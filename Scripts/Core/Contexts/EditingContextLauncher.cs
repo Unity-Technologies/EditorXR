@@ -1,9 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
 using Valve.VR.InteractionSystem;
@@ -12,18 +10,40 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	public class EditingContextLauncher : MonoBehaviour
 	{
+		const string k_DefaultContext = "EditorVR.DefaultContext";
+
 		static EditingContextLauncher s_Instance;
 		static InputManager s_InputManager;
 
-		/// <summary>
-		/// The context stack.  We hold game objects.  But all are expected to have a MonoBehavior that implements IEditingContext.
-		/// </summary>
 		List<IEditingContext> m_ContextStack = new List<IEditingContext>();
 
 		List<IEditingContext> m_AvailableContexts = new List<IEditingContext>();
 		string[] m_ContextNames;
 		int m_SelectedContextIndex;
-		
+
+		IEditingContext defaultContext
+		{
+			get
+			{
+				var context = m_AvailableContexts.First();
+
+				var defaultContextName = EditorPrefs.GetString(k_DefaultContext, string.Empty);
+				if (!string.IsNullOrEmpty(defaultContextName))
+				{
+					var foundContext = m_AvailableContexts.Find(c => ((Object)c).name == defaultContextName);
+					if (foundContext != null)
+						context = foundContext;
+				}
+
+				return context;
+			}
+			set
+			{
+				EditorPrefs.SetString(k_DefaultContext, ((Object)value).name); 
+			}
+		}
+
+
 		static EditingContextLauncher()
 		{
 			VRView.viewEnabled += OnVRViewEnabled;
@@ -46,14 +66,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		}
 
 		[MenuItem("Window/EditorVR %e", false)]
-		public static void ShowEditorVR()
+		static void ShowEditorVR()
 		{
 			// Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
 			EditorWindow.GetWindow<VRView>(true, "EditorVR", true);
 		}
 
 		[MenuItem("Window/EditorVR %e", true)]
-		public static bool ShouldShowEditorVR()
+		static bool ShouldShowEditorVR()
 		{
 			return PlayerSettings.virtualRealitySupported;
 		}
@@ -62,7 +82,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			var types = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
 			var searchString = "t: " + string.Join(" t: ", types.Select(t => t.FullName).ToArray());
-			Debug.Log(searchString);
 			var assets = AssetDatabase.FindAssets(searchString);
 
 			assets.ForEach(a =>
@@ -74,9 +93,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			m_ContextNames = m_AvailableContexts.Select(c => ((Object)c).name).ToArray();
 
-			// for now, we leave the key binding in place and explicilty push EditorVR onto the stack.
-			PushEditingContext(m_AvailableContexts.First());
-			m_SelectedContextIndex = 0;
+			var launchContext = defaultContext;
+			PushEditingContext(launchContext);
+			m_SelectedContextIndex = m_AvailableContexts.IndexOf(launchContext);
 
 			if (m_AvailableContexts.Count > 1)
 				VRView.afterOnGUI += OnVRViewGUI;
@@ -84,10 +103,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void OnDisable()
 		{
+			defaultContext = m_AvailableContexts[m_SelectedContextIndex];
+
 			VRView.afterOnGUI -= OnVRViewGUI;
 
-			while (PeekEditingContext() != null)
-				PopEditingContext();
+			PopAllEditingContexts();
 		}
 
 		void OnVRViewGUI(EditorWindow window)
@@ -101,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_SelectedContextIndex = EditorGUILayout.Popup(string.Empty, m_SelectedContextIndex, m_ContextNames);
 					if (GUI.changed)
 					{
-						PopEditingContext();
+						PopAllEditingContexts();
 						PushEditingContext(m_AvailableContexts[m_SelectedContextIndex]);
 						GUIUtility.ExitGUI();
 					}
@@ -112,10 +132,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			GUILayout.EndArea();
 		}
 
-		/// <summary>
-		/// Peek at the current editing context.
-		/// </summary>
-		/// <returns>The current editing context</returns>
 		IEditingContext PeekEditingContext()
 		{
 			if (m_ContextStack.Count == 0)
@@ -124,14 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return m_ContextStack[m_ContextStack.Count - 1];
 		}
 
-		//public GameObject PushEditingContext<T, C>(C config) where T : ScriptableObject, IEditingContext<C>
-		//{
-		//	var newContext = PushEditingContext<T>();
-		//	newContext.GetComponent<T>().Configure(config);
-		//	return newContext;
-		//}
-
-		public void PushEditingContext(IEditingContext context)
+		void PushEditingContext(IEditingContext context)
 		{
 			//if there is a current context, we subvert and deactivate it.
 			var previousContext = PeekEditingContext();
@@ -144,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_ContextStack.Add(context);
 		}
 
-		public void PopEditingContext()
+		void PopEditingContext()
 		{
 			IEditingContext poppedContext = PeekEditingContext();
 			if (poppedContext != null)
@@ -156,6 +165,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			IEditingContext resumedContext = PeekEditingContext();
 			if (resumedContext != null)
 				resumedContext.OnResumeContext();
+		}
+
+		void PopAllEditingContexts()
+		{
+			while (PeekEditingContext() != null)
+				PopEditingContext();
 		}
 
 		static void InitializeInputManager()
