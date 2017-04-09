@@ -46,6 +46,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
 			}
 
+			internal override void OnDestroy()
+			{
+				ICustomRayMethods.showDefaultRay = null;
+				ICustomRayMethods.hideDefaultRay = null;
+
+				IUsesRayLockingMethods.lockRay = null;
+				IUsesRayLockingMethods.unlockRay = null;
+
+				IForEachRayOriginMethods.forEachRayOrigin = null;
+				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = null;
+				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = null;
+				IUsesRaycastResultsMethods.getFirstGameObject = null;
+
+				foreach (var proxy in m_Proxies)
+					ObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
+			}
+
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
 				if (rayOrigin)

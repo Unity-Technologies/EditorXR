@@ -19,6 +19,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		/// The context stack.  We hold game objects.  But all are expected to have a MonoBehavior that implements IEditingContext.
 		/// </summary>
 		List<IEditingContext> m_ContextStack = new List<IEditingContext>();
+
+		List<IEditingContext> m_AvailableContexts = new List<IEditingContext>();
+		string[] m_ContextNames;
+		int m_SelectedContextIndex;
 		
 		static EditingContextLauncher()
 		{
@@ -33,19 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			InitializeInputManager();
 
 			s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditingContextLauncher>();
-
-			var types = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
-			var searchString = "t: " + string.Join(" t: ", types.Select(t => t.FullName).ToArray());
-			Debug.Log(searchString);
-			var assets = AssetDatabase.FindAssets(searchString);
-
-			assets.ForEach(a => Debug.Log(AssetDatabase.GUIDToAssetPath(a)));
-
-			var defaultAsset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(assets[0]));
-			var defaultContext = defaultAsset as IEditingContext;
-
-			// for now, we leave the key binding in place and explicilty push EditorVR onto the stack.
-			s_Instance.PushEditingContext(defaultContext);
 		}
 
 		static void OnVRViewDisabled()
@@ -67,10 +58,58 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return PlayerSettings.virtualRealitySupported;
 		}
 
+		void OnEnable()
+		{
+			var types = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
+			var searchString = "t: " + string.Join(" t: ", types.Select(t => t.FullName).ToArray());
+			Debug.Log(searchString);
+			var assets = AssetDatabase.FindAssets(searchString);
+
+			assets.ForEach(a =>
+			{
+				var assetPath = AssetDatabase.GUIDToAssetPath(a);
+				var context = AssetDatabase.LoadMainAssetAtPath(assetPath) as IEditingContext;
+				m_AvailableContexts.Add(context);
+			});
+
+			m_ContextNames = m_AvailableContexts.Select(c => ((Object)c).name).ToArray();
+
+			// for now, we leave the key binding in place and explicilty push EditorVR onto the stack.
+			PushEditingContext(m_AvailableContexts.First());
+			m_SelectedContextIndex = 0;
+
+			if (m_AvailableContexts.Count > 1)
+				VRView.afterOnGUI += OnVRViewGUI;
+		}
+
 		void OnDisable()
 		{
+			VRView.afterOnGUI -= OnVRViewGUI;
+
 			while (PeekEditingContext() != null)
 				PopEditingContext();
+		}
+
+		void OnVRViewGUI(EditorWindow window)
+		{
+			var view = (VRView)window;
+			GUILayout.BeginArea(view.guiRect);
+			{
+				GUILayout.FlexibleSpace();
+				GUILayout.BeginHorizontal();
+				{
+					m_SelectedContextIndex = EditorGUILayout.Popup(string.Empty, m_SelectedContextIndex, m_ContextNames);
+					if (GUI.changed)
+					{
+						PopEditingContext();
+						PushEditingContext(m_AvailableContexts[m_SelectedContextIndex]);
+						GUIUtility.ExitGUI();
+					}
+					GUILayout.FlexibleSpace();
+				}
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndArea();
 		}
 
 		/// <summary>

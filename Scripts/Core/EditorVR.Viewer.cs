@@ -61,6 +61,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				VRView.hmdStatusChange -= OnHMDStatusChange;
 
+				var cameraRig = CameraUtils.GetCameraRig();
+				cameraRig.transform.parent = null;
+
+				ObjectUtils.Destroy(m_PlayerBody.gameObject);
+
 				if (customPreviewCamera != null)
 					ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
 			}
