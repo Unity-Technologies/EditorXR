@@ -50,6 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		Viewer m_Viewer;
 		MultipleRayInputModule m_MultipleRayInputModule;
 
+		bool m_HasDeserialized;
+
 		static HideFlags defaultHideFlags
 		{
 			get { return showGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave; }
@@ -188,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();
-			sceneObjectModule.shouldPlaceObject = (obj, targetScale) =>
+			sceneObjectModule.tryPlaceObject = (obj, targetScale) =>
 			{
 				foreach (var miniWorld in m_MiniWorlds.worlds)
 				{
@@ -200,10 +202,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
 					obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
 					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
-					return false;
+
+					spatialHashModule.AddObject(obj.gameObject);
+					return true;
 				}
 
-				return true;
+				return false;
 			};
 
 			m_Viewer.AddPlayerModel();
@@ -234,7 +238,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				yield return null;
 			}
 
+			var viewer = GetNestedModule<Viewer>();
+			while (!viewer.hmdReady)
+				yield return null;
+
 			GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
+			m_HasDeserialized = true;
 		}
 
 		static void ClearDeveloperConsoleIfNecessary()
@@ -291,7 +300,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		internal void Shutdown()
 		{
-			serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
+			if (m_HasDeserialized)
+				serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
 		}
 
 		void OnDestroy()

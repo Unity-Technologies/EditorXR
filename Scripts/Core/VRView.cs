@@ -3,12 +3,9 @@ using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using System.Reflection;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine.VR;
-using UnityEngine.InputNew;
 
 #if ENABLE_STEAMVR_INPUT
 using Valve.VR;
@@ -124,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public static event Action viewEnabled;
 		public static event Action viewDisabled;
 		public static event Action<EditorWindow> onGUIDelegate;
-		public static event Action hmdReady;
+		public static event Action<bool> hmdStatusChange;
 
 		public static VRView GetWindow()
 		{
@@ -204,7 +201,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if ENABLE_OVR_INPUT
 			m_VRInitialized |= OVRPlugin.initialized;
 #endif
-
 #if ENABLE_STEAMVR_INPUT
 			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
 #endif
@@ -234,7 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			s_ActiveView = null;
 		}
 
-		private void UpdateCamera()
+		void UpdateCamera()
 		{
 			// Latch HMD values early in case it is used in other scripts
 			Vector3 headPosition = InputTracking.GetLocalPosition(VRNode.Head);
@@ -260,12 +256,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				cameraTransform.localPosition = headPosition;
 				cameraTransform.localRotation = headRotation;
-				if (!m_HMDReady)
-				{
-					m_HMDReady = true;
-					if (hmdReady != null)
-						hmdReady();
-				}
 			}
 
 			m_LastHeadRotation = headRotation;
@@ -396,10 +386,37 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			SceneViewUtilities.SetSceneRepaintDirty();
 
 			UpdateCamera();
+			UpdateHMDStatus();
 
 			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
 			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
 				SetSceneViewsEnabled(true);
+		}
+
+		void UpdateHMDStatus()
+		{
+			if (hmdStatusChange != null)
+			{
+				var ready = GetIsUserPresent();
+				if (m_HMDReady != ready)
+				{
+					m_HMDReady = ready;
+					hmdStatusChange(ready);
+				}
+			}
+		}
+
+		static bool GetIsUserPresent()
+		{
+#if ENABLE_OVR_INPUT
+			if (VRSettings.loadedDeviceName == "Oculus")
+				return OVRPlugin.userPresent;
+#endif
+#if ENABLE_STEAMVR_INPUT
+			if (VRSettings.loadedDeviceName == "OpenVR")
+				return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
+#endif
+			return true;
 		}
 
 		private void SetGameViewsEnabled(bool enabled)

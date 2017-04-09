@@ -1,77 +1,131 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
-		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection
+		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
+		ICanGrabObject
 	{
-		GameObject m_HoverGameObject;
 		GameObject m_PressedObject;
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 		[SerializeField]
 		ActionMap m_ActionMap;
 
+		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
+
+		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
+
 		public Transform rayOrigin { private get; set; }
 
 		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
 
+		public List<ILinkedObject> linkedObjects { get; set; }
+
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			if (rayOrigin == null)
-				return;
-
-			if (this.IsHoveringOverUI(rayOrigin))
+			if (this.IsSharedUpdater(this))
 			{
-				DeactivateHover();
-				return;
+				var directSelection = this.GetDirectSelection();
+
+				m_SelectionHoverGameObjects.Clear();
+				foreach (var linkedObject in linkedObjects)
+				{
+					var selectionTool = (SelectionTool)linkedObject;
+					var selectionRayOrigin = selectionTool.rayOrigin;
+
+					if (!selectionTool.IsActive())
+						continue;
+
+					var hover = this.GetFirstGameObject(selectionRayOrigin);
+
+					if (!selectionTool.GetSelectionCandidate(ref hover))
+						continue;
+
+					if (hover)
+					{
+						GameObject lastHover;
+						if (m_HoverGameObjects.TryGetValue(selectionRayOrigin, out lastHover) && lastHover != hover)
+							this.SetHighlight(lastHover, false, selectionRayOrigin);
+
+						m_SelectionHoverGameObjects[selectionRayOrigin] = hover;
+						m_HoverGameObjects[selectionRayOrigin] = hover;
+					}
+				}
+
+				// Unset highlight old hovers
+				var hovers = new Dictionary<Transform, GameObject>(m_HoverGameObjects);
+				foreach (var kvp in hovers)
+				{
+					var directRayOrigin = kvp.Key;
+					var hover = kvp.Value;
+
+					if (!directSelection.ContainsKey(directRayOrigin)
+						&& !m_SelectionHoverGameObjects.ContainsKey(directRayOrigin))
+					{
+						this.SetHighlight(hover, false, directRayOrigin);
+						m_HoverGameObjects.Remove(directRayOrigin);
+					}
+				}
+
+				// Find new hovers
+				foreach (var kvp in directSelection)
+				{
+					var directRayOrigin = kvp.Key;
+					var directSelectionData = kvp.Value;
+					var directHoveredObject = directSelectionData.gameObject;
+
+					var directSelectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
+
+					// Can't select this object (it might be locked or static)
+					if (directHoveredObject && !directSelectionCandidate)
+						continue;
+
+					if (directSelectionCandidate)
+						directHoveredObject = directSelectionCandidate;
+
+					if (!this.CanGrabObject(directHoveredObject, rayOrigin))
+						continue;
+
+					var directSelectInput = (DirectSelectInput)directSelectionData.input;
+					
+					// Only add to selection, don't remove
+					if (!Selection.objects.Contains(directHoveredObject))
+						this.SelectObject(directHoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+
+					GameObject lastHover;
+					if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
+						this.SetHighlight(lastHover, false, directRayOrigin);
+
+					m_HoverGameObjects[directRayOrigin] = directHoveredObject;
+				}
+
+				// Set highlight on new hovers
+				foreach (var hover in m_HoverGameObjects)
+				{
+					this.SetHighlight(hover.Value, true, hover.Key);
+				}
 			}
 
-			if (!isRayActive(rayOrigin))
-			{
-				DeactivateHover();
+			if (!IsActive())
 				return;
-			}
 
 			var selectionInput = (SelectionInput)input;
 
+			// Need to call GetFirstGameObject a second time because we do not guarantee shared updater executes first
 			var hoveredObject = this.GetFirstGameObject(rayOrigin);
-
-			var directSelection = this.GetDirectSelection();
-			DirectSelectionData directSelectionData;
-			if (directSelection.TryGetValue(rayOrigin, out directSelectionData))
-			{
-				if (directSelectionData.gameObject)
-					hoveredObject = directSelectionData.gameObject;
-			}
 
 			if (hovered != null)
 				hovered(hoveredObject, rayOrigin);
 
-			var selectionCandidate = this.GetSelectionCandidate(hoveredObject, true);
-
-			// Can't select this object (it might be locked or static)
-			if (hoveredObject && !selectionCandidate)
+			if (!GetSelectionCandidate(ref hoveredObject))
 				return;
-
-			if (selectionCandidate)
-				hoveredObject = selectionCandidate;
-
-			// Handle changing highlight
-			if (hoveredObject != m_HoverGameObject)
-			{
-				DeactivateHover();
-
-				if (hoveredObject != null)
-					this.SetHighlight(hoveredObject, true, rayOrigin);
-			}
-
-			m_HoverGameObject = hoveredObject;
 
 			this.SetManipulatorsVisible(this, !selectionInput.multiSelect.isHeld);
 
@@ -105,20 +159,41 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		void DeactivateHover()
+		bool GetSelectionCandidate(ref GameObject hoveredObject)
 		{
-			if (m_HoverGameObject != null)
-				this.SetHighlight(m_HoverGameObject, false, rayOrigin);
-			m_HoverGameObject = null;
+			var selectionCandidate = this.GetSelectionCandidate(hoveredObject, true);
+
+			// Can't select this object (it might be locked or static)
+			if (hoveredObject && !selectionCandidate)
+				return false;
+
+			if (selectionCandidate)
+				hoveredObject = selectionCandidate;
+
+			return true;
+		}
+
+		bool IsActive()
+		{
+			if (rayOrigin == null)
+				return false;
+
+			if (this.IsHoveringOverUI(rayOrigin))
+				return false;
+
+			if (!isRayActive(rayOrigin))
+				return false;
+
+			return true;
 		}
 
 		void OnDisable()
 		{
-			if (m_HoverGameObject != null)
+			foreach (var kvp in m_HoverGameObjects)
 			{
-				this.SetHighlight(m_HoverGameObject, false, rayOrigin);
-				m_HoverGameObject = null;
+				this.SetHighlight(kvp.Value, false, kvp.Key);
 			}
+			m_HoverGameObjects.Clear();
 		}
 	}
 }
