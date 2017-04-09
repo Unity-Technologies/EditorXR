@@ -6,7 +6,6 @@ using System.Collections;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using System.Reflection;
 using UnityEngine.VR;
-
 #if ENABLE_STEAMVR_INPUT
 using Valve.VR;
 #endif

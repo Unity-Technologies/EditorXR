@@ -1,18 +1,18 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
-using Valve.VR.InteractionSystem;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	public class EditingContextLauncher : MonoBehaviour
+	class EditingContextLauncher : MonoBehaviour
 	{
 		const string k_DefaultContext = "EditorVR.DefaultContext";
 
-		static EditingContextLauncher s_Instance;
+		internal static EditingContextLauncher s_Instance;
 		static InputManager s_InputManager;
 
 		List<IEditingContext> m_ContextStack = new List<IEditingContext>();
@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var defaultContextName = EditorPrefs.GetString(k_DefaultContext, string.Empty);
 				if (!string.IsNullOrEmpty(defaultContextName))
 				{
-					var foundContext = m_AvailableContexts.Find(c => ((Object)c).name == defaultContextName);
+					var foundContext = m_AvailableContexts.Find(c => c.name == defaultContextName);
 					if (foundContext != null)
 						context = foundContext;
 				}
@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 			set
 			{
-				EditorPrefs.SetString(k_DefaultContext, ((Object)value).name); 
+				EditorPrefs.SetString(k_DefaultContext, value.name); 
 			}
 		}
 
@@ -52,10 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		static void OnVRViewEnabled()
 		{
-			ObjectUtils.hideFlags = HideFlags.DontSave;
-
 			InitializeInputManager();
-
 			s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditingContextLauncher>();
 		}
 
@@ -80,22 +77,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void OnEnable()
 		{
-			var types = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
-			var searchString = "t: " + string.Join(" t: ", types.Select(t => t.FullName).ToArray());
-			var assets = AssetDatabase.FindAssets(searchString);
-
-			assets.ForEach(a =>
-			{
-				var assetPath = AssetDatabase.GUIDToAssetPath(a);
-				var context = AssetDatabase.LoadMainAssetAtPath(assetPath) as IEditingContext;
-				m_AvailableContexts.Add(context);
-			});
-
-			m_ContextNames = m_AvailableContexts.Select(c => ((Object)c).name).ToArray();
-
-			var launchContext = defaultContext;
-			PushEditingContext(launchContext);
-			m_SelectedContextIndex = m_AvailableContexts.IndexOf(launchContext);
+			m_AvailableContexts = GetAllEditingContexts();
+			m_ContextNames = m_AvailableContexts.Select(c => c.name).ToArray();
 
 			if (m_AvailableContexts.Count > 1)
 				VRView.afterOnGUI += OnVRViewGUI;
@@ -110,6 +93,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			PopAllEditingContexts();
 		}
 
+		void Start()
+		{
+			var launchContext = defaultContext;
+			PushEditingContext(launchContext);
+			m_SelectedContextIndex = m_AvailableContexts.IndexOf(launchContext);
+		}
+
 		void OnVRViewGUI(EditorWindow window)
 		{
 			var view = (VRView)window;
@@ -121,8 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_SelectedContextIndex = EditorGUILayout.Popup(string.Empty, m_SelectedContextIndex, m_ContextNames);
 					if (GUI.changed)
 					{
-						PopAllEditingContexts();
-						PushEditingContext(m_AvailableContexts[m_SelectedContextIndex]);
+						SetEditingContext(m_AvailableContexts[m_SelectedContextIndex]);
 						GUIUtility.ExitGUI();
 					}
 					GUILayout.FlexibleSpace();
@@ -132,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			GUILayout.EndArea();
 		}
 
-		IEditingContext PeekEditingContext()
+		internal IEditingContext PeekEditingContext()
 		{
 			if (m_ContextStack.Count == 0)
 				return null;
@@ -140,7 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return m_ContextStack[m_ContextStack.Count - 1];
 		}
 
-		void PushEditingContext(IEditingContext context)
+		internal void PushEditingContext(IEditingContext context)
 		{
 			//if there is a current context, we subvert and deactivate it.
 			var previousContext = PeekEditingContext();
@@ -151,9 +140,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			//create the new context and add it to the stack.
 			context.Setup();
 			m_ContextStack.Add(context);
+
+			m_SelectedContextIndex = m_AvailableContexts.IndexOf(context);
 		}
 
-		void PopEditingContext()
+		internal void PopEditingContext()
 		{
 			IEditingContext poppedContext = PeekEditingContext();
 			if (poppedContext != null)
@@ -167,10 +158,33 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				resumedContext.OnResumeContext();
 		}
 
-		void PopAllEditingContexts()
+		internal void SetEditingContext(IEditingContext context)
+		{
+			PopAllEditingContexts();
+			PushEditingContext(context);
+		}
+
+		internal void PopAllEditingContexts()
 		{
 			while (PeekEditingContext() != null)
 				PopEditingContext();
+		}
+
+		internal static List<IEditingContext> GetAllEditingContexts()
+		{
+			var types = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
+			var searchString = "t: " + string.Join(" t: ", types.Select(t => t.FullName).ToArray());
+			var assets = AssetDatabase.FindAssets(searchString);
+
+			var allContexts = new List<IEditingContext>();
+			foreach (var asset in assets)
+			{
+				var assetPath = AssetDatabase.GUIDToAssetPath(asset);
+				var context = AssetDatabase.LoadMainAssetAtPath(assetPath) as IEditingContext;
+				allContexts.Add(context);
+			};
+
+			return allContexts;
 		}
 
 		static void InitializeInputManager()
@@ -210,3 +224,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		}
 	}
 }
+#endif

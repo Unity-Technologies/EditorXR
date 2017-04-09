@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -29,12 +29,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		public void OnSuspendContext()
 		{
-			m_Instance.gameObject.SetActive(false);
+			throw new System.NotImplementedException("EditorVR does not support multiple concurrent instances as of yet");
 		}
 
 		public void OnResumeContext()
 		{
-			m_Instance.gameObject.SetActive(true);
 		}
 	}
 }

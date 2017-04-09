@@ -67,6 +67,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			preserveWorkspaces = true;
 		}
 
+		void OnDestroy()
+		{
+			while (m_Workspaces.Count > 0)
+				ObjectUtils.Destroy(m_Workspaces[0].transform.gameObject);
+		}
+
 		public object OnSerializePreferences()
 		{
 			if (!preserveWorkspaces)

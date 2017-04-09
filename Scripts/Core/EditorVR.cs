@@ -432,7 +432,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							if (map.InterfaceMethods.Length == 1)
 							{
 								var tm = map.TargetMethods[0];
-								tm.Invoke(nestedModule, new [] { dependency });
+								tm.Invoke(nestedModule, new[] { dependency });
 							}
 						}
 					}
@@ -450,8 +450,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return groupRoot;
 		}
 
-        static EditorVR()
+		static EditorVR()
 		{
+			ObjectUtils.hideFlags = defaultHideFlags;
+
 			if (!PlayerSettings.virtualRealitySupported)
 				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
 
