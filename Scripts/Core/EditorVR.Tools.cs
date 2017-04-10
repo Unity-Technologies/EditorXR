@@ -78,10 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void SpawnDefaultTools(IProxy proxy)
 			{
 				// Spawn default tools
-				HashSet<InputDevice> devices;
-
-				var transformTool = SpawnTool(typeof(TransformTool), out devices);
-				evr.m_DirectSelection.objectsGrabber = transformTool.tool as IGrabObjects;
 
 				Func<Transform, bool> isRayActive = Rays.IsRayActive;
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
@@ -94,6 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (deviceData.proxy != proxy)
 						continue;
 
+					HashSet<InputDevice> devices;
 					var toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var selectionTool = (SelectionTool)toolData.tool;
@@ -110,8 +107,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					toolData = SpawnTool(typeof(MoveWorkspacesTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 
-					// Using a shared instance of the transform tool across all device tool stacks
-					AddToolToStack(deviceData, transformTool);
+					toolData = SpawnTool(typeof(TransformTool), out devices, inputDevice);
+					AddToolToDeviceData(toolData, devices);
+					var transformTool = (TransformTool)toolData.tool;
+					if (transformTool.IsSharedUpdater(transformTool))
+						evr.m_DirectSelection.objectsGrabber = transformTool;
 
 					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
@@ -171,6 +171,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 				}
 
+				if (usedDevices.Count == 0)
+					usedDevices.Add(device);
+
 				evr.m_Interfaces.ConnectInterfaces(tool, device);
 
 				return new ToolData { tool = tool, input = actionMapInput };
@@ -228,10 +231,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							HashSet<InputDevice> usedDevices;
 							var device = deviceData.inputDevice;
 							var newTool = SpawnTool(toolType, out usedDevices, device);
-
-							// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
-							if (usedDevices.Count == 0)
-								usedDevices.Add(device);
 
 							var evrDeviceData = evr.m_DeviceData;
 
