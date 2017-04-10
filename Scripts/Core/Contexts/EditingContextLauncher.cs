@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 			set
 			{
-				EditorPrefs.SetString(k_DefaultContext, value.name); 
+				EditorPrefs.SetString(k_DefaultContext, value.name);
 			}
 		}
 
@@ -95,9 +95,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void Start()
 		{
+			string errorMessage;
 			var launchContext = defaultContext;
-			PushEditingContext(launchContext);
-			m_SelectedContextIndex = m_AvailableContexts.IndexOf(launchContext);
+			if (PushEditingContext(launchContext, out errorMessage))
+				m_SelectedContextIndex = m_AvailableContexts.IndexOf(launchContext);
+			else
+			{
+				Debug.LogError(errorMessage);
+				VRView.activeView.Close();
+			}
 		}
 
 		void OnVRViewGUI(EditorWindow window)
@@ -129,19 +135,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return m_ContextStack[m_ContextStack.Count - 1];
 		}
 
-		internal void PushEditingContext(IEditingContext context)
+		internal bool PushEditingContext(IEditingContext context, out string errorMessage)
 		{
-			//if there is a current context, we subvert and deactivate it.
-			var previousContext = PeekEditingContext();
+			errorMessage = null;
 
-			if (previousContext != null)
-				previousContext.OnSuspendContext();
-			
+			//if there is a current context, we subvert and deactivate it.
+			var currentContext = PeekEditingContext();
+
+			if (currentContext != null)
+			{
+				if (!currentContext.OnSuspendContext(out errorMessage))
+					return false;
+			}
+
 			//create the new context and add it to the stack.
 			context.Setup();
 			m_ContextStack.Add(context);
 
-			m_SelectedContextIndex = m_AvailableContexts.IndexOf(context);
+			m_SelectedContextIndex = m_AvailableContexts.IndexOf(context);		
+
+			return true;
 		}
 
 		internal void PopEditingContext()
@@ -160,8 +173,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		internal void SetEditingContext(IEditingContext context)
 		{
+			string errorMessage; // Popping from stack cannot be prevented
 			PopAllEditingContexts();
-			PushEditingContext(context);
+			PushEditingContext(context, out errorMessage);
 		}
 
 		internal void PopAllEditingContexts()

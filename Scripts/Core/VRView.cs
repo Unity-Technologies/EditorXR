@@ -108,7 +108,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		public Rect guiRect { get; private set; }
 
-		public static VRView GetWindow()
+		static VRView GetWindow()
 		{
 			return GetWindow<VRView>(true);
 		}
@@ -127,11 +127,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		// Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
 		// EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
 		// we watch until playmode is done and then relaunch.  
-		static VRView()
-		{
-			EditorApplication.update += ReopenOnExitPlaymode;
-		}
-
 		static void ReopenOnExitPlaymode()
 		{
 			bool launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
@@ -140,7 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
 				EditorApplication.update -= ReopenOnExitPlaymode;
 				if (launch)
-					GetWindow();
+					GetWindow<VRView>();
 			}
 		}
 

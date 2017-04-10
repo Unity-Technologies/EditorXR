@@ -26,7 +26,8 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Execute cleanup before this context is suspended. You can assume the context will be resumed before it will be destroyed.
 		/// </summary>
-		void OnSuspendContext();
+		/// 
+		bool OnSuspendContext(out string errorMessage);
 
 		/// <summary>
 		/// Undo whatever was cleaned up when suspending. You can assume this context was previously suspended.

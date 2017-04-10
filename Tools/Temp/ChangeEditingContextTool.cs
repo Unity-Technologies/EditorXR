@@ -67,7 +67,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (push.wasJustPressed)
 			{
 				consumeControl(push);
-				EditorApplication.delayCall += () => this.PushEditingContext(allContexts[m_CurrentContextIndex]);
+				EditorApplication.delayCall += () =>
+				{
+					string errorMessage;
+					this.PushEditingContext(allContexts[m_CurrentContextIndex], out errorMessage);
+				};
 			}
 			else if (pop.wasJustPressed)
 			{

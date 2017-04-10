@@ -14,8 +14,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 		}
 
-		public void OnSuspendContext()
+		public bool OnSuspendContext(out string errorMessage)
 		{
+			errorMessage = null;
+			return true;
 		}
 
 		public void OnResumeContext()

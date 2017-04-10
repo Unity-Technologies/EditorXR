@@ -27,9 +27,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Instance = null;
 		}
 
-		public void OnSuspendContext()
+		public bool OnSuspendContext(out string errorMessage)
 		{
-			throw new System.NotImplementedException("EditorVR does not support multiple concurrent instances as of yet");
+			errorMessage = "EditorVR does not support context suspension as of yet";
+			return false;
 		}
 
 		public void OnResumeContext()
