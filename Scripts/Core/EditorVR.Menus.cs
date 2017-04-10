@@ -32,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			readonly Dictionary<Type, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
 			List<Type> m_MainMenuTools;
-			WorkspaceModule m_WorkspaceModule;
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
@@ -72,7 +71,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdateMenuVisibilityNearWorkspaces()
 			{
-				Rays.ForEachProxyDevice((deviceData) =>
+				var workspaceModule = evr.GetModule<WorkspaceModule>();
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					m_UpdateVisibilityMenus.Clear();
 					m_UpdateVisibilityMenus.AddRange(deviceData.menuHideFlags.Keys);
@@ -98,11 +98,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							menuSizes[menu] = currentMaxComponent;
 						}
 
-						if (m_WorkspaceModule == null)
-							m_WorkspaceModule = evr.GetModule<WorkspaceModule>();
-
 						var intersection = false;
-						var workspaces = m_WorkspaceModule.workspaces;
+						var workspaces = workspaceModule.workspaces;
 						for (int j = 0; j < workspaces.Count; j++)
 						{
 							var workspace = workspaces[j];
@@ -228,7 +225,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				// Apply state to UI visibility
-				Rays.ForEachProxyDevice((deviceData) =>
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var mainMenu = deviceData.mainMenu;
 					mainMenu.visible = deviceData.menuHideFlags[mainMenu] == 0;
@@ -310,6 +307,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			static GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
 			{
+				var ui = evr.GetNestedModule<UI>();
 				GameObject go = null;
 				Rays.ForEachProxyDevice(deviceData =>
 				{
@@ -322,7 +320,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						{
 							if (deviceData.customMenu == null)
 							{
-								go = evr.GetNestedModule<UI>().InstantiateUI(prefab.gameObject, menuOrigin, false);
+								go = ui.InstantiateUI(prefab.gameObject, menuOrigin, false);
 
 								var customMenu = go.GetComponent<IMenu>();
 								deviceData.customMenu = customMenu;

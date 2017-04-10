@@ -111,6 +111,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				var objectsGrabber = evr.GetNestedModule<DirectSelection>().objectsGrabber;
+				var sceneObjectModule = evr.GetModule<SceneObjectModule>();
+				var viewer = evr.GetNestedModule<Viewer>();
 
 				// Update MiniWorldRays
 				foreach (var ray in m_Rays)
@@ -136,8 +138,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					miniWorldRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
 					miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
 					miniWorldRayOrigin.localScale = Vector3.Scale(inverseScale, referenceTransform.localScale);
-
-					var directSelection = evr.GetNestedModule<DirectSelection>();
 
 					// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
 					var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * DirectSelection.GetPointerLength(originalRayOrigin);
@@ -185,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 
 					// Transfer objects to and from original ray and MiniWorld ray (e.g. outside to inside mini world)
-					if (directSelection != null && isContained != miniWorldRay.wasContained)
+					if (isContained != miniWorldRay.wasContained)
 					{
 						var pointerLengthDiff = DirectSelection.GetPointerLength(miniWorldRayOrigin) - DirectSelection.GetPointerLength(originalRayOrigin);
 						var from = isContained ? originalRayOrigin : miniWorldRayOrigin;
@@ -213,14 +213,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 									otherRay.dragObjects = null;
 
-									if (directSelection != null)
+									var heldObjects = objectsGrabber.GetHeldObjects(otherRayOrigin);
+									if (heldObjects != null)
 									{
-										var heldObjects = objectsGrabber.GetHeldObjects(otherRayOrigin);
-										if (heldObjects != null)
-										{
-											objectsGrabber.TransferHeldObjects(otherRayOrigin, miniWorldRayOrigin,
-												Vector3.zero); // Set the new offset to zero because the object will have moved (this could be improved by taking original offset into account)
-										}
+										objectsGrabber.TransferHeldObjects(otherRayOrigin, miniWorldRayOrigin,
+											Vector3.zero); // Set the new offset to zero because the object will have moved (this could be improved by taking original offset into account)
 									}
 
 									break;
@@ -267,8 +264,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								}
 
 								// Add the object (back) to TransformTool
-								if (directSelection != null)
-									objectsGrabber.GrabObjects(miniWorldRay.node, miniWorldRayOrigin, directSelectInput, dragObjects);
+								objectsGrabber.GrabObjects(miniWorldRay.node, miniWorldRayOrigin, directSelectInput, dragObjects);
 							}
 						}
 						else
@@ -279,8 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								var dragObject = dragObjects[i];
 								if (dragObject.CompareTag(k_VRPlayerTag))
 								{
-									if (directSelection != null)
-										objectsGrabber.DropHeldObjects(miniWorldRayOrigin);
+									objectsGrabber.DropHeldObjects(miniWorldRayOrigin);
 
 									// Drop player at edge of MiniWorld
 									miniWorldRay.dragObjects = null;
@@ -315,13 +310,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									}
 
 									// Drop from TransformTool to take control of object
-									if (directSelection != null)
-									{
-										objectsGrabber.DropHeldObjects(miniWorldRayOrigin, out positionOffsets, out rotationOffsets);
-										miniWorldRay.originalPositionOffsets = positionOffsets;
-										miniWorldRay.originalRotationOffsets = rotationOffsets;
-										miniWorldRay.wasHeld = true;
-									}
+									objectsGrabber.DropHeldObjects(miniWorldRayOrigin, out positionOffsets, out rotationOffsets);
+									miniWorldRay.originalPositionOffsets = positionOffsets;
+									miniWorldRay.originalRotationOffsets = rotationOffsets;
+									miniWorldRay.wasHeld = true;
 								}
 							}
 
@@ -339,8 +331,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					// Release the current object if the trigger is no longer held
 					if (directSelectInput.select.wasJustReleased)
 					{
-						var sceneObjectModule = evr.GetModule<SceneObjectModule>();
-						var viewer = evr.GetNestedModule<Viewer>();
 						var rayPosition = originalRayOrigin.position;
 						for (var i = 0; i < dragObjects.Length; i++)
 						{

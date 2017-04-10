@@ -132,7 +132,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var deviceInputModule = evr.GetModule<DeviceInputModule>();
 						var keyboardModule = evr.GetModule<KeyboardModule>();
 						var highlightModule = evr.GetModule<HighlightModule>();
+						var workspaceModule = evr.GetModule<WorkspaceModule>();
+						var intersectionModule = evr.GetModule<IntersectionModule>();
 						var miniWorlds = evr.GetNestedModule<MiniWorlds>();
+						var ui = evr.GetNestedModule<UI>();
 
 						foreach (var rayOriginPair in proxy.rayOrigins)
 						{
@@ -193,7 +196,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								List<GameObject> prefabs;
 								if (extraData.TryGetValue(rayOriginPair.Key, out prefabs))
 								{
-									var ui = evr.GetNestedModule<UI>();
 									foreach (var prefab in prefabs)
 									{
 										var go = ui.InstantiateUI(prefab);
@@ -204,11 +206,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 							var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
 							tester.active = proxy.active;
-							evr.GetModule<IntersectionModule>().AddTester(tester);
+							intersectionModule.AddTester(tester);
 
 							highlightModule.AddRayOriginForNode(node, rayOrigin);
 
-							var workspaceModule = evr.GetModule<WorkspaceModule>();
 							switch (node)
 							{
 								case Node.LeftHand:
