@@ -116,6 +116,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			get
 			{
+				if (!this.IsSharedUpdater(this))
+					return null;
+
 				if (m_Actions == null)
 				{
 					m_Actions = new List<IAction>()
