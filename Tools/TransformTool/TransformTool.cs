@@ -281,6 +281,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						if (objectGrabbed != null)
 							objectGrabbed(hoveredObject);
 
+						// Only add to selection, don't remove
+						if (!Selection.objects.Contains(hoveredObject))
+							this.SelectObject(hoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+
 						consumeControl(directSelectInput.select);
 
 						var selectedNode = selection.node;
