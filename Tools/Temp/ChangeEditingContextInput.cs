@@ -9,5 +9,6 @@ namespace UnityEngine.InputNew
 		
 		public AxisInputControl @change { get { return (AxisInputControl)this[0]; } }
 		public ButtonInputControl @set { get { return (ButtonInputControl)this[1]; } }
+		public ButtonInputControl @previous { get { return (ButtonInputControl)this[2]; } }
 	}
 }

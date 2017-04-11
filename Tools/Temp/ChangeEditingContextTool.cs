@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -59,10 +60,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.ShowTooltip(this);
 			
 			var set = changeContextInput.set;
+			var previous = changeContextInput.previous;
 			if (set.wasJustPressed)
 			{
 				consumeControl(set);
 				EditorApplication.delayCall += () => this.SetEditingContext(m_AvailableContexts[m_CurrentContextIndex]);
+			}
+			else if (previous.wasJustPressed)
+			{
+				consumeControl(previous);
+				EditorApplication.delayCall += () => this.RestorePreviousEditingContext();
 			}
 		}
 	}

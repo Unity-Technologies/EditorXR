@@ -9,10 +9,21 @@ namespace UnityEditor.Experimental.EditorVR
 	}
 
 	public static class ISetEditingContextMethods
-	{		
-		internal static Action<IEditingContext> setEditingContext { get; set; }
+	{
 		internal static Func<List<IEditingContext>> getAvailableEditingContexts { get; set; }
-		
+		internal static Action<IEditingContext> setEditingContext { get; set; }
+		internal static Action restorePreviousEditingContext { get; set; }
+
+		/// <summary>
+		/// Get the currently available editing contexts
+		/// NOTE: Dynamic contexts can be added to the list to make them available
+		/// </summary>
+		/// <returns>List of the currently available editing contexts</returns>
+		public static List<IEditingContext> GetAvailableEditingContexts(this ISetEditingContext obj)
+		{
+			return getAvailableEditingContexts();
+		}
+
 		/// <summary>
 		/// Set the editing context, which will dispose of the current editing context
 		/// </summary>
@@ -23,13 +34,11 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 
 		/// <summary>
-		/// Get the currently available editing contexts
-		/// NOTE: Dynamic contexts can be added to the list to make them available
+		/// Restore the previous editing context, which will dispose of the current editing context
 		/// </summary>
-		/// <returns>List of the currently available editing contexts</returns>
-		public static List<IEditingContext> GetAvailableEditingContexts(this ISetEditingContext obj)
+		public static void RestorePreviousEditingContext(this ISetEditingContext obj)
 		{
-			return getAvailableEditingContexts();
+			restorePreviousEditingContext();
 		}
 	}
 

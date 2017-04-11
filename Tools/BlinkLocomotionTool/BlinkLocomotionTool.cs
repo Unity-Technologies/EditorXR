@@ -320,8 +320,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_State = State.Inactive;
 				}
 			}
-
-			consumeControl(blinkInput.blink);
 		}
 
 		void Translate(float inputValue, bool isVive, Vector3 direction)
