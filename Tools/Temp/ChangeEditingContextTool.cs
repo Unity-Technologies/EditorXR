@@ -1,7 +1,5 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -37,9 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void OnDestroy()
 		{
-			if (gameObject.activeInHierarchy)
-				this.HideTooltip(this);
-
+			this.HideTooltip(this);
 			ObjectUtils.Destroy(m_TooltipTransform.gameObject);
 		}
 
@@ -56,6 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_CurrentContextIndex = Mathf.Max(m_CurrentContextIndex - 1, 0);
 			else if (change.positive.wasJustReleased)
 				m_CurrentContextIndex = Mathf.Min(m_CurrentContextIndex + 1, m_AvailableContexts.Count - 1);
+
 			consumeControl(change);
 
 			tooltipText = m_AvailableContexts[m_CurrentContextIndex].name;

@@ -229,6 +229,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 
 			managers = Resources.FindObjectsOfTypeAll<InputManager>();
+
 			if (managers.Length == 0)
 			{
 				// Attempt creating object hierarchy via an implicit static constructor call by touching the class
@@ -244,8 +245,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
 
 			s_InputManager = managers[0];
-			s_InputManager.gameObject.hideFlags = ObjectUtils.hideFlags;
-			ObjectUtils.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
+			var go = s_InputManager.gameObject;
+			go.hideFlags = ObjectUtils.hideFlags;
+			ObjectUtils.SetRunInEditModeRecursively(go, true);
 
 			// These components were allocating memory every frame and aren't currently used in EditorVR
 			ObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
