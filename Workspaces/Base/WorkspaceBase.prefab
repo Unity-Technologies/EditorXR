@@ -294,7 +294,7 @@ GameObject:
   - 114: {fileID: 114000012356101864}
   - 114: {fileID: 114000010732057644}
   m_Layer: 5
-  m_Name: BackHandle
+  m_Name: TopFrontHandle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -612,7 +612,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1000013094299778
 GameObject:
   m_ObjectHideFlags: 1
@@ -855,7 +855,7 @@ GameObject:
   - 114: {fileID: 114000013720459270}
   - 114: {fileID: 114000012920327028}
   m_Layer: 5
-  m_Name: BackHandle
+  m_Name: BottomFrontHandle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -886,7 +886,7 @@ GameObject:
   - 224: {fileID: 224000011914184124}
   - 33: {fileID: 33000014195327050}
   m_Layer: 5
-  m_Name: TopFrontHandleContainer
+  m_Name: BottomFrontHandleContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1091,8 +1091,8 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012958766636}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 1.04, y: -0.07493749, z: -0.56816}
-  m_LocalScale: {x: 0.03, y: 0.05512501, z: 0.095}
+  m_LocalPosition: {x: 0, y: -0.1025, z: 0.035}
+  m_LocalScale: {x: 0.03, y: 0.1, z: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000013817173492}
@@ -1474,7 +1474,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: dcfcbcce22eb43f4ebbf1d9a5ef17f78, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -1503,7 +1503,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: dcfcbcce22eb43f4ebbf1d9a5ef17f78, type: 2}
   m_SubsetIndices: 
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
@@ -2739,17 +2739,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
-  editorBounds:
-    m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 0, y: 0, z: 0}
   m_SceneContainer: {fileID: 224000012777721742}
   m_FrontPanel: {fileID: 224000013655961458}
-  m_Handles: []
-  m_ResizeIcons: []
-  m_LeftHandle: {fileID: 0}
-  m_RightHandle: {fileID: 0}
-  m_BackHandle: {fileID: 224000012182436994}
-  m_FrontTopHandle: {fileID: 0}
+  m_Handles:
+  - {fileID: 114000010035209032}
+  - {fileID: 114000011462939678}
+  - {fileID: 114000012392799680}
+  - {fileID: 114000012356101864}
+  - {fileID: 114000013720459270}
+  - {fileID: 114000011349842910}
+  - {fileID: 114000012787825576}
+  - {fileID: 114000012775033414}
+  - {fileID: 114000012268223792}
+  m_ResizeIcons:
+  - {fileID: 114000010013501312}
+  - {fileID: 114000014237042188}
+  - {fileID: 114000012017480980}
+  - {fileID: 114000011332084626}
+  - {fileID: 114000012037022212}
+  - {fileID: 114000010738097314}
+  - {fileID: 114000011675308448}
+  - {fileID: 114000012421043214}
   m_FrontLeftHandle: {fileID: 4000013703858808}
   m_FrontLeftCornerHandle: {fileID: 4000012880835356}
   m_FrontRightHandle: {fileID: 4000012425375176}
@@ -2763,13 +2773,13 @@ MonoBehaviour:
   m_TopPanelDividerTransform: {fileID: 4000011607955888}
   m_UIContentContainer: {fileID: 224000012325241496}
   m_FrontResizeIcon: {fileID: 114000010013501312}
-  m_RightResizeIcon: {fileID: 0}
-  m_LeftResizeIcon: {fileID: 0}
-  m_BackResizeIcon: {fileID: 0}
-  m_FrontLeftResizeIcon: {fileID: 0}
-  m_FrontRightResizeIcon: {fileID: 0}
-  m_BackLeftResizeIcon: {fileID: 0}
-  m_BackRightResizeIcon: {fileID: 0}
+  m_RightResizeIcon: {fileID: 114000012017480980}
+  m_LeftResizeIcon: {fileID: 114000014237042188}
+  m_BackResizeIcon: {fileID: 114000011332084626}
+  m_FrontLeftResizeIcon: {fileID: 114000012037022212}
+  m_FrontRightResizeIcon: {fileID: 114000010738097314}
+  m_BackLeftResizeIcon: {fileID: 114000011675308448}
+  m_BackRightResizeIcon: {fileID: 114000012421043214}
   m_TopHighlightContainer: {fileID: 4000012340493516}
   m_HandleRectTransform: {fileID: 224000013367414678}
   m_ResizeIconRectTransform: {fileID: 224000012061990890}
@@ -3033,7 +3043,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000012061990890}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: 0.03, y: 0}
@@ -3051,7 +3061,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000012061990890}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: -0.03, y: 0}
@@ -3236,8 +3246,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_Children:
   - {fileID: 224000013250432548}
-  - {fileID: 224000011019999500}
   - {fileID: 224000010973109238}
+  - {fileID: 224000011019999500}
   - {fileID: 224000011073146760}
   - {fileID: 224000010220329314}
   - {fileID: 224000011375932052}

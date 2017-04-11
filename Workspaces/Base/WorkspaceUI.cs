@@ -12,10 +12,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	[ExecuteInEditMode]
 	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength
 	{
-		public Bounds editorBounds;
 		const int k_AngledFaceBlendShapeIndex = 2;
 		const int k_ThinFrameBlendShapeIndex = 3;
 		const string k_MaterialStencilRef = "_StencilRef";
@@ -39,18 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		[SerializeField]
 		Image[] m_ResizeIcons;
-
-		[SerializeField]
-		Transform m_LeftHandle;
-
-		[SerializeField]
-		Transform m_RightHandle;
-
-		[SerializeField]
-		Transform m_BackHandle;
-
-		[SerializeField]
-		Transform m_FrontTopHandle;
 
 		[SerializeField]
 		Transform m_FrontLeftHandle;
@@ -464,11 +450,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var extents = m_Bounds.extents;
 			var size = m_Bounds.size;
 			var halfWidth = extents.x;
-			//var handleScaleX = size.x - m_FrameHandleSize;
-			//var handleScaleZ = size.z + m_FrameHandleSize;
-			//var halfHeight = -m_FrameHeight * 0.5f;
 			var halfDepth = extents.z;
-			//var handleHeight = m_FrameHeight + m_FrameHandleSize;
 
 			m_HandleRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 			m_HandleRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
@@ -508,62 +490,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_FrontLeftCornerHandle.localPosition = new Vector3(-halfWidth, yPosition, -halfDepth - zOffset - halfFrameHandleSize);
 			m_FrontLeftCornerHandle.localScale = new Vector3(m_FrameHandleSize, k_HandleZOffset, zScale);
 
-			//m_FrontRightCornerHandle = m_FrontRightCornerHandle.transform;
-			//localPosition = m_FrontLeftCornerHandle.localPosition;
-			//localPosition.x = halfWidth;
-			//m_FrontRightCornerHandle.localPosition = localPosition;
-			//m_FrontRightCornerHandle.localRotation = m_FrontLeftCornerHandle.localRotation;
-			//m_FrontRightCornerHandle.localScale = m_FrontLeftCornerHandle.localScale;
-
-			//// Resize icons
-			//var resizePositionX = halfWidth + m_ResizeHandleMargin;
-			//var resizePositionZ = halfDepth + m_ResizeHandleMargin;
-			//transform = m_FrontResizeIcon.transform;
-			//localPosition = transform.localPosition;
-			//localPosition.z = -resizePositionZ - m_FrontZOffset;
-			//transform.localPosition = localPosition;
-
-			//transform = m_RightResizeIcon.transform;
-			//localPosition = transform.localPosition;
-			//localPosition.x = resizePositionX;
-			//transform.localPosition = localPosition;
-
-			//transform = m_LeftResizeIcon.transform;
-			//localPosition = transform.localPosition;
-			//localPosition.x = -resizePositionX;
-			//transform.localPosition = localPosition;
-
-			//transform = m_BackResizeIcon.transform;
-			//localPosition = transform.localPosition;
-			//localPosition.z = resizePositionZ;
-			//transform.localPosition = localPosition;
-
-			//const float cornerMarginScale = 0.7071067811865475f; // 1 / sqrt(2)
-			//var resizeCornerPositionX = halfWidth + m_ResizeHandleMargin * cornerMarginScale;
-			//var resizeCornerPositionZ = halfDepth + m_ResizeHandleMargin * cornerMarginScale;
-			//transform = m_FrontLeftResizeIcon.transform;
-			//localPosition = transform.localPosition;
-			//localPosition.x = -resizeCornerPositionX;
-			//localPosition.z = -resizeCornerPositionZ - m_FrontZOffset;
-			//transform.localPosition = localPosition;
-
-			//transform = m_FrontRightResizeIcon.transform;
-			//localPosition = transform.localPosition;
-			//localPosition.x = resizeCornerPositionX;
-			//localPosition.z = -resizeCornerPositionZ - m_FrontZOffset;
-			//transform.localPosition = localPosition;
-
-			//transform = m_BackLeftResizeIcon.transform;
-			//localPosition = transform.localPosition;
-			//localPosition.x = -resizeCornerPositionX;
-			//localPosition.z = resizeCornerPositionZ;
-			//transform.localPosition = localPosition;
-
-			//transform = m_BackRightResizeIcon.transform;
-			//localPosition = transform.localPosition;
-			//localPosition.x = resizeCornerPositionX;
-			//localPosition.z = resizeCornerPositionZ;
-			//transform.localPosition = localPosition;
+			m_FrontRightCornerHandle = m_FrontRightCornerHandle.transform;
+			localPosition = m_FrontLeftCornerHandle.localPosition;
+			localPosition.x = halfWidth;
+			m_FrontRightCornerHandle.localPosition = localPosition;
+			m_FrontRightCornerHandle.localRotation = m_FrontLeftCornerHandle.localRotation;
+			m_FrontRightCornerHandle.localScale = m_FrontLeftCornerHandle.localScale;
 		}
 
 		void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
@@ -635,13 +567,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void Update()
 		{
-			bounds = editorBounds;
 			if (!m_DynamicFaceAdjustment)
 				return;
 
 			var currentXRotation = transform.rotation.eulerAngles.x;
-			//if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
-			//	return; // Exit if no x rotation change occurred for this frame
+			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
+				return; // Exit if no x rotation change occurred for this frame
 
 			m_PreviousXRotation = currentXRotation;
 
@@ -768,13 +699,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 									break;
 								case ResizeDirection.Left:
 								case ResizeDirection.Right:
-									var iconPositionZ = iconPosition.z;
-									var positionOffsetZ = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
-									var tergetPositionZ = localPosition.z + positionOffsetZ;
-									if (Mathf.Abs(tergetPositionZ) > bounds.extents.z - m_ResizeCornerSize)
-										tergetPositionZ = localPosition.z - positionOffsetZ;
+									var iconPositionY = iconPosition.y;
+									var positionOffsetY = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
+									var tergetPositionY = localPosition.z + positionOffsetY;
+									if (Mathf.Abs(tergetPositionY) > bounds.extents.z - m_ResizeCornerSize)
+										tergetPositionY = localPosition.z - positionOffsetY;
 
-									iconPosition.z = Mathf.Lerp(iconPositionZ, tergetPositionZ, smoothFollow);
+									iconPosition.y = Mathf.Lerp(iconPositionY, tergetPositionY, smoothFollow);
 									break;
 							}
 							iconTransform.localPosition = iconPosition;
