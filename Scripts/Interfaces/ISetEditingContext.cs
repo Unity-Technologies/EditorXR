@@ -6,23 +6,15 @@ namespace UnityEditor.Experimental.EditorVR
 {
 	public interface ISetEditingContext
 	{
-		/// <summary>
-		/// All of the available editing contexts
-		/// </summary>
-		List<IEditingContext> allContexts { set; }
 	}
 
 	public static class ISetEditingContextMethods
-	{
-		internal delegate bool PushEditingContextDelegate(IEditingContext context, out string errorMessage);
-
+	{		
 		internal static Action<IEditingContext> setEditingContext { get; set; }
-		internal static Func<IEditingContext> peekEditingContext { get; set; }
-		internal static PushEditingContextDelegate pushEditingContext { get; set; }
-		internal static Action popEditingContext { get; set; }
-	
+		internal static Func<List<IEditingContext>> getAvailableEditingContexts { get; set; }
+		
 		/// <summary>
-		/// Set the editing context, which will pop all other editing contexts
+		/// Set the editing context, which will dispose of the current editing context
 		/// </summary>
 		/// <param name="context">The editing context to use</param>
 		public static void SetEditingContext(this ISetEditingContext obj, IEditingContext context)
@@ -31,29 +23,13 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 
 		/// <summary>
-		/// Peek at the current editing context
+		/// Get the currently available editing contexts
+		/// NOTE: Dynamic contexts can be added to the list to make them available
 		/// </summary>
-		/// <returns>The current editing context</returns>
-		public static IEditingContext PeekEditingContext(this ISetEditingContext obj)
+		/// <returns>List of the currently available editing contexts</returns>
+		public static List<IEditingContext> GetAvailableEditingContexts(this ISetEditingContext obj)
 		{
-			return peekEditingContext();
-		}
-
-		/// <summary>
-		/// Push an editing context
-		/// </summary>
-		/// <param name="context">The editing context to activate</param>
-		public static bool PushEditingContext(this ISetEditingContext obj, IEditingContext context, out string errorMessage)
-		{
-			return pushEditingContext(context, out errorMessage);
-		}
-
-		/// <summary>
-		/// Pop the current editing context
-		/// </summary>
-		public static void PopEditingContext(this ISetEditingContext obj)
-		{
-			popEditingContext();
+			return getAvailableEditingContexts();
 		}
 	}
 

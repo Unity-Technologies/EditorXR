@@ -26,16 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			ObjectUtils.Destroy(m_Instance.gameObject);
 			m_Instance = null;
 		}
-
-		public bool OnSuspendContext(out string errorMessage)
-		{
-			errorMessage = "EditorVR does not support context suspension as of yet";
-			return false;
-		}
-
-		public void OnResumeContext()
-		{
-		}
 	}
 }
 #endif

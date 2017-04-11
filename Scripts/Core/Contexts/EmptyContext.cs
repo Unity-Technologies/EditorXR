@@ -13,16 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public void Dispose()
 		{
 		}
-
-		public bool OnSuspendContext(out string errorMessage)
-		{
-			errorMessage = null;
-			return true;
-		}
-
-		public void OnResumeContext()
-		{
-		}
 	}
 }
 #endif

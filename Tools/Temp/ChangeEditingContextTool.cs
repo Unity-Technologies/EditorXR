@@ -18,8 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		int m_CurrentContextIndex;
 		Transform m_TooltipTransform;
-
-		public List<IEditingContext> allContexts { private get; set; }
+		List<IEditingContext> m_AvailableContexts;
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
@@ -33,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void Awake()
 		{
 			m_TooltipTransform = ObjectUtils.CreateEmptyGameObject(null, transform).transform;
+			m_AvailableContexts = this.GetAvailableEditingContexts();
 		}
 
 		void OnDestroy()
@@ -55,33 +55,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (change.negative.wasJustPressed)
 				m_CurrentContextIndex = Mathf.Max(m_CurrentContextIndex - 1, 0);
 			else if (change.positive.wasJustReleased)
-				m_CurrentContextIndex = Mathf.Min(m_CurrentContextIndex + 1, allContexts.Count - 1);
+				m_CurrentContextIndex = Mathf.Min(m_CurrentContextIndex + 1, m_AvailableContexts.Count - 1);
 			consumeControl(change);
 
-			tooltipText = allContexts[m_CurrentContextIndex].name;
+			tooltipText = m_AvailableContexts[m_CurrentContextIndex].name;
 			this.ShowTooltip(this);
 			
-			var push = changeContextInput.push;
-			var pop = changeContextInput.pop;
 			var set = changeContextInput.set;
-			if (push.wasJustPressed)
-			{
-				consumeControl(push);
-				EditorApplication.delayCall += () =>
-				{
-					string errorMessage;
-					this.PushEditingContext(allContexts[m_CurrentContextIndex], out errorMessage);
-				};
-			}
-			else if (pop.wasJustPressed)
-			{
-				consumeControl(pop);
-				EditorApplication.delayCall += () => this.PopEditingContext();
-			}
-			else if (set.wasJustPressed)
+			if (set.wasJustPressed)
 			{
 				consumeControl(set);
-				EditorApplication.delayCall += () => this.SetEditingContext(allContexts[m_CurrentContextIndex]);
+				EditorApplication.delayCall += () => this.SetEditingContext(m_AvailableContexts[m_CurrentContextIndex]);
 			}
 		}
 	}
