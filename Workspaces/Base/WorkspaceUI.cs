@@ -446,24 +446,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void AdjustHandlesAndIcons()
 		{
-			// Handles
-			var extents = m_Bounds.extents;
 			var size = m_Bounds.size;
-			var halfWidth = extents.x;
-			var halfDepth = extents.z;
 
 			m_HandleRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 			m_HandleRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
 
 			var halfFrontZOffset = m_FrontZOffset * 0.5f;
-			var sizeZ = size.z + m_FrontZOffset;
 			var localPosition = m_HandleRectTransform.localPosition;
 			localPosition.z = -halfFrontZOffset;
 			m_ResizeIconRectTransform.localPosition = localPosition;
 
 			m_ResizeIconRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
-			m_ResizeIconRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, sizeZ);
+			m_ResizeIconRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + m_FrontZOffset);
 
+			var extents = m_Bounds.extents;
+			var halfWidth = extents.x;
+			var halfDepth = extents.z;
 			var yOffset = m_FrameHeight * (0.5f - m_LerpAmount);
 			localPosition = m_BottomFrontHandle.localPosition;
 			localPosition.z = yOffset;
@@ -514,6 +512,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var zDistance = bounds.extents.z - Mathf.Abs(localPosition.z);
 			if (localPosition.z < 0)
 				zDistance += m_FrontZOffset;
+
 			var cornerZ = zDistance < m_ResizeCornerSize;
 			var cornerX = bounds.extents.x - Mathf.Abs(localPosition.x) < m_ResizeCornerSize;
 
@@ -609,141 +608,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var secondaryLeft = input.secondaryLeft;
 			var secondaryRight = input.secondaryRight;
 
-			var primaryLeft = input.primaryLeft;
-			var primaryRight = input.primaryRight;
-
-			if (m_DragState == null)
-			{
-				var adjustedBounds = bounds;
-				adjustedBounds.size += Vector3.forward * m_FrontZOffset;
-				adjustedBounds.center += Vector3.back * m_FrontZOffset * 0.5f;
-				Transform dragRayOrigin = null;
-				Image dragResizeIcon = null;
-				var resizing = false;
-
-				var leftPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
-				if (secondaryLeft.wasJustPressed && adjustedBounds.Contains(leftPosition))
-				{
-					dragRayOrigin = leftRayOrigin;
-					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
-					consumeControl(secondaryLeft);
-				}
-
-				var rightPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
-				if (secondaryRight.wasJustPressed && adjustedBounds.Contains(rightPosition))
-				{
-					dragRayOrigin = rightRayOrigin;
-					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
-					consumeControl(secondaryRight);
-				}
-
-				if (!dragRayOrigin)
-				{
-					for (int i = 0; i < m_HovereringRayOrigins.Count; i++)
-					{
-						var rayOrigin = m_HovereringRayOrigins[i];
-						Image lastResizeIcon;
-						m_LastResizeIcons.TryGetValue(rayOrigin, out lastResizeIcon);
-						if (rayOrigin == leftRayOrigin && primaryLeft.wasJustPressed && !preventResize)
-						{
-							consumeControl(primaryLeft);
-							dragRayOrigin = rayOrigin;
-							dragResizeIcon = lastResizeIcon;
-							resizing = true;
-						}
-						if (rayOrigin == rightRayOrigin && primaryRight.wasJustPressed && !preventResize)
-						{
-							consumeControl(primaryRight);
-							dragRayOrigin = rayOrigin;
-							dragResizeIcon = lastResizeIcon;
-							resizing = true;
-						}
-
-						if (!preventResize)
-						{
-							const float kVisibleOpacity = 0.75f;
-							var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
-							var direction = GetResizeDirectionForLocalPosition(localPosition);
-							var resizeIcon = GetResizeIconForDirection(direction);
-
-							if (lastResizeIcon != null)
-							{
-								if (resizeIcon != lastResizeIcon)
-								{
-									resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
-									lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
-								}
-							}
-							else
-							{
-								resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
-							}
-
-							m_LastResizeIcons[rayOrigin] = resizeIcon;
-
-							var iconTransform = resizeIcon.transform;
-							var iconPosition = iconTransform.localPosition;
-							var smoothFollow = lastResizeIcon == null ? 1 : k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
-							var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
-							switch (direction)
-							{
-								case ResizeDirection.Front:
-								case ResizeDirection.Back:
-									var iconPositionX = iconPosition.x;
-									var positionOffsetX = Mathf.Sign(localDirection.x) * m_ResizeHandleMargin;
-									var tergetPositionX = localPosition.x + positionOffsetX;
-									if (Mathf.Abs(tergetPositionX) > bounds.extents.x - m_ResizeCornerSize)
-										tergetPositionX = localPosition.x - positionOffsetX;
-
-									iconPosition.x = Mathf.Lerp(iconPositionX, tergetPositionX, smoothFollow);
-									break;
-								case ResizeDirection.Left:
-								case ResizeDirection.Right:
-									var iconPositionY = iconPosition.y;
-									var positionOffsetY = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
-									var tergetPositionY = localPosition.z + positionOffsetY;
-									if (Mathf.Abs(tergetPositionY) > bounds.extents.z - m_ResizeCornerSize)
-										tergetPositionY = localPosition.z - positionOffsetY;
-
-									iconPosition.y = Mathf.Lerp(iconPositionY, tergetPositionY, smoothFollow);
-									break;
-							}
-							iconTransform.localPosition = iconPosition;
-						}
-					}
-				}
-
-				if (dragRayOrigin)
-				{
-					m_DragState = new DragState(this, dragRayOrigin, resizing);
-					if (dragResizeIcon != null)
-						dragResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
-
-					ResetFrameThickness();
-
-					foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
-					{
-						smoothMotion.enabled = false;
-					}
-				}
-			}
-
 			if (m_DragState != null)
 			{
 				var rayOrigin = m_DragState.rayOrigin;
-				var resizing = m_DragState.resizing;
 
-				var resizeEnded = resizing
-					&& ((rayOrigin == leftRayOrigin && primaryLeft.wasJustReleased)
-						|| (rayOrigin == rightRayOrigin && primaryRight.wasJustReleased));
-
-				var moveEnded = !resizing
-					&& ((rayOrigin == leftRayOrigin && secondaryLeft.wasJustReleased)
-						|| (rayOrigin == rightRayOrigin && secondaryRight.wasJustReleased));
-
-				if (resizeEnded || moveEnded)
+				if ((rayOrigin == leftRayOrigin && secondaryLeft.wasJustReleased)
+					|| (rayOrigin == rightRayOrigin && secondaryRight.wasJustReleased))
 				{
 					m_DragState = null;
+					m_LastResizeIcons.Clear();
 
 					foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
 					{
@@ -760,6 +633,122 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				else
 				{
 					m_DragState.OnDragging();
+				}
+
+				return;
+			}
+
+			var adjustedBounds = bounds;
+			adjustedBounds.size += Vector3.forward * m_FrontZOffset;
+			adjustedBounds.center += Vector3.back * m_FrontZOffset * 0.5f;
+			Transform dragRayOrigin = null;
+			Image dragResizeIcon = null;
+			var resizing = false;
+
+			for (int i = 0; i < m_HovereringRayOrigins.Count; i++)
+			{
+				var rayOrigin = m_HovereringRayOrigins[i];
+				Image lastResizeIcon;
+				m_LastResizeIcons.TryGetValue(rayOrigin, out lastResizeIcon);
+				if (rayOrigin == leftRayOrigin && secondaryLeft.wasJustPressed && !preventResize)
+				{
+					consumeControl(secondaryLeft);
+					dragRayOrigin = rayOrigin;
+					dragResizeIcon = lastResizeIcon;
+					resizing = true;
+				}
+
+				if (rayOrigin == rightRayOrigin && secondaryRight.wasJustPressed && !preventResize)
+				{
+					consumeControl(secondaryRight);
+					dragRayOrigin = rayOrigin;
+					dragResizeIcon = lastResizeIcon;
+					resizing = true;
+				}
+
+				if (!preventResize)
+				{
+					const float kVisibleOpacity = 0.75f;
+					var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+					var direction = GetResizeDirectionForLocalPosition(localPosition);
+					var resizeIcon = GetResizeIconForDirection(direction);
+
+					if (lastResizeIcon != null)
+					{
+						if (resizeIcon != lastResizeIcon)
+						{
+							resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
+							lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
+						}
+					}
+					else
+					{
+						resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
+					}
+
+					m_LastResizeIcons[rayOrigin] = resizeIcon;
+
+					var iconTransform = resizeIcon.transform;
+					var iconPosition = iconTransform.localPosition;
+					var smoothFollow = lastResizeIcon == null ? 1 : k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
+					var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
+					switch (direction)
+					{
+						case ResizeDirection.Front:
+						case ResizeDirection.Back:
+							var iconPositionX = iconPosition.x;
+							var positionOffsetX = Mathf.Sign(localDirection.x) * m_ResizeHandleMargin;
+							var tergetPositionX = localPosition.x + positionOffsetX;
+							if (Mathf.Abs(tergetPositionX) > bounds.extents.x - m_ResizeCornerSize)
+								tergetPositionX = localPosition.x - positionOffsetX;
+
+							iconPosition.x = Mathf.Lerp(iconPositionX, tergetPositionX, smoothFollow);
+							break;
+						case ResizeDirection.Left:
+						case ResizeDirection.Right:
+							var iconPositionY = iconPosition.y;
+							var positionOffsetY = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
+							var tergetPositionY = localPosition.z + positionOffsetY;
+							if (Mathf.Abs(tergetPositionY) > bounds.extents.z - m_ResizeCornerSize)
+								tergetPositionY = localPosition.z - positionOffsetY;
+
+							iconPosition.y = Mathf.Lerp(iconPositionY, tergetPositionY, smoothFollow);
+							break;
+					}
+					iconTransform.localPosition = iconPosition;
+				}
+			}
+
+			if (!dragRayOrigin)
+			{
+				var leftPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
+				if (secondaryLeft.wasJustPressed && adjustedBounds.Contains(leftPosition))
+				{
+					dragRayOrigin = leftRayOrigin;
+					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
+					consumeControl(secondaryLeft);
+				}
+
+				var rightPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
+				if (secondaryRight.wasJustPressed && adjustedBounds.Contains(rightPosition))
+				{
+					dragRayOrigin = rightRayOrigin;
+					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
+					consumeControl(secondaryRight);
+				}
+			}
+
+			if (dragRayOrigin)
+			{
+				m_DragState = new DragState(this, dragRayOrigin, resizing);
+				if (dragResizeIcon != null)
+					dragResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
+
+				ResetFrameThickness();
+
+				foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
+				{
+					smoothMotion.enabled = false;
 				}
 			}
 		}
