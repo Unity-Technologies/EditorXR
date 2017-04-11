@@ -224,6 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public int activeButtonCount { get; set; }
 		public Transform menuOrigin { get; set; }
 		public Action<Transform, bool> highlightPinnedToolButtons { get; set; }
+		public Sprite icon { set { m_GradientButton.icon = value; } }
 
 		private bool activeTool
 		{
