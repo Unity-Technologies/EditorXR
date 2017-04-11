@@ -1,10 +1,11 @@
 fileFormatVersion: 2
 guid: 367f6e7e8089d554ebdb3aff02883660
-timeCreated: 1479428559
-licenseType: Free
+timeCreated: 1491945508
+licenseType: Pro
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - m_ActionMap: {fileID: 11400000, guid: e19dbc8294e48f74a9f13b97365dcff0, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
