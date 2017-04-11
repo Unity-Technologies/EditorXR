@@ -117,11 +117,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.mainMenu = mainMenu;
 					deviceData.menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
 
+					var pinnedTools = evr.m_PinnedTools;
 					var mainMenuActivator = evrMenus.SpawnMainMenuActivator(inputDevice);
 					deviceData.mainMenuActivator = mainMenuActivator;
-					mainMenuActivator.selected += evrMenus.OnMainMenuActivatorSelected;
-					mainMenuActivator.hoverStarted += evrMenus.OnMainMenuActivatorHoverStarted;
-					mainMenuActivator.hoverEnded += evrMenus.OnMainMenuActivatorHoverEnded;
+					mainMenuActivator.selected += pinnedTools.OnMainMenuActivatorSelected;
+					mainMenuActivator.hoverStarted += pinnedTools.OnButtonHoverStarted;
+					mainMenuActivator.hoverEnded += pinnedTools.OnButtonHoverEnded;
 
 					var alternateMenu = evrMenus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 					deviceData.alternateMenu = alternateMenu;
@@ -137,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.pinnedToolButtons.Add(selectionToolButton.toolType, selectionToolButton);
 					selectionToolButton.order = 0; // The "active" tool occupies the zeroth position
 					selectionToolButton.node = deviceData.node;
-					selectionToolButton.highlightPinnedToolButtons = evr.m_PinnedTools.HighlightPinnedToolButtons;
+					selectionToolButton.highlightPinnedToolButtons = pinnedTools.HighlightPinnedToolButtons;
 				}
 
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();

@@ -149,7 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			void OnButtonActivatorHoverStarted(Transform rayOrigin)
+			internal void OnButtonHoverStarted(Transform rayOrigin)
 			{
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
@@ -162,7 +162,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			void OnButtonActivatorHoverEnded(Transform rayOrigin)
+			internal void OnButtonHoverEnded(Transform rayOrigin)
 			{
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
@@ -171,6 +171,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					foreach (var menu in menus)
 					{
 						deviceData.menuHideFlags[menu] &= ~Menus.MenuHideFlags.OverActivator;
+					}
+				}
+			}
+
+			internal void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
+			{
+				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+				if (deviceData != null)
+				{
+					var mainMenu = deviceData.mainMenu;
+					if (mainMenu != null)
+					{
+						var menuHideFlags = deviceData.menuHideFlags;
+						menuHideFlags[mainMenu] ^= Menus.MenuHideFlags.Hidden;
+
+						var customMenu = deviceData.customMenu;
+						if (customMenu != null)
+							menuHideFlags[customMenu] &= ~Menus.MenuHideFlags.Hidden;
+
+						mainMenu.targetRayOrigin = targetRayOrigin;
 					}
 				}
 			}

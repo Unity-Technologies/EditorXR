@@ -244,32 +244,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
 			}
 
-			internal void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
-			{
-				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
-				if (deviceData != null)
-				{
-					var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
-					foreach (var menu in menus)
-					{
-						deviceData.menuHideFlags[menu] |= MenuHideFlags.OverActivator;
-					}
-				}
-			}
-
-			internal void OnMainMenuActivatorHoverEnded(Transform rayOrigin)
-			{
-				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
-				if (deviceData != null)
-				{
-					var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
-					foreach (var menu in menus)
-					{
-						deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverActivator;
-					}
-				}
-			}
-
 			internal void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
 			{
 				SetAlternateMenuVisibility(rayOrigin, Selection.gameObjects.Length > 0);
@@ -286,26 +260,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						deviceData.menuHideFlags[alternateMenu] = (deviceData.rayOrigin == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
 					}
 				});
-			}
-
-			internal void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
-			{
-				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
-				if (deviceData != null)
-				{
-					var mainMenu = deviceData.mainMenu;
-					if (mainMenu != null)
-					{
-						var menuHideFlags = deviceData.menuHideFlags;
-						menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
-
-						var customMenu = deviceData.customMenu;
-						if (customMenu != null)
-							menuHideFlags[customMenu] &= ~MenuHideFlags.Hidden;
-
-						mainMenu.targetRayOrigin = targetRayOrigin;
-					}
-				}
 			}
 
 			internal GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
