@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -22,6 +24,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 			}
 
+			internal MainMenuActivator SpawnMainMenuActivator(InputDevice device)
+			{
+				var mainMenuActivator = ObjectUtils.Instantiate(evr.m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
+				evr.m_Interfaces.ConnectInterfaces(mainMenuActivator, device);
+
+				return mainMenuActivator;
+			}
+
+			internal PinnedToolButton SpawnPinnedToolButton(InputDevice device)
+			{
+				var button = ObjectUtils.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
+				evr.m_Interfaces.ConnectInterfaces(button, device);
+
+				return button;
+			}
+
 			internal void AddPinnedToolButton(DeviceData deviceData, Type toolType)
 			{
 				var pinnedToolButtons = deviceData.pinnedToolButtons;
@@ -34,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					pair.Value.order++;
 				}
 
-				var button = evr.m_Menus.SpawnPinnedToolButton(deviceData.inputDevice);
+				var button = SpawnPinnedToolButton(deviceData.inputDevice);
 				pinnedToolButtons.Add(toolType, button);
 				button.node = deviceData.node;
 				button.toolType = toolType; // Assign Tool Type before assigning order

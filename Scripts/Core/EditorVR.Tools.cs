@@ -118,7 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
 
 					var pinnedTools = evr.m_PinnedTools;
-					var mainMenuActivator = evrMenus.SpawnMainMenuActivator(inputDevice);
+					var mainMenuActivator = pinnedTools.SpawnMainMenuActivator(inputDevice);
 					deviceData.mainMenuActivator = mainMenuActivator;
 					mainMenuActivator.selected += pinnedTools.OnMainMenuActivatorSelected;
 					mainMenuActivator.hoverStarted += pinnedTools.OnButtonHoverStarted;
@@ -131,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					var toolButtonActivePosition = new Vector3(0f, 0f, -0.035f); // Frontmost active button offset from the main menu activator
 					PinnedToolButton.activePosition = toolButtonActivePosition; // Shared active button position
-					var selectionToolButton = evrMenus.SpawnPinnedToolButton(inputDevice);
+					var selectionToolButton = pinnedTools.SpawnPinnedToolButton(inputDevice);
 					deviceData.pinnedToolButtons = new Dictionary<Type, PinnedToolButton>();
 					selectionToolButton.toolType = typeof(SelectionTool); // Selection tool is visible & persistent by default
 					deviceData.pinnedToolButtons.Add(selectionToolButton.toolType, selectionToolButton);

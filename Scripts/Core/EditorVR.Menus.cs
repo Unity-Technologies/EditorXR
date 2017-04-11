@@ -177,10 +177,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var alternateMenu = deviceData.alternateMenu;
 				alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
 
-				// Move the activator button to an alternate position if the alternate menu will be shown
+				// Move the activator & pinned tool buttons to an alternate position if the alternate menu will be shown
 				var mainMenuActivator = deviceData.mainMenuActivator;
 				if (mainMenuActivator != null)
 					mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
+
+				var pinnedToolButtons = deviceData.pinnedToolButtons;
+				if (pinnedToolButtons != null && pinnedToolButtons.Count > 0)
+				{
+					foreach (var button in pinnedToolButtons)
+					{
+						button.Value.moveToAlternatePosition = alternateMenu.visible;
+					}
+				}
 			}
 
 			internal void UpdateMenuVisibilities()
@@ -317,22 +326,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				alternateMenu.visible = false;
 
 				return alternateMenu;
-			}
-
-			internal MainMenuActivator SpawnMainMenuActivator(InputDevice device)
-			{
-				var mainMenuActivator = ObjectUtils.Instantiate(evr.m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
-				evr.m_Interfaces.ConnectInterfaces(mainMenuActivator, device);
-
-				return mainMenuActivator;
-			}
-
-			public PinnedToolButton SpawnPinnedToolButton(InputDevice device)
-			{
-				var button = ObjectUtils.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
-				evr.m_Interfaces.ConnectInterfaces(button, device);
-
-				return button;
 			}
 
 			internal void UpdateAlternateMenuActions()
