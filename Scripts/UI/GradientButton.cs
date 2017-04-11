@@ -110,6 +110,15 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			get { return invertHighlightScale ? m_OriginalContentContainerLocalScale : m_HighlightContentContainerLocalScale; }
 		}
 
+		public Sprite icon
+		{
+			set
+			{
+				m_Icon.sprite = value;
+				m_OriginalIconSprite = value;
+			}
+		}
+
 		public GradientPair normalGradientPair { get { return m_NormalGradientPair; } set { m_NormalGradientPair = value; } }
 		[SerializeField]
 		GradientPair m_NormalGradientPair;
@@ -117,7 +126,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public GradientPair highlightGradientPair { get { return m_HighlightGradientPair; } set { m_HighlightGradientPair = value; } }
 		[SerializeField]
 		GradientPair m_HighlightGradientPair;
-		
+
 		// The inner-button's background gradient MeshRenderer
 		[SerializeField]
 		MeshRenderer m_ButtonMeshRenderer;
