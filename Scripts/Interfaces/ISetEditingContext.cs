@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR
 	public static class ISetEditingContextMethods
 	{
 		internal static Func<List<IEditingContext>> getAvailableEditingContexts { get; set; }
+		internal static Func<List<IEditingContext>> getPreviousEditingContexts { get; set; }
 		internal static Action<IEditingContext> setEditingContext { get; set; }
 		internal static Action restorePreviousEditingContext { get; set; }
 
@@ -22,6 +23,15 @@ namespace UnityEditor.Experimental.EditorVR
 		public static List<IEditingContext> GetAvailableEditingContexts(this ISetEditingContext obj)
 		{
 			return getAvailableEditingContexts();
+		}
+
+		/// <summary>
+		/// Get the previous editing contexts that were set
+		/// </summary>
+		/// <returns>List of the previous editing contexts (last one used is first in list)</returns>
+		public static List<IEditingContext> GetPreviousEditingContexts(this ISetEditingContext obj)
+		{
+			return getPreviousEditingContexts();
 		}
 
 		/// <summary>
