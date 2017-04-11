@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 			}
 
-			void AddPinnedToolButton(DeviceData deviceData, Type toolType)
+			internal void AddPinnedToolButton(DeviceData deviceData, Type toolType)
 			{
 				var pinnedToolButtons = deviceData.pinnedToolButtons;
 				if (pinnedToolButtons.ContainsKey(toolType)) // Return if tooltype already occupies a pinned tool button
@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				button.highlightPinnedToolButtons = HighlightPinnedToolButtons;
 			}
 
-			void SetupPinnedToolButtonsForDevice(DeviceData deviceData, Transform rayOrigin, Type activeToolType)
+			internal void SetupPinnedToolButtonsForDevice(DeviceData deviceData, Transform rayOrigin, Type activeToolType)
 			{
 				Debug.LogError("<color=black>Setting up pinned tool button for type of : </color>" + activeToolType);
 				const int kMaxButtonCount = 6;
