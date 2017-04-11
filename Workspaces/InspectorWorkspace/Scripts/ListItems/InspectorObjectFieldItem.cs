@@ -42,9 +42,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_SerializedProperty.objectReferenceValue = obj;
 
-			OnObjectModified();
-
 			FinalizeModifications();
+
+			OnObjectModified();
 
 			return true;
 		}
