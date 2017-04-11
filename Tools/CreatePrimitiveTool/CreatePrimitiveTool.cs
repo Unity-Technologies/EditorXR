@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-using System;
-using UnityEditor;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -9,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
-		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale
+		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
@@ -28,16 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
-		public Func<Transform, IMenu, GameObject> instantiateMenuUI { private get; set; }
-
 		public Transform rayOrigin { get; set; }
-
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
-		public Action<GameObject> addToSpatialHash { private get; set; }
-		public Action<GameObject> removeFromSpatialHash { private get; set; }
-
-		public Func<float> getViewerScale { private get; set; }
 
 		enum PrimitiveCreationStates
 		{
@@ -48,10 +37,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Start()
 		{
-			m_ToolMenu = instantiateMenuUI(rayOrigin, m_MenuPrefab);
+			m_ToolMenu = this.InstantiateMenuUI(rayOrigin, m_MenuPrefab);
 			var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
-			connectInterfaces(createPrimitiveMenu, rayOrigin);
+			this.ConnectInterfaces(createPrimitiveMenu, rayOrigin);
 			createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
+			createPrimitiveMenu.close = Close;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -96,14 +86,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				// Set starting minimum scale (don't allow zero scale object to be created)
 				const float kMinScale = 0.0025f;
-				var viewerScale = getViewerScale();
+				var viewerScale = this.GetViewerScale();
 				m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale * viewerScale;
 				m_StartPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance * viewerScale;
 				m_CurrentGameObject.transform.position = m_StartPoint;
 
 				m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
 
-				addToSpatialHash(m_CurrentGameObject);
+				this.AddToSpatialHash(m_CurrentGameObject);
 
 				consumeControl(standardInput.action);
 				Selection.activeGameObject = m_CurrentGameObject;
@@ -123,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void UpdatePositions()
 		{
-			m_EndPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance * getViewerScale();
+			m_EndPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance * this.GetViewerScale();
 			m_CurrentGameObject.transform.position = (m_StartPoint + m_EndPoint) * 0.5f;
 		}
 
@@ -143,6 +133,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				consumeControl(standardInput.action);
 			}
+		}
+
+		void Close()
+		{
+			this.SelectTool(rayOrigin, GetType());
 		}
 
 		void OnDestroy()

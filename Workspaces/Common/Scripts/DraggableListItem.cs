@@ -27,10 +27,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Action<TIndex, Transform, bool> setRowGrabbed { protected get; set; }
 		public Func<Transform, ListViewItem<TData, TIndex>> getGrabbedRow { protected get; set; }
 
-		public Func<Transform, Transform> getPreviewOriginForRayOrigin { set; protected get; }
-
-		public Func<float> getViewerScale { get; set; }
-
 		protected virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			if (singleClickDrag)
@@ -69,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				if (m_DragObject)
 				{
-					var previewOrigin = getPreviewOriginForRayOrigin(eventData.rayOrigin);
+					var previewOrigin = this.GetPreviewOriginForRayOrigin(eventData.rayOrigin);
 					MathUtilsExt.LerpTransform(m_DragObject, previewOrigin.position, previewOrigin.rotation, m_DragLerp);
 				}
 			}
@@ -84,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var dragVector = rayOrigin.position - dragStart;
 				var distance = dragVector.magnitude;
 
-				if (m_DragObject == null && distance > k_DragDeadzone * getViewerScale())
+				if (m_DragObject == null && distance > k_DragDeadzone * this.GetViewerScale())
 				{
 					m_DragObject = handle.transform;
 					OnGrabDragStart(handle, eventData, dragStart);

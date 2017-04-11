@@ -45,8 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		Coroutine m_MoveKeyboardCoroutine;
 
-		public Func<float> getViewerScale { private get; set; }
-
 		public virtual string text
 		{
 			get
@@ -146,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		IEnumerator MoveKeyboardToInputField(bool instant)
 		{
 			const float kKeyboardYOffset = 0.05f;
-			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset * getViewerScale();
+			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset * this.GetViewerScale();
 
 			if (!instant && !m_Keyboard.collapsed)
 			{

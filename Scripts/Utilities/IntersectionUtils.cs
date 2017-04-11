@@ -6,6 +6,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 	static class IntersectionUtils
 	{
+		// Local method use only -- created here to reduce garbage collection
+		static readonly Vector3[] s_TriangleVertices = new Vector3[3];
+
 		/// <summary>
 		/// Test whether an object collides with the tester
 		/// </summary>
@@ -48,26 +51,27 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			if (mf)
 				collisionTester.sharedMesh = mf.sharedMesh;
 
+			var boundsMagnitude = collisionTester.bounds.size.magnitude;
+
 			var triangles = tester.triangles;
 			var vertices = tester.vertices;
 
-			var maxDistance = collisionTester.bounds.size.magnitude;
-
-			var triangleVertices = new Vector3[3];
 			var testerTransform = tester.transform;
 			for (var i = 0; i < triangles.Length; i += 3)
 			{
-				triangleVertices[0] = vertices[triangles[i]];
-				triangleVertices[1] = vertices[triangles[i + 1]];
-				triangleVertices[2] = vertices[triangles[i + 2]];
+				s_TriangleVertices[0] = vertices[triangles[i]];
+				s_TriangleVertices[1] = vertices[triangles[i + 1]];
+				s_TriangleVertices[2] = vertices[triangles[i + 2]];
 
 				for (var j = 0; j < 3; j++)
 				{
 					RaycastHit hitInfo;
 
-					var start = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[j]));
-					var end = obj.InverseTransformPoint(testerTransform.TransformPoint(triangleVertices[(j + 1) % 3]));
-					var direction = (end - start).normalized;
+					var start = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[j]));
+					var end = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[(j + 1) % 3]));
+					var edge = end - start;
+					var maxDistance = Mathf.Max(edge.magnitude, boundsMagnitude);
+					var direction = edge.normalized;
 
 					// Handle degenerate triangles
 					if (Mathf.Approximately(direction.magnitude, 0f))
@@ -162,6 +166,28 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			var collisionLine = forwardHit - behindHit;
 			var projection = Vector3.Dot(collisionLine, ray.origin - behindHit);
 			return projection >= 0f && projection <= collisionLine.sqrMagnitude;
+		}
+
+		/// <summary>
+		/// Tests a ray against a collider
+		/// </summary>
+		/// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+		/// <param name="obj">The object to test collision on</param>
+		/// <param name="ray">A ray positioned at a vertex of the tester's collider</param>
+		/// <param name="hit">Info about the raycast hit</param>
+		/// <param name="maxDistance">Maximum distance at which a hit can occur</param>
+		/// <returns>The result of whether the ray intersects with the object</returns>
+		public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
+		{
+			var mf = obj.GetComponent<MeshFilter>();
+			if (mf)
+				collisionTester.sharedMesh = mf.sharedMesh;
+
+			ray.origin = obj.InverseTransformPoint(ray.origin);
+			ray.direction = obj.InverseTransformVector(ray.direction);
+			maxDistance = obj.InverseTransformVector(ray.direction * maxDistance).magnitude;
+
+			return collisionTester.Raycast(ray, out hit, maxDistance);
 		}
 	}
 }

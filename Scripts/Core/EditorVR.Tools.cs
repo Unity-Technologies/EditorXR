@@ -9,13 +9,12 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class Tools : Nested
+		class Tools : Nested, IInterfaceConnector
 		{
-
 			internal class ToolData
 			{
 				public ITool tool;
@@ -24,29 +23,61 @@ namespace UnityEditor.Experimental.EditorVR
 
 			internal List<Type> allTools { get; private set; }
 
-			internal Dictionary<Type, List<ILinkedObject>> linkedObjects { get { return m_LinkedObjects; } }
 			readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
 
-			internal Tools()
+			public Tools()
 			{
 				allTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
+
+				ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
+				ISelectToolMethods.selectTool = SelectTool;
+				ISelectToolMethods.isToolActive = IsToolActive;
 			}
 
-			internal bool IsPermanentTool(Type type)
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			{
+				var linkedObject = obj as ILinkedObject;
+				if (linkedObject != null)
+				{
+					var type = obj.GetType();
+					List<ILinkedObject> linkedObjectList;
+					if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
+					{
+						linkedObjectList = new List<ILinkedObject>();
+						m_LinkedObjects[type] = linkedObjectList;
+					}
+
+					linkedObjectList.Add(linkedObject);
+					linkedObject.linkedObjects = linkedObjectList;
+				}
+			}
+
+			public void DisconnectInterface(object obj)
+			{
+			}
+
+			bool IsSharedUpdater(ILinkedObject linkedObject)
+			{
+				var type = linkedObject.GetType();
+				return m_LinkedObjects[type].IndexOf(linkedObject) == 0;
+			}
+
+			internal static bool IsPermanentTool(Type type)
 			{
 				return typeof(ITransformer).IsAssignableFrom(type)
 					|| typeof(SelectionTool).IsAssignableFrom(type)
 					|| typeof(ILocomotor).IsAssignableFrom(type)
-					|| typeof(VacuumTool).IsAssignableFrom(type);
+					|| typeof(VacuumTool).IsAssignableFrom(type)
+					|| typeof(MoveWorkspacesTool).IsAssignableFrom(type);
 			}
 
 			internal void SpawnDefaultTools(IProxy proxy)
 			{
 				// Spawn default tools
-				HashSet<InputDevice> devices;
 
-				var transformTool = SpawnTool(typeof(TransformTool), out devices);
-				evr.m_DirectSelection.objectsGrabber = transformTool.tool as IGrabObjects;
+				Func<Transform, bool> isRayActive = Rays.IsRayActive;
+				var vacuumables = evr.GetNestedModule<Vacuumables>();
+				var lockModule = evr.GetModule<LockModule>();
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -55,21 +86,28 @@ namespace UnityEditor.Experimental.EditorVR
 					if (deviceData.proxy != proxy)
 						continue;
 
+					HashSet<InputDevice> devices;
 					var toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var selectionTool = (SelectionTool)toolData.tool;
-					selectionTool.hovered += evr.m_LockModule.OnHovered;
-					selectionTool.isRayActive = evr.m_Rays.IsRayActive;
+					selectionTool.hovered += lockModule.OnHovered;
+					selectionTool.isRayActive = isRayActive;
 
 					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var vacuumTool = (VacuumTool)toolData.tool;
-					vacuumTool.defaultOffset = WorkspaceModule.k_DefaultWorkspaceOffset;
-					vacuumTool.defaultTilt = WorkspaceModule.k_DefaultWorkspaceTilt;
-					vacuumTool.vacuumables = evr.m_Vacuumables.vacuumables;
+					vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
+					vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
+					vacuumTool.vacuumables = vacuumables.vacuumables;
 
-					// Using a shared instance of the transform tool across all device tool stacks
-					AddToolToStack(deviceData, transformTool);
+					toolData = SpawnTool(typeof(MoveWorkspacesTool), out devices, inputDevice);
+					AddToolToDeviceData(toolData, devices);
+
+					toolData = SpawnTool(typeof(TransformTool), out devices, inputDevice);
+					AddToolToDeviceData(toolData, devices);
+					var transformTool = (TransformTool)toolData.tool;
+					if (transformTool.IsSharedUpdater(transformTool))
+						evr.m_DirectSelection.objectsGrabber = transformTool;
 
 					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
@@ -124,6 +162,9 @@ namespace UnityEditor.Experimental.EditorVR
 					InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 				}
 
+				if (usedDevices.Count == 0)
+					usedDevices.Add(device);
+
 				evr.m_Interfaces.ConnectInterfaces(tool, device);
 
 				return new ToolData { tool = tool, input = actionMapInput };
@@ -138,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR
 				}
 			}
 
-			internal bool IsToolActive(Transform targetRayOrigin, Type toolType)
+			bool IsToolActive(Transform targetRayOrigin, Type toolType)
 			{
 				var result = false;
 
@@ -149,10 +190,11 @@ namespace UnityEditor.Experimental.EditorVR
 				return result;
 			}
 
-			internal bool SelectTool(Transform rayOrigin, Type toolType)
+			bool SelectTool(Transform rayOrigin, Type toolType)
 			{
 				var result = false;
-				evr.m_Rays.ForEachProxyDevice((deviceData) =>
+				var deviceInputModule = evr.m_DeviceInputModule;
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
 					{
@@ -174,10 +216,6 @@ namespace UnityEditor.Experimental.EditorVR
 							var device = deviceData.inputDevice;
 							var newTool = SpawnTool(toolType, out usedDevices, device);
 
-							// It's possible this tool uses no action maps, so at least include the device this tool was spawned on
-							if (usedDevices.Count == 0)
-								usedDevices.Add(device);
-
 							var evrDeviceData = evr.m_DeviceData;
 
 							// Exclusive mode tools always take over all tool stacks
@@ -198,13 +236,13 @@ namespace UnityEditor.Experimental.EditorVR
 									DespawnTool(deviceData, deviceData.currentTool);
 
 								AddToolToStack(dd, newTool);
-
-								deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
-								deviceData.previousToolButton.rayOrigin = rayOrigin;
 							}
 						}
 
-						evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
+						deviceData.previousToolButton.rayOrigin = rayOrigin;
+						deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
+
+						deviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
 					}
 					else

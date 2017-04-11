@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +12,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
 		List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
 		List<IAction> m_Actions;
-
-		public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 		public void RemoveActions(List<IAction> actions)
 		{
@@ -39,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var action = ObjectUtils.AddComponent(actionType, gameObject) as IAction;
 				var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
 
-				connectInterfaces(action);
+				this.ConnectInterfaces(action);
 
 				if (attribute != null)
 				{

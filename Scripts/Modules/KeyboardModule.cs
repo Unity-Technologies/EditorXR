@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -24,14 +23,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		KeyboardUI m_NumericKeyboard;
 		KeyboardUI m_StandardKeyboard;
 
-		public Func<Transform, object, bool> lockRay { private get; set; }
-		public Func<Transform, object, bool> unlockRay { private get; set; }
-		public DefaultRayVisibilityDelegate showDefaultRay { private get; set; }
-		public DefaultRayVisibilityDelegate hideDefaultRay { private get; set; }
-
-		public Action<ForEachRayOriginCallback> forEachRayOrigin { private get; set; }
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
 		public KeyboardUI SpawnNumericKeyboard()
 		{
 			if (m_StandardKeyboard != null)
@@ -44,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var smoothMotions = m_NumericKeyboard.GetComponentsInChildren<SmoothMotion>(true);
 				foreach (var smoothMotion in smoothMotions)
 				{
-					connectInterfaces(smoothMotion);
+					this.ConnectInterfaces(smoothMotion);
 				}
 			}
 
@@ -63,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var smoothMotions = m_StandardKeyboard.GetComponentsInChildren<SmoothMotion>(true);
 				foreach (var smoothMotion in smoothMotions)
 				{
-					connectInterfaces(smoothMotion);
+					this.ConnectInterfaces(smoothMotion);
 				}
 			}
 
@@ -82,7 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void UpdateKeyboardMallets()
 		{
-			forEachRayOrigin(rayOrigin =>
+			this.ForEachRayOrigin(rayOrigin =>
 			{
 				var malletVisible = true;
 				var numericKeyboardNull = false;
@@ -107,9 +98,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					mallet.visible = malletVisible;
 					if (malletVisible)
-						hideDefaultRay(rayOrigin);
+						this.HideDefaultRay(rayOrigin);
 					else
-						showDefaultRay(rayOrigin);
+						this.ShowDefaultRay(rayOrigin);
 				}
 
 				// TODO remove this after physics is in

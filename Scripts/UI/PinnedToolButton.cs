@@ -15,19 +15,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				return m_ToolType;
 			}
-
 			set
 			{
-				if (m_ToolType == value)
-					return;
-
 				m_GradientButton.gameObject.SetActive(true);
 
 				m_ToolType = value;
 				if (m_ToolType != null)
 				{
+					SetButtonGradients(this.IsToolActive(rayOrigin, m_ToolType));
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
-					SetButtonGradients(true);
 					m_GradientButton.visible = true;
 				}
 			}
@@ -38,17 +34,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		GradientButton m_GradientButton;
 
 		public Transform rayOrigin { get; set; }
-		public Func<Transform, Type, bool> selectTool { private get; set; }
 
 		void Start()
 		{
-			m_GradientButton.onClick += OnClick;
+			m_GradientButton.click += OnClick;
 			m_GradientButton.gameObject.SetActive(false);
 		}
 
 		void OnClick()
 		{
-			SetButtonGradients(selectTool(rayOrigin, m_ToolType));
+			SetButtonGradients(this.SelectTool(rayOrigin, m_ToolType));
 		}
 
 		// Create periodic table-style names for types
@@ -79,6 +74,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.normalGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
 				m_GradientButton.highlightGradientPair = UnityBrandColorScheme.sessionGradient;
 			}
+
+			m_GradientButton.UpdateMaterialColors();
 		}
 	}
 }

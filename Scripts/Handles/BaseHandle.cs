@@ -18,9 +18,9 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
 		[SerializeField]
 		[FlagsProperty]
-		private SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
+		SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
-		private const int k_DefaultCapacity = 2; // i.e. 2 controllers
+		const int k_DefaultCapacity = 2; // i.e. 2 controllers
 
 		protected readonly List<Transform> m_HoverSources = new List<Transform>(k_DefaultCapacity);
 		protected readonly List<Transform> m_DragSources = new List<Transform>(k_DefaultCapacity);
@@ -58,12 +58,14 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 				var eventData = GetHandleEventData(new RayEventData(EventSystem.current));
 				for (int i = 0; i < m_HoverSources.Count; i++)
 				{
+					eventData.rayOrigin = m_HoverSources[i];
 					OnHandleHoverEnded(eventData);
 				}
 				m_HoverSources.Clear();
 
 				for (int i = 0; i < m_DragSources.Count; i++)
 				{
+					eventData.rayOrigin = m_DragSources[i];
 					OnHandleDragEnded(eventData);
 				}
 				m_DragSources.Clear();

@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -171,8 +170,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		private bool m_SemiTransparent;
 
-		public ConnectInterfacesDelegate connectInterfaces { private get; set; }
-
 		void Update()
 		{
 			if (m_Actions != null)
@@ -199,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				var menuSlot = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
-				connectInterfaces(menuSlot);
+				this.ConnectInterfaces(menuSlot);
 				menuSlot.orderIndex = i;
 				m_RadialMenuSlots.Add(menuSlot);
 
@@ -289,7 +286,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
 					if (i < m_Actions.Count)
+					{
 						m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount * revealAmount);
+						m_RadialMenuSlots[i].CorrectIconRotation();
+					}
 				}
 
 				yield return null;

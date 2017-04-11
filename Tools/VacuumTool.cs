@@ -20,8 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Vector3 defaultOffset { private get; set; }
 		public Quaternion defaultTilt { private get; set; }
 
-		public Func<float> getViewerScale { private get; set; }
-
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var standardInput = (Standard)input;
@@ -61,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			var offset = defaultOffset;
 			offset.z += vacuumable.vacuumBounds.extents.z;
-			offset *= getViewerScale();
+			offset *= this.GetViewerScale();
 
 			var camera = CameraUtils.GetMainCamera().transform;
 			var destPosition = camera.position + MathUtilsExt.ConstrainYawRotation(camera.rotation) * offset;

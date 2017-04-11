@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.InputNew;
 

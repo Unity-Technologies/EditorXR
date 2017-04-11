@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Provides methods and delegates used to directly select and grab scene objects
 	/// </summary>
-	public interface IGrabObjects
+	public interface IGrabObjects : ICanGrabObject
 	{
 		/// <summary>
 		/// Adds the given objects to the held objects for the given node and rayOrigin
@@ -43,12 +43,6 @@ namespace UnityEditor.Experimental.EditorVR
 		void DropHeldObjects(Transform rayOrigin, out Vector3[] positionOffset, out Quaternion[] rotationOffset);
 
 		/// <summary>
-		/// Returns true if the object can be grabbed
-		/// Params: the selection, the rayOrigin
-		/// </summary>
-		Func<GameObject, Transform, bool> canGrabObject { set; }
-
-		/// <summary>
 		/// Must be called by the implementer when an object has been grabbed
 		/// Params: the grabbed object
 		/// </summary>
@@ -60,5 +54,16 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		event Action<Transform[], Transform> objectsDropped;
 	}
+
+	public static class IGrabObjectsMethods
+	{
+		public static void DropHeldObjects(this IGrabObjects grabObjects, Transform rayOrigin)
+		{
+			Vector3[] positionOffset;
+			Quaternion[] rotationOffset;
+			grabObjects.DropHeldObjects(rayOrigin, out positionOffset, out rotationOffset);
+		}
+	}
+
 }
 #endif

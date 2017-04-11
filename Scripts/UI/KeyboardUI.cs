@@ -127,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			const float kButtonMoveTimeOffset = 0.01f;
 			var horizontal = IsHorizontal();
 			var t = 0f;
-			int i = 0;
+			var i = 0;
 			while (i < m_Buttons.Count)
 			{
 				if (t < i * kButtonMoveTimeOffset)
@@ -185,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			const float kButtonMoveTimeOffset = 0.01f;
 			var t = 0f;
-			int i = 0;
+			var i = 0;
 			while (i < m_Buttons.Count)
 			{
 				if (t < i * kButtonMoveTimeOffset)
@@ -224,7 +224,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void ActivateShiftModeOnKeys()
 		{
 			foreach (var button in m_Buttons)
+			{
 				button.SetShiftModeActive(true);
+			}
 		}
 
 		/// <summary>
@@ -233,7 +235,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void DeactivateShiftModeOnKeys()
 		{
 			foreach (var button in m_Buttons)
+			{
 				button.SetShiftModeActive(false);
+			}
 		}
 
 		/// <summary>
@@ -254,7 +258,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var t = 0f;
 			while (t < duration)
 			{
-				int i = 0;
+				var i = 0;
 				foreach (var button in m_Buttons)
 				{
 					var targetPos = horizontal
@@ -267,7 +271,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				yield return null;
 			}
 
-			int k = 0;
+			var k = 0;
 			foreach (var button in m_Buttons)
 			{
 				var targetPos = horizontal
@@ -337,13 +341,13 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			return collapsing || m_EligibleForDrag;
 		}
 
-		private void Translate(Vector3 deltaPosition)
+		void Translate(Vector3 deltaPosition, Transform rayOrigin, bool constrained)
 		{
 			if (m_EligibleForDrag)
 				transform.position += deltaPosition;
 		}
 
-		private void Rotate(Quaternion deltaRotation)
+		void Rotate(Quaternion deltaRotation)
 		{
 			if (m_EligibleForDrag)
 				transform.rotation *= deltaRotation;
