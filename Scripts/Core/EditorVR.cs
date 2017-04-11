@@ -137,13 +137,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Viewer.preserveCameraRig = preserveLayout;
 			m_Viewer.InitializeCamera();
 
-			var tools = GetNestedModule<Tools>();
-
 			m_DeviceInputModule = AddModule<DeviceInputModule>();
 			m_DeviceInputModule.InitializePlayerHandle();
 			m_DeviceInputModule.CreateDefaultActionMapInputs();
 			m_DeviceInputModule.processInput = ProcessInput;
-			m_DeviceInputModule.updatePlayerHandleMaps = tools.UpdatePlayerHandleMaps;
+			m_DeviceInputModule.updatePlayerHandleMaps = m_Tools.UpdatePlayerHandleMaps;
 
 			m_UI.Initialize();
 
