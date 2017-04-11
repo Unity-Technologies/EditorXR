@@ -1,5 +1,6 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
@@ -146,6 +147,32 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 				});
+			}
+
+			void OnButtonActivatorHoverStarted(Transform rayOrigin)
+			{
+				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+				if (deviceData != null)
+				{
+					var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
+					foreach (var menu in menus)
+					{
+						deviceData.menuHideFlags[menu] |= Menus.MenuHideFlags.OverActivator;
+					}
+				}
+			}
+
+			void OnButtonActivatorHoverEnded(Transform rayOrigin)
+			{
+				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+				if (deviceData != null)
+				{
+					var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
+					foreach (var menu in menus)
+					{
+						deviceData.menuHideFlags[menu] &= ~Menus.MenuHideFlags.OverActivator;
+					}
+				}
 			}
 		}
 	}
