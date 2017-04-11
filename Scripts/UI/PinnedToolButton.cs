@@ -188,19 +188,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Transform m_TooltipSource;
 
-		string m_TooltipText;
+		[SerializeField]
+		Vector3 m_AlternateLocalPosition;
+
 		Coroutine m_PositionCoroutine;
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
-		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
-		Transform m_AlternateMenuOrigin;
-		Type m_previewToolType;
-		GradientPair m_GradientPair;
-		int m_Order;
-		Type m_ToolType;
-		Material m_FrameMaterial;
+		Coroutine m_ActivatorMoveCoroutine;
+
+		string m_TooltipText;
 		bool m_Highlighted;
+		bool _mMoveToAlternatePosition;
+		int m_Order;
+		Type m_previewToolType;
+		Type m_ToolType;
+		GradientPair m_GradientPair;
+		Transform m_AlternateMenuOrigin;
+		Material m_FrameMaterial;
 		Material m_InsetMaterial;
+		Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
+		Vector3 m_OriginalLocalPosition;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -242,6 +249,27 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			//get { return m_Highlighted; }
+		}
+
+		public bool moveToAlternatePosition
+		{
+			get { return _mMoveToAlternatePosition; }
+			set
+			{
+				if (_mMoveToAlternatePosition == value)
+					return;
+
+				_mMoveToAlternatePosition = value;
+
+				this.StopCoroutine(ref m_ActivatorMoveCoroutine);
+
+				m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(_mMoveToAlternatePosition));
+			}
+		}
+
+		void Awake()
+		{
+			m_OriginalLocalPosition = transform.localPosition;
 		}
 
 		void Start()
@@ -511,6 +539,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
 			//m_MenuInset.localScale = targetInsetScale;
 			//m_IconContainer.localScale = targetIconScale;
+		}
+
+		IEnumerator AnimateMoveActivatorButton(bool moveToAlternatePosition = true)
+		{
+			var amount = 0f;
+			var currentPosition = transform.localPosition;
+			var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
+			var speed = moveToAlternatePosition ? 5 : 5; // perform faster is returning to original position
+
+			while (amount < 1f)
+			{
+				amount += Time.unscaledDeltaTime * speed;
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
+				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
+				yield return null;
+			}
+
+			transform.localPosition = targetPosition;
+			m_ActivatorMoveCoroutine = null;
 		}
 	}
 }
