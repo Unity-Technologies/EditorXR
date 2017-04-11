@@ -12,8 +12,10 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+	[ExecuteInEditMode]
 	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength
 	{
+		public Bounds editorBounds;
 		const int k_AngledFaceBlendShapeIndex = 2;
 		const int k_ThinFrameBlendShapeIndex = 3;
 		const string k_MaterialStencilRef = "_StencilRef";
@@ -63,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Transform m_FrontRightCornerHandle;
 
 		[SerializeField]
-		Transform m_FrontBottomHandle;
+		Transform m_BottomFrontHandle;
 
 		[SerializeField]
 		Transform m_TopFaceContainer;
@@ -112,6 +114,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		[SerializeField]
 		Transform m_TopHighlightContainer;
+
+		[SerializeField]
+		RectTransform m_HandleRectTransform;
+
+		[SerializeField]
+		RectTransform m_ResizeIconRectTransform;
 
 		[SerializeField]
 		WorkspaceHighlight m_FrontHighlight;
@@ -456,110 +464,106 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var extents = m_Bounds.extents;
 			var size = m_Bounds.size;
 			var halfWidth = extents.x;
-			var handleScaleX = size.x - m_FrameHandleSize;
-			var handleScaleZ = size.z + m_FrameHandleSize;
-			var halfHeight = -m_FrameHeight * 0.5f;
+			//var handleScaleX = size.x - m_FrameHandleSize;
+			//var handleScaleZ = size.z + m_FrameHandleSize;
+			//var halfHeight = -m_FrameHeight * 0.5f;
 			var halfDepth = extents.z;
-			var handleHeight = m_FrameHeight + m_FrameHandleSize;
+			//var handleHeight = m_FrameHeight + m_FrameHandleSize;
 
-			var transform = m_LeftHandle.transform;
-			transform.localPosition = new Vector3(-halfWidth, halfHeight, 0);
-			transform.localScale = new Vector3(m_FrameHandleSize, handleHeight, handleScaleZ);
+			m_HandleRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
+			m_HandleRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
 
-			transform = m_RightHandle.transform;
-			transform.localPosition = new Vector3(halfWidth, halfHeight, 0);
-			transform.localScale = new Vector3(m_FrameHandleSize, handleHeight, handleScaleZ);
-
-			transform = m_BackHandle.transform;
-			transform.localPosition = new Vector3(0, halfHeight, halfDepth);
-			transform.localScale = new Vector3(handleScaleX, handleHeight, m_FrameHandleSize);
-
-			transform = m_FrontTopHandle.transform;
-			transform.localPosition = new Vector3(0, 0, -halfDepth);
-			transform.localScale = new Vector3(handleScaleX, m_FrameHandleSize, m_FrameHandleSize);
-
-			transform = m_FrontBottomHandle.transform;
-			var halfFrameHandleSize = m_FrameHandleSize * 0.5f;
-			var botHandleYPosition = (m_FrameHeight) * (m_LerpAmount - 1);
-			transform.localPosition = new Vector3(0, botHandleYPosition, -halfDepth - m_FrontZOffset);
-			transform.localScale = new Vector3(handleScaleX + m_FrameHandleSize * 2, m_FrameHandleSize, m_FrameHandleSize);
-
-			const float kLerpScale = 1.15f;
 			var halfFrontZOffset = m_FrontZOffset * 0.5f;
-			transform = m_FrontLeftHandle.transform;
-			transform.localPosition = new Vector3(-halfWidth, botHandleYPosition * 0.5f, -halfDepth - halfFrontZOffset);
-			transform.localRotation = Quaternion.AngleAxis(Mathf.Clamp01(m_LerpAmount * kLerpScale) * 90f, Vector3.right);
-			transform.localScale = new Vector3(m_FrameHandleSize, m_FrameHeight, m_FrameHandleSize);
+			var sizeZ = size.z + m_FrontZOffset;
+			var localPosition = m_HandleRectTransform.localPosition;
+			localPosition.z = -halfFrontZOffset;
+			m_ResizeIconRectTransform.localPosition = localPosition;
 
-			var rightTransform = m_FrontRightHandle.transform;
-			var localPosition = transform.localPosition;
+			m_ResizeIconRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
+			m_ResizeIconRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, sizeZ);
+
+			var yOffset = m_FrameHeight * (0.5f - m_LerpAmount);
+			localPosition = m_BottomFrontHandle.localPosition;
+			localPosition.z = yOffset;
+			localPosition.y = -halfDepth - m_FrontZOffset;
+			m_BottomFrontHandle.localPosition = localPosition;
+
+			yOffset = (1 - m_LerpAmount) * m_FrameHeight;
+			var angle = Mathf.Atan(m_FrontZOffset / yOffset) * Mathf.Rad2Deg;
+
+			m_FrontLeftHandle.localPosition = new Vector3(-halfWidth, -yOffset * 0.5f , -halfDepth - halfFrontZOffset);
+			m_FrontLeftHandle.localRotation = Quaternion.AngleAxis(angle, Vector3.right);
+			m_FrontLeftHandle.localScale = new Vector3(m_FrameHandleSize, m_FrameHeight, m_FrameHandleSize);
+
+			localPosition = m_FrontLeftHandle.localPosition;
 			localPosition.x = halfWidth;
-			rightTransform.localPosition = localPosition;
-			rightTransform.localRotation = transform.localRotation;
-			rightTransform.localScale = transform.localScale;
+			m_FrontRightHandle.localPosition = localPosition;
+			m_FrontRightHandle.localRotation = m_FrontLeftHandle.localRotation;
+			m_FrontRightHandle.localScale = m_FrontLeftHandle.localScale;
 
-			var cornerScale = m_FrameHeight + m_FrameHandleSize;
-			transform = m_FrontLeftCornerHandle.transform;
+			var halfFrameHandleSize = m_FrameHandleSize * 0.5f;
 			var zOffset = m_FrontZOffset - k_HandleZOffset * 0.5f;
-			transform.localPosition = new Vector3(-halfWidth, -cornerScale * (1f - m_LerpAmount * 0.5f) + m_FrameHandleSize * (1 - m_LerpAmount) * 0.5f, -halfDepth - zOffset - halfFrameHandleSize);
-			transform.localScale = new Vector3(m_FrameHandleSize, (cornerScale - m_FrameHandleSize) * m_LerpAmount, cornerScale - m_FrameHandleSize * 0.75f);
+			var zScale = m_FrameHeight * m_LerpAmount;
+			var yPosition = -halfFrameHandleSize - m_FrameHeight + zScale * 0.5f;
+			m_FrontLeftCornerHandle.localPosition = new Vector3(-halfWidth, yPosition, -halfDepth - zOffset - halfFrameHandleSize);
+			m_FrontLeftCornerHandle.localScale = new Vector3(m_FrameHandleSize, k_HandleZOffset, zScale);
 
-			rightTransform = m_FrontRightCornerHandle.transform;
-			localPosition = transform.localPosition;
-			localPosition.x = halfWidth;
-			rightTransform.localPosition = localPosition;
-			rightTransform.localRotation = transform.localRotation;
-			rightTransform.localScale = transform.localScale;
+			//m_FrontRightCornerHandle = m_FrontRightCornerHandle.transform;
+			//localPosition = m_FrontLeftCornerHandle.localPosition;
+			//localPosition.x = halfWidth;
+			//m_FrontRightCornerHandle.localPosition = localPosition;
+			//m_FrontRightCornerHandle.localRotation = m_FrontLeftCornerHandle.localRotation;
+			//m_FrontRightCornerHandle.localScale = m_FrontLeftCornerHandle.localScale;
 
-			// Resize icons
-			var resizePositionX = halfWidth + m_ResizeHandleMargin;
-			var resizePositionZ = halfDepth + m_ResizeHandleMargin;
-			transform = m_FrontResizeIcon.transform;
-			localPosition = transform.localPosition;
-			localPosition.z = -resizePositionZ - m_FrontZOffset;
-			transform.localPosition = localPosition;
+			//// Resize icons
+			//var resizePositionX = halfWidth + m_ResizeHandleMargin;
+			//var resizePositionZ = halfDepth + m_ResizeHandleMargin;
+			//transform = m_FrontResizeIcon.transform;
+			//localPosition = transform.localPosition;
+			//localPosition.z = -resizePositionZ - m_FrontZOffset;
+			//transform.localPosition = localPosition;
 
-			transform = m_RightResizeIcon.transform;
-			localPosition = transform.localPosition;
-			localPosition.x = resizePositionX;
-			transform.localPosition = localPosition;
+			//transform = m_RightResizeIcon.transform;
+			//localPosition = transform.localPosition;
+			//localPosition.x = resizePositionX;
+			//transform.localPosition = localPosition;
 
-			transform = m_LeftResizeIcon.transform;
-			localPosition = transform.localPosition;
-			localPosition.x = -resizePositionX;
-			transform.localPosition = localPosition;
+			//transform = m_LeftResizeIcon.transform;
+			//localPosition = transform.localPosition;
+			//localPosition.x = -resizePositionX;
+			//transform.localPosition = localPosition;
 
-			transform = m_BackResizeIcon.transform;
-			localPosition = transform.localPosition;
-			localPosition.z = resizePositionZ;
-			transform.localPosition = localPosition;
+			//transform = m_BackResizeIcon.transform;
+			//localPosition = transform.localPosition;
+			//localPosition.z = resizePositionZ;
+			//transform.localPosition = localPosition;
 
-			const float cornerMarginScale = 0.7071067811865475f; // 1 / sqrt(2)
-			var resizeCornerPositionX = halfWidth + m_ResizeHandleMargin * cornerMarginScale;
-			var resizeCornerPositionZ = halfDepth + m_ResizeHandleMargin * cornerMarginScale;
-			transform = m_FrontLeftResizeIcon.transform;
-			localPosition = transform.localPosition;
-			localPosition.x = -resizeCornerPositionX;
-			localPosition.z = -resizeCornerPositionZ - m_FrontZOffset;
-			transform.localPosition = localPosition;
+			//const float cornerMarginScale = 0.7071067811865475f; // 1 / sqrt(2)
+			//var resizeCornerPositionX = halfWidth + m_ResizeHandleMargin * cornerMarginScale;
+			//var resizeCornerPositionZ = halfDepth + m_ResizeHandleMargin * cornerMarginScale;
+			//transform = m_FrontLeftResizeIcon.transform;
+			//localPosition = transform.localPosition;
+			//localPosition.x = -resizeCornerPositionX;
+			//localPosition.z = -resizeCornerPositionZ - m_FrontZOffset;
+			//transform.localPosition = localPosition;
 
-			transform = m_FrontRightResizeIcon.transform;
-			localPosition = transform.localPosition;
-			localPosition.x = resizeCornerPositionX;
-			localPosition.z = -resizeCornerPositionZ - m_FrontZOffset;
-			transform.localPosition = localPosition;
+			//transform = m_FrontRightResizeIcon.transform;
+			//localPosition = transform.localPosition;
+			//localPosition.x = resizeCornerPositionX;
+			//localPosition.z = -resizeCornerPositionZ - m_FrontZOffset;
+			//transform.localPosition = localPosition;
 
-			transform = m_BackLeftResizeIcon.transform;
-			localPosition = transform.localPosition;
-			localPosition.x = -resizeCornerPositionX;
-			localPosition.z = resizeCornerPositionZ;
-			transform.localPosition = localPosition;
+			//transform = m_BackLeftResizeIcon.transform;
+			//localPosition = transform.localPosition;
+			//localPosition.x = -resizeCornerPositionX;
+			//localPosition.z = resizeCornerPositionZ;
+			//transform.localPosition = localPosition;
 
-			transform = m_BackRightResizeIcon.transform;
-			localPosition = transform.localPosition;
-			localPosition.x = resizeCornerPositionX;
-			localPosition.z = resizeCornerPositionZ;
-			transform.localPosition = localPosition;
+			//transform = m_BackRightResizeIcon.transform;
+			//localPosition = transform.localPosition;
+			//localPosition.x = resizeCornerPositionX;
+			//localPosition.z = resizeCornerPositionZ;
+			//transform.localPosition = localPosition;
 		}
 
 		void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
@@ -631,12 +635,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void Update()
 		{
+			bounds = editorBounds;
 			if (!m_DynamicFaceAdjustment)
 				return;
 
 			var currentXRotation = transform.rotation.eulerAngles.x;
-			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
-				return; // Exit if no x rotation change occurred for this frame
+			//if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
+			//	return; // Exit if no x rotation change occurred for this frame
 
 			m_PreviousXRotation = currentXRotation;
 
