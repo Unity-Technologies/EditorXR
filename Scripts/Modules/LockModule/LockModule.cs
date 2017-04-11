@@ -47,7 +47,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public bool IsLocked(GameObject go)
 		{
-			return go && (go.hideFlags & HideFlags.NotEditable) != 0;
+			if (!go)
+				return false;
+
+			if (go.transform.IsChildOf(transform)) // EditorVR objects (i.e. PlayerHead) are hidden but not locked
+				return false;
+
+			return (go.hideFlags & HideFlags.NotEditable) != 0;
 		}
 
 		bool ToggleLocked()
