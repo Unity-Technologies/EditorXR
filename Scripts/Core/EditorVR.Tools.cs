@@ -120,8 +120,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var mainMenuActivator = evrMenus.SpawnMainMenuActivator(inputDevice);
 					deviceData.mainMenuActivator = mainMenuActivator;
 					mainMenuActivator.selected += evrMenus.OnMainMenuActivatorSelected;
-					mainMenuActivator.hoverStarted += evrMenus.OnMainMenuActivatorHoverStarted;
-					mainMenuActivator.hoverEnded += evrMenus.OnMainMenuActivatorHoverEnded;
 
 					var pinnedToolButton = evrMenus.SpawnPinnedToolButton(inputDevice);
 					deviceData.previousToolButton = pinnedToolButton;

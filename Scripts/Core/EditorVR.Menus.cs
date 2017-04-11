@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal enum MenuHideFlags
 			{
 				Hidden = 1 << 0,
-				OverActivator = 1 << 1,
+				OverUI = 1 << 1,
 				NearWorkspace = 1 << 2,
 			}
 
@@ -228,7 +228,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				// Apply state to UI visibility
-				Rays.ForEachProxyDevice((deviceData) =>
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var mainMenu = deviceData.mainMenu;
 					mainMenu.visible = deviceData.menuHideFlags[mainMenu] == 0;
@@ -244,28 +244,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
 			}
 
-			internal void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
+			internal static void OnUIHoverStarted(GameObject go, RayEventData rayEventData)
 			{
+				var rayOrigin = rayEventData.rayOrigin;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
 				{
 					var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
 					foreach (var menu in menus)
 					{
-						deviceData.menuHideFlags[menu] |= MenuHideFlags.OverActivator;
+						deviceData.menuHideFlags[menu] |= MenuHideFlags.OverUI;
 					}
 				}
 			}
 
-			internal void OnMainMenuActivatorHoverEnded(Transform rayOrigin)
+			internal static void OnUIHoverEnded(GameObject go, RayEventData rayEventData)
 			{
+				var rayOrigin = rayEventData.rayOrigin;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
 				{
 					var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
 					foreach (var menu in menus)
 					{
-						deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverActivator;
+						deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverUI;
 					}
 				}
 			}

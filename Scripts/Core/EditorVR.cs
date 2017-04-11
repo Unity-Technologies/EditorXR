@@ -143,6 +143,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			m_UI.Initialize();
 
+			m_MultipleRayInputModule.rayEntered += Menus.OnUIHoverStarted;
+			m_MultipleRayInputModule.rayExited += Menus.OnUIHoverEnded;
+
 			m_KeyboardModule = AddModule<KeyboardModule>();
 
 			var dragAndDropModule = AddModule<DragAndDropModule>();

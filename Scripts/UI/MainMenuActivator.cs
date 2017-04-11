@@ -66,17 +66,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform rayOrigin { private get; set; }
 		public Transform menuOrigin { private get; set; }
 
-		public event Action<Transform> hoverStarted;
-		public event Action<Transform> hoverEnded;
 		public event Action<Transform, Transform> selected;
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			// A child may have used the event, but still reflect that is was hovered
-			var rayEventData = eventData as RayEventData;
-			if (rayEventData != null && hoverStarted != null)
-				hoverStarted(rayEventData.rayOrigin);
-
 			if (eventData.used)
 				return;
 
@@ -89,11 +82,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnPointerExit(PointerEventData eventData)
 		{
-			// A child may have used the event, but still reflect that is was hovered
-			var rayEventData = eventData as RayEventData;
-			if (rayEventData != null && hoverEnded != null)
-				hoverEnded(rayEventData.rayOrigin);
-
 			if (eventData.used)
 				return;
 
