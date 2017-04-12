@@ -257,33 +257,33 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				foreach (var kvp in directSelection)
 				{
-					var rayOrigin = kvp.Key;
-					var selection = kvp.Value;
-					var hoveredObject = selection.gameObject;
+					var directRayOrigin = kvp.Key;
+					var directSelectionData = kvp.Value;
+					var directHoveredObject = directSelectionData.gameObject;
 
-					var selectionCandidate = this.GetSelectionCandidate(hoveredObject, true);
+					var selectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
 
 					// Can't select this object (it might be locked or static)
-					if (hoveredObject && !selectionCandidate)
+					if (directHoveredObject && !selectionCandidate)
 						continue;
 
 					if (selectionCandidate)
-						hoveredObject = selectionCandidate;
+						directHoveredObject = selectionCandidate;
 
-					if (!this.CanGrabObject(hoveredObject, rayOrigin))
+					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
-					var directSelectInput = (DirectSelectInput)selection.input;
+					var directSelectInput = (DirectSelectInput)directSelectionData.input;
 					if (directSelectInput.select.wasJustPressed)
 					{
-						this.ClearSnappingState(rayOrigin);
+						this.ClearSnappingState(directRayOrigin);
 
 						if (objectGrabbed != null)
-							objectGrabbed(hoveredObject);
+							objectGrabbed(directHoveredObject);
 
 						consumeControl(directSelectInput.select);
 
-						var selectedNode = selection.node;
+						var selectedNode = directSelectionData.node;
 
 						// Check if the other hand is already grabbing for two-handed scale
 						foreach (var grabData in m_GrabData)
@@ -292,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							if (otherNode != selectedNode)
 							{
 								var otherData = grabData.Value;
-								m_ScaleStartDistance = (rayOrigin.position - otherData.rayOrigin.position).magnitude;
+								m_ScaleStartDistance = (directRayOrigin.position - otherData.rayOrigin.position).magnitude;
 								m_ScaleFirstNode = otherNode;
 								for (int i = 0; i < otherData.grabbedObjects.Length; i++)
 								{
@@ -302,10 +302,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							}
 						}
 
-						m_GrabData[selectedNode] = new GrabData(rayOrigin, directSelectInput, Selection.transforms, this);
+						m_GrabData[selectedNode] = new GrabData(directRayOrigin, directSelectInput, Selection.transforms, this);
 
-						this.HideDefaultRay(rayOrigin, true); // This will also unhighlight the object
-						this.LockRay(rayOrigin, this);
+						this.HideDefaultRay(directRayOrigin, true); // This will also unhighlight the object
+						this.LockRay(directRayOrigin, this);
 
 						// Wait a frame since OnSelectionChanged is called at the end of the frame, and will set m_DirectSelected to false
 						EditorApplication.delayCall += () =>
