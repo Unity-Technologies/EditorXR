@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class PinnedTools : Nested, IInterfaceConnector
+		class ToolButtons : Nested, IInterfaceConnector
 		{
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{

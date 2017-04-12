@@ -123,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					alternateMenu.itemWasSelected += evrMenus.UpdateAlternateMenuOnSelectionChanged;
 
 					// Setup PinnedToolButtons
-					var pinnedTools = evr.m_PinnedTools;
+					var pinnedTools = evr.m_ToolButtons;
 					deviceData.pinnedToolButtons = new Dictionary<Type, PinnedToolButton>();
 					pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu)).order = PinnedToolButton.menuButtonOrderPosition; // Setup Main Menu button
 					pinnedTools.AddPinnedToolButton(deviceData, typeof(SelectionTool)); // Setup SelectionTool button
@@ -194,7 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var result = false;
 				var deviceInputModule = evr.m_DeviceInputModule;
-				var pinnedTools = evr.m_PinnedTools;
+				var pinnedTools = evr.m_ToolButtons;
 				Rays.ForEachProxyDevice(deviceData =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
