@@ -4,26 +4,25 @@ using System.Collections;
 using System.Text;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public sealed class PinnedToolButton : MonoBehaviour, ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IConnectInterfaces, IUsesMenuOrigins
+	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IConnectInterfaces, IUsesMenuOrigins
 	{
 		static Color s_FrameOpaqueColor;
 		static Color s_SemiTransparentFrameColor;
-		public static int menuButtonOrderPosition { get { return 0; } }
-		public static int activeToolOrderPosition { get { return 1; } }
-		public static Vector3 toolButtonActivePosition { get { return new Vector3(0f, 0f, -0.035f); } } // Shared active button offset from the alternate menu
 
+		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
+		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
+		private const float k_alternateLocalScaleMultiplier = 0.85f; //0.64376f meets outer bounds of the radial menu
 		const string k_MaterialColorProperty = "_Color";
 		const string k_MaterialAlphaProperty = "_Alpha";
 		const string k_SelectionToolTipText = "Selection Tool (cannot be closed)";
 		const string k_MainMenuTipText = "Main Menu (cannot be closed)";
+		readonly Vector3 k_ToolButtonActivePosition = new Vector3(0f, 0f, -0.035f);
 
 		public Type toolType
 		{
@@ -41,6 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (isSelectionTool || isMainMenu)
 					{
 						//activeButtonCount = 1;
+						order= isMainMenu ? menuButtonOrderPosition : activeToolOrderPosition;
 						tooltipText = isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText;
 						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
 					}
@@ -85,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
 				const float kMaxPinnedToolButtonCount = 16; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
 				const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
-				var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount() * 0.5f) * kRotationSpacing;
+				var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
 				var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(newTargetRotation));
 				//transform.localRotation = newLocalRotation;
@@ -99,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public GradientPair gradientPair
 		{
 			get { return m_GradientPair; }
-			private set
+			set
 			{
 				m_GradientPair = value;
 				customToolTipHighlightColor = value;
@@ -112,6 +112,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public Type previewToolType
 		{
+			get { return m_previewToolType; }
 			set
 			{
 				m_previewToolType = value;
@@ -203,6 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Material m_InsetMaterial;
 		//Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
 		Vector3 m_OriginalLocalPosition;
+		Vector3 m_OriginalLocalScale;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -216,13 +218,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public GradientPair customToolTipHighlightColor { get; set; }
 		public bool isSelectionTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
 		public bool isMainMenu { get { return m_ToolType != null && m_ToolType == typeof(IMainMenu); } }
-		public Action<Transform, PinnedToolButton> DeletePinnedToolButton { get; set; }
-		public Func<int> activeButtonCount { get; set; }
+		public Action<Transform, PinnedToolButton> deletePinnedToolButton { get; set; }
+		public int activeButtonCount { get; set; }
 		public Transform menuOrigin { get; set; }
 		public Action<Transform, bool> highlightAllToolButtons { get; set; }
 		public Sprite icon { set { m_GradientButton.icon = value; } }
 		public Action<Transform, Transform> OpenMenu { get; set; }
-		public Action<Transform, Type> clicked { get; set; }
+		public Action<Transform, Type> selectTool { get; set; }
+		public int menuButtonOrderPosition { get { return k_MenuButtonOrderPosition; } }
+		public int activeToolOrderPosition { get { return k_ActiveToolOrderPosition; } }
+		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
 
 		public event Action<Transform> hoverEnter;
 		public event Action<Transform> hoverExit;
@@ -230,7 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		private bool activeTool
 		{
-			get { return m_Order == 0; }
+			get { return m_Order == activeToolOrderPosition; }
 			set
 			{
 				m_GradientButton.normalGradientPair = value ? gradientPair : UnityBrandColorScheme.grayscaleSessionGradient;
@@ -273,6 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void Awake()
 		{
 			m_OriginalLocalPosition = transform.localPosition;
+			m_OriginalLocalScale = transform.localScale;
 		}
 
 		void Start()
@@ -377,7 +383,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PositionCoroutine = null;
 		}
 
-		bool AllowOnlySelectButton (PinnedToolActionButton.ButtonType buttonType)
+		bool IsSelectToolButton (PinnedToolActionButton.ButtonType buttonType)
 		{
 			return buttonType == PinnedToolActionButton.ButtonType.SelectTool;
 		}
@@ -386,7 +392,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
 			//{
-				Debug.LogError("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
+				Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
 				//m_RootCollider.enabled = false;
 				m_GradientButton.highlighted = true;
 				//m_GradientButton.visible = false;
@@ -400,30 +406,33 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void HoverButton()
 		{
-			if (order < 2 || toolType == typeof(IMainMenu)) // The main menu and the active tool occupy orders 0 and 1; don't show any action buttons for buttons in either position
+			if (order < 2 && (isSelectionTool || isMainMenu)) // The main menu and the active tool occupy orders 0 and 1; don't show any action buttons for buttons in either position
 			{
 				m_RightPinnedToolActionButton.visible = false;
 				m_LeftPinnedToolActionButton.visible = false;
-				m_RootCollider.enabled = true;
+				//m_RootCollider.enabled = true;
+				StartCoroutine(DelayedCollderEnable());
 			}
 			else if (isSelectionTool)
 			{
+				/*
 				if (activeTool)
 				{
 					m_RightPinnedToolActionButton.visible = false;
 					m_LeftPinnedToolActionButton.visible = false;
-					m_RootCollider.enabled = true;
+					StartCoroutine(DelayedCollderEnable());
 				}
 				else
+				*/
 				{
-					m_RightPinnedToolActionButton.visible = AllowOnlySelectButton(m_RightPinnedToolActionButton.buttonType) ? true : false;
-					m_LeftPinnedToolActionButton.visible = AllowOnlySelectButton(m_LeftPinnedToolActionButton.buttonType) ? true : false;
+					m_RightPinnedToolActionButton.visible = IsSelectToolButton(m_RightPinnedToolActionButton.buttonType) ? true : false;
+					m_LeftPinnedToolActionButton.visible = IsSelectToolButton(m_LeftPinnedToolActionButton.buttonType) ? true : false;
 				}
 			} else
 			{
-				// Hide the select action button if this tool button is already the selected tool, else show the close button
-				m_RightPinnedToolActionButton.visible = AllowOnlySelectButton(m_RightPinnedToolActionButton.buttonType) ? !activeTool : true;
-				m_LeftPinnedToolActionButton.visible = AllowOnlySelectButton(m_LeftPinnedToolActionButton.buttonType) ? !activeTool : true;
+				// Hide the select action button if this tool button is already the selected tool, else show the close button for inactive tools
+				m_RightPinnedToolActionButton.visible = IsSelectToolButton(m_RightPinnedToolActionButton.buttonType) ? !activeTool : true;
+				m_LeftPinnedToolActionButton.visible = IsSelectToolButton(m_LeftPinnedToolActionButton.buttonType) ? !activeTool : true;
 			}
 
 			highlightAllToolButtons(rayOrigin, true);
@@ -431,25 +440,30 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void ActionButtonClicked(PinnedToolActionButton button)
 		{
-			Debug.LogError("Action Button clicked!");
-			if (order != 1) // Buttons in the first position are active tools, and cannot be selected when clicked
+			Debug.LogError("Action Button selectTool!");
+			if (order > menuButtonOrderPosition)
 			{
-				if (button.buttonType == PinnedToolActionButton.ButtonType.SelectTool)
+				// TODO: SELECT ACTION BUTTONS should be able to be interacted with due to their being hidden, so no need to handle for that case
+				// Buttons in the activeToolOrderPosition cannot be selected when selectTool
+				if (button.buttonType == PinnedToolActionButton.ButtonType.SelectTool && order > activeToolOrderPosition)
 				{
-					m_LeftPinnedToolActionButton.highlighted = false;
-					m_RightPinnedToolActionButton.highlighted = false;
-					OnActionButtonHoverExit();
-					clicked(rayOrigin, m_ToolType); // ButtonClicked will set button order to 0
+					selectTool(rayOrigin, m_ToolType); // ButtonClicked will set button order to 0
 					activeTool = activeTool;
 					//SetButtonGradients(this.ButtonClicked(rayOrigin, m_ToolType));
 				}
-				else
+				else // Handle action buttons assigned Close-Tool functionality
 				{
-					if (!isSelectionTool)
+					//if (!isSelectionTool)
 						this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateClose());
-					else
-						Debug.LogError("<color=red>CANNOT DELETE THE SELECT TOOL!!!!!</color>");
+					//else
+						//Debug.LogError("<color=red>CANNOT DELETE THE SELECT TOOL!!!!!</color>");
+
+					deletePinnedToolButton(rayOrigin, this);
 				}
+
+				OnActionButtonHoverExit();
+				m_LeftPinnedToolActionButton.highlighted = false;
+				m_RightPinnedToolActionButton.highlighted = false;
 			}
 		}
 
@@ -481,7 +495,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// Hide both action buttons if the user is no longer hovering over the button
 			if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
 			{
-				clicked(rayOrigin, m_ToolType); // Perform clik for a ToolButton that doesn't utilize ToolActionButtons
+				selectTool(rayOrigin, m_ToolType); // Perform clik for a ToolButton that doesn't utilize ToolActionButtons
 			}
 
 			m_GradientButton.UpdateMaterialColors();
@@ -512,11 +526,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			transform.localScale = targetScale;
 			m_VisibilityCoroutine = null;
-			DeletePinnedToolButton(rayOrigin, this);
 			ObjectUtils.Destroy(gameObject, 0.1f);
 		}
 
-		public void CorrectIconRotation()
+		void CorrectIconRotation()
 		{
 			const float kIconLookForwardOffset = 0.5f;
 			var iconLookDirection = m_ContentContainer.transform.position + transform.parent.forward * kIconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
@@ -573,6 +586,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var amount = 0f;
 			var currentPosition = transform.localPosition;
 			var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
+			var currentLocalScale = transform.localScale;
+			var targetLocalScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
 			var speed = moveToAlternatePosition ? 5 : 5; // perform faster is returning to original position
 
 			while (amount < 1f)
@@ -580,11 +595,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				amount += Time.unscaledDeltaTime * speed;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
 				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
+				transform.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, shapedAmount);
 				yield return null;
 			}
 
 			transform.localPosition = targetPosition;
+			transform.localScale = targetLocalScale;
 			m_ActivatorMoveCoroutine = null;
+		}
+
+		IEnumerator DelayedCollderEnable()
+		{
+			yield return null;
+			m_RootCollider.enabled = true;
 		}
 	}
 }
