@@ -292,20 +292,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
 			{
-				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
-				if (deviceData != null)
+				foreach (var deviceData in evr.m_DeviceData)
 				{
 					var mainMenu = deviceData.mainMenu;
+					var menuHideFlags = deviceData.menuHideFlags;
 					if (mainMenu != null)
 					{
-						var menuHideFlags = deviceData.menuHideFlags;
-						menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
+						if (deviceData.rayOrigin == rayOrigin)
+						{
+							menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
 
-						var customMenu = deviceData.customMenu;
-						if (customMenu != null)
-							menuHideFlags[customMenu] &= ~MenuHideFlags.Hidden;
+							var customMenu = deviceData.customMenu;
+							if (customMenu != null)
+								menuHideFlags[customMenu] &= ~MenuHideFlags.Hidden;
 
-						mainMenu.targetRayOrigin = targetRayOrigin;
+							mainMenu.targetRayOrigin = targetRayOrigin;
+						}
+						else
+						{
+							menuHideFlags[mainMenu] |= MenuHideFlags.Hidden;
+						}
 					}
 				}
 			}

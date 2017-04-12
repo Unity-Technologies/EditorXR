@@ -179,9 +179,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		{
 			m_Tip.transform.localScale = m_TipStartScale;
 
-			float viewerScale;
+			float viewerScale = this.GetViewerScale();
 			float scaledWidth;
-			var currentWidth = m_LineRenderer.widthStart;
+			var currentWidth = m_LineRenderer.widthStart / viewerScale;
 			var smoothVelocity = 0f;
 			const float kSmoothTime = 0.3125f;
 			var currentDuration = 0f;
