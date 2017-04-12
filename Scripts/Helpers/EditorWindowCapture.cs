@@ -1,8 +1,10 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Reflection;
+#if UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
 using System.Threading;
+#endif
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -137,9 +139,12 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			var rect = m_Window.position;
 			var clickPosition = Vector2.Scale(rectPosition, rect.size) + offset;
 
-			if (clickPosition.y < 25f) // Click y positions below 25 move the window and cause issues
+			const int windowHeaderSize = 25;
+			if (clickPosition.y < windowHeaderSize) // Click y positions below 25 move the window and cause issues
 				return;
 
+			//TODO: See if context menus are an issue on OS X
+#if UNITY_EDITOR_WIN
 			// Send a message to cancel context menus in case the user clicked a drop-down
 			// Thread is needed because context menu blocks main thread
 			if (type == EventType.MouseDown)
@@ -152,6 +157,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 					SendMessage(hwnd, WM_CANCELMODE, 0, IntPtr.Zero);
 				}).Start();
 			}
+#endif
 
 			m_Window.SendEvent(new Event
 			{
@@ -160,8 +166,11 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			});
 		}
 
+#if UNITY_EDITOR_WIN
 		[DllImport("User32.dll")]
 		public static extern int SendMessage(IntPtr hWnd, int uMsg, int wParam, IntPtr lParam);
+#endif
+
 #endif
 	}
 }
