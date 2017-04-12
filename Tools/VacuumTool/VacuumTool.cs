@@ -26,8 +26,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var standardInput = (VacuumInput)input;
-			if (standardInput.secondary.wasJustPressed)
+			var vacuumInput = (VacuumInput)input;
+			if (vacuumInput.vacuum.wasJustPressed)
 			{
 				var realTime = Time.realtimeSinceStartup;
 				if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
@@ -48,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						}
 					}
 
-					consumeControl(standardInput.secondary);
+					consumeControl(vacuumInput.vacuum);
 				}
 
 				m_LastClickTime = realTime;

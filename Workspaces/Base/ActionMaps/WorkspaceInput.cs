@@ -7,7 +7,7 @@ namespace UnityEngine.InputNew
 	public class WorkspaceInput : ActionMapInput {
 		public WorkspaceInput (ActionMap actionMap) : base (actionMap) { }
 		
-		public ButtonInputControl @secondaryLeft { get { return (ButtonInputControl)this[0]; } }
-		public ButtonInputControl @secondaryRight { get { return (ButtonInputControl)this[1]; } }
+		public ButtonInputControl @moveResizeLeft { get { return (ButtonInputControl)this[0]; } }
+		public ButtonInputControl @moveResizeRight { get { return (ButtonInputControl)this[1]; } }
 	}
 }

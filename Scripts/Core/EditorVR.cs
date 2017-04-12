@@ -288,7 +288,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		void Shutdown()
 		{
 			if (m_HasDeserialized)
-			serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
+				serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
 		}
 
 		void OnDestroy()

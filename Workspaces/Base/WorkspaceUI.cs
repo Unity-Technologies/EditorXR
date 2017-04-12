@@ -602,15 +602,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void ProcessInput(WorkspaceInput input, ConsumeControlDelegate consumeControl)
 		{
-			var secondaryLeft = input.secondaryLeft;
-			var secondaryRight = input.secondaryRight;
+			var moveResizeLeft = input.moveResizeLeft;
+			var moveResizeRight = input.moveResizeRight;
 
 			if (m_DragState != null)
 			{
 				var rayOrigin = m_DragState.rayOrigin;
 
-				if ((rayOrigin == leftRayOrigin && secondaryLeft.wasJustReleased)
-					|| (rayOrigin == rightRayOrigin && secondaryRight.wasJustReleased))
+				if ((rayOrigin == leftRayOrigin && moveResizeLeft.wasJustReleased)
+					|| (rayOrigin == rightRayOrigin && moveResizeRight.wasJustReleased))
 				{
 					m_DragState = null;
 					m_LastResizeIcons.Clear();
@@ -647,17 +647,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var rayOrigin = m_HovereringRayOrigins[i];
 				Image lastResizeIcon;
 				m_LastResizeIcons.TryGetValue(rayOrigin, out lastResizeIcon);
-				if (rayOrigin == leftRayOrigin && secondaryLeft.wasJustPressed && !preventResize)
+				if (rayOrigin == leftRayOrigin && moveResizeLeft.wasJustPressed && !preventResize)
 				{
-					consumeControl(secondaryLeft);
+					consumeControl(moveResizeLeft);
 					dragRayOrigin = rayOrigin;
 					dragResizeIcon = lastResizeIcon;
 					resizing = true;
 				}
 
-				if (rayOrigin == rightRayOrigin && secondaryRight.wasJustPressed && !preventResize)
+				if (rayOrigin == rightRayOrigin && moveResizeRight.wasJustPressed && !preventResize)
 				{
-					consumeControl(secondaryRight);
+					consumeControl(moveResizeRight);
 					dragRayOrigin = rayOrigin;
 					dragResizeIcon = lastResizeIcon;
 					resizing = true;
@@ -719,19 +719,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!dragRayOrigin)
 			{
 				var leftPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
-				if (secondaryLeft.wasJustPressed && adjustedBounds.Contains(leftPosition))
+				if (moveResizeLeft.wasJustPressed && adjustedBounds.Contains(leftPosition))
 				{
 					dragRayOrigin = leftRayOrigin;
 					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
-					consumeControl(secondaryLeft);
+					consumeControl(moveResizeLeft);
 				}
 
 				var rightPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
-				if (secondaryRight.wasJustPressed && adjustedBounds.Contains(rightPosition))
+				if (moveResizeRight.wasJustPressed && adjustedBounds.Contains(rightPosition))
 				{
 					dragRayOrigin = rightRayOrigin;
 					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
-					consumeControl(secondaryRight);
+					consumeControl(moveResizeRight);
 				}
 			}
 

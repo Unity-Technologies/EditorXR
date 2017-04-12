@@ -21,22 +21,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						// Delay connecting actions to allow tool / module to initialize first
 						EditorApplication.delayCall += () =>
 						{
-						var actions = toolActions.actions;
+							var actions = toolActions.actions;
 							if (actions != null)
 							{
-						foreach (var action in actions)
-						{
-							var actionMenuData = new ActionMenuData()
-							{
-								name = action.GetType().Name,
-								sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
-								priority = int.MaxValue,
-								action = action,
-							};
-							menuActions.Add(actionMenuData);
-						}
-						Menus.UpdateAlternateMenuActions();
-					}
+								foreach (var action in actions)
+								{
+									var actionMenuData = new ActionMenuData()
+									{
+										name = action.GetType().Name,
+										sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
+										priority = int.MaxValue,
+										action = action,
+									};
+									menuActions.Add(actionMenuData);
+								}
+								Menus.UpdateAlternateMenuActions();
+							}
 						};
 					}
 

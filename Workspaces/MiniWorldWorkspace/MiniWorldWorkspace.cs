@@ -215,27 +215,27 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.ProcessInput(input, consumeControl);
 			var workspaceInput = (WorkspaceInput)input;
 
-			var leftGrip = workspaceInput.secondaryLeft;
-			if (leftGrip.wasJustPressed && miniWorld.Contains(leftRayOrigin.position))
+			var leftControl = workspaceInput.moveResizeLeft;
+			if (leftControl.wasJustPressed && miniWorld.Contains(leftRayOrigin.position))
 			{
 				OnPanZoomDragStarted(leftRayOrigin);
-				consumeControl(leftGrip);
+				consumeControl(leftControl);
 			}
 
-			var rightGrip = workspaceInput.secondaryRight;
-			if (rightGrip.wasJustPressed && miniWorld.Contains(rightRayOrigin.position))
+			var rightControl = workspaceInput.moveResizeRight;
+			if (rightControl.wasJustPressed && miniWorld.Contains(rightRayOrigin.position))
 			{
 				OnPanZoomDragStarted(rightRayOrigin);
-				consumeControl(rightGrip);
+				consumeControl(rightControl);
 			}
 
-			if (leftGrip.isHeld || rightGrip.isHeld)
+			if (leftControl.isHeld || rightControl.isHeld)
 				OnPanZoomDragging();
 
-			if (leftGrip.wasJustReleased)
+			if (leftControl.wasJustReleased)
 				OnPanZoomDragEnded(leftRayOrigin);
 
-			if (rightGrip.wasJustReleased)
+			if (rightControl.wasJustReleased)
 				OnPanZoomDragEnded(rightRayOrigin);
 		}
 

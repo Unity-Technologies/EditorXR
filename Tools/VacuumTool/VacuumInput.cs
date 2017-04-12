@@ -7,6 +7,6 @@ namespace UnityEngine.InputNew
 	public class VacuumInput : ActionMapInput {
 		public VacuumInput (ActionMap actionMap) : base (actionMap) { }
 		
-		public ButtonInputControl @secondary { get { return (ButtonInputControl)this[0]; } }
+		public ButtonInputControl @vacuum { get { return (ButtonInputControl)this[0]; } }
 	}
 }
