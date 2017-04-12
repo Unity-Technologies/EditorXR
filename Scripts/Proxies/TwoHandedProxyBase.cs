@@ -246,6 +246,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public void HighlightDevice (Node deviceNode, GradientPair gradientPair)
 		{
+			if (m_HighlightMaterials == null)
+				return;
+
 			Debug.LogWarning("HighlightDevice called!!!");
 
 			Material deviceMaterial = null;
