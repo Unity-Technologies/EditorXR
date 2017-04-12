@@ -1,6 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -92,6 +93,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, rayOrigin))
 						continue;
 
+					var directSelectInput = (DirectSelectInput)directSelectionData.input;
+
+					// Only overwrite an existing selection if it does not contain the hovered object
+					// In the case of multi-select, only add, do not remove
+					if (directSelectInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
+						this.SelectObject(directHoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+
 					GameObject lastHover;
 					if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
 						this.SetHighlight(lastHover, false, directRayOrigin);
@@ -124,12 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			// Capture object on press
 			if (selectionInput.select.wasJustPressed)
-			{
 				m_PressedObject = hoveredObject;
-
-				if (m_PressedObject)
-					consumeControl(selectionInput.select);
-			}
 
 			// Select button on release
 			if (selectionInput.select.wasJustReleased)

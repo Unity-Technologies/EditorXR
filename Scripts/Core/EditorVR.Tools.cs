@@ -87,7 +87,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						continue;
 
 					HashSet<InputDevice> devices;
-					var toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
+
+					var toolData = SpawnTool(typeof(TransformTool), out devices, inputDevice);
+					AddToolToDeviceData(toolData, devices);
+					var transformTool = (TransformTool)toolData.tool;
+					if (transformTool.IsSharedUpdater(transformTool))
+						evr.m_DirectSelection.objectsGrabber = transformTool;
+
+					toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var selectionTool = (SelectionTool)toolData.tool;
 					selectionTool.hovered += lockModule.OnHovered;
@@ -102,12 +109,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					toolData = SpawnTool(typeof(MoveWorkspacesTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
-
-					toolData = SpawnTool(typeof(TransformTool), out devices, inputDevice);
-					AddToolToDeviceData(toolData, devices);
-					var transformTool = (TransformTool)toolData.tool;
-					if (transformTool.IsSharedUpdater(transformTool))
-						evr.m_DirectSelection.objectsGrabber = transformTool;
 
 					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);

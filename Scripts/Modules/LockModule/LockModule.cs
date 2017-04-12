@@ -50,7 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (!go)
 				return false;
 
-			if (go.transform.IsChildOf(transform)) // EditorVR objects (i.e. PlayerHead) are hidden but not locked
+			// EditorVR objects (i.e. PlayerHead) may get HideAndDontSave, which includes NotEditable, but should not count as locked
+			if (go.transform.IsChildOf(transform))
 				return false;
 
 			return (go.hideFlags & HideFlags.NotEditable) != 0;
