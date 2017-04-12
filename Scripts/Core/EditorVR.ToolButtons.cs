@@ -43,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal PinnedToolButton AddPinnedToolButton(DeviceData deviceData, Type toolType)
 			{
+				Debug.LogError("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
 				var pinnedToolButtons = deviceData.pinnedToolButtons;
 				if (pinnedToolButtons.ContainsKey(toolType)) // Return if tooltype already occupies a pinned tool button
 					return null;
@@ -50,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				// Before adding new button, offset each button to a position greater than the zeroth/active tool position
 				foreach (var pair in pinnedToolButtons)
 				{
-					if (pair.Value.order != PinnedToolButton.menuButtonOrderPosition) // don't move the main menu button
+					if (pair.Value.order != pair.Value.menuButtonOrderPosition) // don't move the main menu button
 						pair.Value.order++;
 				}
 
@@ -58,11 +59,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				pinnedToolButtons.Add(toolType, button);
 				button.node = deviceData.node;
 				button.toolType = toolType; // Assign Tool Type before assigning order
-				button.activeButtonCount = () => deviceData.pinnedToolButtons.Count; // Used to position buttons relative to count
-				button.order = PinnedToolButton.activeToolOrderPosition; // first position is the active tool position
-				button.DeletePinnedToolButton = DeletePinnedToolButton;
+				//button.order = button.activeToolOrderPosition; // first position is the active tool position
+				button.deletePinnedToolButton = DeletePinnedToolButton;
 				button.highlightAllToolButtons = HighlightAllToolButtons;
-				button.clicked = ToolButtonClicked;
+				button.selectTool = ToolButtonClicked;
 				//button.selected += OnMainMenuActivatorSelected;
 				button.hoverEnter += OnButtonHoverEnter;
 				button.hoverExit += OnButtonHoverExit;
@@ -73,10 +73,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void SetupPinnedToolButtonsForDevice(DeviceData deviceData, Transform rayOrigin, Type activeToolType)
 			{
 				Debug.LogError("<color=black>Setting up pinned tool button for type of : </color>" + activeToolType);
+				activeToolType = activeToolType == typeof(IMainMenu) ? typeof(SelectionTool) : activeToolType; // Assign SelectionTool if setting up for IMainMenu
 				const int kMaxButtonCount = 6;
-				var inactiveButtonInitialOrderPosition = PinnedToolButton.activeToolOrderPosition;
 				var buttons = deviceData.pinnedToolButtons;
-				var buttonCount = buttons.Count;
+				var inactiveButtonInitialOrderPosition = -1;
+				var buttonCount = buttons.Count; // Position buttons relative to count
 
 				if (buttonCount >= kMaxButtonCount)
 				{
@@ -87,12 +88,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var pair in buttons)
 				{
 					var button = pair.Value;
+					inactiveButtonInitialOrderPosition = inactiveButtonInitialOrderPosition  == -1 ? button.activeToolOrderPosition : inactiveButtonInitialOrderPosition;
 					button.rayOrigin = rayOrigin;
+					button.activeButtonCount = buttonCount;
 
 					if (button.toolType == typeof(IMainMenu))
-						button.order = PinnedToolButton.menuButtonOrderPosition;
+					{
+						Debug.LogError("Setting up main menu button");
+						button.order = button.menuButtonOrderPosition;
+					}
 					else
-						button.order = button.toolType == activeToolType ? PinnedToolButton.activeToolOrderPosition : ++inactiveButtonInitialOrderPosition;
+					{
+						button.order = button.toolType == activeToolType ? button.activeToolOrderPosition : ++inactiveButtonInitialOrderPosition;
+						Debug.LogError("Setting up button : " + button.toolType + " - ORDER : " + button.order);
+					}
 
 					if (button.order == 0)
 						deviceData.proxy.HighlightDevice(deviceData.node, button.gradientPair); // Perform the higlight on the node with the button's gradient pair
@@ -105,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				// re-order the current buttons
 				// Highlight the device if the top/selected tool was the one that was closed
 
-				Debug.LogError("<color=orange>DeletePinnedToolButton called</color>");
+				Debug.LogError("<color=orange>deletePinnedToolButton called</color>");
 
 				//var result = false;
 				//var deviceInputModule = evr.m_DeviceInputModule;
@@ -128,9 +137,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 
 
-						Debug.LogError("Removing button : " + buttonToDelete.toolType);
+						Debug.LogError("Removing button : " + buttonToDelete.toolType + " - Setting new active button of type : " + selectedButtontype);
 						buttons.Remove(buttonToDelete.toolType);
-						evr.m_Tools.SelectTool(rayOrigin, buttonToDelete.toolType);
+						evr.m_Tools.SelectTool(rayOrigin, selectedButtontype);
 						SetupPinnedToolButtonsForDevice(deviceData, rayOrigin, selectedButtontype);
 					}
 				});

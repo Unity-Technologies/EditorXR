@@ -122,12 +122,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
 					alternateMenu.itemWasSelected += evrMenus.UpdateAlternateMenuOnSelectionChanged;
 
-					// Setup PinnedToolButtons
 					var pinnedTools = evr.m_ToolButtons;
 					deviceData.pinnedToolButtons = new Dictionary<Type, PinnedToolButton>();
-					pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu)).order = PinnedToolButton.menuButtonOrderPosition; // Setup Main Menu button
+					var mainMenuButton = pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu)); // Setup Main Menu button
+					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu));
 					pinnedTools.AddPinnedToolButton(deviceData, typeof(SelectionTool)); // Setup SelectionTool button
-					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(SelectionTool)); // Initialize PinnedToolButtons
+					// Initialize PinnedToolButtons; set SelectionTool as the active tool type
+					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(SelectionTool));
 				}
 
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
@@ -143,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
 			ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device = null)
 			{
-				Debug.LogError("SPAWN TOOL CALLED!");
+				Debug.LogError("SPAWN TOOL CALLED! : " + toolType);
 				usedDevices = new HashSet<InputDevice>();
 				if (!typeof(ITool).IsAssignableFrom(toolType))
 					return null;
@@ -199,12 +200,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					if (deviceData.rayOrigin == rayOrigin)
 					{
-						Debug.LogError("<color=yellow>deviceDate.CurrentTool : </color>" + deviceData.currentTool.ToString());
+						Debug.LogError("<color=yellow>deviceDate.CurrentTool : </color>" + deviceData.currentTool.ToString() + " : setting type to : " + toolType);
 						var spawnTool = true;
+						var pinnedToolButtonAdded = false;
 						var setSelectAsCurrentTool = toolType == typeof(SelectionTool);//deviceData.currentTool is ILocomotor;
 
 						// If this tool was on the current device already, then simply remove it
-						if (deviceData.currentTool != null && (deviceData.currentTool.GetType() == toolType || setSelectAsCurrentTool))
+						var isSelectOrMainMenu = (deviceData.currentTool.GetType() == toolType || setSelectAsCurrentTool) || toolType == typeof(IMainMenu);
+						var permanentTool = IsPermanentTool(toolType); // TODO initially set spawnTool to this permatool value
+						if (deviceData.currentTool != null && isSelectOrMainMenu)
 						{
 							Debug.LogError("Despawing tool !!!! : <color=red>toolType == typeof(SelectionTool) : </color>" + (toolType == typeof(SelectionTool)).ToString());
 							DespawnTool(deviceData, deviceData.currentTool);
@@ -213,8 +217,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							spawnTool = false;
 						}
 
-						if (spawnTool)
+						if (spawnTool && !permanentTool)
 						{
+							Debug.LogError("<color=yellow>SPAWN TOOL : </color>" + toolType);
 							// Spawn tool and collect all devices that this tool will need
 							HashSet<InputDevice> usedDevices;
 							var device = deviceData.inputDevice;
@@ -242,11 +247,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								AddToolToStack(dd, newTool);
 
 								if (!setSelectAsCurrentTool)
+								{
+									pinnedToolButtonAdded = true;
 									pinnedTools.AddPinnedToolButton(deviceData, toolType);
+								}
 							}
 						}
 
 						pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, rayOrigin, toolType);
+
 						deviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
 					}
