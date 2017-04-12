@@ -127,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.pinnedToolButtons = new Dictionary<Type, PinnedToolButton>();
 					pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu)).order = PinnedToolButton.menuButtonOrderPosition; // Setup Main Menu button
 					pinnedTools.AddPinnedToolButton(deviceData, typeof(SelectionTool)); // Setup SelectionTool button
-					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu)); // Initialize PinnedToolButtons
+					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(SelectionTool)); // Initialize PinnedToolButtons
 				}
 
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
