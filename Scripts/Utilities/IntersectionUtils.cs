@@ -51,10 +51,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			if (mf)
 				collisionTester.sharedMesh = mf.sharedMesh;
 
+			var boundsMagnitude = collisionTester.bounds.size.magnitude;
+
 			var triangles = tester.triangles;
 			var vertices = tester.vertices;
-
-			var maxDistance = collisionTester.bounds.size.magnitude;
 
 			var testerTransform = tester.transform;
 			for (var i = 0; i < triangles.Length; i += 3)
@@ -69,7 +69,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 					var start = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[j]));
 					var end = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[(j + 1) % 3]));
-					var direction = (end - start).normalized;
+					var edge = end - start;
+					var maxDistance = Mathf.Max(edge.magnitude, boundsMagnitude);
+					var direction = edge.normalized;
 
 					// Handle degenerate triangles
 					if (Mathf.Approximately(direction.magnitude, 0f))

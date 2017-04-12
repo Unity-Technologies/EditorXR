@@ -10,7 +10,8 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-		IGrabObjects, ICustomRay, IProcessInput, ISelectObject, IManipulatorVisibility, IUsesSnapping
+		IGrabObjects, ICustomRay, IProcessInput, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight,
+		ILinkedObject
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -115,6 +116,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			get
 			{
+				if (!this.IsSharedUpdater(this))
+					return null;
+
 				if (m_Actions == null)
 				{
 					m_Actions = new List<IAction>()
@@ -183,8 +187,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public bool manipulatorVisible { private get; set; }
 
-		void Awake()
+		public List<ILinkedObject> linkedObjects { private get; set; }
+
+		void Start()
 		{
+			if (!this.IsSharedUpdater(this))
+				return;
+
 			m_PivotModeToggleAction.execute = TogglePivotMode;
 			UpdatePivotModeAction();
 			m_PivotRotationToggleAction.execute = TogglePivotRotation;
@@ -204,6 +213,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void OnSelectionChanged()
 		{
+			if (!this.IsSharedUpdater(this))
+				return;
+
 			// Reset direct selection state in case of a ray selection
 			m_DirectSelected = false;
 
@@ -215,6 +227,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			if (!this.IsSharedUpdater(this))
+				return;
+
 			var hasObject = false;
 
 			var manipulatorGameObject = m_CurrentManipulator.gameObject;
@@ -250,7 +265,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					// Can't select this object (it might be locked or static)
 					if (hoveredObject && !selectionCandidate)
-						return;
+						continue;
 
 					if (selectionCandidate)
 						hoveredObject = selectionCandidate;
@@ -265,10 +280,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						if (objectGrabbed != null)
 							objectGrabbed(hoveredObject);
-
-						// Only add to selection, don't remove
-						if (!Selection.objects.Contains(hoveredObject))
-							this.SelectObject(hoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
 
 						consumeControl(directSelectInput.select);
 
