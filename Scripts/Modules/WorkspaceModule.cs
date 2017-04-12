@@ -7,7 +7,6 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
-using Valve.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -115,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			foreach (var workspaceLayout in preferences.workspaceLayouts)
 			{
 				var layout = workspaceLayout;
-				CreateWorkspace(Type.GetType(workspaceLayout.name), (workspace) =>
+				CreateWorkspace(Type.GetType(workspaceLayout.name), workspace =>
 				{
 					workspace.transform.localPosition = layout.localPosition;
 					workspace.transform.localRotation = layout.localRotation;
@@ -164,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				workspaceCreated(workspace);
 		}
 
-		internal void ProcessInputInWorkspaces(ConsumeControlDelegate consumeControl)
+		internal void ProcessInput(ConsumeControlDelegate consumeControl)
 		{
 			for (int i = 0; i < m_Workspaces.Count; i++)
 			{

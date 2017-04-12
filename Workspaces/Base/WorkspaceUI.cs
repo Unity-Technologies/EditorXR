@@ -152,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		class DragState
 		{
 			public Transform rayOrigin { get; private set; }
-			public bool resizing { get; private set; }
+			bool m_Resizing;
 			Vector3 m_PositionOffset;
 			Quaternion m_RotationOffset;
 			WorkspaceUI m_WorkspaceUI;
@@ -164,7 +164,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			public DragState(WorkspaceUI workspaceUI, Transform rayOrigin, bool resizing)
 			{
 				m_WorkspaceUI = workspaceUI;
-				this.resizing = resizing;
+				m_Resizing = resizing;
 				this.rayOrigin = rayOrigin;
 
 				if (resizing)
@@ -184,7 +184,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			public void OnDragging()
 			{
-				if (resizing)
+				if (m_Resizing)
 				{
 					var viewerScale = m_WorkspaceUI.GetViewerScale();
 					var pointerPosition = m_WorkspaceUI.GetPointerPositionForRayOrigin(rayOrigin);
@@ -301,7 +301,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
-		/// A value of zero will leave the mask in the center of the workspaceUI
+		/// A value of zero will leave the mask in the center of the workspace
 		/// </summary>
 		public float topPanelDividerOffset
 		{
@@ -341,7 +341,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				size.y = m_FrameHeight + m_FrameHandleSize;
 				m_Bounds.size = size;
 
-				// Because BlendShapes cap at 100, our workspaceUI maxes out at 100m wide
 				const float kWidthMultiplier = 0.9616f;
 				const float kDepthMultiplier = 0.99385f;
 				const float kWidthOffset = -0.165f;
@@ -430,7 +429,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				currentBlurAmount = MathUtilsExt.SmoothDamp(currentBlurAmount, originalBlurAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
 				m_TopFaceMaterial.SetFloat(kShaderBlur, currentBlurAmount);
 
-				float percentageComplete = currentDuration / kTargetDuration;
+				var percentageComplete = currentDuration / kTargetDuration;
 				m_TopFaceMaterial.SetFloat(kShaderVerticalOffset, 1 - percentageComplete); // lerp back towards an offset of zero
 				m_TopFaceMaterial.SetFloat(kShaderAlpha, percentageComplete * 0.5f + 0.5f); // lerp towards fully opaque from 50% transparent
 
@@ -447,15 +446,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void AdjustHandlesAndIcons()
 		{
 			var size = m_Bounds.size;
-
 			m_HandleRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 			m_HandleRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
 
 			var halfFrontZOffset = m_FrontZOffset * 0.5f;
-			var localPosition = m_HandleRectTransform.localPosition;
+			var localPosition = m_ResizeIconRectTransform.localPosition;
 			localPosition.z = -halfFrontZOffset;
 			m_ResizeIconRectTransform.localPosition = localPosition;
-
 			m_ResizeIconRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
 			m_ResizeIconRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + m_FrontZOffset);
 
@@ -474,9 +471,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_FrontLeftHandle.localPosition = new Vector3(-halfWidth, -yOffset * 0.5f , -halfDepth - halfFrontZOffset);
 			m_FrontLeftHandle.localRotation = Quaternion.AngleAxis(angle, Vector3.right);
 			m_FrontLeftHandle.localScale = new Vector3(m_FrameHandleSize, m_FrameHeight, m_FrameHandleSize);
-
 			localPosition = m_FrontLeftHandle.localPosition;
 			localPosition.x = halfWidth;
+
 			m_FrontRightHandle.localPosition = localPosition;
 			m_FrontRightHandle.localRotation = m_FrontLeftHandle.localRotation;
 			m_FrontRightHandle.localScale = m_FrontLeftHandle.localScale;
@@ -586,7 +583,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_LerpAmount = angledAmount / 90f;
 			var paddedLerp = m_LerpAmount * kLerpPadding;
 
-			// offset front panel according to workspaceUI rotation angle
+			// offset front panel according to workspace rotation angle
 			const float kAdditionalFrontPanelLerpPadding = 1.1f;
 			const float kFrontPanelYOffset = 0.03f;
 			const float kFrontPanelZStartOffset = 0.0084f;
@@ -598,7 +595,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			AdjustHandlesAndIcons();
 
-			// change blendshapes according to workspaceUI rotation angle
+			// change blendshapes according to workspace rotation angle
 			m_Frame.SetBlendShapeWeight(k_AngledFaceBlendShapeIndex, angledAmount * kLerpPadding);
 			m_Frame.SetBlendShapeWeight(kRevealCompensationBlendShapeIndex, midRevealCorrectiveShapeAmount);
 		}

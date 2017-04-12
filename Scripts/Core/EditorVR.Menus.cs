@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdateMenuVisibilityNearWorkspaces()
 			{
-				var workspaceModule = evr.GetModule<WorkspaceModule>();
+				var workspaces = evr.GetModule<WorkspaceModule>().workspaces;
 				Rays.ForEachProxyDevice(deviceData =>
 				{
 					m_UpdateVisibilityMenus.Clear();
@@ -99,7 +99,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 
 						var intersection = false;
-						var workspaces = workspaceModule.workspaces;
 						for (int j = 0; j < workspaces.Count; j++)
 						{
 							var workspace = workspaces[j];

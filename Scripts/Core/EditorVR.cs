@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
 
-		event Action m_SelectionChanged;
+		event Action selectionChanged;
 
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
 
@@ -269,8 +269,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void OnSelectionChanged()
 		{
-			if (m_SelectionChanged != null)
-				m_SelectionChanged();
+			if (selectionChanged != null)
+				selectionChanged();
 
 			Menus.UpdateAlternateMenuOnSelectionChanged(GetNestedModule<Rays>().lastSelectionRayOrigin);
 		}
@@ -322,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
 		{
-			GetModule<WorkspaceModule>().ProcessInputInWorkspaces(consumeControl);
+			GetModule<WorkspaceModule>().ProcessInput(consumeControl);
 
 			GetNestedModule<MiniWorlds>().UpdateMiniWorlds();
 

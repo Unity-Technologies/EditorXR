@@ -134,7 +134,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var highlightModule = evr.GetModule<HighlightModule>();
 						var workspaceModule = evr.GetModule<WorkspaceModule>();
 						var intersectionModule = evr.GetModule<IntersectionModule>();
-						var miniWorlds = evr.GetNestedModule<MiniWorlds>();
 						var ui = evr.GetNestedModule<UI>();
 
 						foreach (var rayOriginPair in proxy.rayOrigins)
@@ -162,8 +161,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOriginPair.Value);
-											}
-										}
+								}
+							}
 
 							var rayOrigin = rayOriginPair.Value;
 							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;

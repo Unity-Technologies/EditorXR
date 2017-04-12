@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	public interface IGetPointerLength
+	interface IGetPointerLength
 	{
 	}
 

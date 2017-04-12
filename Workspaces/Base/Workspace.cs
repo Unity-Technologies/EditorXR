@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
 	{
-		const float k_MaxFrameSize = 100f;
+		const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 
 		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
 		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
