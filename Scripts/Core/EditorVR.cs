@@ -165,6 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var selectionModule = AddModule<SelectionModule>();
 			selectionModule.selected += m_Rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 			selectionModule.getGroupRoot = GetGroupRoot;
+			selectionModule.canHoverButNotSelect = CanHoverButNotSelect;
 
 			var spatialHashModule = AddModule<SpatialHashModule>();
 			spatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
@@ -453,6 +454,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
 
 			return groupRoot;
+		}
+
+		static bool CanHoverButNotSelect(GameObject hoveredObject)
+		{
+			return hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag);
 		}
 
 		static EditorVR s_Instance;

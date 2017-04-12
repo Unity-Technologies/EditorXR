@@ -302,7 +302,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							}
 						}
 
-						m_GrabData[selectedNode] = new GrabData(directRayOrigin, directSelectInput, Selection.transforms, this);
+						var grabbedObjects = new HashSet<Transform> { directHoveredObject.transform };
+						grabbedObjects.UnionWith(Selection.transforms);
+						m_GrabData[selectedNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray(), this);
 
 						this.HideDefaultRay(directRayOrigin, true); // This will also unhighlight the object
 						this.LockRay(directRayOrigin, this);
