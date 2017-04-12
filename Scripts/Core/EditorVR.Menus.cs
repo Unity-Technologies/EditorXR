@@ -246,6 +246,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal static void OnUIHoverStarted(GameObject go, RayEventData rayEventData)
 			{
+				if (go.GetComponentInParent<IManipulator>() != null || go == evr.gameObject)
+					return;
+
 				var rayOrigin = rayEventData.rayOrigin;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
