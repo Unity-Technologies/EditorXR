@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -23,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public void DisconnectInterface(object obj)
 			{
 			}
-
+/* TODO remove after removal of main menu activator codebase
 			internal MainMenuActivator SpawnMainMenuActivator(InputDevice device)
 			{
 				var mainMenuActivator = ObjectUtils.Instantiate(evr.m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
@@ -31,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				return mainMenuActivator;
 			}
-
+*/
 			internal PinnedToolButton SpawnPinnedToolButton(InputDevice device)
 			{
 				var button = ObjectUtils.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
@@ -40,32 +41,40 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return button;
 			}
 
-			internal void AddPinnedToolButton(DeviceData deviceData, Type toolType)
+			internal PinnedToolButton AddPinnedToolButton(DeviceData deviceData, Type toolType)
 			{
 				var pinnedToolButtons = deviceData.pinnedToolButtons;
 				if (pinnedToolButtons.ContainsKey(toolType)) // Return if tooltype already occupies a pinned tool button
-					return;
+					return null;
 
 				// Before adding new button, offset each button to a position greater than the zeroth/active tool position
 				foreach (var pair in pinnedToolButtons)
 				{
-					pair.Value.order++;
+					if (pair.Value.order != PinnedToolButton.menuButtonOrderPosition) // don't move the main menu button
+						pair.Value.order++;
 				}
 
 				var button = SpawnPinnedToolButton(deviceData.inputDevice);
 				pinnedToolButtons.Add(toolType, button);
 				button.node = deviceData.node;
 				button.toolType = toolType; // Assign Tool Type before assigning order
-				button.order = 0; // Zeroth position is the active tool position
+				button.activeButtonCount = () => deviceData.pinnedToolButtons.Count; // Used to position buttons relative to count
+				button.order = PinnedToolButton.activeToolOrderPosition; // first position is the active tool position
 				button.DeletePinnedToolButton = DeletePinnedToolButton;
-				button.highlightPinnedToolButtons = HighlightPinnedToolButtons;
+				button.highlightAllToolButtons = HighlightAllToolButtons;
+				button.clicked = ToolButtonClicked;
+				//button.selected += OnMainMenuActivatorSelected;
+				button.hoverEnter += OnButtonHoverEnter;
+				button.hoverExit += OnButtonHoverExit;
+
+				return button;
 			}
 
 			internal void SetupPinnedToolButtonsForDevice(DeviceData deviceData, Transform rayOrigin, Type activeToolType)
 			{
 				Debug.LogError("<color=black>Setting up pinned tool button for type of : </color>" + activeToolType);
 				const int kMaxButtonCount = 6;
-				var order = 0;
+				var inactiveButtonInitialOrderPosition = PinnedToolButton.activeToolOrderPosition;
 				var buttons = deviceData.pinnedToolButtons;
 				var buttonCount = buttons.Count;
 
@@ -79,8 +88,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					var button = pair.Value;
 					button.rayOrigin = rayOrigin;
-					button.activeButtonCount = buttonCount; // Used to position buttons relative to count
-					button.order = button.toolType == activeToolType ? 0 : ++order;
+
+					if (button.toolType == typeof(IMainMenu))
+						button.order = PinnedToolButton.menuButtonOrderPosition;
+					else
+						button.order = button.toolType == activeToolType ? PinnedToolButton.activeToolOrderPosition : ++inactiveButtonInitialOrderPosition;
 
 					if (button.order == 0)
 						deviceData.proxy.HighlightDevice(deviceData.node, button.gradientPair); // Perform the higlight on the node with the button's gradient pair
@@ -152,7 +164,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return pinnedToolButton;
 			}
 
-			internal void HighlightPinnedToolButtons (Transform rayOrigin, bool enableHighlight)
+			internal void ToolButtonClicked(Transform rayOrigin, Type toolType)
+			{
+				if (toolType == typeof(IMainMenu))
+					OnMainMenuActivatorSelected(rayOrigin);
+				else
+					evr.m_Tools.SelectTool(rayOrigin, toolType);
+			}
+
+			internal void HighlightAllToolButtons (Transform rayOrigin, bool enableHighlight)
 			{
 				Rays.ForEachProxyDevice(deviceData =>
 				{
@@ -167,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			internal void OnButtonHoverStarted(Transform rayOrigin)
+			internal void OnButtonHoverEnter(Transform rayOrigin)
 			{
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
@@ -180,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void OnButtonHoverEnded(Transform rayOrigin)
+			internal void OnButtonHoverExit(Transform rayOrigin)
 			{
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
@@ -193,9 +213,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
+			internal void OnMainMenuActivatorSelected(Transform rayOrigin)
 			{
-				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+				Debug.LogError("OnMainMenuActivatorSelected called!");
+				var targetToolRayOrigin = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin != rayOrigin).rayOrigin;
+				var deviceData = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin == rayOrigin);
+				if (targetToolRayOrigin == null)
+					Debug.LogError("<color=red>????????????????????????????????????????????????????????????</color>");
+
+				foreach (var origin in deviceData.proxy.rayOrigins.Values)
+				{
+					targetToolRayOrigin = origin != rayOrigin ? origin : null; // Assign the opposite hand's rayOrigin
+				}
+
 				if (deviceData != null)
 				{
 					var mainMenu = deviceData.mainMenu;
@@ -208,7 +238,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						if (customMenu != null)
 							menuHideFlags[customMenu] &= ~Menus.MenuHideFlags.Hidden;
 
-						mainMenu.targetRayOrigin = targetRayOrigin;
+						mainMenu.targetRayOrigin = targetToolRayOrigin;
 					}
 				}
 			}
