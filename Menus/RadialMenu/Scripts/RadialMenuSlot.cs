@@ -451,7 +451,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kFasterMotionMultiplier = 2f;
 			var transitionAmount = Time.unscaledDeltaTime;
 			var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
-			var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
 			var currentFrameColor = m_FrameMaterial.color;
 			var transparentFrameColor = new Color (s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0f);
 			var targetFrameColor = m_CanvasGroup.interactable ? (makeSemiTransparent ? m_SemiTransparentFrameColor : s_FrameOpaqueColor) : transparentFrameColor;
