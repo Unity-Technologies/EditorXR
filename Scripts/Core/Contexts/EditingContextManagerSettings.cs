@@ -1,7 +1,5 @@
 ﻿#if UNITY_EDITOR
-using System;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {

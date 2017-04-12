@@ -189,7 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		internal static string[] GetEditingContextNames()
 		{
-			var availableContexts = EditingContextManager.GetEditingContextAssets();
+			var availableContexts = GetEditingContextAssets();
 			return availableContexts.Select(c => c.name).ToArray();
 		}
 
