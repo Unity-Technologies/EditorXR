@@ -126,34 +126,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var pinnedTools = evr.m_PinnedTools;
 					deviceData.pinnedToolButtons = new Dictionary<Type, PinnedToolButton>();
 					pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu)).order = PinnedToolButton.menuButtonOrderPosition; // Setup Main Menu button
-					pinnedTools.AddPinnedToolButton(deviceData, typeof(SelectionTool));
-					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu));
-					//mainMenuButton.order = PinnedToolButton.menuButtonOrderPosition;
-					//mainMenuButton.toolType = typeof(IMainMenu); // Selection tool is visible & persistent by default
-					//deviceData.pinnedToolButtons.Add(mainMenuButton.toolType, mainMenuButton);
-					//mainMenuButton.order = 0; // The main menu button permanently occupies position 0
-					//mainMenuButton.node = deviceData.node;
-					//mainMenuButton.highlightAllToolButtons = pinnedTools.HighlightAllToolButtons;
-					//mainMenuButton.clicked = pinnedTools.ToolButtonClicked;
-					//mainMenuButton.selected += pinnedTools.OnMainMenuActivatorSelected;
-					//mainMenuButton.hoverEnter += pinnedTools.OnButtonHoverEnter;
-					//mainMenuButton.hoverExit += pinnedTools.OnButtonHoverExit;
-					/*
-					var mainMenuActivator = pinnedTools.SpawnMainMenuActivator(inputDevice);
-					deviceData.mainMenuActivator = mainMenuActivator;
-					mainMenuActivator.selected += pinnedTools.OnMainMenuActivatorSelected;
-					mainMenuActivator.hoverEnter += pinnedTools.OnButtonHoverEnter;
-					mainMenuActivator.hoverExit += pinnedTools.OnButtonHoverExit;
-					*/
-
-					// Setup the Select tool button
-					///var selectionToolButton = pinnedTools.SpawnPinnedToolButton(inputDevice);
-					//selectionToolButton.toolType = typeof(SelectionTool); // Selection tool is visible & persistent by default
-					//deviceData.pinnedToolButtons.Add(selectionToolButton.toolType, selectionToolButton);
-					//selectionToolButton.order = 1; // The "active" tool occupies position 1
-					//selectionToolButton.node = deviceData.node;
-					//selectionToolButton.highlightAllToolButtons = pinnedTools.HighlightAllToolButtons;
-					//selectionToolButton.clicked = pinnedTools.ToolButtonClicked;
+					pinnedTools.AddPinnedToolButton(deviceData, typeof(SelectionTool)); // Setup SelectionTool button
+					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu)); // Initialize PinnedToolButtons
 				}
 
 				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
@@ -214,7 +188,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal bool SelectTool(Transform rayOrigin, Type toolType)
 			{
-				Debug.LogError("SelectionTool TYPE : <color=black>" + toolType.ToString() + "</color>");
+				//Debug.LogError("SelectionTool TYPE : <color=black>" + toolType.ToString() + "</color>");
 				//if (toolType == typeof(SelectionTool))
 					//Debug.LogError("<color=green>!!!!! SelectionTool detected</color>");
 
