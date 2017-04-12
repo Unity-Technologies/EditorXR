@@ -18,7 +18,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var toolActions = obj as IActions;
 					if (toolActions != null)
 					{
+						// Delay connecting actions to allow tool / module to initialize first
+						EditorApplication.delayCall += () =>
+						{
 						var actions = toolActions.actions;
+							if (actions != null)
+							{
 						foreach (var action in actions)
 						{
 							var actionMenuData = new ActionMenuData()
@@ -31,6 +36,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							menuActions.Add(actionMenuData);
 						}
 						Menus.UpdateAlternateMenuActions();
+					}
+						};
 					}
 
 					var alternateMenu = obj as IAlternateMenu;

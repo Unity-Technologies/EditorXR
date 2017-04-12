@@ -11,7 +11,6 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -40,6 +39,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		event Action m_SelectionChanged;
 
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
+
+		bool m_HasDeserialized;
 
 		static HideFlags defaultHideFlags
 		{
@@ -176,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();
-			sceneObjectModule.shouldPlaceObject = (obj, targetScale) =>
+			sceneObjectModule.tryPlaceObject = (obj, targetScale) =>
 			{
 				foreach (var miniWorld in miniWorlds.worlds)
 				{
@@ -188,10 +189,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
 					obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
 					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
-					return false;
+
+					spatialHashModule.AddObject(obj.gameObject);
+					return true;
 				}
 
-				return true;
+				return false;
 			};
 
 			viewer.AddPlayerModel();
@@ -222,7 +225,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				yield return null;
 			}
 
+			var viewer = GetNestedModule<Viewer>();
+			while (!viewer.hmdReady)
+				yield return null;
+
 			GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
+			m_HasDeserialized = true;
 		}
 
 		static void ClearDeveloperConsoleIfNecessary()
@@ -279,6 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void Shutdown()
 		{
+			if (m_HasDeserialized)
 			serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
 		}
 

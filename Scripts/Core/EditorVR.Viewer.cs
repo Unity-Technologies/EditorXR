@@ -20,21 +20,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			class Preferences
 			{
 				[SerializeField]
-				Vector3 m_CameraRigPosition;
+				Vector3 m_CameraPosition;
 				[SerializeField]
-				Quaternion m_CameraRigRotation;
+				Quaternion m_CameraRotation;
+				[SerializeField]
+				float m_CameraRigScale = 1;
 
-				public Vector3 cameraRigPosition { get { return m_CameraRigPosition; } set { m_CameraRigPosition = value; } }
-				public Quaternion cameraRigRotation { get { return m_CameraRigRotation; } set { m_CameraRigRotation = value; } }
+				public Vector3 cameraPosition { get { return m_CameraPosition; } set { m_CameraPosition = value; } }
+				public Quaternion cameraRotation { get { return m_CameraRotation; } set { m_CameraRotation = value; } }
+				public float cameraRigScale { get { return m_CameraRigScale; } set { m_CameraRigScale = value; } }
 			}
 
 			const float k_CameraRigTransitionTime = 0.75f;
 
 			PlayerBody m_PlayerBody;
 
+			readonly Preferences m_Preferences = new Preferences();
+
 			internal IPreviewCamera customPreviewCamera { get; private set; }
 
 			public bool preserveCameraRig { private get; set; }
+
+			public bool hmdReady { get; private set; }
 
 			public Viewer()
 			{
@@ -43,12 +50,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
 				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
 
+				VRView.hmdStatusChange += OnHMDStatusChange;
+
 				preserveCameraRig = true;
 			}
 
 			internal override void OnDestroy()
 			{
 				base.OnDestroy();
+
+				VRView.hmdStatusChange -= OnHMDStatusChange;
 
 				if (customPreviewCamera != null)
 					ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -74,13 +85,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!preserveCameraRig)
 					return null;
 
+				if (hmdReady)
+					SaveCameraState();
+
+				return m_Preferences;
+			}
+
+			void OnHMDStatusChange(bool ready)
+			{
+				hmdReady = ready;
+				if (!ready)
+					SaveCameraState();
+			}
+
+			void SaveCameraState()
+			{
+				var camera = CameraUtils.GetMainCamera();
 				var cameraRig = CameraUtils.GetCameraRig();
-
-				var preferences = new Preferences();
-				preferences.cameraRigPosition = cameraRig.position;
-				preferences.cameraRigRotation = cameraRig.rotation;
-
-				return preferences;
+				var cameraTransform = camera.transform;
+				var cameraRigScale = cameraRig.localScale.x;
+				m_Preferences.cameraRigScale = cameraRigScale;
+				m_Preferences.cameraPosition = cameraTransform.position;
+				m_Preferences.cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
 			}
 
 			public void OnDeserializePreferences(object obj)
@@ -90,9 +116,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var preferences = (Preferences)obj;
 
+				var camera = CameraUtils.GetMainCamera();
 				var cameraRig = CameraUtils.GetCameraRig();
-				cameraRig.position = preferences.cameraRigPosition;
-				cameraRig.rotation = preferences.cameraRigRotation;
+				var cameraTransform = camera.transform;
+				var cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
+				var inverseRotation = Quaternion.Inverse(cameraRotation);
+				cameraRig.position = Vector3.zero;
+				cameraRig.rotation = inverseRotation * preferences.cameraRotation;
+				cameraRig.localScale = Vector3.one * preferences.cameraRigScale;
+				cameraRig.position = preferences.cameraPosition - cameraTransform.position;
 			}
 
 			internal void InitializeCamera()

@@ -135,8 +135,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					// Transform into reference space
 					var originalRayOrigin = miniWorldRay.originalRayOrigin;
 					var referenceTransform = miniWorld.referenceTransform;
-					miniWorldRayOrigin.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(originalRayOrigin.position), miniWorld.referenceTransform.localScale);
-					miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * originalRayOrigin.rotation;
+					var miniWorldTransform = miniWorld.miniWorldTransform;
+					miniWorldRayOrigin.position = referenceTransform.TransformPoint(miniWorldTransform.InverseTransformPoint(originalRayOrigin.position));
+					miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorldTransform.rotation) * originalRayOrigin.rotation;
 					miniWorldRayOrigin.localScale = Vector3.Scale(inverseScale, referenceTransform.localScale);
 
 					// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
@@ -393,6 +394,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					};
 
 					intersectionModule.AddTester(tester);
+
+					evr.GetModule<HighlightModule>().AddRayOriginForNode(deviceData.node, miniWorldRayOrigin);
+
+					if (deviceData.proxy.active)
+					{
+						if (deviceData.node == Node.LeftHand)
+							miniWorldWorkspace.leftRayOrigin = deviceData.rayOrigin;
+
+						if (deviceData.node == Node.RightHand)
+							miniWorldWorkspace.rightRayOrigin = deviceData.rayOrigin;
+					}
 				}, false);
 			}
 

@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="force">Force the setting or unsetting of the highlight</param>
 		public static void SetHighlight(this ISetHighlight obj, GameObject go, bool active, Transform rayOrigin = null, Material material = null, bool force = false)
 		{
-			setHighlight(go, active, rayOrigin, material);
+			setHighlight(go, active, rayOrigin, material, force);
 		}
 	}
 }
