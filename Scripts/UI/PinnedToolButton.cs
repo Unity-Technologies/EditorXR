@@ -7,6 +7,7 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -37,8 +38,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ToolType = value;
 				if (m_ToolType != null)
 				{
-					transform.localScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
-					transform.localPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
 					if (isSelectionTool || isMainMenu)
 					{
 						//activeButtonCount = 1;
@@ -56,6 +55,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					activeTool = true;
 					m_GradientButton.visible = true;
+
+					var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
+					var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
+					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow(targetPosition, targetScale));
 				}
 				else
 				{
@@ -168,7 +171,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		PinnedToolActionButton m_RightPinnedToolActionButton;
 
 		[SerializeField]
-		Transform m_ContentContainer;
+		Transform m_IconContainer;
+
+		[SerializeField]
+		CanvasGroup m_IconContainerCanvasGroup;
 
 		[SerializeField]
 		Collider m_RootCollider;
@@ -194,6 +200,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Transform m_InsetMask;
 
+		[SerializeField]
+		Image m_ButtonIcon;
+
 		Coroutine m_PositionCoroutine;
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
@@ -212,6 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
 		Vector3 m_OriginalLocalPosition;
 		Vector3 m_OriginalLocalScale;
+		Material m_IconMaterial;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -239,7 +249,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public event Action<Transform> hoverExit;
 		public event Action<Transform> selected;
 
-		private bool activeTool
+		bool activeTool
 		{
 			get { return m_Order == activeToolOrderPosition; }
 			set
@@ -304,6 +314,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
 			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
 			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.5f);
+
+			m_IconMaterial = MaterialUtils.GetMaterialClone(m_ButtonIcon);
 		}
 
 		void Start()
@@ -364,6 +376,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//m_GradientButton.gameObject.SetActive(false);
 		}
 
+		void OnDestroy()
+		{
+			ObjectUtils.Destroy(m_InsetMaterial);
+			ObjectUtils.Destroy(m_IconMaterial);
+			ObjectUtils.Destroy(m_FrameMaterial);
+		}
+
 		// Create periodic table-style names for types
 		string GetTypeAbbreviation(Type type)
 		{
@@ -378,29 +397,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			return abbreviation.ToString();
-		}
-
-		IEnumerator AnimatePosition(Quaternion targetRotation)
-		{
-			var duration = 0f;
-			//var currentPosition = transform.localPosition;
-			//var targetPosition = activeTool ? activePosition : m_InactivePosition;
-			var currentRotation = transform.localRotation;
-			var positionWait = (order + 2) * 0.125f;
-			while (duration < 1)
-			{
-				duration += Time.unscaledDeltaTime * 4f * positionWait;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 3);
-				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
-				CorrectIconRotation();
-				//transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
-				yield return null;
-			}
-
-			//transform.localPosition = targetPosition;
-			transform.localRotation = targetRotation;
-			CorrectIconRotation();
-			m_PositionCoroutine = null;
 		}
 
 		bool IsSelectToolButton (PinnedToolActionButton.ButtonType buttonType)
@@ -474,7 +470,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				else // Handle action buttons assigned Close-Tool functionality
 				{
 					//if (!isSelectionTool)
-						this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateClose());
+						this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndClose());
 					//else
 						//Debug.LogError("<color=red>CANNOT DELETE THE SELECT TOOL!!!!!</color>");
 
@@ -521,15 +517,30 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.UpdateMaterialColors();
 		}
 
-		void CloseButton()
+		IEnumerator AnimateShow(Vector3 targetPosition, Vector3 targetScale)
 		{
-			// TODO add full close functionality
-			gameObject.SetActive(false);
+			m_RootCollider.enabled = false;
+			var duration = 0f;
+			while (duration < 1)
+			{
+				duration += Time.unscaledDeltaTime * 3f;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
+				m_IconContainerCanvasGroup.alpha = Mathf.Lerp(0f, 1f, durationShaped);
+				m_IconContainer.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, durationShaped * 2f);
+				transform.localPosition = Vector3.Lerp(Vector3.zero, targetPosition, durationShaped);
+				transform.localScale = Vector3.Lerp(Vector3.zero, targetScale, durationShaped);
+				yield return null;
+			}
 
-			// perform a graceful hiding of visuals, then destroy this button gameobject
+			m_IconContainerCanvasGroup.alpha = 1f;
+			m_IconContainer.localScale = Vector3.one;
+			transform.localPosition = targetPosition;
+			transform.localScale = targetScale;
+			m_RootCollider.enabled = true;
+			m_VisibilityCoroutine = null;
 		}
 
-		IEnumerator AnimateClose()
+		IEnumerator AnimateHideAndClose()
 		{
 			this.HideTooltip(this);
 			m_RootCollider.enabled = false;
@@ -549,17 +560,27 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			ObjectUtils.Destroy(gameObject, 0.1f);
 		}
 
-		void CorrectIconRotation()
+		IEnumerator AnimatePosition(Quaternion targetRotation)
 		{
-			const float kIconLookForwardOffset = 0.5f;
-			var iconLookDirection = m_ContentContainer.transform.position + transform.parent.forward * kIconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
-			m_ContentContainer.LookAt(iconLookDirection);
-			m_ContentContainer.localEulerAngles = new Vector3(0f, 0f, m_ContentContainer.localEulerAngles.z);
-			var angle = m_ContentContainer.localEulerAngles.z;
-			m_TooltipTarget.localEulerAngles = new Vector3(90f, 0f, angle);
+			var duration = 0f;
+			//var currentPosition = transform.localPosition;
+			//var targetPosition = activeTool ? activePosition : m_InactivePosition;
+			var currentRotation = transform.localRotation;
+			var positionWait = (order + 5) * 0.1f;
+			while (duration < 1)
+			{
+				duration += Time.unscaledDeltaTime * 4f * positionWait;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 3);
+				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
+				CorrectIconRotation();
+				//transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
+				yield return null;
+			}
 
-			var yaw = transform.localRotation.eulerAngles.y;
-			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
+			//transform.localPosition = targetPosition;
+			transform.localRotation = targetRotation;
+			CorrectIconRotation();
+			m_PositionCoroutine = null;
 		}
 
 		IEnumerator AnimateSemiTransparent(bool makeSemiTransparent)
@@ -577,27 +598,27 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var targetFrameColor = makeSemiTransparent ? s_SemiTransparentFrameColor : s_FrameOpaqueColor;
 			var currentInsetAlpha = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
 			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
-			//var currentIconColor = m_IconMaterial.GetColor(k_MaterialColorProperty);
-			//var targetIconColor = makeSemiTransparent ? s_SemiTransparentFrameColor : Color.white;
+			var currentIconColor = m_IconMaterial.GetColor(k_MaterialColorProperty);
+			var targetIconColor = makeSemiTransparent ? s_SemiTransparentFrameColor : Color.white;
 			var currentInsetScale = m_Inset.localScale;
 			var targetInsetScale = makeSemiTransparent ? new Vector3(1f, 0f, 1f) : Vector3.one;
 			var currentInsetMaskScale = m_InsetMask.localScale;
 			var targetInsetMaskScale = makeSemiTransparent ? Vector3.one * 1.45f : Vector3.one;
-			//var currentIconScale = m_IconContainer.localScale;
-			//var semiTransparentTargetIconScale = Vector3.one * 1.5f;
-			//var targetIconScale = makeSemiTransparent ? semiTransparentTargetIconScale : Vector3.one;
+			var currentIconScale = m_IconContainer.localScale;
+			var targetIconScale = makeSemiTransparent ? Vector3.one * 1.25f : Vector3.one;
+			var speedMultiplier = makeSemiTransparent ? 4f : 6f; // Slower transparent fade; faster opaque fade
 			while (transitionAmount < 1)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 4f;
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+				transitionAmount += Time.unscaledDeltaTime * speedMultiplier;
+				var shapedAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(transitionAmount), 3);
 				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, shapedAmount));
 				m_Inset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, shapedAmount);
-				m_InsetMask.localScale = Vector3.Lerp(currentInsetMaskScale, targetInsetMaskScale, Mathf.Pow(shapedAmount, 3) * 3f);
+				m_InsetMask.localScale = Vector3.Lerp(currentInsetMaskScale, targetInsetMaskScale, Mathf.Pow(shapedAmount, 3));
 				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, shapedAmount));
-				//m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
+				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, shapedAmount));
 				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
-				//m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
-				//CorrectIconRotation();
+				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedAmount);
+				CorrectIconRotation();
 				yield return null;
 			}
 
@@ -605,9 +626,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
 			m_Inset.localScale = targetInsetScale;
 			m_InsetMask.localScale = targetInsetMaskScale;
-			//m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
-			//m_Inset.localScale = targetInsetScale;
-			//m_IconContainer.localScale = targetIconScale;
+			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
+			m_IconContainer.localScale = targetIconScale;
 		}
 
 		IEnumerator AnimateMoveActivatorButton(bool moveToAlternatePosition = true)
@@ -637,6 +657,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			yield return null;
 			m_RootCollider.enabled = true;
+		}
+
+		void CorrectIconRotation()
+		{
+			const float kIconLookForwardOffset = 0.5f;
+			var iconLookDirection = m_IconContainer.transform.position + transform.parent.parent.forward * kIconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
+			m_IconContainer.LookAt(iconLookDirection);
+			m_IconContainer.localEulerAngles = new Vector3(0f, 0f, m_IconContainer.localEulerAngles.z);
+			var angle = m_IconContainer.localEulerAngles.z;
+			m_TooltipTarget.localEulerAngles = new Vector3(90f, 0f, angle);
+
+			var yaw = transform.localRotation.eulerAngles.y;
+			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
 		}
 	}
 }
