@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		Viewer m_Viewer;
 		MultipleRayInputModule m_MultipleRayInputModule;
 		Tools m_Tools;
-		ToolButtons m_ToolButtons;
+		PinnedToolButtons m_PinnedToolButtons;
 
 		bool m_HasDeserialized;
 
@@ -128,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Menus = GetNestedModule<Menus>();
 			m_UI = GetNestedModule<UI>();
 			m_Tools = GetNestedModule<Tools>();
-			m_ToolButtons = GetNestedModule<ToolButtons>();
+			m_PinnedToolButtons = GetNestedModule<PinnedToolButtons>();
 
 			AddModule<HierarchyModule>();
 			AddModule<ProjectFolderModule>();

@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class ToolButtons : Nested, IInterfaceConnector
+		class PinnedToolButtons : Nested, IInterfaceConnector
 		{
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{

@@ -122,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
 					alternateMenu.itemWasSelected += evrMenus.UpdateAlternateMenuOnSelectionChanged;
 
-					var pinnedTools = evr.m_ToolButtons;
+					var pinnedTools = evr.m_PinnedToolButtons;
 					deviceData.pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
 					var mainMenuButton = pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu)); // Setup Main Menu button
 					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu));
@@ -195,7 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var result = false;
 				var deviceInputModule = evr.m_DeviceInputModule;
-				var pinnedTools = evr.m_ToolButtons;
+				var pinnedTools = evr.m_PinnedToolButtons;
 				Rays.ForEachProxyDevice(deviceData =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
