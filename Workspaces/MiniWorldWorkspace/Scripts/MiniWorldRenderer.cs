@@ -105,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					}
 				}
 
-				m_MiniCamera.SetReplacementShader(m_ClipShader, null);
+				m_MiniCamera.SetReplacementShader(m_ClipShader, "RenderType");
 				m_MiniCamera.Render();
 
 				for (var i = 0; i < m_IgnoreList.Count; i++)
