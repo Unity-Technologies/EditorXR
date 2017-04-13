@@ -54,7 +54,7 @@ Shader "EditorVR/Custom/Custom Clip Planes"
 				if (dot(_Color, white) <= 0)
 					_Color = white;
 
-				fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
+				fixed4 c = tex2D(_MainTex, IN.uv_MainTex) *_Color;
 				o.Albedo = c.rgb;
 				// Metallic and smoothness come from slider variables
 				o.Metallic = _Metallic;
@@ -108,7 +108,7 @@ Shader "EditorVR/Custom/Custom Clip Planes"
 				if (dot(_Color, white) <= 0)
 					_Color = white;
 
-				fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
+				fixed4 c = tex2D(_MainTex, IN.uv_MainTex) *_Color;
 				o.Albedo = c.rgb;
 				// Metallic and smoothness come from slider variables
 				o.Metallic = _Metallic;
@@ -141,8 +141,8 @@ Shader "EditorVR/Custom/Custom Clip Planes"
 
 			CGPROGRAM
 				#include "Silhouette.cginc"
-				#pragma vertex MainVs
-				#pragma fragment NullPs
+				#pragma vertex MainVsClip
+				#pragma fragment NullPsClip
 			ENDCG
 		}
 
@@ -166,9 +166,9 @@ Shader "EditorVR/Custom/Custom Clip Planes"
 
 			CGPROGRAM
 				#include "Silhouette.cginc"
-				#pragma vertex MainVs
+				#pragma vertex MainVsClip
 				#pragma geometry ExtrudeGs
-				#pragma fragment MainPs
+				#pragma fragment MainPsClip
 			ENDCG
 		}
 
@@ -188,8 +188,8 @@ Shader "EditorVR/Custom/Custom Clip Planes"
 
 			CGPROGRAM
 				#include "Silhouette.cginc"
-				#pragma vertex MainVs
-				#pragma fragment NullPs
+				#pragma vertex MainVsClip
+				#pragma fragment NullPsClip
 			ENDCG
 		}
 	}

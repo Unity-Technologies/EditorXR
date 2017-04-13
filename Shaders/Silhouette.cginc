@@ -17,7 +17,6 @@ struct VS_INPUT
 	float3 vNormalOs : NORMAL;
 };
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 struct PS_INPUT
 {
 	float4 vPositionOs : TEXCOORD0;
@@ -28,6 +27,22 @@ struct PS_INPUT
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 PS_INPUT MainVs(VS_INPUT i)
+{
+	PS_INPUT o;
+	o.vPositionOs.xyzw = i.vPositionOs.xyzw;
+	o.vNormalOs.xyz = i.vNormalOs.xyz;
+#if UNITY_VERSION >= 540
+	o.vPositionPs = UnityObjectToClipPos(i.vPositionOs.xyzw);
+#else
+	o.vPositionPs = mul(UNITY_MATRIX_MVP, i.vPositionOs.xyzw);
+#endif
+	
+	o.clipPos = (float3)0;
+
+	return o;
+}
+
+PS_INPUT MainVsClip(VS_INPUT i)
 {
 	PS_INPUT o;
 	o.vPositionOs.xyzw = i.vPositionOs.xyzw;
@@ -105,6 +120,17 @@ void ExtrudeGs(triangle PS_INPUT inputTriangle[3], inout TriangleStream<PS_INPUT
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 fixed4 MainPs(PS_INPUT IN) : SV_Target
 {
+	return _Color;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+fixed4 NullPs(PS_INPUT IN) : SV_Target
+{
+	return float4(1.0, 0.0, 1.0, 1.0);
+}
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+fixed4 MainPsClip(PS_INPUT IN) : SV_Target
+{
 	float3 diff = abs(IN.clipPos - _GlobalClipCenter);
 	if (diff.x > _GlobalClipExtents.x || diff.y > _GlobalClipExtents.y || diff.z > _GlobalClipExtents.z)
 		discard;
@@ -113,7 +139,7 @@ fixed4 MainPs(PS_INPUT IN) : SV_Target
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
-fixed4 NullPs(PS_INPUT IN) : SV_Target
+fixed4 NullPsClip (PS_INPUT IN) : SV_Target
 {
 	float3 diff = abs(IN.clipPos - _GlobalClipCenter);
 	if (diff.x > _GlobalClipExtents.x || diff.y > _GlobalClipExtents.y || diff.z > _GlobalClipExtents.z)
