@@ -15,9 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	partial class EditorVR
 	{
 		[SerializeField]
-		MainMenuActivator m_MainMenuActivatorPrefab;
-
-		[SerializeField]
 		PinnedToolButton m_PinnedToolButtonPrefab;
 
 		class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>
@@ -177,11 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var alternateMenu = deviceData.alternateMenu;
 				alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
 
-				// Move the activator & pinned tool buttons to an alternate position if the alternate menu will be shown
-				var mainMenuActivator = deviceData.mainMenuActivator;
-				if (mainMenuActivator != null)
-					mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
-
+				// Move the pinned tool buttons to an alternate position if the alternate menu will be shown
 				var pinnedToolButtons = deviceData.pinnedToolButtons;
 				if (pinnedToolButtons != null && pinnedToolButtons.Count > 0)
 				{

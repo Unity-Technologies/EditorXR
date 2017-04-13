@@ -86,7 +86,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public Transform rayOrigin;
 			public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
 			public ActionMapInput uiInput;
-			public MainMenuActivator mainMenuActivator;
 			public ActionMapInput directSelectInput;
 			public IMainMenu mainMenu;
 			public ActionMapInput mainMenuInput;
