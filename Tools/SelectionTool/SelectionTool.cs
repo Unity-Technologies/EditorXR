@@ -9,8 +9,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject
+		ICanGrabObject, IMenuIcon
 	{
+		[SerializeField]
+		Sprite m_Icon;
+
 		GameObject m_PressedObject;
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
@@ -22,6 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
 
 		public Transform rayOrigin { private get; set; }
+		public Sprite icon { get { return m_Icon; } }
 
 		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
