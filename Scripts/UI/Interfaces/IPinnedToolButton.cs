@@ -20,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Type toolType { get; set; }
 		Type previewToolType { set; }
 		Vector3 toolButtonActivePosition { get; } // Shared active button offset from the alternate menu
+		Sprite icon { set; }
 		Node node { set; }
 		GradientPair gradientPair { get; }
 

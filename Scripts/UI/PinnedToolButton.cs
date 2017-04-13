@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (isSelectionTool || isMainMenu)
 					{
 						//activeButtonCount = 1;
-						order= isMainMenu ? menuButtonOrderPosition : activeToolOrderPosition;
+						order = isMainMenu ? menuButtonOrderPosition : activeToolOrderPosition;
 						tooltipText = isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText;
 						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
 					}
@@ -54,7 +54,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						gradientPair = UnityBrandColorScheme.GetRandomGradient();
 					}
 
-					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
 					activeTool = true;
 					m_GradientButton.visible = true;
 				}
@@ -189,6 +188,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Vector3 m_AlternateLocalPosition;
 
+		[SerializeField]
+		Transform m_Inset;
+
+		[SerializeField]
+		Transform m_InsetMask;
+
 		Coroutine m_PositionCoroutine;
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
@@ -224,7 +229,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public int activeButtonCount { get; set; }
 		public Transform menuOrigin { get; set; }
 		public Action<Transform, bool> highlightAllToolButtons { get; set; }
-		public Sprite icon { set { m_GradientButton.icon = value; } }
 		public Action<Transform, Transform> OpenMenu { get; set; }
 		public Action<Transform, Type> selectTool { get; set; }
 		public int menuButtonOrderPosition { get { return k_MenuButtonOrderPosition; } }
@@ -261,6 +265,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			//get { return m_Highlighted; }
+		}
+
+		public Sprite icon
+		{
+			set
+			{
+				if (value)
+					m_GradientButton.icon = value;
+				else
+					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType)); // Set backup tool abbreviation if no icon is set
+			}
 		}
 
 		public bool moveToAlternatePosition
@@ -371,9 +386,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//var currentPosition = transform.localPosition;
 			//var targetPosition = activeTool ? activePosition : m_InactivePosition;
 			var currentRotation = transform.localRotation;
+			var positionWait = (order + 2) * 0.125f;
 			while (duration < 1)
 			{
-				duration += Time.unscaledDeltaTime * 6;
+				duration += Time.unscaledDeltaTime * 4f * positionWait;
 				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 3);
 				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
 				CorrectIconRotation();
@@ -479,7 +495,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// Hide both action buttons if the user is no longer hovering over the button
 			if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
 			{
-				Debug.LogWarning("<color=green>!!!</color>");
+				//Debug.LogWarning("<color=green>!!!</color>");
 				//m_ButtonCollider.enabled = true;
 				m_LeftPinnedToolActionButton.visible = false;
 				m_RightPinnedToolActionButton.visible = false;
@@ -563,8 +579,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
 			//var currentIconColor = m_IconMaterial.GetColor(k_MaterialColorProperty);
 			//var targetIconColor = makeSemiTransparent ? s_SemiTransparentFrameColor : Color.white;
-			//var currentInsetScale = m_MenuInset.localScale;
-			//var targetInsetScale = makeSemiTransparent ? m_HighlightedInsetLocalScale * 4 : m_VisibleInsetLocalScale;
+			var currentInsetScale = m_Inset.localScale;
+			var targetInsetScale = makeSemiTransparent ? new Vector3(1f, 0f, 1f) : Vector3.one;
+			var currentInsetMaskScale = m_InsetMask.localScale;
+			var targetInsetMaskScale = makeSemiTransparent ? Vector3.one * 1.45f : Vector3.one;
 			//var currentIconScale = m_IconContainer.localScale;
 			//var semiTransparentTargetIconScale = Vector3.one * 1.5f;
 			//var targetIconScale = makeSemiTransparent ? semiTransparentTargetIconScale : Vector3.one;
@@ -573,7 +591,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				transitionAmount += Time.unscaledDeltaTime * 4f;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
 				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, shapedAmount));
-				//m_MenuInset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, transitionAmount * 2f);
+				m_Inset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, shapedAmount);
+				m_InsetMask.localScale = Vector3.Lerp(currentInsetMaskScale, targetInsetMaskScale, Mathf.Pow(shapedAmount, 3) * 3f);
 				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, shapedAmount));
 				//m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
 				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
@@ -584,8 +603,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
 			m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
+			m_Inset.localScale = targetInsetScale;
+			m_InsetMask.localScale = targetInsetMaskScale;
 			//m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
-			//m_MenuInset.localScale = targetInsetScale;
+			//m_Inset.localScale = targetInsetScale;
 			//m_IconContainer.localScale = targetIconScale;
 		}
 
@@ -596,8 +617,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
 			var currentLocalScale = transform.localScale;
 			var targetLocalScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
-			var speed = moveToAlternatePosition ? 5 : 5; // perform faster is returning to original position
-
+			var speed = moveToAlternatePosition ? 5f : 4.5f; // perform faster is returning to original position
+			speed += (order + 1) * 0.275f;
 			while (amount < 1f)
 			{
 				amount += Time.unscaledDeltaTime * speed;
