@@ -37,6 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ToolType = value;
 				if (m_ToolType != null)
 				{
+					transform.localScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
+					transform.localPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
 					if (isSelectionTool || isMainMenu)
 					{
 						//activeButtonCount = 1;
@@ -194,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		string m_TooltipText;
 		bool m_Highlighted;
-		bool _mMoveToAlternatePosition;
+		bool m_MoveToAlternatePosition;
 		int m_Order;
 		Type m_previewToolType;
 		Type m_ToolType;
@@ -261,17 +263,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public bool moveToAlternatePosition
 		{
-			get { return _mMoveToAlternatePosition; }
+			get { return m_MoveToAlternatePosition; }
 			set
 			{
-				if (_mMoveToAlternatePosition == value)
+				if (m_MoveToAlternatePosition == value)
 					return;
 
-				_mMoveToAlternatePosition = value;
+				m_MoveToAlternatePosition = value;
 
 				this.StopCoroutine(ref m_ActivatorMoveCoroutine);
 
-				m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(_mMoveToAlternatePosition));
+				m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(m_MoveToAlternatePosition));
 			}
 		}
 

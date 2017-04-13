@@ -428,7 +428,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			Debug.LogError("OnPointerEnter");
+			//Debug.LogError("OnPointerEnter");
 			highlighted = true;
 			eventData.Use();
 			hoverEnter();
@@ -439,7 +439,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		public void OnPointerExit(PointerEventData eventData)
 		{
-			Debug.LogError("OnPointerExit");
+			//Debug.LogError("OnPointerExit");
 			highlighted = false;
 			eventData.Use();
 			hoverExit();

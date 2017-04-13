@@ -57,6 +57,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var button = SpawnPinnedToolButton(deviceData.inputDevice);
 				pinnedToolButtons.Add(toolType, button);
+
+				// Initialize button in alternate position if the alternate menu is hidden
+				PinnedToolButton mainMenu = null;
+				if (toolType == typeof(IMainMenu))
+					mainMenu = button;
+				else
+					pinnedToolButtons.TryGetValue(typeof(IMainMenu), out mainMenu);
+
+				button.moveToAlternatePosition = mainMenu ? mainMenu.moveToAlternatePosition : false;
 				button.node = deviceData.node;
 				button.toolType = toolType; // Assign Tool Type before assigning order
 				//button.order = button.activeToolOrderPosition; // first position is the active tool position
