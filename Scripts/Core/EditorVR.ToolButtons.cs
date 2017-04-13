@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -33,15 +32,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return mainMenuActivator;
 			}
 */
-			internal PinnedToolButton SpawnPinnedToolButton(InputDevice device)
+			internal IPinnedToolButton SpawnPinnedToolButton(InputDevice device)
 			{
-				var button = ObjectUtils.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
+				var button = ObjectUtils.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<IPinnedToolButton>();
 				evr.m_Interfaces.ConnectInterfaces(button, device);
 
 				return button;
 			}
 
-			internal PinnedToolButton AddPinnedToolButton(DeviceData deviceData, Type toolType)
+			internal IPinnedToolButton AddPinnedToolButton(DeviceData deviceData, Type toolType)
 			{
 				Debug.LogError("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
 				var pinnedToolButtons = deviceData.pinnedToolButtons;
@@ -59,13 +58,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				pinnedToolButtons.Add(toolType, button);
 
 				// Initialize button in alternate position if the alternate menu is hidden
-				PinnedToolButton mainMenu = null;
+				IPinnedToolButton mainMenu = null;
 				if (toolType == typeof(IMainMenu))
 					mainMenu = button;
 				else
 					pinnedToolButtons.TryGetValue(typeof(IMainMenu), out mainMenu);
 
-				button.moveToAlternatePosition = mainMenu ? mainMenu.moveToAlternatePosition : false;
+				button.moveToAlternatePosition = mainMenu != null && mainMenu.moveToAlternatePosition;
 				button.node = deviceData.node;
 				button.toolType = toolType; // Assign Tool Type before assigning order
 				//button.order = button.activeToolOrderPosition; // first position is the active tool position
@@ -117,7 +116,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			void DeletePinnedToolButton(Transform rayOrigin, PinnedToolButton buttonToDelete)
+			void DeletePinnedToolButton(Transform rayOrigin, IPinnedToolButton buttonToDelete)
 			{
 				// Remove the pinned tool from the device data collection
 				// re-order the current buttons
@@ -154,13 +153,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			internal PinnedToolButton PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType)
+			internal IPinnedToolButton PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType)
 			{
 				// Prevents menu buttons of types other than ITool from triggering any pinned tool button preview actions
 				if (!toolType.GetInterfaces().Contains(typeof(ITool)))
 					return null;
 
-				PinnedToolButton pinnedToolButton = null;
+				IPinnedToolButton pinnedToolButton = null;
 				Rays.ForEachProxyDevice((deviceData) =>
 				{
 					if (deviceData.rayOrigin == rayOrigin) // enable pinned tool preview on the opposite (handed) device

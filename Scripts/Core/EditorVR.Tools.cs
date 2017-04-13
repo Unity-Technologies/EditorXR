@@ -123,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					alternateMenu.itemWasSelected += evrMenus.UpdateAlternateMenuOnSelectionChanged;
 
 					var pinnedTools = evr.m_ToolButtons;
-					deviceData.pinnedToolButtons = new Dictionary<Type, PinnedToolButton>();
+					deviceData.pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
 					var mainMenuButton = pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu)); // Setup Main Menu button
 					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu));
 					pinnedTools.AddPinnedToolButton(deviceData, typeof(SelectionTool)); // Setup SelectionTool button

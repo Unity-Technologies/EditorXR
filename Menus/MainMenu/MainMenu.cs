@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public List<ActionMenuData> menuActions { get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
-		public Func<Transform, Type, PinnedToolButton> previewToolInPinnedToolButton { private get; set; }
+		public Func<Transform, Type, IPinnedToolButton> previewToolInPinnedToolButton { private get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 

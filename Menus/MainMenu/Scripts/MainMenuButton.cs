@@ -19,12 +19,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
-		PinnedToolButton m_HighlightedPinnedToolbutton;
+		IPinnedToolButton m_HighlightedPinnedToolbutton;
 
 		/// <summary>
 		/// Highlights a pinned tool button when this menu button is highlighted
 		/// </summary>
-		public Func<Transform, Type, PinnedToolButton> previewToolInPinnedToolButton { private get; set; }
+		public Func<Transform, Type, IPinnedToolButton> previewToolInPinnedToolButton { private get; set; }
 
 		public Type toolType { get; set; }
 
@@ -75,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_HoveringRayOrigin = null;
 
 			// Disable preview-mode on pinned tool button
-			if (m_HighlightedPinnedToolbutton)
+			if (m_HighlightedPinnedToolbutton != null)
 				m_HighlightedPinnedToolbutton.previewToolType = null;
 		}
 	}

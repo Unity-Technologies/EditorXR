@@ -94,7 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public ActionMapInput alternateMenuInput;
 			public ITool currentTool;
 			public IMenu customMenu;
-			public Dictionary<Type, PinnedToolButton> pinnedToolButtons;
+			public Dictionary<Type, IPinnedToolButton> pinnedToolButtons;
 			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
 			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
 		}

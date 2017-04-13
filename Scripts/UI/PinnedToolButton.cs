@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IConnectInterfaces, IUsesMenuOrigins
+	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IConnectInterfaces
 	{
 		static Color s_FrameOpaqueColor;
 		static Color s_SemiTransparentFrameColor;
@@ -220,7 +220,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public GradientPair customToolTipHighlightColor { get; set; }
 		public bool isSelectionTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
 		public bool isMainMenu { get { return m_ToolType != null && m_ToolType == typeof(IMainMenu); } }
-		public Action<Transform, PinnedToolButton> deletePinnedToolButton { get; set; }
+		public Action<Transform, IPinnedToolButton> deletePinnedToolButton { get; set; }
 		public int activeButtonCount { get; set; }
 		public Transform menuOrigin { get; set; }
 		public Action<Transform, bool> highlightAllToolButtons { get; set; }

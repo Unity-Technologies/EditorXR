@@ -38,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Returns the unoccupied pinned tool button that will display the menu-button-tool preview while the button is highlighted
 		/// The returned PinnedToolButton has its preview mode disabled upon a ray exit of the menu button
 		/// </summary>
-		Func<Transform, Type, PinnedToolButton> previewToolInPinnedToolButton { set; }
+		Func<Transform, Type, IPinnedToolButton> previewToolInPinnedToolButton { set; }
 	}
 }
 #endif
