@@ -30,6 +30,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		ProxyExtras m_ProxyExtras;
 
+		[SerializeField]
+		Sprite m_UnityIcon;
+
 		Dictionary<Type, MonoBehaviour> m_Modules = new Dictionary<Type, MonoBehaviour>();
 
 		Interfaces m_Interfaces;

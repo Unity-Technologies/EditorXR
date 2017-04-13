@@ -19,6 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				public ITool tool;
 				public ActionMapInput input;
+				public Sprite icon;
 			}
 
 			internal List<Type> allTools { get; private set; }
@@ -87,13 +88,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						continue;
 
 					HashSet<InputDevice> devices;
-					var toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
-					AddToolToDeviceData(toolData, devices);
-					var selectionTool = (SelectionTool)toolData.tool;
+					var selectionToolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
+					AddToolToDeviceData(selectionToolData, devices);
+					var selectionTool = (SelectionTool)selectionToolData.tool;
 					selectionTool.hovered += lockModule.OnHovered;
 					selectionTool.isRayActive = isRayActive;
 
-					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
+					var toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);
 					var vacuumTool = (VacuumTool)toolData.tool;
 					vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
@@ -124,9 +125,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					var pinnedTools = evr.m_PinnedToolButtons;
 					deviceData.pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
-					var mainMenuButton = pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu)); // Setup Main Menu button
+					var mainMenuButton = pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu), evr.m_UnityIcon); // Setup Main Menu button
 					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu));
-					pinnedTools.AddPinnedToolButton(deviceData, typeof(SelectionTool)); // Setup SelectionTool button
+					pinnedTools.AddPinnedToolButton(deviceData, typeof(SelectionTool), selectionToolData.icon); // Setup SelectionTool button
 					// Initialize PinnedToolButtons; set SelectionTool as the active tool type
 					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(SelectionTool));
 				}
@@ -164,7 +165,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				evr.m_Interfaces.ConnectInterfaces(tool, device);
 
-				return new ToolData { tool = tool, input = actionMapInput };
+				var icon = tool as IMenuIcon;
+				return new ToolData { tool = tool, input = actionMapInput, icon = icon != null ? icon.icon : null};
 			}
 
 			void AddToolToDeviceData(ToolData toolData, HashSet<InputDevice> devices)
@@ -249,7 +251,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								if (!setSelectAsCurrentTool)
 								{
 									pinnedToolButtonAdded = true;
-									pinnedTools.AddPinnedToolButton(deviceData, toolType);
+									pinnedTools.AddPinnedToolButton(deviceData, toolType, newTool.icon);
 								}
 							}
 						}

@@ -40,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return button;
 			}
 
-			internal IPinnedToolButton AddPinnedToolButton(DeviceData deviceData, Type toolType)
+			internal IPinnedToolButton AddPinnedToolButton(DeviceData deviceData, Type toolType, Sprite buttonIcon)
 			{
 				Debug.LogError("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
 				var pinnedToolButtons = deviceData.pinnedToolButtons;
@@ -67,6 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				button.moveToAlternatePosition = mainMenu != null && mainMenu.moveToAlternatePosition;
 				button.node = deviceData.node;
 				button.toolType = toolType; // Assign Tool Type before assigning order
+				button.icon = buttonIcon;
 				//button.order = button.activeToolOrderPosition; // first position is the active tool position
 				button.deletePinnedToolButton = DeletePinnedToolButton;
 				button.highlightAllToolButtons = HighlightAllToolButtons;
