@@ -252,9 +252,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			set
 			{
-				//if (m_Highlighted == value || !gameObject.activeSelf)
-					//return;
+				if (m_Highlighted == value || !gameObject.activeSelf)
+					return;
 
+				m_Highlighted = value;
+				//Debug.LogError(Time.frameCount + " : <color=blue>Highlighting : </color>" + toolType);
 				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(!value));
 			}
 
@@ -281,6 +283,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			m_OriginalLocalPosition = transform.localPosition;
 			m_OriginalLocalScale = transform.localScale;
+
+			m_FrameMaterial = MaterialUtils.GetMaterialClone(m_FrameRenderer);
+			var frameMaterialColor = m_FrameMaterial.color;
+			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
+			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
+			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.5f);
 		}
 
 		void Start()
@@ -307,12 +315,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
 			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
 			this.ConnectInterfaces(m_SmoothMotion);
-
-			m_FrameMaterial = MaterialUtils.GetMaterialClone(m_FrameRenderer);
-			var frameMaterialColor = m_FrameMaterial.color;
-			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
-			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.5f);
-			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
 
 			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
 			//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
@@ -394,7 +396,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
 			//{
-				Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
+				//Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
 				//m_RootCollider.enabled = false;
 				m_GradientButton.highlighted = true;
 				//m_GradientButton.visible = false;
@@ -546,13 +548,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateSemiTransparent(bool makeSemiTransparent)
 		{
-			Debug.LogWarning("<color=blue>AnimateSemiTransparent : </color>" + makeSemiTransparent);
-			const float kFasterMotionMultiplier = 2f;
-			var transitionAmount = Time.unscaledDeltaTime;
-			var positionWait = (order + 1) * 0.25f; // pad the order index for a faster start to the transition
+			//if (!makeSemiTransparent)
+				//yield return new WaitForSeconds(1f); // Pause before making opaque
+
+			//Debug.LogWarning("<color=blue>AnimateSemiTransparent : </color>" + makeSemiTransparent);
+			//const float kFasterMotionMultiplier = 2f;
+			var transitionAmount = 0f;
+			//var positionWait = (order + 1) * 0.25f; // pad the order index for a faster start to the transition
 			//var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
+			//var transparentFrameColor = new Color (s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0f);
 			var currentFrameColor = m_FrameMaterial.color;
-			var transparentFrameColor = new Color (s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0f);
 			var targetFrameColor = makeSemiTransparent ? s_SemiTransparentFrameColor : s_FrameOpaqueColor;
 			var currentInsetAlpha = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
 			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
@@ -565,19 +570,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//var targetIconScale = makeSemiTransparent ? semiTransparentTargetIconScale : Vector3.one;
 			while (transitionAmount < 1)
 			{
-				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, transparentFrameColor, transitionAmount));
+				transitionAmount += Time.unscaledDeltaTime * 4f;
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, shapedAmount));
 				//m_MenuInset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, transitionAmount * 2f);
-				//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, transitionAmount));
+				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, shapedAmount));
 				//m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
 				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
 				//m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
-				transitionAmount += Time.unscaledDeltaTime * 4f;
-				CorrectIconRotation();
+				//CorrectIconRotation();
 				yield return null;
 			}
 
 			m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
-			//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
+			m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
 			//m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
 			//m_MenuInset.localScale = targetInsetScale;
 			//m_IconContainer.localScale = targetIconScale;
