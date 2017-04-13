@@ -7,18 +7,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	[MainMenuItem("Sphere", "Create", "Create spheres in the scene")]
 	//[MainMenuItem(false)]
-	sealed class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesSpatialHash
+	sealed class MakeSphereTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesSpatialHash, IMenuIcon
 	{
+		[SerializeField]
+		private ActionMap m_ActionMap;
+
+		[SerializeField]
+		Sprite m_Icon;
+
 		public Transform rayOrigin { get; set; }
+		public Sprite icon { get { return m_Icon; } }
 
 		public ActionMap actionMap
 		{
 			get { return m_ActionMap; }
 			set { m_ActionMap = value; }
 		}
-
-		[SerializeField]
-		private ActionMap m_ActionMap;
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
