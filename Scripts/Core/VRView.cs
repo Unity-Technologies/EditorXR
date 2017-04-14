@@ -5,11 +5,12 @@ using UnityEngine.Assertions;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using System.Reflection;
+using UnityEngine.Rendering;
 using UnityEngine.VR;
 #if ENABLE_STEAMVR_INPUT
 using Valve.VR;
 #endif
-using Object = UnityEngine.Object;
+using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -45,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		LayerMask? m_CullingMask;
 		private RenderTexture m_SceneTargetTexture;
 		private bool m_ShowDeviceView;
-		private bool m_SceneViewsEnabled;
+		EditorWindow[] m_EditorWindows;
 
 		private static VRView s_ActiveView;
 
@@ -171,6 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
 			m_Camera = cameraGO.GetComponent<Camera>();
+			m_Camera.allowHDR = false; // HACK: CameraStackRenderingState::CalculateStereoCameraTargetType won't resolve to eye textures if camera is HDR
 			m_Camera.useOcclusionCulling = false;
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
@@ -194,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			// Disable other views to increase rendering performance for EditorVR
 			SetOtherViewsEnabled(false);
 
-			VRSettings.StartRenderingToDevice();
+			VRSettings.enabled = true;
 			InputTracking.Recenter();
 			// HACK: Fix VRSettings.enabled or some other API to check for missing HMD
 			m_VRInitialized = false;
@@ -216,7 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
-			VRSettings.StopRenderingToDevice();
+			VRSettings.enabled = false;
 
 			EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
 			EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
@@ -246,7 +248,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (Quaternion.Angle(headRotation, m_LastHeadRotation) > 0.1f)
 			{
 				if (Time.realtimeSinceStartup <= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
-					SetSceneViewsEnabled(false);
+					SetSceneViewsAutoRepaint(false);
 
 				// Keep track of HMD activity by tracking head rotations
 				m_TimeSinceLastHMDChange = Time.realtimeSinceStartup;
@@ -275,7 +277,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				if (renderTexture.format != format || renderTexture.antiAliasing != msaa || !matchingSRGB)
 				{
-					Object.DestroyImmediate(renderTexture);
+					UnityObject.DestroyImmediate(renderTexture);
 					renderTexture = null;
 				}
 			}
@@ -316,20 +318,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var e = Event.current;
 			if (e.type != EventType.ExecuteCommand && e.type != EventType.used)
 			{
-				SceneViewUtilities.ResetOnGUIState();
-
 				var guiRect = new Rect(0, 0, position.width, position.height);
 				var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
 				PrepareCameraTargetTexture(cameraRect);
 
 				m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : UnityEditor.Tools.visibleLayers;
 
-				// Draw camera
-				bool pushedGUIClip;
-				DoDrawCamera(guiRect, out pushedGUIClip);
+				DoDrawCamera(guiRect);
 
 				if (m_ShowDeviceView)
-					SceneViewUtilities.DrawTexture(customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_SceneTargetTexture, guiRect, pushedGUIClip);
+				{
+					if (e.type == EventType.Repaint)
+					{
+						GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+						var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_SceneTargetTexture;
+						GUI.BeginGroup(guiRect);
+						GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
+						GUI.EndGroup();
+						GL.sRGBWrite = false;
+					}
+				}
 
 				GUILayout.BeginArea(guiRect);
 				{
@@ -351,16 +359,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
-		private void DoDrawCamera(Rect cameraRect, out bool pushedGUIClip)
+		void DoDrawCamera(Rect rect)
 		{
-			pushedGUIClip = false;
 			if (!m_Camera.gameObject.activeInHierarchy)
 				return;
 
 			if (!m_VRInitialized)
 				return;
 
-			SceneViewUtilities.DrawCamera(m_Camera, cameraRect, position, m_RenderMode, out pushedGUIClip);
+			UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
+			if (Event.current.type == EventType.Repaint)
+			{
+				GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
+				RenderTexture.active = null; // Clean up after DrawCamera
+			}
 		}
 
 		private void OnPlaymodeStateChanged()
@@ -383,14 +395,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			// Force the window to repaint every tick, since we need live updating
 			// This also allows scripts with [ExecuteInEditMode] to run
-			SceneViewUtilities.SetSceneRepaintDirty();
+			EditorApplication.SetSceneRepaintDirty();
 
 			UpdateCamera();
 			UpdateHMDStatus();
 
-			// Re-enable the other scene views if there has been no activity from the HMD (allows editing in SceneView)
-			if (Time.realtimeSinceStartup >= m_TimeSinceLastHMDChange + k_HMDActivityTimeout)
-				SetSceneViewsEnabled(true);
+			SetSceneViewsAutoRepaint(false);
 		}
 
 		void UpdateHMDStatus()
@@ -419,27 +429,38 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return true;
 		}
 
-		private void SetGameViewsEnabled(bool enabled)
+		void SetGameViewsAutoRepaint(bool enabled)
 		{
-			Assembly asm = Assembly.GetAssembly(typeof(UnityEditor.EditorWindow));
-			Type type = asm.GetType("UnityEditor.GameView");
-			SceneViewUtilities.SetViewsEnabled(type, enabled);
+			var asm = Assembly.GetAssembly(typeof(UnityEditor.EditorWindow));
+			var type = asm.GetType("UnityEditor.GameView");
+			SetAutoRepaintOnSceneChanged(type, enabled);
 		}
 
-		private void SetSceneViewsEnabled(bool enabled)
+		void SetSceneViewsAutoRepaint(bool enabled)
 		{
-			// It's costly to call through to SetViewsEnabled, so only call when the value has changed
-			if (m_SceneViewsEnabled != enabled)
+			SetAutoRepaintOnSceneChanged(typeof(SceneView), enabled);
+		}
+
+		void SetOtherViewsEnabled(bool enabled)
+		{
+			SetGameViewsAutoRepaint(enabled);
+			SetSceneViewsAutoRepaint(enabled);
+		}
+
+		void SetAutoRepaintOnSceneChanged(Type viewType, bool enabled)
+		{
+			if (m_EditorWindows == null)
+				m_EditorWindows = Resources.FindObjectsOfTypeAll<EditorWindow>();
+
+			var windowCount = m_EditorWindows.Length;
+			var mouseOverWindow = EditorWindow.mouseOverWindow;
+			for (int i = 0; i < windowCount; i++)
 			{
-				SceneViewUtilities.SetViewsEnabled(typeof(SceneView), enabled);
-				m_SceneViewsEnabled = enabled;
+				var window = m_EditorWindows[i];
+				if (window.GetType() == viewType)
+					window.autoRepaintOnSceneChange = enabled || (window == mouseOverWindow);
 			}
-		}
 
-		private void SetOtherViewsEnabled(bool enabled)
-		{
-			SetGameViewsEnabled(enabled);
-			SetSceneViewsEnabled(enabled);
 		}
 	}
 }

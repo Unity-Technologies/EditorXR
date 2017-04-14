@@ -269,7 +269,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var values = Enum.GetValues(consoleFlagsType);
 				var clearOnPlayFlag = values.GetValue(Array.IndexOf(names, "ClearOnPlay"));
 
-				var hasFlagMethod = consoleWindowType.GetMethod("HasFlag", BindingFlags.NonPublic | BindingFlags.Instance);
+				var hasFlagMethod = consoleWindowType.GetMethod("HasFlag", BindingFlags.NonPublic | BindingFlags.Static);
 				var result = (bool)hasFlagMethod.Invoke(window, new[] { clearOnPlayFlag });
 
 				if (result)

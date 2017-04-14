@@ -240,7 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 				renderer.receiveShadows = false;
 				renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
-				renderer.motionVectors = false;
+				renderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
 			}
 
 			// Turn off lights
