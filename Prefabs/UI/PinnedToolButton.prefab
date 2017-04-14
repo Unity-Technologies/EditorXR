@@ -804,7 +804,7 @@ MonoBehaviour:
     b: {r: 0, g: 0, b: 0, a: 0}
   m_ButtonMeshRenderer: {fileID: 23000013623333764}
   m_IconContainer: {fileID: 4000010081970184}
-  m_ContentContainer: {fileID: 224000013167097666}
+  m_ContentContainer: {fileID: 4000010081970184}
   m_CanvasGroup: {fileID: 225000010875730614}
   m_Text: {fileID: 114000010635728284}
   m_Icon: {fileID: 114000011073612486}
@@ -1463,7 +1463,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013816124996}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.00021615531, y: 0.00021615547, z: 2.7019436}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []

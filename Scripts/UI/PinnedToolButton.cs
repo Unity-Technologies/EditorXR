@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
-		private const float k_alternateLocalScaleMultiplier = 0.85f; //0.64376f meets outer bounds of the radial menu
+		const float k_alternateLocalScaleMultiplier = 0.85f; //0.64376f meets outer bounds of the radial menu
 		const string k_MaterialColorProperty = "_Color";
 		const string k_MaterialAlphaProperty = "_Alpha";
 		const string k_SelectionToolTipText = "Selection Tool (cannot be closed)";
@@ -521,7 +521,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			m_RootCollider.enabled = false;
 			var duration = 0f;
-			while (duration < 1)
+			while (duration < 2)
 			{
 				duration += Time.unscaledDeltaTime * 3f;
 				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
@@ -569,7 +569,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var positionWait = (order + 5) * 0.1f;
 			while (duration < 1)
 			{
-				duration += Time.unscaledDeltaTime * 4f * positionWait;
+				duration += Time.unscaledDeltaTime * 5f * positionWait;
 				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 3);
 				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
 				CorrectIconRotation();
@@ -605,8 +605,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentInsetMaskScale = m_InsetMask.localScale;
 			var targetInsetMaskScale = makeSemiTransparent ? Vector3.one * 1.45f : Vector3.one;
 			var currentIconScale = m_IconContainer.localScale;
-			var targetIconScale = makeSemiTransparent ? Vector3.one * 1.25f : Vector3.one;
-			var speedMultiplier = makeSemiTransparent ? 4f : 6f; // Slower transparent fade; faster opaque fade
+			var targetIconScale = makeSemiTransparent ? Vector3.one * 1.375f : Vector3.one;
+			var speedMultiplier = makeSemiTransparent ? 4f : 6.5f; // Slower transparent fade; faster opaque fade
 			while (transitionAmount < 1)
 			{
 				transitionAmount += Time.unscaledDeltaTime * speedMultiplier;
