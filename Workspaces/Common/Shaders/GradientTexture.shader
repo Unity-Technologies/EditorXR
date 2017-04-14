@@ -1,4 +1,6 @@
-﻿Shader "EditorVR/UI/GradientTexture"
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "EditorVR/UI/GradientTexture"
 {
 	Properties
 	{
@@ -38,7 +40,7 @@
 			v2f vert(appdata_full v)
 			{
 				v2f output;
-				output.position = mul(UNITY_MATRIX_MVP, v.vertex);
+				output.position = UnityObjectToClipPos(v.vertex);
 				output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y);
 				output.uv = TRANSFORM_TEX(v.texcoord, _MainTex);
 				return output;

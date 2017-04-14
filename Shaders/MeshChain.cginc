@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 #ifndef MESH_CHAIN
 #define MESH_CHAIN
 
@@ -30,7 +32,7 @@
         #if LINE_WORLD_SPACE
             o.pos = mul(UNITY_MATRIX_VP, v.vertex);
         #elif UNITY_VERSION < 540 
-            o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+            o.pos = UnityObjectToClipPos(v.vertex);
         #else
             o.pos = UnityObjectToClipPos(v.vertex);
         #endif
@@ -43,7 +45,7 @@
         #if LINE_WORLD_SPACE
             half4 neighborPos = mul(UNITY_MATRIX_VP, v.texcoord1);
         #elif UNITY_VERSION < 540 
-            half4 neighborPos = mul(UNITY_MATRIX_MVP, v.texcoord1);
+            half4 neighborPos = UnityObjectToClipPos(v.texcoord1);
         #else
             half4 neighborPos = UnityObjectToClipPos(v.texcoord1);
         #endif

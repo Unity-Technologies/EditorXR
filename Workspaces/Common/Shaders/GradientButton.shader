@@ -1,4 +1,6 @@
-﻿Shader "EditorVR/UI/GradientButton"
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "EditorVR/UI/GradientButton"
 {
 	Properties
 	{
@@ -41,7 +43,7 @@
 			v2f vert(appdata_full v)
 			{
 				v2f output;
-				output.position = mul(UNITY_MATRIX_MVP, v.vertex);
+				output.position = UnityObjectToClipPos(v.vertex);
 				output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y);
 				return output;
 			}

@@ -1,4 +1,6 @@
-﻿Shader "EditorVR/UI/GradientButtonMaskClip"
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "EditorVR/UI/GradientButtonMaskClip"
 {
 	Properties
 	{
@@ -38,7 +40,7 @@
 			v2f vert(appdata_full v)
 			{
 				v2f output;
-				output.position = mul(UNITY_MATRIX_MVP, v.vertex);
+				output.position = UnityObjectToClipPos(v.vertex);
 				output.localPosition = mul(_ParentMatrix, mul(UNITY_MATRIX_M, v.vertex));
 				return output;
 			}

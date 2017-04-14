@@ -1,4 +1,6 @@
-﻿Shader "EditorVR/Workspaces/WorkspaceBackgroundVerticalFade"
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "EditorVR/Workspaces/WorkspaceBackgroundVerticalFade"
 {
 	Properties
 	{
@@ -62,7 +64,7 @@
 					v2f vert(appdata_t v)
 					{
 						v2f output;
-						output.position = mul(UNITY_MATRIX_MVP, v.position);
+						output.position = UnityObjectToClipPos(v.position);
 #if UNITY_UV_STARTS_AT_TOP
 						float sign = -1.0;
 						output.yPos = v.texcoord.y;
@@ -131,7 +133,7 @@
 				v2f vert(appdata_t v)
 				{
 					v2f output;
-					output.position = mul(UNITY_MATRIX_MVP, v.position);
+					output.position = UnityObjectToClipPos(v.position);
 	#if UNITY_UV_STARTS_AT_TOP
 					float sign = -1.0;
 					output.yPos = v.texcoord.y;
@@ -201,7 +203,7 @@
 				v2f vert(appdata_t v)
 				{
 					v2f output;
-					output.position = mul(UNITY_MATRIX_MVP, v.position);
+					output.position = UnityObjectToClipPos(v.position);
 	#if UNITY_UV_STARTS_AT_TOP
 					float sign = -1.0;
 	#else

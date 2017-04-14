@@ -1,4 +1,6 @@
-﻿Shader "EditorVR/TransparentBlurVerticalFade"
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "EditorVR/TransparentBlurVerticalFade"
 {
 	Properties{
 		_Color("Main Color", Color) = (1,1,1,1)
@@ -41,7 +43,7 @@
 
 				v2f vert(appdata_t v) {
 					v2f output;
-					output.position = mul(UNITY_MATRIX_MVP, v.position);
+					output.position = UnityObjectToClipPos(v.position);
 #if UNITY_UV_STARTS_AT_TOP
 					float scale = -1.0;
 					output.yPos = v.texcoord.y;
@@ -106,7 +108,7 @@
 
 				v2f vert(appdata_t v) {
 					v2f output;
-					output.position = mul(UNITY_MATRIX_MVP, v.position);
+					output.position = UnityObjectToClipPos(v.position);
 	#if UNITY_UV_STARTS_AT_TOP
 					float scale = -1.0;
 					output.yPos = v.texcoord.y;
@@ -175,7 +177,7 @@
 
 				v2f vert(appdata_t v) {
 					v2f output;
-					output.position = mul(UNITY_MATRIX_MVP, v.position);
+					output.position = UnityObjectToClipPos(v.position);
 	#if UNITY_UV_STARTS_AT_TOP
 					float scale = -1.0;
 	#else
