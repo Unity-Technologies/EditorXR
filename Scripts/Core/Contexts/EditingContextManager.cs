@@ -7,11 +7,15 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
 using System.IO;
+using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	class EditingContextManager : MonoBehaviour
 	{
+		[SerializeField]
+		UnityObject m_DefaultContext;
+
 		const string k_SettingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
 		const string k_UserSettingsPath = "Library/EditingContextManagerSettings.asset";
 
@@ -31,8 +35,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			get
 			{
-				var context = m_AvailableContexts.First();
-
+				var context = m_AvailableContexts.Find(c => c.Equals(m_DefaultContext)) ?? m_AvailableContexts.First();
+				
 				var defaultContextName = m_Settings.defaultContextName;
 				if (!string.IsNullOrEmpty(defaultContextName))
 				{
@@ -228,6 +232,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				settings = LoadProjectSettings();
 
 			return settings;
+		}
+
+		internal static void ResetProjectSettings()
+		{
+			File.Delete(k_UserSettingsPath);
+
+			if (EditorUtility.DisplayDialog("Delete Project Settings?", "Would you like to remove the project-wide settings, too?", "Yes", "No"))
+				File.Delete(k_SettingsPath);
 		}
 
 		internal static void SaveProjectSettings(EditingContextManagerSettings settings)

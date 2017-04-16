@@ -37,6 +37,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					EditingContextManager.SaveProjectSettings(m_Settings);
 					Selection.activeObject = null;
 				}
+
+				if (GUILayout.Button("Reset"))
+				{
+					EditingContextManager.ResetProjectSettings();
+					Selection.activeGameObject = null;
+				}
 			}
 			GUILayout.EndHorizontal();
 		}
