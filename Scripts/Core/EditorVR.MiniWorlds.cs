@@ -324,12 +324,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									}
 
 									// Drop from TransformTool to take control of object
-									if (directSelection != null)
+									objectsGrabber.DropHeldObjects(miniWorldRayOrigin, out positionOffsets, out rotationOffsets);
+									foreach (var kvp in m_Rays)
 									{
-										objectsGrabber.DropHeldObjects(miniWorldRayOrigin, out positionOffsets, out rotationOffsets);
-										miniWorldRay.originalPositionOffsets = positionOffsets;
-										miniWorldRay.originalRotationOffsets = rotationOffsets;
-										miniWorldRay.wasHeld = true;
+										var otherRay = kvp.Value;
+										if (otherRay.originalRayOrigin == miniWorldRay.originalRayOrigin)
+										{
+											otherRay.originalPositionOffsets = positionOffsets;
+											otherRay.originalRotationOffsets = rotationOffsets;
+											otherRay.originalScales = originalScales;
+											otherRay.wasHeld = true;
+										}
 									}
 								}
 							}
