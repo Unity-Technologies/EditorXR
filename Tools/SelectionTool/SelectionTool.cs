@@ -90,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (directSelectionCandidate)
 						directHoveredObject = directSelectionCandidate;
 
-					if (!this.CanGrabObject(directHoveredObject, rayOrigin))
+					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
 					var directSelectInput = (DirectSelectInput)directSelectionData.input;
