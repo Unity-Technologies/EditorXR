@@ -80,6 +80,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 				}
+
+				var selectionModule = obj as SelectionModule;
+				if (selectionModule)
+				{
+					selectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+					selectionModule.getGroupRoot = GetGroupRoot;
+					selectionModule.overrideSelectObject = OverrideSelectObject;
+				}
 			}
 
 			public void DisconnectInterface(object obj)
@@ -102,9 +110,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void SetLastSelectionRayOrigin(Transform rayOrigin)
+			void SetLastSelectionRayOrigin(Transform rayOrigin)
 			{
 				lastSelectionRayOrigin = rayOrigin;
+			}
+
+			static GameObject GetGroupRoot(GameObject hoveredObject)
+			{
+				if (!hoveredObject)
+					return null;
+
+				var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
+
+				return groupRoot;
+			}
+
+			static bool OverrideSelectObject(GameObject hoveredObject)
+			{
+				// The player head can hovered, but not selected (only directly manipulated)
+				return hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag);
 			}
 
 			internal void CreateAllProxies()
