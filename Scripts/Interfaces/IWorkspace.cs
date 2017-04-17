@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Declares a class as a Workspace within the system
 	/// </summary>
-	public interface IWorkspace : IVacuumable
+	public interface IWorkspace : IVacuumable, ICustomActionMap
 	{
 		/// <summary>
 		/// First-time setup; will be called after Awake and ConnectInterfaces

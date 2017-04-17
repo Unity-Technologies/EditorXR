@@ -183,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			static bool Overlaps(Transform rayOrigin, Collider trigger)
 			{
-				var radius = evr.m_DirectSelection.GetPointerLength(rayOrigin);
+				var radius = DirectSelection.GetPointerLength(rayOrigin);
 
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)

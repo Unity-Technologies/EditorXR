@@ -13,12 +13,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
-			event IConnectInterfacesMethods.ConnectInterfacesDelegate m_ConnectInterfaces;
-			event Action<object> m_DisconnectInterfaces;
+			event IConnectInterfacesMethods.ConnectInterfacesDelegate connectInterfaces;
+			event IConnectInterfacesMethods.DisonnectInterfacesDelegate disconnectInterfaces;
 
 			public Interfaces()
 			{
 				IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
+				IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
 			}
 
 			internal void AttachInterfaceConnectors(object obj)
@@ -26,8 +27,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var connector = obj as IInterfaceConnector;
 				if (connector != null)
 				{
-					m_ConnectInterfaces += connector.ConnectInterface;
-					m_DisconnectInterfaces += connector.DisconnectInterface;
+					connectInterfaces += connector.ConnectInterface;
+					disconnectInterfaces += connector.DisconnectInterface;
 				}
 			}
 
@@ -46,16 +47,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!m_ConnectedInterfaces.Add(obj))
 					return;
 
-				if (m_ConnectInterfaces != null)
-					m_ConnectInterfaces(obj, rayOrigin);
+				if (connectInterfaces != null)
+					connectInterfaces(obj, rayOrigin);
 			}
 
 			internal void DisconnectInterfaces(object obj)
 			{
 				m_ConnectedInterfaces.Remove(obj);
 
-				if (m_DisconnectInterfaces != null)
-					m_DisconnectInterfaces(obj);
+				if (disconnectInterfaces != null)
+					disconnectInterfaces(obj);
 			}
 		}
 	}
