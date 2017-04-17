@@ -18,10 +18,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const int k_ThinFrameBlendShapeIndex = 3;
 		const string k_MaterialStencilRef = "_StencilRef";
 
-		const float k_ResizeIconCrossfadeDuration = 0.2f;
+		const float k_ResizeIconCrossfadeDuration = 0.1f;
 		const float k_ResizeIconSmoothFollow = 10f;
 
-		const float k_HandleZOffset = 0.1f;
+		const float k_FrontFrameZOffset = 0.088f;
 
 		static readonly Vector3 k_BaseFrontPanelRotation = Vector3.zero;
 		static readonly Vector3 k_MaxFrontPanelRotation = new Vector3(90f, 0f, 0f);
@@ -111,7 +111,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		WorkspaceHighlight m_FrontHighlight;
 
 		[SerializeField]
-		float m_FrameHandleSize = 0.01f;
+		float m_FrameHandleSize = 0.03f;
+
+		[SerializeField]
+		float m_FrontFrameHandleSize = 0.01f;
 
 		[SerializeField]
 		float m_FrameHeight = 0.09275f;
@@ -341,10 +344,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				size.y = m_FrameHeight + m_FrameHandleSize;
 				m_Bounds.size = size;
 
-				const float kWidthMultiplier = 0.9616f;
-				const float kDepthMultiplier = 0.99385f;
-				const float kWidthOffset = -0.165f;
-				const float kDepthOffset = -0.038f;
+				const float kWidthMultiplier = 0.96154f;
+				const float kDepthMultiplier = 0.99383f;
+				const float kWidthOffset = -0.156f;
+				const float kDepthOffset = -0.0318f;
+				const float kDepthCompensation = -0.008f;
 
 				var width = size.x;
 				var depth = size.z;
@@ -352,7 +356,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var faceDepth = depth - Workspace.FaceMargin;
 
 				m_Frame.SetBlendShapeWeight(0, width * kWidthMultiplier + kWidthOffset);
-				m_Frame.SetBlendShapeWeight(1, depth * kDepthMultiplier + kDepthOffset);
+				m_Frame.SetBlendShapeWeight(1, depth * kDepthMultiplier + kDepthOffset + kDepthCompensation * m_LerpAmount);
 
 				// Resize content container
 				m_UIContentContainer.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, faceWidth);
@@ -468,9 +472,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			yOffset = (1 - m_LerpAmount) * m_FrameHeight;
 			var angle = Mathf.Atan(m_FrontZOffset / yOffset) * Mathf.Rad2Deg;
 
-			m_FrontLeftHandle.localPosition = new Vector3(-halfWidth, -yOffset * 0.5f , -halfDepth - halfFrontZOffset);
+			m_FrontLeftHandle.localPosition = new Vector3(-halfWidth, -yOffset * 0.5f, -halfDepth - halfFrontZOffset);
 			m_FrontLeftHandle.localRotation = Quaternion.AngleAxis(angle, Vector3.right);
-			m_FrontLeftHandle.localScale = new Vector3(m_FrameHandleSize, m_FrameHeight, m_FrameHandleSize);
+			m_FrontLeftHandle.localScale = new Vector3(m_FrontFrameHandleSize, m_FrameHeight, m_FrontFrameHandleSize);
 			localPosition = m_FrontLeftHandle.localPosition;
 			localPosition.x = halfWidth;
 
@@ -478,12 +482,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_FrontRightHandle.localRotation = m_FrontLeftHandle.localRotation;
 			m_FrontRightHandle.localScale = m_FrontLeftHandle.localScale;
 
-			var halfFrameHandleSize = m_FrameHandleSize * 0.5f;
-			var zOffset = m_FrontZOffset - k_HandleZOffset * 0.5f;
+			var zOffset = m_FrontZOffset - (k_FrontFrameZOffset + m_FrontFrameHandleSize) * 0.5f;
 			var zScale = m_FrameHeight * m_LerpAmount;
-			var yPosition = -halfFrameHandleSize - m_FrameHeight + zScale * 0.5f;
-			m_FrontLeftCornerHandle.localPosition = new Vector3(-halfWidth, yPosition, -halfDepth - zOffset - halfFrameHandleSize);
-			m_FrontLeftCornerHandle.localScale = new Vector3(m_FrameHandleSize, k_HandleZOffset, zScale);
+			var yPosition = -m_FrontFrameHandleSize * 0.5f - m_FrameHeight + zScale * 0.5f;
+			m_FrontLeftCornerHandle.localPosition = new Vector3(-halfWidth, yPosition, -halfDepth - zOffset - m_FrontFrameHandleSize);
+			m_FrontLeftCornerHandle.localScale = new Vector3(m_FrontFrameHandleSize, k_FrontFrameZOffset, zScale);
 
 			m_FrontRightCornerHandle = m_FrontRightCornerHandle.transform;
 			localPosition = m_FrontLeftCornerHandle.localPosition;
@@ -591,7 +594,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_FrontPanel.localRotation = Quaternion.Euler(Vector3.Lerp(k_BaseFrontPanelRotation, k_MaxFrontPanelRotation, paddedLerp * kAdditionalFrontPanelLerpPadding));
 			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.forward * kFrontPanelZStartOffset, new Vector3(0, kFrontPanelYOffset, kFrontPanelZEndOffset), paddedLerp);
 
-			m_FrontZOffset = k_HandleZOffset * Mathf.Clamp01(paddedLerp * kAdditionalFrontPanelLerpPadding);
+			m_FrontZOffset = (k_FrontFrameZOffset + m_FrontFrameHandleSize) * Mathf.Clamp01(paddedLerp * kAdditionalFrontPanelLerpPadding);
 
 			AdjustHandlesAndIcons();
 
