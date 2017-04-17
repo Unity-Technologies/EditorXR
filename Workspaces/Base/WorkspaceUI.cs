@@ -301,7 +301,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
 		/// A value of zero will leave the mask in the center of the workspace
@@ -372,7 +371,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				// Position the separator mask if enabled
 				if (m_TopPanelDividerOffset != null)
 				{
-					m_TopPanelDividerTransform.localPosition = new Vector3(size.x * 0.5f * m_TopPanelDividerOffset.Value, 0f, 0f);
+					m_TopPanelDividerTransform.localPosition = new Vector3(faceWidth * (m_TopPanelDividerOffset.Value - 0.5f), 0f, 0f);
 					m_TopPanelDividerTransform.localScale = new Vector3(1f, 1f, faceDepth + Workspace.HighlightMargin);
 				}
 

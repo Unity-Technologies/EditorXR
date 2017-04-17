@@ -7,6 +7,7 @@ using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -86,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			base.Setup();
 
-			topPanelDividerOffset = -0.2875f; // enable & position the top-divider(mask) slightly to the left of workspace center
+			topPanelDividerOffset = k_LeftPaneRatio; // enable & position the top-divider(mask) slightly to the left of workspace center
 
 			var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 			m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
@@ -178,14 +179,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			const float kScrollHandleHeight = 0.001f;
 			const float kScrollHandleYPosition = -0.002f;
+			const float kDividerSize = 0.006f;
 
 			var size = contentBounds.size;
 
-			var contentSizeX = size.x;
-			var sizeX = size.x * k_LeftPaneRatio + HighlightMargin;
+			var contentSizeX = size.x - FaceMargin;
+
+			var sizeX = size.x * k_LeftPaneRatio - kDividerSize;
 			var sizeZ = size.z - FaceMargin + HighlightMargin;
 
-			var xOffset = (contentSizeX - sizeX - FaceMargin) * -0.5f - HighlightMargin * 0.5f;
+			var xOffset = (contentSizeX - sizeX) * -0.5f - HighlightMargin * 0.5f;
 
 			var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
 			folderScrollHandleTransform.localPosition = new Vector3(xOffset, kScrollHandleYPosition, 0);
@@ -195,8 +198,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			folderListView.size = new Vector3(sizeX - FaceMargin, k_YBounds, sizeZ - FaceMargin);
 			folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0); // Center in Y
 
-			sizeX = contentSizeX * (1 - k_LeftPaneRatio) - FaceMargin;
-			xOffset = (contentSizeX - sizeX - FaceMargin) * 0.5f;
+			sizeX = contentSizeX * (1 - k_LeftPaneRatio);
+			xOffset = (contentSizeX - sizeX) * 0.5f;
 			sizeX += HighlightMargin;
 
 			var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
