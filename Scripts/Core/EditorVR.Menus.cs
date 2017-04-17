@@ -32,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			readonly Dictionary<Type, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
 			List<Type> m_MainMenuTools;
-			WorkspaceModule m_WorkspaceModule;
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<IMenu> m_UpdateVisibilityMenus = new List<IMenu>();
@@ -72,7 +71,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void UpdateMenuVisibilityNearWorkspaces()
 			{
-				Rays.ForEachProxyDevice((deviceData) =>
+				var workspaces = evr.GetModule<WorkspaceModule>().workspaces;
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					m_UpdateVisibilityMenus.Clear();
 					m_UpdateVisibilityMenus.AddRange(deviceData.menuHideFlags.Keys);
@@ -98,11 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							menuSizes[menu] = currentMaxComponent;
 						}
 
-						if (m_WorkspaceModule == null)
-							m_WorkspaceModule = evr.GetModule<WorkspaceModule>();
-
 						var intersection = false;
-						var workspaces = m_WorkspaceModule.workspaces;
 						for (int j = 0; j < workspaces.Count; j++)
 						{
 							var workspace = workspaces[j];
@@ -172,7 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			void UpdateAlternateMenuForDevice(DeviceData deviceData)
+			static void UpdateAlternateMenuForDevice(DeviceData deviceData)
 			{
 				var alternateMenu = deviceData.alternateMenu;
 				alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
@@ -228,7 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				// Apply state to UI visibility
-				Rays.ForEachProxyDevice((deviceData) =>
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var mainMenu = deviceData.mainMenu;
 					mainMenu.visible = deviceData.menuHideFlags[mainMenu] == 0;
@@ -241,10 +237,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
 				});
 
-				evr.m_DeviceInputModule.UpdatePlayerHandleMaps();
+				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
 			}
 
-			internal void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
+			internal static void OnMainMenuActivatorHoverStarted(Transform rayOrigin)
 			{
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
@@ -257,7 +253,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void OnMainMenuActivatorHoverEnded(Transform rayOrigin)
+			internal static void OnMainMenuActivatorHoverEnded(Transform rayOrigin)
 			{
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
@@ -270,12 +266,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
+			internal static void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
 			{
 				SetAlternateMenuVisibility(rayOrigin, Selection.gameObjects.Length > 0);
 			}
 
-			internal void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
+			internal static void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
 			{
 				Rays.ForEachProxyDevice(deviceData =>
 				{
@@ -288,7 +284,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			internal void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
+			internal static void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
 			{
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
@@ -308,8 +304,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
+			static GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
 			{
+				var ui = evr.GetNestedModule<UI>();
 				GameObject go = null;
 				Rays.ForEachProxyDevice(deviceData =>
 				{
@@ -322,7 +319,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						{
 							if (deviceData.customMenu == null)
 							{
-								go = evr.m_UI.InstantiateUI(prefab.gameObject, menuOrigin, false);
+								go = ui.InstantiateUI(prefab.gameObject, menuOrigin, false);
 
 								var customMenu = go.GetComponent<IMenu>();
 								deviceData.customMenu = customMenu;
@@ -335,7 +332,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return go;
 			}
 
-			internal IMainMenu SpawnMainMenu(Type type, InputDevice device, bool visible, out ActionMapInput input)
+			internal static IMainMenu SpawnMainMenu(Type type, InputDevice device, bool visible, out ActionMapInput input)
 			{
 				input = null;
 
@@ -343,14 +340,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					return null;
 
 				var mainMenu = (IMainMenu)ObjectUtils.AddComponent(type, evr.gameObject);
-				input = evr.m_DeviceInputModule.CreateActionMapInputForObject(mainMenu, device);
+				input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(mainMenu, device);
 				evr.m_Interfaces.ConnectInterfaces(mainMenu, device);
 				mainMenu.visible = visible;
 
 				return mainMenu;
 			}
 
-			internal IAlternateMenu SpawnAlternateMenu(Type type, InputDevice device, out ActionMapInput input)
+			internal static IAlternateMenu SpawnAlternateMenu(Type type, InputDevice device, out ActionMapInput input)
 			{
 				input = null;
 
@@ -358,14 +355,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					return null;
 
 				var alternateMenu = (IAlternateMenu)ObjectUtils.AddComponent(type, evr.gameObject);
-				input = evr.m_DeviceInputModule.CreateActionMapInputForObject(alternateMenu, device);
+				input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(alternateMenu, device);
 				evr.m_Interfaces.ConnectInterfaces(alternateMenu, device);
 				alternateMenu.visible = false;
 
 				return alternateMenu;
 			}
 
-			internal MainMenuActivator SpawnMainMenuActivator(InputDevice device)
+			internal static MainMenuActivator SpawnMainMenuActivator(InputDevice device)
 			{
 				var mainMenuActivator = ObjectUtils.Instantiate(evr.m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
 				evr.m_Interfaces.ConnectInterfaces(mainMenuActivator, device);
@@ -373,7 +370,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return mainMenuActivator;
 			}
 
-			public PinnedToolButton SpawnPinnedToolButton(InputDevice device)
+			public static PinnedToolButton SpawnPinnedToolButton(InputDevice device)
 			{
 				var button = ObjectUtils.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
 				evr.m_Interfaces.ConnectInterfaces(button, device);
@@ -381,7 +378,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return button;
 			}
 
-			internal void UpdateAlternateMenuActions()
+			internal static void UpdateAlternateMenuActions()
 			{
 				var actionsModule = evr.GetModule<ActionsModule>();
 				foreach (var deviceData in evr.m_DeviceData)
@@ -394,5 +391,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		}
 	}
 }
-
 #endif
