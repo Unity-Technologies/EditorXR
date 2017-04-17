@@ -1,6 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -13,6 +14,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		[SerializeField]
 		DefaultProxyRay m_ProxyRayPrefab;
+
+		[SerializeField]
+		ProxyExtras m_ProxyExtras;
 
 		class Rays : Nested, IInterfaceConnector
 		{
@@ -42,6 +46,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
 				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
+			}
+
+			internal override void OnDestroy()
+			{
+				foreach (var proxy in m_Proxies)
+					ObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
@@ -134,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
 				foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
 				{
-					var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig);
+					var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig, false);
 					proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
 					proxy.activeChanged += () => OnProxyActiveChanged(proxy);
 					proxy.hidden = true;
@@ -374,16 +384,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal static void ShowRay(Transform rayOrigin, bool rayOnly = false)
 			{
-				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-				if (dpr)
-					dpr.Show(rayOnly);
+				if (rayOrigin)
+				{
+					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					if (dpr)
+						dpr.Show(rayOnly);
+				}
 			}
 
 			internal static void HideRay(Transform rayOrigin, bool rayOnly = false)
 			{
-				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-				if (dpr)
-					dpr.Hide(rayOnly);
+				if (rayOrigin)
+				{
+					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					if (dpr)
+						dpr.Hide(rayOnly);
+				}
 			}
 
 			internal static bool LockRay(Transform rayOrigin, object obj)

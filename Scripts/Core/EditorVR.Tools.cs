@@ -62,13 +62,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return m_LinkedObjects[type].IndexOf(linkedObject) == 0;
 			}
 
-			internal static bool IsPermanentTool(Type type)
+			internal static bool IsDefaultTool(Type type)
 			{
-				return typeof(ITransformer).IsAssignableFrom(type)
-					|| typeof(SelectionTool).IsAssignableFrom(type)
-					|| typeof(ILocomotor).IsAssignableFrom(type)
-					|| typeof(VacuumTool).IsAssignableFrom(type)
-					|| typeof(MoveWorkspacesTool).IsAssignableFrom(type);
+				return evr.m_DefaultTools.Contains(type);
 			}
 
 			internal static void SpawnDefaultTools(IProxy proxy)
@@ -76,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				Func<Transform, bool> isRayActive = Rays.IsRayActive;
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
 				var lockModule = evr.GetModule<LockModule>();
+				var defaultTools = evr.m_DefaultTools;
 				var directSelection = evr.GetNestedModule<DirectSelection>();
 
 				foreach (var deviceData in evr.m_DeviceData)
@@ -86,31 +83,34 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						continue;
 
 					HashSet<InputDevice> devices;
+					foreach (var toolType in defaultTools)
+					{
+						var toolData = SpawnTool(toolType, out devices, inputDevice);
+						AddToolToDeviceData(toolData, devices);
 
-					var toolData = SpawnTool(typeof(TransformTool), out devices, inputDevice);
-					AddToolToDeviceData(toolData, devices);
-					var transformTool = (TransformTool)toolData.tool;
-					if (transformTool.IsSharedUpdater(transformTool))
-						directSelection.objectsGrabber = transformTool;
+						var tool = toolData.tool;
+						var selectionTool = tool as SelectionTool;
+						if (selectionTool)
+						{
+							selectionTool.hovered += lockModule.OnHovered;
+							selectionTool.isRayActive = isRayActive;
+						}
 
-					toolData = SpawnTool(typeof(SelectionTool), out devices, inputDevice);
-					AddToolToDeviceData(toolData, devices);
-					var selectionTool = (SelectionTool)toolData.tool;
-					selectionTool.hovered += lockModule.OnHovered;
-					selectionTool.isRayActive = isRayActive;
+						var vacuumTool = tool as VacuumTool;
+						if (vacuumTool)
+						{
+							vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
+							vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
+							vacuumTool.vacuumables = vacuumables.vacuumables;
+						}
 
-					toolData = SpawnTool(typeof(VacuumTool), out devices, inputDevice);
-					AddToolToDeviceData(toolData, devices);
-					var vacuumTool = (VacuumTool)toolData.tool;
-					vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
-					vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
-					vacuumTool.vacuumables = vacuumables.vacuumables;
-
-					toolData = SpawnTool(typeof(MoveWorkspacesTool), out devices, inputDevice);
-					AddToolToDeviceData(toolData, devices);
-
-					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
-					AddToolToDeviceData(toolData, devices);
+						var transformTool = tool as TransformTool;
+						if (transformTool)
+						{
+							if (transformTool.IsSharedUpdater(transformTool))
+								directSelection.objectsGrabber = transformTool;
+						}
+					}
 
 					var mainMenu = Menus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
 					deviceData.mainMenu = mainMenu;
@@ -255,7 +255,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			static void DespawnTool(DeviceData deviceData, ITool tool)
 			{
-				if (!IsPermanentTool(tool.GetType()))
+				if (!IsDefaultTool(tool.GetType()))
 				{
 					// Remove the tool if it is the current tool on this device tool stack
 					if (deviceData.currentTool == tool)

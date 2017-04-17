@@ -4,12 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -24,17 +22,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		const string k_SerializedPreferences = "EditorVR.SerializedPreferences";
 		const string k_VRPlayerTag = "VRPlayer";
 
-		[SerializeField]
-		GameObject m_PlayerModelPrefab;
-
-		[SerializeField]
-		ProxyExtras m_ProxyExtras;
-
+		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
 		Dictionary<Type, MonoBehaviour> m_Modules = new Dictionary<Type, MonoBehaviour>();
 
 		Interfaces m_Interfaces;
-
-		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
+		Type[] m_DefaultTools;
 
 		event Action selectionChanged;
 
@@ -64,6 +56,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			get { return EditorPrefs.GetString(k_SerializedPreferences, string.Empty); }
 			set { EditorPrefs.SetString(k_SerializedPreferences, value); }
 		}
+
+		internal static Type[] defaultTools { get; set; }
 
 		class DeviceData
 		{
@@ -96,6 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		void Awake()
 		{
 			Nested.evr = this; // Set this once for the convenience of all nested classes 
+			m_DefaultTools = defaultTools;
 
 			ClearDeveloperConsoleIfNecessary();
 
@@ -161,6 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			var miniWorlds = GetNestedModule<MiniWorlds>();
 			var workspaceModule = AddModule<WorkspaceModule>();
+			workspaceModule.preserveWorkspaces = preserveLayout;
 			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
 			workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
 			workspaceModule.workspaceCreated += workspace =>
@@ -282,7 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			Selection.selectionChanged -= OnSelectionChanged;
 		}
 
-		void Shutdown()
+		internal void Shutdown()
 		{
 			if (m_HasDeserialized)
 				serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
@@ -424,7 +420,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							if (map.InterfaceMethods.Length == 1)
 							{
 								var tm = map.TargetMethods[0];
-								tm.Invoke(nestedModule, new [] { dependency });
+								tm.Invoke(nestedModule, new[] { dependency });
 							}
 						}
 					}
@@ -432,26 +428,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
-		static EditorVR s_Instance;
-		static InputManager s_InputManager;
-
-		[MenuItem("Window/EditorVR %e", false)]
-		public static void ShowEditorVR()
-		{
-			// Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
-			EditorWindow.GetWindow<VRView>(true, "EditorVR", true);
-		}
-
-		[MenuItem("Window/EditorVR %e", true)]
-		public static bool ShouldShowEditorVR()
-		{
-			return PlayerSettings.virtualRealitySupported;
-		}
-
 		static EditorVR()
 		{
-			VRView.onEnable += OnVRViewEnabled;
-			VRView.onDisable += OnVRViewDisabled;
+			ObjectUtils.hideFlags = defaultHideFlags;
 
 			if (!PlayerSettings.virtualRealitySupported)
 				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
@@ -473,56 +452,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				TagManager.AddLayer(layer);
 			}
-		}
-
-		static void OnVRViewEnabled()
-		{
-			ObjectUtils.hideFlags = defaultHideFlags;
-			InitializeInputManager();
-			s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
-		}
-
-		static void InitializeInputManager()
-		{
-			// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-			// in edit mode we need to handle lifecycle explicitly
-			var managers = Resources.FindObjectsOfTypeAll<InputManager>();
-			foreach (var m in managers)
-			{
-				ObjectUtils.Destroy(m.gameObject);
-			}
-
-			managers = Resources.FindObjectsOfTypeAll<InputManager>();
-			if (managers.Length == 0)
-			{
-				// Attempt creating object hierarchy via an implicit static constructor call by touching the class
-				InputSystem.ExecuteEvents();
-				managers = Resources.FindObjectsOfTypeAll<InputManager>();
-
-				if (managers.Length == 0)
-				{
-					typeof(InputSystem).TypeInitializer.Invoke(null, null);
-					managers = Resources.FindObjectsOfTypeAll<InputManager>();
-				}
-			}
-			Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
-
-			s_InputManager = managers[0];
-			s_InputManager.gameObject.hideFlags = defaultHideFlags;
-			ObjectUtils.SetRunInEditModeRecursively(s_InputManager.gameObject, true);
-
-			// These components were allocating memory every frame and aren't currently used in EditorVR
-			ObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
-			ObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
-			ObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
-			ObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
-		}
-
-		static void OnVRViewDisabled()
-		{
-			s_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
-			ObjectUtils.Destroy(s_Instance.gameObject);
-			ObjectUtils.Destroy(s_InputManager.gameObject);
 		}
 
 		[PreferenceItem("EditorVR")]
