@@ -312,53 +312,61 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 									// Drop from TransformTool to take control of object
 									objectsGrabber.DropHeldObjects(miniWorldRayOrigin, out positionOffsets, out rotationOffsets);
-									miniWorldRay.originalPositionOffsets = positionOffsets;
-									miniWorldRay.originalRotationOffsets = rotationOffsets;
-									miniWorldRay.wasHeld = true;
+									foreach (var kvp in m_Rays)
+									{
+										var otherRay = kvp.Value;
+										if (otherRay.originalRayOrigin == miniWorldRay.originalRayOrigin)
+										{
+											otherRay.originalPositionOffsets = positionOffsets;
+											otherRay.originalRotationOffsets = rotationOffsets;
+											otherRay.originalScales = originalScales;
+											otherRay.wasHeld = true;
+										}
+									}
+								}
+
+								for (var i = 0; i < dragObjects.Length; i++)
+								{
+									var dragObject = dragObjects[i];
+									var rotation = originalRayOrigin.rotation;
+									var position = originalRayOrigin.position
+										+ rotation * Vector3.Scale(previewScaleFactor, positionOffsets[i]);
+									MathUtilsExt.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
 								}
 							}
+						}
 
+						// Release the current object if the trigger is no longer held
+						if (directSelectInput.select.wasJustReleased)
+						{
+							var rayPosition = originalRayOrigin.position;
 							for (var i = 0; i < dragObjects.Length; i++)
 							{
 								var dragObject = dragObjects[i];
-								var rotation = originalRayOrigin.rotation;
-								var position = originalRayOrigin.position
-									+ rotation * Vector3.Scale(previewScaleFactor, positionOffsets[i]);
-								MathUtilsExt.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
-							}
-						}
-					}
 
-					// Release the current object if the trigger is no longer held
-					if (directSelectInput.select.wasJustReleased)
-					{
-						var rayPosition = originalRayOrigin.position;
-						for (var i = 0; i < dragObjects.Length; i++)
-						{
-							var dragObject = dragObjects[i];
-
-							// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
-							if (!isContained)
-							{
-								if (viewer.IsOverShoulder(originalRayOrigin))
+								// If the user has pulled an object out of the MiniWorld, use PlaceObject to grow it back to its original scale
+								if (!isContained)
 								{
-									sceneObjectModule.DeleteSceneObject(dragObject.gameObject);
-								}
-								else
-								{
-									dragObject.localScale = originalScales[i];
-									var rotation = originalRayOrigin.rotation;
-									dragObject.position = rayPosition + rotation * positionOffsets[i];
-									dragObject.rotation = rotation * rotationOffsets[i];
+									if (viewer.IsOverShoulder(originalRayOrigin))
+									{
+										sceneObjectModule.DeleteSceneObject(dragObject.gameObject);
+									}
+									else
+									{
+										dragObject.localScale = originalScales[i];
+										var rotation = originalRayOrigin.rotation;
+										dragObject.position = rayPosition + rotation * positionOffsets[i];
+										dragObject.rotation = rotation * rotationOffsets[i];
+									}
 								}
 							}
+
+							miniWorldRay.dragObjects = null;
+							miniWorldRay.wasHeld = false;
 						}
 
-						miniWorldRay.dragObjects = null;
-						miniWorldRay.wasHeld = false;
+						miniWorldRay.wasContained = isContained;
 					}
-
-					miniWorldRay.wasContained = isContained;
 				}
 			}
 

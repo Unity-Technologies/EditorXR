@@ -144,10 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var lockModule = AddModule<LockModule>();
 			lockModule.updateAlternateMenu = (rayOrigin, o) => Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
 
-			var rays = GetNestedModule<Rays>();
-			var selectionModule = AddModule<SelectionModule>();
-			selectionModule.selected += rays.SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
-			selectionModule.getGroupRoot = GetGroupRoot;
+			AddModule<SelectionModule>();
 
 			var spatialHashModule = AddModule<SpatialHashModule>();
 			spatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
@@ -199,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			viewer.AddPlayerModel();
 
-			rays.CreateAllProxies();
+			GetNestedModule<Rays>().CreateAllProxies();
 
 			// In case we have anything selected at start, set up manipulators, inspector, etc.
 			EditorApplication.delayCall += OnSelectionChanged;
@@ -433,16 +430,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				}
 			}
-		}
-
-		static GameObject GetGroupRoot(GameObject hoveredObject)
-		{
-			if (!hoveredObject)
-				return null;
-
-			var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
-
-			return groupRoot;
 		}
 
 		static EditorVR s_Instance;
