@@ -112,7 +112,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnDestroy()
 		{
-			ObjectUtils.Destroy(m_MainMenuUI.gameObject);
+			if (m_MainMenuUI)
+				ObjectUtils.Destroy(m_MainMenuUI.gameObject);
 		}
 
 		void CreateFaceButtons(List<Type> types)

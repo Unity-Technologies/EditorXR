@@ -322,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			var opacity = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);;
+			var opacity = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
 			var opacityShaped = Mathf.Pow(opacity, opacity);
 			while (opacity > 0)
 			{
