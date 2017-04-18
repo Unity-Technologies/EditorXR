@@ -22,17 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var standardAlt = (Standard)input;
-			if (standardAlt.action.wasJustPressed)
-			{
-				Transform sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
-				if (rayOrigin)
-					sphere.position = rayOrigin.position + rayOrigin.forward * 5f;
-
-				this.AddToSpatialHash(sphere.gameObject);
-
-				consumeControl(standardAlt.action);
-			}
 		}
 	}
 }
