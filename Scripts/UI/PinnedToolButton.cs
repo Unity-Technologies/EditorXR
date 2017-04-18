@@ -133,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				else
 				{
 					activeTool = activeTool;
-					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType));
+					icon = icon; // Gradient button will set its icon back to that representing the current tool, if one existed before previewing new tool type in this button
 					customToolTipHighlightColor = gradientPair;
 					this.HideTooltip(this);
 					tooltipText = (isSelectionTool || isMainMenu) ? (isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText) : toolType.Name;
@@ -222,6 +222,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_OriginalLocalPosition;
 		Vector3 m_OriginalLocalScale;
 		Material m_IconMaterial;
+		Sprite m_Icon;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -279,10 +280,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Sprite icon
 		{
+			get { return m_Icon; }
+
 			set
 			{
-				if (value)
-					m_GradientButton.icon = value;
+				m_Icon = value;
+
+				if (m_Icon)
+					m_GradientButton.SetContent(m_Icon);
 				else
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType)); // Set backup tool abbreviation if no icon is set
 			}

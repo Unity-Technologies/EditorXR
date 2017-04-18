@@ -520,7 +520,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void SetContent(string displayedText)
 		{
 			m_AlternateIconSprite = null;
-			m_IconSprite = null;
+			iconSprite = null;
 			m_Icon.enabled = false;
 			m_Text.text = displayedText.Substring(0, 2);
 		}
@@ -533,7 +533,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public void SetContent(Sprite icon, Sprite alternateIcon = null)
 		{
 			m_Icon.enabled = true;
-			m_IconSprite = icon;
+			iconSprite = icon;
 			m_AlternateIconSprite = alternateIcon;
 			m_Text.text = string.Empty;
 		}
