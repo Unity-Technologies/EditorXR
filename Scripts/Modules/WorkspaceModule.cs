@@ -120,19 +120,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			foreach (var workspaceLayout in preferences.workspaceLayouts)
 			{
 				var layout = workspaceLayout;
-				CreateWorkspace(Type.GetType(workspaceLayout.name), workspace =>
+				var workspaceType = Type.GetType(workspaceLayout.name);
+				if (workspaceType != null)
 				{
-					workspace.transform.localPosition = layout.localPosition;
-					workspace.transform.localRotation = layout.localRotation;
-					workspace.contentBounds = layout.contentBounds;
-
-					var serializeWorkspace = workspace as ISerializeWorkspace;
-					if (serializeWorkspace != null)
+					CreateWorkspace(workspaceType, workspace =>
 					{
-						var payload = JsonUtility.FromJson(layout.payload, Type.GetType(layout.payloadType));
-						serializeWorkspace.OnDeserializeWorkspace(payload);
-					}
-				});
+						workspace.transform.localPosition = layout.localPosition;
+						workspace.transform.localRotation = layout.localRotation;
+						workspace.contentBounds = layout.contentBounds;
+
+						var serializeWorkspace = workspace as ISerializeWorkspace;
+						if (serializeWorkspace != null)
+						{
+							var payload = JsonUtility.FromJson(layout.payload, Type.GetType(layout.payloadType));
+							serializeWorkspace.OnDeserializeWorkspace(payload);
+						}
+					});
+				}
 			}
 		}
 
