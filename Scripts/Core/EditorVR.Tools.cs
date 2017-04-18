@@ -13,6 +13,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
+		[SerializeField]
+		Sprite m_UnityIcon;
+
 		class Tools : Nested, IInterfaceConnector
 		{
 			internal class ToolData

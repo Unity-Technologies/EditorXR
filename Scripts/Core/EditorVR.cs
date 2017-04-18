@@ -22,9 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		const string k_SerializedPreferences = "EditorVR.SerializedPreferences";
 		const string k_VRPlayerTag = "VRPlayer";
 
-		[SerializeField]
-		Sprite m_UnityIcon; // TODO: Refactor, possibly move to proxy extras
-
 		Dictionary<Type, Nested> m_NestedModules = new Dictionary<Type, Nested>();
 		Dictionary<Type, MonoBehaviour> m_Modules = new Dictionary<Type, MonoBehaviour>();
 
