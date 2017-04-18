@@ -248,6 +248,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var startTime = Time.realtimeSinceStartup;
 			while (Time.realtimeSinceStartup - startTime < k_TransitionDuration)
 			{
+				if (!target)
+					break;
+
 				UpdateVisuals(tooltip, tooltipUI, target,
 					1 - (Time.realtimeSinceStartup - startTime) / k_TransitionDuration);
 				yield return null;

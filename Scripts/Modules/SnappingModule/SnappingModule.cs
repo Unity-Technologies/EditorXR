@@ -725,40 +725,40 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			handle.hoverEnded += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Snapping disabled" : "Snapping enabled"; };
 
 			var groundSnappingUI = m_SnappingModuleSettingsUI.groundSnappingEnabled;
-			groundSnappingUI.isOn = groundSnappingEnabled;
+			groundSnappingUI.isOn = m_Preferences.groundSnappingEnabled;
 			groundSnappingUI.onValueChanged.AddListener(b =>
 			{
-				groundSnappingEnabled = groundSnappingUI.isOn;
+				m_Preferences.groundSnappingEnabled = groundSnappingUI.isOn;
 				Reset();
 			});
 
 			var surfaceSnappingUI = m_SnappingModuleSettingsUI.surfaceSnappingEnabled;
-			surfaceSnappingUI.isOn = surfaceSnappingEnabled;
+			surfaceSnappingUI.isOn = m_Preferences.surfaceSnappingEnabled;
 			surfaceSnappingUI.onValueChanged.AddListener(b =>
 			{
-				surfaceSnappingEnabled = surfaceSnappingUI.isOn;
+				m_Preferences.surfaceSnappingEnabled = surfaceSnappingUI.isOn;
 				Reset();
 			});
 
 			var pivotSnappingUI = m_SnappingModuleSettingsUI.pivotSnappingEnabled;
-			m_SnappingModuleSettingsUI.SetToggleValue(pivotSnappingUI, pivotSnappingEnabled);
+			m_SnappingModuleSettingsUI.SetToggleValue(pivotSnappingUI, m_Preferences.pivotSnappingEnabled);
 			pivotSnappingUI.onValueChanged.AddListener(b => { m_Preferences.pivotSnappingEnabled = pivotSnappingUI.isOn; });
 
 			var snapRotationUI = m_SnappingModuleSettingsUI.rotationSnappingEnabled;
-			snapRotationUI.isOn = directSnappingEnabled;
-			snapRotationUI.onValueChanged.AddListener(b => { directSnappingEnabled = snapRotationUI.isOn; });
+			snapRotationUI.isOn = m_Preferences.rotationSnappingEnabled;
+			snapRotationUI.onValueChanged.AddListener(b => { m_Preferences.rotationSnappingEnabled = snapRotationUI.isOn; });
 
 			var localOnlyUI = m_SnappingModuleSettingsUI.localOnly;
-			localOnlyUI.isOn = localOnly;
-			localOnlyUI.onValueChanged.AddListener(b => { localOnly = localOnlyUI.isOn; });
+			localOnlyUI.isOn = m_Preferences.localOnly;
+			localOnlyUI.onValueChanged.AddListener(b => { m_Preferences.localOnly = localOnlyUI.isOn; });
 
 			var manipulatorSnappingUI = m_SnappingModuleSettingsUI.manipulatorSnappingEnabled;
-			manipulatorSnappingUI.isOn =  manipulatorSnappingEnabled;
-			manipulatorSnappingUI.onValueChanged.AddListener(b => { manipulatorSnappingEnabled = manipulatorSnappingUI.isOn; });
+			manipulatorSnappingUI.isOn =  m_Preferences.manipulatorSnappingEnabled;
+			manipulatorSnappingUI.onValueChanged.AddListener(b => { m_Preferences.manipulatorSnappingEnabled = manipulatorSnappingUI.isOn; });
 
 			var directSnappingUI = m_SnappingModuleSettingsUI.directSnappingEnabled;
-			directSnappingUI.isOn = directSnappingEnabled;
-			directSnappingUI.onValueChanged.AddListener(b => { directSnappingEnabled = directSnappingUI.isOn; });
+			directSnappingUI.isOn = m_Preferences.directSnappingEnabled;
+			directSnappingUI.onValueChanged.AddListener(b => { m_Preferences.directSnappingEnabled = directSnappingUI.isOn; });
 
 			SetDependentTogglesGhosted();
 

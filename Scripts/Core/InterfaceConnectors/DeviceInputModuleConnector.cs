@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				// Tracked Object action maps shouldn't block each other so we share an instance
 				var trackedObjectMap = obj as ITrackedObjectActionMap;
 				if (trackedObjectMap != null)
-					trackedObjectMap.trackedObjectInput = evr.m_DeviceInputModule.trackedObjectInput;
+					trackedObjectMap.trackedObjectInput = evr.GetModule<DeviceInputModule>().trackedObjectInput;
 			}
 
 			public void DisconnectInterface(object obj)

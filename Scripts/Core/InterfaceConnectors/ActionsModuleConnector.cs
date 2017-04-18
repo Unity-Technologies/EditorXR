@@ -18,8 +18,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var toolActions = obj as IActions;
 					if (toolActions != null)
 					{
-						var evrMenus = evr.m_Menus;
-
 						// Delay connecting actions to allow tool / module to initialize first
 						EditorApplication.delayCall += () =>
 						{
@@ -37,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									};
 									menuActions.Add(actionMenuData);
 								}
-								evrMenus.UpdateAlternateMenuActions();
+								Menus.UpdateAlternateMenuActions();
 							}
 						};
 					}
@@ -56,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var evrActionsModule = evr.GetModule<ActionsModule>();
 
 					evrActionsModule.RemoveActions(toolActions.actions);
-					evr.m_Menus.UpdateAlternateMenuActions();
+					Menus.UpdateAlternateMenuActions();
 				}
 			}
 		}
