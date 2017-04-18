@@ -1,6 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -10,26 +8,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	//[MainMenuItem(false)]
 	sealed class MakeCubeTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesSpatialHash, IMenuIcon
 	{
-		class CubeToolAction : IAction
-		{
-			public Sprite icon { get; internal set; }
-			public void ExecuteAction() {}
-		}
-
 		[SerializeField]
 		Sprite m_Icon;
 
-		readonly CubeToolAction m_CubeToolAction = new CubeToolAction();
-
-		public List<IAction> actions { get; private set; }
 		public Transform rayOrigin { get; set; }
 		public Sprite icon { get { return m_Icon; } }
-
-		void Awake()
-		{
-			m_CubeToolAction.icon = m_Icon;
-			actions = new List<IAction>() { m_CubeToolAction };
-		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
