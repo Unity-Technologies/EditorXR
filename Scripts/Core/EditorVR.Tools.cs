@@ -75,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var lockModule = evr.GetModule<LockModule>();
 				var defaultTools = evr.m_DefaultTools;
 				var directSelection = evr.GetNestedModule<DirectSelection>();
-				Debug.LogError("get selection tool icon selectionToolData.icon for pinned tool buttons now that selection tool is a DefaultTool");
+				Debug.LogWarning("get selection tool icon selectionToolData.icon for pinned tool buttons now that selection tool is a DefaultTool");
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -125,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
 					alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
 
-					var pinnedTools = evr.m_PinnedToolButtons;
+					var pinnedTools = evr.GetNestedModule<PinnedToolButtons>(); //evr.m_PinnedToolButtons;
 					deviceData.pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
 					var mainMenuButton = pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu), evr.m_UnityIcon); // Setup Main Menu button
 					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu));
@@ -147,7 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
 			static ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device = null)
 			{
-				Debug.LogError("SPAWN TOOL CALLED! : " + toolType);
+				Debug.LogWarning("SPAWN TOOL CALLED! : " + toolType);
 				usedDevices = new HashSet<InputDevice>();
 				if (!typeof(ITool).IsAssignableFrom(toolType))
 					return null;
@@ -199,7 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var result = false;
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
-				var pinnedTools = evr.m_PinnedToolButtons; // TODO: Convert to module fetch
+				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();// m_PinnedToolButtons; // TODO: Convert to module fetch
 				Debug.LogError("Convert pinnedTools to new GetModule method");
 				Rays.ForEachProxyDevice(deviceData =>
 				{
@@ -212,7 +212,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						// If this tool was on the current device already, then simply remove it
 						var isSelectOrMainMenu = (deviceData.currentTool.GetType() == toolType || setSelectAsCurrentTool) || toolType == typeof(IMainMenu);
-						var permanentTool = IsPermanentTool(toolType); // TODO initially set spawnTool to this permatool value
+						var defaultTool = IsDefaultTool(toolType); // TODO initially set spawnTool to this default/permatool value
 						if (deviceData.currentTool != null && isSelectOrMainMenu)
 						{
 							Debug.LogError("Despawing tool !!!! : <color=red>toolType == typeof(SelectionTool) : </color>" + (toolType == typeof(SelectionTool)).ToString());
@@ -222,7 +222,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							spawnTool = false;
 						}
 
-						if (spawnTool && !permanentTool)
+						if (spawnTool && !defaultTool)
 						{
 							Debug.LogError("<color=yellow>SPAWN TOOL : </color>" + toolType);
 							// Spawn tool and collect all devices that this tool will need

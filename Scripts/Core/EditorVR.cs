@@ -22,12 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		const string k_SerializedPreferences = "EditorVR.SerializedPreferences";
 		const string k_VRPlayerTag = "VRPlayer";
 
-		//[SerializeField] // TODO: REFACTOR AFTER MERGE
-		//GameObject m_PlayerModelPrefab; // TODO: REFACTOR AFTER MERGE
-
-		//[SerializeField] // TODO: REFACTOR AFTER MERGE
-		//ProxyExtras m_ProxyExtras; // TODO: REFACTOR AFTER MERGE
-
 		[SerializeField]
 		Sprite m_UnityIcon; // TODO: Refactor, possibly move to proxy extras
 
@@ -40,9 +34,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		event Action selectionChanged;
 
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
-
-		//Tools m_Tools; // TODO: REFACTOR AFTER MERGE
-		//PinnedToolButtons m_PinnedToolButtons; // TODO: REFACTOR AFTER MERGE
 
 		bool m_HasDeserialized;
 
@@ -114,9 +105,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				AddNestedModule(type);
 			}
 			LateBindNestedModules(nestedClassTypes);
-
-			//m_Tools = GetNestedModule<Tools>(); // TODO: REFACTOR AFTER MERGE
-			//m_PinnedToolButtons = GetNestedModule<PinnedToolButtons>(); // TODO: REFACTOR AFTER MERGE
 
 			AddModule<HierarchyModule>();
 			AddModule<ProjectFolderModule>();

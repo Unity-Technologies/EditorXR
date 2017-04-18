@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal IPinnedToolButton AddPinnedToolButton(DeviceData deviceData, Type toolType, Sprite buttonIcon)
 			{
-				Debug.LogError("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
+				Debug.LogWarning("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
 				var pinnedToolButtons = deviceData.pinnedToolButtons;
 				if (pinnedToolButtons.ContainsKey(toolType)) // Return if tooltype already occupies a pinned tool button
 					return null;
@@ -148,7 +148,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						Debug.LogError("Removing button : " + buttonToDelete.toolType + " - Setting new active button of type : " + selectedButtontype);
 						buttons.Remove(buttonToDelete.toolType);
-						evr.m_Tools.SelectTool(rayOrigin, selectedButtontype);
+						Tools.SelectTool(rayOrigin, selectedButtontype);
 						SetupPinnedToolButtonsForDevice(deviceData, rayOrigin, selectedButtontype);
 					}
 				});
@@ -187,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (toolType == typeof(IMainMenu))
 					OnMainMenuActivatorSelected(rayOrigin);
 				else
-					evr.m_Tools.SelectTool(rayOrigin, toolType);
+					Tools.SelectTool(rayOrigin, toolType);
 			}
 
 			internal void HighlightAllToolButtons (Transform rayOrigin, bool enableHighlight)

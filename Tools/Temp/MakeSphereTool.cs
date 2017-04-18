@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var standardAlt = (StandardAlt)input;
+			var standardAlt = (Standard)input;
 			if (standardAlt.action.wasJustPressed)
 			{
 				Transform sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
