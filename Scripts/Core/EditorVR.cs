@@ -222,8 +222,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			while (!viewer.hmdReady)
 				yield return null;
 
-			GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
-			m_HasDeserialized = true;
+			if (preserveLayout)
+			{
+				GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
+				m_HasDeserialized = true;
+			}
 		}
 
 		static void ClearDeveloperConsoleIfNecessary()
@@ -280,7 +283,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		internal void Shutdown()
 		{
-			if (m_HasDeserialized)
+			if (m_HasDeserialized && preserveLayout)
 				serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
 		}
 
