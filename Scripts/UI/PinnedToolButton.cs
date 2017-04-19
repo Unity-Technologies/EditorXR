@@ -350,8 +350,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//transform.localPosition = activePosition;
 			}
 
-			var tooltipSourcePosition = new Vector3(node == Node.LeftHand ? -0.01267f : 0.01267f, tooltipSource.localPosition.y, 0);
-			var tooltipXOffset = node == Node.LeftHand ? -0.05f : 0.05f;
+			var tooltipSourcePosition = new Vector3(node == Node.LeftHand ? -0.01267f : 0.01267f, tooltipSource.localPosition.y, tooltipSource.localPosition.z);
+			var tooltipXOffset = node == Node.LeftHand ? -0.15f : 0.15f;
 			tooltipSource.localPosition = tooltipSourcePosition;
 			tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
 			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
@@ -687,7 +687,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_TooltipTarget.localEulerAngles = new Vector3(90f, 0f, angle);
 
 			var yaw = transform.localRotation.eulerAngles.y;
-			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
+			//tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
 		}
 	}
 }
