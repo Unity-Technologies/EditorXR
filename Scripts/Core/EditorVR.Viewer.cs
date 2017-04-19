@@ -12,6 +12,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	partial class EditorVR
 	{
 		[SerializeField]
+		GameObject m_PlayerModelPrefab;
+
+		[SerializeField]
 		GameObject m_PreviewCameraPrefab;
 
 		class Viewer : Nested, IInterfaceConnector, ISerializePreferences
@@ -60,6 +63,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				base.OnDestroy();
 
 				VRView.hmdStatusChange -= OnHMDStatusChange;
+
+				var cameraRig = CameraUtils.GetCameraRig();
+				cameraRig.transform.parent = null;
+
+				ObjectUtils.Destroy(m_PlayerBody.gameObject);
 
 				if (customPreviewCamera != null)
 					ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -183,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			static bool Overlaps(Transform rayOrigin, Collider trigger)
 			{
-				var radius = evr.m_DirectSelection.GetPointerLength(rayOrigin);
+				var radius = DirectSelection.GetPointerLength(rayOrigin);
 
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)

@@ -59,9 +59,19 @@ namespace ListView
 		protected float m_ScrollDelta;
 		protected float m_LastScrollOffset;
 
+		protected Vector3 m_Size;
+		protected Vector3 m_Extents;
+
 		protected abstract float listHeight { get; }
 
-		public Bounds bounds { protected get; set; }
+		public Vector3 size
+		{
+			set
+			{
+				m_Size = value;
+				m_Extents = m_Size * 0.5f;
+			}
+		}
 
 		void Start()
 		{
@@ -88,7 +98,7 @@ namespace ListView
 
 			var itemSize = m_ItemSize.Value;
 
-			m_StartPosition = (bounds.extents.z - itemSize.z * 0.5f) * Vector3.forward;
+			m_StartPosition = (m_Extents.z - itemSize.z * 0.5f) * Vector3.forward;
 
 			if (m_Scrolling)
 			{
@@ -214,7 +224,7 @@ namespace ListView
 		protected void SetMaterialClip(Material material, Matrix4x4 parentMatrix)
 		{
 			material.SetMatrix("_ParentMatrix", parentMatrix);
-			material.SetVector("_ClipExtents", bounds.extents);
+			material.SetVector("_ClipExtents", m_Extents);
 		}
 
 		public void OnScroll(PointerEventData eventData)

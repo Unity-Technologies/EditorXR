@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace ListView
 {
-	class NestedListViewController<TData, TItem, TIndex> 
-		: ListViewController<TData, TItem, TIndex>
+	class NestedListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>
 		where TData : ListViewItemNestedData<TData, TIndex>
 		where TItem : ListViewItem<TData, TIndex>
 	{
@@ -91,7 +90,7 @@ namespace ListView
 
 				var itemSize = m_ItemSize.Value;
 
-				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
 					Recycle(index);
 				else
 					UpdateNestedItem(datum, offset, depth, ref doneSettling);
@@ -142,7 +141,7 @@ namespace ListView
 			var index = container.index;
 			if (index.Equals(targetIndex))
 			{
-				if (-scrollOffset > scrollHeight || -scrollOffset + bounds.size.z < scrollHeight)
+				if (-scrollOffset > scrollHeight || -scrollOffset + m_Size.z < scrollHeight)
 					scrollOffset = -scrollHeight;
 				return;
 			}

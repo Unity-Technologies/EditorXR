@@ -6,6 +6,7 @@
 		_GridSpacing("Grid Spacing", Float) = (1.0, 1.0, 1.0)
 		_GridCenter("Grid Center", Float) = (0.0, 0.0, 0.0)
 		_GridScale("Grid Scale", Float) = 1.0
+		_GridFade("Grid Fade", Float) = 1.0
 		_GridColour("Grid Colour", Color) = (0.5, 1.0, 1.0, 1.0)
 		_Subdivisions("Subdivisions", Float) = 8
 		_SubdivisionTransparency("Subdivision Transparency", Float) = 0.5
@@ -33,6 +34,7 @@
 				uniform float2 _GridSpacing;
 				uniform float4 _GridCenter;
 				uniform float _GridScale;
+				uniform float _GridFade;
 				uniform float4 _GridColour;
 				uniform float _Subdivisions;
 				uniform float _SubdivisionTransparency;
@@ -88,7 +90,7 @@
 					if (diff.x > _ClipExtents.x || diff.y > _ClipExtents.y || diff.z > _ClipExtents.z)
 						discard;
 
-					float	gridDepth = log2(_GridScale);
+					float	gridDepth = log2(_GridFade);
 					float	gridDepthFloor		= floor(gridDepth);
 					float	gridDepthFade		= 1 - (gridDepth - gridDepthFloor);
 					float2	stepSize			= _GridSpacing * pow(2, gridDepthFloor);

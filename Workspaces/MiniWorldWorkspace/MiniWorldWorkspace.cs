@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -15,13 +14,18 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
-	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ICustomActionMap, ISerializeWorkspace
+	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ISerializeWorkspace
 	{
 		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
+
+		static readonly Vector3 k_LocatePlayerOffset = new Vector3(0.075f, 0.035f, -0.05f);
+		static readonly float k_LocatePlayerArrowOffset = 0.05f;
+
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
+		// Scales larger or smaller than this spam errors in the console
 		const float k_MinScale = 0.01f;
-		const float k_MaxScale = Mathf.Infinity;
+		const float k_MaxScale = 1e12f;
 
 		// Scale slider min/max (maps to referenceTransform uniform scale)
 		const float k_ZoomSliderMin = 0.5f;
@@ -42,21 +46,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		GameObject m_ZoomSliderPrefab;
 
-		public ActionMap actionMap
-		{
-			get { return m_MiniWorldActionMap; }
-		}
-
-		[SerializeField]
-		ActionMap m_MiniWorldActionMap;
-
 		[Serializable]
 		class Preferences
 		{
 			[SerializeField]
 			public Vector3 m_MiniWorldRefeferenceScale;
+
 			[SerializeField]
 			public Vector3 m_MiniWorldReferencePosition;
+
 			[SerializeField]
 			public float m_ZoomSliderValue;
 
@@ -69,6 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		MiniWorld m_MiniWorld;
 		Material m_GridMaterial;
 		ZoomSliderUI m_ZoomSliderUI;
+		Transform m_LocatePlayerUI;
 		Transform m_PlayerDirectionButton;
 		Transform m_PlayerDirectionArrow;
 		readonly List<Transform> m_Rays = new List<Transform>(2);
@@ -86,9 +85,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			get { return m_MiniWorld; }
 		}
-
-		public Transform leftRayOrigin { get; set; }
-		public Transform rightRayOrigin { get; set; }
 
 		public float zoomSliderMax
 		{
@@ -115,18 +111,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 
 			var parent = m_WorkspaceUI.frontPanel.parent;
-			var locatePlayerUI = ObjectUtils.Instantiate(m_LocatePlayerPrefab, parent, false);
-			m_PlayerDirectionButton = locatePlayerUI.transform.GetChild(0);
-			foreach (var mb in locatePlayerUI.GetComponentsInChildren<MonoBehaviour>())
+			m_LocatePlayerUI = ObjectUtils.Instantiate(m_LocatePlayerPrefab, parent, false).transform;
+			m_PlayerDirectionButton = m_LocatePlayerUI.GetChild(0);
+			foreach (var mb in m_LocatePlayerUI.GetComponentsInChildren<MonoBehaviour>())
 			{
 				var button = mb as Button;
 				if (button)
 					button.onClick.AddListener(RecenterOnPlayer);
 			}
 
-			var arrow = ObjectUtils.Instantiate(m_PlayerDirectionArrowPrefab, parent, false);
-			arrow.transform.localPosition = new Vector3(-0.232f, 0.03149995f, 0f);
-			m_PlayerDirectionArrow = arrow.transform;
+			m_PlayerDirectionArrow = ObjectUtils.Instantiate(m_PlayerDirectionArrowPrefab, parent, false).transform;
 
 			// Set up MiniWorld
 			m_MiniWorld = GetComponentInChildren<MiniWorld>();
@@ -149,10 +143,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
 			if (zoomTooltip)
 				zoomTooltip.tooltipText = "Drag the Handle to Zoom the Mini World";
-
-			var frontHandle = m_WorkspaceUI.directManipulator.GetComponent<BaseHandle>();
-			frontHandle.dragStarted += DragStarted;
-			frontHandle.dragEnded += DragEnded;
 
 			// Propagate initial bounds
 			OnBoundsChanged();
@@ -210,7 +200,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var referenceScale = referenceTransform.localScale.x;
 			var gridScale = gridTransform.localScale.x;
 
-			m_GridMaterial.SetFloat("_GridScale", referenceScale);
+			m_GridMaterial.SetFloat("_GridFade", referenceScale);
+			m_GridMaterial.SetFloat("_GridScale", referenceScale * gridScale);
 			m_GridMaterial.SetVector("_GridCenter", -new Vector2(referenceTransform.position.x,
 				referenceTransform.position.z) / (gridScale * referenceScale));
 			inverseRotation = Quaternion.Inverse(m_MiniWorld.transform.rotation);
@@ -219,42 +210,50 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_GridMaterial.SetVector("_ClipCenter", inverseRotation * m_MiniWorld.transform.position);
 		}
 
-		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
+		public override void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var miniWorldInput = (MiniWorldInput)input;
+			base.ProcessInput(input, consumeControl);
+			var workspaceInput = (WorkspaceInput)input;
 
-			if (miniWorld.Contains(leftRayOrigin.position) && miniWorldInput.leftGrab.wasJustPressed)
+			var leftControl = workspaceInput.moveResizeLeft;
+			if (leftControl.wasJustPressed && miniWorld.Contains(leftRayOrigin.position))
 			{
 				OnPanZoomDragStarted(leftRayOrigin);
-				consumeControl(miniWorldInput.leftGrab);
+				consumeControl(leftControl);
 			}
 
-			if (miniWorld.Contains(rightRayOrigin.position) && miniWorldInput.rightGrab.wasJustPressed)
+			var rightControl = workspaceInput.moveResizeRight;
+			if (rightControl.wasJustPressed && miniWorld.Contains(rightRayOrigin.position))
 			{
 				OnPanZoomDragStarted(rightRayOrigin);
-				consumeControl(miniWorldInput.rightGrab);
+				consumeControl(rightControl);
 			}
 
-			if (miniWorldInput.leftGrab.isHeld || miniWorldInput.rightGrab.isHeld)
+			if (leftControl.isHeld || rightControl.isHeld)
 				OnPanZoomDragging();
 
-			if (miniWorldInput.leftGrab.wasJustReleased)
+			if (leftControl.wasJustReleased)
 				OnPanZoomDragEnded(leftRayOrigin);
 
-			if (miniWorldInput.rightGrab.wasJustReleased)
+			if (rightControl.wasJustReleased)
 				OnPanZoomDragEnded(rightRayOrigin);
 		}
 
 		protected override void OnBoundsChanged()
 		{
 			m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
-			const float kOffsetToAccountForFrameSize = -0.14f;
 
-			// NOTE: We are correcting bounds because the mesh needs to be updated
-			var correctedBounds = new Bounds(contentBounds.center, new Vector3(contentBounds.size.x, contentBounds.size.y, contentBounds.size.z + kOffsetToAccountForFrameSize));
-			m_MiniWorld.localBounds = correctedBounds;
-			m_MiniWorldUI.boundsCube.transform.localScale = correctedBounds.size;
-			m_MiniWorldUI.grid.transform.localScale = Vector3.one * new Vector2(correctedBounds.size.x, correctedBounds.size.z).magnitude;
+			var boundsWithMargin = contentBounds;
+			var size = contentBounds.size;
+			size.x -= FaceMargin;
+			size.z -= FaceMargin;
+			boundsWithMargin.size = size;
+			m_MiniWorld.localBounds = boundsWithMargin;
+			m_MiniWorldUI.boundsCube.transform.localScale = size;
+			m_MiniWorldUI.grid.transform.localScale = Vector3.one * new Vector2(size.x, size.z).magnitude;
+
+			m_LocatePlayerUI.localPosition = Vector3.left * boundsWithMargin.extents.x + k_LocatePlayerOffset;
+			m_PlayerDirectionArrow.localPosition = m_LocatePlayerUI.localPosition + Vector3.up * k_LocatePlayerArrowOffset;
 		}
 
 		void OnSliding(float value)

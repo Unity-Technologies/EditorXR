@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
-using ListView;
 using System;
 using System.Collections.Generic;
+using ListView;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -80,11 +80,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.ComputeConditions();
 
 			var itemSize = m_ItemSize.Value;
-			m_NumPerRow = (int)(bounds.size.x / itemSize.x);
+			m_NumPerRow = (int)(m_Size.x / itemSize.x);
 			if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
 				return;
 
-			m_StartPosition = bounds.extents.z * Vector3.forward + (bounds.extents.x - itemSize.x * 0.5f) * Vector3.left;
+			m_StartPosition = m_Extents.z * Vector3.forward + (m_Extents.x - itemSize.x * 0.5f) * Vector3.left;
 
 			// Snap back if list scrolled too far
 			m_ScrollReturn = float.MaxValue;
@@ -120,7 +120,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 
 				var offset = count / m_NumPerRow * itemSize.z;
-				if (offset + scrollOffset < 0 || offset + scrollOffset > bounds.size.z)
+				if (offset + scrollOffset < 0 || offset + scrollOffset > m_Size.z)
 					RecycleGridItem(data);
 				else
 				{
