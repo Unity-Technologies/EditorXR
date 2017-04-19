@@ -128,20 +128,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					// Show the grayscale highlight when previewing a tool on this button
 					//m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
-					tooltipText = "Assign " + m_previewToolType.Name;
-					customToolTipHighlightColor = UnityBrandColorScheme.grayscaleSessionGradient;
-					this.ShowTooltip(this);
+					//tooltipText = "Assign " + m_previewToolType.Name;
+					//customToolTipHighlightColor = UnityBrandColorScheme.grayscaleSessionGradient;
+					//this.ShowTooltip(this);
 				}
 				else
 				{
 					activeTool = activeTool; // Set active tool back to pre-preview state
 					icon = icon; // Gradient button will set its icon back to that representing the current tool, if one existed before previewing new tool type in this button
-					customToolTipHighlightColor = gradientPair;
-					this.HideTooltip(this);
-					tooltipText = (isSelectionTool || isMainMenu) ? (isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText) : toolType.Name;
+					//customToolTipHighlightColor = gradientPair;
+					//this.HideTooltip(this);
+					//tooltipText = (isSelectionTool || isMainMenu) ? (isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText) : toolType.Name;
 				}
 
 				m_GradientButton.highlighted = m_previewToolType != null;
+				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
 			}
 		}
 
