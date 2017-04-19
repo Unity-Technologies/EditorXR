@@ -24,6 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		const string k_SelectionToolTipText = "Selection Tool (cannot be closed)";
 		const string k_MainMenuTipText = "Main Menu (cannot be closed)";
 		readonly Vector3 k_ToolButtonActivePosition = new Vector3(0f, 0f, -0.035f);
+		readonly Vector3 k_SemiTransparentIconContainerScale = new Vector3(1.375f, 1.375f, 1f);
 
 		public Type toolType
 		{
@@ -55,6 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					activeTool = true;
 					m_GradientButton.visible = true;
+					m_IconMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
 
 					var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
 					var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
@@ -531,14 +533,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				duration += Time.unscaledDeltaTime * 3f;
 				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
 				m_IconContainerCanvasGroup.alpha = Mathf.Lerp(0f, 1f, durationShaped);
-				m_IconContainer.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, durationShaped * 2f);
+				m_IconContainer.localScale = Vector3.Lerp(Vector3.zero, k_SemiTransparentIconContainerScale, durationShaped * 2f);
 				transform.localPosition = Vector3.Lerp(Vector3.zero, targetPosition, durationShaped);
 				transform.localScale = Vector3.Lerp(Vector3.zero, targetScale, durationShaped);
 				yield return null;
 			}
 
 			m_IconContainerCanvasGroup.alpha = 1f;
-			m_IconContainer.localScale = Vector3.one;
+			m_IconContainer.localScale = k_SemiTransparentIconContainerScale;
 			transform.localPosition = targetPosition;
 			transform.localScale = targetScale;
 			m_RootCollider.enabled = true;
@@ -610,7 +612,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentInsetMaskScale = m_InsetMask.localScale;
 			var targetInsetMaskScale = makeSemiTransparent ? Vector3.one * 1.45f : Vector3.one;
 			var currentIconScale = m_IconContainer.localScale;
-			var targetIconScale = makeSemiTransparent ? Vector3.one * 1.375f : Vector3.one;
+			var targetIconContainerScale = makeSemiTransparent ? k_SemiTransparentIconContainerScale : Vector3.one;
 			var speedMultiplier = makeSemiTransparent ? 4f : 6.5f; // Slower transparent fade; faster opaque fade
 			while (transitionAmount < 1)
 			{
@@ -620,9 +622,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_Inset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, shapedAmount);
 				m_InsetMask.localScale = Vector3.Lerp(currentInsetMaskScale, targetInsetMaskScale, Mathf.Pow(shapedAmount, 3));
 				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, shapedAmount));
-				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, shapedAmount));
+				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, shapedAmount * 2));
 				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
-				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedAmount);
+				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
 				CorrectIconRotation();
 				yield return null;
 			}
@@ -632,7 +634,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_Inset.localScale = targetInsetScale;
 			m_InsetMask.localScale = targetInsetMaskScale;
 			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
-			m_IconContainer.localScale = targetIconScale;
+			m_IconContainer.localScale = targetIconContainerScale;
 		}
 
 		IEnumerator AnimateMoveActivatorButton(bool moveToAlternatePosition = true)
