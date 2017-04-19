@@ -202,8 +202,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var result = false;
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
-				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();// m_PinnedToolButtons; // TODO: Convert to module fetch
-				Debug.LogError("Convert pinnedTools to new GetModule method");
+				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();
 				Rays.ForEachProxyDevice(deviceData =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
