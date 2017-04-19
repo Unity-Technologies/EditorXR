@@ -667,7 +667,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void CorrectIconRotation()
 		{
 			const float kIconLookForwardOffset = 0.5f;
-			var iconLookDirection = m_IconContainer.transform.position + transform.parent.parent.forward * kIconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
+			var iconLookDirection = m_IconContainer.transform.position + transform.forward * kIconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
 			m_IconContainer.LookAt(iconLookDirection);
 			m_IconContainer.localEulerAngles = new Vector3(0f, 0f, m_IconContainer.localEulerAngles.z);
 			var angle = m_IconContainer.localEulerAngles.z;

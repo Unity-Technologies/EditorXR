@@ -103,13 +103,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					if (button.toolType == typeof(IMainMenu))
 					{
-						Debug.LogError("Setting up main menu button");
+						Debug.LogWarning("Setting up main menu button");
 						button.order = button.menuButtonOrderPosition;
 					}
 					else
 					{
 						button.order = button.toolType == activeToolType ? button.activeToolOrderPosition : ++inactiveButtonInitialOrderPosition;
-						Debug.LogError("Setting up button : " + button.toolType + " - ORDER : " + button.order);
+						Debug.LogWarning("Setting up button : " + button.toolType + " - ORDER : " + button.order);
 					}
 
 					if (button.order == 0)
