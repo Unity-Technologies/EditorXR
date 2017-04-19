@@ -182,6 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		Vector3 m_IconPressedLocalPosition;
 		Sprite m_OriginalIconSprite;
 		Vector3 m_OriginalLocalScale;
+		float m_ContainerContentsAnimationSpeedMultiplier = 1f;
 
 		// The initial button reveal coroutines, before highlighting occurs
 		Coroutine m_VisibilityCoroutine;
@@ -192,6 +193,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		Coroutine m_IconHighlightCoroutine;
 
 		public bool invertHighlightScale { private get; set; }
+
+		public float containerContentsAnimationSpeedMultiplier { set { m_ContainerContentsAnimationSpeedMultiplier = value; }}
 
 		void Awake()
 		{
@@ -412,7 +415,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var transitionAddMultiplier = !pressed ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
-				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
+				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier * m_ContainerContentsAnimationSpeedMultiplier;
 
 				foreach (var graphic in m_HighlightItems)
 				{
