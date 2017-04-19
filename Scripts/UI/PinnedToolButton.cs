@@ -54,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						gradientPair = UnityBrandColorScheme.GetRandomGradient();
 					}
 
-					activeTool = true;
+					activeTool = activeTool;
 					m_GradientButton.visible = true;
 					m_IconMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
 
@@ -94,7 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
 				var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(newTargetRotation));
-				//transform.localRotation = newLocalRotation;
+				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
 			}
 		}
 
@@ -126,7 +126,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (m_previewToolType != null) // Show the highlight if the preview type is valid; hide otherwise
 				{
 					// Show the grayscale highlight when previewing a tool on this button
-					m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
+					//m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
 					tooltipText = "Assign " + m_previewToolType.Name;
 					customToolTipHighlightColor = UnityBrandColorScheme.grayscaleSessionGradient;
@@ -134,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 				else
 				{
-					activeTool = activeTool;
+					activeTool = activeTool; // Set active tool back to pre-preview state
 					icon = icon; // Gradient button will set its icon back to that representing the current tool, if one existed before previewing new tool type in this button
 					customToolTipHighlightColor = gradientPair;
 					this.HideTooltip(this);
@@ -257,9 +257,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_Order == activeToolOrderPosition; }
 			set
 			{
-				m_GradientButton.normalGradientPair = value ? gradientPair : UnityBrandColorScheme.grayscaleSessionGradient;
-				m_GradientButton.highlightGradientPair = value ? UnityBrandColorScheme.grayscaleSessionGradient : gradientPair;
-				m_GradientButton.invertHighlightScale = value;
+				m_GradientButton.normalGradientPair = gradientPair;
+				m_GradientButton.highlightGradientPair = gradientPair;
+
+				if (activeTool) // TODO REMOVE IF NOT NEEDED
+					m_GradientButton.invertHighlightScale = value;
+
 				m_GradientButton.highlighted = true;
 				m_GradientButton.highlighted = false;
 			}
@@ -274,6 +277,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_Highlighted = value;
 				//Debug.LogError(Time.frameCount + " : <color=blue>Highlighting : </color>" + toolType);
+
 				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(!value));
 			}
 
@@ -323,6 +327,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.5f);
 
 			m_IconMaterial = MaterialUtils.GetMaterialClone(m_ButtonIcon);
+
+			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
+			//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 		}
 
 		void Start()
@@ -350,12 +357,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
 			this.ConnectInterfaces(m_SmoothMotion);
 
-			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
-			//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
-
 			m_GradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
 			m_GradientButton.hoverExit += OnActionButtonHoverExit;
 			m_GradientButton.click += OnBackgroundButtonClick;
+			m_GradientButton.containerContentsAnimationSpeedMultiplier = 2.5f;
 
 			m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
 			m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
@@ -595,6 +600,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//if (!makeSemiTransparent)
 				//yield return new WaitForSeconds(1f); // Pause before making opaque
 
+			if (makeSemiTransparent && activeTool)
+				yield break;
+
 			//Debug.LogWarning("<color=blue>AnimateSemiTransparent : </color>" + makeSemiTransparent);
 			//const float kFasterMotionMultiplier = 2f;
 			var transitionAmount = 0f;
@@ -635,6 +643,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_InsetMask.localScale = targetInsetMaskScale;
 			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
 			m_IconContainer.localScale = targetIconContainerScale;
+
+			//if (makeSemiTransparent)
+				//activeTool = activeTool;
 		}
 
 		IEnumerator AnimateMoveActivatorButton(bool moveToAlternatePosition = true)
