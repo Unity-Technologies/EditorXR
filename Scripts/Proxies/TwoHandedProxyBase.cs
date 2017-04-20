@@ -244,7 +244,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 		}
 
-		public void HighlightDevice (Node deviceNode, GradientPair gradientPair)
+		public void HighlightDevice (Node deviceNode, GradientPair gradientPair, bool pulseOnThenOff = false)
 		{
 			if (m_HighlightMaterials == null)
 				return;
@@ -270,7 +270,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			this.RestartCoroutine(ref m_HighlightCoroutine, ShowHighlight(deviceMaterial, gradientPair));
 		}
 
-		IEnumerator ShowHighlight(Material deviceMaterial, GradientPair gradientPair)
+		IEnumerator ShowHighlight(Material deviceMaterial, GradientPair gradientPair, bool pulseOnThenOff = false)
 		{
 			// IF the highlight is already running, lerp the gradientPair color to the new target colors
 			// If the highlight is not already running, just set the gradientPair colors, then lerp in alpha
@@ -314,7 +314,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				yield return null;
 			}
 
-			while (duration > 0)
+			while (pulseOnThenOff && duration > 0)
 			{
 				duration -= Time.unscaledDeltaTime * 0.5f;
 				var durationShaped = Mathf.Pow(duration, 2);
@@ -323,7 +323,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 
 			//deviceMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
-			deviceMaterial.SetFloat(k_MaterialThicknessProperty, 0f);
+			deviceMaterial.SetFloat(k_MaterialThicknessProperty, pulseOnThenOff ? 0f : k_TargetHighlightThicknessAmount);
 
 			m_HighlightCoroutine = null;
 		}

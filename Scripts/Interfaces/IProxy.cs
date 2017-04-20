@@ -93,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Node = device node on which to display the highlight
 		/// GradientPair = gradientPair used in the highlight visuals
 		/// </summary>
-		void HighlightDevice (Node node, GradientPair gradientPair);
+		void HighlightDevice (Node node, GradientPair gradientPair, bool pulseOnThenOff = false);
 	}
 }
 #endif
