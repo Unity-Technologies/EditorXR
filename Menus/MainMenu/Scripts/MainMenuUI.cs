@@ -88,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_FrameRevealCoroutine;
 		int m_Direction;
-		GradientPair m_GradientPair;
+		float m_MenuHeight;
 
 		Transform[] m_MenuFaceContentTransforms;
 		Vector3[] m_MenuFaceContentOriginalLocalPositions;
@@ -156,6 +156,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public float menuHeight { get { return m_MenuHeight; } }
+
 		int currentFaceIndex
 		{
 			get
@@ -202,6 +204,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_MenuFaceContentOriginalLocalScale = m_MenuFaceContentTransforms[0].localScale;
 			m_MenuFaceContentHiddenLocalScale = new Vector3(0f, m_MenuFaceContentOriginalLocalScale.y * 0.5f, m_MenuFaceContentOriginalLocalScale.z);
+
+			var bounds = ObjectUtils.GetBounds(gameObject);
+			m_MenuHeight = bounds.size.y;
 
 			transform.localScale = Vector3.zero;
 			m_AlternateMenu.localScale = Vector3.zero;

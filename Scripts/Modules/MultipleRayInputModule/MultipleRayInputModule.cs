@@ -50,6 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		private ActionMap m_UIActionMap;
 
 		public event Action<GameObject, RayEventData> rayEntered;
+		public event Action<GameObject, RayEventData> rayHovering;
 		public event Action<GameObject, RayEventData> rayExited;
 		public event Action<GameObject, RayEventData> dragStarted;
 		public event Action<GameObject, RayEventData> dragEnded;
@@ -260,6 +261,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				while (t != null)
 				{
 					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
+					if (rayHovering != null)
+						rayHovering(t.gameObject, cachedEventData);
+
 					t = t.parent;
 				}
 				return;

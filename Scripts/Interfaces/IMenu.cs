@@ -22,6 +22,8 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Root GameObject for visible menu content
 		/// </summary>
 		GameObject menuContent { get; }
+
+		float hideDistance { get; }
 	}
 }
 #endif

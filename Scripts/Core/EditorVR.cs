@@ -123,6 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			var multipleRayInputModule = GetModule<MultipleRayInputModule>();
 			multipleRayInputModule.rayEntered += Menus.OnUIHoverStarted;
+			multipleRayInputModule.rayHovering += Menus.OnUIHovering;
 			multipleRayInputModule.rayExited += Menus.OnUIHoverEnded;
 
 			var dragAndDropModule = AddModule<DragAndDropModule>();
@@ -310,7 +311,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			GetModule<DeviceInputModule>().ProcessInput();
 
 			var menus = GetNestedModule<Menus>();
-			menus.UpdateMenuVisibilityNearWorkspaces();
 			menus.UpdateMenuVisibilities();
 
 			GetNestedModule<UI>().UpdateManipulatorVisibilites();

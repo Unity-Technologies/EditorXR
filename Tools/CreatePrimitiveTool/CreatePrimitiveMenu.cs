@@ -12,6 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Action<PrimitiveType, bool> selectPrimitive;
 		public Action close;
 
+		public float hideDistance {get { return Mathf.Infinity; } }
+
 		public bool visible
 		{
 			get { return gameObject.activeSelf; }

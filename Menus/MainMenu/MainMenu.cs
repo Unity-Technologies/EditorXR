@@ -74,6 +74,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
+		public float hideDistance { get { return m_MainMenuUI.menuHeight; } }
+
 		void Start()
 		{
 			m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
