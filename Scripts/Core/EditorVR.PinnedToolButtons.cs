@@ -83,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				Debug.LogError("<color=black>Setting up pinned tool button for type of : </color>" + activeToolType);
 				activeToolType = activeToolType == typeof(IMainMenu) ? typeof(SelectionTool) : activeToolType; // Assign SelectionTool if setting up for IMainMenu
-				const int kMaxButtonCount = 6;
+				const int kMaxButtonCount = 16;
 				var buttons = deviceData.pinnedToolButtons;
 				var inactiveButtonInitialOrderPosition = -1;
 				var buttonCount = buttons.Count; // Position buttons relative to count
@@ -112,7 +112,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						Debug.LogWarning("Setting up button : " + button.toolType + " - ORDER : " + button.order);
 					}
 
-					if (button.order == 0)
+					if (button.order == button.activeToolOrderPosition)
 						deviceData.proxy.HighlightDevice(deviceData.node, button.gradientPair); // Perform the higlight on the node with the button's gradient pair
 				}
 			}
@@ -169,7 +169,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						foreach (var pair in pinnedToolButtons)
 						{
 							var button = pair.Value;
-							if (button.order == 0)
+							if (button.order == button.activeToolOrderPosition)
 							{
 								pinnedToolButton = button;
 								pinnedToolButton.previewToolType = toolType;
