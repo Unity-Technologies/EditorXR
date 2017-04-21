@@ -125,9 +125,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				if (m_previewToolType != null) // Show the highlight if the preview type is valid; hide otherwise
 				{
+					var tempToolGo = ObjectUtils.AddComponent(m_previewToolType, gameObject);
+					var tempTool = tempToolGo as ITool;
+					if (tempTool != null)
+					{
+						var iMenuIcon = tempTool as IMenuIcon;
+						if (iMenuIcon != null)
+							previewIcon = iMenuIcon.icon;
+
+						ObjectUtils.Destroy(tempToolGo);
+					}
+
 					// Show the grayscale highlight when previewing a tool on this button
 					//m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
+
+					if (!previewIcon)
+						m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
+
 					//tooltipText = "Assign " + m_previewToolType.Name;
 					//customToolTipHighlightColor = UnityBrandColorScheme.grayscaleSessionGradient;
 					//this.ShowTooltip(this);
@@ -226,6 +241,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_OriginalLocalScale;
 		Material m_IconMaterial;
 		Sprite m_Icon;
+		Sprite m_PreviewIcon;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -297,6 +313,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_GradientButton.SetContent(m_Icon);
 				else
 					m_GradientButton.SetContent(GetTypeAbbreviation(m_ToolType)); // Set backup tool abbreviation if no icon is set
+			}
+		}
+
+		public Sprite previewIcon
+		{
+			get { return m_PreviewIcon; }
+			set
+			{
+				m_PreviewIcon = value;
+				m_GradientButton.SetContent(m_PreviewIcon);
 			}
 		}
 
