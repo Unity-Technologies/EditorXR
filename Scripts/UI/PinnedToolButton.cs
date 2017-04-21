@@ -89,11 +89,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				// We move in counter-clockwise direction
 				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
-				const float kMaxPinnedToolButtonCount = 16; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
-				const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
-				var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
-				var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
-				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(newTargetRotation));
+				//const float kMaxPinnedToolButtonCount = 16; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
+				//const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
+				//var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
+				//var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
+				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order, activeButtonCount));
 				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
 			}
 		}
@@ -295,7 +295,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_Highlighted = value;
 				//Debug.LogError(Time.frameCount + " : <color=blue>Highlighting : </color>" + toolType);
 
-				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(!value));
+				var newOrderPosition = order;
+				var buttonCount = 2; // MainMenu + ActiveTool button count
+				var targetRotation = Quaternion.identity;
+				if (m_Highlighted)
+				{
+					buttonCount = activeButtonCount;
+					order = order;
+				}
+				else
+				{
+					// Set all buttons back to the center
+					// Tools with orders greater than that of the active tool should hide themseleves when the pinned tools arent being hovered
+					newOrderPosition = isMainMenu ? 0 : 1;
+				}
+
+				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(newOrderPosition, buttonCount));
+				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(!value && order < 1));
 			}
 
 			//get { return m_Highlighted; }
@@ -445,6 +461,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnBackgroundHoverEnter ()
 		{
+			if (m_PositionCoroutine != null)
+				return;
+
 			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
 			//{
 				//Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
@@ -524,6 +543,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnActionButtonHoverExit()
 		{
+			if (m_PositionCoroutine != null)
+				return;
+
 			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
 			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
 
@@ -599,22 +621,36 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			ObjectUtils.Destroy(gameObject, 0.1f);
 		}
 
-		IEnumerator AnimatePosition(Quaternion targetRotation)
+		IEnumerator AnimatePosition(int orderPosition, int buttonCount)
 		{
+			//if (!activeTool) // hide a button if it is not the active tool button and the buttons are no longer highlighted
+				//gameObject.SetActive(true);
+
+			//if (order != activeToolOrderPosition)
+				//m_RootCollider.enabled = false;
+
+			const float kMaxPinnedToolButtonCount = 16; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
+			const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
+			var phaseOffset = kRotationSpacing * 0.5f - (2 * 0.5f) * kRotationSpacing; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
+			var targetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * orderPosition, Vector3.down);
+
 			var duration = 0f;
 			//var currentPosition = transform.localPosition;
 			//var targetPosition = activeTool ? activePosition : m_InactivePosition;
 			var currentRotation = transform.localRotation;
-			var positionWait = (order + 5) * 0.1f;
+			var positionWait = 1f;// (order + 5) * 0.1f;
 			while (duration < 1)
 			{
-				duration += Time.unscaledDeltaTime * 5f * positionWait;
+				duration += Time.unscaledDeltaTime * 6f * positionWait;
 				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 3);
 				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
 				CorrectIconRotation();
 				//transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
 				yield return null;
 			}
+
+			//if (!m_Highlighted && orderPosition == 0 && buttonCount == 1 && !activeTool) // hide a button if it is not the active tool button and the buttons are no longer highlighted
+				//gameObject.SetActive(false);
 
 			//transform.localPosition = targetPosition;
 			transform.localRotation = targetRotation;
