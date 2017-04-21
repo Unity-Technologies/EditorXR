@@ -201,7 +201,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public Action<PinnedToolActionButton> clicked { get; set; }
 		public Action hoverEnter { get; set; }
 		public Action hoverExit { get; set; }
-		public Collider mainButtonCollider { get; set; }
+		//public Collider mainButtonCollider { get; set; }
 
 		void Awake()
 		{
@@ -229,7 +229,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				//m_ContentContainer.gameObject.SetActive(false);
 			//}
 
-			mainButtonCollider.enabled = true;
+			//mainButtonCollider.enabled = true;
 		}
 
 		/// <summary>
@@ -237,7 +237,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// </summary>
 		IEnumerator AnimateShow()
 		{
-			mainButtonCollider.enabled = false;
+			//mainButtonCollider.enabled = false;
 
 			const float kTargetTransitionAmount = 1f;
 			var transitionAmount = Time.unscaledDeltaTime;
