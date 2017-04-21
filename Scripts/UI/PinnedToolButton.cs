@@ -194,8 +194,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		CanvasGroup m_IconContainerCanvasGroup;
 
-		[SerializeField]
-		Collider m_RootCollider;
+		//[SerializeField]
+		//Collider m_RootCollider;
 
 		[SerializeField]
 		MeshRenderer m_FrameRenderer;
@@ -423,8 +423,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_LeftPinnedToolActionButton.visible = false;
 			m_RightPinnedToolActionButton.visible = false;
 
-			m_LeftPinnedToolActionButton.mainButtonCollider = m_RootCollider;
-			m_RightPinnedToolActionButton.mainButtonCollider = m_RootCollider;
+			//m_LeftPinnedToolActionButton.mainButtonCollider = m_RootCollider;
+			//m_RightPinnedToolActionButton.mainButtonCollider = m_RootCollider;
 
 			//m_ButtonCollider.enabled = true;
 			//m_GradientButton.click += OnClick;
@@ -580,7 +580,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateShow(Vector3 targetPosition, Vector3 targetScale)
 		{
-			m_RootCollider.enabled = false;
+			//m_RootCollider.enabled = false;
 			var duration = 0f;
 			while (duration < 2)
 			{
@@ -597,14 +597,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_IconContainer.localScale = k_SemiTransparentIconContainerScale;
 			transform.localPosition = targetPosition;
 			transform.localScale = targetScale;
-			m_RootCollider.enabled = true;
+			//m_RootCollider.enabled = true;
 			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateHideAndClose()
 		{
 			this.HideTooltip(this);
-			m_RootCollider.enabled = false;
+			//m_RootCollider.enabled = false;
 			var duration = 0f;
 			var currentScale = transform.localScale;
 			var targetScale = Vector3.zero;
@@ -706,9 +706,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_InsetMask.localScale = targetInsetMaskScale;
 			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
 			m_IconContainer.localScale = targetIconContainerScale;
-
-			//if (makeSemiTransparent)
-				//activeTool = activeTool;
 		}
 
 		IEnumerator AnimateMoveActivatorButton(bool moveToAlternatePosition = true)
@@ -736,8 +733,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator DelayedCollderEnable()
 		{
-			yield return null;
-			m_RootCollider.enabled = true;
+			yield return new WaitForSeconds(0.5f);
+			//m_RootCollider.enabled = true;
 		}
 
 		void CorrectIconRotation()
