@@ -137,8 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					}
 
 					// Show the grayscale highlight when previewing a tool on this button
-					//m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
-					m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
+					m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
 
 					if (!previewIcon)
 						m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
@@ -151,6 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					activeTool = activeTool; // Set active tool back to pre-preview state
 					icon = icon; // Gradient button will set its icon back to that representing the current tool, if one existed before previewing new tool type in this button
+					m_GradientButton.highlightGradientPair = gradientPair;
 					//customToolTipHighlightColor = gradientPair;
 					//this.HideTooltip(this);
 					//tooltipText = (isSelectionTool || isMainMenu) ? (isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText) : toolType.Name;
@@ -274,11 +274,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_Order == activeToolOrderPosition; }
 			set
 			{
-				m_GradientButton.normalGradientPair = gradientPair;
-				m_GradientButton.highlightGradientPair = gradientPair;
+				m_GradientButton.normalGradientPair = activeTool ? gradientPair : UnityBrandColorScheme.grayscaleSessionGradient;
+				m_GradientButton.highlightGradientPair = activeTool ? UnityBrandColorScheme.grayscaleSessionGradient : gradientPair;
 
-				if (activeTool) // TODO REMOVE IF NOT NEEDED
-					m_GradientButton.invertHighlightScale = value;
+				//if (activeTool) // TODO REMOVE IF NOT NEEDED
+					//m_GradientButton.invertHighlightScale = value;
 
 				m_GradientButton.highlighted = true;
 				m_GradientButton.highlighted = false;
@@ -320,9 +320,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Sprite icon
 		{
 			get { return m_Icon; }
-
 			set
 			{
+				m_PreviewIcon = null; // clear any cached preview icons
 				m_Icon = value;
 
 				if (m_Icon)
