@@ -12,6 +12,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	partial class EditorVR
 	{
 		[SerializeField]
+		GameObject m_PlayerModelPrefab;
+
+		[SerializeField]
 		GameObject m_PreviewCameraPrefab;
 
 		class Viewer : Nested, IInterfaceConnector, ISerializePreferences
@@ -34,6 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			const float k_CameraRigTransitionTime = 0.75f;
 
 			PlayerBody m_PlayerBody;
+			float m_OriginalNearClipPlane;
+			float m_OriginalFarClipPlane;
 
 			readonly Preferences m_Preferences = new Preferences();
 
@@ -49,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
 				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
 				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
+				IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
 
 				VRView.hmdStatusChange += OnHMDStatusChange;
 
@@ -60,6 +66,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				base.OnDestroy();
 
 				VRView.hmdStatusChange -= OnHMDStatusChange;
+
+				var cameraRig = CameraUtils.GetCameraRig();
+				cameraRig.transform.parent = null;
+
+				ObjectUtils.Destroy(m_PlayerBody.gameObject);
 
 				if (customPreviewCamera != null)
 					ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -123,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var inverseRotation = Quaternion.Inverse(cameraRotation);
 				cameraRig.position = Vector3.zero;
 				cameraRig.rotation = inverseRotation * preferences.cameraRotation;
-				cameraRig.localScale = Vector3.one * preferences.cameraRigScale;
+				SetViewerScale(preferences.cameraRigScale);
 				cameraRig.position = preferences.cameraPosition - cameraTransform.position;
 			}
 
@@ -134,6 +145,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				cameraRig.hideFlags = defaultHideFlags;
 				var viewerCamera = CameraUtils.GetMainCamera();
 				viewerCamera.gameObject.hideFlags = defaultHideFlags;
+				m_OriginalNearClipPlane = viewerCamera.nearClipPlane;
+				m_OriginalFarClipPlane = viewerCamera.farClipPlane;
 				if (VRSettings.loadedDeviceName == "OpenVR")
 				{
 					// Steam's reference position should be at the feet and not at the head as we do with Oculus
@@ -183,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			static bool Overlaps(Transform rayOrigin, Collider trigger)
 			{
-				var radius = evr.m_DirectSelection.GetPointerLength(rayOrigin);
+				var radius = DirectSelection.GetPointerLength(rayOrigin);
 
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)
@@ -272,6 +285,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal static float GetViewerScale()
 			{
 				return CameraUtils.GetCameraRig().localScale.x;
+			}
+
+			void SetViewerScale(float scale)
+			{
+				var camera = CameraUtils.GetMainCamera();
+				CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
+				camera.nearClipPlane = m_OriginalNearClipPlane * scale;
+				camera.farClipPlane = m_OriginalFarClipPlane * scale;
 			}
 		}
 	}

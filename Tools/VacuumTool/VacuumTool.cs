@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -8,10 +7,15 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class VacuumTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesViewerScale
+	sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale
 	{
+		[SerializeField]
+		ActionMap m_ActionMap;
+
 		float m_LastClickTime;
 		readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
+
+		public ActionMap actionMap { get { return m_ActionMap; } }
 
 		public List<IVacuumable> vacuumables { private get; set; }
 
@@ -22,8 +26,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var standardInput = (Standard)input;
-			if (standardInput.action.wasJustPressed)
+			var vacuumInput = (VacuumInput)input;
+			if (vacuumInput.vacuum.wasJustPressed)
 			{
 				var realTime = Time.realtimeSinceStartup;
 				if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
@@ -44,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						}
 					}
 
-					consumeControl(standardInput.action);
+					consumeControl(vacuumInput.vacuum);
 				}
 
 				m_LastClickTime = realTime;
