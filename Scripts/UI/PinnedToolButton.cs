@@ -84,8 +84,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//m_SmoothMotion.SetPositionSmoothing(smoothingFactor);
 				//m_SmoothMotion.SetRotationSmoothing(smoothingFactor);
 				//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
-				m_LeftPinnedToolActionButton.visible = false;
-				m_RightPinnedToolActionButton.visible = false;
+				//m_LeftPinnedToolActionButton.visible = false;
+				//m_RightPinnedToolActionButton.visible = false;
 
 				// We move in counter-clockwise direction
 				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
@@ -93,9 +93,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
 				//var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
 				//var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
-				var aboluteMenuButtonCount = isMainMenu ? 2 : activeButtonCount; // madates a fixed position for the MainMenu button, next to the ActiveToolButton
+				var mainMenuAndActiveButtonCount = 2;
+				var aboluteMenuButtonCount = isMainMenu ? mainMenuAndActiveButtonCount : activeButtonCount; // madates a fixed position for the MainMenu button, next to the ActiveToolButton
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order, aboluteMenuButtonCount));
-				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
+
+				if (aboluteMenuButtonCount > mainMenuAndActiveButtonCount)
+					this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
 			}
 		}
 
@@ -183,11 +186,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		SmoothMotion m_SmoothMotion;
 
-		[SerializeField]
-		PinnedToolActionButton m_LeftPinnedToolActionButton;
+		//[SerializeField]
+		//PinnedToolActionButton m_LeftPinnedToolActionButton;
 
-		[SerializeField]
-		PinnedToolActionButton m_RightPinnedToolActionButton;
+		//[SerializeField]
+		//PinnedToolActionButton m_RightPinnedToolActionButton;
 
 		[SerializeField]
 		Transform m_IconContainer;
@@ -416,23 +419,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.click += OnBackgroundButtonClick;
 			m_GradientButton.containerContentsAnimationSpeedMultiplier = 2.5f;
 
-			m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
-			m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
-			m_LeftPinnedToolActionButton.hoverExit = OnActionButtonHoverExit;
-			m_RightPinnedToolActionButton.clicked = ActionButtonClicked;
-			m_RightPinnedToolActionButton.hoverEnter = HoverButton;
-			m_RightPinnedToolActionButton.hoverExit = OnActionButtonHoverExit;
+			//m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
+			//m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
+			//m_LeftPinnedToolActionButton.hoverExit = OnActionButtonHoverExit;
+			//m_RightPinnedToolActionButton.clicked = ActionButtonClicked;
+			//m_RightPinnedToolActionButton.hoverEnter = HoverButton;
+			//m_RightPinnedToolActionButton.hoverExit = OnActionButtonHoverExit;
 
 			// Assign the select action button to the side closest to the opposite hand, that allows the arrow to also point in the direction the
-			var leftHand = node == Node.LeftHand;
-			m_RightPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.SelectTool : PinnedToolActionButton.ButtonType.Close;
-			m_LeftPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.Close : PinnedToolActionButton.ButtonType.SelectTool;
+			//var leftHand = node == Node.LeftHand;
+			//m_RightPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.SelectTool : PinnedToolActionButton.ButtonType.Close;
+			//m_LeftPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.Close : PinnedToolActionButton.ButtonType.SelectTool;
 
-			m_RightPinnedToolActionButton.rotateIcon = leftHand ? false : true;
-			m_LeftPinnedToolActionButton.rotateIcon = leftHand ? false : true;
+			//m_RightPinnedToolActionButton.rotateIcon = leftHand ? false : true;
+			//m_LeftPinnedToolActionButton.rotateIcon = leftHand ? false : true;
 
-			m_LeftPinnedToolActionButton.visible = false;
-			m_RightPinnedToolActionButton.visible = false;
+			//m_LeftPinnedToolActionButton.visible = false;
+			//m_RightPinnedToolActionButton.visible = false;
 
 			//m_LeftPinnedToolActionButton.mainButtonCollider = m_RootCollider;
 			//m_RightPinnedToolActionButton.mainButtonCollider = m_RootCollider;
@@ -499,8 +502,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (order < 2 && (isSelectionTool || isMainMenu)) // The main menu and the active tool occupy orders 0 and 1; don't show any action buttons for buttons in either position
 			{
-				m_RightPinnedToolActionButton.visible = false;
-				m_LeftPinnedToolActionButton.visible = false;
+				//m_RightPinnedToolActionButton.visible = false;
+				//m_LeftPinnedToolActionButton.visible = false;
 				//m_RootCollider.enabled = true;
 				StartCoroutine(DelayedCollderEnable());
 			}
@@ -516,14 +519,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				else
 				*/
 				{
-					m_RightPinnedToolActionButton.visible = IsSelectToolButton(m_RightPinnedToolActionButton.buttonType) ? true : false;
-					m_LeftPinnedToolActionButton.visible = IsSelectToolButton(m_LeftPinnedToolActionButton.buttonType) ? true : false;
+					//m_RightPinnedToolActionButton.visible = IsSelectToolButton(m_RightPinnedToolActionButton.buttonType) ? true : false;
+					//m_LeftPinnedToolActionButton.visible = IsSelectToolButton(m_LeftPinnedToolActionButton.buttonType) ? true : false;
 				}
 			} else
 			{
 				// Hide the select action button if this tool button is already the selected tool, else show the close button for inactive tools
-				m_RightPinnedToolActionButton.visible = IsSelectToolButton(m_RightPinnedToolActionButton.buttonType) ? !activeTool : true;
-				m_LeftPinnedToolActionButton.visible = IsSelectToolButton(m_LeftPinnedToolActionButton.buttonType) ? !activeTool : true;
+				//m_RightPinnedToolActionButton.visible = IsSelectToolButton(m_RightPinnedToolActionButton.buttonType) ? !activeTool : true;
+				//m_LeftPinnedToolActionButton.visible = IsSelectToolButton(m_LeftPinnedToolActionButton.buttonType) ? !activeTool : true;
 			}
 
 			highlightAllToolButtons(rayOrigin, true);
@@ -544,16 +547,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
 
 			// Hide both action buttons if the user is no longer hovering over the button
-			if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
-			{
+			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
+			//{
 				//Debug.LogWarning("<color=green>!!!</color>");
 				//m_ButtonCollider.enabled = true;
-				m_LeftPinnedToolActionButton.visible = false;
-				m_RightPinnedToolActionButton.visible = false;
+				//m_LeftPinnedToolActionButton.visible = false;
+				//m_RightPinnedToolActionButton.visible = false;
 				//m_GradientButton.visible = true;
 				m_GradientButton.highlighted = false;
 				highlightAllToolButtons(rayOrigin, false);
-			}
+			//}
 
 			m_GradientButton.UpdateMaterialColors();
 		}
@@ -582,8 +585,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 
 				OnActionButtonHoverExit();
-				m_LeftPinnedToolActionButton.highlighted = false;
-				m_RightPinnedToolActionButton.highlighted = false;
+				//m_LeftPinnedToolActionButton.highlighted = false;
+				//m_RightPinnedToolActionButton.highlighted = false;
 			}
 		}
 
@@ -593,10 +596,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
 
 			// Hide both action buttons if the user is no longer hovering over the button
-			if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
-			{
+			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
+			//{
 				selectTool(rayOrigin, m_ToolType); // Perform clik for a ToolButton that doesn't utilize ToolActionButtons
-			}
+			//}
+
+			if (!isMainMenu)
+				highlightAllToolButtons(rayOrigin, true);
 
 			m_GradientButton.UpdateMaterialColors();
 		}
