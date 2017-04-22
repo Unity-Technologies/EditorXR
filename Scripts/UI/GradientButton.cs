@@ -94,6 +94,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 				m_Visible = value;
 
+				if (m_Visible && !gameObject.activeSelf)
+					gameObject.SetActive(true);
+
 				this.StopCoroutine(ref m_VisibilityCoroutine);
 				m_VisibilityCoroutine = value ? StartCoroutine(AnimateShow()) : StartCoroutine(AnimateHide());
 			}
