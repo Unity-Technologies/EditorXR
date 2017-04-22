@@ -99,6 +99,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				if (aboluteMenuButtonCount > mainMenuAndActiveButtonCount)
 					this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
+				else
+					m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
 			}
 		}
 
