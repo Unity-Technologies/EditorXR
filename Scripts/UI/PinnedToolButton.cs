@@ -15,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		static Color s_FrameOpaqueColor;
 		static Color s_SemiTransparentFrameColor;
+		static bool s_Hovered;
 
 		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
@@ -231,6 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_ActivatorMoveCoroutine;
+		Coroutine m_HoverCheckCoroutine;
 
 		string m_TooltipText;
 		bool m_Highlighted;
@@ -480,6 +482,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (m_PositionCoroutine != null)
 				return;
 
+			s_Hovered = true;
+			this.StopCoroutine(ref m_HoverCheckCoroutine);
+
 			if (isMainMenu)
 			{
 				m_GradientButton.highlighted = true;
@@ -507,7 +512,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//m_RightPinnedToolActionButton.visible = false;
 				//m_LeftPinnedToolActionButton.visible = false;
 				//m_RootCollider.enabled = true;
-				StartCoroutine(DelayedCollderEnable());
+				//StartCoroutine(DelayedCollderEnable());
 			}
 			else if (isSelectionTool)
 			{
@@ -534,7 +539,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			highlightAllToolButtons(rayOrigin, true);
 		}
 
-		void OnActionButtonHoverExit()
+		void OnActionButtonHoverExit(bool waitBeforeClosingAllButtons = true)
 		{
 			if (m_PositionCoroutine != null)
 				return;
@@ -545,6 +550,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 			}
 
+			this.RestartCoroutine(ref m_HoverCheckCoroutine, DelayedHoverExitCheck(waitBeforeClosingAllButtons));
+
+			return;
 			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
 			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
 
@@ -586,7 +594,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					deletePinnedToolButton(rayOrigin, this);
 				}
 
-				OnActionButtonHoverExit();
+				OnActionButtonHoverExit(false);
 				//m_LeftPinnedToolActionButton.highlighted = false;
 				//m_RightPinnedToolActionButton.highlighted = false;
 			}
@@ -762,10 +770,35 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ActivatorMoveCoroutine = null;
 		}
 
+/*
 		IEnumerator DelayedCollderEnable()
 		{
 			yield return new WaitForSeconds(0.5f);
 			//m_RootCollider.enabled = true;
+		}
+*/
+
+		IEnumerator DelayedHoverExitCheck(bool waitBeforeClosingAllButtons = true)
+		{
+			s_Hovered = false;
+
+			if (waitBeforeClosingAllButtons)
+			{
+				var duration = Time.unscaledDeltaTime;
+				while (duration < 0.25f)
+				{
+					duration += Time.unscaledDeltaTime;
+					yield return null;
+
+					if (s_Hovered)
+						yield break;
+				}
+			}
+
+			// Only proceed if no other button is being hovered
+			m_GradientButton.highlighted = false;
+			highlightAllToolButtons(rayOrigin, false);
+			m_GradientButton.UpdateMaterialColors();
 		}
 
 		void CorrectIconRotation()
