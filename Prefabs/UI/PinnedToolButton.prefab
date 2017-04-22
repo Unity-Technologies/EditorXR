@@ -41,7 +41,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!1 &1000010351058842
 GameObject:
   m_ObjectHideFlags: 1
@@ -323,7 +323,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1000013979951132
 GameObject:
   m_ObjectHideFlags: 1
@@ -388,6 +388,9 @@ GameObject:
   - 23: {fileID: 23000013566874788}
   - 114: {fileID: 114000010373680160}
   - 65: {fileID: 65000011941282114}
+  - 65: {fileID: 65000011946148642}
+  - 65: {fileID: 65000010009342954}
+  - 65: {fileID: 65000012371166842}
   m_Layer: 5
   m_Name: GradientButton
   m_TagString: Untagged
@@ -748,6 +751,18 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000014093660532}
   m_Mesh: {fileID: 4300050, guid: 4f7e1c38dff4db9449be30d253d1bd8f, type: 3}
+--- !u!65 &65000010009342954
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014093660532}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.18, y: 0.005, z: 0.06}
+  m_Center: {x: 0, y: 0, z: -0}
 --- !u!65 &65000010916098064
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -770,8 +785,32 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.17, y: 0.005, z: 0.19}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.145, y: 0.005, z: 0.23}
+  m_Center: {x: 0, y: 0, z: -0.015}
+--- !u!65 &65000011946148642
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014093660532}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.2, y: 0.005, z: 0.1}
+  m_Center: {x: 0, y: 0, z: -0.08}
+--- !u!65 &65000012371166842
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014093660532}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.16, y: 0.005, z: 0.04}
+  m_Center: {x: 0, y: 0, z: 0.05}
 --- !u!65 &65000012740030200
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -892,11 +931,8 @@ MonoBehaviour:
   m_RunInEditMode: 0
   m_GradientButton: {fileID: 114000010373680160}
   m_SmoothMotion: {fileID: 0}
-  m_LeftPinnedToolActionButton: {fileID: 114000011926581952}
-  m_RightPinnedToolActionButton: {fileID: 114000013773965116}
   m_IconContainer: {fileID: 4000010081970184}
   m_IconContainerCanvasGroup: {fileID: 225000010875730614}
-  m_RootCollider: {fileID: 65000011941282114}
   m_FrameRenderer: {fileID: 23000013529982034}
   m_InsetMeshRenderer: {fileID: 23000013623333764}
   m_TooltipTarget: {fileID: 4000010683372396}
@@ -1386,7 +1422,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013929112766}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.003020957}
+  m_LocalPosition: {x: 0, y: 0, z: -0.0030222163}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
