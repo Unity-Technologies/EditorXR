@@ -93,8 +93,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
 				//var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
 				//var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
-				var aboluteMenuAndActiveToolButtonPosition = !highlighted || isMainMenu ? 2 : activeButtonCount;
-				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order, aboluteMenuAndActiveToolButtonPosition));
+				var aboluteMenuButtonCount = isMainMenu ? 2 : activeButtonCount; // madates a fixed position for the MainMenu button, next to the ActiveToolButton
+				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order, aboluteMenuButtonCount));
 				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
 			}
 		}
