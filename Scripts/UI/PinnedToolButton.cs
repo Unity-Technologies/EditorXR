@@ -93,7 +93,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
 				//var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
 				//var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
-				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order, activeButtonCount));
+				var aboluteMenuAndActiveToolButtonPosition = !highlighted || isMainMenu ? 2 : activeButtonCount;
+				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order, aboluteMenuAndActiveToolButtonPosition));
 				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
 			}
 		}
@@ -287,12 +288,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public bool highlighted
 		{
+			get { return m_Highlighted; }
 			set
 			{
-				if (m_Highlighted == value || !gameObject.activeSelf)
+				if (m_Highlighted == value || !gameObject.activeSelf || activeButtonCount <= k_ActiveToolOrderPosition + 1)
 					return;
 
 				m_Highlighted = value;
+
+				if (isMainMenu)
+				{
+					m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor * (value ? 0f : 1f));
+					m_GradientButton.visible = !value;
+					return;
+				}
+
 				//Debug.LogError(Time.frameCount + " : <color=blue>Highlighting : </color>" + toolType);
 
 				var newOrderPosition = order;
@@ -300,7 +310,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var targetRotation = Quaternion.identity;
 				if (m_Highlighted)
 				{
-					buttonCount = activeButtonCount;
+					buttonCount = activeButtonCount - 1; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
+					newOrderPosition -= 1;
 					order = order;
 				}
 				else
@@ -464,6 +475,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (m_PositionCoroutine != null)
 				return;
 
+			if (isMainMenu)
+			{
+				m_GradientButton.highlighted = true;
+				return;
+			}
+
 			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
 			//{
 				//Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
@@ -512,6 +529,35 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			highlightAllToolButtons(rayOrigin, true);
 		}
 
+		void OnActionButtonHoverExit()
+		{
+			if (m_PositionCoroutine != null)
+				return;
+
+			if (isMainMenu)
+			{
+				m_GradientButton.highlighted = false;
+				return;
+			}
+
+			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
+			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
+
+			// Hide both action buttons if the user is no longer hovering over the button
+			if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
+			{
+				//Debug.LogWarning("<color=green>!!!</color>");
+				//m_ButtonCollider.enabled = true;
+				m_LeftPinnedToolActionButton.visible = false;
+				m_RightPinnedToolActionButton.visible = false;
+				//m_GradientButton.visible = true;
+				m_GradientButton.highlighted = false;
+				highlightAllToolButtons(rayOrigin, false);
+			}
+
+			m_GradientButton.UpdateMaterialColors();
+		}
+
 		void ActionButtonClicked(PinnedToolActionButton button)
 		{
 			Debug.LogError("Action Button selectTool!");
@@ -539,29 +585,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_LeftPinnedToolActionButton.highlighted = false;
 				m_RightPinnedToolActionButton.highlighted = false;
 			}
-		}
-
-		void OnActionButtonHoverExit()
-		{
-			if (m_PositionCoroutine != null)
-				return;
-
-			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
-			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
-
-			// Hide both action buttons if the user is no longer hovering over the button
-			if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
-			{
-				//Debug.LogWarning("<color=green>!!!</color>");
-				//m_ButtonCollider.enabled = true;
-				m_LeftPinnedToolActionButton.visible = false;
-				m_RightPinnedToolActionButton.visible = false;
-				//m_GradientButton.visible = true;
-				m_GradientButton.highlighted = false;
-				highlightAllToolButtons(rayOrigin, false);
-			}
-
-			m_GradientButton.UpdateMaterialColors();
 		}
 
 		void OnBackgroundButtonClick()
@@ -631,7 +654,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			const float kMaxPinnedToolButtonCount = 16; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
 			const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
-			var phaseOffset = kRotationSpacing * 0.5f - (2 * 0.5f) * kRotationSpacing; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
+			var phaseOffset = kRotationSpacing * 0.5f - (buttonCount * 0.5f) * kRotationSpacing; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
 			var targetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * orderPosition, Vector3.down);
 
 			var duration = 0f;
