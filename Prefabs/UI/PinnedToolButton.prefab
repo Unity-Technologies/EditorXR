@@ -388,9 +388,9 @@ GameObject:
   - 23: {fileID: 23000013566874788}
   - 114: {fileID: 114000010373680160}
   - 65: {fileID: 65000011941282114}
-  - 65: {fileID: 65000011946148642}
-  - 65: {fileID: 65000010009342954}
   - 65: {fileID: 65000012371166842}
+  - 65: {fileID: 65000010009342954}
+  - 65: {fileID: 65000011946148642}
   m_Layer: 5
   m_Name: GradientButton
   m_TagString: Untagged
@@ -761,7 +761,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.18, y: 0.005, z: 0.06}
+  m_Size: {x: 0.205, y: 0.005, z: 0.06}
   m_Center: {x: 0, y: 0, z: -0}
 --- !u!65 &65000010916098064
 BoxCollider:
@@ -785,7 +785,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.145, y: 0.005, z: 0.23}
+  m_Size: {x: 0.165, y: 0.005, z: 0.23}
   m_Center: {x: 0, y: 0, z: -0.015}
 --- !u!65 &65000011946148642
 BoxCollider:
@@ -797,7 +797,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.2, y: 0.005, z: 0.1}
+  m_Size: {x: 0.225, y: 0.005, z: 0.1}
   m_Center: {x: 0, y: 0, z: -0.08}
 --- !u!65 &65000012371166842
 BoxCollider:
@@ -809,7 +809,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.16, y: 0.005, z: 0.04}
+  m_Size: {x: 0.18, y: 0.005, z: 0.04}
   m_Center: {x: 0, y: 0, z: 0.05}
 --- !u!65 &65000012740030200
 BoxCollider:
