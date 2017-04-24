@@ -26,6 +26,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesDirectSelectionMethods.getDirectSelection = () => m_DirectSelections;
 
 				ICanGrabObjectMethods.canGrabObject = CanGrabObject;
+
+				IGetPointerLengthMethods.getPointerLength = GetPointerLength;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
@@ -49,18 +51,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 
 			// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer
-			internal float GetPointerLength(Transform rayOrigin)
+			internal static float GetPointerLength(Transform rayOrigin)
 			{
 				var length = 0f;
 
 				// Check if this is a MiniWorldRay
 				MiniWorlds.MiniWorldRay ray;
-				if (evr.m_MiniWorlds.rays.TryGetValue(rayOrigin, out ray))
+				if (evr.GetNestedModule<MiniWorlds>().rays.TryGetValue(rayOrigin, out ray))
 					rayOrigin = ray.originalRayOrigin;
 
-				var rays = evr.m_Rays;
 				DefaultProxyRay dpr;
-				if (rays.defaultRays.TryGetValue(rayOrigin, out dpr))
+				if (evr.GetNestedModule<Rays>().defaultRays.TryGetValue(rayOrigin, out dpr))
 				{
 					length = dpr.pointerLength;
 
@@ -105,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				});
 
-				foreach (var ray in evr.m_MiniWorlds.rays)
+				foreach (var ray in evr.GetNestedModule<MiniWorlds>().rays)
 				{
 					var rayOrigin = ray.Key;
 					var miniWorldRay = ray.Value;
@@ -150,9 +151,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			bool CanGrabObject(GameObject selection, Transform rayOrigin)
+			static bool CanGrabObject(GameObject selection, Transform rayOrigin)
 			{
-				if (selection.CompareTag(k_VRPlayerTag) && !evr.m_MiniWorlds.rays.ContainsKey(rayOrigin))
+				if (selection.CompareTag(k_VRPlayerTag) && !evr.GetNestedModule<MiniWorlds>().rays.ContainsKey(rayOrigin))
 					return false;
 
 				return true;
@@ -168,11 +169,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
+			static void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
 			{
 				var sceneObjectModule = evr.GetModule<SceneObjectModule>();
 				var viewer = evr.GetNestedModule<Viewer>();
-				var miniWorlds = evr.m_MiniWorlds;
+				var miniWorlds = evr.GetNestedModule<MiniWorlds>();
 				foreach (var grabbedObject in grabbedObjects)
 				{
 					// Dropping the player head updates the camera rig position

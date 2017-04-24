@@ -71,10 +71,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		[SerializeField]
 		private ActionMap m_BlinkActionMap;
 
-		Camera m_MainCamera;
-		float m_OriginalNearClipPlane;
-		float m_OriginalFarClipPlane;
-
 		public Transform rayOrigin { private get; set; }
 		public Node? node { private get; set; }
 
@@ -93,10 +89,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_BlinkVisualsGO.transform.parent = rayOrigin;
 			m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
 			m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
-
-			m_MainCamera = CameraUtils.GetMainCamera();
-			m_OriginalNearClipPlane = m_MainCamera.nearClipPlane;
-			m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
 
 			Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
 		}
@@ -192,12 +184,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									rayToRay = otherRayOrigin.position - rayOrigin.position;
 									midPoint = rayOrigin.position + rayToRay * 0.5f;
 									var currOffset = midPoint - cameraRig.position;
-									cameraRig.localScale = Vector3.one;
+									this.SetViewerScale(1f);
 									cameraRig.position = midPoint - currOffset / currentScale;
 									cameraRig.rotation = Quaternion.AngleAxis(m_StartYaw, Vector3.up);
-
-									m_MainCamera.nearClipPlane = m_OriginalNearClipPlane;
-									m_MainCamera.farClipPlane = m_OriginalFarClipPlane;
 
 									consumeControl(m_Thumb);
 									consumeControl(blinkTool.m_Thumb);
@@ -220,11 +209,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									midPoint = currentRotation * midPoint * currentScale;
 
 									cameraRig.position = m_StartPosition + m_StartMidPoint - midPoint;
-									cameraRig.localScale = Vector3.one * currentScale;
 									cameraRig.rotation = currentRotation;
 
-									m_MainCamera.nearClipPlane = m_OriginalNearClipPlane * currentScale;
-									m_MainCamera.farClipPlane = m_OriginalFarClipPlane * currentScale;
+									this.SetViewerScale(currentScale);
 
 									m_ViewerScaleVisuals.viewerScale = currentScale;
 									m_BlinkVisuals.viewerScale = currentScale;
@@ -320,8 +307,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_State = State.Inactive;
 				}
 			}
-
-			consumeControl(blinkInput.blink);
 		}
 
 		void Translate(float inputValue, bool isVive, Vector3 direction)

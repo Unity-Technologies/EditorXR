@@ -6,29 +6,12 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
+	[CreateAssetMenu(menuName = "EditorVR/ProxyExtras")]
 	/// <summary>
 	/// Spawn additional objects around a proxy node
 	/// </summary>
 	sealed class ProxyExtras : ScriptableObject
 	{
-#if UNITY_EDITOR
-		[MenuItem("Assets/Create/ScriptableObjects/ProxyExtras")]
-		public static void Create()
-		{
-			var path = AssetDatabase.GetAssetPath(Selection.activeObject);
-
-			if (string.IsNullOrEmpty(path))
-				path = "Assets";
-
-			if (!Directory.Exists(path))
-				path = Path.GetDirectoryName(path);
-
-			var proxyExtras = ScriptableObject.CreateInstance<ProxyExtras>();
-			path = AssetDatabase.GenerateUniqueAssetPath(path + "/ProxyExtras.asset");
-			AssetDatabase.CreateAsset(proxyExtras, path);
-		}
-#endif
-
 		[Serializable]
 		struct ProxyExtraData
 		{

@@ -58,7 +58,7 @@ namespace ListView
 			for (int i = 0; i < m_Data.Count; i++)
 			{
 				var datum = m_Data[i];
-				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
 					Recycle(datum.index);
 				else
 					UpdateVisibleItem(datum, i * itemSize.z + m_ScrollOffset, ref doneSettling);
