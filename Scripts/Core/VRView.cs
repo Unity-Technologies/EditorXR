@@ -51,7 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		private Transform m_CameraRig;
 
 		bool m_HMDReady;
-		bool m_VRInitialized;
 		bool m_UseCustomPreviewCamera;
 
 		public static Transform cameraRig
@@ -198,15 +197,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			InputTracking.Recenter();
 			Camera.SetupCurrent(currentCamera);
 
-			// HACK: Fix VRSettings.enabled or some other API to check for missing HMD
-			m_VRInitialized = false;
-#if ENABLE_OVR_INPUT
-			m_VRInitialized |= OVRPlugin.initialized;
-#endif
-#if ENABLE_STEAMVR_INPUT
-			m_VRInitialized |= (OpenVR.IsHmdPresent() && OpenVR.Compositor != null);
-#endif
-
 			if (onEnable != null)
 				onEnable();
 		}
@@ -339,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (!m_Camera.gameObject.activeInHierarchy)
 				return;
 
-			if (!m_VRInitialized)
+			if (!VRDevice.isPresent)
 				return;
 
 			UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
