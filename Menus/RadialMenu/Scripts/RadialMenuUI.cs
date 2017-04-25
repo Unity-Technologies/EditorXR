@@ -282,12 +282,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			while (revealAmount < 1)
 			{
 				revealAmount += Time.unscaledDeltaTime * 8;
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(revealAmount);
 
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
 					if (i < m_Actions.Count)
 					{
-						m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount * revealAmount);
+						m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, shapedAmount);
 						m_RadialMenuSlots[i].CorrectIconRotation();
 					}
 				}
