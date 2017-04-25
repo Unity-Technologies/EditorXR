@@ -94,14 +94,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
 				//var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
 				//var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
+
+				m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
+				m_IconContainerCanvasGroup.alpha = 1f;
+
 				var mainMenuAndActiveButtonCount = 2;
 				var aboluteMenuButtonCount = isMainMenu ? mainMenuAndActiveButtonCount : activeButtonCount; // madates a fixed position for the MainMenu button, next to the ActiveToolButton
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order, aboluteMenuButtonCount));
 
+				/*
 				if (aboluteMenuButtonCount > mainMenuAndActiveButtonCount)
 					this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
 				else
 					m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
+				*/
 			}
 		}
 
@@ -164,7 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 
 				m_GradientButton.highlighted = m_previewToolType != null;
-				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
+				//this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
 			}
 		}
 
@@ -325,11 +331,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					// Set all buttons back to the center
 					// Tools with orders greater than that of the active tool should hide themseleves when the pinned tools arent being hovered
-					newOrderPosition = isMainMenu ? 0 : 1;
+					newOrderPosition = isMainMenu ? 0 : k_ActiveToolOrderPosition;
 				}
 
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(newOrderPosition, buttonCount));
-				this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(!value && order < 1));
+				//this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(!value && order < 1));
 			}
 
 			//get { return m_Highlighted; }
@@ -483,7 +489,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 
 			s_Hovered = true;
-			this.StopCoroutine(ref m_HoverCheckCoroutine);
 
 			if (isMainMenu)
 			{
@@ -500,11 +505,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				//Debug.LogWarning("Handle for disabled buttons not being shown, ie the promotote(green) button on the first/selected tool");
 
-			HoverButton();
+			highlightAllToolButtons(rayOrigin, true);
+			//HoverButton();
 			//m_ButtonCollider.enabled = false;
 			//}
 		}
 
+		/*
 		void HoverButton()
 		{
 			if (order < 2 && (isSelectionTool || isMainMenu)) // The main menu and the active tool occupy orders 0 and 1; don't show any action buttons for buttons in either position
@@ -516,7 +523,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 			else if (isSelectionTool)
 			{
-				/*
+
 				if (activeTool)
 				{
 					m_RightPinnedToolActionButton.visible = false;
@@ -524,7 +531,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					StartCoroutine(DelayedCollderEnable());
 				}
 				else
-				*/
+
 				{
 					//m_RightPinnedToolActionButton.visible = IsSelectToolButton(m_RightPinnedToolActionButton.buttonType) ? true : false;
 					//m_LeftPinnedToolActionButton.visible = IsSelectToolButton(m_LeftPinnedToolActionButton.buttonType) ? true : false;
@@ -538,6 +545,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			highlightAllToolButtons(rayOrigin, true);
 		}
+	*/
 
 		void OnActionButtonHoverExit(bool waitBeforeClosingAllButtons = true)
 		{
@@ -608,31 +616,34 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// Hide both action buttons if the user is no longer hovering over the button
 			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
 			//{
-				selectTool(rayOrigin, m_ToolType); // Perform clik for a ToolButton that doesn't utilize ToolActionButtons
 			//}
 
+			selectTool(rayOrigin, m_ToolType); // Perform clik for a ToolButton that doesn't utilize ToolActionButtons
+
 			if (!isMainMenu)
-				highlightAllToolButtons(rayOrigin, true);
+			{
+				OnActionButtonHoverExit(false);
+				//highlightAllToolButtons(rayOrigin, true);
+			}
 
 			m_GradientButton.UpdateMaterialColors();
 		}
 
 		IEnumerator AnimateShow(Vector3 targetPosition, Vector3 targetScale)
 		{
+			m_IconContainerCanvasGroup.alpha = 1f;
 			//m_RootCollider.enabled = false;
 			var duration = 0f;
 			while (duration < 2)
 			{
 				duration += Time.unscaledDeltaTime * 3f;
 				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
-				m_IconContainerCanvasGroup.alpha = Mathf.Lerp(0f, 1f, durationShaped);
 				m_IconContainer.localScale = Vector3.Lerp(Vector3.zero, k_SemiTransparentIconContainerScale, durationShaped * 2f);
 				transform.localPosition = Vector3.Lerp(Vector3.zero, targetPosition, durationShaped);
 				transform.localScale = Vector3.Lerp(Vector3.zero, targetScale, durationShaped);
 				yield return null;
 			}
 
-			m_IconContainerCanvasGroup.alpha = 1f;
 			m_IconContainer.localScale = k_SemiTransparentIconContainerScale;
 			transform.localPosition = targetPosition;
 			transform.localScale = targetScale;
@@ -676,6 +687,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var duration = 0f;
 			//var currentPosition = transform.localPosition;
 			//var targetPosition = activeTool ? activePosition : m_InactivePosition;
+			var currentCanvasAlpha = m_IconContainerCanvasGroup.alpha;
+			var targetCanvasAlpha = orderPosition > k_ActiveToolOrderPosition - 1 || activeTool ? 1f : 0f;
 			var currentRotation = transform.localRotation;
 			var positionWait = 1f;// (order + 5) * 0.1f;
 			while (duration < 1)
@@ -683,6 +696,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				duration += Time.unscaledDeltaTime * 6f * positionWait;
 				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 3);
 				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
+				m_IconContainerCanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, targetCanvasAlpha, durationShaped);
 				CorrectIconRotation();
 				//transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
 				yield return null;
@@ -697,7 +711,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PositionCoroutine = null;
 		}
 
-		IEnumerator AnimateSemiTransparent(bool makeSemiTransparent)
+		IEnumerator AnimateSemiTransparentX(bool makeSemiTransparent)
 		{
 			//if (!makeSemiTransparent)
 				//yield return new WaitForSeconds(1f); // Pause before making opaque
@@ -790,8 +804,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					duration += Time.unscaledDeltaTime;
 					yield return null;
 
-					if (s_Hovered)
+					if (s_Hovered || m_PositionCoroutine != null)
+					{
+						m_HoverCheckCoroutine = null;
 						yield break;
+					}
 				}
 			}
 
@@ -799,6 +816,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.highlighted = false;
 			highlightAllToolButtons(rayOrigin, false);
 			m_GradientButton.UpdateMaterialColors();
+			m_HoverCheckCoroutine = null;
 		}
 
 		void CorrectIconRotation()
