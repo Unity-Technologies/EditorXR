@@ -33,10 +33,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_Button.transition = Selectable.Transition.ColorTint;
 					m_Button.targetGraphic.color = m_OriginalColor;
 				}
-
-				// HACK: Force update of target graphic color
-				m_Button.enabled = false;
-				m_Button.enabled = true;
 			}
 		}
 

@@ -140,10 +140,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_DropZoneTransform = m_DropZone.transform;
 			m_Text.text = data.name;
 
-			// HACK: We need to kick the canvasRenderer to update the mesh properly
-			m_Text.gameObject.SetActive(false);
-			m_Text.gameObject.SetActive(true);
-
 			hovering = false;
 		}
 

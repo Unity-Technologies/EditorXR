@@ -181,10 +181,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_PreviewObjectTransform.localScale = Vector3.zero;
 
 			m_Text.text = listData.name;
-
-			// HACK: We need to kick the canvasRenderer to update the mesh properly
-			m_Text.gameObject.SetActive(false);
-			m_Text.gameObject.SetActive(true);
 		}
 
 		public void UpdateTransforms(float scale)
