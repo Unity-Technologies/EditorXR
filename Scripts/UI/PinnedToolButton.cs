@@ -211,10 +211,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//Collider m_RootCollider;
 
 		[SerializeField]
-		MeshRenderer m_FrameRenderer;
+		SkinnedMeshRenderer m_FrameRenderer;
 
 		[SerializeField]
-		MeshRenderer m_InsetMeshRenderer;
+		SkinnedMeshRenderer m_InsetMeshRenderer;
+
+		[SerializeField]
+		SkinnedMeshRenderer m_SecondaryInsetMeshRenderer;
+
+		[SerializeField]
+		SkinnedMeshRenderer m_SecondaryInsetMaskMeshRenderer;
 
 		[SerializeField]
 		Transform m_TooltipTarget;
@@ -239,6 +245,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_ActivatorMoveCoroutine;
 		Coroutine m_HoverCheckCoroutine;
+		Coroutine m_SecondaryButtonVisibilityCoroutine;
 
 		string m_TooltipText;
 		bool m_Highlighted;
@@ -509,6 +516,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//HoverButton();
 			//m_ButtonCollider.enabled = false;
 			//}
+
+			this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 		}
 
 		/*
@@ -830,6 +839,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			var yaw = transform.localRotation.eulerAngles.y;
 			//tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
+		}
+
+		IEnumerator ShowSecondaryButton()
+		{
+			var duration = 0f;
+			while (duration < 1f)
+			{
+				duration += Time.unscaledDeltaTime * 1.5f;
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(0f, 39.5f, duration));
+				yield return null;
+			}
+
+			while (duration > 0f)
+			{
+				duration -= Time.unscaledDeltaTime * 1.5f;
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(0f, 39.5f, duration));
+				yield return null;
+			}
+
+			m_SecondaryButtonVisibilityCoroutine = null;
 		}
 	}
 }
