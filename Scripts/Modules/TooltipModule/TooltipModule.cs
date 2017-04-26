@@ -130,7 +130,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_CustomHighlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipColor.customToolTipHighlightColor.b);
 			}
 
-			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(Color.clear, m_OriginalBackgroundColor, lerp));
+			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
 
 			var placement = tooltip as ITooltipPlacement;
 
