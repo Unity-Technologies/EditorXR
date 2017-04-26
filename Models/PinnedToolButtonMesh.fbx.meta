@@ -15,6 +15,10 @@ ModelImporter:
     100014: PinnedToolButtonFaceMask
     100016: PinnedToolButtonFrame
     100018: PinnedToolButtonInset
+    100020: PinnedToolCloseButtonFaceMask
+    100022: PinnedToolCloseButtonInset
+    100024: PinnedToolSecondaryButtonFaceMask
+    100026: PinnedToolSecondaryButtonInset
     400000: //RootNode
     400002: RadialMenuFrameSegment.001
     400004: RadialMenuSlotInset.001
@@ -25,6 +29,10 @@ ModelImporter:
     400014: PinnedToolButtonFaceMask
     400016: PinnedToolButtonFrame
     400018: PinnedToolButtonInset
+    400020: PinnedToolCloseButtonFaceMask
+    400022: PinnedToolCloseButtonInset
+    400024: PinnedToolSecondaryButtonFaceMask
+    400026: PinnedToolSecondaryButtonInset
     2300000: RadialMenuFrameSegment.001
     2300002: RadialMenuSlotInset.001
     2300004: RadialMenuSlotMask.002
@@ -34,6 +42,8 @@ ModelImporter:
     2300012: PinnedToolButtonFaceMask
     2300014: PinnedToolButtonFrame
     2300016: PinnedToolButtonInset
+    2300018: PinnedToolCloseButtonFaceMask
+    2300020: PinnedToolCloseButtonInset
     3300000: RadialMenuFrameSegment.001
     3300002: RadialMenuSlotInset.001
     3300004: RadialMenuSlotMask.002
@@ -43,6 +53,8 @@ ModelImporter:
     3300012: PinnedToolButtonFaceMask
     3300014: PinnedToolButtonFrame
     3300016: PinnedToolButtonInset
+    3300018: PinnedToolCloseButtonFaceMask
+    3300020: PinnedToolCloseButtonInset
     4300000: RadialMenuFrameSegment.001
     4300002: RadialMenuSlotInset.001
     4300004: RadialMenuSlotMask.002
@@ -52,8 +64,20 @@ ModelImporter:
     4300012: PinnedToolButtonFrame
     4300014: PinnedToolButtonInset
     4300016: PinnedToolButtonFaceMask
+    4300018: PinnedToolCloseButtonFaceMask
+    4300020: PinnedToolCloseButtonInset
+    4300022: PinnedToolSecondaryButtonFaceMask
+    4300024: PinnedToolSecondaryButtonInset
     9500000: //RootNode
+    11100000: //RootNode
     13700000: RadialMenuSlotMask.002
+    13700002: PinnedToolButtonFaceMask
+    13700004: PinnedToolCloseButtonFaceMask
+    13700006: PinnedToolButtonFrame
+    13700008: PinnedToolButtonInset
+    13700010: PinnedToolCloseButtonInset
+    13700012: PinnedToolSecondaryButtonFaceMask
+    13700014: PinnedToolSecondaryButtonInset
   materials:
     importMaterials: 0
     materialName: 0
@@ -112,7 +136,7 @@ ModelImporter:
     rootMotionBoneName: 
     hasTranslationDoF: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 0
+  animationType: 1
   humanoidOversampling: 1
   additionalBone: 0
   userData: 
