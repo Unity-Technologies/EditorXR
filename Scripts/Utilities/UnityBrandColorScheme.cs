@@ -36,6 +36,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// Collection of curated Unity brand gradients; selected pairs of specific unity-brand color swatches
 		/// </summary>
 		static readonly List<GradientPair> s_CuratedGradientPairs = new List<GradientPair>();
+		static int s_RandomCuratedGradientPairPosition;
+		static int s_CuratedGradientPairsRange;
 
 		static Color s_Red;
 		static Color s_RedLight;
@@ -290,6 +292,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedGradientPairs.Add(new GradientPair(blue, lime));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, yellowLight));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, darkBlue));
+
+			s_CuratedGradientPairsRange = s_CuratedGradientPairs.Count - 1;
 		}
 
 		/// <summary>
@@ -356,8 +360,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>Gradient pair of two curated brand-swatches</returns>
 		public static GradientPair GetRandomCuratedGradient()
 		{
-			var curatedGradientPair = s_CuratedGradientPairs[s_ColorRandom.Next(s_CuratedGradientPairs.Count - 1)];
-			return curatedGradientPair;
+			var randomPosition = s_ColorRandom.Next(s_CuratedGradientPairsRange);
+
+			while (randomPosition == s_RandomCuratedGradientPairPosition)
+				randomPosition = s_ColorRandom.Next(s_CuratedGradientPairsRange);
+
+			s_RandomCuratedGradientPairPosition = randomPosition;
+
+			return s_CuratedGradientPairs[s_RandomCuratedGradientPairPosition];;
 		}
 	}
 }
