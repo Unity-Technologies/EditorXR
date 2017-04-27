@@ -486,6 +486,7 @@ GameObject:
   - 65: {fileID: 65000012371166842}
   - 65: {fileID: 65000010009342954}
   - 65: {fileID: 65000011946148642}
+  - 65: {fileID: 65000012409633396}
   m_Layer: 5
   m_Name: GradientButton
   m_TagString: Untagged
@@ -990,6 +991,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.18, y: 0.005, z: 0.04}
   m_Center: {x: 0, y: 0, z: 0.05}
+--- !u!65 &65000012409633396
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000014093660532}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.235, y: 0.005, z: 0.1}
+  m_Center: {x: 0, y: 0, z: -0.15}
 --- !u!65 &65000012740030200
 BoxCollider:
   m_ObjectHideFlags: 1
@@ -1448,7 +1461,7 @@ SkinnedMeshRenderer:
   m_Mesh: {fileID: 4300022, guid: 303f9d32292c8d444aa4375f4f57be3a, type: 3}
   m_Bones: []
   m_BlendShapeWeights:
-  - 71.5
+  - 62
   m_RootBone: {fileID: 0}
   m_AABB:
     m_Center: {x: 0.010867998, y: 0, z: -0.03129649}
@@ -1532,7 +1545,7 @@ SkinnedMeshRenderer:
   m_Bones: []
   m_BlendShapeWeights:
   - 0
-  - 39.4
+  - 47.63
   m_RootBone: {fileID: 0}
   m_AABB:
     m_Center: {x: 0.04595294, y: -0.0000000017462298, z: -0.19399026}
@@ -1574,7 +1587,7 @@ SkinnedMeshRenderer:
   m_Mesh: {fileID: 4300024, guid: 303f9d32292c8d444aa4375f4f57be3a, type: 3}
   m_Bones: []
   m_BlendShapeWeights:
-  - 71.5
+  - 62
   m_RootBone: {fileID: 0}
   m_AABB:
     m_Center: {x: 0.057552528, y: 0.0014277332, z: -0.26775372}
