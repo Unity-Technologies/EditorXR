@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						tooltipText = toolType.Name;
 
 						// Tools other than select fetch a random gradientPair; also used by the device when highlighted
-						gradientPair = UnityBrandColorScheme.GetRandomGradient();
+						gradientPair = UnityBrandColorScheme.GetRandomCuratedGradient();
 					}
 
 					activeTool = activeTool;
@@ -843,18 +843,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator ShowSecondaryButton()
 		{
-			var duration = 0f;
-			while (duration < 1f)
+			var amount = 0f;
+			while (amount < 1f)
 			{
-				duration += Time.unscaledDeltaTime * 1.5f;
-				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(0f, 39.5f, duration));
+				amount += Time.unscaledDeltaTime * 1.5f;
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(0f, 39.5f, shapedAmount));
 				yield return null;
 			}
 
-			while (duration > 0f)
+			while (amount > 0f)
 			{
-				duration -= Time.unscaledDeltaTime * 1.5f;
-				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(0f, 39.5f, duration));
+				amount -= Time.unscaledDeltaTime * 1.5f;
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(0f, 39.5f, amount));
 				yield return null;
 			}
 
