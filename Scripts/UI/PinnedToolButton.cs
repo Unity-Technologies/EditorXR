@@ -339,6 +339,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					// Set all buttons back to the center
 					// Tools with orders greater than that of the active tool should hide themseleves when the pinned tools arent being hovered
 					newOrderPosition = isMainMenu ? 0 : k_ActiveToolOrderPosition;
+					this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 				}
 
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(newOrderPosition, buttonCount));
@@ -437,6 +438,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.containerContentsAnimationSpeedMultiplier = 2.5f;
 
 			m_FrameRenderer.SetBlendShapeWeight(1, 0f);
+			m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, 100f);
+			m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, 100f);
 
 			//m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
 			//m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
@@ -504,7 +507,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.highlighted = true;
 				return;
 			}
-			else
+			else if (!isSelectionTool)
 			{
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 			}
@@ -573,9 +576,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			this.RestartCoroutine(ref m_HoverCheckCoroutine, DelayedHoverExitCheck(waitBeforeClosingAllButtons));
-
-			if (!activeTool)
-				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
+			this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
 			return;
 			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
@@ -853,8 +854,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator ShowSecondaryButton()
 		{
-			var amount = 0f;
+			const float kFrameSecondaryButtonVisibleBlendShapeWeight = 61f;
+			const float kSecondaryButtonVisibleBlendShapeWeight = 46f;
+
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
+			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
+			var amount = 0f;
 			while (amount < 0.25f)
 			{
 				amount += Time.unscaledDeltaTime;
@@ -866,7 +871,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				amount += Time.unscaledDeltaTime * 10f;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
-				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 47.63f, shapedAmount));
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kFrameSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
+				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
+				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
 				yield return null;
 			}
 
@@ -875,13 +882,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator HideSecondaryButton()
 		{
+			const float kSecondaryButtonHiddenBlendShapeWeight = 100f;
+
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
+			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
 			var amount = 0f;
 			while (amount < 1f)
 			{
 				amount += Time.unscaledDeltaTime * 8f;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 0f, shapedAmount));
+				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
+				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
 				yield return null;
 			}
 
