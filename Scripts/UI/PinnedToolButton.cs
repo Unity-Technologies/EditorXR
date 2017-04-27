@@ -52,12 +52,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						tooltipText = toolType.Name;
 
 						// Tools other than select fetch a random gradientPair; also used by the device when highlighted
-						gradientPair = UnityBrandColorScheme.GetRandomCuratedGradient();
+						gradientPair = UnityBrandColorScheme.GetRandomCuratedDarkGradient();
 					}
 
 					activeTool = activeTool;
 					m_GradientButton.visible = true;
-					m_IconMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
+					//m_IconMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
 
 					var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
 					var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
@@ -573,7 +573,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			this.RestartCoroutine(ref m_HoverCheckCoroutine, DelayedHoverExitCheck(waitBeforeClosingAllButtons));
-			this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
+
+			if (!activeTool)
+				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
 			return;
 			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
@@ -726,6 +728,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PositionCoroutine = null;
 		}
 
+		/*
 		IEnumerator AnimateSemiTransparentX(bool makeSemiTransparent)
 		{
 			//if (!makeSemiTransparent)
@@ -775,6 +778,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
 			m_IconContainer.localScale = targetIconContainerScale;
 		}
+		*/
 
 		IEnumerator AnimateMoveActivatorButton(bool moveToAlternatePosition = true)
 		{
@@ -862,7 +866,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				amount += Time.unscaledDeltaTime * 10f;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
-				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 39.5f, shapedAmount));
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 47.63f, shapedAmount));
 				yield return null;
 			}
 
