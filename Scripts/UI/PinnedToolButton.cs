@@ -502,6 +502,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.highlighted = true;
 				return;
 			}
+			else
+			{
+				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
+			}
 
 			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
 			//{
@@ -517,7 +521,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//m_ButtonCollider.enabled = false;
 			//}
 
-			this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 		}
 
 		/*
@@ -568,6 +571,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			this.RestartCoroutine(ref m_HoverCheckCoroutine, DelayedHoverExitCheck(waitBeforeClosingAllButtons));
+			this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
 			return;
 			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
@@ -856,6 +860,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				amount -= Time.unscaledDeltaTime * 1.5f;
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(0f, 39.5f, amount));
+				yield return null;
+			}
+
+			m_SecondaryButtonVisibilityCoroutine = null;
+		}
+
+		IEnumerator HideSecondaryButton()
+		{
+			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
+			var amount = 0f;
+			while (amount < 1f)
+			{
+				amount += Time.unscaledDeltaTime * 1.5f;
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 0f, shapedAmount));
 				yield return null;
 			}
 
