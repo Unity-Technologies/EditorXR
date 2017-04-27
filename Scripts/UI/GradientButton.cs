@@ -132,7 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		// The inner-button's background gradient MeshRenderer
 		[SerializeField]
-		MeshRenderer m_ButtonMeshRenderer;
+		Renderer m_ButtonMeshRenderer;
 
 		// Transform-root of the contents in the icon container (icons, text, etc)
 		[SerializeField]
