@@ -270,7 +270,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedDarkGradientPairs.Add(new GradientPair(red, darker));
 			s_CuratedDarkGradientPairs.Add(new GradientPair(red, darkBlue));
 			s_CuratedDarkGradientPairs.Add(new GradientPair(lime, darkBlue));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(lime, limeDark));
 			s_CuratedDarkGradientPairs.Add(new GradientPair(lime, greenDark));
 			s_CuratedDarkGradientPairs.Add(new GradientPair(lime, cyanDark));
 			s_CuratedDarkGradientPairs.Add(new GradientPair(lime, darker));
@@ -288,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedLightGradientPairs.Add(new GradientPair(lime, greenLight));
 			s_CuratedLightGradientPairs.Add(new GradientPair(red, redLight));
 			s_CuratedLightGradientPairs.Add(new GradientPair(red, yellow));
-			s_CuratedLightGradientPairs.Add(new GradientPair(red, orange));
+			s_CuratedLightGradientPairs.Add(new GradientPair(lime, limeDark));
 			s_CuratedLightGradientPairs.Add(new GradientPair(red, orangeLight));
 			s_CuratedLightGradientPairs.Add(new GradientPair(lime, orange));
 			s_CuratedLightGradientPairs.Add(new GradientPair(lime, teal));
@@ -305,8 +304,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedLightGradientPairs.Add(new GradientPair(blue, lime));
 			s_CuratedLightGradientPairs.Add(new GradientPair(blue, yellowLight));
 
+			// A common collection of curated gradient pairs that arent separated by their luma values
 			s_CuratedGradientPairs.AddRange(s_CuratedDarkGradientPairs);
 			s_CuratedGradientPairs.AddRange(s_CuratedLightGradientPairs);
+
 			s_CuratedGradientPairsRange = s_CuratedGradientPairs.Count - 1;
 			s_CuratedLightGradientPairsRange = s_CuratedLightGradientPairs.Count - 1;
 			s_CuratedDarkGradientPairsRange = s_CuratedDarkGradientPairs.Count - 1;
