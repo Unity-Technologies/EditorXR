@@ -436,6 +436,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.click += OnBackgroundButtonClick;
 			m_GradientButton.containerContentsAnimationSpeedMultiplier = 2.5f;
 
+			m_FrameRenderer.SetBlendShapeWeight(1, 0f);
+
 			//m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
 			//m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
 			//m_LeftPinnedToolActionButton.hoverExit = OnActionButtonHoverExit;
