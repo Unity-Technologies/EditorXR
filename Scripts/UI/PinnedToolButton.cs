@@ -848,18 +848,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator ShowSecondaryButton()
 		{
 			var amount = 0f;
-			while (amount < 1f)
+			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
+			while (amount < 0.25f)
 			{
-				amount += Time.unscaledDeltaTime * 1.5f;
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
-				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(0f, 39.5f, shapedAmount));
+				amount += Time.unscaledDeltaTime;
 				yield return null;
 			}
 
-			while (amount > 0f)
+			amount = 0f;
+			while (amount < 1f)
 			{
-				amount -= Time.unscaledDeltaTime * 1.5f;
-				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(0f, 39.5f, amount));
+				amount += Time.unscaledDeltaTime * 10f;
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 39.5f, shapedAmount));
 				yield return null;
 			}
 
@@ -872,7 +873,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var amount = 0f;
 			while (amount < 1f)
 			{
-				amount += Time.unscaledDeltaTime * 1.5f;
+				amount += Time.unscaledDeltaTime * 8f;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 0f, shapedAmount));
 				yield return null;
