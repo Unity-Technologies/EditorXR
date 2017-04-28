@@ -236,13 +236,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				Debug.LogError("OnMainMenuActivatorSelected called!");
 				var targetToolRayOrigin = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin != rayOrigin).rayOrigin;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin == rayOrigin);
-				if (targetToolRayOrigin == null)
-					Debug.LogError("<color=red>????????????????????????????????????????????????????????????</color>");
-
-				foreach (var origin in deviceData.proxy.rayOrigins.Values)
-				{
-					targetToolRayOrigin = origin != rayOrigin ? origin : null; // Assign the opposite hand's rayOrigin
-				}
 
 				if (deviceData != null)
 				{
