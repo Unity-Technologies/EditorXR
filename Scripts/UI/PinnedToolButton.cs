@@ -46,6 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						order = isMainMenu ? menuButtonOrderPosition : activeToolOrderPosition;
 						tooltipText = isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText;
 						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
+						secondaryButtonCollidersEnabled = false;
 					}
 					else
 					{
@@ -229,6 +230,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		SkinnedMeshRenderer m_SecondaryInsetMaskMeshRenderer;
 
 		[SerializeField]
+		Collider[] m_SecondaryButtonColliders; // disable for the main menu button & solitary active tool button
+
+		[SerializeField]
 		Transform m_TooltipTarget;
 
 		[SerializeField]
@@ -312,6 +316,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		private bool secondaryButtonCollidersEnabled
+		{
+			set
+			{
+				foreach (var collider in m_SecondaryButtonColliders)
+				{
+					collider.enabled = value;
+				}
+			}
+		}
+
 		public bool highlighted
 		{
 			get { return m_Highlighted; }
@@ -337,14 +352,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (m_Highlighted)
 				{
 					buttonCount = activeButtonCount - 1; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
+					this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 					newOrderPosition -= 1;
 					order = order;
+					secondaryButtonCollidersEnabled = true;
 				}
 				else
 				{
 					// Set all buttons back to the center
 					// Tools with orders greater than that of the active tool should hide themseleves when the pinned tools arent being hovered
 					newOrderPosition = isMainMenu ? 0 : k_ActiveToolOrderPosition;
+					secondaryButtonCollidersEnabled = false;
 					this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 				}
 
