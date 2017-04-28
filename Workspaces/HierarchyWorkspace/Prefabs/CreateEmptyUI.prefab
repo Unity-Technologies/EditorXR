@@ -290,6 +290,7 @@ MonoBehaviour:
   m_SwapIconsOnClick: 1
   m_HighlightItems:
   - {fileID: 114000013561299652}
+  - {fileID: 114000013733206062}
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
