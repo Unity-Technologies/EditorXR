@@ -264,7 +264,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedGradientPairs.Add(new GradientPair(lime, limeDark));
 			s_CuratedGradientPairs.Add(new GradientPair(lime, magenta));
 			s_CuratedGradientPairs.Add(new GradientPair(magenta, purpleDark));
-			s_CuratedGradientPairs.Add(new GradientPair(magenta, darker));
 			s_CuratedGradientPairs.Add(new GradientPair(magenta, yellow));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, purpleDark));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, cyanDark));
@@ -272,7 +271,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedGradientPairs.Add(new GradientPair(blue, blueDark));
 			s_CuratedGradientPairs.Add(new GradientPair(red, darkBlue));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, darkBlue));
-			s_CuratedGradientPairs.Add(new GradientPair(magenta, darkBlue));
 			s_CuratedGradientPairs.Add(new GradientPair(yellow, red));
 			s_CuratedGradientPairs.Add(new GradientPair(red, blue));
 			s_CuratedGradientPairs.Add(new GradientPair(magenta, cyan));
