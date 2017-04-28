@@ -217,6 +217,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		SkinnedMeshRenderer m_InsetMeshRenderer;
 
 		[SerializeField]
+		GradientButton m_SecondaryGradientButton;
+
+		[SerializeField]
 		CanvasGroup m_SecondaryButtonContainerCanvasGroup;
 
 		[SerializeField]
@@ -444,6 +447,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, 100f);
 			m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, 100f);
 
+			m_SecondaryGradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
+			m_SecondaryGradientButton.hoverExit += OnActionButtonHoverExit;
 			m_SecondaryButtonContainerCanvasGroup.alpha = 0f;
 			//m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
 			//m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
@@ -501,7 +506,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnBackgroundHoverEnter ()
 		{
-			if (m_PositionCoroutine != null)
+			if (m_PositionCoroutine != null || m_SecondaryGradientButton.highlighted)
 				return;
 
 			s_Hovered = true;
@@ -828,7 +833,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					duration += Time.unscaledDeltaTime;
 					yield return null;
 
-					if (s_Hovered || m_PositionCoroutine != null)
+					if ((s_Hovered || m_PositionCoroutine != null) || m_SecondaryGradientButton.highlighted)
 					{
 						m_HoverCheckCoroutine = null;
 						yield break;
@@ -896,13 +901,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var amount = 0f;
 			while (amount < 1f)
 			{
+				yield return null;
+
+				if (m_SecondaryGradientButton.highlighted)
+				{
+					m_SecondaryButtonVisibilityCoroutine = null;
+					yield break;
+				}
+
 				amount += Time.unscaledDeltaTime * 8f;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 0f, shapedAmount));
 				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
 				m_SecondaryButtonContainerCanvasGroup.alpha = Mathf.Lerp(currentSecondaryCanvasGroupAlpha, 0f, shapedAmount);
-				yield return null;
 			}
 
 			m_SecondaryButtonVisibilityCoroutine = null;
