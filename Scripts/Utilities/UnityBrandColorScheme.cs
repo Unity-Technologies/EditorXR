@@ -372,7 +372,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		/// <summary>
-		/// Fetch a custom-curated Unity brand-specific color scheme (pair of differing brand-swatches)
+		/// Fetch a curated Unity brand-specific color scheme (pair of differing brand-swatches)
 		/// </summary>
 		/// <returns>Gradient pair of two curated brand-swatches</returns>
 		public static GradientPair GetRandomCuratedGradient()
@@ -388,7 +388,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		/// <summary>
-		/// Fetch a custom-curated lighter-luma Unity brand-specific color scheme (pair of differing brand-swatches)
+		/// Fetch a curated lighter-luma Unity brand-specific color scheme (pair of differing brand-swatches)
 		/// </summary>
 		/// <returns>Gradient pair of two curated lighter-luma brand-swatches</returns>
 		public static GradientPair GetRandomCuratedLightGradient()
@@ -404,7 +404,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		/// <summary>
-		/// Fetch a custom-curated darker-luma Unity brand-specific color scheme (pair of differing brand-swatches)
+		/// Fetch a curated darker-luma Unity brand-specific color scheme (pair of differing brand-swatches)
 		/// </summary>
 		/// <returns>Gradient pair of two curated darker-luma brand-swatches</returns>
 		public static GradientPair GetRandomCuratedDarkGradient()
@@ -420,9 +420,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		/// <summary>
-		/// Remove the session gradient from all GradientPair collections
+		/// Remove the session gradient from a GradientPair collection, if it is found in the collection
 		/// </summary>
-		/// <param name="gradientPairCollection">Collection for which the SessionGradient will be removed</param>
+		/// <param name="gradientPairCollection">Collection from which the SessionGradient will be removed</param>
 		static void RemoveSessionGradientFromCollection(List<GradientPair> gradientPairCollection)
 		{
 			foreach (GradientPair pair in gradientPairCollection)
