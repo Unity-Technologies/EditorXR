@@ -467,6 +467,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_SecondaryGradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
 			m_SecondaryGradientButton.hoverExit += OnActionButtonHoverExit;
+			m_SecondaryGradientButton.click += OnSecondaryButtonClicked;
 			m_SecondaryButtonContainerCanvasGroup.alpha = 0f;
 			//m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
 			//m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
@@ -674,6 +675,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.UpdateMaterialColors();
 		}
 
+		void OnSecondaryButtonClicked()
+		{
+			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndClose());
+			deletePinnedToolButton(rayOrigin, this);
+			OnActionButtonHoverExit(false);
+		}
+
 		IEnumerator AnimateShow(Vector3 targetPosition, Vector3 targetScale)
 		{
 			m_IconContainerCanvasGroup.alpha = 1f;
@@ -754,6 +762,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			transform.localRotation = targetRotation;
 			CorrectIconRotation();
 			m_PositionCoroutine = null;
+
+			if (m_GradientButton.highlighted)
+				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 		}
 
 		/*
