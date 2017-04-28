@@ -217,6 +217,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		SkinnedMeshRenderer m_InsetMeshRenderer;
 
 		[SerializeField]
+		CanvasGroup m_SecondaryButtonContainerCanvasGroup;
+
+		[SerializeField]
 		SkinnedMeshRenderer m_SecondaryInsetMeshRenderer;
 
 		[SerializeField]
@@ -441,6 +444,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, 100f);
 			m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, 100f);
 
+			m_SecondaryButtonContainerCanvasGroup.alpha = 0f;
 			//m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
 			//m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
 			//m_LeftPinnedToolActionButton.hoverExit = OnActionButtonHoverExit;
@@ -859,6 +863,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
 			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
+			var currentSecondaryCanvasGroupAlpha = m_SecondaryButtonContainerCanvasGroup.alpha;
 			var amount = 0f;
 			while (amount < 0.25f)
 			{
@@ -874,6 +879,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kFrameSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
+				m_SecondaryButtonContainerCanvasGroup.alpha = Mathf.Lerp(currentSecondaryCanvasGroupAlpha, 1f, shapedAmount);
 				yield return null;
 			}
 
@@ -886,6 +892,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
 			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
+			var currentSecondaryCanvasGroupAlpha = m_SecondaryButtonContainerCanvasGroup.alpha;
 			var amount = 0f;
 			while (amount < 1f)
 			{
@@ -894,6 +901,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 0f, shapedAmount));
 				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
+				m_SecondaryButtonContainerCanvasGroup.alpha = Mathf.Lerp(currentSecondaryCanvasGroupAlpha, 0f, shapedAmount);
 				yield return null;
 			}
 
