@@ -50,6 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		public bool highlighted
 		{
+			get { return m_Highlighted; }
 			set
 			{
 				if (m_Highlighted == value)
