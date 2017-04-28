@@ -1242,9 +1242,9 @@ MonoBehaviour:
   m_NormalContentColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
   m_HighlightItemColor: {r: 1, g: 1, b: 1, a: 1}
   m_HighlightItems:
-  - {fileID: 114000011650556854}
+  - {fileID: 114000012344975988}
   m_DelayBeforeReveal: 0
-  m_highlightZScaleMultiplier: 10
+  m_highlightZScaleMultiplier: 25
 --- !u!114 &114000010635728284
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1301,6 +1301,10 @@ MonoBehaviour:
   m_SecondaryButtonContainerCanvasGroup: {fileID: 225000012815828682}
   m_SecondaryInsetMeshRenderer: {fileID: 137000012837336366}
   m_SecondaryInsetMaskMeshRenderer: {fileID: 137000010072420284}
+  m_SecondaryButtonColliders:
+  - {fileID: 65000012409633396}
+  - {fileID: 65000010321053192}
+  - {fileID: 65000011573248474}
   m_TooltipTarget: {fileID: 4000010683372396}
   m_TooltipSource: {fileID: 4000013378434912}
   m_AlternateLocalPosition: {x: 0, y: 0, z: 0}
