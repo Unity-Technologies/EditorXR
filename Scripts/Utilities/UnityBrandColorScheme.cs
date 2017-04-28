@@ -264,7 +264,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedGradientPairs.Add(new GradientPair(lime, limeDark));
 			s_CuratedGradientPairs.Add(new GradientPair(lime, magenta));
 			s_CuratedGradientPairs.Add(new GradientPair(magenta, purpleDark));
-			s_CuratedGradientPairs.Add(new GradientPair(magenta, darker));
 			s_CuratedGradientPairs.Add(new GradientPair(magenta, yellow));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, purpleDark));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, cyanDark));
@@ -272,7 +271,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedGradientPairs.Add(new GradientPair(blue, blueDark));
 			s_CuratedGradientPairs.Add(new GradientPair(red, darkBlue));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, darkBlue));
-			s_CuratedGradientPairs.Add(new GradientPair(magenta, darkBlue));
 			s_CuratedGradientPairs.Add(new GradientPair(yellow, red));
 			s_CuratedGradientPairs.Add(new GradientPair(red, blue));
 			s_CuratedGradientPairs.Add(new GradientPair(magenta, cyan));
@@ -295,7 +293,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			// Setup dark-luma curated gradient pairs
 			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, darkBlue));
 			s_CuratedDarkGradientPairs.Add(new GradientPair(blueDark, darkBlue));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(orangeDark, darker));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(redDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(yellowDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(cyanDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(greenDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(purpleDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(darkBlueLight, darkBlue));
 
 			// Setup light-luma curated gradient pairs
 			s_CuratedLightGradientPairs.Add(new GradientPair(redLight, tealDark));
