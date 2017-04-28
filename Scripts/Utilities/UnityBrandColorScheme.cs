@@ -38,11 +38,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// Cache curated gradients collection size, to reduce further lookups
 		/// </summary>
 		static int s_CuratedGradientPairsRange;
-		static int s_RandomCuratedGradientPairPosition;
+		static int s_RandomCuratedGradientPairPosition = -1; // Set to -1 in order to allow a zero entry to be initially set
 		static int s_CuratedLightGradientPairsRange;
-		static int s_RandomCuratedLightGradientPairPosition;
+		static int s_RandomCuratedLightGradientPairPosition =  -1;
 		static int s_CuratedDarkGradientPairsRange;
-		static int s_RandomCuratedDarkGradientPairPosition;
+		static int s_RandomCuratedDarkGradientPairPosition = -1;
 
 		static GradientPair s_SessionGradient;
 
@@ -152,6 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			{
 				s_SessionGradient = value;
 
+				// Prevent the fetching of the session gradient from any of the curated collections
 				RemoveSessionGradientFromCollection(s_CuratedGradientPairs);
 				RemoveSessionGradientFromCollection(s_CuratedLightGradientPairs);
 				RemoveSessionGradientFromCollection(s_CuratedDarkGradientPairs);
@@ -246,60 +247,66 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			// Setup grayscale light/dark contrasting session gradient
 			grayscaleSessionGradient = new GradientPair(MaterialUtils.HexToColor("898A8AFF"), s_Light);
 
-			// Setup light-luma curated gradient pairs
-			s_CuratedDarkGradientPairs.Add(new GradientPair(blueDark, cyan));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(blueDark, darkBlue)); // too dark
-			s_CuratedDarkGradientPairs.Add(new GradientPair(blueDark, redDark));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, magenta));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, teal));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, green));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, lime));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, darkBlue)); // too dark
-			s_CuratedDarkGradientPairs.Add(new GradientPair(orangeDark, redDark));
+			// Setup neutral-luma curated gradient pairs
+			s_CuratedGradientPairs.Add(new GradientPair(cyan, blueDark));
+			s_CuratedGradientPairs.Add(new GradientPair(teal, tealDark));
+			s_CuratedGradientPairs.Add(new GradientPair(green, tealDark));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, tealDark));
+			s_CuratedGradientPairs.Add(new GradientPair(orange, redDark));
+			s_CuratedGradientPairs.Add(new GradientPair(orange, magenta));
+			s_CuratedGradientPairs.Add(new GradientPair(red, darker));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, red));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, cyan));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, greenDark));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, cyanDark));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, darker));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, darkBlue));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, limeDark));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, magenta));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, purpleDark));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, darker));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, yellow));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, purpleDark));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, cyanDark));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, blueDark));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, blueDark));
+			s_CuratedGradientPairs.Add(new GradientPair(red, darkBlue));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, darkBlue));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, darkBlue));
+			s_CuratedGradientPairs.Add(new GradientPair(yellow, red));
+			s_CuratedGradientPairs.Add(new GradientPair(red, blue));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, cyan));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, magenta));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, purple));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, darker));
+			// Slightly lighter pairs added to main curated set
+			s_CuratedGradientPairs.Add(new GradientPair(yellowLight, tealDark));
+			s_CuratedGradientPairs.Add(new GradientPair(orangeDark, orangeLight));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, greenLight));
+			s_CuratedGradientPairs.Add(new GradientPair(red, redLight));
+			s_CuratedGradientPairs.Add(new GradientPair(red, orangeLight));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, orange));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, teal));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, blueLight));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, blueLight));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, lime));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, yellowLight));
+
+			// Setup dark-luma curated gradient pairs
+			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(blueDark, darkBlue));
 			s_CuratedDarkGradientPairs.Add(new GradientPair(orangeDark, darker));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(red, darker));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(red, darkBlue));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(lime, darkBlue));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(lime, greenDark));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(lime, cyanDark));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(lime, darker)); // too dark
-			s_CuratedDarkGradientPairs.Add(new GradientPair(magenta, darkBlue));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(magenta, purpleDark));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(magenta, magentaDark));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(magenta, darker));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(blue, purpleDark));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(blue, cyanDark));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(blue, darkBlue));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(blue, blueDark));
 
 			// Setup light-luma curated gradient pairs
-			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, redLight));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, yellowLight));
-			s_CuratedDarkGradientPairs.Add(new GradientPair(orangeDark, orangeLight));
-			s_CuratedLightGradientPairs.Add(new GradientPair(red, blue));
-			s_CuratedLightGradientPairs.Add(new GradientPair(lime, greenLight));
-			s_CuratedLightGradientPairs.Add(new GradientPair(red, redLight));
-			s_CuratedLightGradientPairs.Add(new GradientPair(red, yellow));
-			s_CuratedLightGradientPairs.Add(new GradientPair(lime, limeDark));
-			s_CuratedLightGradientPairs.Add(new GradientPair(red, orangeLight));
-			s_CuratedLightGradientPairs.Add(new GradientPair(lime, orange));
-			s_CuratedLightGradientPairs.Add(new GradientPair(lime, teal));
-			s_CuratedLightGradientPairs.Add(new GradientPair(lime, cyan));
-			s_CuratedLightGradientPairs.Add(new GradientPair(lime, magenta));
-			s_CuratedLightGradientPairs.Add(new GradientPair(lime, red));
-			s_CuratedLightGradientPairs.Add(new GradientPair(magenta, orange));
-			s_CuratedLightGradientPairs.Add(new GradientPair(magenta, yellow));
-			s_CuratedLightGradientPairs.Add(new GradientPair(magenta, blueLight));
-			s_CuratedLightGradientPairs.Add(new GradientPair(magenta, cyan));
-			s_CuratedLightGradientPairs.Add(new GradientPair(blue, blueLight));
-			s_CuratedLightGradientPairs.Add(new GradientPair(blue, magenta));
-			s_CuratedLightGradientPairs.Add(new GradientPair(blue, purple));
-			s_CuratedLightGradientPairs.Add(new GradientPair(blue, lime));
-			s_CuratedLightGradientPairs.Add(new GradientPair(blue, yellowLight));
-
-			// A common collection of curated gradient pairs that arent separated by their luma values
-			s_CuratedGradientPairs.AddRange(s_CuratedDarkGradientPairs);
-			s_CuratedGradientPairs.AddRange(s_CuratedLightGradientPairs);
+			s_CuratedLightGradientPairs.Add(new GradientPair(redLight, tealDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, tealDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight, orangeDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(greenLight,lime));
+			s_CuratedLightGradientPairs.Add(new GradientPair(redLight, red));
+			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight, red));
+			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, magenta));
+			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, blue));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, blue));
 
 			s_CuratedGradientPairsRange = s_CuratedGradientPairs.Count - 1;
 			s_CuratedLightGradientPairsRange = s_CuratedLightGradientPairs.Count - 1;
