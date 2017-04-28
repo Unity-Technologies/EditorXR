@@ -232,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			if (renderTexture == null)
 			{
-				renderTexture = new RenderTexture(0, 0, 24, format);
+				renderTexture = new RenderTexture(0, 0, 24, format, RenderTextureReadWrite.Linear);
 				renderTexture.name = "Scene RT";
 				renderTexture.antiAliasing = msaa;
 				renderTexture.hideFlags = HideFlags.HideAndDontSave;
