@@ -53,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						tooltipText = toolType.Name;
 
 						// Tools other than select fetch a random gradientPair; also used by the device when revealed
-						gradientPair = UnityBrandColorScheme.GetRandomCuratedDarkGradient();
+						gradientPair = UnityBrandColorScheme.GetRandomCuratedLightGradient();
 					}
 
 					activeTool = activeTool;
