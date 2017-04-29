@@ -623,7 +623,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			this.RestartCoroutine(ref m_HoverCheckCoroutine, DelayedHoverExitCheck(waitBeforeClosingAllButtons));
-			this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
+
+			if (!m_SecondaryGradientButton.highlighted)
+				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
 			return;
 			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
