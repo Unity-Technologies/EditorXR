@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						tooltipText = toolType.Name;
 
-						// Tools other than select fetch a random gradientPair; also used by the device when highlighted
+						// Tools other than select fetch a random gradientPair; also used by the device when revealed
 						gradientPair = UnityBrandColorScheme.GetRandomCuratedDarkGradient();
 					}
 
@@ -218,6 +218,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		SkinnedMeshRenderer m_InsetMeshRenderer;
 
 		[SerializeField]
+		Collider[] m_PrimaryButtonColliders;
+
+		[SerializeField]
 		GradientButton m_SecondaryGradientButton;
 
 		[SerializeField]
@@ -258,7 +261,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_SecondaryButtonVisibilityCoroutine;
 
 		string m_TooltipText;
-		bool m_Highlighted;
+		bool m_Revealed;
 		bool m_MoveToAlternatePosition;
 		int m_Order;
 		Type m_previewToolType;
@@ -316,7 +319,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		private bool secondaryButtonCollidersEnabled
+		bool primaryButtonCollidersEnabled
+		{
+			set
+			{
+				foreach (var collider in m_PrimaryButtonColliders)
+				{
+					collider.enabled = value;
+				}
+			}
+		}
+
+		bool secondaryButtonCollidersEnabled
 		{
 			set
 			{
@@ -327,21 +341,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public bool highlighted
+		public bool revealed
 		{
-			get { return m_Highlighted; }
+			get { return m_Revealed; }
 			set
 			{
-				if (m_Highlighted == value || !gameObject.activeSelf || activeButtonCount <= k_ActiveToolOrderPosition + 1)
+				if (m_Revealed == value || !gameObject.activeSelf || activeButtonCount <= k_ActiveToolOrderPosition + 1)
 					return;
 
-				m_Highlighted = value;
+				m_Revealed = value;
 
 				if (isMainMenu)
 				{
 					m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor * (value ? 0f : 1f));
 					m_GradientButton.visible = !value;
+					primaryButtonCollidersEnabled = !m_Revealed;
 					return;
+				}
+				else
+				{
+					primaryButtonCollidersEnabled = m_Revealed;
 				}
 
 				//Debug.LogError(Time.frameCount + " : <color=blue>Highlighting : </color>" + toolType);
@@ -349,7 +368,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var newOrderPosition = order;
 				var buttonCount = 2; // MainMenu + ActiveTool button count
 				var targetRotation = Quaternion.identity;
-				if (m_Highlighted)
+				if (m_Revealed)
 				{
 					buttonCount = activeButtonCount - 1; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
 					this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
@@ -370,7 +389,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(!value && order < 1));
 			}
 
-			//get { return m_Highlighted; }
+			//get { return m_Revealed; }
 		}
 
 		public Sprite icon
@@ -540,7 +559,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 			}
 
-			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
+			//if (!m_LeftPinnedToolActionButton.revealed && !m_RightPinnedToolActionButton.revealed)
 			//{
 				//Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
 				//m_RootCollider.enabled = false;
@@ -611,7 +630,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
 
 			// Hide both action buttons if the user is no longer hovering over the button
-			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
+			//if (!m_LeftPinnedToolActionButton.revealed && !m_RightPinnedToolActionButton.revealed)
 			//{
 				//Debug.LogWarning("<color=green>!!!</color>");
 				//m_ButtonCollider.enabled = true;
@@ -649,8 +668,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 
 				OnActionButtonHoverExit(false);
-				//m_LeftPinnedToolActionButton.highlighted = false;
-				//m_RightPinnedToolActionButton.highlighted = false;
+				//m_LeftPinnedToolActionButton.revealed = false;
+				//m_RightPinnedToolActionButton.revealed = false;
 			}
 		}
 
@@ -660,7 +679,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
 
 			// Hide both action buttons if the user is no longer hovering over the button
-			//if (!m_LeftPinnedToolActionButton.highlighted && !m_RightPinnedToolActionButton.highlighted)
+			//if (!m_LeftPinnedToolActionButton.revealed && !m_RightPinnedToolActionButton.revealed)
 			//{
 			//}
 
@@ -685,7 +704,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator AnimateShow(Vector3 targetPosition, Vector3 targetScale)
 		{
 			m_IconContainerCanvasGroup.alpha = 1f;
-			//m_RootCollider.enabled = false;
 			var duration = 0f;
 			while (duration < 2)
 			{
@@ -700,14 +718,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_IconContainer.localScale = k_SemiTransparentIconContainerScale;
 			transform.localPosition = targetPosition;
 			transform.localScale = targetScale;
-			//m_RootCollider.enabled = true;
 			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateHideAndClose()
 		{
 			this.HideTooltip(this);
-			//m_RootCollider.enabled = false;
 			var duration = 0f;
 			var currentScale = transform.localScale;
 			var targetScale = Vector3.zero;
@@ -726,7 +742,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimatePosition(int orderPosition, int buttonCount)
 		{
-			//if (!activeTool) // hide a button if it is not the active tool button and the buttons are no longer highlighted
+			primaryButtonCollidersEnabled = false;
+			//if (!activeTool) // hide a button if it is not the active tool button and the buttons are no longer revealed
 				//gameObject.SetActive(true);
 
 			//if (order != activeToolOrderPosition)
@@ -755,12 +772,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield return null;
 			}
 
-			//if (!m_Highlighted && orderPosition == 0 && buttonCount == 1 && !activeTool) // hide a button if it is not the active tool button and the buttons are no longer highlighted
+			//if (!m_Revealed && orderPosition == 0 && buttonCount == 1 && !activeTool) // hide a button if it is not the active tool button and the buttons are no longer revealed
 				//gameObject.SetActive(false);
 
 			//transform.localPosition = targetPosition;
 			transform.localRotation = targetRotation;
 			CorrectIconRotation();
+			primaryButtonCollidersEnabled = true;
 			m_PositionCoroutine = null;
 
 			if (m_GradientButton.highlighted)
