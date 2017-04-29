@@ -303,17 +303,24 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			// Setup light-luma curated gradient pairs
 			s_CuratedLightGradientPairs.Add(new GradientPair(redLight, tealDark));
 			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, tealDark));
-			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight, orangeDark));
-			s_CuratedLightGradientPairs.Add(new GradientPair(greenLight,lime));
-			s_CuratedLightGradientPairs.Add(new GradientPair(redLight, red));
-			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight, red));
-			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, magenta));
-			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, blue));
+			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight,limeDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, blueDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, cyanDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight, greenDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(cyanLight, orange));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, purple));
 			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, blue));
+			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight, lime));
+			s_CuratedLightGradientPairs.Add(new GradientPair(redLight, darkBlue));
+			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, yellow));
+			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, yellowDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(greenLight, red));
+			s_CuratedLightGradientPairs.Add(new GradientPair(light, darker));
+			s_CuratedLightGradientPairs.Add(new GradientPair(light, blueLight));
 
-			s_CuratedGradientPairsRange = s_CuratedGradientPairs.Count - 1;
-			s_CuratedLightGradientPairsRange = s_CuratedLightGradientPairs.Count - 1;
-			s_CuratedDarkGradientPairsRange = s_CuratedDarkGradientPairs.Count - 1;
+			s_CuratedGradientPairsRange = s_CuratedGradientPairs.Count;
+			s_CuratedLightGradientPairsRange = s_CuratedLightGradientPairs.Count;
+			s_CuratedDarkGradientPairsRange = s_CuratedDarkGradientPairs.Count;
 		}
 
 		/// <summary>
