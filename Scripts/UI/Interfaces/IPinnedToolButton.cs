@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR
 		int activeToolOrderPosition  { get; }
 		int order { get; set; }
 		int activeButtonCount { set; }
-		bool highlighted { set; }
+		bool revealed { set; }
 		bool moveToAlternatePosition { get; set; }
 		Transform rayOrigin { get; set; }
 		Type toolType { get; set; }

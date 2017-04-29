@@ -70,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				button.icon = buttonIcon;
 				//button.order = button.activeToolOrderPosition; // first position is the active tool position
 				button.deletePinnedToolButton = DeletePinnedToolButton;
-				button.highlightAllToolButtons = HighlightAllToolButtons;
+				button.highlightAllToolButtons = RevealAllToolButtons;
 				button.selectTool = ToolButtonClicked;
 				//button.selected += OnMainMenuActivatorSelected;
 				button.hoverEnter += OnButtonHoverEnter;
@@ -105,6 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					{
 						Debug.LogWarning("Setting up main menu button");
 						button.order = button.menuButtonOrderPosition;
+						button.revealed = true;
 					}
 					else
 					{
@@ -144,7 +145,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								selectedButtontype = selectedButtonOrder == button.order ? button.toolType : selectedButtontype;
 							}
 						}
-
 
 						Debug.LogError("Removing button : " + buttonToDelete.toolType + " - Setting new active button of type : " + selectedButtontype);
 						buttons.Remove(buttonToDelete.toolType);
@@ -190,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					Tools.SelectTool(rayOrigin, toolType);
 			}
 
-			internal void HighlightAllToolButtons (Transform rayOrigin, bool enableHighlight)
+			internal void RevealAllToolButtons (Transform rayOrigin, bool reveal)
 			{
 				Rays.ForEachProxyDevice(deviceData =>
 				{
@@ -199,7 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var buttons = deviceData.pinnedToolButtons;
 						foreach (var pair in buttons)
 						{
-							pair.Value.highlighted = enableHighlight;
+							pair.Value.revealed = reveal;
 						}
 					}
 				});
