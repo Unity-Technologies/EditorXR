@@ -268,7 +268,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 					else
 					{
-						deviceData.menuHideFlags[deviceData.mainMenu] |= Menus.MenuHideFlags.Hidden;
+						// TODO: Remove the below line after additional design review approval
+						//deviceData.menuHideFlags[deviceData.mainMenu] |= Menus.MenuHideFlags.Hidden;
 					}
 				});
 
