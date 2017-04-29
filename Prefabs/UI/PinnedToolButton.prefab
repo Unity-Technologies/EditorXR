@@ -111,7 +111,7 @@ GameObject:
   - 65: {fileID: 65000013092476136}
   - 65: {fileID: 65000013413917816}
   m_Layer: 5
-  m_Name: GradientButton
+  m_Name: PrimaryGradientButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1297,6 +1297,11 @@ MonoBehaviour:
   m_IconContainerCanvasGroup: {fileID: 225000010727404378}
   m_FrameRenderer: {fileID: 137000012108747896}
   m_InsetMeshRenderer: {fileID: 137000013542685126}
+  m_PrimaryButtonColliders:
+  - {fileID: 65000012469590154}
+  - {fileID: 65000012136550866}
+  - {fileID: 65000010544999880}
+  - {fileID: 65000012534630730}
   m_SecondaryGradientButton: {fileID: 114000010373680160}
   m_SecondaryButtonContainerCanvasGroup: {fileID: 225000012815828682}
   m_SecondaryInsetMeshRenderer: {fileID: 137000012837336366}
@@ -1308,8 +1313,8 @@ MonoBehaviour:
   m_TooltipTarget: {fileID: 4000010683372396}
   m_TooltipSource: {fileID: 4000013378434912}
   m_AlternateLocalPosition: {x: 0, y: 0, z: 0}
-  m_Inset: {fileID: 4000013614942004}
-  m_InsetMask: {fileID: 4000011771676402}
+  m_Inset: {fileID: 0}
+  m_InsetMask: {fileID: 0}
   m_ButtonIcon: {fileID: 114000011650556854}
 --- !u!114 &114000011650556854
 MonoBehaviour:
