@@ -545,7 +545,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_AutoHighlight: 1
-  m_CustomHighlightColor: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+  m_CustomHighlightColor: {r: 0.64705884, g: 0.64705884, b: 0.64705884, a: 1}
   m_AlternateIconSprite: {fileID: 21300000, guid: 8f21106ed0539b64ca132508f61ed30b,
     type: 3}
   m_ButtonMeshRenderer: {fileID: 23000010650811250}
