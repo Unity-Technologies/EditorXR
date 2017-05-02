@@ -5,10 +5,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	class EditorWindowWorkspace : Workspace
+	abstract class EditorWindowWorkspace : Workspace
 	{
-		static readonly Vector2 k_PointerOffset = new Vector2(0, 20f);
-
 		[SerializeField]
 		GameObject m_CaptureWindowPrefab;
 
@@ -50,22 +48,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnHovering(BaseHandle handle, HandleEventData eventData)
 		{
-			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseMove, k_PointerOffset);
+			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseMove);
 		}
 
 		void OnDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseDown, k_PointerOffset);
+			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseDown);
 		}
 
 		void OnDragging(BaseHandle handle, HandleEventData eventData)
 		{
-			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseDrag, k_PointerOffset);
+			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseDrag);
 		}
 
 		void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
-			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseUp, k_PointerOffset);
+			m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseUp);
 		}
 	}
 }

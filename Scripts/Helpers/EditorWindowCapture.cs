@@ -15,13 +15,14 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 	/// </summary>
 	sealed class EditorWindowCapture : MonoBehaviour
 	{
+		static readonly Vector2 k_WindowOffset = new Vector2(0, 22f); // Offset for window header to simulate mouse position
+
 		[SerializeField]
 		string m_WindowClass = "UnityEditor.ProfilerWindow";
 		[SerializeField]
 		Rect m_Position = new Rect(0f, 0f, 600f, 400f);
 
 #if UNITY_EDITOR
-		RectTransform m_RectTransform;
 		EditorWindow m_Window;
 		Object m_GuiView;
 		MethodInfo m_GrabPixels;
@@ -36,8 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 		void Start()
 		{
-			m_RectTransform = GetComponent<RectTransform>();
-
 			Type windowType = null;
 			Type guiViewType = null;
 
@@ -118,7 +117,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			}
 		}
 
-		public void SendEvent(Transform rayOrigin, Transform workspace, EventType type, Vector2 offset = default(Vector2))
+		public void SendEvent(Transform rayOrigin, Transform workspace, EventType type)
 		{
 			if (m_Window == null)
 				return;
@@ -127,21 +126,17 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			var plane = new Plane(workspace.up, workspace.position);
 			float distance;
 			plane.Raycast(ray, out distance);
-			var localPosition = workspace.InverseTransformPoint(ray.GetPoint(distance));
-			var worldCorners = new Vector3[4];
-			m_RectTransform.GetWorldCorners(worldCorners);
-			var contentSize = new Vector2((worldCorners[1] - worldCorners[2]).magnitude,
-				(worldCorners[0] - worldCorners[1]).magnitude);
-			localPosition.x /= contentSize.x;
-			localPosition.z /= -contentSize.y;
-			var rectPosition = new Vector2(localPosition.x + 0.5f, localPosition.z + 0.5f);
+			var localPosition = transform.parent.InverseTransformPoint(ray.GetPoint(distance));
+			localPosition.x += 0.5f;
+			localPosition.y = -localPosition.z + 0.5f;
 
 			var rect = m_Window.position;
-			var clickPosition = Vector2.Scale(rectPosition, rect.size) + offset;
+			var clickPosition = Vector2.Scale(localPosition, rect.size);
 
-			const int windowHeaderSize = 25;
-			if (clickPosition.y < windowHeaderSize) // Click y positions below 25 move the window and cause issues
+			if (clickPosition.y < 0) // Click y positions below 0 move the window and cause issues
 				return;
+
+			clickPosition += k_WindowOffset;
 
 			//TODO: See if context menus are an issue on OS X
 #if UNITY_EDITOR_WIN

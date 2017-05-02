@@ -36,6 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public override void Setup()
 		{
+			base.Setup();
 			UnityEditorInternal.ProfilerDriver.profileEditor = false;
 
 			m_CaptureWindowRect = GetComponentInChildren<EditorWindowCapture>().GetComponent<RectTransform>();

@@ -320,7 +320,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
 		public bool dynamicFaceAdjustment { get { return m_DynamicFaceAdjustment; } set { m_DynamicFaceAdjustment = value; } }
 
-		public bool preventResize { get; set; }
+		public bool preventResize
+		{
+			set
+			{
+				foreach (var handle in m_Handles)
+				{
+					handle.gameObject.SetActive(!value);
+				}
+			}
+		}
 
 		public byte stencilRef { get; set; }
 
@@ -649,7 +658,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var rayOrigin = m_HovereringRayOrigins[i];
 				Image lastResizeIcon;
 				m_LastResizeIcons.TryGetValue(rayOrigin, out lastResizeIcon);
-				if (rayOrigin == leftRayOrigin && moveResizeLeft.wasJustPressed && !preventResize)
+				if (rayOrigin == leftRayOrigin && moveResizeLeft.wasJustPressed)
 				{
 					consumeControl(moveResizeLeft);
 					dragRayOrigin = rayOrigin;
@@ -657,7 +666,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					resizing = true;
 				}
 
-				if (rayOrigin == rightRayOrigin && moveResizeRight.wasJustPressed && !preventResize)
+				if (rayOrigin == rightRayOrigin && moveResizeRight.wasJustPressed)
 				{
 					consumeControl(moveResizeRight);
 					dragRayOrigin = rayOrigin;
@@ -665,57 +674,54 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					resizing = true;
 				}
 
-				if (!preventResize)
-				{
-					const float kVisibleOpacity = 0.75f;
-					var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
-					var direction = GetResizeDirectionForLocalPosition(localPosition);
-					var resizeIcon = GetResizeIconForDirection(direction);
+				const float kVisibleOpacity = 0.75f;
+				var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+				var direction = GetResizeDirectionForLocalPosition(localPosition);
+				var resizeIcon = GetResizeIconForDirection(direction);
 
-					if (lastResizeIcon != null)
-					{
-						if (resizeIcon != lastResizeIcon)
-						{
-							resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
-							lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
-						}
-					}
-					else
+				if (lastResizeIcon != null)
+				{
+					if (resizeIcon != lastResizeIcon)
 					{
 						resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
+						lastResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
 					}
-
-					m_LastResizeIcons[rayOrigin] = resizeIcon;
-
-					var iconTransform = resizeIcon.transform;
-					var iconPosition = iconTransform.localPosition;
-					var smoothFollow = lastResizeIcon == null ? 1 : k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
-					var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
-					switch (direction)
-					{
-						case ResizeDirection.Front:
-						case ResizeDirection.Back:
-							var iconPositionX = iconPosition.x;
-							var positionOffsetX = Mathf.Sign(localDirection.x) * m_ResizeHandleMargin;
-							var tergetPositionX = localPosition.x + positionOffsetX;
-							if (Mathf.Abs(tergetPositionX) > bounds.extents.x - m_ResizeCornerSize)
-								tergetPositionX = localPosition.x - positionOffsetX;
-
-							iconPosition.x = Mathf.Lerp(iconPositionX, tergetPositionX, smoothFollow);
-							break;
-						case ResizeDirection.Left:
-						case ResizeDirection.Right:
-							var iconPositionY = iconPosition.y;
-							var positionOffsetY = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
-							var tergetPositionY = localPosition.z + positionOffsetY;
-							if (Mathf.Abs(tergetPositionY) > bounds.extents.z - m_ResizeCornerSize)
-								tergetPositionY = localPosition.z - positionOffsetY;
-
-							iconPosition.y = Mathf.Lerp(iconPositionY, tergetPositionY, smoothFollow);
-							break;
-					}
-					iconTransform.localPosition = iconPosition;
 				}
+				else
+				{
+					resizeIcon.CrossFadeAlpha(kVisibleOpacity, k_ResizeIconCrossfadeDuration, true);
+				}
+
+				m_LastResizeIcons[rayOrigin] = resizeIcon;
+
+				var iconTransform = resizeIcon.transform;
+				var iconPosition = iconTransform.localPosition;
+				var smoothFollow = lastResizeIcon == null ? 1 : k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
+				var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
+				switch (direction)
+				{
+					case ResizeDirection.Front:
+					case ResizeDirection.Back:
+						var iconPositionX = iconPosition.x;
+						var positionOffsetX = Mathf.Sign(localDirection.x) * m_ResizeHandleMargin;
+						var tergetPositionX = localPosition.x + positionOffsetX;
+						if (Mathf.Abs(tergetPositionX) > bounds.extents.x - m_ResizeCornerSize)
+							tergetPositionX = localPosition.x - positionOffsetX;
+
+						iconPosition.x = Mathf.Lerp(iconPositionX, tergetPositionX, smoothFollow);
+						break;
+					case ResizeDirection.Left:
+					case ResizeDirection.Right:
+						var iconPositionY = iconPosition.y;
+						var positionOffsetY = Mathf.Sign(localDirection.z) * m_ResizeHandleMargin;
+						var tergetPositionY = localPosition.z + positionOffsetY;
+						if (Mathf.Abs(tergetPositionY) > bounds.extents.z - m_ResizeCornerSize)
+							tergetPositionY = localPosition.z - positionOffsetY;
+
+						iconPosition.y = Mathf.Lerp(iconPositionY, tergetPositionY, smoothFollow);
+						break;
+				}
+				iconTransform.localPosition = iconPosition;
 			}
 
 			if (!dragRayOrigin)

@@ -11,11 +11,13 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 	sealed class EditorWindowCaptureUpdater : MonoBehaviour
 	{
 		[SerializeField]
-		private EditorWindowCapture m_EditorWindowCapture;
+		EditorWindowCapture m_EditorWindowCapture;
+
 		[SerializeField]
-		private RawImage m_RawImage;
+		RawImage m_RawImage;
+
 		[SerializeField]
-		private Material m_Material;
+		Material m_Material;
 
 		[SerializeField]
 		bool m_LockAspect = true;
