@@ -1,12 +1,13 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Reflection;
+using UnityEngine;
+using Object = UnityEngine.Object;
+
 #if UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
 using System.Threading;
 #endif
-using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
@@ -19,10 +20,10 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 		[SerializeField]
 		string m_WindowClass = "UnityEditor.ProfilerWindow";
+
 		[SerializeField]
 		Rect m_Position = new Rect(0f, 0f, 600f, 400f);
 
-#if UNITY_EDITOR
 		EditorWindow m_Window;
 		Object m_GuiView;
 		MethodInfo m_GrabPixels;
@@ -138,7 +139,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 			clickPosition += k_WindowOffset;
 
-			//TODO: See if context menus are an issue on OS X
 #if UNITY_EDITOR_WIN
 			// Send a message to cancel context menus in case the user clicked a drop-down
 			// Thread is needed because context menu blocks main thread
@@ -164,8 +164,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 #if UNITY_EDITOR_WIN
 		[DllImport("User32.dll")]
 		public static extern int SendMessage(IntPtr hWnd, int uMsg, int wParam, IntPtr lParam);
-#endif
-
 #endif
 	}
 }
