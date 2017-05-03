@@ -1,4 +1,5 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -12,14 +13,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		class DirectSelection : Nested, IInterfaceConnector
 		{
-			internal IGrabObjects objectsGrabber { get; set; }
-
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
+			readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
+			readonly List<IGrabObjects> m_ObjectGrabbers = new List<IGrabObjects>();
 
 			IntersectionModule m_IntersectionModule;
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
+
+			public event Action<Transform, Transform[]> objectsDropped;
 
 			public DirectSelection()
 			{
@@ -35,8 +38,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)
 				{
+					m_ObjectGrabbers.Add(grabObjects);
 					grabObjects.objectGrabbed += OnObjectGrabbed;
 					grabObjects.objectsDropped += OnObjectsDropped;
+					grabObjects.objectsTransferred += OnObjectsTransferred;
 				}
 			}
 
@@ -45,8 +50,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)
 				{
+					m_ObjectGrabbers.Remove(grabObjects);
 					grabObjects.objectGrabbed -= OnObjectGrabbed;
 					grabObjects.objectsDropped -= OnObjectsDropped;
+					grabObjects.objectsTransferred -= OnObjectsTransferred;
 				}
 			}
 
@@ -84,7 +91,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				m_DirectSelections.Clear();
 				m_ActiveStates.Clear();
 
-				var directSelection = objectsGrabber;
 				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var rayOrigin = deviceData.rayOrigin;
@@ -100,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							input = input
 						};
 					}
-					else if (directSelection != null && directSelection.GetHeldObjects(rayOrigin) != null)
+					else if (m_GrabbedObjects.ContainsKey(rayOrigin))
 					{
 						m_ActiveStates.Add(input);
 					}
@@ -122,8 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							input = input
 						};
 					}
-					else if (miniWorldRay.dragObjects != null
-						|| (directSelection != null && directSelection.GetHeldObjects(rayOrigin) != null))
+					else if (miniWorldRay.previewObjects != null || m_GrabbedObjects.ContainsKey(rayOrigin))
 					{
 						m_ActiveStates.Add(input);
 					}
@@ -159,8 +164,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return true;
 			}
 
-			static void OnObjectGrabbed(GameObject selection)
+			void OnObjectGrabbed(Transform rayOrigin, Transform selection)
 			{
+				HashSet<Transform> grabbedObjects;
+				if (!m_GrabbedObjects.TryGetValue(rayOrigin, out grabbedObjects))
+				{
+					grabbedObjects = new HashSet<Transform>();
+					m_GrabbedObjects[rayOrigin] = grabbedObjects;
+				}
+
+				grabbedObjects.Add(selection);
+
 				// Detach the player head model so that it is not affected by its parent transform
 				if (selection.CompareTag(k_VRPlayerTag))
 				{
@@ -169,18 +183,74 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			static void OnObjectsDropped(Transform[] grabbedObjects, Transform rayOrigin)
+			void OnObjectsDropped(Transform rayOrigin, Transform[] grabbedObjects)
 			{
 				var sceneObjectModule = evr.GetModule<SceneObjectModule>();
 				var viewer = evr.GetNestedModule<Viewer>();
 				var miniWorlds = evr.GetNestedModule<MiniWorlds>();
+				var objects = m_GrabbedObjects[rayOrigin];
+				var eventObjects = new List<Transform>();
 				foreach (var grabbedObject in grabbedObjects)
 				{
+					objects.Remove(grabbedObject);
+
 					// Dropping the player head updates the camera rig position
 					if (grabbedObject.CompareTag(k_VRPlayerTag))
 						Viewer.DropPlayerHead(grabbedObject);
 					else if (viewer.IsOverShoulder(rayOrigin) && !miniWorlds.rays.ContainsKey(rayOrigin))
 						sceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
+					else
+						eventObjects.Add(grabbedObject);
+				}
+
+				if (objects.Count == 0)
+					m_GrabbedObjects.Remove(rayOrigin);
+
+				if (objectsDropped != null)
+					objectsDropped(rayOrigin, eventObjects.ToArray());
+			}
+
+			void OnObjectsTransferred(Transform srcRayOrigin, Transform destRayOrigin)
+			{
+				m_GrabbedObjects[destRayOrigin] = m_GrabbedObjects[srcRayOrigin];
+				m_GrabbedObjects.Remove(srcRayOrigin);
+			}
+
+			public HashSet<Transform> GetHeldObjects(Transform rayOrigin)
+			{
+				HashSet<Transform> objects;
+				return m_GrabbedObjects.TryGetValue(rayOrigin, out objects) ? objects : null;
+			}
+
+			public void SuspendHoldingObjects(Node node)
+			{
+				foreach (var grabber in m_ObjectGrabbers)
+				{
+					grabber.SuspendHoldingObjects(node);
+				}
+			}
+
+			public void ResumeHoldingObjects(Node node)
+			{
+				foreach (var grabber in m_ObjectGrabbers)
+				{
+					grabber.ResumeHoldingObjects(node);
+				}
+			}
+
+			public void DropHeldObjects(Node node)
+			{
+				foreach (var grabber in m_ObjectGrabbers)
+				{
+					grabber.DropHeldObjects(node);
+				}
+			}
+
+			public void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset = default(Vector3))
+			{
+				foreach (var grabber in m_ObjectGrabbers)
+				{
+					grabber.TransferHeldObjects(rayOrigin, destRayOrigin, deltaOffset);
 				}
 			}
 		}

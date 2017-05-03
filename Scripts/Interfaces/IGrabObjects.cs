@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -11,58 +10,48 @@ namespace UnityEditor.Experimental.EditorVR
 	public interface IGrabObjects : ICanGrabObject
 	{
 		/// <summary>
-		/// Adds the given objects to the held objects for the given node and rayOrigin
-		/// </summary>
-		/// <param name="node">The node associated with the rayOrigin</param>
-		/// <param name="rayOrigin">The rayOrigin to attach the object to</param>
-		/// <param name="input">The input used to control selection</param>
-		/// <param name="objects">The objects being grabbed</param>
-		void GrabObjects(Node node, Transform rayOrigin, ActionMapInput input, Transform[] objects);
-
-		/// <summary>
-		/// Get the object held by a given rayOrign
-		/// </summary>
-		/// <param name="rayOrigin">The rayOrigin to query</param>
-		/// <returns></returns>
-		Transform[] GetHeldObjects(Transform rayOrigin);
-
-		/// <summary>
 		/// Transfer a held object between rayOrigins (i.e. dragging into the MiniWorld)
 		/// </summary>
 		/// <param name="rayOrigin">rayOrigin of current held object</param>
 		/// <param name="destRayOrigin">Destination rayOrigin</param>
 		/// <param name="deltaOffset">Change in position offset (added to GrabData.positionOffset)</param>
-		void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset);
+		void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset = default(Vector3));
 
 		/// <summary>
-		/// Drop a currently held object, getting its current offset
+		/// Drop objects held with a given node
 		/// </summary>
-		/// <param name="rayOrigin">The rayOrigin that was holding the objects</param>
-		/// <param name="positionOffset">The position offset between the rayOrigin and the object</param>
-		/// <param name="rotationOffset">The rotation offset between the rayOrigin and the object</param>
-		void DropHeldObjects(Transform rayOrigin, out Vector3[] positionOffset, out Quaternion[] rotationOffset);
+		/// <param name="node">The node that was holding the objects</param>
+		void DropHeldObjects(Node node);
+
+		/// <summary>
+		/// Stop acting on objects held with a given node
+		/// </summary>
+		/// <param name="node">The node that was holding the objects</param>
+		void SuspendHoldingObjects(Node node);
+
+		/// <summary>
+		/// Resume acting on objects held with a given nod
+		/// </summary>
+		/// <param name="node">The node that was holding the objects</param>
+		void ResumeHoldingObjects(Node node);
 
 		/// <summary>
 		/// Must be called by the implementer when an object has been grabbed
 		/// Params: the grabbed object
 		/// </summary>
-		event Action<GameObject> objectGrabbed;
+		event Action<Transform, Transform> objectGrabbed;
 
 		/// <summary>
 		/// Must be called by the implementer when objects have been dropped
-		/// Params: the selected objects, the rayOrigin
+		/// Params: the rayOrigin, the selected objects
 		/// </summary>
-		event Action<Transform[], Transform> objectsDropped;
-	}
+		event Action<Transform, Transform[]> objectsDropped;
 
-	public static class IGrabObjectsMethods
-	{
-		public static void DropHeldObjects(this IGrabObjects grabObjects, Transform rayOrigin)
-		{
-			Vector3[] positionOffset;
-			Quaternion[] rotationOffset;
-			grabObjects.DropHeldObjects(rayOrigin, out positionOffset, out rotationOffset);
-		}
+		/// <summary>
+		/// Must be called by the implementer when objects have been transferred
+		/// Params: the source rayOrigin, the destination rayOrigin
+		/// </summary>
+		event Action<Transform, Transform> objectsTransferred;
 	}
 
 }

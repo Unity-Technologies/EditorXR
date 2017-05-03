@@ -474,6 +474,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), preserveLayout);
 			}
 
+			if (GUILayout.Button("Clear Saved Settings"))
+				EditorPrefs.DeleteKey(k_SerializedPreferences);
+
 			EditorGUILayout.EndVertical();
 		}
 	}

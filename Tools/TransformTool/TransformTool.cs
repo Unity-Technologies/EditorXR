@@ -20,14 +20,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		class GrabData
 		{
-			public Transform rayOrigin;
-			public DirectSelectInput input;
+			public Transform[] grabbedObjects { get; private set; }
+			public DirectSelectInput input { get; private set; }
 			public Vector3[] positionOffsets { get; private set; }
-			public Quaternion[] rotationOffsets { get; private set; }
-			public Transform[] grabbedObjects;
+			public bool suspended { private get; set; }
+			public Transform rayOrigin { get; set; }
+			Quaternion[] m_RotationOffsets;
 			IUsesSnapping m_UsesSnapping;
 			Vector3[] m_InitialScales;
-			GameObject[] m_Objects;
 
 			public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects, IUsesSnapping usesSnapping)
 			{
@@ -36,11 +36,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				this.grabbedObjects = grabbedObjects;
 				m_UsesSnapping = usesSnapping;
 
-				m_Objects = new GameObject[grabbedObjects.Length];
+				var objects = new GameObject[grabbedObjects.Length];
 				for (int i = 0; i < grabbedObjects.Length; i++)
 				{
 					var go = grabbedObjects[i].gameObject;
-					m_Objects[i] = go;
+					objects[i] = go;
 				}
 
 				Reset();
@@ -48,20 +48,26 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			public void Reset()
 			{
+				if (suspended)
+					return;
+
 				var length = grabbedObjects.Length;
 				positionOffsets = new Vector3[length];
-				rotationOffsets = new Quaternion[length];
+				m_RotationOffsets = new Quaternion[length];
 				m_InitialScales = new Vector3[length];
 				for (int i = 0; i < length; i++)
 				{
 					var grabbedObject = grabbedObjects[i];
-					MathUtilsExt.GetTransformOffset(rayOrigin, grabbedObject, out positionOffsets[i], out rotationOffsets[i]);
+					MathUtilsExt.GetTransformOffset(rayOrigin, grabbedObject, out positionOffsets[i], out m_RotationOffsets[i]);
 					m_InitialScales[i] = grabbedObject.transform.localScale;
 				}
 			}
 
 			public void UpdatePositions()
 			{
+				if (suspended)
+					return;
+
 				Undo.RecordObjects(grabbedObjects, "Move");
 
 				for (int i = 0; i < grabbedObjects.Length; i++)
@@ -70,7 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var position = grabbedObject.position;
 					var rotation = grabbedObject.rotation;
 					var targetPosition = rayOrigin.position + rayOrigin.rotation * positionOffsets[i];
-					var targetRotation = rayOrigin.rotation * rotationOffsets[i];
+					var targetRotation = rayOrigin.rotation * m_RotationOffsets[i];
 
 					if (m_UsesSnapping.DirectSnap(rayOrigin, grabbedObject.gameObject, ref position, ref rotation, targetPosition, targetRotation))
 					{
@@ -88,6 +94,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			public void ScaleObjects(float scaleFactor)
 			{
+				if (suspended)
+					return;
+
 				Undo.RecordObjects(grabbedObjects, "Move");
 
 				for (int i = 0; i < grabbedObjects.Length; i++)
@@ -182,8 +191,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 		readonly TransformAction m_ManipulatorToggleAction = new TransformAction();
 
-		public event Action<GameObject> objectGrabbed;
-		public event Action<Transform[], Transform> objectsDropped;
+		public event Action<Transform, Transform> objectGrabbed;
+		public event Action<Transform, Transform[]> objectsDropped;
+		public event Action<Transform, Transform> objectsTransferred;
 
 		public bool manipulatorVisible { private get; set; }
 
@@ -279,17 +289,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						this.ClearSnappingState(directRayOrigin);
 
 						if (objectGrabbed != null)
-							objectGrabbed(directHoveredObject);
+							objectGrabbed(directRayOrigin, directHoveredObject.transform);
 
 						consumeControl(directSelectInput.select);
 
-						var selectedNode = directSelectionData.node;
+						var grabbingNode = directSelectionData.node;
 
 						// Check if the other hand is already grabbing for two-handed scale
 						foreach (var grabData in m_GrabData)
 						{
 							var otherNode = grabData.Key;
-							if (otherNode != selectedNode)
+							if (otherNode != grabbingNode)
 							{
 								var otherData = grabData.Value;
 								m_ScaleStartDistance = (directRayOrigin.position - otherData.rayOrigin.position).magnitude;
@@ -304,7 +314,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						var grabbedObjects = new HashSet<Transform> { directHoveredObject.transform };
 						grabbedObjects.UnionWith(Selection.transforms);
-						m_GrabData[selectedNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray(), this);
+						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray(), this);
 
 						this.HideDefaultRay(directRayOrigin, true); // This will also unhighlight the object
 						this.LockRay(directRayOrigin, this);
@@ -376,14 +386,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					if (leftInput.cancel.wasJustPressed)
 					{
-						DropObjects(Node.LeftHand);
+						DropHeldObjects(Node.LeftHand);
 						consumeControl(leftInput.cancel);
 						Undo.PerformUndo();
 					}
 
 					if (leftInput.select.wasJustReleased)
 					{
-						DropObjects(Node.LeftHand);
+						DropHeldObjects(Node.LeftHand);
 						consumeControl(leftInput.select);
 					}
 				}
@@ -392,14 +402,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					if (rightInput.cancel.wasJustPressed)
 					{
-						DropObjects(Node.RightHand);
+						DropHeldObjects(Node.RightHand);
 						consumeControl(rightInput.cancel);
 						Undo.PerformUndo();
 					}
 
 					if (rightInput.select.wasJustReleased)
 					{
-						DropObjects(Node.RightHand);
+						DropHeldObjects(Node.RightHand);
 						consumeControl(rightInput.select);
 					}
 				}
@@ -441,36 +451,27 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		public void DropHeldObjects(Transform rayOrigin, out Vector3[] positionOffsets, out Quaternion[] rotationOffsets)
+		public void SuspendHoldingObjects(Node node)
 		{
-			foreach (var kvp in m_GrabData)
-			{
-				var grabData = kvp.Value;
-				if (grabData.rayOrigin == rayOrigin)
-				{
-					positionOffsets = grabData.positionOffsets;
-					rotationOffsets = grabData.rotationOffsets;
-					DropObjects(kvp.Key);
-					return;
-				}
-			}
-
-			positionOffsets = null;
-			rotationOffsets = null;
+			GrabData grabData;
+			if (m_GrabData.TryGetValue(node, out grabData))
+				grabData.suspended = true;
 		}
 
-		public Transform[] GetHeldObjects(Transform rayOrigin)
+		public void ResumeHoldingObjects(Node node)
 		{
-			foreach (var grabData in m_GrabData.Values)
-			{
-				if (grabData.rayOrigin == rayOrigin)
-					return grabData.grabbedObjects.ToArray();
-			}
-
-			return null;
+			GrabData grabData;
+			if (m_GrabData.TryGetValue(node, out grabData))
+				grabData.suspended = false;
 		}
 
-		public void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset)
+		public Transform[] GetHeldObjects(Node node)
+		{
+			GrabData grabData;
+			return m_GrabData.TryGetValue(node, out grabData) ? grabData.grabbedObjects : null;
+		}
+
+		public void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset = default(Vector3))
 		{
 			foreach (var grabData in m_GrabData.Values)
 			{
@@ -482,7 +483,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					{
 						positionOffsets[i] += deltaOffset;
 					}
-					grabData.UpdatePositions();
 
 					// Prevent lock from getting stuck
 					this.UnlockRay(rayOrigin, this);
@@ -490,23 +490,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					return;
 				}
 			}
+
+			if (objectsTransferred != null)
+				objectsTransferred(rayOrigin, destRayOrigin);
 		}
 
-		public void GrabObjects(Node node, Transform rayOrigin, ActionMapInput input, Transform[] objects)
+		public void DropHeldObjects(Node node)
 		{
-			m_GrabData[node] = new GrabData(rayOrigin, (DirectSelectInput)input, objects, this);
-		}
-
-		void DropObjects(Node inputNode)
-		{
-			var grabData = m_GrabData[inputNode];
+			var grabData = m_GrabData[node];
 			var grabbedObjects = grabData.grabbedObjects;
 			var rayOrigin = grabData.rayOrigin;
 
 			if (objectsDropped != null)
-				objectsDropped(grabbedObjects, rayOrigin);
+				objectsDropped(rayOrigin, grabbedObjects);
 
-			m_GrabData.Remove(inputNode);
+			m_GrabData.Remove(node);
 
 			this.UnlockRay(grabData.rayOrigin, this);
 			this.ShowDefaultRay(grabData.rayOrigin, true);

@@ -136,7 +136,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			static bool OverrideSelectObject(GameObject hoveredObject)
 			{
 				// The player head can hovered, but not selected (only directly manipulated)
-				return hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag);
+				if (hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag))
+				{
+					Selection.activeObject = null;
+					return true;
+				}
+
+				return false;
 			}
 
 			internal void CreateAllProxies()
