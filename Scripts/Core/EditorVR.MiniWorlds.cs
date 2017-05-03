@@ -15,8 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObject, IUsesViewerScale
 		{
-			const float k_PreviewScale = 0.1f;
-
 			internal class MiniWorldRay
 			{
 				public Transform originalRayOrigin;
@@ -25,15 +23,82 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				public Node node;
 				public ActionMapInput directSelectInput;
 				public IntersectionTester tester;
-				public Transform[] previewObjects;
-
-				public Vector3[] originalScales;
-
-				public Vector3[] positionOffsets;
-				public Quaternion[] rotationOffsets;
 
 				public bool dragStartedOutside;
 				public bool wasContained;
+
+				public bool hasPreview
+				{
+					get { return m_Previews.Count > 0; }
+				}
+
+				readonly List<Preview> m_Previews = new List<Preview>();
+
+				class Preview
+				{
+					Transform m_Transform;
+					Vector3 m_PositionOffset;
+					Quaternion m_RotationOffset;
+					Vector3 m_OriginalScale;
+
+					public Preview(Transform transform, Transform parent, float scaleFactor)
+					{
+						m_Transform = transform;
+						m_OriginalScale = transform.localScale;
+						transform.localScale *= scaleFactor;
+						MathUtilsExt.GetTransformOffset(parent, transform, out m_PositionOffset, out m_RotationOffset);
+						m_PositionOffset *= scaleFactor;
+					}
+
+					public void Update(Transform parent)
+					{
+						MathUtilsExt.SetTransformOffset(parent, m_Transform, m_PositionOffset, m_RotationOffset);
+					}
+
+					public void ResetScale()
+					{
+						m_Transform.localScale = m_OriginalScale;
+					}
+
+					public void PlaceObject(IPlaceSceneObject placer)
+					{
+						placer.PlaceSceneObject(m_Transform, m_OriginalScale);
+					}
+				}
+
+				public void EnterPreviewMode(HashSet<Transform> heldObjects, Transform rayOrigin, float scaleFactor)
+				{
+					foreach (var heldObject in heldObjects)
+					{
+						m_Previews.Add(new Preview(heldObject, rayOrigin, scaleFactor));
+					}
+				}
+
+				public void ExitPreviewMode()
+				{
+					foreach (var preview in m_Previews)
+					{
+						preview.ResetScale();
+					}
+					m_Previews.Clear();
+				}
+
+				public void DropPreviewObjects(IPlaceSceneObject placer)
+				{
+					foreach (var preview in m_Previews)
+					{
+						preview.PlaceObject(placer);
+					}
+					m_Previews.Clear();
+				}
+
+				public void UpdatePreview()
+				{
+					foreach (var preview in m_Previews)
+					{
+						preview.Update(originalRayOrigin);
+					}
+				}
 			}
 
 			public Dictionary<Transform, MiniWorldRay> rays { get { return m_Rays; } }
@@ -110,9 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_MiniWorldIgnoreListDirty = false;
 				}
 
-				var objectsGrabber = evr.GetNestedModule<DirectSelection>();
-				var sceneObjectModule = evr.GetModule<SceneObjectModule>();
-				var viewer = evr.GetNestedModule<Viewer>();
+				var directSelection = evr.GetNestedModule<DirectSelection>();
 
 				// Update MiniWorldRays
 				foreach (var ray in m_Rays)
@@ -147,8 +210,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					miniWorldRay.tester.active = isContained;
 					miniWorldRayOrigin.gameObject.SetActive(isContained);
 
-					var miniWorldRayObjects = objectsGrabber.GetHeldObjects(miniWorldRayOrigin);
-					var originalRayObjects = objectsGrabber.GetHeldObjects(originalRayOrigin);
+					var miniWorldRayObjects = directSelection.GetHeldObjects(miniWorldRayOrigin);
+					var originalRayObjects = directSelection.GetHeldObjects(originalRayOrigin);
 
 					if (isContained && !miniWorldRay.wasContained)
 					{
@@ -168,33 +231,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						continue;
 					}
 
-					//var dragObjects = miniWorldRay.previewObjects;
-					//if (dragObjects == null)
-					//{
-					//	var heldObjects = objectsGrabber.GetHeldObjects(miniWorldRayOrigin);
-					//	if (heldObjects != null)
-					//	{
-					//		// Only one ray can grab an object, otherwise PlaceObject is called on each trigger release
-					//		// This does not prevent TransformTool from doing two-handed scaling
-					//		var otherRayHasObject = false;
-					//		foreach (var otherRay in m_Rays.Values)
-					//		{
-					//			if (otherRay != miniWorldRay && otherRay.previewObjects != null)
-					//				otherRayHasObject = true;
-					//		}
-
-					//		if (!otherRayHasObject)
-					//			miniWorldRay.previewObjects = heldObjects.ToArray();
-					//	}
-					//}
-
 					// Transfer objects to and from original ray and MiniWorld ray (e.g. outside to inside mini world)
 					if (isContained != miniWorldRay.wasContained)
 					{
 						var from = isContained ? originalRayOrigin : miniWorldRayOrigin;
 						var to = isContained ? miniWorldRayOrigin : originalRayOrigin;
 						var pointerLengthDiff = DirectSelection.GetPointerLength(to) - DirectSelection.GetPointerLength(from);
-						objectsGrabber.TransferHeldObjects(from, to, Vector3.forward * pointerLengthDiff);
+						directSelection.TransferHeldObjects(from, to, Vector3.forward * pointerLengthDiff);
 					}
 
 					// Transfer objects between MiniWorlds
@@ -224,18 +267,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					//	}
 					//}
 
+					var hasPreview = miniWorldRay.hasPreview;
 
-
-					//if (dragObjects == null)
-					//{
-					//	miniWorldRay.wasContained = isContained;
-					//	continue;
-					//}
-
-					var previewObjects = miniWorldRay.previewObjects;
-					var originalScales = miniWorldRay.originalScales;
-
-					if (originalRayObjects != null && previewObjects == null)
+					if (originalRayObjects != null && !hasPreview)
 						miniWorldRay.dragStartedOutside = true;
 
 					if (miniWorldRay.dragStartedOutside)
@@ -245,44 +279,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 
 					// Scale the object back to its original scale when it re-enters the MiniWorld
-					if (isContained && !miniWorldRay.wasContained && previewObjects != null)
+					if (isContained && !miniWorldRay.wasContained && hasPreview)
 					{
-						for (var i = 0; i < previewObjects.Length; i++)
-						{
-							var previewObject = previewObjects[i];
-							previewObject.localScale = originalScales[i];
-
-							//MathUtilsExt.SetTransformOffset(miniWorldRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
-							//MathUtilsExt.SetTransformOffset(miniWorldRayOrigin, dragObject, Vector3.zero, Quaternion.identity);
-						}
-
-						// Add the object (back) to TransformTool
-						objectsGrabber.ResumeHoldingObjects(node);
+						miniWorldRay.ExitPreviewMode();
+						directSelection.ResumeHoldingObjects(node);
 					}
 
 					if (!isContained)
 					{
-						//	// Check for player head
-						//	for (var i = 0; i < dragObjects.Length; i++)
-						//	{
-						//		var dragObject = dragObjects[i];
-						//		if (dragObject.CompareTag(k_VRPlayerTag))
-						//		{
-						//			objectsGrabber.DropHeldObjects(node);
-
-						//			// Drop player at edge of MiniWorld
-						//			miniWorldRay.previewObjects = null;
-						//			dragObjects = null;
-						//			break;
-						//		}
-						//	}
-
-						//	if (dragObjects == null)
-						//		continue;
-
-						var positionOffsets = miniWorldRay.positionOffsets;
-						var rotationOffsets = miniWorldRay.rotationOffsets;
-
 						if (miniWorldRay.wasContained && miniWorldRayObjects != null)
 						{
 							var containedInOtherMiniWorld = false;
@@ -296,48 +300,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							// Don't switch to previewing the objects we are dragging if we are still in another mini world
 							if (!containedInOtherMiniWorld)
 							{
-								previewObjects = miniWorldRayObjects.ToArray();
-								var length = previewObjects.Length;
-								originalScales = new Vector3[length];
-								positionOffsets = new Vector3[length];
-								rotationOffsets = new Quaternion[length];
-
-								for (var i = 0; i < length; i++)
+								// Check for player head
+								var playerHead = false;
+								foreach (var obj in miniWorldRayObjects)
 								{
-									var dragObject = previewObjects[i];
-
-									// Store the original scale in case the object re-enters the MiniWorld
-									originalScales[i] = dragObject.localScale;
-									var scaleFactor = this.GetViewerScale() / miniWorld.referenceTransform.localScale.x;
-									dragObject.localScale *= scaleFactor;
-
-									MathUtilsExt.GetTransformOffset(miniWorldRayOrigin, dragObject, out positionOffsets[i], out rotationOffsets[i]);
-									positionOffsets[i] *= scaleFactor;
+									if (obj.CompareTag(k_VRPlayerTag))
+									{
+										playerHead = true;
+										directSelection.DropHeldObjects(node);
+										break;
+									}
 								}
 
-								miniWorldRay.previewObjects = previewObjects;
-								miniWorldRay.originalScales = originalScales;
-								miniWorldRay.positionOffsets = positionOffsets;
-								miniWorldRay.rotationOffsets = rotationOffsets;
-
-								// Suspend control of object grabbers on this node
-								objectsGrabber.SuspendHoldingObjects(node);
+								if (!playerHead)
+								{
+									var scaleFactor = this.GetViewerScale() / miniWorld.referenceTransform.localScale.x;
+									miniWorldRay.EnterPreviewMode(miniWorldRayObjects, miniWorldRayOrigin, scaleFactor);
+									directSelection.SuspendHoldingObjects(node);
+								}
 							}
 						}
 
-						if (previewObjects != null)
-						{
-							for (var i = 0; i < previewObjects.Length; i++)
-							{
-								var dragObject = previewObjects[i];
-
-								//var rotation = originalRayOrigin.rotation;
-								//var position = originalRayOrigin.position
-								//	+ rotation * Vector3.Scale(previewScaleFactor, positionOffsets[i]);
-								//MathUtilsExt.LerpTransform(dragObject, position, rotation * rotationOffsets[i]);
-								MathUtilsExt.SetTransformOffset(originalRayOrigin, dragObject, positionOffsets[i], rotationOffsets[i]);
-							}
-						}
+						miniWorldRay.UpdatePreview();
 					}
 
 					miniWorldRay.wasContained = isContained;
@@ -416,19 +400,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var miniWorldRay = ray.Value;
 					if (ray.Key == rayOrigin || miniWorldRay.originalRayOrigin == rayOrigin)
 					{
-						if (!miniWorldRay.wasContained)
-						{
-							var dragObjects = miniWorldRay.previewObjects;
-							if (dragObjects != null)
-							{
-								for (var i = 0; i < dragObjects.Length; i++)
-								{
-									this.PlaceSceneObject(dragObjects[i], miniWorldRay.originalScales[i]);
-								}
-							}
-						}
+						miniWorldRay.DropPreviewObjects(this);
 
-						miniWorldRay.previewObjects = null;
 						miniWorldRay.dragStartedOutside = false;
 					}
 				}

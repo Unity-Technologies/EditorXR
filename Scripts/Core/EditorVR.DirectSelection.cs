@@ -128,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							input = input
 						};
 					}
-					else if (miniWorldRay.previewObjects != null || m_GrabbedObjects.ContainsKey(rayOrigin))
+					else if (miniWorldRay.hasPreview || m_GrabbedObjects.ContainsKey(rayOrigin))
 					{
 						m_ActiveStates.Add(input);
 					}
