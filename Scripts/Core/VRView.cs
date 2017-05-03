@@ -145,7 +145,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
 			m_Camera = cameraGO.GetComponent<Camera>();
-			m_Camera.allowHDR = false; // HACK: CameraStackRenderingState::CalculateStereoCameraTargetType won't resolve to eye textures if camera is HDR
 			m_Camera.useOcclusionCulling = false;
 			m_Camera.enabled = false;
 			m_Camera.cameraType = CameraType.VR;
