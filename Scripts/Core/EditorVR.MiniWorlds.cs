@@ -16,15 +16,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			internal class MiniWorldRay
 			{
-				public Transform originalRayOrigin { get; set; }
-				public IMiniWorld miniWorld { get; set; }
-				public IProxy proxy { get; set; }
-				public Node node { get; set; }
-				public ActionMapInput directSelectInput { get; set; }
-				public IntersectionTester tester { get; set; }
+				public Transform originalRayOrigin { get; private set; }
+				public IMiniWorld miniWorld { get; private set; }
+				public IProxy proxy { get; private set; }
+				public Node node { get; private set; }
+				public ActionMapInput directSelectInput { get; private set; }
+				public IntersectionTester tester { get; private set; }
 
 				public bool dragStartedOutside { get; set; }
-				public bool wasContained { get; set; }
+				public bool isContained { get; set; }
 
 				public bool hasPreview
 				{
@@ -65,6 +65,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				}
 
+				public MiniWorldRay(Transform originalRayOrigin, IMiniWorld miniWorld, IProxy proxy, Node node, ActionMapInput directSelectInput, IntersectionTester tester)
+				{
+					this.originalRayOrigin = originalRayOrigin;
+					this.miniWorld = miniWorld;
+					this.proxy = proxy;
+					this.node = node;
+					this.directSelectInput = directSelectInput;
+					this.tester = tester;
+				}
+
 				public void EnterPreviewMode(HashSet<Transform> heldObjects, Transform rayOrigin, float scaleFactor)
 				{
 					foreach (var heldObject in heldObjects)
@@ -102,6 +112,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public Dictionary<Transform, MiniWorldRay> rays { get { return m_Rays; } }
 			readonly Dictionary<Transform, MiniWorldRay> m_Rays = new Dictionary<Transform, MiniWorldRay>();
+			readonly Dictionary<Transform, bool> m_RayWasContained = new Dictionary<Transform, bool>();
 
 			public List<IMiniWorld> worlds { get { return m_Worlds; } }
 			readonly List<IMiniWorld> m_Worlds = new List<IMiniWorld>();
@@ -212,32 +223,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var miniWorldRayObjects = directSelection.GetHeldObjects(miniWorldRayOrigin);
 					var originalRayObjects = directSelection.GetHeldObjects(originalRayOrigin);
 
-					var wasContained = miniWorldRay.wasContained;
-					if (isContained && !wasContained)
-					{
-						Rays.HideRay(originalRayOrigin, true);
-						Rays.LockRay(originalRayOrigin, this);
-					}
-
-					if (!isContained && wasContained)
-					{
-						Rays.UnlockRay(originalRayOrigin, this);
-						Rays.ShowRay(originalRayOrigin, true);
-					}
-
 					var hasPreview = miniWorldRay.hasPreview;
 					if (miniWorldRayObjects == null && originalRayObjects == null && !hasPreview)
 					{
-						miniWorldRay.wasContained = isContained;
+						miniWorldRay.isContained = isContained;
 						continue;
 					}
 
+					var wasContained = miniWorldRay.isContained;
 					if (isContained != wasContained)
 					{
 						// Early out if we grabbed a real-world object that started inside a mini world
 						if (!isContained && miniWorldRayObjects == null)
 						{
-							miniWorldRay.wasContained = false;
+							miniWorldRay.isContained = false;
 							continue;
 						}
 
@@ -252,7 +251,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							{
 								var otherRayOrigin = kvp.Key;
 								var otherRay = kvp.Value;
-								if (originalRayOrigin == otherRay.originalRayOrigin && otherRay != miniWorldRay && otherRay.wasContained)
+								if (originalRayOrigin == otherRay.originalRayOrigin && otherRay != miniWorldRay && otherRay.isContained)
 								{
 									//otherRay.dragStartedOutside = false;
 									from = miniWorldRayOrigin;
@@ -264,11 +263,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						var pointerLengthDiff = DirectSelection.GetPointerLength(to) - DirectSelection.GetPointerLength(from);
 						directSelection.TransferHeldObjects(from, to, Vector3.forward * pointerLengthDiff);
+
+						if (!isContained)
+							m_RayWasContained[originalRayOrigin] = false; //Prevent ray from showing
 					}
 
 					if (miniWorldRay.dragStartedOutside)
 					{
-						miniWorldRay.wasContained = isContained;
+						miniWorldRay.isContained = isContained;
 						continue;
 					}
 
@@ -335,8 +337,36 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 
-					miniWorldRay.wasContained = isContained;
+					miniWorldRay.isContained = isContained;
 				}
+
+				// Update ray visibilities
+				Rays.ForEachProxyDevice(data =>
+				{
+					bool wasContained;
+					var rayOrigin = data.rayOrigin;
+					m_RayWasContained.TryGetValue(rayOrigin, out wasContained);
+
+					var isContained = false;
+					foreach (var miniWorld in m_Worlds)
+					{
+						isContained |= miniWorld.Contains(rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin));
+					}
+
+					if (isContained && !wasContained)
+					{
+						Rays.HideRay(rayOrigin, true);
+						Rays.LockRay(rayOrigin, this);
+					}
+
+					if (!isContained && wasContained)
+					{
+						Rays.UnlockRay(rayOrigin, this);
+						Rays.ShowRay(rayOrigin, true);
+					}
+
+					m_RayWasContained[rayOrigin] = isContained;
+				});
 			}
 
 			internal void OnWorkspaceCreated(IWorkspace workspace)
@@ -354,34 +384,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var intersectionModule = evr.GetModule<IntersectionModule>();
 				Rays.ForEachProxyDevice(deviceData =>
 				{
+					var node = deviceData.node;
+					var rayOrigin = deviceData.rayOrigin;
+					var proxy = deviceData.proxy;
+
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();
-					miniWorldRayOrigin.name = string.Format("{0} Miniworld {1} Ray", deviceData.node, m_Worlds.Count - 1);
+					miniWorldRayOrigin.name = string.Format("{0} Miniworld {1} Ray", node, m_Worlds.Count - 1);
 					miniWorldRayOrigin.parent = workspace.transform;
 
 					var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
 					tester.active = false;
 
-					m_Rays[miniWorldRayOrigin] = new MiniWorldRay
-					{
-						originalRayOrigin = deviceData.rayOrigin,
-						miniWorld = miniWorld,
-						proxy = deviceData.proxy,
-						node = deviceData.node,
-						directSelectInput = deviceData.directSelectInput,
-						tester = tester
-					};
+					m_Rays[miniWorldRayOrigin] = new MiniWorldRay(rayOrigin, miniWorld, proxy, node, deviceData.directSelectInput, tester);
 
 					intersectionModule.AddTester(tester);
 
-					evr.GetModule<HighlightModule>().AddRayOriginForNode(deviceData.node, miniWorldRayOrigin);
+					evr.GetModule<HighlightModule>().AddRayOriginForNode(node, miniWorldRayOrigin);
 
-					if (deviceData.proxy.active)
+					if (proxy.active)
 					{
-						if (deviceData.node == Node.LeftHand)
-							miniWorldWorkspace.leftRayOrigin = deviceData.rayOrigin;
+						if (node == Node.LeftHand)
+							miniWorldWorkspace.leftRayOrigin = rayOrigin;
 
-						if (deviceData.node == Node.RightHand)
-							miniWorldWorkspace.rightRayOrigin = deviceData.rayOrigin;
+						if (node == Node.RightHand)
+							miniWorldWorkspace.rightRayOrigin = rayOrigin;
 					}
 				}, false);
 			}
@@ -434,6 +460,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					{
 						miniWorldRay.DropPreviewObjects(this);
 						miniWorldRay.dragStartedOutside = false;
+
+						if (!miniWorldRay.isContained)
+						{
+							Rays.UnlockRay(rayOrigin, this);
+							Rays.ShowRay(rayOrigin, true);
+						}
 					}
 				}
 			}
