@@ -205,6 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							}
 
 							var rayOrigin = rayOriginPair.Value;
+							rayOrigin.name = string.Format("{0} Ray Origin", node);
 							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;
 							rayTransform.position = rayOrigin.position;
 							rayTransform.rotation = rayOrigin.rotation;

@@ -1,6 +1,5 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -17,15 +16,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			internal class MiniWorldRay
 			{
-				public Transform originalRayOrigin;
-				public IMiniWorld miniWorld;
-				public IProxy proxy;
-				public Node node;
-				public ActionMapInput directSelectInput;
-				public IntersectionTester tester;
+				public Transform originalRayOrigin { get; set; }
+				public IMiniWorld miniWorld { get; set; }
+				public IProxy proxy { get; set; }
+				public Node node { get; set; }
+				public ActionMapInput directSelectInput { get; set; }
+				public IntersectionTester tester { get; set; }
 
-				public bool dragStartedOutside;
-				public bool wasContained;
+				public bool dragStartedOutside { get; set; }
+				public bool wasContained { get; set; }
 
 				public bool hasPreview
 				{
@@ -177,6 +176,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var directSelection = evr.GetNestedModule<DirectSelection>();
 
+				//TODO: grabbing objects that start inside miniworld
+
 				// Update MiniWorldRays
 				foreach (var ray in m_Rays)
 				{
@@ -213,64 +214,53 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var miniWorldRayObjects = directSelection.GetHeldObjects(miniWorldRayOrigin);
 					var originalRayObjects = directSelection.GetHeldObjects(originalRayOrigin);
 
-					if (isContained && !miniWorldRay.wasContained)
+					var wasContained = miniWorldRay.wasContained;
+					if (isContained && !wasContained)
 					{
 						Rays.HideRay(originalRayOrigin, true);
 						Rays.LockRay(originalRayOrigin, this);
 					}
 
-					if (!isContained && miniWorldRay.wasContained)
+					if (!isContained && wasContained)
 					{
 						Rays.UnlockRay(originalRayOrigin, this);
 						Rays.ShowRay(originalRayOrigin, true);
 					}
 
-					if (miniWorldRayObjects == null && originalRayObjects == null)
+					var hasPreview = miniWorldRay.hasPreview;
+					if (miniWorldRayObjects == null && originalRayObjects == null && !hasPreview)
 					{
 						miniWorldRay.wasContained = isContained;
+						//miniWorldRay.dragStartedOutside = false;
 						continue;
 					}
 
-					// Transfer objects to and from original ray and MiniWorld ray (e.g. outside to inside mini world)
-					if (isContained != miniWorldRay.wasContained)
+					if (isContained != wasContained)
 					{
+						// Transfer objects to and from original ray and MiniWorld ray (e.g. outside to inside mini world)
 						var from = isContained ? originalRayOrigin : miniWorldRayOrigin;
 						var to = isContained ? miniWorldRayOrigin : originalRayOrigin;
+
+						if (miniWorldRayObjects != null && !isContained)
+						{
+							// Try to transfer objects between MiniWorlds
+							foreach (var kvp in m_Rays)
+							{
+								var otherRayOrigin = kvp.Key;
+								var otherRay = kvp.Value;
+								if (originalRayOrigin == otherRay.originalRayOrigin && otherRay != miniWorldRay && otherRay.wasContained)
+								{
+									//otherRay.dragStartedOutside = false;
+									from = miniWorldRayOrigin;
+									to = otherRayOrigin;
+									break;
+								}
+							}
+						}
+
 						var pointerLengthDiff = DirectSelection.GetPointerLength(to) - DirectSelection.GetPointerLength(from);
 						directSelection.TransferHeldObjects(from, to, Vector3.forward * pointerLengthDiff);
 					}
-
-					// Transfer objects between MiniWorlds
-					//if (dragObjects == null)
-					//{
-					//	if (isContained)
-					//	{
-					//		foreach (var kvp in m_Rays)
-					//		{
-					//			var otherRayOrigin = kvp.Key;
-					//			var otherRay = kvp.Value;
-					//			var otherObjects = otherRay.previewObjects;
-					//			if (otherRay != miniWorldRay && !otherRay.wasContained && otherObjects != null)
-					//			{
-					//				dragObjects = otherObjects;
-					//				miniWorldRay.previewObjects = otherObjects;
-
-					//				otherRay.previewObjects = null;
-
-					//				var heldObjects = objectsGrabber.GetHeldObjects(otherRayOrigin);
-					//				if (heldObjects != null)
-					//					objectsGrabber.TransferHeldObjects(otherRayOrigin, miniWorldRayOrigin);
-
-					//				break;
-					//			}
-					//		}
-					//	}
-					//}
-
-					var hasPreview = miniWorldRay.hasPreview;
-
-					if (originalRayObjects != null && !hasPreview)
-						miniWorldRay.dragStartedOutside = true;
 
 					if (miniWorldRay.dragStartedOutside)
 					{
@@ -278,50 +268,67 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						continue;
 					}
 
-					// Scale the object back to its original scale when it re-enters the MiniWorld
-					if (isContained && !miniWorldRay.wasContained && hasPreview)
+					if (miniWorldRayObjects != null && !isContained && wasContained)
 					{
-						miniWorldRay.ExitPreviewMode();
-						directSelection.ResumeHoldingObjects(node);
-					}
-
-					if (!isContained)
-					{
-						if (miniWorldRay.wasContained && miniWorldRayObjects != null)
+						var containedInOtherMiniWorld = false;
+						foreach (var world in m_Worlds)
 						{
-							var containedInOtherMiniWorld = false;
-							foreach (var world in m_Worlds)
+							if (miniWorld != world && world.Contains(originalPointerPosition))
+								containedInOtherMiniWorld = true;
+						}
+
+						// Transfer objects from miniworld to preview state
+						// Don't switch to previewing the objects we are dragging if we are still in another mini world
+						if (!containedInOtherMiniWorld)
+						{
+							// Check for player head
+							var playerHead = false;
+							foreach (var obj in miniWorldRayObjects)
 							{
-								if (miniWorld != world && world.Contains(originalPointerPosition))
-									containedInOtherMiniWorld = true;
+								if (obj.CompareTag(k_VRPlayerTag))
+								{
+									playerHead = true;
+									directSelection.DropHeldObjects(node);
+									break;
+								}
 							}
 
-							// Transfer objects from miniworld to preview state
-							// Don't switch to previewing the objects we are dragging if we are still in another mini world
-							if (!containedInOtherMiniWorld)
+							if (!playerHead)
 							{
-								// Check for player head
-								var playerHead = false;
-								foreach (var obj in miniWorldRayObjects)
-								{
-									if (obj.CompareTag(k_VRPlayerTag))
-									{
-										playerHead = true;
-										directSelection.DropHeldObjects(node);
-										break;
-									}
-								}
+								var scaleFactor = this.GetViewerScale() / miniWorld.referenceTransform.localScale.x;
+								miniWorldRay.EnterPreviewMode(miniWorldRayObjects, miniWorldRayOrigin, scaleFactor);
+								directSelection.SuspendHoldingObjects(node);
+							}
+						}
+					}
 
-								if (!playerHead)
-								{
-									var scaleFactor = this.GetViewerScale() / miniWorld.referenceTransform.localScale.x;
-									miniWorldRay.EnterPreviewMode(miniWorldRayObjects, miniWorldRayOrigin, scaleFactor);
-									directSelection.SuspendHoldingObjects(node);
-								}
+					if (hasPreview)
+					{
+						// Check if we have just entered another miniworld
+						var enterOther = false;
+						foreach (var otherRay in m_Rays)
+						{
+							var otherMiniWorldRay = otherRay.Value;
+							if (otherMiniWorldRay.miniWorld != miniWorld && otherMiniWorldRay.miniWorld.Contains(originalPointerPosition))
+							{
+								miniWorldRay.ExitPreviewMode();
+								directSelection.ResumeHoldingObjects(node);
+								enterOther = true;
 							}
 						}
 
-						miniWorldRay.UpdatePreview();
+						if (!enterOther)
+						{
+							if (!isContained)
+							{
+								miniWorldRay.UpdatePreview();
+							}
+							else if (!wasContained)
+							{
+								miniWorldRay.ExitPreviewMode();
+								directSelection.ResumeHoldingObjects(node);
+							}
+						}
 					}
 
 					miniWorldRay.wasContained = isContained;
@@ -344,6 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var miniWorldRayOrigin = InstantiateMiniWorldRay();
+					miniWorldRayOrigin.name = string.Format("{0} Miniworld {1} Ray", deviceData.node, m_Worlds.Count - 1);
 					miniWorldRayOrigin.parent = workspace.transform;
 
 					var tester = miniWorldRayOrigin.GetComponentInChildren<IntersectionTester>();
@@ -393,15 +401,34 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
+			void OnObjectGrabbed(Transform rayOrigin, Transform grabbedObject)
+			{
+				foreach (var ray in m_Rays.Values)
+				{
+					if (ray.originalRayOrigin == rayOrigin)
+						ray.dragStartedOutside = true;
+				}
+			}
+
 			void OnObjectsDropped(Transform rayOrigin, Transform[] grabbedObjects)
 			{
+				Node? node = null;
 				foreach (var ray in m_Rays)
 				{
 					var miniWorldRay = ray.Value;
 					if (ray.Key == rayOrigin || miniWorldRay.originalRayOrigin == rayOrigin)
 					{
-						miniWorldRay.DropPreviewObjects(this);
+						node = miniWorldRay.node;
+						break;
+					}
+				}
 
+				foreach (var ray in m_Rays)
+				{
+					var miniWorldRay = ray.Value;
+					if (miniWorldRay.node == node)
+					{
+						miniWorldRay.DropPreviewObjects(this);
 						miniWorldRay.dragStartedOutside = false;
 					}
 				}
@@ -409,6 +436,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void LateBindInterfaceMethods(DirectSelection provider)
 			{
+				provider.objectGrabbed += OnObjectGrabbed;
 				provider.objectsDropped += OnObjectsDropped;
 			}
 		}

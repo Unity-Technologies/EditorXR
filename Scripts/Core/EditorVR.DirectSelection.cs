@@ -5,7 +5,6 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -19,9 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			IntersectionModule m_IntersectionModule;
 
-			// Local method use only -- created here to reduce garbage collection
-			readonly List<ActionMapInput> m_ActiveStates = new List<ActionMapInput>();
-
+			public event Action<Transform, Transform> objectGrabbed;
 			public event Action<Transform, Transform[]> objectsDropped;
 
 			public DirectSelection()
@@ -89,7 +86,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void UpdateDirectSelection()
 			{
 				m_DirectSelections.Clear();
-				m_ActiveStates.Clear();
 
 				Rays.ForEachProxyDevice(deviceData =>
 				{
@@ -98,17 +94,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var obj = GetDirectSelectionForRayOrigin(rayOrigin);
 					if (obj && !obj.CompareTag(k_VRPlayerTag))
 					{
-						m_ActiveStates.Add(input);
 						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = obj,
 							node = deviceData.node,
 							input = input
 						};
-					}
-					else if (m_GrabbedObjects.ContainsKey(rayOrigin))
-					{
-						m_ActiveStates.Add(input);
 					}
 				});
 
@@ -120,7 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var go = GetDirectSelectionForRayOrigin(rayOrigin);
 					if (go != null)
 					{
-						m_ActiveStates.Add(input);
 						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = go,
@@ -128,19 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							input = input
 						};
 					}
-					else if (miniWorldRay.hasPreview || m_GrabbedObjects.ContainsKey(rayOrigin))
-					{
-						m_ActiveStates.Add(input);
-					}
 				}
-
-				// Only activate direct selection input if the cone is inside of an object, so a trigger press can be detected,
-				// and keep it active if we are dragging
-				Rays.ForEachProxyDevice(deviceData =>
-				{
-					var input = deviceData.directSelectInput;
-					input.active = m_ActiveStates.Contains(input);
-				});
 			}
 
 			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
@@ -164,7 +142,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return true;
 			}
 
-			void OnObjectGrabbed(Transform rayOrigin, Transform selection)
+			void OnObjectGrabbed(Transform rayOrigin, Transform grabbedObject)
 			{
 				HashSet<Transform> grabbedObjects;
 				if (!m_GrabbedObjects.TryGetValue(rayOrigin, out grabbedObjects))
@@ -173,14 +151,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_GrabbedObjects[rayOrigin] = grabbedObjects;
 				}
 
-				grabbedObjects.Add(selection);
+				grabbedObjects.Add(grabbedObject);
 
 				// Detach the player head model so that it is not affected by its parent transform
-				if (selection.CompareTag(k_VRPlayerTag))
+				if (grabbedObject.CompareTag(k_VRPlayerTag))
 				{
-					selection.hideFlags = HideFlags.None;
-					selection.transform.parent = null;
+					grabbedObject.hideFlags = HideFlags.None;
+					grabbedObject.transform.parent = null;
 				}
+
+				if (objectGrabbed != null)
+					objectGrabbed(rayOrigin, grabbedObject);
 			}
 
 			void OnObjectsDropped(Transform rayOrigin, Transform[] grabbedObjects)
