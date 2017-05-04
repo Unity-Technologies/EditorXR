@@ -207,7 +207,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				foreach (var grabber in m_ObjectGrabbers)
 				{
-					grabber.SuspendHoldingObjects(node);
+					grabber.SuspendTransformation(node);
 				}
 			}
 
@@ -215,7 +215,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				foreach (var grabber in m_ObjectGrabbers)
 				{
-					grabber.ResumeHoldingObjects(node);
+					grabber.ResumeTransformation(node);
 				}
 			}
 
