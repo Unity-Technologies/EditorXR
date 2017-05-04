@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			IntersectionModule m_IntersectionModule;
 
-			public event Action<Transform, Transform> objectGrabbed;
+			public event Action<Transform, HashSet<Transform>> objectsGrabbed;
 			public event Action<Transform, Transform[]> objectsDropped;
 
 			public DirectSelection()
@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (grabObjects != null)
 				{
 					m_ObjectGrabbers.Add(grabObjects);
-					grabObjects.objectGrabbed += OnObjectGrabbed;
+					grabObjects.objectsGrabbed += OnObjectsGrabbed;
 					grabObjects.objectsDropped += OnObjectsDropped;
 					grabObjects.objectsTransferred += OnObjectsTransferred;
 				}
@@ -48,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (grabObjects != null)
 				{
 					m_ObjectGrabbers.Remove(grabObjects);
-					grabObjects.objectGrabbed -= OnObjectGrabbed;
+					grabObjects.objectsGrabbed -= OnObjectsGrabbed;
 					grabObjects.objectsDropped -= OnObjectsDropped;
 					grabObjects.objectsTransferred -= OnObjectsTransferred;
 				}
@@ -142,26 +142,29 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return true;
 			}
 
-			void OnObjectGrabbed(Transform rayOrigin, Transform grabbedObject)
+			void OnObjectsGrabbed(Transform rayOrigin, HashSet<Transform> grabbedObjects)
 			{
-				HashSet<Transform> grabbedObjects;
-				if (!m_GrabbedObjects.TryGetValue(rayOrigin, out grabbedObjects))
+				HashSet<Transform> objects;
+				if (!m_GrabbedObjects.TryGetValue(rayOrigin, out objects))
 				{
-					grabbedObjects = new HashSet<Transform>();
-					m_GrabbedObjects[rayOrigin] = grabbedObjects;
+					objects = new HashSet<Transform>();
+					m_GrabbedObjects[rayOrigin] = objects;
 				}
 
-				grabbedObjects.Add(grabbedObject);
+				objects.UnionWith(grabbedObjects);
 
 				// Detach the player head model so that it is not affected by its parent transform
-				if (grabbedObject.CompareTag(k_VRPlayerTag))
+				foreach (var grabbedObject in grabbedObjects)
 				{
-					grabbedObject.hideFlags = HideFlags.None;
-					grabbedObject.transform.parent = null;
+					if (grabbedObject.CompareTag(k_VRPlayerTag))
+					{
+						grabbedObject.hideFlags = HideFlags.None;
+						grabbedObject.transform.parent = null;
+					}
 				}
 
-				if (objectGrabbed != null)
-					objectGrabbed(rayOrigin, grabbedObject);
+				if (objectsGrabbed != null)
+					objectsGrabbed(rayOrigin, grabbedObjects);
 			}
 
 			void OnObjectsDropped(Transform rayOrigin, Transform[] grabbedObjects)

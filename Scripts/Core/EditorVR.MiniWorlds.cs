@@ -430,7 +430,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			void OnObjectGrabbed(Transform rayOrigin, Transform grabbedObject)
+			void OnObjectsGrabbed(Transform rayOrigin, HashSet<Transform> grabbedObjects)
 			{
 				foreach (var ray in m_Rays.Values)
 				{
@@ -471,7 +471,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void LateBindInterfaceMethods(DirectSelection provider)
 			{
-				provider.objectGrabbed += OnObjectGrabbed;
+				provider.objectsGrabbed += OnObjectsGrabbed;
 				provider.objectsDropped += OnObjectsDropped;
 			}
 		}

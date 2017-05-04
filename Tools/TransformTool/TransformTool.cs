@@ -210,7 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 		readonly TransformAction m_ManipulatorToggleAction = new TransformAction();
 
-		public event Action<Transform, Transform> objectGrabbed;
+		public event Action<Transform, HashSet<Transform>> objectsGrabbed;
 		public event Action<Transform, Transform[]> objectsDropped;
 		public event Action<Transform, Transform> objectsTransferred;
 
@@ -307,9 +307,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					{
 						this.ClearSnappingState(directRayOrigin);
 
-						if (objectGrabbed != null)
-							objectGrabbed(directRayOrigin, directHoveredObject.transform);
-
 						consumeControl(directSelectInput.select);
 
 						var grabbingNode = directSelectionData.node;
@@ -330,6 +327,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						var grabbedObjects = new HashSet<Transform> { directHoveredObject.transform };
 						grabbedObjects.UnionWith(Selection.transforms);
+
+						if (objectsGrabbed != null)
+							objectsGrabbed(directRayOrigin, grabbedObjects);
+
 						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray(), this);
 
 						this.HideDefaultRay(directRayOrigin, true); // This will also unhighlight the object
@@ -494,6 +495,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (grabData.rayOrigin == rayOrigin)
 				{
 					grabData.TransferTo(destRayOrigin, deltaOffset);
+					this.ClearSnappingState(rayOrigin);
 
 					// Prevent lock from getting stuck
 					this.UnlockRay(rayOrigin, this);

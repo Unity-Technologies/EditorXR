@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -39,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Must be called by the implementer when an object has been grabbed
 		/// Params: the rayOrign, the grabbed object
 		/// </summary>
-		event Action<Transform, Transform> objectGrabbed;
+		event Action<Transform, HashSet<Transform>> objectsGrabbed;
 
 		/// <summary>
 		/// Must be called by the implementer when objects have been dropped
