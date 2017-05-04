@@ -176,8 +176,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var directSelection = evr.GetNestedModule<DirectSelection>();
 
-				//TODO: grabbing objects that start inside miniworld
-
 				// Update MiniWorldRays
 				foreach (var ray in m_Rays)
 				{
@@ -231,12 +229,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (miniWorldRayObjects == null && originalRayObjects == null && !hasPreview)
 					{
 						miniWorldRay.wasContained = isContained;
-						//miniWorldRay.dragStartedOutside = false;
 						continue;
 					}
 
 					if (isContained != wasContained)
 					{
+						// Early out if we grabbed a real-world object that started inside a mini world
+						if (!isContained && miniWorldRayObjects == null)
+						{
+							miniWorldRay.wasContained = false;
+							continue;
+						}
+
 						// Transfer objects to and from original ray and MiniWorld ray (e.g. outside to inside mini world)
 						var from = isContained ? originalRayOrigin : miniWorldRayOrigin;
 						var to = isContained ? miniWorldRayOrigin : originalRayOrigin;
