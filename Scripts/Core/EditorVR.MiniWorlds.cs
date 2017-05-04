@@ -253,7 +253,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								var otherRay = kvp.Value;
 								if (originalRayOrigin == otherRay.originalRayOrigin && otherRay != miniWorldRay && otherRay.isContained)
 								{
-									//otherRay.dragStartedOutside = false;
 									from = miniWorldRayOrigin;
 									to = otherRayOrigin;
 									break;
@@ -420,7 +419,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var miniWorld = miniWorldWorkspace.miniWorld;
 
-				//Clean up MiniWorldRays
+				// Clean up MiniWorldRays
 				m_Worlds.Remove(miniWorld);
 				var miniWorldRaysCopy = new Dictionary<Transform, MiniWorldRay>(m_Rays);
 				foreach (var ray in miniWorldRaysCopy)
