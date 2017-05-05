@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 800ff7c94496eac41ab0b6df27863704
+timeCreated: 1493960032
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_MainMenuActionMap: {fileID: 11400000, guid: 744d823602c92f94ebd746822bed646d,
+      type: 2}
+  - m_PinnedToolsMenuPrefab: {fileID: 114000010527895234, guid: 9df94b11e4f4ed848aa8c4055b378c6a,
+      type: 2}
+  - m_PinnedToolButtonTemplate: {fileID: 114000011260412956, guid: 7221a75a049ac3949a505c7c2f06bd8e,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
