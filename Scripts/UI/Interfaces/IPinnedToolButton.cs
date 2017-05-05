@@ -16,9 +16,10 @@ namespace UnityEditor.Experimental.EditorVR
 		bool highlighted { get; set; }
 		bool allButtonsVisible { get; set; }
 		int maxButtonCount { get; set; }
-		int visibileButtonCount { get; set; }
+		Func<int> visibileButtonCount { get; set; }
 		bool activeTool { get; set; }
 		Action<IPinnedToolButton> selectTool { get; set; }
+		bool toolTipVisible { set; }
 		/*
 		int menuButtonOrderPosition { get; }
 		int activeToolOrderPosition  { get; }

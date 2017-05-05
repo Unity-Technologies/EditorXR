@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Permissions;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -13,8 +14,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	sealed class PinnedToolsMenuUI : MonoBehaviour, IInstantiateUI
 	{
-		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
-		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
+		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
+		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
+		const int k_InactiveButtonInitialOrderPosition = -1;
 
 		[SerializeField]
 		Transform m_ButtonContainer;
@@ -42,27 +44,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_AllButtonsVisible = value;
 
 				if (m_AllButtonsVisible)
-					ShowAllButtons();
-				else
-					HideAllButtons();
-			}
-		}
-
-		private int visibleButtonCount
-		{
-			get
-			{
-				return m_VisibleButtonCount;
-				/*
-				int count = 0;
-				for (int i = 0; i < m_OrderedButtons.Count; ++i)
 				{
-					if (m_OrderedButtons[i].order > -1)
-						++count;
+					this.StopCoroutine(ref m_ShowHideAllButtonsCoroutine);
+					ShowAllExceptMenuButton();
 				}
-
-				return count;
-				*/
+				else
+					ShowOnlyMenuAndActiveToolButtons();
 			}
 		}
 
@@ -77,30 +64,37 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.allButtonsVisible = allButtonsVisible;
 			button.maxButtonCount = maxButtonCount;
 			button.selectTool = SelectTool;
-			button.visibileButtonCount = visibleButtonCount;
+			button.visibileButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
 
-			var insertPosition = -1;
-			if (button.toolType == typeof(IMainMenu))
+			var insertPosition = k_InactiveButtonInitialOrderPosition;
+			if (IsMainMenuButton(button))
+			{
 				insertPosition = k_MenuButtonOrderPosition;
+				//m_VisibleButtonCount = 2; // Show only the MainMenu and select buttons initiall
+			}
 			else
+			{
 				insertPosition = k_ActiveToolOrderPosition;
+			}
 
 			m_OrderedButtons.Insert(insertPosition, button);
-			m_VisibleButtonCount = m_VisibleButtonCount = m_OrderedButtons.Count;
+			m_VisibleButtonCount = m_OrderedButtons.Count;
 
 			button.activeTool = true;
+			button.order = insertPosition;
 
 			buttonTransform.rotation = Quaternion.identity;
 			buttonTransform.localPosition = Vector3.zero;
 			buttonTransform.localScale = Vector3.zero;
 
-			button.order = insertPosition;
-
 			Debug.LogWarning("Setting up button : " + button.toolType + " - ORDER : " + button.order);
 
-			if (m_OrderedButtons.Count > k_ActiveToolOrderPosition)
+			if (m_OrderedButtons.Count > k_ActiveToolOrderPosition + 1)
 				this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons());
+			else
+				SetupButtonOrder(); // Setup the MainMenu and active tool buttons only
 			/*
+
 			foreach (var pair in pinnedToolButtons)
 			{
 				if (pair.Value.order != pair.Value.menuButtonOrderPosition) // don't move the main menu button
@@ -158,8 +152,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			return pinnedToolButton;
 		}
 
+		void Reinsert(IPinnedToolButton button, int newOrderPosition, bool updateButtonOrder = false)
+		{
+			var removed = m_OrderedButtons.Remove(button);
+			if (!removed)
+			{
+				Debug.LogError("Could not remove button");
+				return;
+			}
+
+			m_OrderedButtons.Insert(newOrderPosition, button);
+
+			if (updateButtonOrder)
+				button.order = newOrderPosition;
+		}
+
 		void SetupButtonOrder()
 		{
+			Debug.LogError("SetupButtonOrder");
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];
@@ -168,45 +178,61 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void ShowAllButtons()
+		void ShowAllExceptMenuButton()
 		{
-			m_VisibleButtonCount = m_OrderedButtons.Count - 1; // subtract the menu button from the total
+			Debug.LogError("ShowAllExceptMenuButton");
+			m_VisibleButtonCount = Mathf.Max(0, m_OrderedButtons.Count - 1); // The MainMenu button will be hidden, subtract 1 from the m_VisibleButtonCount
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
-				m_OrderedButtons[i].order = i == 0 ? -1 : i; // hide the menu buttons when revealing all tools buttons
+				m_OrderedButtons[i].order = i == k_MenuButtonOrderPosition ? k_InactiveButtonInitialOrderPosition : i - 1; // Hide the menu buttons when revealing all tools buttons
 
 			SetupButtonOrder();
 		}
 
-		void HideAllButtons()
+		void ShowOnlyMenuAndActiveToolButtons()
 		{
 			Debug.LogError("Hiding all buttons");
 			m_VisibleButtonCount = 2; // Show only the menu and active tool button
-			const int kInactiveButtonInitialOrderPosition = -1;
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
-				m_OrderedButtons[i].order = i > k_ActiveToolOrderPosition ? kInactiveButtonInitialOrderPosition : i; // maintain menu and active tool positions
+			{
+				var button = m_OrderedButtons[i];
+				button.toolTipVisible = false;
+				if (IsMainMenuButton(button))
+					Reinsert(button, k_MenuButtonOrderPosition, true); // Return the main menu button to its original position after being hidden when showing tool buttons
+				else
+					m_OrderedButtons[i].order = i > k_ActiveToolOrderPosition ? k_InactiveButtonInitialOrderPosition : i; // Hide buttons beyond the active tool button threshold
+			}
 		}
 
 		void SelectTool(IPinnedToolButton pinnedToolButton)
 		{
+			Debug.LogError("Selecting toolf of type : " + pinnedToolButton.toolType);
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];;
 				if (button == pinnedToolButton && button.order > k_ActiveToolOrderPosition)
-				{
-					m_OrderedButtons.Remove(button);
-					m_OrderedButtons.Insert(k_ActiveToolOrderPosition, button);
-				}
+					Reinsert(button, k_ActiveToolOrderPosition);
 			}
 
-			SetupButtonOrder(); // after setting the new order of the active tool button, reposition the buttons
+			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons());
 			selectTool(rayOrigin, pinnedToolButton.toolType);
 		}
 
-		public void HighlightSingleButton(int buttonOrderPosition)
+		public void SelectExistingType(Type type)
+		{
+			foreach (var button in m_OrderedButtons)
+			{
+				if (button.toolType == type)
+					SelectTool(button);
+			}
+		}
+
+		public void HighlightSingleButtonWithoutMenu(int buttonOrderPosition)
 		{
 			Debug.LogError("Highlighting SINGLE BUTTON at position : "+ buttonOrderPosition);
-			for (int i = 0; i < m_OrderedButtons.Count; ++i)
-				m_OrderedButtons[i].highlighted = i == buttonOrderPosition;
+			for (int i = 0; i < m_OrderedButtons.Count - 1; ++i)
+			{
+				m_OrderedButtons[i + 1].highlighted = i == buttonOrderPosition;
+			}
 		}
 
 		public void SelectHighlightedButton()
@@ -221,6 +247,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					return;
 				}
 			}
+		}
+
+		bool IsMainMenuButton(IPinnedToolButton button)
+		{
+			return button.toolType == typeof(IMainMenu);
+		}
+
+		bool IsSelectionButton(IPinnedToolButton button)
+		{
+			return button.toolType == typeof(SelectionTool);
+		}
+
+		int VisibleButtonCount()
+		{
+			return m_VisibleButtonCount;
 		}
 	}
 }

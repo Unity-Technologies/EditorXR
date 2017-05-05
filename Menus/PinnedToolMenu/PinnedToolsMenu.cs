@@ -118,8 +118,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			Debug.LogWarning("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
 			//var pinnedToolButtons = deviceData.pinnedToolButtons;
-			if (pinnedToolButtons.ContainsKey(toolType) || pinnedToolButtons.Count >= k_MaxButtonCount) // Return if tooltype already occupies a pinned tool button
+			if (pinnedToolButtons.Count >= k_MaxButtonCount) // Return if tooltype already occupies a pinned tool button
+			{
 				return;
+			}
+			else if (pinnedToolButtons.ContainsKey(toolType))
+			{
+				m_PinnedToolsMenuUI.SelectExistingType(toolType);
+				return;
+			}
 
 			// Before adding new button, offset each button to a position greater than the zeroth/active tool position
 			//foreach (var pair in pinnedToolButtons)
@@ -160,6 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PinnedToolsMenuUI.AddButton(button, buttonTransform);
 		}
 
+		float? continuedInputConsumptionStartTime;
 		Vector3 spatialScrollStartPosition;
 		Vector3? spatialDirection = null;
 		Vector3 previousWorldPosition;
@@ -169,8 +177,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (buttonCount <= k_ActiveToolOrderPosition + 1)
 				return;
 
-			//Debug.LogError("<color=BLUE>PinnedToolButton</color>");
 			var pinnedToolInput = (PinnedToolslMenuInput) input;
+			if (continuedInputConsumptionStartTime != null)
+			{
+				// Continue consumption for period of time after releasing the button
+				consumeControl(pinnedToolInput.show);
+				consumeControl(pinnedToolInput.select);
+				if (Time.time > continuedInputConsumptionStartTime.Value)
+					continuedInputConsumptionStartTime = null;
+			}
 
 			if (pinnedToolInput.show.wasJustPressed)
 				Debug.LogError("<color=black>SHOW pressed in PinnedToolButton</color>");
@@ -182,6 +197,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				//Debug.LogError("<color=yellow>Processing input in PinnedToolButton</color>");
 				//consumeControl(directSelectInput.select);
+				consumeControl(pinnedToolInput.show);
 				m_PinnedToolsMenuUI.allButtonsVisible = true;
 				spatialScrollStartPosition = m_PinnedToolsMenuUI.transform.position;
 			}
@@ -193,22 +209,32 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					//OnActionButtonHoverExit(false);
 					deleteHighlightedButton(rayOrigin);
 					m_PinnedToolsMenuUI.allButtonsVisible = false;
-					spatialDirection = null;
+					//spatialDirection = null;
 					return;
 				}
 
 				// normalized input should loop after reaching the 0.15f length
+				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
 				var normalizedRepeatingPosition = processSpatialScrolling(spatialScrollStartPosition, m_PinnedToolsMenuUI.transform.position, 0.15f, true);
-				m_PinnedToolsMenuUI.HighlightSingleButton((int)(buttonCount * normalizedRepeatingPosition));
+				m_PinnedToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition));
 				consumeControl(pinnedToolInput.show);
 				consumeControl(pinnedToolInput.select);
 			}
 			else if (pinnedToolInput.show.wasJustReleased)
 			{
-				m_PinnedToolsMenuUI.allButtonsVisible = false;
-				m_PinnedToolsMenuUI.SelectHighlightedButton();
-				spatialDirection = null;
-				consumeControl(pinnedToolInput.select);
+				continuedInputConsumptionStartTime = Time.time + 2f;
+
+				if (spatialDirection != null)
+				{
+					m_PinnedToolsMenuUI.SelectHighlightedButton();
+					spatialDirection = null;
+					consumeControl(pinnedToolInput.select);
+
+				}
+				else
+				{
+					m_PinnedToolsMenuUI.allButtonsVisible = false;
+				}
 			}
 
 			// cache current position for delta comparison on next frame for fine tuned scrolling with low velocity

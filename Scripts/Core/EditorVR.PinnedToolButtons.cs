@@ -74,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				button.deletePinnedToolButton = DeletePinnedToolButton;
 				button.revealAllToolButtons = RevealAllToolButtons;
 				button.selectTool = ToolButtonClicked;
-				//button.highli = HighlightSingleButton;
+				//button.highli = HighlightSingleButtonWithoutMenu;
 				button.selectHighlightedButton = SelectHighlightedButton;
 				button.deleteHighlightedButton = DeleteHighlightedButton;
 				//button.selected += OnMainMenuActivatorSelected;
@@ -234,7 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			/*
 			// TODO: move into pinned tool button controller?
-			internal void HighlightSingleButton (Transform rayOrigin, int buttonOrderPosition, bool highlight = true)
+			internal void HighlightSingleButtonWithoutMenu (Transform rayOrigin, int buttonOrderPosition, bool highlight = true)
 			{
 				Rays.ForEachProxyDevice(deviceData =>
 				{

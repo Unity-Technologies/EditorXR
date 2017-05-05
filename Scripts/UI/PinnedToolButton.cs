@@ -78,17 +78,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_Order; }
 			set
 			{
-				if (m_Order == value)
-					return;
-
-
-				Debug.LogError(m_ToolType.ToString() + " : <color=red>SETTING BUTTON ORDER TO : </color>" + m_Order);
+				//if (m_Order == value)
+					//return;
 
 				m_Order = value; // Position of this button in relation to other pinned tool buttons
+
+				Debug.LogError(m_ToolType.ToString() + " : <color=red>SETTING BUTTON ORDER TO : </color>" + m_Order + " - current button count : " + visibileButtonCount);
+
 				//m_InactivePosition = s_ActivePosition * ++value; // Additional offset for the button when it is visible and inactive
 				//activeTool = activeTool;
-				const float kSmoothingMax = 50f;
-				const int kSmoothingIncreaseFactor = 10;
+				//const float kSmoothingMax = 50f;
+				//const int kSmoothingIncreaseFactor = 10;
 				//var smoothingFactor = Mathf.Clamp(kSmoothingMax- m_Order * kSmoothingIncreaseFactor, 0f, kSmoothingMax);
 				//m_SmoothMotion.SetPositionSmoothing(smoothingFactor);
 				//m_SmoothMotion.SetRotationSmoothing(smoothingFactor);
@@ -106,9 +106,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
 				m_IconContainerCanvasGroup.alpha = 1f;
 
-				var mainMenuAndActiveButtonCount = 2;
-				var aboluteMenuButtonCount = isMainMenu ? mainMenuAndActiveButtonCount : activeButtonCount; // madates a fixed position for the MainMenu button, next to the ActiveToolButton
+				//var mainMenuAndActiveButtonCount = 2;
+				//var aboluteMenuButtonCount = isMainMenu ? mainMenuAndActiveButtonCount : activeButtonCount; // madates a fixed position for the MainMenu button, next to the ActiveToolButton
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order));
+
+				if(m_Order == -1)
+					this.HideTooltip(this);
 
 				/*
 				if (aboluteMenuButtonCount > mainMenuAndActiveButtonCount)
@@ -287,6 +290,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Sprite m_PreviewIcon;
 		bool m_Highlighted;
 		bool m_ActiveTool;
+		bool m_Visible;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -313,7 +317,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Transform> deleteHighlightedButton { get; set; }
 		public Action<Transform> selectHighlightedButton { get; set; }
 		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
-		public int visibileButtonCount { get; set; }
+		public Func<int> visibileButtonCount { get; set; }
 
 		public event Action<Transform> hoverEnter;
 		public event Action<Transform> hoverExit;
@@ -324,8 +328,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_ActiveTool; }
 			set
 			{
-				if (m_ActiveTool == value)
-					return;
+				//if (m_ActiveTool == value)
+					//return;
 
 				m_ActiveTool = value;
 
@@ -337,6 +341,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_GradientButton.highlighted = true;
 				m_GradientButton.highlighted = false;
+			}
+		}
+
+		public bool visible
+		{
+			//get { return m_Highlighted; }
+			set
+			{
+				if (m_Visible == value)
+					return;
+
+				gameObject.SetActive(value);
 			}
 		}
 
@@ -361,6 +377,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					else
 						this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 				}
+			}
+		}
+
+		public bool toolTipVisible
+		{
+			set
+			{
+				if (!value)
+					this.HideTooltip(this);
 			}
 		}
 
@@ -795,7 +820,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//IEnumerator AnimatePosition(int orderPosition, int buttonCount)
 		IEnumerator AnimatePosition(int orderPosition)
 		{
-			Debug.LogError(m_ToolType + " - Animate Button position : " + orderPosition);
+			Debug.LogError(m_ToolType + " - Animate Button position : " + orderPosition + " - BUTTON COUNT: " + visibileButtonCount);
 			primaryButtonCollidersEnabled = false;
 			//if (!activeTool) // hide a button if it is not the active tool button and the buttons are no longer revealed
 				//gameObject.SetActive(true);
@@ -803,10 +828,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//if (order != activeToolOrderPosition)
 				//m_RootCollider.enabled = false;
 
-			const float kMaxPinnedToolButtonCount = 16; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
-			const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
-			var phaseOffset = orderPosition > -1 ? kRotationSpacing * 0.5f - (visibileButtonCount * 0.5f) * kRotationSpacing : 0; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
-			var targetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * Mathf.Max(0f, orderPosition), Vector3.down);
+			var rotationSpacing = 360f / maxButtonCount; // dividend should be the count of pinned tool buttons showing at this time
+			var phaseOffset = orderPosition > -1 ? rotationSpacing * 0.5f - (visibileButtonCount() * 0.5f) * rotationSpacing : 0; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
+			var targetRotation = orderPosition > -1 ? Quaternion.AngleAxis(phaseOffset + rotationSpacing * Mathf.Max(0f, orderPosition), Vector3.down) : Quaternion.identity;
 
 			var duration = 0f;
 			//var currentPosition = transform.localPosition;
