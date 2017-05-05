@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -31,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				return mainMenuActivator;
 			}
-*/
 			internal IPinnedToolButton SpawnPinnedToolButton(InputDevice device)
 			{
 				var button = ObjectUtils.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<IPinnedToolButton>();
@@ -39,7 +39,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				return button;
 			}
+*/
 
+			/*
 			internal IPinnedToolButton AddPinnedToolButton(DeviceData deviceData, Type toolType, Sprite buttonIcon)
 			{
 				Debug.LogWarning("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
@@ -70,15 +72,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				button.icon = buttonIcon;
 				//button.order = button.activeToolOrderPosition; // first position is the active tool position
 				button.deletePinnedToolButton = DeletePinnedToolButton;
-				button.highlightAllToolButtons = RevealAllToolButtons;
+				button.revealAllToolButtons = RevealAllToolButtons;
 				button.selectTool = ToolButtonClicked;
+				//button.highli = HighlightSingleButton;
+				button.selectHighlightedButton = SelectHighlightedButton;
+				button.deleteHighlightedButton = DeleteHighlightedButton;
 				//button.selected += OnMainMenuActivatorSelected;
-				button.hoverEnter += OnButtonHoverEnter;
-				button.hoverExit += OnButtonHoverExit;
+				button.hoverEnter += onButtonHoverEnter;
+				button.hoverExit += onButtonHoverExit;
 
 				return button;
 			}
-
+*/
+/*
 			internal void SetupPinnedToolButtonsForDevice(DeviceData deviceData, Transform rayOrigin, Type activeToolType)
 			{
 				Debug.LogError("<color=black>Setting up pinned tool button for type of : </color>" + activeToolType);
@@ -117,6 +123,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						deviceData.proxy.HighlightDevice(deviceData.node, button.gradientPair); // Perform the higlight on the node with the button's gradient pair
 				}
 			}
+*/
+
+			internal void HighlightDevice(Transform rayOrigin, GradientPair gradientPair)
+			{
+				Rays.ForEachProxyDevice(deviceData =>
+				{
+					if (deviceData.rayOrigin == rayOrigin)
+					{
+						deviceData.proxy.HighlightDevice(deviceData.node, gradientPair);
+					}
+				});
+			}
 
 			void DeletePinnedToolButton(Transform rayOrigin, IPinnedToolButton buttonToDelete)
 			{
@@ -133,6 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					if (deviceData.rayOrigin == rayOrigin)
 					{
+						/*
 						var buttons = deviceData.pinnedToolButtons;
 						var selectedButtonOrder = buttons.Count;
 						foreach (var pair in deviceData.pinnedToolButtons)
@@ -149,7 +168,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						Debug.LogError("Removing button : " + buttonToDelete.toolType + " - Setting new active button of type : " + selectedButtontype);
 						buttons.Remove(buttonToDelete.toolType);
 						Tools.SelectTool(rayOrigin, selectedButtontype);
-						SetupPinnedToolButtonsForDevice(deviceData, rayOrigin, selectedButtontype);
+						// TODO remove after refacter : SetupPinnedToolButtonsForDevice(deviceData, rayOrigin, selectedButtontype);
+						*/
 					}
 				});
 			}
@@ -165,6 +185,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					if (deviceData.rayOrigin == rayOrigin) // enable pinned tool preview on the opposite (handed) device
 					{
+						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+						pinnedToolsMenu.previewToolType = toolType;
+						/*
 						var pinnedToolButtons = deviceData.pinnedToolButtons;
 						foreach (var pair in pinnedToolButtons)
 						{
@@ -176,6 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								break;
 							}
 						}
+						*/
 					}
 				});
 
@@ -184,12 +208,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void ToolButtonClicked(Transform rayOrigin, Type toolType)
 			{
+				Debug.LogError("TOOL BUTTON CLICKED : " + toolType.ToString());
 				if (toolType == typeof(IMainMenu))
 					OnMainMenuActivatorSelected(rayOrigin);
 				else
 					Tools.SelectTool(rayOrigin, toolType);
 			}
 
+			/*
 			internal void RevealAllToolButtons (Transform rayOrigin, bool reveal)
 			{
 				Rays.ForEachProxyDevice(deviceData =>
@@ -203,6 +229,73 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 				});
+			}
+			*/
+
+			/*
+			// TODO: move into pinned tool button controller?
+			internal void HighlightSingleButton (Transform rayOrigin, int buttonOrderPosition, bool highlight = true)
+			{
+				Rays.ForEachProxyDevice(deviceData =>
+				{
+					if (deviceData.rayOrigin == rayOrigin)
+					{
+						var buttons = deviceData.pinnedToolButtons;
+						foreach (var pair in buttons)
+						{
+							var toolButton = pair.Value;
+							toolButton.highlighted = toolButton.order == buttonOrderPosition ? highlight : false;
+						}
+					}
+				});
+			}
+			*/
+
+			// TODO: move into pinned tool button controller
+			internal void DeleteHighlightedButton (Transform rayOrigin)
+			{
+				Rays.ForEachProxyDevice(deviceData =>
+				{
+					if (deviceData.rayOrigin == rayOrigin)
+					{
+						Debug.LogError("RE IMPLEMENT DELETING OF TOOL BUTTONS!!! after refactor");
+						/*
+						var buttons = deviceData.pinnedToolButtons;
+						foreach (var pair in buttons)
+						{
+							var toolButton = pair.Value;
+							if (toolButton.highlighted == true)
+							{
+								DeletePinnedToolButton(rayOrigin, toolButton);
+								return;
+							}
+						}
+						*/
+					}
+				});
+			}
+
+			internal void SelectHighlightedButton (Transform rayOrigin)
+			{
+				Debug.LogError("SELECT HIGHLIGHTED BUTTON CALLED - ADD FUNCTIOALITY BACK IN!!!");
+				/*
+				Rays.ForEachProxyDevice(deviceData =>
+				{
+					if (deviceData.rayOrigin == rayOrigin)
+					{
+						var buttons = deviceData.pinnedToolButtons;
+						foreach (var pair in buttons)
+						{
+							var toolButton = pair.Value;
+							if (toolButton.highlighted)
+							{
+								ToolButtonClicked(toolButton.rayOrigin, toolButton.toolType);
+								break;
+							}
+						}
+					}
+				});
+				*/
 			}
 
 			internal void OnButtonHoverEnter(Transform rayOrigin)

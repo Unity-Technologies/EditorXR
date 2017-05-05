@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -74,7 +75,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public ActionMapInput alternateMenuInput;
 			public ITool currentTool;
 			public IMenu customMenu;
-			public Dictionary<Type, IPinnedToolButton> pinnedToolButtons;
+			public IPinnedToolsMenu pinnedToolsMenu;
+			public ActionMapInput pinnedToolsMenuInput;
+			//public Dictionary<Type, IPinnedToolButton> pinnedToolButtons;
 			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
 			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
 		}
@@ -325,6 +328,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!deviceData.proxy.active)
 					continue;
 
+				var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+				var pinnedToolsMenuInput = pinnedToolsMenu as IProcessInput;
+				if (pinnedToolsMenuInput != null)
+					pinnedToolsMenuInput.ProcessInput(deviceData.pinnedToolsMenuInput, consumeControl);
+
 				var mainMenu = deviceData.mainMenu;
 				var menuInput = mainMenu as IProcessInput;
 				if (menuInput != null && mainMenu.visible)
@@ -335,8 +343,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (altMenuInput != null && altMenu.visible)
 					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
 
+				ActionMapInput testBlinkActionMap = null; // HACK - implement proper fetching of action map input that minds the grip move/zoom
+
 				foreach (var toolData in deviceData.toolData)
 				{
+					var blink = (toolData.tool as BlinkLocomotionTool);
+					if (blink)
+					{
+						testBlinkActionMap = toolData.input;
+					}
 					var process = toolData.tool as IProcessInput;
 					if (process != null && ((MonoBehaviour)toolData.tool).enabled
 						&& processedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)

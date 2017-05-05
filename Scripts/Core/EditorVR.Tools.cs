@@ -78,6 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var lockModule = evr.GetModule<LockModule>();
 				var defaultTools = evr.m_DefaultTools;
 				var directSelection = evr.GetNestedModule<DirectSelection>();
+				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();
 				Debug.LogWarning("get selection tool icon selectionToolData.icon for pinned tool buttons now that selection tool is a DefaultTool");
 
 				foreach (var deviceData in evr.m_DeviceData)
@@ -128,13 +129,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
 					alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
 
-					var pinnedTools = evr.GetNestedModule<PinnedToolButtons>(); //evr.m_PinnedToolButtons;
-					deviceData.pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
-					var mainMenuButton = pinnedTools.AddPinnedToolButton(deviceData, typeof(IMainMenu), evr.m_UnityIcon); // Setup Main Menu button
-					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu));
-					pinnedTools.AddPinnedToolButton(deviceData, typeof(SelectionTool), selectionToolData.icon); // Setup SelectionTool button
-					// Initialize PinnedToolButtons; set SelectionTool as the active tool type
-					pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(SelectionTool));
+					// Setup PinnedToolsMenu
+					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
+					deviceData.pinnedToolsMenu = pinnedToolsMenu;
+					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
+					pinnedToolsMenu.selectTool = pinnedTools.ToolButtonClicked;
+					pinnedToolsMenu.onButtonHoverEnter = pinnedTools.OnButtonHoverEnter;
+					pinnedToolsMenu.onButtonHoverExit = pinnedTools.OnButtonHoverExit;
+					pinnedToolsMenu.highlightDevice = pinnedTools.HighlightDevice;
+					// Setup permanent menu & selection PinnedToolButtons
+					//deviceData.pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
+					pinnedToolsMenu.createPinnedToolButton(typeof(IMainMenu), evr.m_UnityIcon, deviceData.node);
+					//pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu));
+					pinnedToolsMenu.createPinnedToolButton(typeof(SelectionTool), selectionToolData.icon, deviceData.node);
+					// Initialize PinnedToolButtons & set SelectionTool as the active tool type
+					//pinnedTools.SetupPinnedToolButtonsForDevice(deviceData.rayOrigin, typeof(SelectionTool), deviceData.node);
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -202,7 +211,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var result = false;
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
-				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();
 				Rays.ForEachProxyDevice(deviceData =>
 				{
 					if (deviceData.rayOrigin == rayOrigin)
@@ -211,6 +219,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var spawnTool = true;
 						var pinnedToolButtonAdded = false;
 						var setSelectAsCurrentTool = toolType == typeof(SelectionTool);//deviceData.currentTool is ILocomotor;
+						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
 
 						// If this tool was on the current device already, then simply remove it
 						var isSelectOrMainMenu = (deviceData.currentTool.GetType() == toolType || setSelectAsCurrentTool) || toolType == typeof(IMainMenu);
@@ -256,12 +265,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								if (!setSelectAsCurrentTool)
 								{
 									pinnedToolButtonAdded = true;
-									pinnedTools.AddPinnedToolButton(deviceData, toolType, newTool.icon);
+									pinnedToolsMenu.createPinnedToolButton(toolType, newTool.icon, deviceData.node);
 								}
 							}
 						}
 
-						pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, rayOrigin, toolType);
+						// TODO remove after refactor
+						//pinnedToolsMenu.SetupPinnedToolButtonsForDevice(rayOrigin, toolType, deviceData.node);
 
 						deviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
@@ -380,6 +390,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						if (!maps.Contains(alternateMenuInput))
 							maps.Add(alternateMenuInput);
+					}
+
+					var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+					var pinnedToolsMenuInput = deviceData.pinnedToolsMenuInput;
+					if (pinnedToolsMenu != null && pinnedToolsMenuInput != null)
+					{
+						// PinnedToolsMenu visibility is handled internally, not via hide flags
+						if (!maps.Contains(pinnedToolsMenuInput))
+							maps.Add(pinnedToolsMenuInput);
 					}
 
 					maps.Add(deviceData.directSelectInput);
