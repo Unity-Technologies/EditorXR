@@ -12,5 +12,6 @@ namespace UnityEngine.InputNew
 		public AxisInputControl @forward { get { return (AxisInputControl)this[2]; } }
 		public ButtonInputControl @grip { get { return (ButtonInputControl)this[3]; } }
 		public ButtonInputControl @thumb { get { return (ButtonInputControl)this[4]; } }
+		public ButtonInputControl @trigger { get { return (ButtonInputControl)this[5]; } }
 	}
 }

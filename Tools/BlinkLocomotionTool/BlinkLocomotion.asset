@@ -18,6 +18,7 @@ MonoBehaviour:
   - {fileID: 114000011232169852}
   - {fileID: 114000013530790504}
   - {fileID: 114000011708774044}
+  - {fileID: 114000014215053452}
   m_ControlSchemes:
   - m_Name: BlinkLocomotion
     m_DeviceSlots:
@@ -66,6 +67,15 @@ MonoBehaviour:
       primaryIsButtonAxis: 0
     - sources:
       - controlIndex: 22
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 17
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -180,4 +190,25 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
     name: Yaw
+    defaultValue: 0
+--- !u!114 &114000014215053452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Trigger
+  m_EditorClassIdentifier: 
+  m_RunInEditMode: 0
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 5
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Trigger
     defaultValue: 0
