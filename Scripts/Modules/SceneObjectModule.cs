@@ -135,10 +135,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			for (int i = 0; i < length; i++)
 			{
 				var transform = transforms[i];
-				startScales[i] = transform.localScale;
 				transform.localScale = startScales[i];
 				transform.rotation = parentStartRotation * rotationOffsets[i];
-				transform.position = parentStartPosition + positionOffsets[i];
+				transform.position = parentStartPosition + parentStartRotation * positionOffsets[i];
 			}
 
 			// We want to position the object so that it fits within the camera perspective at its original scale
@@ -160,6 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var tSquared = t * t;
 				var parentPosition = Vector3.Lerp(parentStartPosition, targetPosition, tSquared);
 				var parentRotation = Quaternion.Lerp(parentStartRotation, targetRotation, tSquared);
+				var scaleDiff = Mathf.Lerp(1, scaleFactor, tSquared);
 				for (int i = 0; i < length; i++)
 				{
 					var obj = transforms[i];
@@ -167,11 +167,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					// Don't let us direct select while placing
 					this.RemoveFromSpatialHash(obj.gameObject);
 					obj.localScale = Vector3.Lerp(startScales[i], targetScales[i], tSquared);
-					obj.position = parentPosition + targetRotation * positionOffsets[i] * scaleFactor;
+					obj.position = parentPosition + parentRotation * positionOffsets[i] * scaleDiff;
 					obj.rotation = parentRotation * rotationOffsets[i];
 					yield return null;
-
-					this.AddToSpatialHash(obj.gameObject);
 				}
 			}
 
@@ -181,6 +179,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var transform = transforms[i];
 				objects[i] = transform.gameObject;
 				transform.localScale = targetScales[i];
+				transform.rotation = targetRotation * rotationOffsets[i];
+				transform.position = targetPosition + targetRotation * positionOffsets[i] * scaleFactor;
+
+				this.AddToSpatialHash(transform.gameObject);
 			}
 
 			Selection.objects = objects;
