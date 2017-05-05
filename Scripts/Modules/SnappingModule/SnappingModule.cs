@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public Bounds identityBounds { get; private set; }
 			public Bounds rotatedBounds { get; private set; }
 
-			public SnappingState(GameObject[] objects, Vector3 position, Quaternion rotation)
+			public SnappingState(Transform[] transforms, Vector3 position, Quaternion rotation)
 			{
 				currentPosition = position;
 				startRotation = rotation;
@@ -63,34 +63,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				Bounds rotatedBounds;
 				Bounds identityBounds;
 
-				if (objects.Length == 1)
+				if (transforms.Length == 1)
 				{
-					var go = objects[0];
-					var objTransform = go.transform;
-					var objRotation = objTransform.rotation;
+					var transform = transforms[0];
+					var objRotation = transform.rotation;
 
-					rotatedBounds = ObjectUtils.GetBounds(go);
-					go.transform.rotation = Quaternion.identity;
-					identityBounds = ObjectUtils.GetBounds(go);
-					go.transform.rotation = objRotation;
+					rotatedBounds = ObjectUtils.GetBounds(transform);
+					transform.rotation = Quaternion.identity;
+					identityBounds = ObjectUtils.GetBounds(transform);
+					transform.rotation = objRotation;
 				}
 				else
 				{
-					rotatedBounds = ObjectUtils.GetBounds(objects);
+					rotatedBounds = ObjectUtils.GetBounds(transforms);
 
 					float angle;
 					Vector3 axis;
 					rotation.ToAngleAxis(out angle, out axis);
-					foreach (var obj in objects)
+					foreach (var transform in transforms)
 					{
-						obj.transform.RotateAround(position, axis, -angle);
+						transform.transform.RotateAround(position, axis, -angle);
 					}
 
-					identityBounds = ObjectUtils.GetBounds(objects);
+					identityBounds = ObjectUtils.GetBounds(transforms);
 
-					foreach (var obj in objects)
+					foreach (var transform in transforms)
 					{
-						obj.transform.RotateAround(position, axis, angle);
+						transform.transform.RotateAround(position, axis, angle);
 					}
 				}
 
@@ -228,7 +227,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		SnappingModuleSettingsUI m_SnappingModuleSettingsUI;
 		Material m_ButtonHighlightMaterialClone;
 
-		readonly Dictionary<Transform, Dictionary<GameObject, SnappingState>> m_SnappingStates = new Dictionary<Transform, Dictionary<GameObject, SnappingState>>();
+		readonly Dictionary<Transform, Dictionary<Transform, SnappingState>> m_SnappingStates = new Dictionary<Transform, Dictionary<Transform, SnappingState>>();
 		Vector3 m_CurrentSurfaceSnappingHit;
 		Vector3 m_CurrentSurfaceSnappingPosition;
 		Quaternion m_CurrentSurfaceSnappingRotation;
@@ -365,7 +364,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
-		GameObject[] m_SingleGameObjectArray = new GameObject[1];
+		Transform[] m_SingleTransformArray = new Transform[1];
 
 		void Awake()
 		{
@@ -428,7 +427,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public bool ManipulatorSnap(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
+		public bool ManipulatorSnap(Transform rayOrigin, Transform[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
 		{
 			if (objects.Length == 0)
 				return false;
@@ -484,7 +483,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		public bool DirectSnap(Transform rayOrigin, GameObject go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
+		public bool DirectSnap(Transform rayOrigin, Transform go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
 		{
 			if (snappingEnabled && directSnappingEnabled)
 			{
@@ -573,19 +572,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		void AddToIgnoreList(GameObject go)
+		void AddToIgnoreList(Transform transform)
 		{
-			m_SingleGameObjectArray[0] = go;
-			AddToIgnoreList(m_SingleGameObjectArray);
+			m_SingleTransformArray[0] = transform;
+			AddToIgnoreList(m_SingleTransformArray);
 		}
 
-		void AddToIgnoreList(GameObject[] objects)
+		void AddToIgnoreList(Transform[] transforms)
 		{
 			m_CombinedIgnoreList.Clear();
 
-			for (int i = 0; i < objects.Length; i++)
+			for (int i = 0; i < transforms.Length; i++)
 			{
-				var renderers = objects[i].GetComponentsInChildren<Renderer>();
+				var renderers = transforms[i].GetComponentsInChildren<Renderer>();
 				for (var j = 0; j < renderers.Length; j++)
 				{
 					m_CombinedIgnoreList.Add(renderers[j].gameObject);
@@ -672,18 +671,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		SnappingState GetSnappingState(Transform rayOrigin, GameObject go, Vector3 position, Quaternion rotation)
+		SnappingState GetSnappingState(Transform rayOrigin, Transform go, Vector3 position, Quaternion rotation)
 		{
-			m_SingleGameObjectArray[0] = go;
-			return GetSnappingState(rayOrigin, m_SingleGameObjectArray, position, rotation);
+			m_SingleTransformArray[0] = go;
+			return GetSnappingState(rayOrigin, m_SingleTransformArray, position, rotation);
 		}
 
-		SnappingState GetSnappingState(Transform rayOrigin, GameObject[] objects, Vector3 position, Quaternion rotation)
+		SnappingState GetSnappingState(Transform rayOrigin, Transform[] objects, Vector3 position, Quaternion rotation)
 		{
-			Dictionary<GameObject, SnappingState> states;
+			Dictionary<Transform, SnappingState> states;
 			if (!m_SnappingStates.TryGetValue(rayOrigin, out states))
 			{
-				states = new Dictionary<GameObject, SnappingState>();
+				states = new Dictionary<Transform, SnappingState>();
 				m_SnappingStates[rayOrigin] = states;
 			}
 

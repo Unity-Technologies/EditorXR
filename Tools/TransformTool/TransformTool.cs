@@ -80,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var targetPosition = rayOrigin.position + rayOrigin.rotation * m_PositionOffsets[i];
 					var targetRotation = rayOrigin.rotation * m_RotationOffsets[i];
 
-					if (m_UsesSnapping.DirectSnap(rayOrigin, grabbedObject.gameObject, ref position, ref rotation, targetPosition, targetRotation))
+					if (m_UsesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
 					{
 						var deltaTime = Time.unscaledDeltaTime;
 						grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
@@ -533,7 +533,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (constrained)
 				m_TargetPosition += delta;
 			else
-				this.ManipulatorSnap(rayOrigin, Selection.gameObjects, ref m_TargetPosition, ref m_TargetRotation, delta);
+				this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta);
 		}
 
 		void Rotate(Quaternion delta)
@@ -558,7 +558,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void UpdateSelectionBounds()
 		{
-			m_SelectionBounds = ObjectUtils.GetBounds(Selection.gameObjects);
+			m_SelectionBounds = ObjectUtils.GetBounds(Selection.transforms);
 		}
 
 		BaseManipulator CreateManipulator(GameObject prefab)

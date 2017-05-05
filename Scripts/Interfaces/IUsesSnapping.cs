@@ -13,8 +13,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IUsesSnappingMethods
 	{
-		internal delegate bool ManipulatorSnapDelegate(Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta);
-		internal delegate bool DirectSnapDelegate(Transform rayOrigin, GameObject go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
+		internal delegate bool ManipulatorSnapDelegate(Transform rayOrigin, Transform[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta);
+		internal delegate bool DirectSnapDelegate(Transform rayOrigin, Transform go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
 
 		internal static ManipulatorSnapDelegate manipulatorSnap { get; set; }
 		internal static DirectSnapDelegate directSnap { get; set; }
@@ -29,7 +29,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="rotation">The rotation to be modified if rotation snapping is enabled</param>
 		/// <param name="delta">The position delta to apply</param>
 		/// <returns>Whether the position was set to a snapped position</returns>
-		public static bool ManipulatorSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, GameObject[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
+		public static bool ManipulatorSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
 		{
 			return manipulatorSnap(rayOrigin, objects, ref position, ref rotation, delta);
 		}
@@ -44,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="targetPosition">The input position provided by direct transformation</param>
 		/// <param name="targetRotation">The input rotation provided by direct transformation</param>
 		/// <returns></returns>
-		public static bool DirectSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, GameObject go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
+		public static bool DirectSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
 		{
 			return directSnap(rayOrigin, go, ref position, ref rotation, targetPosition, targetRotation);
 		}

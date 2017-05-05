@@ -1,5 +1,6 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -12,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObject, IUsesViewerScale
+		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale
 		{
 			internal class MiniWorldRay
 			{
@@ -23,6 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				public ActionMapInput directSelectInput { get; private set; }
 				public IntersectionTester tester { get; private set; }
 
+				public Quaternion dragStartRotation { private get; set; }
 				public bool dragStartedOutside { get; set; }
 				public bool isContained { get; set; }
 
@@ -32,18 +34,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				readonly List<Preview> m_Previews = new List<Preview>();
+				float m_PreviewScaleFactor;
 
 				class Preview
 				{
-					Transform m_Transform;
 					Vector3 m_PositionOffset;
 					Quaternion m_RotationOffset;
-					Vector3 m_OriginalScale;
+
+					public Transform transform { get; private set; }
 
 					public Preview(Transform transform, Transform parent, float scaleFactor)
 					{
-						m_Transform = transform;
-						m_OriginalScale = transform.localScale;
+						this.transform = transform;
 						transform.localScale *= scaleFactor;
 						MathUtilsExt.GetTransformOffset(parent, transform, out m_PositionOffset, out m_RotationOffset);
 						m_PositionOffset *= scaleFactor;
@@ -51,17 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					public void Update(Transform parent)
 					{
-						MathUtilsExt.SetTransformOffset(parent, m_Transform, m_PositionOffset, m_RotationOffset);
-					}
-
-					public void ResetScale()
-					{
-						m_Transform.localScale = m_OriginalScale;
-					}
-
-					public void PlaceObject(IPlaceSceneObject placer)
-					{
-						placer.PlaceSceneObject(m_Transform, m_OriginalScale);
+						MathUtilsExt.SetTransformOffset(parent, transform, m_PositionOffset, m_RotationOffset);
 					}
 				}
 
@@ -77,6 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				public void EnterPreviewMode(HashSet<Transform> heldObjects, Transform rayOrigin, float scaleFactor)
 				{
+					m_PreviewScaleFactor = scaleFactor;
 					foreach (var heldObject in heldObjects)
 					{
 						m_Previews.Add(new Preview(heldObject, rayOrigin, scaleFactor));
@@ -87,17 +80,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					foreach (var preview in m_Previews)
 					{
-						preview.ResetScale();
+						preview.transform.localScale /= m_PreviewScaleFactor;
 					}
 					m_Previews.Clear();
 				}
 
-				public void DropPreviewObjects(IPlaceSceneObject placer)
+				public void DropPreviewObjects(IPlaceSceneObjects placer)
 				{
-					foreach (var preview in m_Previews)
-					{
-						preview.PlaceObject(placer);
-					}
+					var transforms = m_Previews.Select(preview => preview.transform).ToArray();
+					var rotationOffset = Quaternion.Inverse(Quaternion.Inverse(dragStartRotation) * originalRayOrigin.rotation);
+					placer.PlaceSceneObject(transforms, originalRayOrigin, rotationOffset, 1 / m_PreviewScaleFactor);
 					m_Previews.Clear();
 				}
 
@@ -436,6 +428,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					if (ray.originalRayOrigin == rayOrigin)
 						ray.dragStartedOutside = true;
+
+					ray.dragStartRotation = rayOrigin.rotation;
 				}
 			}
 

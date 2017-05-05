@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 			//http://forum.unity3d.com/threads/editorapplication-ExecuteActionmenuitem-dont-include-edit-menu.148215/
 			//return EditorApplication.ExecuteActionMenuItem("Edit/Copy");
 
-			Paste.buffer = Selection.gameObjects;
+			Paste.buffer = Selection.transforms;
 		}
 	}
 }
