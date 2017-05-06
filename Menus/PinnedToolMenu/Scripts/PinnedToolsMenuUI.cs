@@ -103,14 +103,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			*/
 		}
 
-		IEnumerator ShowThenHideAllButtons(bool waitBeforeClosingAllButtons = true)
+		IEnumerator ShowThenHideAllButtons(float delayBeforeHiding = 1.25f)
 		{
 			SetupButtonOrder();
 
-			if (waitBeforeClosingAllButtons)
+			if (delayBeforeHiding > 0)
 			{
 				var duration = Time.unscaledDeltaTime;
-				while (duration < 1.25f)
+				while (duration < delayBeforeHiding)
 				{
 					duration += Time.unscaledDeltaTime;
 					yield return null;
@@ -213,7 +213,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					Reinsert(button, k_ActiveToolOrderPosition);
 			}
 
-			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons());
+			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(0.5f));
 			selectTool(rayOrigin, pinnedToolButton.toolType);
 		}
 
@@ -229,9 +229,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public void HighlightSingleButtonWithoutMenu(int buttonOrderPosition)
 		{
 			Debug.LogError("Highlighting SINGLE BUTTON at position : "+ buttonOrderPosition);
-			for (int i = 0; i < m_OrderedButtons.Count - 1; ++i)
+			for (int i = 1; i < m_OrderedButtons.Count; ++i)
 			{
-				m_OrderedButtons[i + 1].highlighted = i == buttonOrderPosition;
+				m_OrderedButtons[i].highlighted = i == buttonOrderPosition;
 			}
 		}
 

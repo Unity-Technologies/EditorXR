@@ -216,7 +216,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				// normalized input should loop after reaching the 0.15f length
 				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
 				var normalizedRepeatingPosition = processSpatialScrolling(spatialScrollStartPosition, m_PinnedToolsMenuUI.transform.position, 0.15f, true);
-				m_PinnedToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition));
+				m_PinnedToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
 				consumeControl(pinnedToolInput.show);
 				consumeControl(pinnedToolInput.select);
 			}
@@ -229,7 +229,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_PinnedToolsMenuUI.SelectHighlightedButton();
 					spatialDirection = null;
 					consumeControl(pinnedToolInput.select);
-
 				}
 				else
 				{
