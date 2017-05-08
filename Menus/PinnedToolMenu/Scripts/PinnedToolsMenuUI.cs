@@ -183,9 +183,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			Debug.LogError("ShowAllExceptMenuButton");
 			m_VisibleButtonCount = Mathf.Max(0, m_OrderedButtons.Count - 1); // The MainMenu button will be hidden, subtract 1 from the m_VisibleButtonCount
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
-				m_OrderedButtons[i].order = i == k_MenuButtonOrderPosition ? k_InactiveButtonInitialOrderPosition : i - 1; // Hide the menu buttons when revealing all tools buttons
-
-			SetupButtonOrder();
+			{
+				var button = m_OrderedButtons[i];
+				button.activeTool = i == k_ActiveToolOrderPosition;
+				button.order = i == k_MenuButtonOrderPosition ? k_InactiveButtonInitialOrderPosition : i - 1; // Hide the menu buttons when revealing all tools buttons
+			}
 		}
 
 		void ShowOnlyMenuAndActiveToolButtons()
