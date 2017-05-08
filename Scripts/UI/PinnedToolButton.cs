@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
 					var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
-					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow(targetPosition, targetScale));
+					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateInitialReveal(targetPosition, targetScale));
 				}
 				else
 				{
@@ -782,7 +782,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			OnActionButtonHoverExit(false);
 		}
 
-		IEnumerator AnimateShow(Vector3 targetPosition, Vector3 targetScale)
+		IEnumerator AnimateInitialReveal(Vector3 targetPosition, Vector3 targetScale)
 		{
 			m_IconContainerCanvasGroup.alpha = 1f;
 			var duration = 0f;
@@ -821,7 +821,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			ObjectUtils.Destroy(gameObject, 0.1f);
 		}
 
-		IEnumerator AnimateTempHide()
+		IEnumerator AnimateHide()
 		{
 			primaryButtonCollidersEnabled = false;
 			secondaryButtonCollidersEnabled = false;
@@ -867,7 +867,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_VisibilityCoroutine = null;
 		}
 
-		IEnumerator AnimateTempShow()
+		IEnumerator AnimateShow()
 		{
 			primaryButtonCollidersEnabled = false;
 			secondaryButtonCollidersEnabled = false;
@@ -927,10 +927,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (orderPosition == -1)
 			{
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
-				//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateTempHide());
+				//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
 			}
 			//else
-				//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateTempShow());
+				//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
 
 			var rotationSpacing = 360f / maxButtonCount; // dividend should be the count of pinned tool buttons showing at this time
 			var phaseOffset = orderPosition > -1 ? rotationSpacing * 0.5f - (visibileButtonCount() * 0.5f) * rotationSpacing : 0; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
