@@ -61,9 +61,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_GradientButton.visible = true;
 					//m_IconMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
 
-					var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
-					var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
-					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateInitialReveal(targetPosition, targetScale));
+					//var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
+					//var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
+					//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateInitialReveal(targetPosition, targetScale));
 				}
 				else
 				{
@@ -103,9 +103,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
 				//var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
 				//var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
-
-				m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
-				m_IconContainerCanvasGroup.alpha = 1f;
 
 				//var mainMenuAndActiveButtonCount = 2;
 				//var aboluteMenuButtonCount = isMainMenu ? mainMenuAndActiveButtonCount : activeButtonCount; // madates a fixed position for the MainMenu button, next to the ActiveToolButton
@@ -290,6 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_OriginalLocalPosition;
 		Vector3 m_OriginalLocalScale;
 		Material m_IconMaterial;
+		Vector3 m_OriginalIconContainerLocalScale;
 		Sprite m_Icon;
 		Sprite m_PreviewIcon;
 		bool m_Highlighted;
@@ -337,8 +335,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_ActiveTool = value;
 
-				m_GradientButton.normalGradientPair = m_ActiveTool ? gradientPair : UnityBrandColorScheme.grayscaleSessionGradient;
-				m_GradientButton.highlightGradientPair = m_ActiveTool ? UnityBrandColorScheme.grayscaleSessionGradient : gradientPair;
+				m_GradientButton.normalGradientPair = !m_ActiveTool ? gradientPair : UnityBrandColorScheme.grayscaleSessionGradient;
+				m_GradientButton.highlightGradientPair = !m_ActiveTool ? UnityBrandColorScheme.grayscaleSessionGradient : gradientPair;
 
 				//if (activeTool) // TODO REMOVE IF NOT NEEDED
 					//m_GradientButton.invertHighlightScale = value;
@@ -514,13 +512,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_FrameMaterial = MaterialUtils.GetMaterialClone(m_FrameRenderer);
 			var frameMaterialColor = m_FrameMaterial.color;
-			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
+			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
 			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
 			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.5f);
 
 			m_IconMaterial = MaterialUtils.GetMaterialClone(m_ButtonIcon);
-
 			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
+			m_OriginalIconContainerLocalScale = m_IconContainer.localScale;
 			//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 		}
 
@@ -823,8 +821,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateHide()
 		{
-			primaryButtonCollidersEnabled = false;
-			secondaryButtonCollidersEnabled = false;
+			//primaryButtonCollidersEnabled = false;
+			//secondaryButtonCollidersEnabled = false;
+			var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
+			var targetPosition = Vector3.zero;
+			var currentPosition = transform.localPosition;
 
 			var currentFrameColor = m_FrameMaterial.color;
 			var targetFrameColor = Color.clear;
@@ -851,26 +852,33 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, shapedAmount));
 				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, shapedAmount * 2));
 				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
-				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
 				*/
 				//CorrectIconRotation();
+				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
+				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
 				transform.localScale = Vector3.Lerp(currentScale, Vector3.zero, shapedAmount);
 				yield return null;
 			}
 
+			/*
 			m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
 			m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
 			//m_Inset.localScale = targetInsetScale;
 			//m_InsetMask.localScale = targetInsetMaskScale;
 			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
+			*/
 			m_IconContainer.localScale = targetIconContainerScale;
+			transform.localPosition = targetPosition;
 			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateShow()
 		{
-			primaryButtonCollidersEnabled = false;
-			secondaryButtonCollidersEnabled = false;
+			//primaryButtonCollidersEnabled = false;
+			//secondaryButtonCollidersEnabled = false;
+
+			var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
+			var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
 
 			var currentFrameColor = m_FrameMaterial.color;
 			var targetFrameColor = Color.clear;
@@ -883,7 +891,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//var currentInsetMaskScale = m_InsetMask.localScale;
 			//var targetInsetMaskScale = makeSemiTransparent ? Vector3.one * 1.45f : Vector3.one;
 			var currentIconScale = m_IconContainer.localScale;
-			var targetIconContainerScale = Vector3.zero;
+			var targetIconContainerScale = m_OriginalIconContainerLocalScale;
 			var transitionAmount = 0f;
 			var currentScale = transform.localScale;
 			while (transitionAmount < 1)
@@ -897,18 +905,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, shapedAmount));
 				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, shapedAmount * 2));
 				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
-				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
+				transform.localPosition = Vector3.Lerp(Vector3.zero, targetPosition, durationShaped);
 				*/
 				//CorrectIconRotation();
-				transform.localScale = Vector3.Lerp(currentScale, m_OriginalLocalScale, shapedAmount);
+				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
+				transform.localPosition = Vector3.Lerp(Vector3.zero, targetPosition, shapedAmount);
+				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedAmount);
 				yield return null;
 			}
 
+			/*
 			m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
 			m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
 			//m_Inset.localScale = targetInsetScale;
 			//m_InsetMask.localScale = targetInsetMaskScale;
 			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
+			*/
+			transform.localPosition = targetPosition;
+			transform.localScale = targetScale;
 			m_IconContainer.localScale = targetIconContainerScale;
 			m_VisibilityCoroutine = null;
 		}
@@ -918,19 +932,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			Debug.LogError(m_ToolType + " - Animate Button position : " + orderPosition + " - BUTTON COUNT: " + visibileButtonCount);
 			primaryButtonCollidersEnabled = false;
+			secondaryButtonCollidersEnabled = false;
 			//if (!activeTool) // hide a button if it is not the active tool button and the buttons are no longer revealed
 				//gameObject.SetActive(true);
 
 			//if (order != activeToolOrderPosition)
 				//m_RootCollider.enabled = false;
 
+			this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
+
 			if (orderPosition == -1)
-			{
-				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
-				//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
-			}
-			//else
-				//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
+				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
+			else
+				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
 
 			var rotationSpacing = 360f / maxButtonCount; // dividend should be the count of pinned tool buttons showing at this time
 			var phaseOffset = orderPosition > -1 ? rotationSpacing * 0.5f - (visibileButtonCount() * 0.5f) * rotationSpacing : 0; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
@@ -960,7 +974,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//transform.localPosition = targetPosition;
 			transform.localRotation = targetRotation;
 			CorrectIconRotation();
-			primaryButtonCollidersEnabled = true;
+			primaryButtonCollidersEnabled = orderPosition > -1 ? true : false;
+			secondaryButtonCollidersEnabled = orderPosition > -1 ? true : false;
 			m_PositionCoroutine = null;
 
 			if (orderPosition > -1 && m_GradientButton.highlighted)
