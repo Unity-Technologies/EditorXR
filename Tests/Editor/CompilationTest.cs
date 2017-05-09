@@ -53,6 +53,9 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 				if (assembly.FullName.StartsWith("ICSharpCode.NRefactory", StringComparison.OrdinalIgnoreCase))
 					return;
 
+				if (assembly.FullName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase))
+					return;
+
 				var codeBase = assembly.CodeBase;
 				var uri = new UriBuilder(codeBase);
 				var path = Uri.UnescapeDataString(uri.Path);
@@ -61,12 +64,13 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 			});
 
 			var sources = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
-
+			
 			var output = EditorUtility.CompileCSharp(sources, references.ToArray(), defines, outputFile);
 			foreach (var o in output)
 			{
 				var line = o.ToLower();
-				Assert.IsFalse(line.Contains("exception") || line.Contains("error") || line.Contains("warning"), string.Join("\n", output));
+				if (line.Contains("editorvr"))
+					Assert.IsFalse(line.Contains("exception") || line.Contains("error") || line.Contains("warning"), string.Join("\n", output));
 			}
 		}
 	}
