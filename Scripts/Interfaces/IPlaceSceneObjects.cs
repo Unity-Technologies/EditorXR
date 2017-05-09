@@ -13,18 +13,18 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IPlaceSceneObjectsMethods
 	{
-		internal static Action<Transform[], Transform, Quaternion, float> placeSceneObjects { get; set; }
+		internal static Action<Transform[], Vector3[], Quaternion[], Vector3[]> placeSceneObjects { get; set; }
 
 		/// <summary>
 		/// Method used to place groups of objects in the scene/MiniWorld
 		/// </summary>
 		/// <param name="transforms">Transforms of the GameObjects to place</param>
-		/// <param name="parent">Current parent of the group, if any</param>
-		/// <param name="rotationOffset">rotation offset to apply to the group, if any</param>
+		/// <param name="targetPositionOffsets">Array of per-object target positions</param>
+		/// <param name="targetRotations">Array of per-object target rotations</param>
 		/// <param name="scaleFactor">Scale multiplier to apply to the group, if any</param>
-		public static void PlaceSceneObject(this IPlaceSceneObjects obj, Transform[] transforms, Transform parent = null, Quaternion rotationOffset = default(Quaternion), float scaleFactor = 1)
+		public static void PlaceSceneObjects(this IPlaceSceneObjects obj, Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
 		{
-			placeSceneObjects(transforms, parent, rotationOffset, scaleFactor);
+			placeSceneObjects(transforms, targetPositionOffsets, targetRotations, targetScales);
 		}
 	}
 }

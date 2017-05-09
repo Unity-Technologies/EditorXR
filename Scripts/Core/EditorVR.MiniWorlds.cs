@@ -24,36 +24,48 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				public ActionMapInput directSelectInput { get; private set; }
 				public IntersectionTester tester { get; private set; }
 
-				public Quaternion dragStartRotation { private get; set; }
 				public bool dragStartedOutside { get; set; }
 				public bool isContained { get; set; }
 
-				public bool hasPreview
-				{
-					get { return m_Previews.Count > 0; }
-				}
+				public bool hasPreview { get; private set; }
 
-				readonly List<Preview> m_Previews = new List<Preview>();
+				readonly List<GrabData> m_GrabData = new List<GrabData>();
 				float m_PreviewScaleFactor;
 
-				class Preview
+				class GrabData
 				{
-					Vector3 m_PositionOffset;
+					Vector3 m_LocalPositionOffset;
 					Quaternion m_RotationOffset;
+
+					public Vector3 centerPositionOffset { get; private set; }
+					public Quaternion originalRotation { get; private set; }
+					public Vector3 originalScale { get; private set; }
 
 					public Transform transform { get; private set; }
 
-					public Preview(Transform transform, Transform parent, float scaleFactor)
+					public GrabData(Transform transform, Transform parent, Vector3 center)
 					{
 						this.transform = transform;
+						centerPositionOffset = transform.position - center;
+						originalRotation = transform.rotation;
+						originalScale = transform.localScale;
+						GetCurrentOffsets(parent);
+					}
+
+					public void GetCurrentOffsets(Transform parent)
+					{
+						MathUtilsExt.GetTransformOffset(parent, transform, out m_LocalPositionOffset, out m_RotationOffset);
+					}
+
+					public void SetScale(float scaleFactor)
+					{
 						transform.localScale *= scaleFactor;
-						MathUtilsExt.GetTransformOffset(parent, transform, out m_PositionOffset, out m_RotationOffset);
-						m_PositionOffset *= scaleFactor;
+						m_LocalPositionOffset *= scaleFactor;
 					}
 
 					public void Update(Transform parent)
 					{
-						MathUtilsExt.SetTransformOffset(parent, transform, m_PositionOffset, m_RotationOffset);
+						MathUtilsExt.SetTransformOffset(parent, transform, m_LocalPositionOffset, m_RotationOffset);
 					}
 				}
 
@@ -67,37 +79,81 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					this.tester = tester;
 				}
 
-				public void EnterPreviewMode(HashSet<Transform> heldObjects, Transform rayOrigin, float scaleFactor)
+				public void OnObjectsGrabbed(HashSet<Transform> heldObjects, Transform rayOrigin)
 				{
-					m_PreviewScaleFactor = scaleFactor;
+					var center = Vector3.zero;
 					foreach (var heldObject in heldObjects)
 					{
-						m_Previews.Add(new Preview(heldObject, rayOrigin, scaleFactor));
+						center += heldObject.position;
+					}
+					center /= heldObjects.Count;
+
+					m_GrabData.Clear();
+					foreach (var heldObject in heldObjects)
+					{
+						m_GrabData.Add(new GrabData(heldObject, rayOrigin, center));
+					}
+				}
+
+				public void TransferObjects(MiniWorldRay destinationRay, Transform rayOrigin)
+				{
+					var destinationGrabData = destinationRay.m_GrabData;
+					destinationGrabData.AddRange(m_GrabData);
+					m_GrabData.Clear();
+
+					foreach (var grabData in destinationGrabData)
+					{
+						grabData.GetCurrentOffsets(rayOrigin);
+					}
+				}
+
+				public void EnterPreviewMode(float scaleFactor)
+				{
+					hasPreview = true;
+					m_PreviewScaleFactor = scaleFactor;
+					foreach (var grabData in m_GrabData)
+					{
+						grabData.SetScale(scaleFactor);
 					}
 				}
 
 				public void ExitPreviewMode()
 				{
-					foreach (var preview in m_Previews)
+					foreach (var grabData in m_GrabData)
 					{
-						preview.transform.localScale /= m_PreviewScaleFactor;
+						grabData.SetScale(1 / m_PreviewScaleFactor);
 					}
-					m_Previews.Clear();
+					hasPreview = false;
 				}
 
 				public void DropPreviewObjects(IPlaceSceneObjects placer)
 				{
-					var transforms = m_Previews.Select(preview => preview.transform).ToArray();
-					var rotationOffset = Quaternion.Inverse(Quaternion.Inverse(dragStartRotation) * originalRayOrigin.rotation);
-					placer.PlaceSceneObject(transforms, originalRayOrigin, rotationOffset, 1 / m_PreviewScaleFactor);
-					m_Previews.Clear();
+					var count = m_GrabData.Count;
+					var transforms = new Transform[count];
+					var targetPositionOffsets = new Vector3[count];
+					var targetRotations = new Quaternion[count];
+					var targetScales = new Vector3[count];
+
+					for (var i = 0; i < count; i++)
+					{
+						var grabData = m_GrabData[i];
+						transforms[i] = grabData.transform;
+						targetPositionOffsets[i] = grabData.centerPositionOffset;
+						targetRotations[i] = grabData.originalRotation;
+						targetScales[i] = grabData.originalScale;
+					}
+
+					if (hasPreview)
+						placer.PlaceSceneObjects(transforms, targetPositionOffsets, targetRotations, targetScales);
+
+					hasPreview = false;
 				}
 
 				public void UpdatePreview()
 				{
-					foreach (var preview in m_Previews)
+					foreach (var grabData in m_GrabData)
 					{
-						preview.Update(originalRayOrigin);
+						grabData.Update(originalRayOrigin);
 					}
 				}
 			}
@@ -236,6 +292,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var from = isContained ? originalRayOrigin : miniWorldRayOrigin;
 						var to = isContained ? miniWorldRayOrigin : originalRayOrigin;
 
+						KeyValuePair<Transform, MiniWorldRay>? overlapPair = null;
+
 						if (miniWorldRayObjects != null && !isContained)
 						{
 							// Try to transfer objects between MiniWorlds
@@ -245,6 +303,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								var otherRay = kvp.Value;
 								if (originalRayOrigin == otherRay.originalRayOrigin && otherRay != miniWorldRay && otherRay.isContained)
 								{
+									overlapPair = kvp;
 									from = miniWorldRayOrigin;
 									to = otherRayOrigin;
 									break;
@@ -254,6 +313,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						var pointerLengthDiff = DirectSelection.GetPointerLength(to) - DirectSelection.GetPointerLength(from);
 						directSelection.TransferHeldObjects(from, to, Vector3.forward * pointerLengthDiff);
+
+						if (overlapPair.HasValue)
+						{
+							var kvp = overlapPair.Value;
+							miniWorldRay.TransferObjects(kvp.Value, kvp.Key);
+						}
+
+						miniWorldRay.UpdatePreview(); // Otherwise the object is in the wrong position for a frame
 
 						if (!isContained)
 							m_RayWasContained[originalRayOrigin] = false; //Prevent ray from showing
@@ -293,7 +360,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							if (!playerHead)
 							{
 								var scaleFactor = this.GetViewerScale() / miniWorld.referenceTransform.localScale.x;
-								miniWorldRay.EnterPreviewMode(miniWorldRayObjects, miniWorldRayOrigin, scaleFactor);
+								miniWorldRay.EnterPreviewMode(scaleFactor);
 								directSelection.SuspendHoldingObjects(node);
 							}
 						}
@@ -424,17 +491,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			void OnObjectsGrabbed(Transform rayOrigin, HashSet<Transform> grabbedObjects)
 			{
-				foreach (var ray in m_Rays.Values)
+				Debug.Log("grab " + rayOrigin);
+				foreach (var kvp in m_Rays)
 				{
-					if (ray.originalRayOrigin == rayOrigin)
+					var miniWorldRayOrigin = kvp.Key;
+					var ray = kvp.Value;
+					var isOriginalRayOrigin = rayOrigin == ray.originalRayOrigin;
+					if (isOriginalRayOrigin)
 						ray.dragStartedOutside = true;
 
-					ray.dragStartRotation = rayOrigin.rotation;
+					var isMiniWorldRayOrigin = rayOrigin == miniWorldRayOrigin;
+					if (isOriginalRayOrigin || isMiniWorldRayOrigin)
+						ray.OnObjectsGrabbed(grabbedObjects, rayOrigin);
 				}
 			}
 
 			void OnObjectsDropped(Transform rayOrigin, Transform[] grabbedObjects)
 			{
+				Debug.Log("drop " + rayOrigin);
 				Node? node = null;
 				foreach (var ray in m_Rays)
 				{

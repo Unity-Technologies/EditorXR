@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// Don't let us direct select while placing
 			this.RemoveFromSpatialHash(obj.gameObject);
 
-			float start = Time.realtimeSinceStartup;
+			var start = Time.realtimeSinceStartup;
 			var currTime = 0f;
 
 			obj.parent = null;
@@ -54,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var camPosition = camera.transform.position;
 			var forward = obj.position - camPosition;
 
+			//TODO: for non-center pivot
 			var distance = bounds.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
 			var targetPosition = obj.position;
 			if (distance > forward.magnitude && obj.localScale != targetScale)
@@ -75,69 +76,48 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			this.AddToSpatialHash(obj.gameObject);
 		}
 
-		public void PlaceSceneObjects(Transform[] transforms, Transform parent = null, Quaternion rotationOffset = default(Quaternion), float scaleFactor = 1)
+		public void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
 		{
-			StartCoroutine(PlaceSceneObjectsCoroutine(transforms, parent, rotationOffset, scaleFactor));
+			StartCoroutine(PlaceSceneObjectsCoroutine(transforms, targetPositionOffsets, targetRotations, targetScales));
 		}
 
-		IEnumerator PlaceSceneObjectsCoroutine(Transform[] transforms, Transform parent, Quaternion rotationOffset, float scaleFactor)
+		IEnumerator PlaceSceneObjectsCoroutine(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
 		{
-			float start = Time.realtimeSinceStartup;
+			var start = Time.realtimeSinceStartup;
 			var currTime = 0f;
 
 			var length = transforms.Length;
-			Vector3 parentStartPosition;
-			Quaternion parentStartRotation;
-			var rotationOffsets = new Quaternion[length];
-			var positionOffsets = new Vector3[length];
-			if (parent)
-			{
-				parentStartPosition = parent.position;
-				parentStartRotation = parent.rotation;
-
-				for (int i = 0; i < length; i++)
-				{
-					MathUtilsExt.GetTransformOffset(parent, transforms[i], out positionOffsets[i], out rotationOffsets[i]);
-				}
-			}
-			else
-			{
-				parentStartRotation = Quaternion.identity;
-				parentStartPosition = Vector3.zero;
-				foreach (var transform in transforms)
-				{
-					parentStartPosition += transform.position;
-				}
-				parentStartPosition /= length;
-
-				for (int i = 0; i < length; i++)
-				{
-					positionOffsets[i] = transforms[i].position - parentStartPosition;
-					rotationOffsets[i] = Quaternion.identity;
-				}
-			}
-
-			var targetRotation = parentStartRotation * rotationOffset;
+			var startPositions = new Vector3[length];
+			var startRotations = new Quaternion[length];
 			var startScales = new Vector3[length];
-			var targetScales = new Vector3[length];
+			var center = Vector3.zero;
 
 			//Get bounds at target scale and rotation
-			for (int i = 0; i < length; i++)
+			for (var i = 0; i < length; i++)
 			{
 				var transform = transforms[i];
+				this.RemoveFromSpatialHash(transform.gameObject);
+				var position = transform.position;
+				startPositions[i] = position;
+				startRotations[i] = transform.rotation;
 				startScales[i] = transform.localScale;
-				transform.localScale *= scaleFactor;
-				targetScales[i] = transform.localScale;
-				transform.rotation = targetRotation * rotationOffsets[i];
-				transform.position = parentStartPosition + targetRotation * positionOffsets[i] * scaleFactor;
+
+				center += position;
+
+				transform.position = targetPositionOffsets[i];
+				transform.rotation = targetRotations[i];
+				transform.localScale = targetScales[i];
 			}
+			center /= length;
+
 			var bounds = ObjectUtils.GetBounds(transforms);
-			for (int i = 0; i < length; i++)
+
+			for (var i = 0; i < length; i++)
 			{
 				var transform = transforms[i];
+				transform.position = startPositions[i];
+				transform.rotation = startRotations[i];
 				transform.localScale = startScales[i];
-				transform.rotation = parentStartRotation * rotationOffsets[i];
-				transform.position = parentStartPosition + parentStartRotation * positionOffsets[i];
 			}
 
 			// We want to position the object so that it fits within the camera perspective at its original scale
@@ -145,30 +125,29 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var halfAngle = camera.fieldOfView * 0.5f;
 			var perspective = halfAngle + k_InstantiateFOVDifference;
 			var camPosition = camera.transform.position;
-			var forward = parentStartPosition - camPosition;
+			var forward = center - camPosition;
 
 			var distance = bounds.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
-			var targetPosition = parentStartPosition;
-			if (distance > forward.magnitude && scaleFactor != 1)
+			var targetPosition = center;
+			if (distance > forward.magnitude)
 				targetPosition = camPosition + forward.normalized * distance;
+
+			for (var i = 0; i < length; i++)
+			{
+				targetPositionOffsets[i] += targetPosition;
+			}
 
 			while (currTime < k_GrowDuration)
 			{
 				currTime = Time.realtimeSinceStartup - start;
 				var t = currTime / k_GrowDuration;
 				var tSquared = t * t;
-				var parentPosition = Vector3.Lerp(parentStartPosition, targetPosition, tSquared);
-				var parentRotation = Quaternion.Lerp(parentStartRotation, targetRotation, tSquared);
-				var scaleDiff = Mathf.Lerp(1, scaleFactor, tSquared);
 				for (int i = 0; i < length; i++)
 				{
-					var obj = transforms[i];
-
-					// Don't let us direct select while placing
-					this.RemoveFromSpatialHash(obj.gameObject);
-					obj.localScale = Vector3.Lerp(startScales[i], targetScales[i], tSquared);
-					obj.position = parentPosition + parentRotation * positionOffsets[i] * scaleDiff;
-					obj.rotation = parentRotation * rotationOffsets[i];
+					var transform = transforms[i];
+					transform.localScale = Vector3.Lerp(startScales[i], targetScales[i], tSquared);
+					transform.position = Vector3.Lerp(startPositions[i], targetPositionOffsets[i], tSquared);
+					transform.rotation = Quaternion.Slerp(startRotations[i], targetRotations[i], tSquared);
 					yield return null;
 				}
 			}
@@ -179,8 +158,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var transform = transforms[i];
 				objects[i] = transform.gameObject;
 				transform.localScale = targetScales[i];
-				transform.rotation = targetRotation * rotationOffsets[i];
-				transform.position = targetPosition + targetRotation * positionOffsets[i] * scaleFactor;
+				transform.rotation = targetRotations[i];
+				transform.position = targetPositionOffsets[i];
 
 				this.AddToSpatialHash(transform.gameObject);
 			}

@@ -204,7 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_ScaleStartDistance;
 		Node m_ScaleFirstNode;
 		float m_ScaleFactor;
-		bool m_WasScaling;
+		bool m_Scaling;
 
 		readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 		readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
@@ -321,6 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								m_ScaleStartDistance = (directRayOrigin.position - otherData.rayOrigin.position).magnitude;
 								m_ScaleFirstNode = otherNode;
 								otherData.StartScaling();
+								m_Scaling = true;
 								break;
 							}
 						}
@@ -328,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						var grabbedObjects = new HashSet<Transform> { directHoveredObject.transform };
 						grabbedObjects.UnionWith(Selection.transforms);
 
-						if (objectsGrabbed != null)
+						if (objectsGrabbed != null && !m_Scaling)
 							objectsGrabbed(directRayOrigin, grabbedObjects);
 
 						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray(), this);
@@ -357,47 +358,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var leftHeld = leftData != null && leftInput.select.isHeld;
 				var rightInput = rightData != null ? rightData.input : null;
 				var rightHeld = rightData != null && rightInput.select.isHeld;
-				if (hasLeft && hasRight && leftHeld && rightHeld) // Two-handed scaling
-				{
-					// Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
-					m_WasScaling = true;
-
-					var rightRayOrigin = rightData.rayOrigin;
-					var leftRayOrigin = leftData.rayOrigin;
-					m_ScaleFactor = (leftRayOrigin.position - rightRayOrigin.position).magnitude / m_ScaleStartDistance;
-					if (m_ScaleFactor > 0 && m_ScaleFactor < Mathf.Infinity)
-					{
-						if (m_ScaleFirstNode == Node.LeftHand)
-						{
-							leftData.ScaleObjects(m_ScaleFactor);
-							this.ClearSnappingState(leftRayOrigin);
-						}
-						else
-						{
-							rightData.ScaleObjects(m_ScaleFactor);
-							this.ClearSnappingState(rightRayOrigin);
-						}
-					}
-				}
-				else
-				{
-					if (m_WasScaling)
-					{
-						// Reset initial conditions
-						if (hasLeft)
-							leftData.Reset();
-						if (hasRight)
-							rightData.Reset();
-
-						m_WasScaling = false;
-					}
-
-					if (hasLeft && leftHeld)
-						leftData.UpdatePositions();
-
-					if (hasRight && rightHeld)
-						rightData.UpdatePositions();
-				}
 
 				if (hasLeft)
 				{
@@ -429,6 +389,45 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						DropHeldObjects(Node.RightHand);
 						consumeControl(rightInput.select);
 					}
+				}
+
+				if (hasLeft && hasRight && leftHeld && rightHeld) // Two-handed scaling
+				{
+					var rightRayOrigin = rightData.rayOrigin;
+					var leftRayOrigin = leftData.rayOrigin;
+					m_ScaleFactor = (leftRayOrigin.position - rightRayOrigin.position).magnitude / m_ScaleStartDistance;
+					if (m_ScaleFactor > 0 && m_ScaleFactor < Mathf.Infinity)
+					{
+						if (m_ScaleFirstNode == Node.LeftHand)
+						{
+							leftData.ScaleObjects(m_ScaleFactor);
+							this.ClearSnappingState(leftRayOrigin);
+						}
+						else
+						{
+							rightData.ScaleObjects(m_ScaleFactor);
+							this.ClearSnappingState(rightRayOrigin);
+						}
+					}
+				}
+				else
+				{
+					// Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
+					if (m_Scaling)
+					{
+						if (hasLeft)
+							leftData.Reset();
+						if (hasRight)
+							rightData.Reset();
+
+						m_Scaling = false;
+					}
+
+					if (hasLeft && leftHeld)
+						leftData.UpdatePositions();
+
+					if (hasRight && rightHeld)
+						rightData.UpdatePositions();
 				}
 			}
 
@@ -496,6 +495,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					grabData.TransferTo(destRayOrigin, deltaOffset);
 					this.ClearSnappingState(rayOrigin);
+					grabData.UpdatePositions();
 
 					// Prevent lock from getting stuck
 					this.UnlockRay(rayOrigin, this);
@@ -517,7 +517,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var grabbedObjects = grabData.grabbedObjects;
 			var rayOrigin = grabData.rayOrigin;
 
-			if (objectsDropped != null)
+			if (objectsDropped != null && !m_Scaling)
 				objectsDropped(rayOrigin, grabbedObjects);
 
 			m_GrabData.Remove(node);
