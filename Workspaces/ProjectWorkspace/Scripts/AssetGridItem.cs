@@ -291,7 +291,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				var originalPosition = m_PreviewObjectClone.position;
 				var originalRotation = m_PreviewObjectClone.rotation;
 				var originalScale = m_PreviewObjectClone.localScale;
+				var restoreParent = m_PreviewObjectClone.parent;
+				m_PreviewObjectClone.SetParent(null); // HACK: MergePrefab deactivates the root transform when calling ConnectGameObjectToPrefab, which is EditorVR in this case
 				m_PreviewObjectClone = PrefabUtility.ConnectGameObjectToPrefab(m_PreviewObjectClone.gameObject, data.preview).transform;
+				m_PreviewObjectClone.SetParent(restoreParent);
 				m_PreviewObjectClone.position = originalPosition;
 				m_PreviewObjectClone.rotation = originalRotation;
 				m_PreviewObjectClone.localScale = originalScale;
