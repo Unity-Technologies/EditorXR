@@ -90,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			Debug.LogWarning("Setting up button : " + button.toolType + " - ORDER : " + button.order);
 
 			if (m_OrderedButtons.Count > k_ActiveToolOrderPosition + 1)
-				this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons());
+				this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1.25f, false));
 			else
 				SetupButtonOrder(); // Setup the MainMenu and active tool buttons only
 			/*
@@ -188,7 +188,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];
-				button.activeTool = i == k_ActiveToolOrderPosition;
+				button.activeTool = i == k_ActiveToolOrderPosition; // Set the button gradients // TODO Consider handling insid button via k_ActiveToolOrder position comparison
 				button.order = i == k_MenuButtonOrderPosition ? k_InactiveButtonInitialOrderPosition : i - 1; // Hide the menu buttons when revealing all tools buttons
 			}
 		}
