@@ -64,7 +64,10 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 			});
 
 			var sources = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
-			
+
+			var editorVRFolder = sources.Any(s => s.Contains("EditorVR.cs") && s.Replace("EditorVR.cs", string.Empty).Contains("EditorVR"));
+			Assert.IsTrue(editorVRFolder, "EditorVR scripts must be under a folder named 'EditorVR'");
+
 			var output = EditorUtility.CompileCSharp(sources, references.ToArray(), defines, outputFile);
 			foreach (var o in output)
 			{
