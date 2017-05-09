@@ -894,6 +894,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var targetIconContainerScale = m_OriginalIconContainerLocalScale;
 			var transitionAmount = 0f;
 			var currentScale = transform.localScale;
+			var currentPosition = transform.localPosition;
 			while (transitionAmount < 1)
 			{
 				transitionAmount += Time.unscaledDeltaTime * 8;
@@ -909,7 +910,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				*/
 				//CorrectIconRotation();
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
-				transform.localPosition = Vector3.Lerp(Vector3.zero, targetPosition, shapedAmount);
+				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedAmount);
 				yield return null;
 			}
