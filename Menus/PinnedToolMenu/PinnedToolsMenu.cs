@@ -120,6 +120,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//var pinnedToolButtons = deviceData.pinnedToolButtons;
 			if (pinnedToolButtons.Count >= k_MaxButtonCount) // Return if tooltype already occupies a pinned tool button
 			{
+				// TODO: kick out the oldest tool, and allow the new tool to become the active tool
+				Debug.LogWarning("New pinned tool button cannot be added.  The maximum number of pinned tool buttons are currently being displayed");
 				return;
 			}
 			else if (pinnedToolButtons.ContainsKey(toolType))
