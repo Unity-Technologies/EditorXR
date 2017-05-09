@@ -103,9 +103,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			*/
 		}
 
-		IEnumerator ShowThenHideAllButtons(float delayBeforeHiding = 1.25f)
+		IEnumerator ShowThenHideAllButtons(float delayBeforeHiding = 1.25f, bool showMenuButton = true)
 		{
-			SetupButtonOrder();
+			if (showMenuButton)
+				SetupButtonOrder();
+			else
+				ShowAllExceptMenuButton();
 
 			if (delayBeforeHiding > 0)
 			{
@@ -215,7 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					Reinsert(button, k_ActiveToolOrderPosition);
 			}
 
-			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(0.5f));
+			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(0.5f, false));
 			selectTool(rayOrigin, pinnedToolButton.toolType);
 		}
 
