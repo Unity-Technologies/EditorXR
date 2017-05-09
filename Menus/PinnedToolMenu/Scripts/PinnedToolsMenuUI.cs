@@ -208,7 +208,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void SelectTool(IPinnedToolButton pinnedToolButton)
+		void SelectTool(IPinnedToolButton pinnedToolButton, bool existingButton = false)
 		{
 			Debug.LogError("Selecting toolf of type : " + pinnedToolButton.toolType);
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
@@ -219,7 +219,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(0.5f, false));
-			selectTool(rayOrigin, pinnedToolButton.toolType);
+
+			if (!existingButton || IsMainMenuButton(pinnedToolButton))
+				selectTool(rayOrigin, pinnedToolButton.toolType);
 		}
 
 		public void SelectExistingType(Type type)
@@ -227,7 +229,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			foreach (var button in m_OrderedButtons)
 			{
 				if (button.toolType == type)
-					SelectTool(button);
+					SelectTool(button, true);
 			}
 		}
 
