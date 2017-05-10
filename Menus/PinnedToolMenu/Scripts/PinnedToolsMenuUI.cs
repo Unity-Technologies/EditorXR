@@ -210,18 +210,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void SetupButtonOrderThenSelectTool(IPinnedToolButton pinnedToolButton)
 		{
-			bool existingButton = m_OrderedButtons.Any((x) => x.toolType == pinnedToolButton.toolType);
-
 			Debug.LogError("Selecting toolf of type : " + pinnedToolButton.toolType);
-			for (int i = 0; i < m_OrderedButtons.Count; ++i)
-			{
-				var button = m_OrderedButtons[i];;
-				if (button == pinnedToolButton && button.order > k_ActiveToolOrderPosition)
-					Reinsert(button, k_ActiveToolOrderPosition);
-			}
+			Reinsert(pinnedToolButton, k_ActiveToolOrderPosition);
 
-			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(0.5f, false));
+			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1f, false));
 
+			bool existingButton = m_OrderedButtons.Any((x) => x.toolType == pinnedToolButton.toolType);
 			if (IsMainMenuButton(pinnedToolButton))
 				mainMenuActivatorSelected(rayOrigin);
 			else if (!existingButton)
