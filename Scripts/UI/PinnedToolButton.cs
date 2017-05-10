@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IConnectInterfaces
+	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
 	{
 		static Color s_FrameOpaqueColor;
 		static Color s_SemiTransparentFrameColor;
@@ -545,7 +545,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			tooltipSource.localPosition = tooltipSourcePosition;
 			tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
 			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
-			this.ConnectInterfaces(m_SmoothMotion);
 
 			m_GradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
 			m_GradientButton.hoverExit += OnActionButtonHoverExit;
