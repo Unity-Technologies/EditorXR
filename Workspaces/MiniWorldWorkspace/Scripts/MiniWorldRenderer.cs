@@ -105,6 +105,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					}
 				}
 
+				// Because this is a manual render it is necessary to set the target texture to whatever the active RT 
+				// is, which would either be the left/right eye in the case of VR rendering, or the custom SceneView RT 
+				// in the case of the SceneView rendering, etc.
+				m_MiniCamera.targetTexture = RenderTexture.active;
+
 				m_MiniCamera.SetReplacementShader(m_ClipShader, null);
 				m_MiniCamera.Render();
 

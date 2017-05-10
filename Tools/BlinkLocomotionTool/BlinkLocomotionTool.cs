@@ -112,7 +112,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			foreach (var linkedObject in linkedObjects)
 			{
-				if (linkedObject == this)
+				if (linkedObject.Equals(this))
 					continue;
 
 				var blinkTool = (BlinkLocomotionTool)linkedObject;
@@ -135,7 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						var otherGrip = false;
 						foreach (var linkedObject in linkedObjects)
 						{
-							if (linkedObject == this)
+							if (linkedObject.Equals(this))
 								continue;
 
 							var blinkTool = (BlinkLocomotionTool)linkedObject;

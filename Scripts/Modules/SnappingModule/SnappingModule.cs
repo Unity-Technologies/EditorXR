@@ -14,6 +14,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
 	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences
 	{
+		public delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null);
+
 		const float k_GroundSnappingMaxRayLength = 25f;
 		const float k_SurfaceSnappingMaxRayLength = 100f;
 

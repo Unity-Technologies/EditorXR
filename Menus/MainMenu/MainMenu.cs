@@ -187,6 +187,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 							provider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, provider.settingsMenuPrefab);
 						});
 					}
+
+					if (customMenuAttribute != null && customMenuAttribute.tooltip != null)
+						b.tooltipText = customMenuAttribute.tooltip.tooltipText;
 				});
 			}
 		}
