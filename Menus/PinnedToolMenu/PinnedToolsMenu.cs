@@ -52,13 +52,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Transform> onButtonHoverExit { get; set; }
 		public Action<Transform, GradientPair> highlightDevice { get; set; }
 		public Action<Type, Sprite, Node> createPinnedToolButton { get; set; }
+		public Action<Transform> mainMenuActivatorSelected { get; set; }
 
 		Transform m_AlternateMenuOrigin;
 
-		public Action<Transform, Type> selectTool
-		{
-			set { m_PinnedToolsMenuUI.selectTool = value; }
-		}
+		public Action<Transform, Type> selectTool { get; set; }
 
 		public Transform rayOrigin
 		{
@@ -66,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_RayOrigin = value;
-				m_PinnedToolsMenuUI.rayOrigin = value;
+				CreatePinnedToolsUI();
 			}
 		}
 
@@ -85,15 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_AlternateMenuOrigin = value;
 
-				if (m_PinnedToolsMenuUI == null)
-					m_PinnedToolsMenuUI = this.InstantiateUI(m_PinnedToolsMenuPrefab.gameObject).GetComponent<PinnedToolsMenuUI>();
 
-				m_PinnedToolsMenuUI.maxButtonCount = k_MaxButtonCount;
-
-				var pinnedToolsUITransform = m_PinnedToolsMenuUI.transform;
-				pinnedToolsUITransform.SetParent(m_AlternateMenuOrigin);
-				pinnedToolsUITransform.localPosition = Vector3.zero;
-				pinnedToolsUITransform.localRotation = Quaternion.identity;
 			}
 		}
 
@@ -112,6 +102,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
 			createPinnedToolButton = CreatePinnedToolButton;
+		}
+
+		void CreatePinnedToolsUI()
+		{
+			Debug.LogWarning("Spawing pinned tools menu UI");
+			if (m_PinnedToolsMenuUI == null)
+				m_PinnedToolsMenuUI = this.InstantiateUI(m_PinnedToolsMenuPrefab.gameObject).GetComponent<PinnedToolsMenuUI>();
+
+			this.ConnectInterfaces(m_PinnedToolsMenuUI);
+			m_PinnedToolsMenuUI.maxButtonCount = k_MaxButtonCount;
+			m_PinnedToolsMenuUI.mainMenuActivatorSelected = mainMenuActivatorSelected;
+			m_PinnedToolsMenuUI.rayOrigin = rayOrigin;
+
+			// Alternate menu origin isnt set when awake or start run
+			var pinnedToolsUITransform = m_PinnedToolsMenuUI.transform;
+			pinnedToolsUITransform.SetParent(m_AlternateMenuOrigin);
+			pinnedToolsUITransform.localPosition = Vector3.zero;
+			pinnedToolsUITransform.localRotation = Quaternion.identity;
 		}
 
 		public void CreatePinnedToolButton(Type toolType, Sprite buttonIcon, Node node)
