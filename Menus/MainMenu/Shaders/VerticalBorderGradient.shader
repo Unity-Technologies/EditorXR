@@ -1,6 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "EditorVR/MainMenu/VerticalBorderGradient"
+﻿Shader "EditorVR/MainMenu/VerticalBorderGradient"
 {
 	Properties
 	{

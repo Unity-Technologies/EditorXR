@@ -1,6 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "EditorVR/TransparentBlurVerticalFade"
+﻿Shader "EditorVR/TransparentBlurVerticalFade"
 {
 	Properties{
 		_Color("Main Color", Color) = (1,1,1,1)

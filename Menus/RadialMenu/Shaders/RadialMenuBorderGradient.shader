@@ -1,6 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "EditorVR/RadialMenu/RadialMenuBorderGradient"
+﻿Shader "EditorVR/RadialMenu/RadialMenuBorderGradient"
 {
 	Properties
 	{

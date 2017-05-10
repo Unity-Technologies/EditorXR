@@ -1,6 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "EditorVR/UI/GradientTexture"
+﻿Shader "EditorVR/UI/GradientTexture"
 {
 	Properties
 	{

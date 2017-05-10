@@ -1,6 +1,4 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
-Shader "EditorVR/Workspaces/WorkspaceBackgroundBorderGradient"
+﻿Shader "EditorVR/Workspaces/WorkspaceBackgroundBorderGradient"
 {
 	Properties
 	{

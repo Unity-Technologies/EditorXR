@@ -1,5 +1,3 @@
-// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
-
 //======= Copyright (c) Valve Corporation, All rights reserved. ===============
 //
 // Purpose: Used to show the outline of the object
