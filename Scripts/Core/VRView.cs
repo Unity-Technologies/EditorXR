@@ -220,7 +220,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				if (renderTexture.format != format || renderTexture.antiAliasing != msaa || !matchingSRGB)
 				{
-					UnityObject.DestroyImmediate(renderTexture);
+					DestroyImmediate(renderTexture);
 					renderTexture = null;
 				}
 			}
@@ -231,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			if (renderTexture == null)
 			{
-				renderTexture = new RenderTexture(0, 0, 24, format, RenderTextureReadWrite.Linear);
+				renderTexture = new RenderTexture(0, 0, 24, format);
 				renderTexture.name = "Scene RT";
 				renderTexture.antiAliasing = msaa;
 				renderTexture.hideFlags = HideFlags.HideAndDontSave;
