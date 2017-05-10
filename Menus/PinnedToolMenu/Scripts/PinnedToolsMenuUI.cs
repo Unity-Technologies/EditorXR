@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, IInstantiateUI
+	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -30,8 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Node node { get; set; }
 		public int maxButtonCount { get; set; }
 		public Transform buttonContainer { get { return m_ButtonContainer; } }
-		public Action<Transform, Type> selectTool { get; set; }
 		public Transform rayOrigin { get; set; }
+		public Action<Transform> mainMenuActivatorSelected { get; set; }
 
 		public bool allButtonsVisible
 		{
@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			button.allButtonsVisible = allButtonsVisible;
 			button.maxButtonCount = maxButtonCount;
-			button.selectTool = SelectTool;
+			button.selectTool = SetupButtonOrderThenSelectTool;
 			button.visibileButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
 
 			var insertPosition = k_InactiveButtonInitialOrderPosition;
@@ -208,8 +208,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void SelectTool(IPinnedToolButton pinnedToolButton, bool existingButton = false)
+		void SetupButtonOrderThenSelectTool(IPinnedToolButton pinnedToolButton)
 		{
+			bool existingButton = m_OrderedButtons.Any((x) => x.toolType == pinnedToolButton.toolType);
+
 			Debug.LogError("Selecting toolf of type : " + pinnedToolButton.toolType);
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
@@ -220,16 +222,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(0.5f, false));
 
-			if (!existingButton || IsMainMenuButton(pinnedToolButton))
-				selectTool(rayOrigin, pinnedToolButton.toolType);
+			if (IsMainMenuButton(pinnedToolButton))
+				mainMenuActivatorSelected(rayOrigin);
+			else if (!existingButton)
+				this.SelectTool(rayOrigin, pinnedToolButton.toolType);
 		}
 
+		/// <summary>
+		/// Utilized by PinnedToolsMenu to select an existing button by type, without created a new button
+		/// </summary>
+		/// <param name="type">Button ToolType to compare against existing button types</param>
 		public void SelectExistingType(Type type)
 		{
 			foreach (var button in m_OrderedButtons)
 			{
 				if (button.toolType == type)
-					SelectTool(button, true);
+					SetupButtonOrderThenSelectTool(button);
 			}
 		}
 
@@ -250,7 +258,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var isHighlighted = button.highlighted;
 				if (isHighlighted)
 				{
-					SelectTool(button);
+					SetupButtonOrderThenSelectTool(button);
 					return;
 				}
 			}
