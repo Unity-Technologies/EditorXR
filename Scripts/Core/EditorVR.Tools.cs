@@ -132,11 +132,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					// Setup PinnedToolsMenu
 					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
 					deviceData.pinnedToolsMenu = pinnedToolsMenu;
-					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
 					pinnedToolsMenu.selectTool = pinnedTools.ToolButtonClicked;
 					pinnedToolsMenu.onButtonHoverEnter = pinnedTools.OnButtonHoverEnter;
 					pinnedToolsMenu.onButtonHoverExit = pinnedTools.OnButtonHoverExit;
 					pinnedToolsMenu.highlightDevice = pinnedTools.HighlightDevice;
+					pinnedToolsMenu.mainMenuActivatorSelected = pinnedTools.OnMainMenuActivatorSelected;
+					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
 					// Setup permanent menu & selection PinnedToolButtons
 					//deviceData.pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
 					pinnedToolsMenu.createPinnedToolButton(typeof(IMainMenu), evr.m_UnityIcon, deviceData.node);
@@ -222,9 +223,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
 
 						// If this tool was on the current device already, then simply remove it
-						var isSelectOrMainMenu = (deviceData.currentTool.GetType() == toolType || setSelectAsCurrentTool) || toolType == typeof(IMainMenu);
+						var despawn = deviceData.currentTool.GetType() == toolType || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
 						var defaultTool = IsDefaultTool(toolType); // TODO initially set spawnTool to this default/permatool value
-						if (deviceData.currentTool != null && isSelectOrMainMenu)
+						if (deviceData.currentTool != null && despawn)
 						{
 							Debug.LogError("Despawing tool !!!! : <color=red>toolType == typeof(SelectionTool) : </color>" + (toolType == typeof(SelectionTool)).ToString());
 							DespawnTool(deviceData, deviceData.currentTool);
