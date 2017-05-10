@@ -35,6 +35,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Action<Transform> onButtonHoverEnter { get; set; }
 		Action<Transform> onButtonHoverExit { get; set; }
 		Action<Transform, GradientPair> highlightDevice { get; set; }
+		Action<Transform> mainMenuActivatorSelected { set; }
 
 		// CONVERT INTO METHODS
 		Action<Type, Sprite, Node> createPinnedToolButton { get; set; }
