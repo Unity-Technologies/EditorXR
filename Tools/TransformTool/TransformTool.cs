@@ -483,7 +483,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void SuspendTransformation(Node node)
 		{
-			Debug.Log("Suspend " + node + "\n" + Environment.StackTrace);
 			GrabData grabData;
 			if (m_GrabData.TryGetValue(node, out grabData))
 				grabData.suspended = true;
@@ -491,7 +490,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ResumeTransformation(Node node)
 		{
-			Debug.Log("Resume " + node + "\n" + Environment.StackTrace);
 			GrabData grabData;
 			if (m_GrabData.TryGetValue(node, out grabData))
 				grabData.suspended = false;
@@ -512,8 +510,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				if (grabData.rayOrigin == rayOrigin)
 				{
-					Debug.Log("Transfer " + rayOrigin + " to " + destRayOrigin + " - " + Time.frameCount + "\n" + Environment.StackTrace);
-
 					grabData.TransferTo(destRayOrigin, deltaOffset);
 					this.ClearSnappingState(rayOrigin);
 					grabData.UpdatePositions();
@@ -534,8 +530,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			if (!this.IsSharedUpdater(this))
 				return;
-
-			Debug.Log("Drop " + node + "\n" + Environment.StackTrace);
 
 			var grabData = m_GrabData[node];
 			var grabbedObjects = grabData.grabbedObjects;

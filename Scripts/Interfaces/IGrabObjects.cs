@@ -21,24 +21,24 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Drop objects held with a given node
 		/// </summary>
-		/// <param name="node">The node that was holding the objects</param>
+		/// <param name="node">The node that is holding the objects</param>
 		void DropHeldObjects(Node node);
 
 		/// <summary>
 		/// Stop acting on objects held with a given node
 		/// </summary>
-		/// <param name="node">The node that was holding the objects</param>
+		/// <param name="node">The node that is holding the objects</param>
 		void SuspendTransformation(Node node);
 
 		/// <summary>
-		/// Resume acting on objects held with a given nod
+		/// Resume acting on objects held with a given node
 		/// </summary>
-		/// <param name="node">The node that was holding the objects</param>
+		/// <param name="node">The node that is holding the objects</param>
 		void ResumeTransformation(Node node);
 
 		/// <summary>
 		/// Must be called by the implementer when an object has been grabbed
-		/// Params: the rayOrign, the grabbed object
+		/// Params: the rayOrign, the grabbed objects
 		/// </summary>
 		event Action<Transform, HashSet<Transform>> objectsGrabbed;
 
@@ -54,6 +54,5 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		event Action<Transform, Transform> objectsTransferred;
 	}
-
 }
 #endif

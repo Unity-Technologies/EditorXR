@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Gives decorated class the ability to place objects in the scene, or a MiniWorld
+	/// Gives decorated class the ability to place objects in the scene or a MiniWorld
 	/// </summary>
 	public interface IPlaceSceneObjects
 	{
@@ -18,10 +18,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Method used to place groups of objects in the scene/MiniWorld
 		/// </summary>
-		/// <param name="transforms">Transforms of the GameObjects to place</param>
+		/// <param name="transforms">Array of Transforms to place</param>
 		/// <param name="targetPositionOffsets">Array of per-object target positions</param>
 		/// <param name="targetRotations">Array of per-object target rotations</param>
-		/// <param name="scaleFactor">Scale multiplier to apply to the group, if any</param>
+		/// <param name="targetScales">Array of per-object target scales</param>
 		public static void PlaceSceneObjects(this IPlaceSceneObjects obj, Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
 		{
 			placeSceneObjects(transforms, targetPositionOffsets, targetRotations, targetScales);

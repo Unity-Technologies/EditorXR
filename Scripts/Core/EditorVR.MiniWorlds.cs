@@ -1,7 +1,5 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -110,7 +108,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				public void TransferObjects(MiniWorldRay destinationRay, Transform rayOrigin = null)
 				{
-					Debug.Log("   transfer objects from " + miniWorld.miniWorldTransform + " to " + destinationRay.miniWorld.miniWorldTransform + "\n" + Environment.StackTrace);
 					var destinationGrabData = destinationRay.m_GrabData;
 					destinationGrabData.AddRange(m_GrabData);
 					m_GrabData.Clear();
@@ -127,7 +124,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				public void EnterPreviewMode(IUsesSpatialHash hash, float scaleFactor)
 				{
-					Debug.Log("enterprev " + m_GrabData.Count + "\n" + Environment.StackTrace);
 					hasPreview = true;
 					foreach (var grabData in m_GrabData)
 					{
@@ -138,7 +134,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				public void ExitPreviewMode(IUsesSpatialHash hash)
 				{
-					Debug.Log("exitprev " + m_GrabData.Count + "\n" + Environment.StackTrace);
 					foreach (var grabData in m_GrabData)
 					{
 						hash.AddToSpatialHash(grabData.transform.gameObject);
@@ -179,19 +174,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			public Dictionary<Transform, MiniWorldRay> rays
-			{
-				get { return m_Rays; }
-			}
-
+			public Dictionary<Transform, MiniWorldRay> rays { get { return m_Rays; } }
 			readonly Dictionary<Transform, MiniWorldRay> m_Rays = new Dictionary<Transform, MiniWorldRay>();
 			readonly Dictionary<Transform, bool> m_RayWasContained = new Dictionary<Transform, bool>();
 
-			public List<IMiniWorld> worlds
-			{
-				get { return m_Worlds; }
-			}
-
+			public List<IMiniWorld> worlds { get { return m_Worlds; } }
 			readonly List<IMiniWorld> m_Worlds = new List<IMiniWorld>();
 
 			bool m_MiniWorldIgnoreListDirty = true;
@@ -269,7 +256,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					var miniWorldRayOrigin = ray.Key;
 					var miniWorldRay = ray.Value;
-					var node = miniWorldRay.node;
 
 					if (!miniWorldRay.proxy.active)
 					{
@@ -311,8 +297,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var dragStartedOutside = miniWorldRay.dragStartedOutside;
 					if (isContained != wasContained)
 					{
-						Debug.Log(miniWorldRayOrigin + ", " + isContained + ", " + miniWorldRayObjects);
-
 						// Early out if we grabbed a real-world object that started inside a mini world
 						if (!isContained && miniWorldRayObjects == null)
 						{
@@ -330,7 +314,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						// Try to transfer objects between MiniWorlds
 						if (miniWorldRayObjects != null && !isContained)
 						{
-
 							foreach (var kvp in m_Rays)
 							{
 								var otherRayOrigin = kvp.Key;
@@ -362,7 +345,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 
 						var pointerLengthDiff = DirectSelection.GetPointerLength(to) - DirectSelection.GetPointerLength(from);
-						Debug.Log(pointerLengthDiff + " " + incomingPreview);
 						directSelection.TransferHeldObjects(from, to, Vector3.forward * pointerLengthDiff);
 
 						if (overlapPair.HasValue)
@@ -390,6 +372,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						continue;
 					}
 
+					var node = miniWorldRay.node;
+
 					if (miniWorldRayObjects != null && !isContained && wasContained)
 					{
 						var containedInOtherMiniWorld = false;
@@ -398,8 +382,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							if (miniWorld != world && world.Contains(originalPointerPosition))
 								containedInOtherMiniWorld = true;
 						}
-
-						Debug.Log("remove " + containedInOtherMiniWorld);
 
 						// Transfer objects from miniworld to preview state
 						// Don't switch to previewing the objects we are dragging if we are still in another mini world
@@ -436,12 +418,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							var otherMiniWorld = otherRay.miniWorld;
 							if (otherMiniWorld != miniWorld && otherRay.node == node && otherMiniWorld.Contains(originalPointerPosition))
 							{
-								Debug.Log(string.Format("({4}) Entering {0} with {1} - {2}\n{3}", otherMiniWorld, miniWorldRayOrigin, Time.frameCount, Environment.StackTrace, miniWorldRayOrigin));
 								miniWorldRay.ExitPreviewMode(this);
 								directSelection.ResumeHoldingObjects(node);
-
-								//Debug.Log(string.Format("Transfer {0} to {1} - {2}", miniWorldRayOrigin, otherRayOrign, Time.frameCount));
-								//directSelection.TransferHeldObjects(miniWorldRayOrigin, otherRayOrign);
 								enterOther = true;
 								break;
 							}
@@ -565,10 +543,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var ray = kvp.Value;
 					var isOriginalRayOrigin = rayOrigin == ray.originalRayOrigin;
 					if (isOriginalRayOrigin)
-					{
 						ray.dragStartedOutside = true;
-						Debug.Log("dragoutsides");
-					}
 
 					var isMiniWorldRayOrigin = rayOrigin == miniWorldRayOrigin;
 					if (isOriginalRayOrigin || isMiniWorldRayOrigin)
@@ -606,38 +581,39 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			void OnObjectsTransferred(Transform srcRayOrigin, Transform destRayOrigin)
+			void OnObjectsTransferred(Transform sourceRayOrigin, Transform destinationRayOrigin)
 			{
 				// Handle hand-to-hand transfers from two-handed scaling
-				foreach (var srcRay in m_Rays)
+				foreach (var src in m_Rays)
 				{
-					if (srcRay.Key == srcRayOrigin)
+					var srcRayOrigin = src.Key;
+					var srcRay = src.Value;
+					var srcRayHasObjects = srcRay.hasObjects;
+					if (srcRayOrigin == sourceRayOrigin)
 					{
-						if (srcRay.Value.hasObjects)
+						if (srcRayHasObjects)
 						{
-							foreach (var dstRay in m_Rays)
+							foreach (var dest in m_Rays)
 							{
-								if (dstRay.Key == destRayOrigin)
+								if (dest.Key == destinationRayOrigin)
 								{
-									srcRay.Value.TransferObjects(dstRay.Value, destRayOrigin);
+									srcRay.TransferObjects(dest.Value, destinationRayOrigin);
 									break;
 								}
 							}
 						}
-						break;
 					}
-				}
 
-				foreach (var srcRay in m_Rays)
-				{
-					if (srcRay.Value.originalRayOrigin == srcRayOrigin)
+					var srcRayOriginalRayOrigin = srcRay.originalRayOrigin;
+					if (srcRayOriginalRayOrigin == sourceRayOrigin)
 					{
-						if (srcRay.Value.hasObjects)
+						if (srcRayHasObjects)
 						{
-							foreach (var dstRay in m_Rays)
+							foreach (var dest in m_Rays)
 							{
-								if (dstRay.Value.originalRayOrigin == destRayOrigin && dstRay.Value.miniWorld ==  srcRay.Value.miniWorld)
-									srcRay.Value.TransferObjects(dstRay.Value, destRayOrigin);
+								var destRay = dest.Value;
+								if (destRay.originalRayOrigin == destinationRayOrigin && destRay.miniWorld == srcRay.miniWorld)
+									srcRay.TransferObjects(destRay, destinationRayOrigin);
 							}
 						}
 					}

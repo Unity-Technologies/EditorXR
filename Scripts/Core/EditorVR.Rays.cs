@@ -138,6 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				// The player head can hovered, but not selected (only directly manipulated)
 				if (hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag))
 				{
+					// Clear the selection so that we do not manipulate it when moving the player head
 					Selection.activeObject = null;
 					return true;
 				}

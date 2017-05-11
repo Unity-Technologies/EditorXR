@@ -13,8 +13,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IUsesSnappingMethods
 	{
-		internal delegate bool ManipulatorSnapDelegate(Transform rayOrigin, Transform[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta);
-		internal delegate bool DirectSnapDelegate(Transform rayOrigin, Transform go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
+		internal delegate bool ManipulatorSnapDelegate(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta);
+		internal delegate bool DirectSnapDelegate(Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
 
 		internal static ManipulatorSnapDelegate manipulatorSnap { get; set; }
 		internal static DirectSnapDelegate directSnap { get; set; }
@@ -24,29 +24,29 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Perform manipulator snapping: Translate a position vector using deltas while also respecting snapping
 		/// </summary>
 		/// <param name="rayOrigin">The ray doing the translating</param>
-		/// <param name="objects">The objects being translated (used to determine bounds; Transforms do not get modified)</param>
+		/// <param name="transforms">The transforms being translated (used to determine bounds; Transforms do not get modified)</param>
 		/// <param name="position">The position being modified by delta. This will be set with a snapped position if possible</param>
 		/// <param name="rotation">The rotation to be modified if rotation snapping is enabled</param>
 		/// <param name="delta">The position delta to apply</param>
 		/// <returns>Whether the position was set to a snapped position</returns>
-		public static bool ManipulatorSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
+		public static bool ManipulatorSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
 		{
-			return manipulatorSnap(rayOrigin, objects, ref position, ref rotation, delta);
+			return manipulatorSnap(rayOrigin, transforms, ref position, ref rotation, delta);
 		}
 
 		/// <summary>
 		/// Perform direct snapping: Transform a position/rotation directly while also respecting snapping
 		/// </summary>
 		/// <param name="rayOrigin">The ray doing the transforming</param>
-		/// <param name="go">The object being transformed (used to determine bounds; Transforms do not get modified)</param>
+		/// <param name="transform">The object being transformed (used to determine bounds; Transforms do not get modified)</param>
 		/// <param name="position">The position being transformed. This will be set to a snapped position if possible</param>
 		/// <param name="rotation">The rotation being transformed. This will only be modified if rotation snapping is enabled</param>
 		/// <param name="targetPosition">The input position provided by direct transformation</param>
 		/// <param name="targetRotation">The input rotation provided by direct transformation</param>
 		/// <returns></returns>
-		public static bool DirectSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
+		public static bool DirectSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
 		{
-			return directSnap(rayOrigin, go, ref position, ref rotation, targetPosition, targetRotation);
+			return directSnap(rayOrigin, transform, ref position, ref rotation, targetPosition, targetRotation);
 		}
 
 		/// <summary>

@@ -190,8 +190,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return false;
 			};
 
-			AddModule<GizmoModule>();
-
 			viewer.AddPlayerModel();
 
 			GetNestedModule<Rays>().CreateAllProxies();
@@ -475,9 +473,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				string tooltip = "Check this to preserve your layout and location in EditorVR";
 				preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), preserveLayout);
 			}
-
-			if (GUILayout.Button("Clear Saved Settings"))
-				EditorPrefs.DeleteKey(k_SerializedPreferences);
 
 			EditorGUILayout.EndVertical();
 		}

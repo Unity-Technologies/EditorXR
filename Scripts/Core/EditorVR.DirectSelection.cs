@@ -120,11 +120,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						};
 					}
 				}
-
-				foreach (var grabbedObject in m_GrabbedObjects)
-				{
-					GizmoModule.instance.DrawSphere(grabbedObject.Key.position, grabbedObject.Key.lossyScale.magnitude * 0.03f, Color.blue);
-				}
 			}
 
 			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
@@ -150,7 +145,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			void OnObjectsGrabbed(Transform rayOrigin, HashSet<Transform> grabbedObjects)
 			{
-				Debug.Log(string.Format("Grabbed {0} objects with {1} - {2}\n{3}", grabbedObjects.Count, rayOrigin, Time.frameCount, Environment.StackTrace));
 				HashSet<Transform> objects;
 				if (!m_GrabbedObjects.TryGetValue(rayOrigin, out objects))
 				{
@@ -176,7 +170,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			void OnObjectsDropped(Transform rayOrigin, Transform[] grabbedObjects)
 			{
-				Debug.Log(string.Format("Dropped {0} objects with {1} - {2}\n{3}", grabbedObjects.Length, rayOrigin, Time.frameCount, Environment.StackTrace));
 				var sceneObjectModule = evr.GetModule<SceneObjectModule>();
 				var viewer = evr.GetNestedModule<Viewer>();
 				var miniWorlds = evr.GetNestedModule<MiniWorlds>();
