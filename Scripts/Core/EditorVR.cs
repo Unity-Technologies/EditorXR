@@ -328,11 +328,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!deviceData.proxy.active)
 					continue;
 
-				var pinnedToolsMenu = deviceData.pinnedToolsMenu;
-				var pinnedToolsMenuInput = pinnedToolsMenu as IProcessInput;
-				if (pinnedToolsMenuInput != null)
-					pinnedToolsMenuInput.ProcessInput(deviceData.pinnedToolsMenuInput, consumeControl);
-
 				var mainMenu = deviceData.mainMenu;
 				var menuInput = mainMenu as IProcessInput;
 				if (menuInput != null && mainMenu.visible)
@@ -357,6 +352,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						&& processedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
 						process.ProcessInput(toolData.input, consumeControl);
 				}
+
+				var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+				var pinnedToolsMenuInput = pinnedToolsMenu as IProcessInput;
+				if (pinnedToolsMenuInput != null)
+					pinnedToolsMenuInput.ProcessInput(deviceData.pinnedToolsMenuInput, consumeControl);
 			}
 		}
 
