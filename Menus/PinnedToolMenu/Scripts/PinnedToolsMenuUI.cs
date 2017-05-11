@@ -254,7 +254,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void SelectNextExistingToolButton()
 		{
-			SetupButtonOrderThenSelectTool(m_OrderedButtons[k_ActiveToolOrderPosition + 1]);
+			var button = m_OrderedButtons[k_ActiveToolOrderPosition + 1];
+			SetupButtonOrderThenSelectTool(button);
+			this.SelectTool(rayOrigin, button.toolType);
 		}
 
 		public void HighlightSingleButtonWithoutMenu(int buttonOrderPosition)
@@ -275,7 +277,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (isHighlighted)
 				{
 					Debug.LogError("<color=orange>Selecting highlighted button : </color>"+ button.toolType);
-					//SetupButtonOrderThenSelectTool(button);
 					// Force the selection of the button regardless of it previously existing via a call to EVR that triggers a call to SelectExistingType()
 					this.SelectTool(rayOrigin, button.toolType);
 					return;
