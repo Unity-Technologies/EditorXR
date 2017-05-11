@@ -28,13 +28,13 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Stop acting on objects held with a given node
 		/// </summary>
 		/// <param name="node">The node that is holding the objects</param>
-		void SuspendTransformation(Node node);
+		void Suspend(Node node);
 
 		/// <summary>
 		/// Resume acting on objects held with a given node
 		/// </summary>
 		/// <param name="node">The node that is holding the objects</param>
-		void ResumeTransformation(Node node);
+		void Resume(Node node);
 
 		/// <summary>
 		/// Must be called by the implementer when an object has been grabbed

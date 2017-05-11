@@ -472,14 +472,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		public void SuspendTransformation(Node node)
+		public void Suspend(Node node)
 		{
 			GrabData grabData;
 			if (m_GrabData.TryGetValue(node, out grabData))
 				grabData.suspended = true;
 		}
 
-		public void ResumeTransformation(Node node)
+		public void Resume(Node node)
 		{
 			GrabData grabData;
 			if (m_GrabData.TryGetValue(node, out grabData))

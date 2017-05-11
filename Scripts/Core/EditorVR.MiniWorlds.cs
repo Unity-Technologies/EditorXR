@@ -191,6 +191,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 			}
 
+			public void LateBindInterfaceMethods(DirectSelection provider)
+			{
+				provider.objectsGrabbed += OnObjectsGrabbed;
+				provider.objectsDropped += OnObjectsDropped;
+				provider.objectsTransferred += OnObjectsTransferred;
+			}
+
 			void OnHierarchyChanged()
 			{
 				m_MiniWorldIgnoreListDirty = true;
@@ -354,7 +361,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						{
 							incomingPreview.ExitPreviewMode(this);
 							incomingPreview.TransferObjects(miniWorldRay);
-							directSelection.ResumeHoldingObjects(incomingPreview.node);
+							directSelection.ResumeGrabbers(incomingPreview.node);
 						}
 
 						miniWorldRay.UpdatePreview(); // Otherwise the object is in the wrong position for a frame
@@ -400,7 +407,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							{
 								var scaleFactor = this.GetViewerScale() / miniWorld.referenceTransform.localScale.x;
 								miniWorldRay.EnterPreviewMode(this, scaleFactor);
-								directSelection.SuspendHoldingObjects(node);
+								directSelection.SuspendGrabbers(node);
 							}
 						}
 					}
@@ -416,7 +423,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							if (otherMiniWorld != miniWorld && otherRay.node == node && otherMiniWorld.Contains(originalPointerPosition))
 							{
 								miniWorldRay.ExitPreviewMode(this);
-								directSelection.ResumeHoldingObjects(node);
+								directSelection.ResumeGrabbers(node);
 								enterOther = true;
 								break;
 							}
@@ -431,7 +438,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							else if (!wasContained)
 							{
 								miniWorldRay.ExitPreviewMode(this);
-								directSelection.ResumeHoldingObjects(node);
+								directSelection.ResumeGrabbers(node);
 							}
 						}
 					}
@@ -615,13 +622,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 				}
-			}
-
-			public void LateBindInterfaceMethods(DirectSelection provider)
-			{
-				provider.objectsGrabbed += OnObjectsGrabbed;
-				provider.objectsDropped += OnObjectsDropped;
-				provider.objectsTransferred += OnObjectsTransferred;
 			}
 		}
 	}

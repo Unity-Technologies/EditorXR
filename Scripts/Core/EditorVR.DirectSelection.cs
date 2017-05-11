@@ -210,19 +210,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return m_GrabbedObjects.TryGetValue(rayOrigin, out objects) ? objects : null;
 			}
 
-			public void SuspendHoldingObjects(Node node)
+			public void SuspendGrabbers(Node node)
 			{
 				foreach (var grabber in m_ObjectGrabbers)
 				{
-					grabber.SuspendTransformation(node);
+					grabber.Suspend(node);
 				}
 			}
 
-			public void ResumeHoldingObjects(Node node)
+			public void ResumeGrabbers(Node node)
 			{
 				foreach (var grabber in m_ObjectGrabbers)
 				{
-					grabber.ResumeTransformation(node);
+					grabber.Resume(node);
 				}
 			}
 

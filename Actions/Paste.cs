@@ -32,8 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 
 		public override void ExecuteAction()
 		{
-			//return EditorApplication.ExecuteActionMenuItem("Edit/Paste");
-
 			if (buffer != null)
 			{
 				var pastedGameObjects = new GameObject[buffer.Length];
