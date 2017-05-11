@@ -181,7 +181,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 spatialScrollStartPosition;
 		Vector3? spatialDirection = null;
 		Vector3 previousWorldPosition;
-		float? spatialScrollStartTime = null; // use to hide menu if input is consumed externally and no spatialDirection is define within a given duration
+		float? allowSpatialScrollBeforeThisTime = null; // use to hide menu if input is consumed externally and no spatialDirection is define within a given duration
+		float allowToolToggleBeforeThisTime;
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var buttonCount = pinnedToolButtons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
@@ -189,6 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 
 			const float kAutoHideDuration = 1f;
+			const float kAllowToggleDuration = 0.25f;
 			var pinnedToolInput = (PinnedToolslMenuInput) input;
 			if (continuedInputConsumptionStartTime != null)
 			{
@@ -204,11 +206,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (pinnedToolInput.select.wasJustPressed)
 				Debug.LogError("<color=black>SELECT pressed in PinnedToolButton</color>");
 
-			if (spatialScrollStartTime != null && spatialDirection == null && Time.realtimeSinceStartup > spatialScrollStartTime.Value)
+			if (allowSpatialScrollBeforeThisTime != null && spatialDirection == null && Time.realtimeSinceStartup > allowSpatialScrollBeforeThisTime.Value)
 			{
 				// Hide if no direction as been defined after a given duration
 				m_PinnedToolsMenuUI.allButtonsVisible = false;
-				spatialScrollStartTime = null;
+				allowSpatialScrollBeforeThisTime = null;
 				return;
 			}
 
@@ -217,8 +219,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//consumeControl(pinnedToolInput.show);
 				//m_PinnedToolsMenuUI.allButtonsVisible = true;
 				spatialScrollStartPosition = m_PinnedToolsMenuUI.transform.position;
-				spatialScrollStartTime = Time.realtimeSinceStartup + kAutoHideDuration;
-
+				allowSpatialScrollBeforeThisTime = Time.realtimeSinceStartup + kAutoHideDuration;
+				allowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
 				//Dont show if the user hasnt passed the threshold in the given duration
 			}
 			else if (pinnedToolInput.show.isHeld && !pinnedToolInput.select.isHeld && !pinnedToolInput.select.wasJustPressed)
@@ -231,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					//OnActionButtonHoverExit(false);
 					deleteHighlightedButton(rayOrigin);
 					m_PinnedToolsMenuUI.allButtonsVisible = false;
-					spatialScrollStartTime = null;
+					allowSpatialScrollBeforeThisTime = null;
 					spatialDirection = null;
 					return;
 				}
@@ -252,19 +254,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 			else if (pinnedToolInput.show.wasJustReleased)
 			{
-				if (spatialScrollStartTime == null)
+				if (allowSpatialScrollBeforeThisTime == null)
 					return;
 
 				const float kAdditionalConsumptionDuration = 0.25f;
 				continuedInputConsumptionStartTime = Time.realtimeSinceStartup + kAdditionalConsumptionDuration;
-				spatialScrollStartTime = null;
+				allowSpatialScrollBeforeThisTime = null;
 				if (spatialDirection != null)
 				{
 					m_PinnedToolsMenuUI.SelectHighlightedButton();
 					spatialDirection = null;
 					consumeControl(pinnedToolInput.select);
 				}
-				else
+				else if (Time.realtimeSinceStartup < allowToolToggleBeforeThisTime)
 				{
 					// Allow for single press+release to cycle through tools
 					m_PinnedToolsMenuUI.SelectNextExistingToolButton();
