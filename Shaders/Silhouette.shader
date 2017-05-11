@@ -54,7 +54,7 @@ Shader "EditorVR/Valve/Silhouette"
 #if UNITY_VERSION >= 540
 			o.vPositionPs = UnityObjectToClipPos( i.vPositionOs.xyzw );
 #else
-			o.vPositionPs = mul( UNITY_MATRIX_MVP, i.vPositionOs.xyzw );
+			o.vPositionPs = UnityObjectToClipPos( i.vPositionOs.xyzw );
 #endif
 			return o;
 		}
@@ -73,7 +73,7 @@ Shader "EditorVR/Valve/Silhouette"
 #if UNITY_VERSION >= 540
 			extruded.vPositionPs = UnityObjectToClipPos( vertex.vPositionOs.xyzw );
 #else
-			extruded.vPositionPs = mul( UNITY_MATRIX_MVP, vertex.vPositionOs.xyzw );
+			extruded.vPositionPs = UnityObjectToClipPos( vertex.vPositionOs.xyzw );
 #endif
 			extruded.vPositionPs.xy += vOffsetPs.xy * extruded.vPositionPs.w * g_flOutlineWidth;
 

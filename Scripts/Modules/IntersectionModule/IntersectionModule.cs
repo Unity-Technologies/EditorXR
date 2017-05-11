@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,8 +6,6 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null);
-
 	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		const int k_MaxTestsPerTester = 250;
@@ -17,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
 		readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
 
-		SpatialHash<Renderer> m_SpatialHash;
+		SpatialHash<Renderer> m_SpatialHash; 
 		MeshCollider m_CollisionTester;
 
 		class RayIntersection
@@ -26,12 +23,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public float distance;
 		}
 
-#if UNITY_EDITOR
 		public bool ready { get { return m_SpatialHash != null; } }
 		public List<IntersectionTester> testers { get { return m_Testers; } }
 		public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
 		public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
-#endif
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<Renderer> m_Intersections = new List<Renderer>();
