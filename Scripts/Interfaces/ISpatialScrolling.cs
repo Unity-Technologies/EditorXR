@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Action<Transform, bool> revealAllToolButtons { set; }
 		*/
 
-		Vector3 startingPosition { set; }
+		Vector3 initialPosition { set; } // Position of the input device when spatial-scrolling is initiated
 		Vector3 currentPosition { set; }
 
 		// start pos, current pos, world length before repeat, returns normalized repeating projection position
