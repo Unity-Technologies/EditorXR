@@ -315,9 +315,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						foreach (var grabData in m_GrabData)
 						{
 							var otherNode = grabData.Key;
-							if (otherNode != grabbingNode)
+							var otherData = grabData.Value;
+
+							if (otherNode != grabbingNode && otherData.grabbedObjects.Contains(directHoveredObject.transform))
 							{
-								var otherData = grabData.Value;
 								m_ScaleStartDistance = (directRayOrigin.position - otherData.rayOrigin.position).magnitude;
 								m_ScaleFirstNode = otherNode;
 								otherData.StartScaling();
@@ -395,7 +396,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					}
 				}
 
-				if (hasLeft && hasRight && leftHeld && rightHeld) // Two-handed scaling
+				if (hasLeft && hasRight && leftHeld && rightHeld && m_Scaling) // Two-handed scaling
 				{
 					var rightRayOrigin = rightData.rayOrigin;
 					var leftRayOrigin = leftData.rayOrigin;
