@@ -53,6 +53,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		private bool aboveMinimumButtonCount { get { return m_OrderedButtons.Count > k_ActiveToolOrderPosition + 1; } }
+
 		void Awake()
 		{
 			m_OrderedButtons = new List<IPinnedToolButton>();
@@ -89,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			Debug.LogWarning("Setting up button : " + button.toolType + " - ORDER : " + button.order);
 
-			if (m_OrderedButtons.Count > k_ActiveToolOrderPosition + 1)
+			if (aboveMinimumButtonCount)
 				this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1.25f, false));
 			else
 				SetupButtonOrder(); // Setup the MainMenu and active tool buttons only
@@ -195,7 +197,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void ShowOnlyMenuAndActiveToolButtons()
 		{
-			Debug.LogError("Hiding all buttons");
+			Debug.LogError("Showing only the MainMenu and ACTIVE tool buttons");
+			if (!aboveMinimumButtonCount) // If only the Selection and MainMenu buttons exist, don't proceed
+				return;
+
 			m_VisibleButtonCount = 2; // Show only the menu and active tool button
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
@@ -210,15 +215,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void SetupButtonOrderThenSelectTool(IPinnedToolButton pinnedToolButton)
 		{
-			Debug.LogError("Selecting toolf of type : " + pinnedToolButton.toolType);
+			Debug.LogError("<color=white> SetupButtonOrderThenSelectTool - Selecting  of type : </color>" + pinnedToolButton.toolType);
+			var mainMenu = IsMainMenuButton(pinnedToolButton);
+			if (mainMenu)
+			{
+				mainMenuActivatorSelected(rayOrigin);
+				return;
+			}
+			else if (!aboveMinimumButtonCount)
+			{
+				return;
+			}
+
 			Reinsert(pinnedToolButton, k_ActiveToolOrderPosition);
 
 			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1f, false));
 
 			bool existingButton = m_OrderedButtons.Any((x) => x.toolType == pinnedToolButton.toolType);
-			if (IsMainMenuButton(pinnedToolButton))
-				mainMenuActivatorSelected(rayOrigin);
-			else if (!existingButton)
+			if (!existingButton)
 				this.SelectTool(rayOrigin, pinnedToolButton.toolType);
 		}
 
@@ -231,13 +245,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			foreach (var button in m_OrderedButtons)
 			{
 				if (button.toolType == type)
+				{
 					SetupButtonOrderThenSelectTool(button);
+					return;
+				}
 			}
+		}
+
+		public void SelectNextExistingToolButton()
+		{
+			SetupButtonOrderThenSelectTool(m_OrderedButtons[k_ActiveToolOrderPosition + 1]);
 		}
 
 		public void HighlightSingleButtonWithoutMenu(int buttonOrderPosition)
 		{
-			Debug.LogError("Highlighting SINGLE BUTTON at position : "+ buttonOrderPosition);
+			//Debug.LogError("Highlighting SINGLE BUTTON at position : "+ buttonOrderPosition);
 			for (int i = 1; i < m_OrderedButtons.Count; ++i)
 			{
 				m_OrderedButtons[i].highlighted = i == buttonOrderPosition;
@@ -252,7 +274,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var isHighlighted = button.highlighted;
 				if (isHighlighted)
 				{
-					SetupButtonOrderThenSelectTool(button);
+					Debug.LogError("<color=orange>Selecting highlighted button : </color>"+ button.toolType);
+					//SetupButtonOrderThenSelectTool(button);
+					// Force the selection of the button regardless of it previously existing via a call to EVR that triggers a call to SelectExistingType()
+					this.SelectTool(rayOrigin, button.toolType);
 					return;
 				}
 			}
