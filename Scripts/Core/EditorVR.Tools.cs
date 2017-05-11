@@ -79,7 +79,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var defaultTools = evr.m_DefaultTools;
 				var directSelection = evr.GetNestedModule<DirectSelection>();
 				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();
-				Debug.LogWarning("get selection tool icon selectionToolData.icon for pinned tool buttons now that selection tool is a DefaultTool");
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -222,13 +221,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var setSelectAsCurrentTool = toolType == typeof(SelectionTool);//deviceData.currentTool is ILocomotor;
 						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
 
-						// If this tool was on the current device already, then simply remove it
+						// If this tool was on the current device already, remove it, if it is selected while already being the current tool
 						var despawn = deviceData.currentTool.GetType() == toolType || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
 						var defaultTool = IsDefaultTool(toolType); // TODO initially set spawnTool to this default/permatool value
 						if (deviceData.currentTool != null && despawn)
 						{
 							Debug.LogError("Despawing tool !!!! : <color=red>toolType == typeof(SelectionTool) : </color>" + (toolType == typeof(SelectionTool)).ToString());
 							DespawnTool(deviceData, deviceData.currentTool);
+							pinnedToolsMenu.createPinnedToolButton(toolType, null, deviceData.node);
 
 							// Don't spawn a new tool, since we are only removing the old tool
 							spawnTool = false;
