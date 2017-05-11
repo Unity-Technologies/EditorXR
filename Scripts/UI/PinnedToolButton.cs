@@ -83,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_Order = value; // Position of this button in relation to other pinned tool buttons
 
-				Debug.LogError(m_ToolType.ToString() + " : <color=red>SETTING BUTTON ORDER TO : </color>" + m_Order + " - current button count : " + visibileButtonCount);
+				//Debug.LogError(m_ToolType.ToString() + " : <color=red>SETTING BUTTON ORDER TO : </color>" + m_Order + " - current button count : " + visibileButtonCount);
 
 				highlighted = false;
 				//m_InactivePosition = s_ActivePosition * ++value; // Additional offset for the button when it is visible and inactive
@@ -930,7 +930,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//IEnumerator AnimatePosition(int orderPosition, int buttonCount)
 		IEnumerator AnimatePosition(int orderPosition)
 		{
-			Debug.LogError(m_ToolType + " - Animate Button position : " + orderPosition + " - BUTTON COUNT: " + visibileButtonCount);
+			//Debug.LogError(m_ToolType + " - Animate Button position : " + orderPosition + " - BUTTON COUNT: " + visibileButtonCount);
 			primaryButtonCollidersEnabled = false;
 			secondaryButtonCollidersEnabled = false;
 			//if (!activeTool) // hide a button if it is not the active tool button and the buttons are no longer revealed
@@ -1107,7 +1107,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator ShowSecondaryButton()
 		{
-			Debug.LogError("<color=black>Waiting before SHOWING SECONDARY BUTTON</color>");
+			//Debug.LogError("<color=black>Waiting before SHOWING SECONDARY BUTTON</color>");
 			const float kFrameSecondaryButtonVisibleBlendShapeWeight = 61f;
 			const float kSecondaryButtonVisibleBlendShapeWeight = 46f;
 
@@ -1121,7 +1121,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield return null;
 			}
 
-			Debug.LogError("<color=white>SHOWING SECONDARY BUTTON</color>");
+			//Debug.LogError("<color=white>SHOWING SECONDARY BUTTON</color>");
 			this.ShowTooltip(this);
 
 			amount = 0f;
