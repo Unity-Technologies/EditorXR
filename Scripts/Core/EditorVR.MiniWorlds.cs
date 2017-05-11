@@ -16,15 +16,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			internal class MiniWorldRay
 			{
+				readonly List<GrabData> m_GrabData = new List<GrabData>();
+
 				public Transform originalRayOrigin { get; private set; }
 				public IMiniWorld miniWorld { get; private set; }
 				public IProxy proxy { get; private set; }
 				public Node node { get; private set; }
 				public ActionMapInput directSelectInput { get; private set; }
 				public IntersectionTester tester { get; private set; }
-
-				public bool dragStartedOutside { get; set; }
-				public bool isContained { get; set; }
 
 				public bool hasPreview { get; private set; }
 
@@ -33,7 +32,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					get { return m_GrabData.Count > 0; }
 				}
 
-				readonly List<GrabData> m_GrabData = new List<GrabData>();
+				public bool dragStartedOutside { get; set; }
+				public bool isContained { get; set; }
 
 				class GrabData
 				{
@@ -174,14 +174,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			public Dictionary<Transform, MiniWorldRay> rays { get { return m_Rays; } }
 			readonly Dictionary<Transform, MiniWorldRay> m_Rays = new Dictionary<Transform, MiniWorldRay>();
 			readonly Dictionary<Transform, bool> m_RayWasContained = new Dictionary<Transform, bool>();
 
-			public List<IMiniWorld> worlds { get { return m_Worlds; } }
 			readonly List<IMiniWorld> m_Worlds = new List<IMiniWorld>();
 
 			bool m_MiniWorldIgnoreListDirty = true;
+
+			public Dictionary<Transform, MiniWorldRay> rays { get { return m_Rays; } }
+			public List<IMiniWorld> worlds { get { return m_Worlds; } }
 
 			public MiniWorlds()
 			{

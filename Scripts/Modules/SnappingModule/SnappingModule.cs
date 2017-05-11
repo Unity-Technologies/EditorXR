@@ -427,14 +427,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public bool ManipulatorSnap(Transform rayOrigin, Transform[] objects, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
+		public bool ManipulatorSnap(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta)
 		{
-			if (objects.Length == 0)
+			if (transforms.Length == 0)
 				return false;
 
 			if (snappingEnabled && manipulatorSnappingEnabled)
 			{
-				var state = GetSnappingState(rayOrigin, objects, position, rotation);
+				var state = GetSnappingState(rayOrigin, transforms, position, rotation);
 
 				state.currentPosition += delta;
 				var targetPosition = state.currentPosition;
@@ -443,7 +443,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var camera = CameraUtils.GetMainCamera();
 				var breakScale = Vector3.Distance(camera.transform.position, targetPosition);
 
-				AddToIgnoreList(objects);
+				AddToIgnoreList(transforms);
 				if (surfaceSnappingEnabled && ManipulatorSnapToSurface(rayOrigin, ref position, ref rotation, targetPosition, state, targetRotation, breakScale * k_ManipulatorSurfaceSnapBreakDist))
 					return true;
 
@@ -483,11 +483,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		public bool DirectSnap(Transform rayOrigin, Transform go, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
+		public bool DirectSnap(Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
 		{
 			if (snappingEnabled && directSnappingEnabled)
 			{
-				var state = GetSnappingState(rayOrigin, go, position, rotation);
+				var state = GetSnappingState(rayOrigin, transform, position, rotation);
 
 				state.currentPosition = targetPosition;
 
@@ -495,7 +495,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var breakScale = viewerScale;
 				var breakDistance = breakScale * k_DirectSurfaceSnapBreakDist;
 
-				AddToIgnoreList(go);
+				AddToIgnoreList(transform);
 				if (surfaceSnappingEnabled && DirectSnapToSurface(ref position, ref rotation, targetPosition, state, targetRotation, breakDistance))
 					return true;
 
@@ -671,13 +671,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		SnappingState GetSnappingState(Transform rayOrigin, Transform go, Vector3 position, Quaternion rotation)
+		SnappingState GetSnappingState(Transform rayOrigin, Transform transform, Vector3 position, Quaternion rotation)
 		{
-			m_SingleTransformArray[0] = go;
+			m_SingleTransformArray[0] = transform;
 			return GetSnappingState(rayOrigin, m_SingleTransformArray, position, rotation);
 		}
 
-		SnappingState GetSnappingState(Transform rayOrigin, Transform[] objects, Vector3 position, Quaternion rotation)
+		SnappingState GetSnappingState(Transform rayOrigin, Transform[] transforms, Vector3 position, Quaternion rotation)
 		{
 			Dictionary<Transform, SnappingState> states;
 			if (!m_SnappingStates.TryGetValue(rayOrigin, out states))
@@ -686,11 +686,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_SnappingStates[rayOrigin] = states;
 			}
 
-			var firstObject = objects[0];
+			var firstObject = transforms[0];
 			SnappingState state;
 			if (!states.TryGetValue(firstObject, out state))
 			{
-				state = new SnappingState(objects, position, rotation);
+				state = new SnappingState(transforms, position, rotation);
 				states[firstObject] = state;
 			}
 			return state;

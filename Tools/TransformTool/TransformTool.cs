@@ -22,7 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			Vector3[] m_PositionOffsets;
 			Quaternion[] m_RotationOffsets;
-			IUsesSnapping m_UsesSnapping;
 			Vector3[] m_InitialScales;
 
 			public Transform[] grabbedObjects { get; private set; }
@@ -31,20 +30,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			public bool suspended { private get; set; }
 
-			public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects, IUsesSnapping usesSnapping)
+			public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects)
 			{
 				this.rayOrigin = rayOrigin;
 				this.input = input;
 				this.grabbedObjects = grabbedObjects;
-				m_UsesSnapping = usesSnapping;
-
-				var objects = new GameObject[grabbedObjects.Length];
-				for (int i = 0; i < grabbedObjects.Length; i++)
-				{
-					var go = grabbedObjects[i].gameObject;
-					objects[i] = go;
-				}
-
 				Reset();
 			}
 
@@ -65,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			public void UpdatePositions()
+			public void UpdatePositions(IUsesSnapping usesSnapping)
 			{
 				if (suspended)
 					return;
@@ -80,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var targetPosition = rayOrigin.position + rayOrigin.rotation * m_PositionOffsets[i];
 					var targetRotation = rayOrigin.rotation * m_RotationOffsets[i];
 
-					if (m_UsesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
+					if (usesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
 					{
 						var deltaTime = Time.unscaledDeltaTime;
 						grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
@@ -333,7 +323,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						if (objectsGrabbed != null && !m_Scaling)
 							objectsGrabbed(directRayOrigin, grabbedObjects);
 
-						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray(), this);
+						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray());
 
 						this.HideDefaultRay(directRayOrigin, true); // This will also unhighlight the object
 						this.LockRay(directRayOrigin, this);
@@ -439,10 +429,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					}
 
 					if (hasLeft && leftHeld)
-						leftData.UpdatePositions();
+						leftData.UpdatePositions(this);
 
 					if (hasRight && rightHeld)
-						rightData.UpdatePositions();
+						rightData.UpdatePositions(this);
 				}
 			}
 
@@ -513,7 +503,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					grabData.TransferTo(destRayOrigin, deltaOffset);
 					this.ClearSnappingState(rayOrigin);
-					grabData.UpdatePositions();
+					grabData.UpdatePositions(this);
 
 					// Prevent lock from getting stuck
 					this.UnlockRay(rayOrigin, this);
