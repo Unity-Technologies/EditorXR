@@ -8,7 +8,7 @@ using UnityEngine.InputNew;
 
 [ExecuteInEditMode]
 public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, ICustomRay, IUsesViewerBody, 
-	IResetWorkspaces, IAllWorkspaces
+	IResetWorkspaces, IAllWorkspaces, IUsesViewerScale
 {
 	enum State
 	{
@@ -113,7 +113,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 		const float kLocalScaleWhenReadyToThrow = 0.5f;
 		const float kThrowDelayAllowed = 0.2f;
 
-		var verticalVelocity = (m_RayOriginPreviousPosition.y - rayOrigin.position.y) / Time.unscaledDeltaTime;
+		var verticalVelocity = (m_RayOriginPreviousPosition.y - rayOrigin.position.y) / Time.unscaledDeltaTime / this.GetViewerScale();
 		m_RayOriginPreviousPosition = rayOrigin.position;
 
 		if (verticalVelocity > kThrowVelocityThreshold)

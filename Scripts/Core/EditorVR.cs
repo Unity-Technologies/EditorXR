@@ -167,7 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
 
-			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
+			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();
 			sceneObjectModule.tryPlaceObject = (obj, targetScale) =>
@@ -248,7 +248,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var values = Enum.GetValues(consoleFlagsType);
 				var clearOnPlayFlag = values.GetValue(Array.IndexOf(names, "ClearOnPlay"));
 
-				var hasFlagMethod = consoleWindowType.GetMethod("HasFlag", BindingFlags.NonPublic | BindingFlags.Instance);
+				var hasFlagMethod = consoleWindowType.GetMethod("HasFlag", BindingFlags.NonPublic | BindingFlags.Static);
 				var result = (bool)hasFlagMethod.Invoke(window, new[] { clearOnPlayFlag });
 
 				if (result)

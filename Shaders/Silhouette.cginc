@@ -34,7 +34,7 @@ PS_INPUT MainVs(VS_INPUT i)
 #if UNITY_VERSION >= 540
 	o.vPositionPs = UnityObjectToClipPos(i.vPositionOs.xyzw);
 #else
-	o.vPositionPs = mul(UNITY_MATRIX_MVP, i.vPositionOs.xyzw);
+	o.vPositionPs = UnityObjectToClipPos(i.vPositionOs.xyzw);
 #endif
 	
 	o.clipPos = (float3)0;
@@ -50,7 +50,7 @@ PS_INPUT MainVsClip(VS_INPUT i)
 #if UNITY_VERSION >= 540
 	o.vPositionPs = UnityObjectToClipPos(i.vPositionOs.xyzw);
 #else
-	o.vPositionPs = mul(UNITY_MATRIX_MVP, i.vPositionOs.xyzw);
+	o.vPositionPs = UnityObjectToClipPos(i.vPositionOs.xyzw);
 #endif
 
 	o.clipPos = mul(_InverseRotation, mul(unity_ObjectToWorld, i.vPositionOs));
@@ -72,7 +72,7 @@ PS_INPUT Extrude(PS_INPUT vertex)
 #if UNITY_VERSION >= 540
 	extruded.vPositionPs = UnityObjectToClipPos(vertex.vPositionOs.xyzw);
 #else
-	extruded.vPositionPs = mul(UNITY_MATRIX_MVP, vertex.vPositionOs.xyzw);
+	extruded.vPositionPs = UnityObjectToClipPos(vertex.vPositionOs.xyzw);
 #endif
 	extruded.vPositionPs.xy += vOffsetPs.xy * extruded.vPositionPs.w * g_flOutlineWidth;
 
