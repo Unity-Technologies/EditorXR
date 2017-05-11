@@ -37,11 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <summary>
 		/// Cache curated gradients collection size, to reduce further lookups
 		/// </summary>
-		static int s_CuratedGradientPairsRange;
 		static int s_RandomCuratedGradientPairPosition = -1; // Set to -1 in order to allow a zero entry to be initially set
-		static int s_CuratedLightGradientPairsRange;
 		static int s_RandomCuratedLightGradientPairPosition =  -1;
-		static int s_CuratedDarkGradientPairsRange;
 		static int s_RandomCuratedDarkGradientPairPosition = -1;
 
 		static GradientPair s_SessionGradient;
@@ -152,7 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			{
 				s_SessionGradient = value;
 
-				// Prevent the fetching of the session gradient from any of the curated collections
+				// In order to more easily differentiate curated gradients, they should not match the session gradient
 				RemoveSessionGradientFromCollection(s_CuratedGradientPairs);
 				RemoveSessionGradientFromCollection(s_CuratedLightGradientPairs);
 				RemoveSessionGradientFromCollection(s_CuratedDarkGradientPairs);
@@ -315,12 +312,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, yellow));
 			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, yellowDark));
 			s_CuratedLightGradientPairs.Add(new GradientPair(greenLight, red));
-			//s_CuratedLightGradientPairs.Add(new GradientPair(light, darker));
-			//s_CuratedLightGradientPairs.Add(new GradientPair(light, blueLight));
-
-			s_CuratedGradientPairsRange = s_CuratedGradientPairs.Count;
-			s_CuratedLightGradientPairsRange = s_CuratedLightGradientPairs.Count;
-			s_CuratedDarkGradientPairsRange = s_CuratedDarkGradientPairs.Count;
 		}
 
 		/// <summary>
@@ -387,10 +378,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>Gradient pair of two curated brand-swatches</returns>
 		public static GradientPair GetRandomCuratedGradient()
 		{
-			var randomPosition = s_ColorRandom.Next(s_CuratedGradientPairsRange);
+			var curatedGradientPairsRange = s_CuratedGradientPairs.Count;
+			var randomPosition = s_ColorRandom.Next(curatedGradientPairsRange);
 
 			while (randomPosition == s_RandomCuratedGradientPairPosition)
-				randomPosition = s_ColorRandom.Next(s_CuratedGradientPairsRange);
+				randomPosition = s_ColorRandom.Next(curatedGradientPairsRange);
 
 			s_RandomCuratedGradientPairPosition = randomPosition;
 
@@ -403,10 +395,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>Gradient pair of two curated lighter-luma brand-swatches</returns>
 		public static GradientPair GetRandomCuratedLightGradient()
 		{
-			var randomPosition = s_ColorRandom.Next(s_CuratedLightGradientPairsRange);
+			var curatedLightGradientPairsRange = s_CuratedLightGradientPairs.Count;
+			var randomPosition = s_ColorRandom.Next(curatedLightGradientPairsRange);
 
 			while (randomPosition == s_RandomCuratedLightGradientPairPosition)
-				randomPosition = s_ColorRandom.Next(s_CuratedLightGradientPairsRange);
+				randomPosition = s_ColorRandom.Next(curatedLightGradientPairsRange);
 
 			s_RandomCuratedLightGradientPairPosition = randomPosition;
 
@@ -419,10 +412,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>Gradient pair of two curated darker-luma brand-swatches</returns>
 		public static GradientPair GetRandomCuratedDarkGradient()
 		{
-			var randomPosition = s_ColorRandom.Next(s_CuratedDarkGradientPairsRange);
+			var curatedDarkGradientPairsRange = s_CuratedDarkGradientPairs.Count;
+			var randomPosition = s_ColorRandom.Next(curatedDarkGradientPairsRange);
 
 			while (randomPosition == s_RandomCuratedDarkGradientPairPosition)
-				randomPosition = s_ColorRandom.Next(s_CuratedDarkGradientPairsRange);
+				randomPosition = s_ColorRandom.Next(curatedDarkGradientPairsRange);
 
 			s_RandomCuratedDarkGradientPairPosition = randomPosition;
 
