@@ -483,16 +483,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void SuspendTransformation(Node node)
 		{
-		    Debug.Log("Suspend " + node + "\n" + Environment.StackTrace);
-            GrabData grabData;
+			Debug.Log("Suspend " + node + "\n" + Environment.StackTrace);
+			GrabData grabData;
 			if (m_GrabData.TryGetValue(node, out grabData))
 				grabData.suspended = true;
 		}
 
 		public void ResumeTransformation(Node node)
 		{
-		    Debug.Log("Resume " + node + "\n" + Environment.StackTrace);
-            GrabData grabData;
+			Debug.Log("Resume " + node + "\n" + Environment.StackTrace);
+			GrabData grabData;
 			if (m_GrabData.TryGetValue(node, out grabData))
 				grabData.suspended = false;
 		}

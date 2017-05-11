@@ -20,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public event Action<Transform, HashSet<Transform>> objectsGrabbed;
 			public event Action<Transform, Transform[]> objectsDropped;
+			public event Action<Transform, Transform> objectsTransferred;
 
 			public DirectSelection()
 			{
@@ -205,6 +206,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				m_GrabbedObjects[destRayOrigin] = m_GrabbedObjects[srcRayOrigin];
 				m_GrabbedObjects.Remove(srcRayOrigin);
+
+				if (objectsTransferred != null)
+					objectsTransferred(srcRayOrigin, destRayOrigin);
 			}
 
 			public HashSet<Transform> GetHeldObjects(Transform rayOrigin)
