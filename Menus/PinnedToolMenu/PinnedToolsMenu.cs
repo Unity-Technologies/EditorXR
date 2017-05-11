@@ -215,12 +215,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (pinnedToolInput.show.wasJustPressed)
 			{
 				//consumeControl(pinnedToolInput.show);
-				m_PinnedToolsMenuUI.allButtonsVisible = true;
+				//m_PinnedToolsMenuUI.allButtonsVisible = true;
 				spatialScrollStartPosition = m_PinnedToolsMenuUI.transform.position;
 				spatialScrollStartTime = Time.realtimeSinceStartup + kAutoHideDuration;
+
+				//Dont show if the user hasnt passed the threshold in the given duration
 			}
 			else if (pinnedToolInput.show.isHeld && !pinnedToolInput.select.isHeld && !pinnedToolInput.select.wasJustPressed)
 			{
+				// Don't scroll if the trigger is held, allowing the user to setting on a single button to select with release
 				if (pinnedToolInput.select.wasJustReleased)
 				{
 					Debug.LogError("<color=red>DELETING PinnedToolButton</color>");
@@ -238,6 +241,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var normalizedRepeatingPosition = processSpatialScrolling(spatialScrollStartPosition, m_PinnedToolsMenuUI.transform.position, 0.15f, true);
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{
+					if (!m_PinnedToolsMenuUI.allButtonsVisible)
+						m_PinnedToolsMenuUI.allButtonsVisible = true;
+
 					m_PinnedToolsMenuUI.HighlightSingleButtonWithoutMenu((int) (buttonCount * normalizedRepeatingPosition) + 1);
 					consumeControl(pinnedToolInput.show);
 					consumeControl(pinnedToolInput.select);
