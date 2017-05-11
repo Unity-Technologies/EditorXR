@@ -320,6 +320,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Transform> selectHighlightedButton { get; set; }
 		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
 		public Func<int> visibileButtonCount { get; set; }
+		public bool implementsSecondaryButton { get; set; }
+		public Action destroy { get { return DestroyButton; } }
 
 		public event Action<Transform> hoverEnter;
 		public event Action<Transform> hoverExit;
@@ -372,7 +374,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (!m_Highlighted)
 					this.HideTooltip(this);
 
-				if (!isMainMenu || !isSelectionTool)
+				if (implementsSecondaryButton && (!isMainMenu || !isSelectionTool))
 				{
 					if (m_Highlighted)
 						this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
@@ -590,6 +592,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			ObjectUtils.Destroy(m_InsetMaterial);
 			ObjectUtils.Destroy(m_IconMaterial);
 			ObjectUtils.Destroy(m_FrameMaterial);
+
+			this.StopCoroutine(ref m_PositionCoroutine);
+			this.StopCoroutine(ref m_VisibilityCoroutine);
+			this.StopCoroutine(ref m_HighlightCoroutine);
+			this.StopCoroutine(ref m_ActivatorMoveCoroutine);
+			this.StopCoroutine(ref m_HoverCheckCoroutine);
+			this.StopCoroutine(ref m_SecondaryButtonVisibilityCoroutine);
+		}
+
+		void DestroyButton()
+		{
+			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
 		}
 
 		// Create periodic table-style names for types
@@ -626,7 +640,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.highlighted = true;
 				return;
 			}
-			else if (!isSelectionTool)
+			else if (implementsSecondaryButton)
 			{
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 			}
@@ -801,6 +815,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateHideAndDestroy()
 		{
+			this.StopCoroutine(ref m_PositionCoroutine);
+			this.StopCoroutine(ref m_HighlightCoroutine);
+			this.StopCoroutine(ref m_ActivatorMoveCoroutine);
+			this.StopCoroutine(ref m_HoverCheckCoroutine);
+			this.StopCoroutine(ref m_SecondaryButtonVisibilityCoroutine);
+
 			this.HideTooltip(this);
 			var duration = 0f;
 			var currentScale = transform.localScale;
@@ -978,7 +998,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			secondaryButtonCollidersEnabled = orderPosition > -1 ? true : false;
 			m_PositionCoroutine = null;
 
-			if (orderPosition > -1 && m_GradientButton.highlighted)
+			if (implementsSecondaryButton && orderPosition > -1 && m_GradientButton.highlighted)
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 		}
 

@@ -20,6 +20,9 @@ namespace UnityEditor.Experimental.EditorVR
 		bool activeTool { get; set; }
 		Action<IPinnedToolButton> selectTool { get; set; }
 		bool toolTipVisible { set; }
+		Action destroy { get; }
+		bool implementsSecondaryButton { get; set; }
+
 		/*
 		int menuButtonOrderPosition { get; }
 		int activeToolOrderPosition  { get; }

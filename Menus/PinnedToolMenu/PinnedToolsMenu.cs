@@ -233,8 +233,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					Debug.LogError("<color=red>DELETING PinnedToolButton</color>");
 					//selectHighlightedButton(rayOrigin);
 					//OnActionButtonHoverExit(false);
-					deleteHighlightedButton(rayOrigin);
-					m_PinnedToolsMenuUI.allButtonsVisible = false;
+
+
+					//KEEP deleteHighlightedButton(rayOrigin); // convert to method in IPinnedToolsMenu interface
+					m_PinnedToolsMenuUI.DeleteHighlightedButton();
 					allowSpatialScrollBeforeThisTime = null;
 					spatialDirection = null;
 					return;

@@ -93,20 +93,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.selectTool = SetupButtonOrderThenSelectTool;
 			button.visibileButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
 
+			bool allowSecondaryButton = false; // Secondary button is the close button
 			var insertPosition = k_InactiveButtonInitialOrderPosition;
 			if (IsMainMenuButton(button))
 			{
 				insertPosition = k_MenuButtonOrderPosition;
-				//m_VisibleButtonCount = 2; // Show only the MainMenu and select buttons initiall
 			}
 			else
 			{
 				insertPosition = k_ActiveToolOrderPosition;
+				allowSecondaryButton = !IsSelectionToolButton(button);
 			}
 
 			m_OrderedButtons.Insert(insertPosition, button);
 			m_VisibleButtonCount = m_OrderedButtons.Count;
 
+			button.implementsSecondaryButton = allowSecondaryButton;
 			button.activeTool = true;
 			button.order = insertPosition;
 
@@ -309,12 +311,32 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public void DeleteHighlightedButton()
+		{
+			IPinnedToolButton button = null;
+			for (int i = 0; i < m_OrderedButtons.Count; ++i)
+			{
+				button = m_OrderedButtons[i];
+				var isHighlighted = button.highlighted;
+				if (isHighlighted)
+				{
+					Debug.LogError("<color=blue>DeleteHighlightedButton : </color>"+ button.toolType);
+					break;
+				}
+			}
+
+			m_OrderedButtons.Remove(button);
+			button.destroy();
+			button = m_OrderedButtons[k_ActiveToolOrderPosition];
+			this.SelectTool(rayOrigin, button.toolType);
+		}
+
 		bool IsMainMenuButton(IPinnedToolButton button)
 		{
 			return button.toolType == typeof(IMainMenu);
 		}
 
-		bool IsSelectionButton(IPinnedToolButton button)
+		bool IsSelectionToolButton(IPinnedToolButton button)
 		{
 			return button.toolType == typeof(SelectionTool);
 		}
