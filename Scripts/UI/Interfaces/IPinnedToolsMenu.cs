@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR
 		int activeToolOrderPosition  { get; }
 		//int activeButtonCount { set; }
 		bool revealed { set; }
-		bool moveToAlternatePosition { get; set; }
+		bool moveToAlternatePosition { set; }
 		Transform rayOrigin { get; set; }
 		Type previewToolType { set; }
 		Vector3 alternateMenuItem { get; } // Shared active button offset from the alternate menu

@@ -21,10 +21,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Transform m_ButtonContainer;
 
+		[Header("Used when displaying Alternate Menu")]
+		[SerializeField]
+		Vector3 m_AlternatePosition;
+
+		[SerializeField]
+		Vector3 m_AlternateLocalScale;
+
 		bool m_AllButtonsVisible;
 		List<IPinnedToolButton> m_OrderedButtons;
 		Coroutine m_ShowHideAllButtonsCoroutine;
 		int m_VisibleButtonCount;
+		bool m_MoveToAlternatePosition;
+		Vector3 m_OriginalLocalScale;
 
 		public Dictionary<Type, IPinnedToolButton> pinnedToolButtons { get; set; }
 		public Node node { get; set; }
@@ -53,10 +62,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public bool moveToAlternatePosition
+		{
+			set
+			{
+				if (m_MoveToAlternatePosition == value)
+					return;
+
+				m_MoveToAlternatePosition = value;
+				transform.localScale = m_MoveToAlternatePosition ? m_AlternateLocalScale : m_OriginalLocalScale;
+				transform.localPosition = m_MoveToAlternatePosition ? m_AlternatePosition : Vector3.zero;
+			}
+		}
+
 		private bool aboveMinimumButtonCount { get { return m_OrderedButtons.Count > k_ActiveToolOrderPosition + 1; } }
 
 		void Awake()
 		{
+			m_OriginalLocalScale = transform.localScale;
 			m_OrderedButtons = new List<IPinnedToolButton>();
 			Debug.LogError("<color=green>PinnedToolsMenuUI initialized</color>");
 		}

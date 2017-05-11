@@ -41,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Dictionary<Type, Sprite> icons { get; set; }
 		public int activeToolOrderPosition { get; private set; }
 		public bool revealed { get; set; }
-		public bool moveToAlternatePosition { get; set; }
+		public bool moveToAlternatePosition { set { m_PinnedToolsMenuUI.moveToAlternatePosition = value; } }
 		public Type previewToolType { get; set; }
 		public Vector3 alternateMenuItem { get; private set; }
 		public Node node { set { m_PinnedToolsMenuUI.node = value; } }
@@ -192,6 +192,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kAutoHideDuration = 1f;
 			const float kAllowToggleDuration = 0.25f;
 			var pinnedToolInput = (PinnedToolslMenuInput) input;
+			/*
 			if (continuedInputConsumptionStartTime != null)
 			{
 				// Continue consumption of the "show" input for period of time after releasing the button
@@ -199,6 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (Time.realtimeSinceStartup > continuedInputConsumptionStartTime.Value)
 					continuedInputConsumptionStartTime = null;
 			}
+			*/
 
 			if (pinnedToolInput.show.wasJustPressed)
 				Debug.LogError("<color=black>SHOW pressed in PinnedToolButton</color>");
