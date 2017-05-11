@@ -142,6 +142,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
 		{
+			// HACK: MiniWorldWorkspace is not working in single pass yet
+			if (t == typeof(MiniWorldWorkspace) && PlayerSettings.stereoRenderingPath != StereoRenderingPath.MultiPass)
+			{
+				Debug.LogWarning("The MiniWorld workspace is not working on single pass, currently.");
+				return;
+			}
+
 			var cameraTransform = CameraUtils.GetMainCamera().transform;
 
 			var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);

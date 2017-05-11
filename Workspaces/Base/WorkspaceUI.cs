@@ -628,6 +628,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						var direction = GetResizeDirectionForLocalPosition(localPosition);
 						GetResizeIconForDirection(direction);
 					}
+
+					highlightsVisible = false;
 				}
 				else
 				{
@@ -749,6 +751,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					smoothMotion.enabled = false;
 				}
+
+				highlightsVisible = true;
 			}
 		}
 

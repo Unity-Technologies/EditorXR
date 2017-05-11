@@ -27,13 +27,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			var go = UnityObject.Instantiate(prefab);
 			go.transform.SetParent(parent, worldPositionStays);
 			go.SetActive(active);
-#if UNITY_EDITORVR
 			if (!Application.isPlaying && runInEditMode)
 			{
 				SetRunInEditModeRecursively(go, runInEditMode);
 				go.hideFlags = hideFlags;
 			}
-#endif
 
 			return go;
 		}
@@ -65,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			if (string.IsNullOrEmpty(name))
 				name = "New Game Object";
 
-#if UNITY_EDITORVR
+#if UNITY_EDITOR
 			empty = EditorUtility.CreateGameObjectWithHideFlags(name, hideFlags);
 #else
 			empty = new GameObject(name);
@@ -84,7 +82,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static Component CreateGameObjectWithComponent(Type type, Transform parent = null, bool worldPositionStays = true)
 		{
-#if UNITY_EDITORVR
+#if UNITY_EDITOR
 			var component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type).GetComponent(type);
 			if (!Application.isPlaying)
 				SetRunInEditModeRecursively(component.gameObject, true);
@@ -146,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static void SetRunInEditModeRecursively(GameObject go, bool enabled)
 		{
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR
 			var monoBehaviours = go.GetComponents<MonoBehaviour>();
 			foreach (var mb in monoBehaviours)
 			{
