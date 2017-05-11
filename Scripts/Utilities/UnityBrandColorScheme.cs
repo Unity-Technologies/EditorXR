@@ -315,8 +315,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, yellow));
 			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, yellowDark));
 			s_CuratedLightGradientPairs.Add(new GradientPair(greenLight, red));
-			s_CuratedLightGradientPairs.Add(new GradientPair(light, darker));
-			s_CuratedLightGradientPairs.Add(new GradientPair(light, blueLight));
 
 			s_CuratedGradientPairsRange = s_CuratedGradientPairs.Count;
 			s_CuratedLightGradientPairsRange = s_CuratedLightGradientPairs.Count;
