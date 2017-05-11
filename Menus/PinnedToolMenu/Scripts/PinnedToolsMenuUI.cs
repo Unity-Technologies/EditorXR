@@ -31,6 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_AllButtonsVisible;
 		List<IPinnedToolButton> m_OrderedButtons;
 		Coroutine m_ShowHideAllButtonsCoroutine;
+		Coroutine m_MoveCoroutine;
 		int m_VisibleButtonCount;
 		bool m_MoveToAlternatePosition;
 		Vector3 m_OriginalLocalScale;
@@ -70,8 +71,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					return;
 
 				m_MoveToAlternatePosition = value;
-				transform.localScale = m_MoveToAlternatePosition ? m_AlternateLocalScale : m_OriginalLocalScale;
-				transform.localPosition = m_MoveToAlternatePosition ? m_AlternatePosition : Vector3.zero;
+				var newPosition = m_MoveToAlternatePosition ? m_AlternatePosition : Vector3.zero;
+				var newScale = m_MoveToAlternatePosition ? m_AlternateLocalScale : m_OriginalLocalScale;
+				this.RestartCoroutine(ref m_MoveCoroutine, MoveToLocation(newPosition, newScale));
 			}
 		}
 
@@ -320,6 +322,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		int VisibleButtonCount()
 		{
 			return m_VisibleButtonCount;
+		}
+
+		IEnumerator MoveToLocation(Vector3 targetPosition, Vector3 targetScale)
+		{
+			var currentPosition = transform.localPosition;
+			var currentScale = transform.localScale;
+			var duration = 0f;
+			while (duration < 1)
+			{
+				duration += Time.unscaledDeltaTime * 6f;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
+				transform.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
+				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
+				yield return null;
+			}
+
+			transform.localScale = targetScale;
+			transform.localPosition = targetPosition;
+			m_MoveCoroutine = null;
 		}
 	}
 }
