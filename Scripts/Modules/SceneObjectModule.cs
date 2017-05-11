@@ -40,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var startRotation = obj.rotation;
 			var targetRotation = MathUtilsExt.ConstrainYawRotation(startRotation);
 
-			//Get bounds at target scale and rotation
+			//Get bounds at target scale and rotation (scaled and rotated from bounds center)
 			var origScale = obj.localScale;
 			obj.localScale = targetScale;
 			obj.rotation = targetRotation;
@@ -98,9 +98,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var startPositions = new Vector3[length];
 			var startRotations = new Quaternion[length];
 			var startScales = new Vector3[length];
-			var center = Vector3.zero;
+			var center = ObjectUtils.GetBounds(transforms).center;
+			var pivot = Vector3.zero;
 
-			//Get bounds at target scale and rotation
+			//Get bounds at target scale and rotation (scaled and rotated from bounds center)
 			for (var i = 0; i < length; i++)
 			{
 				var transform = transforms[i];
@@ -110,13 +111,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				startRotations[i] = transform.rotation;
 				startScales[i] = transform.localScale;
 
-				center += position;
+				pivot += position;
 
 				transform.position = targetPositionOffsets[i];
 				transform.rotation = targetRotations[i];
 				transform.localScale = targetScales[i];
 			}
-			center /= length;
+			pivot /= length;
 
 			var bounds = ObjectUtils.GetBounds(transforms);
 
@@ -136,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var forward = center - camPosition;
 
 			var distance = bounds.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
-			var targetPosition = center;
+			var targetPosition = pivot;
 			if (distance > forward.magnitude)
 				targetPosition = camPosition + forward.normalized * distance;
 

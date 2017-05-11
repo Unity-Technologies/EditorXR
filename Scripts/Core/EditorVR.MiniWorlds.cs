@@ -1,5 +1,6 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -92,12 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				public void OnObjectsGrabbed(HashSet<Transform> heldObjects, Transform rayOrigin)
 				{
-					var center = Vector3.zero;
-					foreach (var heldObject in heldObjects)
-					{
-						center += heldObject.position;
-					}
-					center /= heldObjects.Count;
+					var center = ObjectUtils.GetBounds(heldObjects.ToArray()).center;
 
 					m_GrabData.Clear();
 					foreach (var heldObject in heldObjects)
