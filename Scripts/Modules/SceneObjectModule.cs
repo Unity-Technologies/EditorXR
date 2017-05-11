@@ -35,7 +35,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			obj.parent = null;
 			var startScale = obj.localScale;
-			var startPosition = obj.position;
+			var startPosition = ObjectUtils.GetBounds(obj).center;
+			var pivotOffset = obj.position - startPosition;
 			var startRotation = obj.rotation;
 			var targetRotation = MathUtilsExt.ConstrainYawRotation(startRotation);
 
@@ -43,22 +44,29 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var origScale = obj.localScale;
 			obj.localScale = targetScale;
 			obj.rotation = targetRotation;
+			var rotationDiff = Quaternion.Inverse(startRotation) * targetRotation;
+			var scaleDiff = targetScale.magnitude / startScale.magnitude;
+			var targetPivotOffset = rotationDiff * pivotOffset * scaleDiff;
+			obj.position = startPosition + targetPivotOffset;
 			var bounds = ObjectUtils.GetBounds(obj);
 			obj.localScale = origScale;
 			obj.localRotation = startRotation;
+			obj.position = startPosition + pivotOffset;
 
 			// We want to position the object so that it fits within the camera perspective at its original scale
 			var camera = CameraUtils.GetMainCamera();
 			var halfAngle = camera.fieldOfView * 0.5f;
 			var perspective = halfAngle + k_InstantiateFOVDifference;
 			var camPosition = camera.transform.position;
-			var forward = obj.position - camPosition;
+			var forward = startPosition - camPosition;
 
-			//TODO: for non-center pivot
 			var distance = bounds.size.magnitude / Mathf.Tan(perspective * Mathf.Deg2Rad);
-			var targetPosition = obj.position;
+			var targetPosition = bounds.center;
 			if (distance > forward.magnitude && obj.localScale != targetScale)
 				targetPosition = camPosition + forward.normalized * distance;
+
+			startPosition += pivotOffset;
+			targetPosition += targetPivotOffset;
 
 			while (currTime < k_GrowDuration)
 			{
