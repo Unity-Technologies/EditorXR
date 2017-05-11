@@ -190,6 +190,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return false;
 			};
 
+			AddModule<GizmoModule>();
+
 			viewer.AddPlayerModel();
 
 			GetNestedModule<Rays>().CreateAllProxies();

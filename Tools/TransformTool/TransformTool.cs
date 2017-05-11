@@ -364,6 +364,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (leftInput.cancel.wasJustPressed)
 					{
 						DropHeldObjects(Node.LeftHand);
+						hasLeft = false;
 						consumeControl(leftInput.cancel);
 						Undo.PerformUndo();
 					}
@@ -371,6 +372,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (leftInput.select.wasJustReleased)
 					{
 						DropHeldObjects(Node.LeftHand);
+						hasLeft = false;
 						consumeControl(leftInput.select);
 					}
 				}
@@ -380,6 +382,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (rightInput.cancel.wasJustPressed)
 					{
 						DropHeldObjects(Node.RightHand);
+						hasRight = false;
 						consumeControl(rightInput.cancel);
 						Undo.PerformUndo();
 					}
@@ -387,6 +390,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (rightInput.select.wasJustReleased)
 					{
 						DropHeldObjects(Node.RightHand);
+						hasRight = false;
 						consumeControl(rightInput.select);
 					}
 				}
@@ -416,9 +420,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (m_Scaling)
 					{
 						if (hasLeft)
+						{
 							leftData.Reset();
+
+							if (objectsTransferred != null && m_ScaleFirstNode == Node.RightHand)
+								objectsTransferred(rightData.rayOrigin, leftData.rayOrigin);
+						}
 						if (hasRight)
+						{
 							rightData.Reset();
+
+							if (objectsTransferred != null && m_ScaleFirstNode == Node.LeftHand)
+								objectsTransferred(leftData.rayOrigin, rightData.rayOrigin);
+						}
 
 						m_Scaling = false;
 					}
@@ -469,14 +483,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void SuspendTransformation(Node node)
 		{
-			GrabData grabData;
+		    Debug.Log("Suspend " + node + "\n" + Environment.StackTrace);
+            GrabData grabData;
 			if (m_GrabData.TryGetValue(node, out grabData))
 				grabData.suspended = true;
 		}
 
 		public void ResumeTransformation(Node node)
 		{
-			GrabData grabData;
+		    Debug.Log("Resume " + node + "\n" + Environment.StackTrace);
+            GrabData grabData;
 			if (m_GrabData.TryGetValue(node, out grabData))
 				grabData.suspended = false;
 		}
@@ -489,10 +505,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset = default(Vector3))
 		{
+			if (!this.IsSharedUpdater(this))
+				return;
+
 			foreach (var grabData in m_GrabData.Values)
 			{
 				if (grabData.rayOrigin == rayOrigin)
 				{
+					Debug.Log("Transfer " + rayOrigin + " to " + destRayOrigin + " - " + Time.frameCount + "\n" + Environment.StackTrace);
+
 					grabData.TransferTo(destRayOrigin, deltaOffset);
 					this.ClearSnappingState(rayOrigin);
 					grabData.UpdatePositions();
@@ -500,18 +521,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					// Prevent lock from getting stuck
 					this.UnlockRay(rayOrigin, this);
 					this.LockRay(destRayOrigin, this);
+
+					if (objectsTransferred != null)
+						objectsTransferred(rayOrigin, destRayOrigin);
+
 					return;
 				}
 			}
-
-			if (objectsTransferred != null)
-				objectsTransferred(rayOrigin, destRayOrigin);
 		}
 
 		public void DropHeldObjects(Node node)
 		{
 			if (!this.IsSharedUpdater(this))
 				return;
+
+			Debug.Log("Drop " + node + "\n" + Environment.StackTrace);
 
 			var grabData = m_GrabData[node];
 			var grabbedObjects = grabData.grabbedObjects;
