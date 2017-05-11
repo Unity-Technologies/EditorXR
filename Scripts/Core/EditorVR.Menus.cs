@@ -80,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					{
 						var menu = m_UpdateVisibilityMenus[i];
 						var menuSizes = deviceData.menuSizes;
-						var menuBounds = ObjectUtils.GetBounds(menu.menuContent);
+						var menuBounds = ObjectUtils.GetBounds(menu.menuContent.transform);
 						var menuBoundsSize = menuBounds.size;
 						float size; // Because menus can change size, store the maximum size to avoid ping ponging visibility
 						if (!menuSizes.TryGetValue(menu, out size))

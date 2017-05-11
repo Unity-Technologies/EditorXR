@@ -101,10 +101,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				transforms[i].gameObject.layer = layer;
 		}
 
-		public static Bounds GetBounds(GameObject[] gameObjects)
+		public static Bounds GetBounds(Transform[] transforms)
 		{
 			Bounds? bounds = null;
-			foreach (var go in gameObjects)
+			foreach (var go in transforms)
 			{
 				var goBounds = GetBounds(go);
 				if (!bounds.HasValue)
@@ -120,10 +120,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			return bounds ?? new Bounds();
 		}
 
-		public static Bounds GetBounds(GameObject obj)
+		public static Bounds GetBounds(Transform transform)
 		{
-			var b = new Bounds(obj.transform.position, Vector3.zero);
-			var renderers = obj.GetComponentsInChildren<Renderer>();
+			var b = new Bounds(transform.position, Vector3.zero);
+			var renderers = transform.GetComponentsInChildren<Renderer>();
 			for (int i = 0; i < renderers.Length; i++)
 			{
 				var r = renderers[i];
@@ -134,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			// As a fallback when there are no bounds, collect all transform positions
 			if (b.size == Vector3.zero)
 			{
-				var transforms = obj.GetComponentsInChildren<Transform>();
+				var transforms = transform.GetComponentsInChildren<Transform>();
 				foreach (var t in transforms)
 					b.Encapsulate(t.position);
 			}

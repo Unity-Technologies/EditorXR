@@ -221,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_PreviewPrefabScale = m_PreviewObjectTransform.localScale;
 
 			// Normalize total scale to 1
-			var previewTotalBounds = ObjectUtils.GetBounds(m_PreviewObjectTransform.gameObject);
+			var previewTotalBounds = ObjectUtils.GetBounds(m_PreviewObjectTransform);
 
 			// Don't show a preview if there are no renderers
 			if (previewTotalBounds.size == Vector3.zero)

@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.DefaultActionSectionName, 6)]
 	sealed class Paste : BaseAction, IUsesSpatialHash
 	{
-		public static GameObject[] buffer
+		public static Transform[] buffer
 		{
 			get
 			{
@@ -26,22 +26,20 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				}
 			}
 		}
-		static GameObject[] s_Buffer;
+		static Transform[] s_Buffer;
 
 		static float s_BufferDistance;
 
 		public override void ExecuteAction()
 		{
-			//return EditorApplication.ExecuteActionMenuItem("Edit/Paste");
-
 			if (buffer != null)
 			{
 				var pastedGameObjects = new GameObject[buffer.Length];
 				var index = 0;
 				var bounds = ObjectUtils.GetBounds(buffer);
-				foreach (var go in buffer)
+				foreach (var transform in buffer)
 				{
-					var pasted = Instantiate(go);
+					var pasted = Instantiate(transform.gameObject);
 					var pastedTransform = pasted.transform;
 					pasted.hideFlags = HideFlags.None;
 					var cameraTransform = CameraUtils.GetMainCamera().transform;
@@ -53,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				}
 
 				if (pastedGameObjects.Length > 0)
-				    Selection.objects = pastedGameObjects;
+					Selection.objects = pastedGameObjects;
 			}
 		}
 	}

@@ -136,7 +136,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			static bool OverrideSelectObject(GameObject hoveredObject)
 			{
 				// The player head can hovered, but not selected (only directly manipulated)
-				return hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag);
+				if (hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag))
+				{
+					// Clear the selection so that we do not manipulate it when moving the player head
+					Selection.activeObject = null;
+					return true;
+				}
+
+				return false;
 			}
 
 			internal void CreateAllProxies()
@@ -199,6 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							}
 
 							var rayOrigin = rayOriginPair.Value;
+							rayOrigin.name = string.Format("{0} Ray Origin", node);
 							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;
 							rayTransform.position = rayOrigin.position;
 							rayTransform.rotation = rayOrigin.rotation;
