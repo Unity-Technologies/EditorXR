@@ -152,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			{
 				s_SessionGradient = value;
 
-				// Prevent the fetching of the session gradient from any of the curated collections
+				// In order to more easily differentiate curated gradients, they should not match the session gradient
 				RemoveSessionGradientFromCollection(s_CuratedGradientPairs);
 				RemoveSessionGradientFromCollection(s_CuratedLightGradientPairs);
 				RemoveSessionGradientFromCollection(s_CuratedDarkGradientPairs);
