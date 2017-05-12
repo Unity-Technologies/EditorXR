@@ -51,7 +51,7 @@ Transform:
   m_GameObject: {fileID: 1000014083153210}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.35, y: 0.35, z: 0.35}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000012301197336}
@@ -83,6 +83,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RunInEditMode: 0
   m_ButtonContainer: {fileID: 4000012301197336}
+  m_AlternatePosition: {x: 0, y: 0, z: -0.0136}
+  m_AlternateLocalScale: {x: 0.54, y: 0.54, z: 0.54}
 --- !u!114 &114000011597863712
 MonoBehaviour:
   m_ObjectHideFlags: 1
