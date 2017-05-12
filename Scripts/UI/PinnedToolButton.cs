@@ -33,6 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				return m_ToolType;
 			}
+
 			set
 			{
 				m_ToolType = value;
@@ -313,19 +314,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//public Action revealAllToolButtons { get; set; }
 		//public Action hideAllToolButtons { get; set; }
 		public Action<Transform, Transform> OpenMenu { get; set; }
-		public Action<IPinnedToolButton> selectTool { get; set; }
+		public Action<Type> selectTool { get; set; }
+		public Func<bool> closeButton { get; set; }
 		public Action<Transform, int, bool> highlightSingleButton { get; set; }
-		public Action<Transform> deleteHighlightedButton { get; set; }
+		//public Action<Transform> deleteHighlightedButton { get; set; }
 		public Action<Transform> selectHighlightedButton { get; set; }
 		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
 		public Func<int> visibileButtonCount { get; set; }
 		public bool implementsSecondaryButton { get; set; }
 		public Action destroy { get { return DestroyButton; } }
 		public Action<IPinnedToolButton> showAllButtons { get; set; }
-		public Action<IPinnedToolButton> hideAllButtons { get; set; }
+		public Action hoverExit { get; set; }
 
-		public event Action<Transform> hoverEnter;
-		public event Action<Transform> hoverExit;
+		//public event Action<Transform> hoverEnter;
+		//public event Action<Transform> hoverExit;
 		public event Action<Transform> selected;
 
 		public bool activeTool
@@ -384,6 +386,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 		}
+
+		public bool secondaryButtonHighlighted { get { return m_SecondaryGradientButton.highlighted; } }
 
 		public bool toolTipVisible
 		{
@@ -715,6 +719,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (!m_SecondaryGradientButton.highlighted)
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
+			hoverExit();
+
 			return;
 			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
 			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
@@ -775,7 +781,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//{
 			//}
 
-			selectTool(this); // Perform clik for a ToolButton that doesn't utilize ToolActionButtons
+			selectTool(toolType); // Perform clik for a ToolButton that doesn't utilize ToolActionButtons
 
 			if (!isMainMenu)
 			{
@@ -789,7 +795,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnSecondaryButtonClicked()
 		{
 			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
-			deleteHighlightedButton(rayOrigin);
+			closeButton();
+			//deleteHighlightedButton(rayOrigin);
 			//deletePinnedToolButton(rayOrigin, this);
 			OnActionButtonHoverExit(false);
 		}
@@ -1108,7 +1115,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			// Only proceed if no other button is being hovered
 			m_GradientButton.highlighted = false;
-			hideAllButtons(this);
+			hoverExit();
 			m_GradientButton.UpdateMaterialColors();
 			m_HoverCheckCoroutine = null;
 		}

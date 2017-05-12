@@ -32,9 +32,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		List<IPinnedToolButton> m_OrderedButtons;
 		Coroutine m_ShowHideAllButtonsCoroutine;
 		Coroutine m_MoveCoroutine;
+		Coroutine m_ButtonHoverExitDelayCoroutine;
 		int m_VisibleButtonCount;
 		bool m_MoveToAlternatePosition;
 		Vector3 m_OriginalLocalScale;
+		bool m_RayHovered;
 
 		public Node node { get; set; }
 		public int maxButtonCount { get; set; }
@@ -88,9 +90,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public void AddButton(IPinnedToolButton button, Transform buttonTransform)
 		{
 			button.showAllButtons = ShowAllButtons;
-			button.hideAllButtons = HideAllButtons;
+			button.hoverExit = ButtonHoverExitPerformed;
 			button.maxButtonCount = maxButtonCount;
-			button.selectTool = SetupButtonOrderThenSelectTool;
+			button.selectTool = SelectExistingType;
+			button.closeButton = DeleteHighlightedButton;
 			button.visibileButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
 
 			bool allowSecondaryButton = false; // Secondary button is the close button
@@ -318,8 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				button = m_OrderedButtons[i];
-				var isHighlighted = button.highlighted;
-				if (isHighlighted && !IsSelectionToolButton(button))
+				if ((button.highlighted || button.secondaryButtonHighlighted) && !IsSelectionToolButton(button))
 				{
 					Debug.LogError("<color=blue>DeleteHighlightedButton : </color>" + button.toolType);
 					break;
@@ -376,7 +378,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void ShowAllButtons(IPinnedToolButton button)
 		{
 			Debug.LogError("<color=blue>ShowAllButtons : </color>" + button.toolType);
-			if (!allButtonsVisible && aboveMinimumButtonCount && !IsMainMenuButton(button))
+			m_RayHovered = true;
+			if (!allButtonsVisible && aboveMinimumButtonCount && !IsMainMenuButton(button) && m_ButtonHoverExitDelayCoroutine == null)
 				allButtonsVisible = true;
 		}
 
@@ -385,6 +388,30 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			Debug.LogError("<color=blue>HideAllButtons : </color>" + button.toolType);
 			if (allButtonsVisible && !IsMainMenuButton(button))
 				allButtonsVisible = false;
+		}
+
+		void ButtonHoverExitPerformed()
+		{
+			this.RestartCoroutine(ref m_ButtonHoverExitDelayCoroutine, DelayedHoverExitCheck());
+		}
+
+		IEnumerator DelayedHoverExitCheck()
+		{
+			m_RayHovered = false;
+
+			var duration = Time.unscaledDeltaTime;
+			while (duration < 0.25f)
+			{
+				duration += Time.unscaledDeltaTime;
+				yield return null;
+
+				if (m_RayHovered)
+					yield break;
+			}
+
+			// Only proceed if no other button is being hovered
+			allButtonsVisible = false;
+			m_ButtonHoverExitDelayCoroutine = null;
 		}
 	}
 }

@@ -132,8 +132,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
 					deviceData.pinnedToolsMenu = pinnedToolsMenu;
 					pinnedToolsMenu.selectTool = pinnedTools.ToolButtonClicked;
-					pinnedToolsMenu.onButtonHoverEnter = pinnedTools.OnButtonHoverEnter;
-					pinnedToolsMenu.onButtonHoverExit = pinnedTools.OnButtonHoverExit;
+					//pinnedToolsMenu.onButtonHoverEnter = pinnedTools.OnButtonHoverEnter;
+					//pinnedToolsMenu.onButtonHoverExit = pinnedTools.OnButtonHoverExit;
 					pinnedToolsMenu.highlightDevice = pinnedTools.HighlightDevice;
 					pinnedToolsMenu.mainMenuActivatorSelected = pinnedTools.OnMainMenuActivatorSelected;
 					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;

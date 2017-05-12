@@ -14,15 +14,17 @@ namespace UnityEditor.Experimental.EditorVR
 		int order { get; set; }
 		Type toolType { get; set; }
 		bool highlighted { get; set; }
+		bool secondaryButtonHighlighted { get; }
 		int maxButtonCount { get; set; }
 		Func<int> visibileButtonCount { get; set; }
 		bool activeTool { get; set; }
-		Action<IPinnedToolButton> selectTool { get; set; }
+		Action<Type> selectTool { get; set; }
+		Func<bool> closeButton { get; set; }
 		bool toolTipVisible { set; }
 		Action destroy { get; }
 		bool implementsSecondaryButton { get; set; }
 		Action<IPinnedToolButton> showAllButtons { get; set; }
-		Action<IPinnedToolButton> hideAllButtons { get; set; }
+		Action hoverExit { get; set; }
 
 		/*
 		int menuButtonOrderPosition { get; }

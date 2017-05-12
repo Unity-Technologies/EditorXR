@@ -166,12 +166,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.rayOrigin = rayOrigin;
 			button.toolType = toolType; // Assign Tool Type before assigning order
 			button.icon = buttonIcon;
-			button.deleteHighlightedButton = deleteHighlightedButton;
 			button.highlightSingleButton = HighlightSingleButton;
 			button.selectHighlightedButton = SelectHighlightedButton;
 			//button.selected += OnMainMenuActivatorSelected;
-			button.hoverEnter += onButtonHoverExit;
-			button.hoverExit += onButtonHoverExit;
+			//button.hoverEnter += onButtonHoverExit;
+			//button.hoverExit += onButtonHoverExit;
 			button.rayOrigin = rayOrigin;
 
 			m_PinnedToolsMenuUI.AddButton(button, buttonTransform);
