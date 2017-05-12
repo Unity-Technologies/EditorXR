@@ -87,7 +87,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void AddButton(IPinnedToolButton button, Transform buttonTransform)
 		{
-			button.allButtonsVisible = allButtonsVisible;
+			button.showAllButtons = ShowAllButtons;
+			button.hideAllButtons = HideAllButtons;
 			button.maxButtonCount = maxButtonCount;
 			button.selectTool = SetupButtonOrderThenSelectTool;
 			button.visibileButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
@@ -370,6 +371,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			transform.localScale = targetScale;
 			transform.localPosition = targetPosition;
 			m_MoveCoroutine = null;
+		}
+
+		void ShowAllButtons(IPinnedToolButton button)
+		{
+			Debug.LogError("<color=blue>ShowAllButtons : </color>" + button.toolType);
+			if (!allButtonsVisible && aboveMinimumButtonCount && !IsMainMenuButton(button))
+				allButtonsVisible = true;
+		}
+
+		void HideAllButtons(IPinnedToolButton button)
+		{
+			Debug.LogError("<color=blue>HideAllButtons : </color>" + button.toolType);
+			if (allButtonsVisible && !IsMainMenuButton(button))
+				allButtonsVisible = false;
 		}
 	}
 }

@@ -312,7 +312,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//public Action<Transform, bool> revealAllToolButtons { get; set; }
 		//public Action revealAllToolButtons { get; set; }
 		//public Action hideAllToolButtons { get; set; }
-		public bool allButtonsVisible { get; set; }
 		public Action<Transform, Transform> OpenMenu { get; set; }
 		public Action<IPinnedToolButton> selectTool { get; set; }
 		public Action<Transform, int, bool> highlightSingleButton { get; set; }
@@ -322,6 +321,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Func<int> visibileButtonCount { get; set; }
 		public bool implementsSecondaryButton { get; set; }
 		public Action destroy { get { return DestroyButton; } }
+		public Action<IPinnedToolButton> showAllButtons { get; set; }
+		public Action<IPinnedToolButton> hideAllButtons { get; set; }
 
 		public event Action<Transform> hoverEnter;
 		public event Action<Transform> hoverExit;
@@ -655,7 +656,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//Debug.LogWarning("Handle for disabled buttons not being shown, ie the promotote(green) button on the first/selected tool");
 
 			//revealAllToolButtons(rayOrigin, true);
-			allButtonsVisible = true;
+			showAllButtons(this);
 			//HoverButton();
 			//m_ButtonCollider.enabled = false;
 			//}
@@ -1107,7 +1108,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			// Only proceed if no other button is being hovered
 			m_GradientButton.highlighted = false;
-			allButtonsVisible = false;
+			hideAllButtons(this);
 			m_GradientButton.UpdateMaterialColors();
 			m_HoverCheckCoroutine = null;
 		}

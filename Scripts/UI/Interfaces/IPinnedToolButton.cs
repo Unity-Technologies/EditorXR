@@ -14,7 +14,6 @@ namespace UnityEditor.Experimental.EditorVR
 		int order { get; set; }
 		Type toolType { get; set; }
 		bool highlighted { get; set; }
-		bool allButtonsVisible { get; set; }
 		int maxButtonCount { get; set; }
 		Func<int> visibileButtonCount { get; set; }
 		bool activeTool { get; set; }
@@ -22,6 +21,8 @@ namespace UnityEditor.Experimental.EditorVR
 		bool toolTipVisible { set; }
 		Action destroy { get; }
 		bool implementsSecondaryButton { get; set; }
+		Action<IPinnedToolButton> showAllButtons { get; set; }
+		Action<IPinnedToolButton> hideAllButtons { get; set; }
 
 		/*
 		int menuButtonOrderPosition { get; }
