@@ -48,9 +48,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_AllButtonsVisible; }
 			set
 			{
-				//if (m_AllButtonsVisible == value)
-					//return;
-
 				m_AllButtonsVisible = value;
 
 				if (m_AllButtonsVisible)
@@ -59,7 +56,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					ShowAllExceptMenuButton();
 				}
 				else
+				{
 					ShowOnlyMenuAndActiveToolButtons();
+				}
 			}
 		}
 
