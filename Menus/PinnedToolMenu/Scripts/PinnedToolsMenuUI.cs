@@ -81,6 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Awake()
 		{
+			pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
 			m_OriginalLocalScale = transform.localScale;
 			m_OrderedButtons = new List<IPinnedToolButton>();
 			Debug.LogError("<color=green>PinnedToolsMenuUI initialized</color>");
@@ -311,7 +312,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public Type DeleteHighlightedButton()
+		public bool DeleteHighlightedButton()
 		{
 			IPinnedToolButton button = null;
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
@@ -330,12 +331,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (button != null)
 			{
 				m_OrderedButtons.Remove(button);
+				pinnedToolButtons.Remove(button.toolType);
 				button.destroy();
 				button = m_OrderedButtons[k_ActiveToolOrderPosition];
 				this.SelectTool(rayOrigin, button.toolType);
 			}
 
-			return button != null ? button.toolType : null;
+			return button != null;
 		}
 
 		bool IsMainMenuButton(IPinnedToolButton button)

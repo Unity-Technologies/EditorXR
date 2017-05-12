@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Transform m_RayOrigin;
 
 		public Transform menuOrigin { get; set; }
-		public Dictionary<Type, IPinnedToolButton> pinnedToolButtons { get; set; }
+		public Dictionary<Type, IPinnedToolButton> pinnedToolButtons { get { return m_PinnedToolsMenuUI.pinnedToolButtons; } }
 		public Dictionary<Type, Sprite> icons { get; set; }
 		public int activeToolOrderPosition { get; private set; }
 		public bool revealed { get; set; }
@@ -100,7 +100,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Awake()
 		{
-			pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
 			createPinnedToolButton = CreatePinnedToolButton;
 		}
 
@@ -132,7 +131,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				Debug.LogWarning("New pinned tool button cannot be added.  The maximum number of pinned tool buttons are currently being displayed");
 				return;
 			}
-			else if (pinnedToolButtons.ContainsKey(toolType))
+
+			if (pinnedToolButtons.ContainsKey(toolType))
 			{
 				m_PinnedToolsMenuUI.SelectExistingType(toolType);
 				return;
@@ -236,8 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 
 					//KEEP deleteHighlightedButton(rayOrigin); // convert to method in IPinnedToolsMenu interface
-					var deletedType = m_PinnedToolsMenuUI.DeleteHighlightedButton();
-					if (deletedType != null)
+					if (m_PinnedToolsMenuUI.DeleteHighlightedButton())
 					{
 						buttonCount = pinnedToolButtons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
 						//if (buttonCount <= k_ActiveToolOrderPosition + 1)
