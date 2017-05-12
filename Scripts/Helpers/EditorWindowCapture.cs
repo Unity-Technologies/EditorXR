@@ -16,10 +16,12 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 	/// </summary>
 	sealed class EditorWindowCapture : MonoBehaviour
 	{
-		static readonly Vector2 k_WindowOffset = new Vector2(0, 22f); // Offset for window header to simulate mouse position
+		// Offset for window header (internally defined in Unity) when sending events
+		// Mouse events are expected to be relative to the window, but our quad only displays the inner GUI
+		static readonly Vector2 k_WindowOffset = new Vector2(0, 22f);
 
 		[SerializeField]
-		string m_WindowClass = "UnityEditor.ProfilerWindow";
+		string m_WindowClass;
 
 		[SerializeField]
 		Rect m_Position = new Rect(0f, 0f, 600f, 400f);

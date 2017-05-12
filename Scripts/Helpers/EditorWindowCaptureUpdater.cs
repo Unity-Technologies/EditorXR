@@ -22,7 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		[SerializeField]
 		bool m_LockAspect = true;
 
-#if UNITY_EDITOR
 		void Start()
 		{
 			if (!m_EditorWindowCapture)
@@ -88,7 +87,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 				}
 			}
 		}
-#endif
 	}
 }
 #endif
