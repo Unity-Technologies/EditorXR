@@ -11,7 +11,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Actions:
   - {fileID: 114000012697452144}
   - {fileID: 114000013037932804}
@@ -221,7 +220,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 4
   m_ControlData:
@@ -242,7 +240,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 6
   m_ControlData:
@@ -263,7 +260,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 7
   m_ControlData:
@@ -284,7 +280,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 12
   m_ControlData:
@@ -305,7 +300,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 17
   m_ControlData:
@@ -326,7 +320,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 11
   m_ControlData:
@@ -347,7 +340,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 9
   m_ControlData:
@@ -368,7 +360,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 5
   m_ControlData:
@@ -389,7 +380,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 13
   m_ControlData:
@@ -410,7 +400,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 14
   m_ControlData:
@@ -431,7 +420,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 15
   m_ControlData:
@@ -452,7 +440,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 0
   m_ControlData:
@@ -473,7 +460,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 1
   m_ControlData:
@@ -494,7 +480,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 3
   m_ControlData:
@@ -515,7 +500,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 10
   m_ControlData:
@@ -536,7 +520,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 16
   m_ControlData:
@@ -557,7 +540,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 2
   m_ControlData:
@@ -578,7 +560,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: TrackedObject
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 8
   m_ControlData:

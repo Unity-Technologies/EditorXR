@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					if (usesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
 					{
-						var deltaTime = Time.unscaledDeltaTime;
+						var deltaTime = Time.deltaTime;
 						grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
 						grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
 					}
@@ -445,7 +445,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (!m_CurrentManipulator.dragging)
 					UpdateCurrentManipulator();
 
-				var deltaTime = Time.unscaledDeltaTime;
+				var deltaTime = Time.deltaTime;
 				var manipulatorTransform = manipulatorGameObject.transform;
 				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, k_LazyFollowTranslate * deltaTime);
 				if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode

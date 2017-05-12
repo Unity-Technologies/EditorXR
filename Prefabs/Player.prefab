@@ -16,10 +16,10 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000012130594944}
-  - 65: {fileID: 65000012604665208}
+  - component: {fileID: 4000012130594944}
+  - component: {fileID: 65000012604665208}
   m_Layer: 31
   m_Name: AboveHeadTrigger
   m_TagString: VRPlayer
@@ -32,11 +32,11 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000012312717512}
-  - 33: {fileID: 33000010250972572}
-  - 23: {fileID: 23000012781288072}
+  - component: {fileID: 4000012312717512}
+  - component: {fileID: 33000010250972572}
+  - component: {fileID: 23000012781288072}
   m_Layer: 31
   m_Name: HMD
   m_TagString: VRPlayer
@@ -49,10 +49,10 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000011972990504}
-  - 65: {fileID: 65000012040812158}
+  - component: {fileID: 4000011972990504}
+  - component: {fileID: 65000012040812158}
   m_Layer: 31
   m_Name: OverShoulderTrigger
   m_TagString: VRPlayer
@@ -65,12 +65,12 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000012302416490}
-  - 33: {fileID: 33000010236785338}
-  - 23: {fileID: 23000012136404606}
-  - 114: {fileID: 114000012038545942}
+  - component: {fileID: 4000012302416490}
+  - component: {fileID: 33000010236785338}
+  - component: {fileID: 23000012136404606}
+  - component: {fileID: 114000012038545942}
   m_Layer: 31
   m_Name: Player
   m_TagString: VRPlayer
@@ -87,10 +87,10 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -0.841}
   m_LocalScale: {x: 1.9406667, y: 2.5111997, z: 1.4739267}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012302416490}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4000012130594944
 Transform:
   m_ObjectHideFlags: 1
@@ -100,10 +100,10 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -0.01}
   m_LocalScale: {x: 1.9406573, y: 2.5111933, z: 1.4739364}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012302416490}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4000012302416490
 Transform:
   m_ObjectHideFlags: 1
@@ -113,13 +113,13 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.44771942, y: 0.4477194, z: 0.4477194}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000011972990504}
   - {fileID: 4000012312717512}
   - {fileID: 4000012130594944}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4000012312717512
 Transform:
   m_ObjectHideFlags: 1
@@ -129,10 +129,10 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.10000005, z: 0.258}
   m_LocalScale: {x: 0.7010762, y: 0.2718624, z: 0.88133425}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000012302416490}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &23000012136404606
 MeshRenderer:
   m_ObjectHideFlags: 1
@@ -147,7 +147,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_Materials:
   - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
-  m_SubsetIndices: 
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
@@ -155,12 +157,13 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_SelectedWireframeHidden: 0
+  m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!23 &23000012781288072
 MeshRenderer:
@@ -176,7 +179,9 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_Materials:
   - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
-  m_SubsetIndices: 
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
@@ -184,12 +189,13 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_SelectedWireframeHidden: 0
+  m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!33 &33000010236785338
 MeshFilter:
@@ -240,6 +246,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efb2d45f009af8f459e7ecf2729999ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_OverShoulderTrigger: {fileID: 65000012040812158}
   m_AboveHeadTrigger: {fileID: 65000012604665208}

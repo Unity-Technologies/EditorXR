@@ -10,172 +10,86 @@ Material:
   m_Shader: {fileID: 4800000, guid: 26cdd3c5cadd1284d913a2fe5a1dcfc6, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 1
+  m_EnableInstancingVariants: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
+  disabledShaderPasses: []
   m_SavedProperties:
-    serializedVersion: 2
+    serializedVersion: 3
     m_TexEnvs:
-    - first:
-        name: _BumpMap
-      second:
+    - _BumpMap:
         m_Texture: {fileID: 2800000, guid: b2816b0a15efb7b4c9d7b0c9658cce91, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - first:
-        name: _ColorRamp
-      second:
+    - _ColorRamp:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - first:
-        name: _DetailAlbedoMap
-      second:
+    - _DetailAlbedoMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - first:
-        name: _DetailMask
-      second:
+    - _DetailMask:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - first:
-        name: _DetailNormalMap
-      second:
+    - _DetailNormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - first:
-        name: _EmissionMap
-      second:
+    - _EmissionMap:
         m_Texture: {fileID: 2800000, guid: 79598c28225d2d34b8302226bd9eef22, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - first:
-        name: _MainTex
-      second:
+    - _MainTex:
         m_Texture: {fileID: 2800000, guid: e3d142da281fe8c44a8ad1f5804bcab3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - first:
-        name: _MetallicGlossMap
-      second:
+    - _MetallicGlossMap:
         m_Texture: {fileID: 2800000, guid: 5041e241ded3448438f63bdf4bef11fd, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - first:
-        name: _OcclusionMap
-      second:
+    - _OcclusionMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - first:
-        name: _ParallaxMap
-      second:
+    - _ParallaxMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - first:
-        name: _Alpha
-      second: 1
-    - first:
-        name: _BumpScale
-      second: 1.5
-    - first:
-        name: _ColorMask
-      second: 15
-    - first:
-        name: _ColorRampOffset
-      second: 0
-    - first:
-        name: _Cutoff
-      second: 0.5
-    - first:
-        name: _DetailNormalMapScale
-      second: 1
-    - first:
-        name: _DstBlend
-      second: 0
-    - first:
-        name: _Expand
-      second: 1
-    - first:
-        name: _GlossMapScale
-      second: 0.539
-    - first:
-        name: _Glossiness
-      second: 0.5
-    - first:
-        name: _GlossyReflections
-      second: 1
-    - first:
-        name: _Metallic
-      second: 0
-    - first:
-        name: _Mode
-      second: 0
-    - first:
-        name: _OcclusionStrength
-      second: 1
-    - first:
-        name: _Parallax
-      second: 0.02
-    - first:
-        name: _Scale
-      second: 4.4
-    - first:
-        name: _SmoothnessTextureChannel
-      second: 0
-    - first:
-        name: _SpecularHighlights
-      second: 1
-    - first:
-        name: _SrcBlend
-      second: 1
-    - first:
-        name: _Stencil
-      second: 0
-    - first:
-        name: _StencilComp
-      second: 8
-    - first:
-        name: _StencilOp
-      second: 0
-    - first:
-        name: _StencilReadMask
-      second: 255
-    - first:
-        name: _StencilRef
-      second: 3
-    - first:
-        name: _StencilWriteMask
-      second: 255
-    - first:
-        name: _UVSec
-      second: 0
-    - first:
-        name: _UseUIAlphaClip
-      second: 0
-    - first:
-        name: _ZWrite
-      second: 1
+    - _Alpha: 1
+    - _BumpScale: 1.5
+    - _ColorMask: 15
+    - _ColorRampOffset: 0
+    - _Cutoff: 0.5
+    - _DetailNormalMapScale: 1
+    - _DstBlend: 0
+    - _Expand: 1
+    - _GlossMapScale: 0.539
+    - _Glossiness: 0.5
+    - _GlossyReflections: 1
+    - _Metallic: 0
+    - _Mode: 0
+    - _OcclusionStrength: 1
+    - _Parallax: 0.02
+    - _Scale: 4.4
+    - _SmoothnessTextureChannel: 0
+    - _SpecularHighlights: 1
+    - _SrcBlend: 1
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilRef: 3
+    - _StencilWriteMask: 255
+    - _UVSec: 0
+    - _UseUIAlphaClip: 0
+    - _ZWrite: 1
     m_Colors:
-    - first:
-        name: _Color
-      second: {r: 1, g: 1, b: 1, a: 1}
-    - first:
-        name: _ColorBottom
-      second: {r: 0.8039216, g: 0.8627451, b: 0.22352941, a: 1}
-    - first:
-        name: _ColorLeft
-      second: {r: 0.61960787, g: 0.13725491, b: 0.3019608, a: 1}
-    - first:
-        name: _ColorRight
-      second: {r: 0.14901961, g: 0.41568628, b: 0.627451, a: 1}
-    - first:
-        name: _ColorTop
-      second: {r: 0.61960787, g: 0.13725491, b: 0.3019608, a: 1}
-    - first:
-        name: _EmissionColor
-      second: {r: 1, g: 1, b: 1, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _ColorBottom: {r: 0.8039216, g: 0.8627451, b: 0.22352941, a: 1}
+    - _ColorLeft: {r: 0.61960787, g: 0.13725491, b: 0.3019608, a: 1}
+    - _ColorRight: {r: 0.14901961, g: 0.41568628, b: 0.627451, a: 1}
+    - _ColorTop: {r: 0.61960787, g: 0.13725491, b: 0.3019608, a: 1}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}

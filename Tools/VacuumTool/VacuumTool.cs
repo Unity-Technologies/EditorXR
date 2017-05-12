@@ -76,8 +76,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			const float kTargetDuration = 0.5f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentValue = MathUtilsExt.SmoothDamp(currentValue, kTargetValue, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentValue = MathUtilsExt.SmoothDamp(currentValue, kTargetValue, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				vacuumTransform.position = Vector3.Lerp(startPosition, destPosition, currentValue);
 				vacuumTransform.rotation = Quaternion.Lerp(startRotation, destRotation, currentValue);
 				yield return null;

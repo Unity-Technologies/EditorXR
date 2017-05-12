@@ -60,8 +60,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kTargetDuration = 0.3f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_TopHighlightMaterial.SetFloat(k_AlphaProperty, currentAlpha);
 				yield return null;
 			}
@@ -79,8 +79,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kTargetDuration = 0.35f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_TopHighlightMaterial.SetFloat(k_AlphaProperty, currentAlpha);
 				yield return null;
 			}
