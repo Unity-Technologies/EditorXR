@@ -298,6 +298,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				*/
 			}
 
+			/*
 			internal void OnButtonHoverEnter(Transform rayOrigin)
 			{
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
@@ -323,6 +324,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				}
 			}
+			*/
 
 			internal void OnMainMenuActivatorSelected(Transform rayOrigin)
 			{
