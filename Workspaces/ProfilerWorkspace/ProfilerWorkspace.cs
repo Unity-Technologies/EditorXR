@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -13,7 +14,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		Transform m_ProfilerWindow;
 
-#if UNITY_EDITORVR
 		RectTransform m_CaptureWindowRect;
 
 		bool inView
@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_CaptureWindowRect.GetWorldCorners(corners);
 
 				//use a smaller rect than the full viewerCamera to re-enable only when enough of the profiler is in view.
-				var camera = VRView.viewerCamera;
+				var camera = CameraUtils.GetMainCamera();
 				var minX = camera.pixelRect.width * .25f;
 				var minY = camera.pixelRect.height * .25f;
 				var maxX = camera.pixelRect.width * .75f;
@@ -78,7 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.OnDestroy();
 			UnityEditorInternal.ProfilerDriver.profileEditor = false;
 		}
-#endif
 	}
 }
 #endif
