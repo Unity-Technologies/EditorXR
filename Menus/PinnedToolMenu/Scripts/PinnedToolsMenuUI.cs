@@ -281,7 +281,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void SelectNextExistingToolButton()
 		{
-			var button = m_OrderedButtons[k_ActiveToolOrderPosition + 1];
+			var button = m_OrderedButtons[aboveMinimumButtonCount ? k_ActiveToolOrderPosition + 1 : k_ActiveToolOrderPosition];
 			SetupButtonOrderThenSelectTool(button);
 			this.SelectTool(rayOrigin, button.toolType);
 		}
@@ -311,24 +311,31 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public void DeleteHighlightedButton()
+		public Type DeleteHighlightedButton()
 		{
 			IPinnedToolButton button = null;
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				button = m_OrderedButtons[i];
 				var isHighlighted = button.highlighted;
-				if (isHighlighted)
+				if (isHighlighted && !IsSelectionToolButton(button))
 				{
-					Debug.LogError("<color=blue>DeleteHighlightedButton : </color>"+ button.toolType);
+					Debug.LogError("<color=blue>DeleteHighlightedButton : </color>" + button.toolType);
 					break;
 				}
+
+				button = null;
 			}
 
-			m_OrderedButtons.Remove(button);
-			button.destroy();
-			button = m_OrderedButtons[k_ActiveToolOrderPosition];
-			this.SelectTool(rayOrigin, button.toolType);
+			if (button != null)
+			{
+				m_OrderedButtons.Remove(button);
+				button.destroy();
+				button = m_OrderedButtons[k_ActiveToolOrderPosition];
+				this.SelectTool(rayOrigin, button.toolType);
+			}
+
+			return button != null ? button.toolType : null;
 		}
 
 		bool IsMainMenuButton(IPinnedToolButton button)

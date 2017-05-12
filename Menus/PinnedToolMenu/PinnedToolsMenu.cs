@@ -236,10 +236,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 
 					//KEEP deleteHighlightedButton(rayOrigin); // convert to method in IPinnedToolsMenu interface
-					m_PinnedToolsMenuUI.DeleteHighlightedButton();
-					allowSpatialScrollBeforeThisTime = null;
-					spatialDirection = null;
-					return;
+					var deletedType = m_PinnedToolsMenuUI.DeleteHighlightedButton();
+					if (deletedType != null)
+					{
+						buttonCount = pinnedToolButtons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
+						//if (buttonCount <= k_ActiveToolOrderPosition + 1)
+							//return;
+
+						//allowSpatialScrollBeforeThisTime = null;
+						//spatialDirection = null;
+					}
+
+					if (buttonCount <= k_ActiveToolOrderPosition + 1)
+					{
+						allowSpatialScrollBeforeThisTime = null;
+						spatialDirection = null;
+						return;
+					}
 				}
 
 				// normalized input should loop after reaching the 0.15f length
