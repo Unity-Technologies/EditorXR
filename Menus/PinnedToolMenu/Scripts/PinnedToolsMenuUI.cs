@@ -244,6 +244,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			Debug.LogError("<color=white> SetupButtonOrderThenSelectTool - Selecting  of type : </color>" + pinnedToolButton.toolType);
 			var mainMenu = IsMainMenuButton(pinnedToolButton);
+			var showMenuButton = false;
 			if (mainMenu)
 			{
 				mainMenuActivatorSelected(rayOrigin);
@@ -251,12 +252,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 			else if (!aboveMinimumButtonCount)
 			{
-				return;
+				showMenuButton = true;
 			}
 
 			Reinsert(pinnedToolButton, k_ActiveToolOrderPosition);
 
-			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1f, false));
+			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1f, showMenuButton));
 
 			bool existingButton = m_OrderedButtons.Any((x) => x.toolType == pinnedToolButton.toolType);
 			if (!existingButton)
