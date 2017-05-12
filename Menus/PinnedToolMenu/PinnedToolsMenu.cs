@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -37,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Transform m_RayOrigin;
 
 		public Transform menuOrigin { get; set; }
-		public Dictionary<Type, IPinnedToolButton> pinnedToolButtons { get { return m_PinnedToolsMenuUI.pinnedToolButtons; } }
+		List<IPinnedToolButton> buttons { get { return m_PinnedToolsMenuUI.buttons; } }
 		public Dictionary<Type, Sprite> icons { get; set; }
 		public int activeToolOrderPosition { get; private set; }
 		public bool revealed { get; set; }
@@ -124,22 +125,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public void CreatePinnedToolButton(Type toolType, Sprite buttonIcon, Node node)
 		{
 			Debug.LogError("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
-			//var pinnedToolButtons = deviceData.pinnedToolButtons;
-			if (pinnedToolButtons.Count >= k_MaxButtonCount) // Return if tooltype already occupies a pinned tool button
+			//var buttons = deviceData.buttons;
+			if (buttons.Count >= k_MaxButtonCount) // Return if tooltype already occupies a pinned tool button
 			{
 				// TODO: kick out the oldest tool, and allow the new tool to become the active tool
 				Debug.LogWarning("New pinned tool button cannot be added.  The maximum number of pinned tool buttons are currently being displayed");
 				return;
 			}
 
-			if (pinnedToolButtons.ContainsKey(toolType))
+			if (buttons.Any( (x) => x.toolType == toolType))
 			{
 				m_PinnedToolsMenuUI.SelectExistingType(toolType);
 				return;
 			}
 
 			// Before adding new button, offset each button to a position greater than the zeroth/active tool position
-			//foreach (var pair in pinnedToolButtons)
+			//foreach (var pair in buttons)
 			//{
 		//		if (pair.Value.order != pair.Value.menuButtonOrderPosition) // don't move the main menu button
 		//			pair.Value.order++;
@@ -150,7 +151,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var buttonTransform = ObjectUtils.Instantiate(m_PinnedToolButtonTemplate.gameObject, m_PinnedToolsMenuUI.buttonContainer, false).transform;
 			var button = buttonTransform.GetComponent<PinnedToolButton>();
 			this.ConnectInterfaces(button);
-			pinnedToolButtons.Add(toolType, button);
 
 			// Initialize button in alternate position if the alternate menu is hidden
 			/*
@@ -158,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (toolType == typeof(IMainMenu))
 				mainMenu = button;
 			else
-				pinnedToolButtons.TryGetValue(typeof(IMainMenu), out mainMenu);
+				buttons.TryGetValue(typeof(IMainMenu), out mainMenu);
 			*/
 
 			//button.moveToAlternatePosition = mainMenu != null && mainMenu.moveToAlternatePosition;
@@ -185,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		float allowToolToggleBeforeThisTime;
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var buttonCount = pinnedToolButtons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
+			var buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
 			if (buttonCount <= k_ActiveToolOrderPosition + 1)
 				return;
 
@@ -234,11 +234,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					//selectHighlightedButton(rayOrigin);
 					//OnActionButtonHoverExit(false);
 
-
 					//KEEP deleteHighlightedButton(rayOrigin); // convert to method in IPinnedToolsMenu interface
 					if (m_PinnedToolsMenuUI.DeleteHighlightedButton())
 					{
-						buttonCount = pinnedToolButtons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
+						buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
 						//if (buttonCount <= k_ActiveToolOrderPosition + 1)
 							//return;
 

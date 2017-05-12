@@ -36,12 +36,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_MoveToAlternatePosition;
 		Vector3 m_OriginalLocalScale;
 
-		public Dictionary<Type, IPinnedToolButton> pinnedToolButtons { get; set; }
 		public Node node { get; set; }
 		public int maxButtonCount { get; set; }
 		public Transform buttonContainer { get { return m_ButtonContainer; } }
 		public Transform rayOrigin { get; set; }
 		public Action<Transform> mainMenuActivatorSelected { get; set; }
+		public List<IPinnedToolButton> buttons { get { return m_OrderedButtons; } }
 
 		public bool allButtonsVisible
 		{
@@ -81,7 +81,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Awake()
 		{
-			pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
 			m_OriginalLocalScale = transform.localScale;
 			m_OrderedButtons = new List<IPinnedToolButton>();
 			Debug.LogError("<color=green>PinnedToolsMenuUI initialized</color>");
@@ -331,7 +330,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (button != null)
 			{
 				m_OrderedButtons.Remove(button);
-				pinnedToolButtons.Remove(button.toolType);
 				button.destroy();
 				button = m_OrderedButtons[k_ActiveToolOrderPosition];
 				this.SelectTool(rayOrigin, button.toolType);

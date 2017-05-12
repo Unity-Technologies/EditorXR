@@ -11,7 +11,6 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IPinnedToolsMenu : IUsesMenuOrigins, ICustomActionMap
 	{
-		Dictionary<Type, IPinnedToolButton> pinnedToolButtons { get; }
 		Dictionary<Type, Sprite> icons { set; }
 		int activeToolOrderPosition  { get; }
 		//int activeButtonCount { set; }
