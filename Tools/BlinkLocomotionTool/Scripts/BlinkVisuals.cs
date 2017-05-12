@@ -169,7 +169,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (visible)
 			{
 				const float kMotionSphereSpeed = 0.125f;
-				m_MotionSphereOffset = (m_MotionSphereOffset + (Time.unscaledDeltaTime * kMotionSphereSpeed)) % (1.0f / (float)m_MotionSphereCount);
+				m_MotionSphereOffset = (m_MotionSphereOffset + (Time.deltaTime * kMotionSphereSpeed)) % (1.0f / (float)m_MotionSphereCount);
 
 				if (m_LastPosition != m_Transform.position || m_LastRotation != m_Transform.rotation)
 				{
@@ -180,7 +180,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				DrawMotionSpheres();
 
 				m_RoomScaleTransform.position = MathUtilsExt.SmoothDamp(m_RoomScaleLazyPosition, m_LocatorRoot.position,
-					ref m_MovementVelocityDelta, 0.2625f, 100f * viewerScale, Time.unscaledDeltaTime);
+					ref m_MovementVelocityDelta, 0.2625f, 100f * viewerScale, Time.deltaTime);
 
 				// Since the room scale visuals are parented under the locator root it is necessary to cache the position each frame before the locator root gets updated
 				m_RoomScaleLazyPosition = m_RoomScaleTransform.position;
@@ -240,9 +240,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var currentDuration = 0f;
 			while (m_State == State.TransitioningIn && currentDuration < kSmoothTime)
 			{
-				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
 				var adjustedScale = scale * viewerScale;
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 				m_LocatorRoot.localScale = Vector3.one * scale;
 				m_LineRenderer.SetWidth(adjustedScale, adjustedScale);
@@ -266,9 +266,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var currentDuration = 0f;
 			while (m_State == State.TransitioningOut && currentDuration < kSmoothTime)
 			{
-				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
 				var adjustedScale = scale * viewerScale;
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				SetColors(Color.Lerp(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
 				m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 				m_LineRenderer.SetWidth(scale * adjustedScale, scale * adjustedScale);
@@ -363,7 +363,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				const float scaleCoefficient = 4f;
 
 				motionSphereScale = MathUtilsExt.SmoothDamp(motionSphere.localScale.x, motionSphereScale,
-					ref smoothVelocity, 3f, Mathf.Infinity, Time.unscaledDeltaTime)
+					ref smoothVelocity, 3f, Mathf.Infinity, Time.deltaTime)
 					* Mathf.Min((m_Transform.position - motionSphere.position).magnitude
 					* scaleCoefficient / viewerScale, 1f);
 

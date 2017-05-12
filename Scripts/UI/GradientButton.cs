@@ -227,19 +227,19 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var visibleLocalScale = m_OriginalLocalScale;
 			while (currentDuration < totalDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				transform.localScale = scale;
 				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.y);
 
 				// Perform initial delay
 				while (delay < m_DelayBeforeReveal)
 				{
-					delay += Time.unscaledDeltaTime;
+					delay += Time.deltaTime;
 					yield return null;
 				}
 
 				// Perform the button depth reveal
-				scale = MathUtilsExt.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.deltaTime);
 				yield return null;
 			}
 
@@ -264,8 +264,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var currentDuration = 0f;
 			while (currentDuration < kTotalDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				scale = MathUtilsExt.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				scale = MathUtilsExt.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.deltaTime);
 				transform.localScale = scale;
 				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.z);
 
@@ -296,16 +296,16 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var targetDuration = targetDelay + kRevealDuration;
 			while (currentDuration < targetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				m_CanvasGroup.alpha = alpha;
 
 				while (delay < targetDelay)
 				{
-					delay += Time.unscaledDeltaTime;
+					delay += Time.deltaTime;
 					yield return null;
 				}
 
-				alpha = MathUtilsExt.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, targetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				alpha = MathUtilsExt.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, targetDuration, Mathf.Infinity, Time.deltaTime);
 				yield return null;
 			}
 
@@ -322,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
 			const float kTargetTransitionAmount = 1f;
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var shapedTransitionAmount = 0f;
 			var currentGradientPair = GetMaterialColors();
 			var targetGradientPair = highlightGradientPair;
@@ -330,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var highlightedLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_highlightZScaleMultiplier);
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 3;
+				transitionAmount += Time.deltaTime * 3;
 				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
 
@@ -353,7 +353,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsEndHighlight());
 
 			const float kTargetTransitionAmount = 1f;
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var shapedTransitionAmount = 0f;
 			var currentGradientPair = GetMaterialColors();
 			var targetGradientPair = normalGradientPair;
@@ -361,7 +361,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var targetScale = m_OriginalContentContainerLocalScale;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 3;
+				transitionAmount += Time.deltaTime * 3;
 				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				currentGradientPair = GradientPair.Lerp(currentGradientPair, targetGradientPair, shapedTransitionAmount);
 
@@ -384,11 +384,11 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			var currentPosition = m_IconContainer.localPosition;
 			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // forward for highlight, backward for press
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var transitionAddMultiplier = !pressed ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
-				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
+				transitionAmount += Time.deltaTime * transitionAddMultiplier;
 
 				foreach (var graphic in m_HighlightItems)
 				{
@@ -420,7 +420,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			const float kTransitionSubtractMultiplier = 5f;
 			while (transitionAmount > 0)
 			{
-				transitionAmount -= Time.unscaledDeltaTime * kTransitionSubtractMultiplier;
+				transitionAmount -= Time.deltaTime * kTransitionSubtractMultiplier;
 
 				foreach (var graphic in m_HighlightItems)
 				{

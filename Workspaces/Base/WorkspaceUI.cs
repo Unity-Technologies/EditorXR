@@ -437,8 +437,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentBlurAmount = MathUtilsExt.SmoothDamp(currentBlurAmount, originalBlurAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentBlurAmount = MathUtilsExt.SmoothDamp(currentBlurAmount, originalBlurAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_TopFaceMaterial.SetFloat(kShaderBlur, currentBlurAmount);
 
 				var percentageComplete = currentDuration / kTargetDuration;
@@ -698,7 +698,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				var iconTransform = resizeIcon.transform;
 				var iconPosition = iconTransform.localPosition;
-				var smoothFollow = lastResizeIcon == null ? 1 : k_ResizeIconSmoothFollow * Time.unscaledDeltaTime;
+				var smoothFollow = lastResizeIcon == null ? 1 : k_ResizeIconSmoothFollow * Time.deltaTime;
 				var localDirection = localPosition - transform.InverseTransformPoint(rayOrigin.position);
 				switch (direction)
 				{
@@ -807,8 +807,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var currentVelocity = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentBlendAmount = MathUtilsExt.SmoothDamp(currentBlendAmount, targetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentBlendAmount = MathUtilsExt.SmoothDamp(currentBlendAmount, targetBlendAmount, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_Frame.SetBlendShapeWeight(k_ThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
@@ -826,8 +826,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var currentVelocity = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_TopFaceMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
 				yield return null;
 			}
@@ -845,8 +845,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var currentVelocity = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_TopFaceMaterial.SetFloat(kMaterialHighlightAlphaProperty, currentAlpha);
 				yield return null;
 			}

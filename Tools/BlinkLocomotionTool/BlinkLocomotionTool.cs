@@ -256,7 +256,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							if (Mathf.Abs(yawValue) > threshold)
 								speed = k_FastRotationSpeed * Mathf.Sign(yawValue);
 
-							cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
+							cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.deltaTime);
 						}
 
 						consumeControl(blinkInput.yaw);
@@ -318,7 +318,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			speed *= this.GetViewerScale();
 
-			cameraRig.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
+			cameraRig.Translate(direction * speed * Time.deltaTime, Space.World);
 		}
 
 		void CreateViewerScaleVisuals(Transform leftHand, Transform rightHand)
@@ -351,7 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				currentPosition = Vector3.Lerp(currentPosition, targetPosition, currentDuration / kTargetDuration);
 				cameraRig.position = currentPosition;
 				yield return null;

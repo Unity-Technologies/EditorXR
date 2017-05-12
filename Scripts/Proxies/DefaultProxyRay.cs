@@ -165,8 +165,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentWidth = MathUtilsExt.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentWidth = MathUtilsExt.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
 				m_LineRenderer.SetWidth(currentWidth, currentWidth);
 				yield return null;
 			}
@@ -188,8 +188,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			while (currentDuration < kSmoothTime)
 			{
 				viewerScale = this.GetViewerScale();
-				currentDuration += Time.unscaledDeltaTime;
-				currentWidth = MathUtilsExt.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentWidth = MathUtilsExt.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
 				scaledWidth = currentWidth * viewerScale;
 				m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
 				yield return null;
@@ -209,8 +209,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentScale = MathUtilsExt.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentScale = MathUtilsExt.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
 				m_ConeTransform.localScale = currentScale;
 				yield return null;
 			}
@@ -227,8 +227,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentScale = MathUtilsExt.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentScale = MathUtilsExt.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
 				m_ConeTransform.localScale = currentScale;
 				yield return null;
 			}

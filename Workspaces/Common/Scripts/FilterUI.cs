@@ -167,11 +167,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var currentAlpha = m_CanvasGroup.alpha;
 			var kTargetAlpha = 1f;
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			while (transitionAmount < 1)
 			{
 				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
-				transitionAmount = transitionAmount + Time.unscaledDeltaTime;
+				transitionAmount = transitionAmount + Time.deltaTime;
 				yield return null;
 			}
 
@@ -183,12 +183,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var currentAlpha = m_CanvasGroup.alpha;
 			var kTargetAlpha = 0f;
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var kSpeedMultiplier = 3;
 			while (transitionAmount < 1)
 			{
 				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
-				transitionAmount = transitionAmount + Time.unscaledDeltaTime * kSpeedMultiplier;
+				transitionAmount = transitionAmount + Time.deltaTime * kSpeedMultiplier;
 				yield return null;
 			}
 
@@ -208,8 +208,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_ButtonListGrid.spacing = new Vector2(0f, Mathf.Lerp(m_HiddenButtonListYSpacing, 0f, transitionAmount));
 				m_ButtonListCanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
 				yield return null;
@@ -231,8 +231,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_ButtonListGrid.spacing = new Vector2(0f, Mathf.Lerp(currentSpacing, m_HiddenButtonListYSpacing, transitionAmount));
 				m_ButtonListCanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
 				yield return null;
