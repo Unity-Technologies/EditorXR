@@ -24,8 +24,15 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
 		{
-			var go = UnityObject.Instantiate(prefab);
-			go.transform.SetParent(parent, worldPositionStays);
+			var go = UnityObject.Instantiate(prefab, parent, worldPositionStays);
+			if (worldPositionStays)
+			{
+				var goTransform = go.transform;
+				var prefabTransform = prefab.transform;
+				goTransform.position = prefabTransform.position;
+				goTransform.rotation = prefabTransform.rotation;
+			}
+
 			go.SetActive(active);
 			if (!Application.isPlaying && runInEditMode)
 			{
