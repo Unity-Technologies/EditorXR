@@ -6,6 +6,7 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
@@ -58,6 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Vector3 m_StartMidPoint;
 		Vector3 m_StartDirection;
 		float m_StartYaw;
+		bool m_IsVive;
 
 		// Allow shared updater to consume these controls for another linked instance
 		InputControl m_Grip;
@@ -89,6 +91,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_BlinkVisualsGO.transform.parent = rayOrigin;
 			m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
 			m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
+
+			m_IsVive = proxyType == typeof(ViveProxy)
+				&& VRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) < 0;
 
 			Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
 		}
@@ -231,9 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			bool isVive = proxyType == typeof(ViveProxy);
-
-			if (m_EnableJoystick && (!isVive || m_Thumb != null))
+			if (m_EnableJoystick && (!m_IsVive || m_Thumb != null))
 			{
 				var viewerCamera = CameraUtils.GetMainCamera();
 
@@ -247,12 +250,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							direction.y = 0;
 							direction.Normalize();
 
-							Translate(yawValue, isVive, direction);
+							Translate(yawValue, m_IsVive, direction);
 						}
 						else
 						{
 							var speed = yawValue * k_SlowRotationSpeed;
-							var threshold = isVive ? k_RotationThresholdVive : k_RotationThreshold;
+							var threshold = m_IsVive ? k_RotationThresholdVive : k_RotationThreshold;
 							if (Mathf.Abs(yawValue) > threshold)
 								speed = k_FastRotationSpeed * Mathf.Sign(yawValue);
 
@@ -275,7 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							direction.Normalize();
 						}
 
-						Translate(forwardValue, isVive, direction);
+						Translate(forwardValue, m_IsVive, direction);
 						consumeControl(blinkInput.forward);
 					}
 				}

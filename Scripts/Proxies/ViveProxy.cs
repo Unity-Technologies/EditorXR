@@ -1,21 +1,37 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
+using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
 	sealed class ViveProxy : TwoHandedProxyBase
 	{
+		[SerializeField]
+		GameObject m_LeftHandTouchProxyPrefab;
+
+		[SerializeField]
+		GameObject m_RightHandTouchProxyPrefab;
+
 #if ENABLE_STEAMVR_INPUT
-		SteamVR_RenderModel m_RightModel;
 		SteamVR_RenderModel m_LeftModel;
+		SteamVR_RenderModel m_RightModel;
 #endif
 
 		public override void Awake()
 		{
+			if (VRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0)
+			{
+				m_LeftHandProxyPrefab = m_LeftHandTouchProxyPrefab;
+				m_RightHandProxyPrefab = m_RightHandTouchProxyPrefab;
+			}
+			
 			base.Awake();
 			m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
+
 #if !ENABLE_STEAMVR_INPUT
 			enabled = false;
 #endif
