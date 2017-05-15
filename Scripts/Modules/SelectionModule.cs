@@ -41,6 +41,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (hoveredObject != null)
 			{
+				if (!hoveredObject.activeInHierarchy)
+					return false;
+
 				if (useGrouping)
 					return CanSelectObject(GetSelectionCandidate(hoveredObject, true), false);
 			}
