@@ -255,28 +255,28 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var visibleLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale);
 			while (currentDuration < totalDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				transform.localScale = scale;
 				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.z);
 
 				// Perform initial delay
 				while (delay < m_DelayBeforeReveal)
 				{
-					delay += Time.unscaledDeltaTime;
+					delay += Time.deltaTime;
 					yield return null;
 				}
 
 				// Perform the button vertical button reveal, after the initial wait
 				while (delay < kInitialRevealDuration + m_DelayBeforeReveal)
 				{
-					delay += Time.unscaledDeltaTime;
+					delay += Time.deltaTime;
 					var shapedDelayLerp = delay / m_DelayBeforeReveal;
 					transform.localScale = Vector3.Lerp(hiddenLocalYScale, m_HiddenLocalScale, shapedDelayLerp * shapedDelayLerp);
 					yield return null;
 				}
 
 				// Perform the button depth reveal
-				scale = MathUtilsExt.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.deltaTime);
 				yield return null;
 			}
 
@@ -299,16 +299,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var targetDuration = targetDelay + kRevealDuration;
 			while (currentDuration < targetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				m_CanvasGroup.alpha = alpha;
 
 				while (delay < targetDelay)
 				{
-					delay += Time.unscaledDeltaTime;
+					delay += Time.deltaTime;
 					yield return null;
 				}
 
-				alpha = MathUtilsExt.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, targetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				alpha = MathUtilsExt.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, targetDuration, Mathf.Infinity, Time.deltaTime);
 				yield return null;
 			}
 
@@ -322,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
 			const float kTargetTransitionAmount = 1f;
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var shapedTransitionAmount = 0f;
 			var topColor = Color.clear;
 			var bottomColor = Color.clear;
@@ -335,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var transitionAmountMultiplier = 5;
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * transitionAmountMultiplier;
+				transitionAmount += Time.deltaTime * transitionAmountMultiplier;
 				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				transform.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
 
@@ -358,7 +358,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsEndHighlight());
 
 			const float kTargetTransitionAmount = 1f;
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var shapedTransitionAmount = 0f;
 			var topColor = Color.clear;
 			var bottomColor = Color.clear;
@@ -370,7 +370,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var targetScale = new Vector3(transform.localScale.x, transform.localScale.y, m_VisibleLocalZScale);
 			while (transitionAmount < kTargetTransitionAmount)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 3;
+				transitionAmount += Time.deltaTime * 3;
 				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				topColor = Color.Lerp(currentTopColor, topOriginalColor, shapedTransitionAmount);
 				bottomColor = Color.Lerp(currentBottomColor, bottomOriginalColor, shapedTransitionAmount);
@@ -392,11 +392,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var currentPosition = m_IconContainer.localPosition;
 			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // forward for highlight, backward for press
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var transitionAddMultiplier = !pressed ? 4 : 7; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
-				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
+				transitionAmount += Time.deltaTime * transitionAddMultiplier;
 
 				foreach (var graphic in m_HighlightItems)
 				{
@@ -425,7 +425,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kTransitionSubtractMultiplier = 5f;
 			while (transitionAmount > 0)
 			{
-				transitionAmount -= Time.unscaledDeltaTime * kTransitionSubtractMultiplier;
+				transitionAmount -= Time.deltaTime * kTransitionSubtractMultiplier;
 
 				foreach (var graphic in m_HighlightItems)
 				{

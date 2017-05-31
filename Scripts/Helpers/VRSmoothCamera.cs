@@ -78,8 +78,8 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			m_SmoothCamera.stereoTargetEye = StereoTargetEyeMask.None;
 			m_SmoothCamera.fieldOfView = m_FieldOfView;
 
-			m_Position = Vector3.Lerp(m_Position, m_VRCamera.transform.position, Time.unscaledDeltaTime * m_SmoothingMultiplier);
-			m_Forward = Vector3.Lerp(m_Forward, m_VRCamera.transform.forward, Time.unscaledDeltaTime * m_SmoothingMultiplier);
+			m_Position = Vector3.Lerp(m_Position, m_VRCamera.transform.position, Time.deltaTime * m_SmoothingMultiplier);
+			m_Forward = Vector3.Lerp(m_Forward, m_VRCamera.transform.forward, Time.deltaTime * m_SmoothingMultiplier);
 
 			const float kPullBackDistance = 1.1f;
 			transform.forward = m_Forward;

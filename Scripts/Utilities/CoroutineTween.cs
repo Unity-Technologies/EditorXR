@@ -560,7 +560,7 @@ namespace UnityEditor.Experimental.Tweening
 					continue;
 				}
 
-				elapsedTime += tweenInfo.ignoreTimeScale ? Time.unscaledDeltaTime : Time.deltaTime;
+				elapsedTime += tweenInfo.ignoreTimeScale ? Time.deltaTime : Time.deltaTime;
 				var t = Mathf.Clamp01(elapsedTime / tweenInfo.duration);
 
 				switch (m_EaseType)

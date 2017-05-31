@@ -189,6 +189,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						});
 					}
 
+					if (customMenuAttribute != null && customMenuAttribute.tooltip != null)
+						b.tooltipText = customMenuAttribute.tooltip.tooltipText;
+
 					// Assign pinned tool button preview properties
 					b.toolType = selectedType;
 					b.previewToolInPinnedToolButton = previewToolInPinnedToolButton;

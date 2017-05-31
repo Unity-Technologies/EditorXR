@@ -11,7 +11,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
   m_Name: BlinkLocomotion
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Actions:
   - {fileID: 114000011114386886}
   - {fileID: 114000014052142292}
@@ -97,7 +96,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: BlinkLocomotion
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 0
   m_ControlData:
@@ -118,7 +116,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: Forward
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 2
   m_ControlData:
@@ -139,7 +136,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: Thumb
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 4
   m_ControlData:
@@ -160,7 +156,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: Grip
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 3
   m_ControlData:
@@ -181,7 +176,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: Yaw
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 1
   m_ControlData:

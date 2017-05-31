@@ -77,7 +77,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
 				var lockModule = evr.GetModule<LockModule>();
 				var defaultTools = evr.m_DefaultTools;
-				var directSelection = evr.GetNestedModule<DirectSelection>();
 				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();
 
 				foreach (var deviceData in evr.m_DeviceData)
@@ -88,9 +87,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (deviceData.proxy != proxy)
 						continue;
 
-					HashSet<InputDevice> devices;
 					foreach (var toolType in defaultTools)
 					{
+						HashSet<InputDevice> devices;
 						var toolData = SpawnTool(toolType, out devices, inputDevice);
 						AddToolToDeviceData(toolData, devices);
 
@@ -109,13 +108,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
 							vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
 							vacuumTool.vacuumables = vacuumables.vacuumables;
-						}
-
-						var transformTool = tool as TransformTool;
-						if (transformTool)
-						{
-							if (transformTool.IsSharedUpdater(transformTool))
-								directSelection.objectsGrabber = transformTool;
 						}
 					}
 

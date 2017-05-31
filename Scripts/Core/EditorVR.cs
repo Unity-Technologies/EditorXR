@@ -89,6 +89,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal virtual void OnDestroy() { }
 		}
 
+		static void ResetPreferences()
+		{
+			EditorPrefs.DeleteKey(k_ShowGameObjects);
+			EditorPrefs.DeleteKey(k_PreserveLayout);
+			EditorPrefs.DeleteKey(k_SerializedPreferences);
+		}
+
 		void Awake()
 		{
 			Nested.evr = this; // Set this once for the convenience of all nested classes 
@@ -250,7 +257,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var values = Enum.GetValues(consoleFlagsType);
 				var clearOnPlayFlag = values.GetValue(Array.IndexOf(names, "ClearOnPlay"));
 
-				var hasFlagMethod = consoleWindowType.GetMethod("HasFlag", BindingFlags.NonPublic | BindingFlags.Instance);
+				var hasFlagMethod = consoleWindowType.GetMethod("HasFlag", BindingFlags.NonPublic | BindingFlags.Static);
 				var result = (bool)hasFlagMethod.Invoke(window, new[] { clearOnPlayFlag });
 
 				if (result)
@@ -488,6 +495,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), preserveLayout);
 			}
 
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button("Reset to Defaults", GUILayout.Width(140)))
+				ResetPreferences();
+			
 			EditorGUILayout.EndVertical();
 		}
 	}

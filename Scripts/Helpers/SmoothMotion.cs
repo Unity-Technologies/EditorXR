@@ -62,7 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			if (m_Target == null)
 				return;
 
-			var scaledTime = Time.unscaledDeltaTime / this.GetViewerScale();
+			var scaledTime = Time.deltaTime / this.GetViewerScale();
 			const float kMaxSmoothingVelocity = 1f; // m/s
 			var targetPosition = m_Target.position;
 			if (Vector3.Distance(targetPosition, m_LazyPosition) > kMaxSmoothingVelocity * scaledTime)

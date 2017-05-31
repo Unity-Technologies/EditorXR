@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 	{
 		public override void ExecuteAction()
 		{
-			var selection = Selection.gameObjects;
+			var selection = Selection.transforms;
 			var clones = new GameObject[selection.Length];
 			var index = 0;
 			var bounds = ObjectUtils.GetBounds(selection);

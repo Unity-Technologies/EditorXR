@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				IDeleteSceneObjectMethods.deleteSceneObject = provider.DeleteSceneObject;
 				IPlaceSceneObjectMethods.placeSceneObject = provider.PlaceSceneObject;
+				IPlaceSceneObjectsMethods.placeSceneObjects = provider.PlaceSceneObjects;
 			}
 		}
 	}

@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
+	sealed class MainMenuButton : MonoBehaviour, ITooltip
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]
@@ -17,7 +17,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		private Text m_ButtonTitle;
 
-		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
 		IPinnedToolButton m_HighlightedPinnedToolbutton;
 
@@ -25,6 +24,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// Highlights a pinned tool button when this menu button is highlighted
 		/// </summary>
 		public Func<Transform, Type, IPinnedToolButton> previewToolInPinnedToolButton { private get; set; }
+
+		public string tooltipText { get; set; }
 
 		public Type toolType { get; set; }
 
@@ -42,10 +43,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_Button.transition = Selectable.Transition.ColorTint;
 					m_Button.targetGraphic.color = m_OriginalColor;
 				}
-
-				// HACK: Force update of target graphic color
-				m_Button.enabled = false;
-				m_Button.enabled = true;
 			}
 		}
 

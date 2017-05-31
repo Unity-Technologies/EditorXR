@@ -200,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				return;
 
 			var mainCamera = CameraUtils.GetMainCamera().transform;
-			var bounds = ObjectUtils.GetBounds(Selection.gameObjects);
+			var bounds = ObjectUtils.GetBounds(Selection.transforms);
 
 			var size = bounds.size;
 			size.y = 0;
