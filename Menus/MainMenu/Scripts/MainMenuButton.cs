@@ -17,6 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		private Text m_ButtonTitle;
 
+		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
 		IPinnedToolButton m_HighlightedPinnedToolbutton;
 

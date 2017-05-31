@@ -11,6 +11,7 @@ MonoImporter:
       type: 2}
   - m_PlayerInput: {instanceID: 0}
   - m_HighlightMaterial: {fileID: 2100000, guid: 40ce8f85e3653a84abffb13adb986781,
+      type: 2}
   - m_LeftHandTouchProxyPrefab: {fileID: 118082, guid: daaa590e782c45c4880977eb4d91d4ee,
       type: 2}
   - m_RightHandTouchProxyPrefab: {fileID: 141214, guid: 687f54c4214cdf541b6809be57b26544,

@@ -703,7 +703,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	*/
 
-		void OnActionButtonHoverExit(bool waitBeforeClosingAllButtons = true)
+		void OnActionButtonHoverExit()
+		{
+			ActionButtonHoverExit();
+		}
+
+		void ActionButtonHoverExit(bool waitBeforeClosingAllButtons = true)
 		{
 			if (m_PositionCoroutine != null)
 				return;
@@ -785,7 +790,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (!isMainMenu)
 			{
-				OnActionButtonHoverExit(false);
+				ActionButtonHoverExit(false);
 				//revealAllToolButtons(rayOrigin, true);
 			}
 
@@ -798,7 +803,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			closeButton();
 			//deleteHighlightedButton(rayOrigin);
 			//deletePinnedToolButton(rayOrigin, this);
-			OnActionButtonHoverExit(false);
+			ActionButtonHoverExit(false);
 		}
 
 		IEnumerator AnimateInitialReveal(Vector3 targetPosition, Vector3 targetScale)
