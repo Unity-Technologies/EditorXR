@@ -408,11 +408,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		triangles.Add(kSides * 2 + 1);
 	}
 
-	private void SetupAnnotation()
+	bool SetupAnnotation()
 	{
 		m_IsValidStroke = m_CustomPointerObject.activeSelf;
 		if (!m_IsValidStroke)
-			return;
+			return false;
 
 		SetupHolder();
 
@@ -439,6 +439,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		m_CurrentMesh = new Mesh();
 		m_CurrentMesh.name = "Annotation";
+
+		return true;
 	}
 
 	private void SetupHolder()
@@ -651,7 +653,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		m_CurrentMesh.RecalculateBounds();
 		m_CurrentMesh.RecalculateNormals();
-		m_CurrentMesh.Optimize();
 
 		m_CurrentMesh.UploadMeshData(true);
 
@@ -732,21 +733,32 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var annotationInput = input as AnnotationInput;
-		
+
 		if (annotationInput.draw.wasJustPressed)
-			SetupAnnotation();
+		{
+			if (SetupAnnotation())
+				consumeControl(annotationInput.draw);
+		}
 		else if (m_IsValidStroke)
 		{
+			consumeControl(annotationInput.draw);
 			if (annotationInput.draw.isHeld)
 				UpdateAnnotation();
 			else if (annotationInput.draw.wasJustReleased)
 				FinalizeMesh();
 		}
 		else if (annotationInput.undo.wasJustPressed)
+		{
+			consumeControl(annotationInput.undo);
 			UndoLast();
+		}
 
-		if (annotationInput.changeBrushSize.value != 0)
+		if (!Mathf.Approximately(annotationInput.changeBrushSize.value, 0))
+		{
 			HandleBrushSize(annotationInput.changeBrushSize.value);
+			consumeControl(annotationInput.changeBrushSize);
+			consumeControl(annotationInput.vertical);
+		}
 	}
 
 }
