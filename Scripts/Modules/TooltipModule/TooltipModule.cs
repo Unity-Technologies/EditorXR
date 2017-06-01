@@ -133,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (placement != null)
 				offset *= halfWidth * rectTransform.lossyScale.x;
 			else
-				offset = Vector3.back * k_Offset;
+				offset = Vector3.back * k_Offset * this.GetViewerScale();
 
 			MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, Quaternion.identity);
 
