@@ -48,7 +48,7 @@
 			v2f vert(appdata_full v)
 			{
 				v2f output;
-				output.position = mul(UNITY_MATRIX_MVP, v.vertex);
+				output.position = UnityObjectToClipPos(v.vertex);
 				output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y);
 				output.localPosition = mul(_ParentMatrix, mul(UNITY_MATRIX_M, v.vertex));
 				return output;

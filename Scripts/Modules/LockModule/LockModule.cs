@@ -114,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 				else if (m_CurrentHoverObject == go) // Keep track of existing hover object
 				{
-					m_HoverDuration += Time.unscaledDeltaTime;
+					m_HoverDuration += Time.deltaTime;
 
 					// Don't allow hover menu if over a selected game object
 					if (IsLocked(go) && m_HoverDuration >= k_MaxHoverTime)

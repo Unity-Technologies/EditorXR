@@ -153,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				{
 					m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / k_MoveKeyboardTime);
 					m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - CameraUtils.GetMainCamera().transform.position);
-					t += Time.unscaledDeltaTime;
+					t += Time.deltaTime;
 					yield return null;
 				}
 			}

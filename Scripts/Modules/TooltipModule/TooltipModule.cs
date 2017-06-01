@@ -165,7 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var uvRect = dottedLine.uvRect;
 				var worldScale = 1 / viewerScale;
 				uvRect.width = length * k_UVScale * worldScale;
-				uvRect.xMin += k_UVScrollSpeed * Time.unscaledDeltaTime;
+				uvRect.xMin += k_UVScrollSpeed * Time.deltaTime;
 				dottedLine.uvRect = uvRect;
 
 				var dottedLineTransform = dottedLine.transform.parent.GetComponent<RectTransform>();

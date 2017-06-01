@@ -169,8 +169,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var currentDuration = 0f;
 			while (currentDuration < duration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref speed, duration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref speed, duration, Mathf.Infinity, Time.deltaTime);
 				transform.position = Vector3.Lerp(currentPosition, targetPos, transitionAmount);
 				yield return null;
 			}
@@ -202,7 +202,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				var a = t / duration;
 				canvasGroup.alpha = Mathf.Lerp(startingAlpha, toAlpha, a);
-				t += Time.unscaledDeltaTime;
+				t += Time.deltaTime;
 				yield return null;
 			}
 
@@ -399,7 +399,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				var emission = t / k_EmissionLerpTime;
 				finalColor = Color.white * Mathf.LinearToGammaSpace(emission * k_PressEmission);
 				m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
-				t += Time.unscaledDeltaTime;
+				t += Time.deltaTime;
 
 				yield return null;
 			}
@@ -422,7 +422,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				var emission = 1f - t / k_EmissionLerpTime;
 				finalColor = Color.white * Mathf.LinearToGammaSpace(emission * k_PressEmission);
 				m_TargetMeshMaterial.SetColor("_EmissionColor", finalColor);
-				t += Time.unscaledDeltaTime;
+				t += Time.deltaTime;
 
 				yield return null;
 			}
@@ -440,7 +440,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var elapsedTime = 0f;
 			while (elapsedTime < k_KeyResponseDuration)
 			{
-				elapsedTime += Time.unscaledDeltaTime;
+				elapsedTime += Time.deltaTime;
 				var t = Mathf.Clamp01(elapsedTime / k_KeyResponseDuration);
 
 				targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * k_KeyResponsePositionAmplitude;
@@ -449,7 +449,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				pos.z = t * k_KeyResponsePositionAmplitude;
 				targetMeshTransform.localPosition = pos;
 
-				elapsedTime += Time.unscaledDeltaTime;
+				elapsedTime += Time.deltaTime;
 				yield return null;
 			}
 
@@ -472,7 +472,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var elapsedTime = 0f;
 			while (elapsedTime < k_KeyResponseDuration)
 			{
-				elapsedTime += Time.unscaledDeltaTime;
+				elapsedTime += Time.deltaTime;
 				var t = 1f - Mathf.Clamp01(elapsedTime / k_KeyResponseDuration);
 
 				targetMeshTransform.localScale = m_TargetMeshInitialScale + m_TargetMeshInitialScale * t * k_KeyResponseScaleAmplitude;

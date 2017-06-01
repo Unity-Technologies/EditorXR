@@ -86,11 +86,11 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 			// Scrolling changes the radius of the sphere while dragging, and accelerates
 			if (Mathf.Abs(eventData.scrollDelta.y) > 0.5f)
-				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y) * k_ScrollAcceleration * Time.unscaledDeltaTime;
+				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y) * k_ScrollAcceleration * Time.deltaTime;
 			else
 				m_ScrollRate = k_InitialScrollRate;
 
-			ChangeRadius(m_ScrollRate * eventData.scrollDelta.y * Time.unscaledDeltaTime);
+			ChangeRadius(m_ScrollRate * eventData.scrollDelta.y * Time.deltaTime);
 		}
 
 		Vector3 GetRayPoint(HandleEventData eventData)
