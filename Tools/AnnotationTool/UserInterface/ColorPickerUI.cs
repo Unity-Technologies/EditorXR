@@ -158,6 +158,7 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 		if (onColorPicked != null)
 		{
 			var col = GetColorForCurrentPosition();
+			col *= m_ColorPicker.color;
 			onColorPicked(col);
 		}
 	}
