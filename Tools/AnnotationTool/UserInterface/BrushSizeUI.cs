@@ -1,23 +1,21 @@
-using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
 using System;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class BrushSizeUI : MonoBehaviour
 {
+	const float k_MinSize = 0.625f;
+	const float k_MaxSize = 12.5f;
+
+	[SerializeField]
+	RectTransform m_SliderHandle;
+
+	[SerializeField]
+	Slider m_Slider;
+
+	Image m_SliderHandleImage;
 
 	public Action<float> onValueChanged { private get; set; }
-
-	[SerializeField]
-	private RectTransform m_SliderHandle;
-
-	[SerializeField]
-	private Slider m_Slider;
-
-	private Image m_SliderHandleImage;
-
-	private const float kMinSize = 0.625f;
-	private const float kMaxSize = 12.5f;
 
 	void Start()
 	{
@@ -26,7 +24,7 @@ public class BrushSizeUI : MonoBehaviour
 
 	public void OnSliderValueChanged(float value)
 	{
-		m_SliderHandle.localScale = Vector3.one * Mathf.Lerp(kMinSize, kMaxSize, value);
+		m_SliderHandle.localScale = Vector3.one * Mathf.Lerp(k_MinSize, k_MaxSize, value);
 
 		if (onValueChanged != null)
 			onValueChanged(value);
@@ -41,5 +39,4 @@ public class BrushSizeUI : MonoBehaviour
 	{
 		m_SliderHandleImage.color = newColor;
 	}
-
 }
