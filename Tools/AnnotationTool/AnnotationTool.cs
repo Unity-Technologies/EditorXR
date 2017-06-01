@@ -9,11 +9,12 @@ using UnityEngine.InputNew;
 using UnityEngine.VR;
 
 [MainMenuItem("Annotation", "Create", "Draw in 3D")]
-public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesRayLocking
+public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale
 {
 	public const float TipDistance = 0.05f;
 	public const float MinBrushSize = 0.0025f;
 	public const float MaxBrushSize = 0.05f;
+	const float k_MinDistance = 0.001f;
 
 	[SerializeField]
 	ActionMap m_ActionMap;
@@ -34,7 +35,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	List<Vector3> m_Points = new List<Vector3>(k_InitialListSize);
 	List<Vector3> m_Forwards = new List<Vector3>(k_InitialListSize);
 	List<float> m_Widths = new List<float>(k_InitialListSize);
-	List<Vector3> m_Rights = new List<Vector3>(k_InitialListSize);
 
 	MeshFilter m_CurrentMeshFilter;
 	Color m_ColorToUse = Color.white;
@@ -225,7 +225,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_Points.Clear();
 		m_Forwards.Clear();
 		m_Widths.Clear();
-		m_Rights.Clear();
 
 		var go = new GameObject("Annotation " + m_AnnotationHolder.childCount);
 		m_UndoList.Add(go);
@@ -296,29 +295,28 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	void UpdateAnnotation()
 	{
 		var rayForward = rayOrigin.forward;
-		var rayRight = rayOrigin.right;
-		var worldPoint = rayOrigin.position + rayForward * TipDistance;
+		var viewerScale = this.GetViewerScale();
+		var worldPoint = rayOrigin.position + rayForward * TipDistance * viewerScale;
 		var localPoint = m_WorldToLocalMesh.MultiplyPoint3x4(worldPoint);
 
 		if (m_Points.Count > 0)
 		{
 			var lastPoint = m_Points.Last();
-			var velocity = (localPoint - lastPoint) / Time.unscaledDeltaTime;
-			if (velocity.magnitude < m_BrushSize)
+			var velocity = localPoint - lastPoint;
+			if (velocity.magnitude < k_MinDistance * viewerScale)
 				return;
 		}
 
-		InterpolatePointsIfNeeded(localPoint, rayForward, rayRight);
+		InterpolatePointsIfNeeded(localPoint, rayForward);
 		
 		m_Points.Add(localPoint);
 		m_Forwards.Add(rayForward);
-		m_Widths.Add(m_BrushSize);
-		m_Rights.Add(rayRight);
+		m_Widths.Add(m_BrushSize * viewerScale);
 
 		PointsToMesh();
 	}
 
-	void InterpolatePointsIfNeeded(Vector3 localPoint, Vector3 rayForward, Vector3 rayRight)
+	void InterpolatePointsIfNeeded(Vector3 localPoint, Vector3 rayForward)
 	{
 		if (m_Points.Count > 1)
 		{
@@ -335,9 +333,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 				var halfRadius = (m_Widths.Last() + m_BrushSize) / 2f;
 				m_Widths.Add(halfRadius);
-
-				var halfRight = (m_Rights.Last() + rayRight) / 2f;
-				m_Rights.Add(halfRight);
 			}
 		}
 	}
@@ -377,36 +372,23 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void LineToPlane(List<Vector3> newVertices)
 	{
-		var prevDirection = (m_Points[1] - m_Points[0]).normalized;
-
 		for (var i = 1; i < m_Points.Count; i++)
 		{
 			var nextPoint = m_Points[i];
 			var thisPoint = m_Points[i - 1];
 			var direction = (nextPoint - thisPoint).normalized;
 
-			// For optimization, ignore inner points of an almost straight line.
-			// The last point is an exception, it is required for a smooth drawing experience.
-			if (Vector3.Angle(prevDirection, direction) < 1f && i < m_Points.Count - 1 && i > 1)
-				continue;
+			var forward = m_Forwards[i];
+			Vector3.OrthoNormalize(ref direction, ref forward);
+			var binormal = Vector3.Cross(forward, direction).normalized;
 
-			var ratio = Mathf.Abs(Vector3.Dot(direction, m_Forwards[i - 1]));
-			var cross1 = m_Rights[i - 1].normalized;
-			var cross2 = Vector3.Cross(direction, m_Forwards[i - 1]).normalized;
-			var cross = Vector3.Lerp(cross1, cross2, 1 - ratio).normalized;
+			var width = m_Widths[i];
 
-			var lowWidth = Mathf.Min((newVertices.Count / 2) * 0.1f, 1);
-			var highWidth = Mathf.Min((m_Points.Count - (i + 3)) * 0.25f, 1);
-			var unclampedWidth = m_Widths[i - 1] * Mathf.Clamp01(i < m_Points.Count / 2f ? lowWidth : highWidth);
-			var width = Mathf.Clamp(unclampedWidth, MinBrushSize, MaxBrushSize);
-
-			var left = thisPoint - cross * width;
-			var right = thisPoint + cross * width;
+			var left = thisPoint - binormal * width;
+			var right = thisPoint + binormal * width;
 
 			newVertices.Add(left);
 			newVertices.Add(right);
-
-			prevDirection = direction;
 		}
 	}
 	
@@ -550,6 +532,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (annotationInput.draw.wasJustPressed)
 		{
 			SetupAnnotation();
+			UpdateAnnotation();
 			consumeControl(annotationInput.draw);
 			return;
 		}
