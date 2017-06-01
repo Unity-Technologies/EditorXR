@@ -6,6 +6,7 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
@@ -58,6 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Vector3 m_StartMidPoint;
 		Vector3 m_StartDirection;
 		float m_StartYaw;
+		bool m_IsVive;
 
 		// Allow shared updater to consume these controls for another linked instance
 		InputControl m_Grip;
@@ -90,6 +92,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
 			m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
 
+			m_IsVive = proxyType == typeof(ViveProxy)
+				&& VRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) < 0;
+
 			Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
 		}
 
@@ -112,7 +117,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			foreach (var linkedObject in linkedObjects)
 			{
-				if (linkedObject == this)
+				if (linkedObject.Equals(this))
 					continue;
 
 				var blinkTool = (BlinkLocomotionTool)linkedObject;
@@ -135,7 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						var otherGrip = false;
 						foreach (var linkedObject in linkedObjects)
 						{
-							if (linkedObject == this)
+							if (linkedObject.Equals(this))
 								continue;
 
 							var blinkTool = (BlinkLocomotionTool)linkedObject;
@@ -231,9 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			bool isVive = proxyType == typeof(ViveProxy);
-
-			if (m_EnableJoystick && (!isVive || m_Thumb != null))
+			if (m_EnableJoystick && (!m_IsVive || m_Thumb != null))
 			{
 				var viewerCamera = CameraUtils.GetMainCamera();
 
@@ -247,16 +250,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							direction.y = 0;
 							direction.Normalize();
 
-							Translate(yawValue, isVive, direction);
+							Translate(yawValue, m_IsVive, direction);
 						}
 						else
 						{
 							var speed = yawValue * k_SlowRotationSpeed;
-							var threshold = isVive ? k_RotationThresholdVive : k_RotationThreshold;
+							var threshold = m_IsVive ? k_RotationThresholdVive : k_RotationThreshold;
 							if (Mathf.Abs(yawValue) > threshold)
 								speed = k_FastRotationSpeed * Mathf.Sign(yawValue);
 
-							cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.unscaledDeltaTime);
+							cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.deltaTime);
 						}
 
 						consumeControl(blinkInput.yaw);
@@ -275,7 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							direction.Normalize();
 						}
 
-						Translate(forwardValue, isVive, direction);
+						Translate(forwardValue, m_IsVive, direction);
 						consumeControl(blinkInput.forward);
 					}
 				}
@@ -318,7 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			speed *= this.GetViewerScale();
 
-			cameraRig.Translate(direction * speed * Time.unscaledDeltaTime, Space.World);
+			cameraRig.Translate(direction * speed * Time.deltaTime, Space.World);
 		}
 
 		void CreateViewerScaleVisuals(Transform leftHand, Transform rightHand)
@@ -351,7 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				currentPosition = Vector3.Lerp(currentPosition, targetPosition, currentDuration / kTargetDuration);
 				cameraRig.position = currentPosition;
 				yield return null;

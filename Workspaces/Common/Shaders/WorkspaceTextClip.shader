@@ -80,7 +80,7 @@
 					v2f OUT;
 					OUT.worldPosition = IN.vertex;
 					OUT.localPosition = mul(_ParentMatrix, mul(UNITY_MATRIX_M, IN.vertex));
-					OUT.vertex = mul(UNITY_MATRIX_MVP, OUT.worldPosition);
+					OUT.vertex = UnityObjectToClipPos(OUT.worldPosition);
 					OUT.texcoord = IN.texcoord;
 
 					#ifdef UNITY_HALF_TEXEL_OFFSET

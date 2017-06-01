@@ -16,10 +16,10 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000012436472240}
-  - 114: {fileID: 114000011825643758}
+  - component: {fileID: 4000012436472240}
+  - component: {fileID: 114000011825643758}
   m_Layer: 0
   m_Name: PlayerInput
   m_TagString: Untagged
@@ -51,15 +51,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84d2c07be54604d7d9acbaf6555da85a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   autoAssignGlobal: 1
   actionMaps:
-  - actionMap: {fileID: 11400000, guid: 7629f3c1c455be74d86e5f78cadba9c5, type: 2}
+  - actionMap: {fileID: 0}
     active: 1
     blockSubsequent: 0
   - actionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a, type: 2}
     active: 1
     blockSubsequent: 0
-  - actionMap: {fileID: 11400000, guid: a97c335242dc8a341a94fccacad6457d, type: 2}
+  - actionMap: {fileID: 0}
     active: 1
     blockSubsequent: 0
