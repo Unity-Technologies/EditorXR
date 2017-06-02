@@ -44,6 +44,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void PerformHaptics(float duration, float intensity = 1f)
 		{
+			// Clip buffer can hold up to 800 milliseconds of samples
+			// At 320Hz, each sample is 3.125f milliseconds
 			if (Mathf.Approximately(m_MasterIntensity, 0))
 				return;
 
