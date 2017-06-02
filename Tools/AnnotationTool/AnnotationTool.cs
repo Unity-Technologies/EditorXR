@@ -111,6 +111,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			m_ColorPickerActivator.transform.SetParent(otherAltMenu.GetComponentInChildren<MainMenuActivator>().transform);
 			m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
 			m_ColorPickerActivator.transform.localPosition = Vector3.right * 0.05f;
+			m_ColorPickerActivator.transform.localScale = Vector3.one;
 
 			var activator = m_ColorPickerActivator.GetComponent<ColorPickerActivator>();
 
