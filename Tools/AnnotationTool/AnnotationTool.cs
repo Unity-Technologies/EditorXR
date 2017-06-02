@@ -113,7 +113,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			m_ColorPickerActivator.transform.localPosition = Vector3.right * 0.05f;
 			m_ColorPickerActivator.transform.localScale = Vector3.one;
 
-			var activator = m_ColorPickerActivator.GetComponent<ColorPickerActivator>();
+			var activator = m_ColorPickerActivator.GetComponentInChildren<ColorPickerActivator>();
 
 			m_ColorPicker = activator.GetComponentInChildren<ColorPickerUI>(true);
 			m_ColorPicker.onHideCalled = HideColorPicker;
@@ -123,13 +123,18 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			activator.rayOrigin = otherRayOrigins.First();
 			activator.showColorPicker = ShowColorPicker;
 			activator.hideColorPicker = HideColorPicker;
+
+#if UNITY_EDITOR
+			activator.undoButtonClick += UnityEditor.Undo.PerformUndo;
+			activator.redoButtonClick += UnityEditor.Undo.PerformRedo;
+#endif
 		}
 
 		//HACK: Get RadialMenuUI directly until we create an interface to set custom actions
 		var radialUI = alternateMenuOrigin.GetComponentInChildren<RadialMenuUI>(true);
 		m_PreviousActions = radialUI.actions;
 		radialUI.actions = m_PreviousActions.Where(action => action.action is Undo || action.action is Redo).ToList();
-		//radialUI.visible = true;
+		radialUI.visible = true;
 	}
 
 	void CheckBrushSizeUi()
@@ -140,9 +145,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			m_BrushSizeUi = brushSizeUi.GetComponent<BrushSizeUI>();
 
 			var trans = brushSizeUi.transform;
-			trans.SetParent(alternateMenuOrigin);
+			var scale = brushSizeUi.transform.localScale;
+			trans.SetParent(alternateMenuOrigin, false);
 			trans.localPosition = Vector3.zero;
 			trans.localRotation = Quaternion.Euler(-90, 0, 0);
+			trans.localScale = scale;
 
 			m_BrushSizeUi.onValueChanged = (val) => 
 			{

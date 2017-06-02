@@ -18,10 +18,10 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 	[SerializeField]
 	RectTransform m_Picker;
 
-	Vector3 m_PickerTargetPosition;
-
 	[SerializeField]
 	ColorPickerSquareUI m_ColorPickerSquare;
+
+	Vector3 m_PickerTargetPosition;
 
 	Texture2D m_BrightnessBarTexture;
 	Texture2D m_ColorPickerTexture;
