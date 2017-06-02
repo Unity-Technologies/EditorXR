@@ -6,37 +6,33 @@ using UnityEngine.EventSystems;
 
 public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 {
+	[SerializeField]
+	float m_FadeTime;
+
+	[SerializeField]
+	RawImage m_ColorPicker;
+
+	[SerializeField]
+	RawImage m_SliderBackground;
+
+	[SerializeField]
+	RectTransform m_Picker;
+
+	Vector3 m_PickerTargetPosition;
+
+	[SerializeField]
+	ColorPickerSquareUI m_ColorPickerSquare;
+
+	Texture2D m_BrightnessBarTexture;
+	Texture2D m_ColorPickerTexture;
+
+	Coroutine m_FadeCoroutine;
 
 	public Transform toolRayOrigin { private get; set; }
 
 	public Action<Color> onColorPicked { private get; set; }
 
 	public Action onHideCalled { private get; set; }
-
-	[SerializeField]
-	private float m_FadeTime;
-
-	[SerializeField]
-	private RawImage m_ColorPicker;
-
-	[SerializeField]
-	private Slider m_BrightnessSlider;
-
-	[SerializeField]
-	private RawImage m_SliderBackground;
-
-	[SerializeField]
-	private RectTransform m_Picker;
-
-	private Vector3 m_PickerTargetPosition;
-
-	[SerializeField]
-	private ColorPickerSquareUI m_ColorPickerSquare;
-
-	private Texture2D m_BrightnessBarTexture;
-	private Texture2D m_ColorPickerTexture;
-
-	private Coroutine m_FadeCoroutine;
 
 	void Start()
 	{
@@ -78,15 +74,15 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 		PositionToColor();
 	}
 
-	private IEnumerator FadeCanvas(bool fadeOut)
+	IEnumerator FadeCanvas(bool fadeOut)
 	{
 		enabled = !fadeOut;
 		m_Picker.localPosition = m_PickerTargetPosition;
 
 		var canvasGroup = GetComponentInChildren<CanvasGroup>();
-		float current = canvasGroup.alpha;
-		float start = fadeOut ? 1 : 0;
-		float target = 1 - start;
+		var current = canvasGroup.alpha;
+		var start = fadeOut ? 1 : 0;
+		var target = 1 - start;
 
 		if (current == target)
 		{
@@ -94,7 +90,7 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 			yield break;
 		}
 
-		float ratio = fadeOut ? 1 - current : current;
+		var ratio = fadeOut ? 1 - current : current;
 		while (ratio < 1)
 		{
 			canvasGroup.alpha = Mathf.Lerp(start, target, ratio);
@@ -120,12 +116,12 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 			var localRayPos = worldToLocal.MultiplyPoint3x4(toolRayOrigin.position);
 			var localRayForward = worldToLocal.MultiplyVector(toolRayOrigin.forward).normalized;
 			
-			float height = localRayPos.z;
-			float angle = Vector3.Angle(new Vector3(0, 0, height), localRayForward);
-			float sine = Mathf.Sin((90 - angle) * Mathf.Deg2Rad);
+			var height = localRayPos.z;
+			var angle = Vector3.Angle(new Vector3(0, 0, height), localRayForward);
+			var sine = Mathf.Sin((90 - angle) * Mathf.Deg2Rad);
 
-			float distance = Mathf.Abs(height / sine);
-			Vector2 point = localRayPos + localRayForward * distance;
+			var distance = Mathf.Abs(height / sine);
+			var point = localRayPos + localRayForward * distance;
 			point = point.normalized * Mathf.Min(point.magnitude, rect.width / 2f);
 			
 			m_PickerTargetPosition = point;
@@ -134,19 +130,19 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 		}
 	}
 
-	private void GenerateBrightnessBar()
+	void GenerateBrightnessBar()
 	{
 		var rect = m_SliderBackground.rectTransform.rect;
 		if (!m_BrightnessBarTexture)
 			m_BrightnessBarTexture = new Texture2D((int)rect.width, 1);
 
-		Color col = GetColorForCurrentPosition();
+		var col = GetColorForCurrentPosition();
 
-		for (int y = 0; y < m_BrightnessBarTexture.height; y++)
+		for (var y = 0; y < m_BrightnessBarTexture.height; y++)
 		{
-			for (int x = 0; x < m_BrightnessBarTexture.width; x++)
+			for (var x = 0; x < m_BrightnessBarTexture.width; x++)
 			{
-				float brightness = x / rect.width;
+				var brightness = x / rect.width;
 				var tempCol = col * brightness;
 				tempCol.a = 1;
 				m_BrightnessBarTexture.SetPixel(x, y, tempCol);
@@ -157,25 +153,26 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 		m_SliderBackground.texture = m_BrightnessBarTexture;
 	}
 
-	private void PositionToColor()
+	void PositionToColor()
 	{
 		if (onColorPicked != null)
 		{
 			var col = GetColorForCurrentPosition();
+			col *= m_ColorPicker.color; // Apply brightness slider
 			onColorPicked(col);
 		}
 	}
 
-	private Color GetColorForCurrentPosition()
+	Color GetColorForCurrentPosition()
 	{
 		var rect = m_ColorPicker.rectTransform.rect;
 
-		Vector3 dir = m_PickerTargetPosition;
+		var dir = m_PickerTargetPosition;
 		var x = (dir.x + rect.width / 2f) / rect.width;
 		var y = (dir.y + rect.height / 2f) / rect.height;
-		int textureX = (int)(x * m_ColorPickerTexture.width);
-		int textureY = (int)(y * m_ColorPickerTexture.height);
-		Color col = m_ColorPickerTexture.GetPixel(textureX, textureY);
+		var textureX = (int)(x * m_ColorPickerTexture.width);
+		var textureY = (int)(y * m_ColorPickerTexture.height);
+		var col = m_ColorPickerTexture.GetPixel(textureX, textureY);
 
 		return col;
 	}

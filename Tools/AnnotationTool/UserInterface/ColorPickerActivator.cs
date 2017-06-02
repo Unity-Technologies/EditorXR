@@ -5,18 +5,17 @@ using UnityEngine.EventSystems;
 
 public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
+	[SerializeField]
+	Transform m_TargetScale;
 
 	[SerializeField]
-	private Transform m_TargetScale;
+	Transform m_Icon;
+
+	Coroutine m_HighlightCoroutine;
 
 	public Transform rayOrigin { private get; set; }
 	public Action<Transform> showColorPicker { private get; set; }
 	public Action hideColorPicker { private get; set; }
-
-	[SerializeField]
-	private Transform m_Icon;
-
-	private Coroutine m_HighlightCoroutine;
 	
 	public void OnPointerClick(PointerEventData eventData)
 	{
@@ -59,5 +58,4 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 
 		m_Icon.localScale = targetScale;
 	}
-
 }

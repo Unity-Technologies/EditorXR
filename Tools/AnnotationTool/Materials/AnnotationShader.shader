@@ -1,3 +1,5 @@
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 Shader "EditorVR/Annotation/Line"
  {
 	
@@ -55,7 +57,7 @@ Shader "EditorVR/Annotation/Line"
 			{
                 VertexOutput o = (VertexOutput)0;
                 o.uv0 = i.texcoord0;
-                o.pos = mul(UNITY_MATRIX_MVP, i.vertex);
+                o.pos = UnityObjectToClipPos(i.vertex);
                 return o;
             }
 			

@@ -11,11 +11,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
   m_Name: AnnotationInput
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Actions:
   - {fileID: 114000013162093460}
   - {fileID: 114000010589948208}
-  - {fileID: 114000012503875562}
+  - {fileID: 114574627476091900}
   m_ControlSchemes:
   - m_Name: AnnotationInput
     m_DeviceSlots:
@@ -45,7 +44,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 3
+      - controlIndex: 1
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -67,7 +66,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: ChangeBrushSize
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 1
   m_ControlData:
@@ -76,27 +74,6 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
     name: ChangeBrushSize
-    defaultValue: 0
---- !u!114 &114000012503875562
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Undo
-  m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 2
-  m_ControlData:
-    componentControlIndices: 
-    controlType:
-      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-    name: Undo
     defaultValue: 0
 --- !u!114 &114000013162093460
 MonoBehaviour:
@@ -109,7 +86,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: Draw
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 0
   m_ControlData:
@@ -118,4 +94,24 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
     name: Draw
+    defaultValue: 0
+--- !u!114 &114574627476091900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Vertical
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 2
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Vertical
     defaultValue: 0

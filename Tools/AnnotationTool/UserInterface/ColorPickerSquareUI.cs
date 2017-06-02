@@ -1,13 +1,11 @@
-using UnityEngine;
-using System.Collections;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using System;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class ColorPickerSquareUI : Selectable, IDragHandler, IBeginDragHandler, IEndDragHandler
 {
+	bool m_AllowDragEvents;
 
-	private bool m_AllowDragEvents;
 	public Action onDrag { private get; set; }
 
 	public void OnBeginDrag(PointerEventData eventData)
@@ -25,5 +23,4 @@ public class ColorPickerSquareUI : Selectable, IDragHandler, IBeginDragHandler, 
 	{
 		m_AllowDragEvents = false;
 	}
-
 }
