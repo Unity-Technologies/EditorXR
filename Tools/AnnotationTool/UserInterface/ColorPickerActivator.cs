@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -41,7 +42,17 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 	void Awake()
 	{
 		m_UndoButton = m_Undo.GetComponentInChildren<GradientButton>();
+		m_UndoButton.normalGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
+		m_UndoButton.highlightGradientPair = UnityBrandColorScheme.sessionGradient;
 		m_RedoButton = m_Redo.GetComponentInChildren<GradientButton>();
+		m_RedoButton.normalGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
+		m_RedoButton.highlightGradientPair = UnityBrandColorScheme.sessionGradient;
+	}
+
+	void Start()
+	{
+		m_UndoButton.UpdateMaterialColors();
+		m_RedoButton.UpdateMaterialColors();
 	}
 
 	public void OnPointerClick(PointerEventData eventData)

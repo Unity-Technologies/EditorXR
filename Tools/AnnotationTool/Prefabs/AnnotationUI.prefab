@@ -1436,11 +1436,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_NormalGradientPair:
-    a: {r: 0, g: 0, b: 0, a: 0}
-    b: {r: 0, g: 0, b: 0, a: 0}
+    a: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+    b: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
   m_HighlightGradientPair:
-    a: {r: 0, g: 0, b: 0, a: 0}
-    b: {r: 0, g: 0, b: 0, a: 0}
+    a: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+    b: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
   m_ButtonMeshRenderer: {fileID: 23437852442812966}
   m_IconContainer: {fileID: 224939432255965946}
   m_ContentContainer: {fileID: 224860733548256162}
@@ -1449,7 +1449,7 @@ MonoBehaviour:
   m_Icon: {fileID: 114967506099497140}
   m_AlternateIconSprite: {fileID: 0}
   m_NormalContentColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_HighlightItemColor: {r: 1, g: 1, b: 1, a: 1}
+  m_HighlightItemColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
   m_HighlightItems:
   - {fileID: 114967506099497140}
   - {fileID: 114121773849455374}
@@ -1467,11 +1467,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_NormalGradientPair:
-    a: {r: 0, g: 0, b: 0, a: 0}
-    b: {r: 0, g: 0, b: 0, a: 0}
+    a: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+    b: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
   m_HighlightGradientPair:
-    a: {r: 0, g: 0, b: 0, a: 0}
-    b: {r: 0, g: 0, b: 0, a: 0}
+    a: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
+    b: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
   m_ButtonMeshRenderer: {fileID: 23652728190552066}
   m_IconContainer: {fileID: 224878234700512394}
   m_ContentContainer: {fileID: 224124519857189990}
@@ -1480,7 +1480,7 @@ MonoBehaviour:
   m_Icon: {fileID: 114481225842932662}
   m_AlternateIconSprite: {fileID: 0}
   m_NormalContentColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
-  m_HighlightItemColor: {r: 1, g: 1, b: 1, a: 1}
+  m_HighlightItemColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
   m_HighlightItems:
   - {fileID: 114481225842932662}
   - {fileID: 114469476190543946}
@@ -1545,8 +1545,8 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: dd79a285dde86924793e5a909ca783e0, type: 2}
-  m_Color: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+  m_Material: {fileID: 2100000, guid: f51c2d173513e574f91a3666d94906b2, type: 2}
+  m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -1614,8 +1614,8 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: dd79a285dde86924793e5a909ca783e0, type: 2}
-  m_Color: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
+  m_Material: {fileID: 2100000, guid: f51c2d173513e574f91a3666d94906b2, type: 2}
+  m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
