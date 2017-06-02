@@ -9,7 +9,6 @@ namespace UnityEngine.InputNew
 		
 		public ButtonInputControl @draw { get { return (ButtonInputControl)this[0]; } }
 		public AxisInputControl @changeBrushSize { get { return (AxisInputControl)this[1]; } }
-		public ButtonInputControl @undo { get { return (ButtonInputControl)this[2]; } }
-		public AxisInputControl @vertical { get { return (AxisInputControl)this[3]; } }
+		public AxisInputControl @vertical { get { return (AxisInputControl)this[2]; } }
 	}
 }

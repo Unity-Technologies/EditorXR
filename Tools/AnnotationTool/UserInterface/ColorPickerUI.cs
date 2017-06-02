@@ -158,7 +158,7 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 		if (onColorPicked != null)
 		{
 			var col = GetColorForCurrentPosition();
-			col *= m_ColorPicker.color;
+			col *= m_ColorPicker.color; // Apply brightness slider
 			onColorPicked(col);
 		}
 	}

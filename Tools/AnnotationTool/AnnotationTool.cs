@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Actions;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -9,12 +10,13 @@ using UnityEngine.InputNew;
 using UnityEngine.VR;
 
 [MainMenuItem("Annotation", "Create", "Draw in 3D")]
-public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale
+public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins,
+	IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash
 {
 	public const float TipDistance = 0.05f;
 	public const float MinBrushSize = 0.0025f;
 	public const float MaxBrushSize = 0.05f;
-	const float k_MinDistance = 0.001f;
+	const float k_MinDistance = 0.003f;
 
 	[SerializeField]
 	ActionMap m_ActionMap;
@@ -35,6 +37,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	List<Vector3> m_Points = new List<Vector3>(k_InitialListSize);
 	List<Vector3> m_Forwards = new List<Vector3>(k_InitialListSize);
 	List<float> m_Widths = new List<float>(k_InitialListSize);
+	float m_Length;
 
 	MeshFilter m_CurrentMeshFilter;
 	Color m_ColorToUse = Color.white;
@@ -52,7 +55,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	float m_BrushSize = MinBrushSize;
 
-	List<GameObject> m_UndoList = new List<GameObject>();
+	List<ActionMenuData> m_PreviousActions;
 
 	public Transform rayOrigin { private get; set; }
 	public List<Transform> otherRayOrigins { private get; set; }
@@ -82,6 +85,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		if (m_AnnotationPointer)
 			ObjectUtils.Destroy(m_AnnotationPointer.gameObject);
+
+		//HACK: Get RadialMenuUI directly until we create an interface to set custom actions
+		var radialUI = alternateMenuOrigin.GetComponentInChildren<RadialMenuUI>(true);
+		radialUI.actions = m_PreviousActions;
+		radialUI.visible = false;
 	}
 
 	void Start()
@@ -112,34 +120,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			activator.showColorPicker = ShowColorPicker;
 			activator.hideColorPicker = HideColorPicker;
 		}
-	}
 
-	void UndoLast()
-	{
-		if (m_UndoList.Count > 0)
-		{
-			var first = m_UndoList.Last();
-			DestroyImmediate(first);
-			m_UndoList.RemoveAt(m_UndoList.Count - 1);
-
-			// Clean up after the removed annotations if necessary.
-			if (m_AnnotationHolder.childCount == 0)
-			{
-				var root = m_AnnotationHolder.parent;
-				var index = m_AnnotationHolder.GetSiblingIndex();
-				DestroyImmediate(m_AnnotationHolder.gameObject);
-
-				if (root.childCount == 0)
-					DestroyImmediate(root.gameObject);
-				else
-				{
-					if (index > 0)
-						m_AnnotationHolder = root.GetChild(index - 1);
-					else if (index < root.childCount)
-						m_AnnotationHolder = root.GetChild(index);
-				}
-			}
-		}
+		//HACK: Get RadialMenuUI directly until we create an interface to set custom actions
+		var radialUI = alternateMenuOrigin.GetComponentInChildren<RadialMenuUI>(true);
+		m_PreviousActions = radialUI.actions;
+		radialUI.actions = m_PreviousActions.Where(action => action.action is Undo || action.action is Redo).ToList();
+		//radialUI.visible = true;
 	}
 
 	void CheckBrushSizeUi()
@@ -225,9 +211,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_Points.Clear();
 		m_Forwards.Clear();
 		m_Widths.Clear();
+		m_Length = 0;
 
 		var go = new GameObject("Annotation " + m_AnnotationHolder.childCount);
-		m_UndoList.Add(go);
 
 		var goTrans = go.transform;
 		goTrans.SetParent(m_AnnotationHolder);
@@ -302,28 +288,32 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (m_Points.Count > 0)
 		{
 			var lastPoint = m_Points.Last();
-			var velocity = localPoint - lastPoint;
-			if (velocity.magnitude < k_MinDistance * viewerScale)
+			localPoint = Vector3.Lerp(lastPoint, localPoint, 0.5f);
+			var distance = (localPoint - lastPoint).magnitude;
+			if (distance < k_MinDistance * viewerScale)
 				return;
+
+			m_Length += distance;
 		}
 
-		InterpolatePointsIfNeeded(localPoint, rayForward);
+		var brushSize = m_BrushSize * viewerScale;
+		InterpolatePointsIfNeeded(localPoint, rayForward, brushSize);
 		
 		m_Points.Add(localPoint);
 		m_Forwards.Add(rayForward);
-		m_Widths.Add(m_BrushSize * viewerScale);
+		m_Widths.Add(brushSize);
 
 		PointsToMesh();
 	}
 
-	void InterpolatePointsIfNeeded(Vector3 localPoint, Vector3 rayForward)
+	void InterpolatePointsIfNeeded(Vector3 localPoint, Vector3 rayForward, float brushSize)
 	{
 		if (m_Points.Count > 1)
 		{
 			var lastPoint = m_Points.Last();
 			var distance = Vector3.Distance(lastPoint, localPoint);
 
-			if (distance > m_BrushSize * .5f)
+			if (distance > brushSize * .5f)
 			{
 				var halfPoint = (lastPoint + localPoint) / 2f;
 				m_Points.Add(halfPoint);
@@ -331,7 +321,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				var halfForward = (m_Forwards.Last() + rayForward) / 2f;
 				m_Forwards.Add(halfForward);
 
-				var halfRadius = (m_Widths.Last() + m_BrushSize) / 2f;
+				var halfRadius = (m_Widths.Last() + brushSize) / 2f;
 				m_Widths.Add(halfRadius);
 			}
 		}
@@ -350,11 +340,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		var newUvs = new List<Vector2>();
 
 		LineToPlane(newVertices);
-		SmoothPlane(newVertices);
-
-		newVertices.RemoveRange(0, Mathf.Min(newVertices.Count, 4));
-		if (newVertices.Count > 4)
-			newVertices.RemoveRange(newVertices.Count - 4, 4);
 
 		TriangulatePlane(newTriangles, newVertices.Count);
 		CalculateUvs(newUvs, newVertices);
@@ -372,37 +357,38 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void LineToPlane(List<Vector3> newVertices)
 	{
+		var distance = 0f;
+		var lastPoint = m_Points[0];
+		var direction = (m_Points[1] - m_Points[0]).normalized;
+		var forward = -m_Forwards[0];
+		Vector3.OrthoNormalize(ref direction, ref forward);
+		var lastBinormal = Vector3.Cross(forward, direction).normalized;
 		for (var i = 1; i < m_Points.Count; i++)
 		{
-			var nextPoint = m_Points[i];
-			var thisPoint = m_Points[i - 1];
-			var direction = (nextPoint - thisPoint).normalized;
+			var point = m_Points[i];
+			var segment = point - lastPoint;
+			direction = segment.normalized;
 
-			var forward = m_Forwards[i];
+			forward = -m_Forwards[i];
 			Vector3.OrthoNormalize(ref direction, ref forward);
 			var binormal = Vector3.Cross(forward, direction).normalized;
+			binormal = Vector3.Lerp(lastBinormal, binormal, 0.1f).normalized;
+			lastBinormal = binormal;
 
 			var width = m_Widths[i];
 
-			var left = thisPoint - binormal * width;
-			var right = thisPoint + binormal * width;
+			width *= Math.Min(Mathf.Sqrt(distance / width), 1);
+			var endDistance = m_Length - distance;
+			width *= Math.Min(Mathf.Sqrt(endDistance / width), 1);
+
+			var left = point - binormal * width;
+			var right = point + binormal * width;
 
 			newVertices.Add(left);
 			newVertices.Add(right);
-		}
-	}
-	
-	static void SmoothPlane(List<Vector3> newVertices)
-	{
-		const float kSmoothRatio = 0.75f;
-		for (var side = 0; side < 2; side++)
-		{
-			for (var i = 4; i < newVertices.Count - 4 - side; i++)
-			{
-				var average = (newVertices[i - 4 + side] + newVertices[i - 2 + side] + newVertices[i + 2 + side] + newVertices[i + 4 + side]) / 4f;
-				var dynamicSmooth = 1 / Vector3.Distance(newVertices[i + side], average);
-				newVertices[i + side] = Vector3.Lerp(newVertices[i + side], average, kSmoothRatio * dynamicSmooth);
-			}
+
+			distance += segment.magnitude;
+			lastPoint = point;
 		}
 	}
 
@@ -439,6 +425,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_CurrentMesh.UploadMeshData(true);
 
 		CenterHolder();
+
+		var go = m_CurrentMeshFilter.gameObject;
+
+		this.AddToSpatialHash(go);
+
+		UnityEditor.Undo.IncrementCurrentGroup();
+		UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Create Annotation");
 	}
 
 	void CenterMesh()
@@ -490,7 +483,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		}
 	}
 
-	public static int[] VerticesToPolygon(int upperLeft, int upperRight, int lowerLeft, int lowerRight, bool doubleSided = false)
+	public static int[] VerticesToPolygon(int upperLeft, int upperRight, int lowerLeft, int lowerRight, bool doubleSided = true)
 	{
 		var triangleCount = doubleSided ? 12 : 6;
 		var triangles = new int[triangleCount];
@@ -532,29 +525,19 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (annotationInput.draw.wasJustPressed)
 		{
 			SetupAnnotation();
-			UpdateAnnotation();
 			consumeControl(annotationInput.draw);
-			return;
 		}
 
 		if (annotationInput.draw.isHeld)
 		{
 			UpdateAnnotation();
 			consumeControl(annotationInput.draw);
-			return;
 		}
 
 		if (annotationInput.draw.wasJustReleased)
 		{
 			FinalizeMesh();
 			consumeControl(annotationInput.draw);
-			return;
-		}
-
-		if (annotationInput.undo.wasJustPressed)
-		{
-			consumeControl(annotationInput.undo);
-			UndoLast();
 		}
 	}
 }
