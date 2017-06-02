@@ -3,8 +3,9 @@ using UnityEngine;
 
 public class AnnotationPointer : MonoBehaviour
 {
-	const int k_Sides = 16;
+	const int k_Sides = 8;
 	const float k_BottomRadius = 0.01f;
+	const float k_YScale = 2.5f;
 
 	[SerializeField]
 	Material m_ConeMaterial;
@@ -15,11 +16,12 @@ public class AnnotationPointer : MonoBehaviour
 
 	public void Resize(float size)
 	{
+		size /= k_YScale;
 		var vertices = m_CustomPointerMesh.vertices;
 		for (var i = k_Sides; i < k_Sides * 2; i++)
 		{
 			var angle = (i / (float)k_Sides) * Mathf.PI * 2f;
-			var xPos = Mathf.Cos(angle) * size;
+			var xPos = Mathf.Sin(angle) * 0.001f;
 			var yPos = Mathf.Sin(angle) * size;
 
 			var point = new Vector3(xPos, yPos, AnnotationTool.TipDistance);
@@ -38,6 +40,8 @@ public class AnnotationPointer : MonoBehaviour
 
 		m_ConeMaterialInstance = Instantiate(m_ConeMaterial);
 		gameObject.AddComponent<MeshRenderer>().sharedMaterial = m_ConeMaterialInstance;
+
+		transform.localScale = new Vector3(1, k_YScale, 1);
 	}
 
 	static Vector3[] GeneratePointerVertices()
