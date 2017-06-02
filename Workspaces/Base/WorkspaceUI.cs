@@ -815,7 +815,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// If hovering the frame, and not dragging, perform haptic feedback
 			if (m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
-				this.PerformHaptics(0.25f, 0.05f);
+				this.PerformHaptics(1.25f, 0.05f, true);
 
 			m_FrameThicknessCoroutine = null;
 		}
