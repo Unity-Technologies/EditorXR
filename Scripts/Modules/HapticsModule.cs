@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			OVRHaptics.Process();
 		}
 
-		public void PerformHaptics(float duration, float intensity = 1f)
+		public void PerformHaptics(float duration, float intensity = 1f, bool fadeIn = false)
 		{
 			// Clip buffer can hold up to 800 milliseconds of samples
 			// At 320Hz, each sample is 3.125f milliseconds
@@ -51,12 +51,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			m_GeneratedHapticClip.Reset(); // TODO: Support multiple generated clips
 
+			const float kFadeInSampleCount = 200f;
 			const int kIntensityIncreaseMultiplier = 255; // Maximum value of 255 for intensity
 			intensity = Mathf.Clamp(Mathf.Clamp01(intensity) * kIntensityIncreaseMultiplier * m_MasterIntensity, 0, 255);
 			byte hapticClipSample = Convert.ToByte(intensity);
 			duration *= 490; // Samplerate conversion : 44100/90fps
-			for (int i = 0; i < duration; ++i)
-				m_GeneratedHapticClip.WriteSample(hapticClipSample);
+			for (int i = 1; i < duration; ++i)
+			{
+				float sampleShaped = hapticClipSample;
+				if (fadeIn && i < kFadeInSampleCount)
+				{
+					sampleShaped = Mathf.Lerp(0, intensity, i / kFadeInSampleCount);
+				}
+
+				Debug.LogWarning(Convert.ToByte(sampleShaped));
+				m_GeneratedHapticClip.WriteSample(Convert.ToByte(sampleShaped));
+			}
 
 			m_RHapticsChannel.Mix(m_GeneratedHapticClip);
 			m_LHapticsChannel.Mix(m_GeneratedHapticClip);
