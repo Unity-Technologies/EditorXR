@@ -49,11 +49,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			m_GeneratedHapticClip.Reset(); // TODO: Support multiple generated clips
 
-			const int kIntensityIncreaseMultiplier = 25;
-			intensity = Mathf.Clamp(intensity * kIntensityIncreaseMultiplier * m_MasterIntensity, 0, 255);
+			const int kIntensityIncreaseMultiplier = 255; // Maximum value of 255 for intensity
+			intensity = Mathf.Clamp(Mathf.Clamp01(intensity) * kIntensityIncreaseMultiplier * m_MasterIntensity, 0, 255);
 			byte hapticClipSample = Convert.ToByte(intensity);
-			var clipLength = 25;
-			for (int i = 0; i < clipLength; ++i)
+			duration *= 490; // Samplerate conversion : 44100/90fps
+			for (int i = 0; i < duration; ++i)
 				m_GeneratedHapticClip.WriteSample(hapticClipSample);
 
 			m_RHapticsChannel.Mix(m_GeneratedHapticClip);
