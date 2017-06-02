@@ -142,6 +142,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			AddModule<ActionsModule>();
 			AddModule<HighlightModule>();
+			AddModule<HapticsModule>();
 
 			var lockModule = AddModule<LockModule>();
 			lockModule.updateAlternateMenu = (rayOrigin, o) => Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
