@@ -318,7 +318,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			this.PerformHaptics(1f, 1f);
+			this.PerformHaptics(0.005f, 0.125f);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
