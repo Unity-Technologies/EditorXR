@@ -1,12 +1,12 @@
 ﻿#if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace ListView
 {
-	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler
+	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler, IPerformHaptics
 	{
 		public float scrollOffset { get { return m_ScrollOffset; } set { m_ScrollOffset = value; } }
 
@@ -233,6 +233,8 @@ namespace ListView
 				return;
 
 			scrollOffset += eventData.scrollDelta.y * scrollSpeed * Time.deltaTime;
+
+			this.PerformHaptics(0.0001f, 0.125f);
 		}
 
 		protected virtual void StartSettling(Action onComplete = null)

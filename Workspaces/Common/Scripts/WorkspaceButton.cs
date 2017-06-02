@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef
+	sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef, IPerformHaptics
 	{
 		const float k_IconHighlightedLocalZOffset = -0.0015f;
 		const string k_MaterialAlphaProperty = "_Alpha";
@@ -207,6 +207,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			// Hookup button OnClick event if there is an alternate icon sprite set
 			if (m_SwapIconsOnClick && m_AlternateIconSprite)
 				m_Button.onClick.AddListener(SwapIconSprite);
+
+			m_Button.onClick.AddListener(OnButtonClicked);
 		}
 
 		void Start()
@@ -229,6 +231,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			ObjectUtils.Destroy(m_ButtonMaterial);
 			ObjectUtils.Destroy(m_ButtonMaskMaterial);
+
+			m_Button.onClick.RemoveAllListeners();
 		}
 
 		void OnDisable()
@@ -318,6 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
+			this.PerformHaptics(0.005f, 0.075f);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
@@ -463,6 +468,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			// Alternate between the main icon and the alternate icon when the button is clicked
 			alternateIconVisible = !alternateIconVisible;
+		}
+
+		void OnButtonClicked()
+		{
+			this.PerformHaptics(0.175f, 0.05f);
 		}
 	}
 }
