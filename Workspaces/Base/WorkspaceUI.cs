@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength
+	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IPerformHaptics
 	{
 		const int k_AngledFaceBlendShapeIndex = 2;
 		const int k_ThinFrameBlendShapeIndex = 3;
@@ -812,6 +812,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_Frame.SetBlendShapeWeight(k_ThinFrameBlendShapeIndex, currentBlendAmount);
 				yield return null;
 			}
+
+			// If hovering the frame, and not dragging, perform haptic feedback
+			if (m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
+				this.PerformHaptics(0.25f, 0.05f);
 
 			m_FrameThicknessCoroutine = null;
 		}
