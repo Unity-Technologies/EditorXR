@@ -55,8 +55,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	float m_BrushSize = MinBrushSize;
 
-	List<ActionMenuData> m_PreviousActions;
-
 	public Transform rayOrigin { private get; set; }
 	public List<Transform> otherRayOrigins { private get; set; }
 
@@ -77,11 +75,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		{
 			this.UnlockRay(rayOrigin, this);
 			this.ShowDefaultRay(rayOrigin);
-
-			//HACK: Get RadialMenuUI directly until we create an interface to set custom actions
-			var radialUI = alternateMenuOrigin.GetComponentInChildren<RadialMenuUI>(true);
-			radialUI.actions = m_PreviousActions;
-			radialUI.visible = false;
 		}
 
 		if (m_ColorPicker)
@@ -129,12 +122,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			activator.redoButtonClick += UnityEditor.Undo.PerformRedo;
 #endif
 		}
-
-		//HACK: Get RadialMenuUI directly until we create an interface to set custom actions
-		var radialUI = alternateMenuOrigin.GetComponentInChildren<RadialMenuUI>(true);
-		m_PreviousActions = radialUI.actions;
-		radialUI.actions = m_PreviousActions.Where(action => action.action is Undo || action.action is Redo).ToList();
-		radialUI.visible = true;
 	}
 
 	void CheckBrushSizeUi()
