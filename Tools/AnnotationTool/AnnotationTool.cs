@@ -73,8 +73,16 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void OnDestroy()
 	{
-		this.UnlockRay(rayOrigin, this);
-		this.ShowDefaultRay(rayOrigin);
+		if (rayOrigin)
+		{
+			this.UnlockRay(rayOrigin, this);
+			this.ShowDefaultRay(rayOrigin);
+
+			//HACK: Get RadialMenuUI directly until we create an interface to set custom actions
+			var radialUI = alternateMenuOrigin.GetComponentInChildren<RadialMenuUI>(true);
+			radialUI.actions = m_PreviousActions;
+			radialUI.visible = false;
+		}
 
 		if (m_ColorPicker)
 			ObjectUtils.Destroy(m_ColorPicker.gameObject);
@@ -85,11 +93,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		if (m_AnnotationPointer)
 			ObjectUtils.Destroy(m_AnnotationPointer.gameObject);
-
-		//HACK: Get RadialMenuUI directly until we create an interface to set custom actions
-		var radialUI = alternateMenuOrigin.GetComponentInChildren<RadialMenuUI>(true);
-		radialUI.actions = m_PreviousActions;
-		radialUI.visible = false;
 	}
 
 	void Start()
