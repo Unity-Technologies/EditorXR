@@ -294,9 +294,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_Highlighted;
 		bool m_ActiveTool;
 		bool m_Visible;
-		OVRHaptics.OVRHapticsChannel m_LHapticsChannel;
-		OVRHaptics.OVRHapticsChannel m_RHapticsChannel;
-		OVRHapticsClip m_GeneratedHapticClip;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -379,8 +376,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				if (!m_Highlighted)
 					this.HideTooltip(this);
-				else
-					PerformHoverHaptics();
+				//else
+					// perform haptics here for spatial scrolling
 
 				if (implementsSecondaryButton && (!isMainMenu || !isSelectionTool))
 				{
@@ -536,10 +533,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Start()
 		{
-			m_LHapticsChannel = OVRHaptics.LeftChannel;
-			m_RHapticsChannel = OVRHaptics.RightChannel;
-			m_GeneratedHapticClip = new OVRHapticsClip();
-
 			//m_GradientButton.onClick += ButtonClicked; // TODO remove after action button refactor
 
 			Debug.LogWarning("Hide (L+R) pinned tool action buttons if button is the main menu button Hide select action button if button is in the first position (next to menu button)");
@@ -639,20 +632,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool IsSelectToolButton (PinnedToolActionButton.ButtonType buttonType)
 		{
 			return buttonType == PinnedToolActionButton.ButtonType.SelectTool;
-		}
-
-		void PerformHoverHaptics()
-		{
-			m_GeneratedHapticClip.Reset();
-			var intensity = 25;
-			intensity = Mathf.Clamp(intensity, 0, 255);
-			byte holder = Convert.ToByte(intensity);
-			var clipLength = 25;
-			for (int i = 0; i < clipLength; ++i)
-				m_GeneratedHapticClip.WriteSample(holder);
-
-			m_RHapticsChannel.Mix(m_GeneratedHapticClip);
-			m_LHapticsChannel.Mix(m_GeneratedHapticClip);
 		}
 
 		void OnBackgroundHoverEnter ()
