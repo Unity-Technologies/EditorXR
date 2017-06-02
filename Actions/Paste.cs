@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.DefaultActionSectionName, 6)]
-	sealed class Paste : BaseAction, IUsesSpatialHash
+	sealed class Paste : BaseAction, IUsesSpatialHash, IUsesViewerScale
 	{
 		public static Transform[] buffer
 		{
@@ -22,7 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				{
 					var bounds = ObjectUtils.GetBounds(value);
 					
-					s_BufferDistance = bounds.size == Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 0f;
+					s_BufferDistance = bounds.size != Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 0f;
+					s_BufferDistance /= IUsesViewerScaleMethods.getViewerScale(); // Normalize this value, so if viewer scale changes when pasted
 				}
 			}
 		}
