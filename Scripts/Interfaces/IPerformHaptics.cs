@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IPerformHapticsMethods
 	{
-		internal delegate void PerformHapticsDelegate(float duration, float intensity = 1f, bool fadeIn = false);
+		internal delegate void PerformHapticsDelegate(float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false);
 
 		internal static PerformHapticsDelegate performHaptics { get; set; }
 
@@ -20,9 +20,9 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		/// <param name="duration">Duration of haptic feedback</param>
 		/// <param name="intensity">Intensity of haptic feedback (optional)</param>
-		public static void PerformHaptics(this IPerformHaptics obj, float duration, float intensity = 1f, bool fadeIn = false)
+		public static void PerformHaptics(this IPerformHaptics obj, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
 		{
-			performHaptics(duration, intensity, fadeIn);
+			performHaptics(duration, intensity, fadeIn, fadeOut);
 		}
 	}
 }
