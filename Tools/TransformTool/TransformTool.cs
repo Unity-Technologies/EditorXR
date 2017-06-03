@@ -537,12 +537,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.ClearSnappingState(rayOrigin);
 		}
 
-		void Translate(Vector3 delta, Transform rayOrigin, bool constrained)
+		void Translate(Vector3 delta, Transform rayOrigin, ConstrainedAxis constraint)
 		{
-			if (constrained)
-				m_TargetPosition += delta;
-			else
-				this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta);
+			switch (constraint)
+			{
+				case ConstrainedAxis.None:
+					this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta);
+					break;
+				default:
+					m_TargetPosition += delta;
+					break;
+			}
 		}
 
 		void Rotate(Quaternion delta)

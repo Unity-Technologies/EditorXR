@@ -15,9 +15,11 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		internal delegate bool ManipulatorSnapDelegate(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta);
 		internal delegate bool DirectSnapDelegate(Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
+		internal delegate bool ConstrainedSnapDelegate(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints);
 
 		internal static ManipulatorSnapDelegate manipulatorSnap { get; set; }
 		internal static DirectSnapDelegate directSnap { get; set; }
+		internal static ConstrainedSnapDelegate constrainedSnap { get; set; }
 		internal static Action<Transform> clearSnappingState { get; set; }
 
 		/// <summary>
@@ -56,6 +58,21 @@ namespace UnityEditor.Experimental.EditorVR
 		public static void ClearSnappingState(this IUsesSnapping usesSnaping, Transform rayOrigin)
 		{
 			clearSnappingState(rayOrigin);
+		}
+
+		/// <summary>
+		/// Perform constrained snapping: Translate a position vector using deltas while also respecting constraints and snapping
+		/// </summary>
+		/// <param name="rayOrigin">The ray doing the translating</param>
+		/// <param name="transforms">The transforms being translated (used to determine bounds; Transforms do not get modified)</param>
+		/// <param name="position">The position being modified by delta. This will be set with a snapped position if possible</param>
+		/// <param name="rotation">The rotation to be modified if rotation snapping is enabled</param>
+		/// <param name="delta">The position delta to apply</param>
+		/// <param name="constraints">The axis constraints</param>
+		/// <returns>Whether the position was set to a snapped position</returns>
+		public static bool ConstrainedSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints)
+		{
+			return constrainedSnap(rayOrigin, transforms, ref position, ref rotation, delta, constraints);
 		}
 	}
 }

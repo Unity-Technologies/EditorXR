@@ -20,10 +20,15 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		[SerializeField]
 		bool m_OrientDragPlaneToRay = true;
 
+		[SerializeField]
+		ConstrainedAxis m_Constraints;
+
 		private const float k_MaxDragDistance = 1000f;
 
 		private Plane m_Plane;
 		private Vector3 m_LastPosition;
+
+		public ConstrainedAxis constraints { get { return m_Constraints; } }
 
 		private void OnDisable()
 		{
