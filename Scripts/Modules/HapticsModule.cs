@@ -52,29 +52,38 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_GeneratedHapticClip.Reset(); // TODO: Support multiple generated clips
 
 			const float kSampleRateConversion = 490; // Samplerate conversion : 44100/90fps = 490
-			var fadeInSampleCount = duration * kSampleRateConversion * 0.25f;
 			const int kIntensityIncreaseMultiplier = 255; // Maximum value of 255 for intensity
-			intensity = Mathf.Clamp(Mathf.Clamp01(intensity) * kIntensityIncreaseMultiplier * m_MasterIntensity, 0, 255);
-			byte hapticClipSample = Convert.ToByte(intensity);
+			duration = Mathf.Clamp(duration, 0f, 0.8f); // Clamp at maxiumum 800ms for sample buffer
+			var fadeInSampleCount = duration * kSampleRateConversion * 0.25f;
+			var fadeOutSampleCount = fadeInSampleCount * 2; // FadeOut is less apparent than FadeIn unless FadeOut duration is increased
 			duration *= kSampleRateConversion;
+			var durationFadeOutPosition = duration - fadeOutSampleCount;
+			intensity = Mathf.Clamp(Mathf.Clamp01(intensity) * kIntensityIncreaseMultiplier * m_MasterIntensity, 0, 255);
+			var hapticClipSample = Convert.ToByte(intensity);
 			for (int i = 1; i < duration; ++i)
 			{
 				float sampleShaped = hapticClipSample;
 				if (fadeIn && i < fadeInSampleCount)
-				{
 					sampleShaped = Mathf.Lerp(0, intensity, i / fadeInSampleCount);
-				}
-				else if (fadeOut && i > duration - fadeInSampleCount)
-				{
-					sampleShaped = Mathf.Lerp(0, intensity, duration - i / fadeInSampleCount);
-					Debug.LogWarning(Convert.ToByte(sampleShaped) + " - i: " + i + " - duration: " + duration + " - fadeInSampleCount: " + fadeInSampleCount);
-				}
+				else if (fadeOut && i > durationFadeOutPosition)
+					sampleShaped = Mathf.Lerp(0, intensity, (duration - i) / fadeOutSampleCount);
 
 				m_GeneratedHapticClip.WriteSample(Convert.ToByte(sampleShaped));
 			}
 
-			m_RHapticsChannel.Mix(m_GeneratedHapticClip);
-			m_LHapticsChannel.Mix(m_GeneratedHapticClip);
+			if (duration > 0.125f)
+			{
+				// Prevent multiple long clips from playing back simultaneously
+				// If the new clip has a long duration, stop playback of any existing clips
+				m_RHapticsChannel.Preempt(m_GeneratedHapticClip);
+				m_LHapticsChannel.Preempt(m_GeneratedHapticClip);
+			}
+			else
+			{
+				// Allow multiple short clips to play simultaneously
+				m_RHapticsChannel.Mix(m_GeneratedHapticClip);
+				m_LHapticsChannel.Mix(m_GeneratedHapticClip);
+			}
 		}
 	}
 }
