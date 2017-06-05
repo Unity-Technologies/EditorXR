@@ -142,7 +142,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			AddModule<ActionsModule>();
 			AddModule<HighlightModule>();
-			AddModule<HapticsModule>();
 
 			var lockModule = AddModule<LockModule>();
 			lockModule.updateAlternateMenu = (rayOrigin, o) => Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
@@ -197,6 +196,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				return false;
 			};
+
+			var hapticsModule = AddModule<HapticsModule>();
+			hapticsModule.getNodeFromRayOrigin = Tools.GetNodeFromRayOrigin;
 
 			viewer.AddPlayerModel();
 

@@ -16,6 +16,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// </summary>
 		public float masterIntensity { set { m_MasterIntensity = Mathf.Clamp01(value); } }
 
+		/// <summary>
+		/// Fetch a corresponding node for a given transform.
+		/// Used to get the device node on which to perform the haptic feedback.
+		/// </summary>
+		public Func<Transform, Node?> getNodeFromRayOrigin { private get; set; }
+
 		OVRHaptics.OVRHapticsChannel m_LHapticsChannel;
 		OVRHaptics.OVRHapticsChannel m_RHapticsChannel;
 		OVRHapticsClip m_GeneratedHapticClip;
@@ -35,7 +41,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			OVRHaptics.Process();
 		}
 
-		public void Pulse(float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
+		/// <summary>
+		/// Pulse haptic feedback
+		/// </summary>
+		/// <param name="rayOrigin">Device RayOrigin Transform on which to perform the pulse. A NULL value will pulse on all devices</param>
+		/// <param name="duration">Duration of pulse. Currently a maximum duration of 0.8f is supported.</param>
+		/// <param name="intensity">Strength of pulse.</param>
+		/// <param name="fadeIn">Fade the pulse in</param>
+		/// <param name="fadeOut">Fade the pulse out</param>
+		public void Pulse(Transform rayOrigin, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
 		{
 			// Clip buffer can hold up to 800 milliseconds of samples
 			// At 320Hz, each sample is 3.125f milliseconds
@@ -75,20 +89,53 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_GeneratedHapticClip.WriteSample(Convert.ToByte(sampleShaped));
 			}
 
-			const float kMaxSimultaneousClipDuration = 0.125f;
+			const float kMaxSimultaneousClipDuration = 0.25f;
+			var channel = GetTargetChannel(rayOrigin);
 			if (duration > kMaxSimultaneousClipDuration)
 			{
 				// Prevent multiple long clips from playing back simultaneously
-				// If the new clip has a long duration, stop playback of any existing clips
-				m_RHapticsChannel.Preempt(m_GeneratedHapticClip);
-				m_LHapticsChannel.Preempt(m_GeneratedHapticClip);
+				// If the new clip has a long duration, stop playback of any existing clips in order to prevent haptic feedback noise
+				if (channel != null)
+				{
+					channel.Preempt(m_GeneratedHapticClip);
+				}
+				else
+				{
+					m_RHapticsChannel.Preempt(m_GeneratedHapticClip);
+					m_LHapticsChannel.Preempt(m_GeneratedHapticClip);
+				}
+				
 			}
 			else
 			{
 				// Allow multiple short clips to play simultaneously
-				m_RHapticsChannel.Mix(m_GeneratedHapticClip);
-				m_LHapticsChannel.Mix(m_GeneratedHapticClip);
+				if (channel != null)
+				{
+					channel.Mix(m_GeneratedHapticClip);
+				}
+				else
+				{
+					m_RHapticsChannel.Mix(m_GeneratedHapticClip);
+					m_LHapticsChannel.Mix(m_GeneratedHapticClip);
+				}
 			}
+		}
+
+		OVRHaptics.OVRHapticsChannel GetTargetChannel(Transform rayOrigin)
+		{
+			OVRHaptics.OVRHapticsChannel channel = null;
+			var node = getNodeFromRayOrigin (rayOrigin);
+			switch (node)
+			{
+				case Node.LeftHand:
+					channel = m_LHapticsChannel;
+					break;
+				case Node.RightHand:
+					channel = m_RHapticsChannel;
+					break;
+			}
+
+			return channel;
 		}
 	}
 }

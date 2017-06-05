@@ -234,7 +234,7 @@ namespace ListView
 
 			scrollOffset += eventData.scrollDelta.y * scrollSpeed * Time.deltaTime;
 
-			this.Pulse(0.0001f, 0.125f);
+			this.Pulse(null, 0.001f, 0.125f);
 		}
 
 		protected virtual void StartSettling(Action onComplete = null)

@@ -506,10 +506,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
+			var rayOrigin =  eventData.rayOrigin;
 			if (m_HovereringRayOrigins.Count == 0 && m_DragState == null)
-				IncreaseFrameThickness();
+				IncreaseFrameThickness(rayOrigin);
 
-			m_HovereringRayOrigins.Add(eventData.rayOrigin);
+			m_HovereringRayOrigins.Add(rayOrigin);
 		}
 
 		ResizeDirection GetResizeDirectionForLocalPosition(Vector3 localPosition)
@@ -785,21 +786,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				resetSizeClicked();
 		}
 
-		void IncreaseFrameThickness()
+		void IncreaseFrameThickness(Transform rayOrigin = null)
 		{
 			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			const float kTargetBlendAmount = 0f;
-			m_FrameThicknessCoroutine = StartCoroutine(ChangeFrameThickness(kTargetBlendAmount));
+			m_FrameThicknessCoroutine = StartCoroutine(ChangeFrameThickness(kTargetBlendAmount, rayOrigin));
 		}
 
 		void ResetFrameThickness()
 		{
 			this.StopCoroutine(ref m_FrameThicknessCoroutine);
 			const float kTargetBlendAmount = 50f;
-			m_FrameThicknessCoroutine = StartCoroutine(ChangeFrameThickness(kTargetBlendAmount));
+			m_FrameThicknessCoroutine = StartCoroutine(ChangeFrameThickness(kTargetBlendAmount, null));
 		}
 
-		IEnumerator ChangeFrameThickness(float targetBlendAmount)
+		IEnumerator ChangeFrameThickness(float targetBlendAmount, Transform rayOrigin)
 		{
 			const float kTargetDuration = 0.25f;
 			var currentDuration = 0f;
@@ -814,8 +815,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 
 			// If hovering the frame, and not dragging, perform haptic feedback
-			if (m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
-				this.Pulse(0.8f, 0.15f, true, true);
+			if (m_HovereringRayOrigins.Count > 0 && m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
+				this.Pulse(rayOrigin, 0.8f, 0.1f, true, true);
 
 			m_FrameThicknessCoroutine = null;
 		}
