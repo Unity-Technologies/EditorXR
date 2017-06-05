@@ -55,14 +55,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_SampleLengthWarningShown = true;
 			}
 
-
 			const int kSampleRateConversion = 490; // Samplerate conversion : 44100/90fps = 490
 			const int kIntensityIncreaseMultiplier = 255; // Maximum value of 255 for intensity
-			var fadeInSampleCount = duration * kSampleRateConversion * 0.25f;
+			const float kFadeInProportion = 0.25f;
+			var fadeInSampleCount = duration * kSampleRateConversion * kFadeInProportion;
 			var fadeOutSampleCount = fadeInSampleCount * 2; // FadeOut is less apparent than FadeIn unless FadeOut duration is increased
 			duration *= kSampleRateConversion;
 			var durationFadeOutPosition = duration - fadeOutSampleCount;
-			intensity = Mathf.Clamp(Mathf.Clamp01(intensity) * kIntensityIncreaseMultiplier * m_MasterIntensity, 0, 255);
+			intensity = Mathf.Clamp(Mathf.Clamp01(intensity) * kIntensityIncreaseMultiplier * m_MasterIntensity, 0, kIntensityIncreaseMultiplier);
 			var hapticClipSample = Convert.ToByte(intensity);
 			for (int i = 1; i < duration; ++i)
 			{
@@ -75,7 +75,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_GeneratedHapticClip.WriteSample(Convert.ToByte(sampleShaped));
 			}
 
-			if (duration > 0.125f)
+			const float kMaxSimultaneousClipDuration = 0.125f;
+			if (duration > kMaxSimultaneousClipDuration)
 			{
 				// Prevent multiple long clips from playing back simultaneously
 				// If the new clip has a long duration, stop playback of any existing clips
