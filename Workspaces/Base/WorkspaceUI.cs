@@ -771,7 +771,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			ObjectUtils.Destroy(m_TopFaceMaterial);
 			ObjectUtils.Destroy(m_FrontFaceMaterial);
-		}
+		} 
 
 		public void CloseClick()
 		{
@@ -815,7 +815,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// If hovering the frame, and not dragging, perform haptic feedback
 			if (m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
-				this.PerformHaptics(1.25f, 0.15f, true, true);
+				this.PerformHaptics(0.8f, 0.15f, true, true);
 
 			m_FrameThicknessCoroutine = null;
 		}
