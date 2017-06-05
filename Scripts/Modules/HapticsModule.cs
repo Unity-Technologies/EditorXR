@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class HapticsModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		[SerializeField]
-		private float m_MasterIntensity = 1f;
+		float m_MasterIntensity = 1f;
 
 		/// <summary>
 		/// Overall intensity of haptics.
@@ -19,6 +19,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		OVRHaptics.OVRHapticsChannel m_LHapticsChannel;
 		OVRHaptics.OVRHapticsChannel m_RHapticsChannel;
 		OVRHapticsClip m_GeneratedHapticClip;
+
+		bool m_SampleLengthWarningShown;
 
 		void Start()
 		{
@@ -42,9 +44,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			m_GeneratedHapticClip.Reset(); // TODO: Support multiple generated clips
 
-			const float kSampleRateConversion = 490; // Samplerate conversion : 44100/90fps = 490
+			const float kMaxDuration = 0.8f;
+			if (duration > kMaxDuration)
+			{
+				duration = Mathf.Clamp(duration, 0f, kMaxDuration); // Clamp at maxiumum 800ms for sample buffer
+
+				if (!m_SampleLengthWarningShown)
+					Debug.LogWarning("Pulse durations greater than 0.8f are not currently supported");
+
+				m_SampleLengthWarningShown = true;
+			}
+
+
+			const int kSampleRateConversion = 490; // Samplerate conversion : 44100/90fps = 490
 			const int kIntensityIncreaseMultiplier = 255; // Maximum value of 255 for intensity
-			duration = Mathf.Clamp(duration, 0f, 0.8f); // Clamp at maxiumum 800ms for sample buffer
 			var fadeInSampleCount = duration * kSampleRateConversion * 0.25f;
 			var fadeOutSampleCount = fadeInSampleCount * 2; // FadeOut is less apparent than FadeIn unless FadeOut duration is increased
 			duration *= kSampleRateConversion;
