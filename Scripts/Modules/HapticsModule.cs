@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			OVRHaptics.Process();
 		}
 
-		public void PerformHaptics(float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
+		public void Pulse(float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
 		{
 			// Clip buffer can hold up to 800 milliseconds of samples
 			// At 320Hz, each sample is 3.125f milliseconds

@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			public void LateBindInterfaceMethods(HapticsModule provider)
 			{
-				IPerformHapticsMethods.performHaptics = provider.PerformHaptics;
+				IPerformHapticsMethods.performHaptics = provider.Pulse;
 			}
 		}
 	}

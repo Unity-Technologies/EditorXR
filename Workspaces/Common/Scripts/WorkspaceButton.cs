@@ -322,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			this.PerformHaptics(0.005f, 0.075f);
+			this.Pulse(0.005f, 0.075f);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
@@ -472,7 +472,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnButtonClicked()
 		{
-			this.PerformHaptics(0.175f, 0.05f);
+			this.Pulse(0.175f, 0.05f);
 		}
 	}
 }

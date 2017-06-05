@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		/// <param name="duration">Duration of haptic feedback</param>
 		/// <param name="intensity">Intensity of haptic feedback (optional)</param>
-		public static void PerformHaptics(this IPerformHaptics obj, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
+		public static void Pulse(this IPerformHaptics obj, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
 		{
 			performHaptics(duration, intensity, fadeIn, fadeOut);
 		}
