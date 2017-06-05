@@ -110,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				// in the case of the SceneView rendering, etc.
 				m_MiniCamera.targetTexture = RenderTexture.active;
 
-				m_MiniCamera.SetReplacementShader(m_ClipShader, null);
+				m_MiniCamera.SetReplacementShader(m_ClipShader, "RenderType");
 				m_MiniCamera.Render();
 
 				for (var i = 0; i < m_IgnoreList.Count; i++)

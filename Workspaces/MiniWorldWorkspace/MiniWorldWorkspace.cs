@@ -396,8 +396,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				transform.position = MathUtilsExt.SmoothDamp(transform.position, targetPosition, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				transform.position = MathUtilsExt.SmoothDamp(transform.position, targetPosition, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				yield return null;
 			}
 		

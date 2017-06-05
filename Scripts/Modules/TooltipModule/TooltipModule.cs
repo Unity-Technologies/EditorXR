@@ -133,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (placement != null)
 				offset *= halfWidth * rectTransform.lossyScale.x;
 			else
-				offset = Vector3.back * k_Offset;
+				offset = Vector3.back * k_Offset * this.GetViewerScale();
 
 			MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, Quaternion.identity);
 
@@ -165,7 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var uvRect = dottedLine.uvRect;
 				var worldScale = 1 / viewerScale;
 				uvRect.width = length * k_UVScale * worldScale;
-				uvRect.xMin += k_UVScrollSpeed * Time.unscaledDeltaTime;
+				uvRect.xMin += k_UVScrollSpeed * Time.deltaTime;
 				dottedLine.uvRect = uvRect;
 
 				var dottedLineTransform = dottedLine.transform.parent.GetComponent<RectTransform>();

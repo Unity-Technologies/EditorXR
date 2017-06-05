@@ -7,13 +7,8 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]
-	sealed class ProfilerWorkspace : Workspace
+	sealed class ProfilerWorkspace : EditorWindowWorkspace
 	{
-		[SerializeField]
-		GameObject m_ProfilerWindowPrefab;
-
-		Transform m_ProfilerWindow;
-
 		RectTransform m_CaptureWindowRect;
 
 		bool inView
@@ -42,27 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public override void Setup()
 		{
-			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(0.6f, MinBounds.y, 0.4f);
-			m_CustomStartingBounds = minBounds;
-
 			base.Setup();
-
-			preventResize = true;
-			dynamicFaceAdjustment = false;
-
-			m_ProfilerWindow = this.InstantiateUI(m_ProfilerWindowPrefab).transform;
-			m_ProfilerWindow.SetParent(m_WorkspaceUI.topFaceContainer, false);
-			m_ProfilerWindow.localPosition = new Vector3(0f, -0.007f, -0.5f);
-			m_ProfilerWindow.localRotation = Quaternion.Euler(90f, 0f, 0f);
-			m_ProfilerWindow.localScale = new Vector3(1f, 1f, 1f);
-
-			var bounds = contentBounds;
-			var size = bounds.size;
-			size.z = 0.1f;
-			bounds.size = size;
-			contentBounds = bounds;
-
 			UnityEditorInternal.ProfilerDriver.profileEditor = false;
 
 			m_CaptureWindowRect = GetComponentInChildren<EditorWindowCapture>().GetComponent<RectTransform>();

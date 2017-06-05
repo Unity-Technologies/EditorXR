@@ -194,6 +194,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				for (int i = 0; i < components.Length; i++)
 				{
 					var component = components[i];
+
+					if (!component)
+						continue;
+
 					if (component is Transform)
 						continue;
 

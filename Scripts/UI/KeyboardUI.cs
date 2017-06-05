@@ -132,7 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				if (t < i * kButtonMoveTimeOffset)
 				{
-					t += Time.unscaledDeltaTime;
+					t += Time.deltaTime;
 					continue;
 				}
 
@@ -190,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				if (t < i * kButtonMoveTimeOffset)
 				{
-					t += Time.unscaledDeltaTime;
+					t += Time.deltaTime;
 					continue;
 				}
 
@@ -267,7 +267,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 					button.transform.position = Vector3.Lerp(button.transform.position, targetPos, t / duration);
 					i++;
 				}
-				t += Time.unscaledDeltaTime;
+				t += Time.deltaTime;
 				yield return null;
 			}
 
@@ -364,7 +364,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var t = 0f;
 			while (t < k_DragWaitTime)
 			{
-				t += Time.unscaledDeltaTime;
+				t += Time.deltaTime;
 				yield return null;
 			}
 
@@ -393,7 +393,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				var alpha = t / k_HandleChangeColorTime;
 				m_HandleMaterial.color = Color.Lerp(startColor, s_HandleDragColor, alpha);
-				t += Time.unscaledDeltaTime;
+				t += Time.deltaTime;
 				yield return null;
 			}
 
@@ -412,7 +412,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				var alpha = t / k_HandleChangeColorTime;
 				m_HandleMaterial.color = Color.Lerp(startColor, handleButton.targetMeshBaseColor, alpha);
-				t += Time.unscaledDeltaTime;
+				t += Time.deltaTime;
 				yield return null;
 			}
 

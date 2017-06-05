@@ -16,9 +16,9 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000011695297064}
+  - component: {fileID: 224000011695297064}
   m_Layer: 5
   m_Name: OptionsPanel
   m_TagString: Untagged
@@ -31,12 +31,12 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000012713681346}
-  - 222: {fileID: 222000010694231896}
-  - 114: {fileID: 114000013503460266}
-  - 114: {fileID: 114000013247399548}
+  - component: {fileID: 224000012713681346}
+  - component: {fileID: 222000010694231896}
+  - component: {fileID: 114000013503460266}
+  - component: {fileID: 114000013247399548}
   m_Layer: 5
   m_Name: DropDown
   m_TagString: Untagged
@@ -49,11 +49,11 @@ GameObject:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000010688532472}
-  - 222: {fileID: 222000014183115490}
-  - 114: {fileID: 114000013958816440}
+  - component: {fileID: 224000010688532472}
+  - component: {fileID: 222000014183115490}
+  - component: {fileID: 114000013958816440}
   m_Layer: 5
   m_Name: Image
   m_TagString: Untagged
@@ -66,11 +66,11 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000011984862108}
-  - 222: {fileID: 222000010578662396}
-  - 114: {fileID: 114000013643951252}
+  - component: {fileID: 224000011984862108}
+  - component: {fileID: 222000010578662396}
+  - component: {fileID: 114000013643951252}
   m_Layer: 5
   m_Name: Arrow
   m_TagString: Untagged
@@ -83,12 +83,12 @@ GameObject:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000010172474962}
-  - 222: {fileID: 222000011356586198}
-  - 114: {fileID: 114000012103203696}
-  - 114: {fileID: 114000011318542928}
+  - component: {fileID: 224000010172474962}
+  - component: {fileID: 222000011356586198}
+  - component: {fileID: 114000012103203696}
+  - component: {fileID: 114000011318542928}
   m_Layer: 5
   m_Name: OptionsList
   m_TagString: Untagged
@@ -101,11 +101,11 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000013811286554}
-  - 222: {fileID: 222000013456648872}
-  - 114: {fileID: 114000010200217102}
+  - component: {fileID: 224000013811286554}
+  - component: {fileID: 222000013456648872}
+  - component: {fileID: 114000010200217102}
   m_Layer: 5
   m_Name: Label
   m_TagString: Untagged
@@ -118,12 +118,12 @@ GameObject:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000014113726842}
-  - 222: {fileID: 222000012309024304}
-  - 114: {fileID: 114000011988997642}
-  - 114: {fileID: 114000010094193486}
+  - component: {fileID: 224000014113726842}
+  - component: {fileID: 222000012309024304}
+  - component: {fileID: 114000011988997642}
+  - component: {fileID: 114000010094193486}
   m_Layer: 5
   m_Name: CloseButton
   m_TagString: Untagged
@@ -142,7 +142,6 @@ MonoBehaviour:
   m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Navigation:
     m_Mode: 3
     m_SelectOnUp: {fileID: 0}
@@ -195,7 +194,6 @@ MonoBehaviour:
   m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
   m_RaycastTarget: 1
@@ -229,7 +227,6 @@ MonoBehaviour:
   m_Script: {fileID: 1297475563, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Padding:
     m_Left: 0
     m_Right: 0
@@ -239,6 +236,8 @@ MonoBehaviour:
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
+  m_ChildControlWidth: 1
+  m_ChildControlHeight: 1
 --- !u!114 &114000011988997642
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -250,7 +249,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.9607843, g: 0.972549, b: 0.9764706, a: 1}
   m_RaycastTarget: 1
@@ -278,7 +276,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
@@ -306,17 +303,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8e513a78f8352940b3b3bd81422b3f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
-  m_SelectionFlags: 2
   m_Options: []
   m_MultiSelect: 0
   m_Label: {fileID: 114000010200217102}
   m_OptionsPanel: {fileID: 224000011695297064}
-  m_OptionsList: {fileID: 114000011318542928}
+  m_OptionsList: {fileID: 0}
   m_TemplatePrefab: {fileID: 1000012851962796, guid: 96e9e26ba4c02c4459218e81d404980f,
     type: 2}
   m_MultiSelectTemplatePrefab: {fileID: 1000011005728614, guid: 44aae4eb5a02aae479e9a5b75c0591dc,
     type: 2}
+  m_CanvasGroup: {fileID: 0}
+  m_BackgroundMeshTransform: {fileID: 0}
   m_Value: 0
   m_Values: 
 --- !u!114 &114000013503460266
@@ -330,7 +327,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -358,7 +354,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -386,7 +381,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
   m_RaycastTarget: 0
@@ -448,10 +442,10 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: -50.07, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000011695297064}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: -50.07, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
@@ -466,10 +460,10 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000014113726842}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
@@ -484,12 +478,12 @@ RectTransform:
   m_LocalRotation: {x: -0.42317176, y: 0, z: 0, w: 0.90604955}
   m_LocalPosition: {x: 0, y: 0, z: -0.012}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: -50.07, y: 0, z: 0}
   m_Children:
   - {fileID: 224000014113726842}
   - {fileID: 224000010172474962}
   m_Father: {fileID: 224000012713681346}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: -50.07, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: -0.014527775}
@@ -504,10 +498,10 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000012713681346}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: -0.01, y: 0}
@@ -522,13 +516,13 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000013811286554}
   - {fileID: 224000011984862108}
   - {fileID: 224000011695297064}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: -0.006733939, y: -0.016136566}
@@ -543,10 +537,10 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.001, y: 0.001, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000012713681346}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 0.052100763, y: 0}
@@ -561,11 +555,11 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000010688532472}
   m_Father: {fileID: 224000011695297064}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0.0029995963, y: 0.0039990097}

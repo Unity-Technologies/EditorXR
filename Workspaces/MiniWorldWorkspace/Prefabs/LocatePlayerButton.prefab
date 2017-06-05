@@ -16,9 +16,9 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000012857281132}
+  - component: {fileID: 4000012857281132}
   m_Layer: 5
   m_Name: TooltipTarget
   m_TagString: Untagged
@@ -31,10 +31,10 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000013347876576}
-  - 33: {fileID: 33000013694227068}
+  - component: {fileID: 4000013347876576}
+  - component: {fileID: 33000013694227068}
   m_Layer: 0
   m_Name: ButtonMesh
   m_TagString: Untagged
@@ -47,9 +47,9 @@ GameObject:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000013632100888}
+  - component: {fileID: 224000013632100888}
   m_Layer: 5
   m_Name: IconContainer
   m_TagString: Untagged
@@ -62,11 +62,11 @@ GameObject:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000011240948810}
-  - 222: {fileID: 222000013850563780}
-  - 114: {fileID: 114000010852292732}
+  - component: {fileID: 224000011240948810}
+  - component: {fileID: 222000013850563780}
+  - component: {fileID: 114000010852292732}
   m_Layer: 5
   m_Name: Icon
   m_TagString: Untagged
@@ -79,12 +79,12 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000010503807310}
-  - 114: {fileID: 114000013201547200}
-  - 225: {fileID: 225000010115924638}
-  - 114: {fileID: 114000014081982906}
+  - component: {fileID: 4000010503807310}
+  - component: {fileID: 114000013201547200}
+  - component: {fileID: 225000010115924638}
+  - component: {fileID: 114000014081982906}
   m_Layer: 5
   m_Name: LocatePlayerButton
   m_TagString: Untagged
@@ -97,12 +97,12 @@ GameObject:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000012837422760}
-  - 222: {fileID: 222000012046194124}
-  - 114: {fileID: 114000010662288158}
-  - 114: {fileID: 114000014183139400}
+  - component: {fileID: 224000012837422760}
+  - component: {fileID: 222000012046194124}
+  - component: {fileID: 114000010662288158}
+  - component: {fileID: 114000014183139400}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -115,11 +115,11 @@ GameObject:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000010409608544}
-  - 33: {fileID: 33000013316414584}
-  - 23: {fileID: 23000013076435620}
+  - component: {fileID: 4000010409608544}
+  - component: {fileID: 33000013316414584}
+  - component: {fileID: 23000013076435620}
   m_Layer: 5
   m_Name: IconPlane
   m_TagString: Untagged
@@ -132,9 +132,9 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 4: {fileID: 4000011967229546}
+  - component: {fileID: 4000011967229546}
   m_Layer: 5
   m_Name: TooltipSource
   m_TagString: Untagged
@@ -151,10 +151,10 @@ Transform:
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 6.5, y: 1, z: 6.5000033}
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000013632100888}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!4 &4000010503807310
 Transform:
   m_ObjectHideFlags: 1
@@ -164,13 +164,13 @@ Transform:
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: -0.232, y: 0.031499956, z: 0}
   m_LocalScale: {x: 1.8250337, y: 1.8250332, z: 1.8250332}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_Children:
   - {fileID: 4000013347876576}
   - {fileID: 4000012857281132}
   - {fileID: 4000011967229546}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!4 &4000011967229546
 Transform:
   m_ObjectHideFlags: 1
@@ -180,10 +180,10 @@ Transform:
   m_LocalRotation: {x: -0.5604656, y: -0, z: -0, w: 0.82817775}
   m_LocalPosition: {x: 0, y: -0.0245, z: 0}
   m_LocalScale: {x: 0.9999979, y: 0.9999982, z: 0.9999982}
-  m_LocalEulerAnglesHint: {x: -68.176, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000010503807310}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: -68.176, y: 0, z: 0}
 --- !u!4 &4000012857281132
 Transform:
   m_ObjectHideFlags: 1
@@ -193,10 +193,10 @@ Transform:
   m_LocalRotation: {x: -0.5604656, y: 0, z: 0, w: 0.82817775}
   m_LocalPosition: {x: 0, y: -0.0329, z: 0.021}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: -68.176, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 4000010503807310}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: -68.176, y: 0, z: 0}
 --- !u!4 &4000013347876576
 Transform:
   m_ObjectHideFlags: 1
@@ -206,11 +206,11 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 2.5, y: 2.5, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000013632100888}
   m_Father: {fileID: 4000010503807310}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!23 &23000013076435620
 MeshRenderer:
   m_ObjectHideFlags: 1
@@ -226,7 +226,9 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 92456d8901e6c82488b601ac78f0d3f9, type: 2}
   - {fileID: 2100000, guid: e1423c0176008a841a94b94a6034bbf8, type: 2}
-  m_SubsetIndices: 
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
   m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
@@ -234,12 +236,13 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
-  m_SelectedWireframeHidden: 0
+  m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
+  m_SortingLayer: 0
   m_SortingOrder: 0
 --- !u!33 &33000013316414584
 MeshFilter:
@@ -266,7 +269,6 @@ MonoBehaviour:
   m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Navigation:
     m_Mode: 3
     m_SelectOnUp: {fileID: 0}
@@ -319,7 +321,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 0
@@ -347,7 +348,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ea8f288a8eeaef46b1f6bfb72debc2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_AutoHighlight: 1
   m_CustomHighlightColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
   m_AlternateIconSprite: {fileID: 0}
@@ -373,7 +373,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_TooltipText: Center on Player
   m_TooltipTarget: {fileID: 4000012857281132}
   m_TooltipSource: {fileID: 4000011967229546}
@@ -389,7 +388,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
@@ -427,10 +425,10 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.0008948, y: 1.0008953, z: 1.0045481}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000013632100888}
   m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.108500004, y: 0.108500004}
   m_AnchorMax: {x: 0.8915, y: 0.8915}
   m_AnchoredPosition: {x: 0.0011342466, y: -0.0000018179417}
@@ -445,10 +443,10 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000013632100888}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.108500004, y: 0.108500004}
   m_AnchorMax: {x: 0.8915, y: 0.8915}
   m_AnchoredPosition: {x: 0, y: 0}
@@ -463,13 +461,13 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.0003, y: 0.0003, z: 0.0003}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 4000010409608544}
   - {fileID: 224000012837422760}
   - {fileID: 224000011240948810}
   m_Father: {fileID: 4000013347876576}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0.0000011473894}

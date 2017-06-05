@@ -196,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
 
 			if (m_Sphere.gameObject.activeInHierarchy)
-				m_Sphere.transform.Rotate(Vector3.up, k_RotateSpeed * Time.unscaledDeltaTime, Space.Self);
+				m_Sphere.transform.Rotate(Vector3.up, k_RotateSpeed * Time.deltaTime, Space.Self);
 
 			if (data.type == "Scene")
 			{
@@ -221,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_PreviewPrefabScale = m_PreviewObjectTransform.localScale;
 
 			// Normalize total scale to 1
-			var previewTotalBounds = ObjectUtils.GetBounds(m_PreviewObjectTransform.gameObject);
+			var previewTotalBounds = ObjectUtils.GetBounds(m_PreviewObjectTransform);
 
 			// Don't show a preview if there are no renderers
 			if (previewTotalBounds.size == Vector3.zero)
@@ -425,7 +425,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			while (currentTime < k_TransitionDuration)
 			{
-				currentTime += Time.unscaledDeltaTime;
+				currentTime += Time.deltaTime;
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, currentTime / k_TransitionDuration);
 				yield return null;
 			}
@@ -470,7 +470,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (m_DragObject == null)
 					yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
 
-				currentTime = MathUtilsExt.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentTime = MathUtilsExt.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.deltaTime);
 				m_DragObject.localScale = Vector3.Lerp(currentLocalScale, m_GrabPreviewTargetScale, currentTime);
 
 				if (m_PreviewObjectClone)
@@ -487,12 +487,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var itemTransform = itemToHide.transform;
 			var currentScale = itemTransform.localScale;
 			var targetScale = Vector3.zero;
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var transitionAddMultiplier = 6;
 			while (transitionAmount < 1)
 			{
 				itemTransform.localScale = Vector3.Lerp(currentScale, targetScale, transitionAmount);
-				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
+				transitionAmount += Time.deltaTime * transitionAddMultiplier;
 				yield return null;
 			}
 
