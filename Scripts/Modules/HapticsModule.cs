@@ -9,15 +9,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[SerializeField]
 		private float m_MasterIntensity = 1f;
 
-		[SerializeField]
-		private float m_ShortPulseDuration = 0.125f;
-
-		[SerializeField]
-		private float m_MediumPulseDuration = 0.25f;
-
-		[SerializeField]
-		private float m_LongPulseDuration = 0.5f;
-
 		/// <summary>
 		/// Overall intensity of haptics.
 		/// A value to 0 will mute haptics.
