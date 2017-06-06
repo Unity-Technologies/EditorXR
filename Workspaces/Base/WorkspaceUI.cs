@@ -245,10 +245,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						+ transform.forward * (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward);
 
 					m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
+					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.2f, true, true);
 				}
 				else
 				{
 					MathUtilsExt.SetTransformOffset(rayOrigin, m_WorkspaceUI.transform.parent, m_PositionOffset, m_RotationOffset);
+					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.055f, false, true);
 				}
 			}
 		}

@@ -81,6 +81,9 @@ namespace ListView
 		void Update()
 		{
 			UpdateView();
+
+			if (m_Scrolling)
+				this.Pulse(null, 0.25f, 0.055f, false, true);
 		}
 
 		protected abstract void Setup();
@@ -233,8 +236,6 @@ namespace ListView
 				return;
 
 			scrollOffset += eventData.scrollDelta.y * scrollSpeed * Time.deltaTime;
-
-			this.Pulse(null, 0.001f, 0.125f);
 		}
 
 		protected virtual void StartSettling(Action onComplete = null)

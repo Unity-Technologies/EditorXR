@@ -323,7 +323,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			this.Pulse(m_RayOrigin, 0.005f, 0.075f);
+			this.Pulse(m_RayOrigin, 0.005f, 0.082f);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
