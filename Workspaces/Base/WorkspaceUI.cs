@@ -245,7 +245,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						+ transform.forward * (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward);
 
 					m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
-					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.2f, true, true);
+					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.35f, true, true);
 				}
 				else
 				{
@@ -818,7 +818,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// If hovering the frame, and not dragging, perform haptic feedback
 			if (m_HovereringRayOrigins.Count > 0 && m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
-				this.Pulse(rayOrigin, 0.8f, 0.1f, true, true);
+				this.Pulse(rayOrigin, 0.8f, 0.065f, true, true);
 
 			m_FrameThicknessCoroutine = null;
 		}
