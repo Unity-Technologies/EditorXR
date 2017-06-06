@@ -774,7 +774,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			ObjectUtils.Destroy(m_TopFaceMaterial);
 			ObjectUtils.Destroy(m_FrontFaceMaterial);
-		} 
+		}
 
 		public void CloseClick()
 		{
