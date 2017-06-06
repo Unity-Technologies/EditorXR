@@ -138,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		GradientPair m_OriginalGradientPair;
 		GradientPair m_HighlightGradientPair;
-		Transform m_parentTransform;
+		Transform m_RayOrigin;
 		Vector3 m_IconDirection;
 		Material m_ButtonMaterial;
 		Material m_ButtonMaskMaterial;
@@ -172,6 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
 			ResetColors();
+			m_RayOrigin = null;
 		}
 
 		public void SetMaterialColors(GradientPair gradientPair)
@@ -322,7 +323,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			this.PerformHaptics(0.005f, 0.075f);
+			this.Pulse(m_RayOrigin, 0.005f, 0.082f);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
@@ -454,12 +455,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void OnRayEnter(RayEventData eventData)
 		{
+			m_RayOrigin = eventData.rayOrigin;
+
 			if (autoHighlight)
 				highlighted = true;
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
+			m_RayOrigin = null;
+
 			if (autoHighlight)
 				highlighted = false;
 		}
@@ -472,7 +477,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnButtonClicked()
 		{
-			this.PerformHaptics(0.175f, 0.05f);
+			this.Pulse(m_RayOrigin, 0.25f, 0.065f, false, true);
 		}
 	}
 }
