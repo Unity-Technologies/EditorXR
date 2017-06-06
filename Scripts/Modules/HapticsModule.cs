@@ -121,6 +121,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
+		public void StopPulses(Transform rayOrigin = null)
+		{
+			// Stop haptic feedback on only one device, if specific via the function parameter
+			// Otherwise stop all haptic feedback on all devices
+			if (rayOrigin == null)
+			{
+				m_RHapticsChannel.Clear();
+				m_LHapticsChannel.Clear();
+			}
+			else
+			{
+				var channel = GetTargetChannel(rayOrigin);
+				if (channel != null)
+					channel.Clear();
+			}
+		}
+
 		OVRHaptics.OVRHapticsChannel GetTargetChannel(Transform rayOrigin)
 		{
 			OVRHaptics.OVRHapticsChannel channel = null;
