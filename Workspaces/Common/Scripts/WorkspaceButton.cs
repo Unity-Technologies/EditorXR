@@ -321,7 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			this.Pulse(m_RayOrigin, 0.005f, 0.082f);
+			this.Pulse(m_RayOrigin, 0.005f, 0.125f);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
@@ -473,7 +473,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnButtonClicked()
 		{
-			this.Pulse(m_RayOrigin, 0.25f, 0.065f, false, true);
+			this.Pulse(m_RayOrigin, 0.25f, 0.085f, true, true);
 		}
 	}
 }
