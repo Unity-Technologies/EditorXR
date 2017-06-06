@@ -250,7 +250,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				else
 				{
 					MathUtilsExt.SetTransformOffset(rayOrigin, m_WorkspaceUI.transform.parent, m_PositionOffset, m_RotationOffset);
-					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.055f, false, true);
+					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.075f, false, true);
 				}
 			}
 		}
