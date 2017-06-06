@@ -4,10 +4,11 @@ using System.Text;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolButton : MonoBehaviour, ISelectTool
+	sealed class PinnedToolButton : MonoBehaviour, ISelectTool, IPointerEnterHandler, IPerformHaptics
 	{
 		public Type toolType
 		{
@@ -44,6 +45,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnClick()
 		{
 			SetButtonGradients(this.SelectTool(rayOrigin, m_ToolType));
+			this.Pulse(rayOrigin, 0.5f, 0.085f, true, true);
+		}
+
+		public void OnPointerEnter(PointerEventData eventData)
+		{
+			this.Pulse(rayOrigin, 0.005f, 0.125f);
 		}
 
 		// Create periodic table-style names for types
