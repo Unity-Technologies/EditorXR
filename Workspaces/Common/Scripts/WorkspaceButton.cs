@@ -123,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Graphic[] m_HighlightItems;
 
 		[SerializeField]
-		bool m_GrayscaleGradient = false;
+		bool m_GrayscaleGradient;
 
 		[Header("Animated Reveal Settings")]
 		[SerializeField]
