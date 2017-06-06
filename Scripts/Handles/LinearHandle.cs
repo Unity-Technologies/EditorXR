@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -7,6 +8,8 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 {
 	sealed class LinearHandle : BaseHandle
 	{
+		const float k_MaxDragDistance = 1000f;
+
 		class LinearHandleEventData : HandleEventData
 		{
 			public Vector3 raycastHitWorldPosition;
@@ -15,22 +18,21 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		}
 
 		[SerializeField]
-		private Transform m_HandleTip;
+		Transform m_HandleTip;
 
 		[SerializeField]
 		bool m_OrientDragPlaneToRay = true;
 
+		[FlagsProperty]
 		[SerializeField]
 		ConstrainedAxis m_Constraints;
 
-		private const float k_MaxDragDistance = 1000f;
-
-		private Plane m_Plane;
-		private Vector3 m_LastPosition;
+		Plane m_Plane;
+		Vector3 m_LastPosition;
 
 		public ConstrainedAxis constraints { get { return m_Constraints; } }
 
-		private void OnDisable()
+		void OnDisable()
 		{
 			if (m_HandleTip != null)
 				m_HandleTip.gameObject.SetActive(false);
@@ -58,7 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			base.OnHandleHoverEnded(eventData);
 		}
 
-		private void UpdateHandleTip(LinearHandleEventData eventData)
+		void UpdateHandleTip(LinearHandleEventData eventData)
 		{
 			if (m_HandleTip != null)
 			{
@@ -103,13 +105,13 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		protected override void OnHandleDragging(HandleEventData eventData)
 		{
-			Transform rayOrigin = eventData.rayOrigin;
-			Vector3 worldPosition = m_LastPosition;
+			var rayOrigin = eventData.rayOrigin;
+			var worldPosition = m_LastPosition;
 
 			UpdatePlaneOrientation(rayOrigin);
 
-			float distance = 0f;
-			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			float distance;
+			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			if (m_Plane.Raycast(ray, out distance))
 				worldPosition = ray.GetPoint(Mathf.Min(distance, k_MaxDragDistance));
 
