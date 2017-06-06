@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Clone", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
-	sealed class Clone : BaseAction, IUsesSpatialHash
+	sealed class Clone : BaseAction, IUsesSpatialHash, IUsesViewerScale
 	{
 		public override void ExecuteAction()
 		{
@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				var cloneTransform = clone.transform;
 				var cameraTransform = CameraUtils.GetMainCamera().transform;
 				var viewDirection = cloneTransform.position - cameraTransform.position;
-				cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude)
+				cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude / this.GetViewerScale())
 					+ cloneTransform.position - bounds.center;
 				this.AddToSpatialHash(clone);
 				clones[index++] = clone;
