@@ -22,17 +22,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// </summary>
 		public Func<Transform, Node?> getNodeFromRayOrigin { private get; set; }
 
+#if ENABLE_OVR_INPUT
 		OVRHaptics.OVRHapticsChannel m_LHapticsChannel;
 		OVRHaptics.OVRHapticsChannel m_RHapticsChannel;
 		OVRHapticsClip m_GeneratedHapticClip;
+#endif
 
+		/// <summary>
+		/// Allow for a single warning that informs the user of an attempted pulse with a length greater than 0.8f
+		/// </summary>
 		bool m_SampleLengthWarningShown;
 
 		void Start()
 		{
+#if ENABLE_OVR_INPUT
 			m_LHapticsChannel = OVRHaptics.LeftChannel;
 			m_RHapticsChannel = OVRHaptics.RightChannel;
 			m_GeneratedHapticClip = new OVRHapticsClip();
+#endif
 		}
 
 		void LateUpdate()
@@ -51,12 +58,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// <param name="fadeOut">Fade the pulse out</param>
 		public void Pulse(Transform rayOrigin, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
 		{
+#if ENABLE_OVR_INPUT
 			// Clip buffer can hold up to 800 milliseconds of samples
 			// At 320Hz, each sample is 3.125f milliseconds
 			if (Mathf.Approximately(m_MasterIntensity, 0))
 				return;
 
-			m_GeneratedHapticClip.Reset(); // TODO: Support multiple generated clips
+			m_GeneratedHapticClip.Reset();
 
 			const float kMaxDuration = 0.8f;
 			if (duration > kMaxDuration)
@@ -119,10 +127,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					m_LHapticsChannel.Mix(m_GeneratedHapticClip);
 				}
 			}
+#endif
 		}
 
 		public void StopPulses(Transform rayOrigin = null)
 		{
+#if ENABLE_OVR_INPUT
 			// Stop haptic feedback on only one device, if specific via the function parameter
 			// Otherwise stop all haptic feedback on all devices
 			if (rayOrigin == null)
@@ -136,8 +146,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (channel != null)
 					channel.Clear();
 			}
+#endif
 		}
 
+#if ENABLE_OVR_INPUT
 		OVRHaptics.OVRHapticsChannel GetTargetChannel(Transform rayOrigin)
 		{
 			OVRHaptics.OVRHapticsChannel channel = null;
@@ -154,6 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			return channel;
 		}
+#endif
 	}
 }
 #endif
