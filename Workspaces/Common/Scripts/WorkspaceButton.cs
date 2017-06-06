@@ -327,7 +327,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			const float kTargetTransitionAmount = 1f;
 			var transitionAmount = Time.deltaTime;
-			var shapedTransitionAmount = 0f;
 			var topColor = Color.clear;
 			var bottomColor = Color.clear;
 			var currentTopColor = m_ButtonMaterial.GetColor(k_MaterialColorTopProperty);
@@ -340,7 +339,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.deltaTime * transitionAmountMultiplier;
-				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
+				var shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				transform.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
 
 				topColor = Color.Lerp(currentTopColor, topHighlightColor, shapedTransitionAmount);
@@ -363,7 +362,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			const float kTargetTransitionAmount = 1f;
 			var transitionAmount = Time.deltaTime;
-			var shapedTransitionAmount = 0f;
 			var topColor = Color.clear;
 			var bottomColor = Color.clear;
 			var currentTopColor = m_ButtonMaterial.GetColor(k_MaterialColorTopProperty);
@@ -375,7 +373,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.deltaTime * 3;
-				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
+				var shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				topColor = Color.Lerp(currentTopColor, topOriginalColor, shapedTransitionAmount);
 				bottomColor = Color.Lerp(currentBottomColor, bottomOriginalColor, shapedTransitionAmount);
 
