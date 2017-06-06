@@ -461,14 +461,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					if (isContained && !wasContained)
 					{
-						Rays.HideRay(rayOrigin, true);
+						Rays.SetDefaultRayVisibility(rayOrigin, false, true);
 						Rays.LockRay(rayOrigin, this);
 					}
 
 					if (!isContained && wasContained)
 					{
 						Rays.UnlockRay(rayOrigin, this);
-						Rays.ShowRay(rayOrigin, true);
+						Rays.SetDefaultRayVisibility(rayOrigin, true, true);
 					}
 
 					m_RayWasContained[rayOrigin] = isContained;
@@ -579,7 +579,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						if (!miniWorldRay.isContained)
 						{
 							Rays.UnlockRay(rayOrigin, this);
-							Rays.ShowRay(rayOrigin, true);
+							Rays.SetDefaultRayVisibility(rayOrigin, true, true);
 						}
 					}
 				}
