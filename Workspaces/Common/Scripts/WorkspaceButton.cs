@@ -48,9 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			get { return m_Pressed; }
 			set
 			{
-				if (!m_Highlighted)
-					value = false;
-				else if (value != m_Pressed && value) // proceed only if value is true after previously being false
+				if (m_Highlighted && value != m_Pressed && value) // proceed only if value is true after previously being false
 				{
 					m_Pressed = value;
 
