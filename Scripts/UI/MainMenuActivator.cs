@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IUsesRayOrigin
+	sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IUsesRayOrigin, IPerformHaptics
 	{
 		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
 		static readonly float kAlternateLocationOffset = 0.06f;
@@ -108,11 +108,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			var rayEventData = eventData as RayEventData;
 			if (selected != null)
+			{
+				this.Pulse(rayOrigin, 0.5f, 0.06f, true, true);
 				selected(rayOrigin, rayEventData != null ? rayEventData.rayOrigin : null);
+			}
 		}
 
 		IEnumerator Highlight(bool transitionIn = true)
 		{
+			this.Pulse(rayOrigin, 0.005f, 0.125f);
 			var amount = 0f;
 			var currentScale = m_Icon.localScale;
 			var currentPosition = m_Icon.localPosition;
