@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				public float cameraRigScale { get { return m_CameraRigScale; } set { m_CameraRigScale = value; } }
 			}
 
-			const float k_CameraRigTransitionTime = 0.75f;
+			const float k_CameraRigTransitionTime = 0.25f;
 
 			PlayerBody m_PlayerBody;
 			float m_OriginalNearClipPlane;
