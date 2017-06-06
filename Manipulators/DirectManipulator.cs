@@ -74,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			var target = m_Target == null ? transform : m_Target;
 
 			var rayOrigin = eventData.rayOrigin;
-			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position, rayOrigin, ConstrainedAxis.None);
+			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position, rayOrigin, 0);
 			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
 		}
 
