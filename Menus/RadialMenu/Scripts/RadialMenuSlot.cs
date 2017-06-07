@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
+	sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler, IPerformHaptics
 	{
 		static Color s_FrameOpaqueColor;
 		static readonly Vector3 k_HiddenLocalScale = new Vector3(1f, 0f, 1f);
@@ -88,6 +88,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					// Only start the highlight coroutine if the highlight coroutine isnt already playing. Otherwise allow it to gracefully finish.
 					if (m_HighlightCoroutine == null)
 						m_HighlightCoroutine = StartCoroutine(Highlight());
+
+					this.Pulse(rayOrigin, 0.005f, 0.2f);
 				}
 				else
 				{
@@ -203,6 +205,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		// For overriding text (i.e. TransformActions)
 		public ITooltip tooltip { private get; set; }
+
+		public Transform rayOrigin { get; set; }
 
 		void Awake()
 		{

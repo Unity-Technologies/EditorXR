@@ -6,7 +6,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap
+	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap, IPerformHaptics
 	{
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
@@ -76,6 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_RadialMenuUI.actions = menuActions;
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
+			m_RadialMenuUI.rayOrigin = rayOrigin;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -102,6 +103,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (radialMenuInput.selectItem.wasJustReleased)
 			{
+				this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
+
 				m_RadialMenuUI.SelectionOccurred();
 
 				if (itemWasSelected != null)
