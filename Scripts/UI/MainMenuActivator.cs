@@ -85,6 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_HighlightCoroutine = null;
 			m_HighlightCoroutine = StartCoroutine(Highlight());
+			this.Pulse(rayOrigin, 0.005f, 0.2f);
 		}
 
 		public void OnPointerExit(PointerEventData eventData)
@@ -108,15 +109,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			var rayEventData = eventData as RayEventData;
 			if (selected != null)
-			{
-				this.Pulse(rayOrigin, 0.5f, 0.06f, true, true);
 				selected(rayOrigin, rayEventData != null ? rayEventData.rayOrigin : null);
-			}
 		}
 
 		IEnumerator Highlight(bool transitionIn = true)
 		{
-			this.Pulse(rayOrigin, 0.005f, 0.125f);
 			var amount = 0f;
 			var currentScale = m_Icon.localScale;
 			var currentPosition = m_Icon.localPosition;
