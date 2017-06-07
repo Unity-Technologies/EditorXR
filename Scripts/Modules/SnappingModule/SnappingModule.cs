@@ -500,42 +500,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 							var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
 							var startRotation = state.startRotation;
 							var upVector = startRotation * Vector3.back;
-							var maxRayLength = Vector3.Project(boundsExtents, direction).magnitude;
+							var maxRayLength = projectedExtents.magnitude;
 							var breakDistance = breakScale * k_ManipulatorSurfaceSnapBreakDist;
 
 							switch (constraints)
 							{
 								case ConstrainedAxis.X:
-									if (Vector3.Dot(targetRotation * Vector3.left, direction) > 0)
+									if (Vector3.Dot(Vector3.left, direction) > 0)
 										offset *= -1;
 									break;
 								case ConstrainedAxis.Y:
-									if (Vector3.Dot(targetRotation * Vector3.up, direction) > 0)
+									if (Vector3.Dot(Vector3.up, direction) > 0)
 										offset *= -1;
 									break;
 								case ConstrainedAxis.Z:
-									if (Vector3.Dot(targetRotation * Vector3.forward, direction) > 0)
+									if (Vector3.Dot(Vector3.forward, direction) > 0)
 										offset *= -1;
 									break;
 							}
 
-							//Debug.Log(constraints + ", " + Vector3.Dot(targetRotation * Vector3.forward, direction));
+							Debug.Log(constraints + ", " + offset + ", " + targetPosition + ", " + direction);
 
 							var axisRay = new Ray(targetPosition, direction);
-
-							debug = Color.red;
-							GizmoModule.instance.DrawSphere(axisRay.origin, 0.01f, Color.red);
-							GizmoModule.instance.DrawRay(axisRay.origin, axisRay.direction, Color.red, breakDistance);
 
 							if (SnapToSurface(axisRay, ref position, ref rotation, state, offset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, maxRayLength)
 								|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance))
 								return true;
 
 							axisRay = new Ray(targetPosition, -direction);
-
-							debug = Color.blue;
-							GizmoModule.instance.DrawSphere(axisRay.origin, 0.01f, Color.blue);
-							GizmoModule.instance.DrawRay(axisRay.origin, axisRay.direction, Color.blue, breakDistance);
 
 							if (SnapToSurface(axisRay, ref position, ref rotation, state, -offset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, maxRayLength)
 								|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance))
@@ -680,7 +672,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var hitPoint = hit.point;
 				m_CurrentSurfaceSnappingHit = hitPoint;
 				var snappedPosition = pivotSnappingEnabled ? hitPoint : hitPoint + boundsOffset;
-				//Debug.Log(snappedPosition + " , " + boundsOffset);
 
 				if (localOnly && Vector3.Distance(snappedPosition, targetPosition) > breakDistance)
 					return false;
