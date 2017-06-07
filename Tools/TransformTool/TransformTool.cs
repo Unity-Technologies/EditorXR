@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-		IGrabObjects, ICustomRay, IProcessInput, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight,
+		IGrabObjects, ISetDefaultRayVisibility, IProcessInput, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight,
 		ILinkedObject
 	{
 		const float k_LazyFollowTranslate = 8f;
@@ -325,7 +325,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray());
 
-						this.HideDefaultRay(directRayOrigin, true); // This will also unhighlight the object
+						this.SetDefaultRayVisibility(directRayOrigin, false, true); // This will also unhighlight the object
 						this.LockRay(directRayOrigin, this);
 
 						// Wait a frame since OnSelectionChanged is called at the end of the frame, and will set m_DirectSelected to false
@@ -532,7 +532,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_GrabData.Remove(node);
 
 			this.UnlockRay(grabData.rayOrigin, this);
-			this.ShowDefaultRay(grabData.rayOrigin, true);
+			this.SetDefaultRayVisibility(grabData.rayOrigin, true, true);
 
 			this.ClearSnappingState(rayOrigin);
 		}

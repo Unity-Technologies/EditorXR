@@ -2,6 +2,7 @@
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
 #if ENABLE_STEAMVR_INPUT
 using System;
 using Valve.VR;
@@ -62,6 +63,15 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
 			if (leftSteamDeviceIndex == -1 || rightSteamDeviceIndex == -1 || leftSteamDeviceIndex == rightSteamDeviceIndex)
 				return;
+
+			// Oculus Touch on OpenVR should have fixed left/right hand device indices
+			if (VRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0
+				&& leftSteamDeviceIndex > rightSteamDeviceIndex)
+			{
+				var swap = rightSteamDeviceIndex;
+				rightSteamDeviceIndex = leftSteamDeviceIndex;
+				leftSteamDeviceIndex = swap;
+			}
 
 			for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left; (int)hand <= (int)VRInputDevice.Handedness.Right; hand++)
 			{

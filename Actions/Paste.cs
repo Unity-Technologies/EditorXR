@@ -22,7 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				{
 					var bounds = ObjectUtils.GetBounds(value);
 					
-					s_BufferDistance = bounds.size != Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 0f;
+					s_BufferDistance = bounds.size != Vector3.zero ?
+						(bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 1f;
 					s_BufferDistance /= IUsesViewerScaleMethods.getViewerScale(); // Normalize this value, so if viewer scale changes when pasted
 				}
 			}
@@ -40,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				var bounds = ObjectUtils.GetBounds(buffer);
 				foreach (var transform in buffer)
 				{
-					var pasted = Instantiate(transform.gameObject);
+					var pasted = ObjectUtils.Instantiate(transform.gameObject);
 					var pastedTransform = pasted.transform;
 					pasted.hideFlags = HideFlags.None;
 					var cameraTransform = CameraUtils.GetMainCamera().transform;
