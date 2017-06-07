@@ -45,12 +45,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnClick()
 		{
 			SetButtonGradients(this.SelectTool(rayOrigin, m_ToolType));
-			this.Pulse(rayOrigin, 0.5f, 0.085f, true, true);
+			this.Pulse(rayOrigin, 0.5f, 0.2f, true, true);
 		}
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			this.Pulse(rayOrigin, 0.005f, 0.125f);
+			this.Pulse(rayOrigin, 0.005f, 0.2f);
 		}
 
 		// Create periodic table-style names for types
