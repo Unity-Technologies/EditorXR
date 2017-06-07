@@ -1,10 +1,12 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, ITooltip
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IPerformHaptics, IRayEnterHandler, IPointerClickHandler
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]
@@ -16,8 +18,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		private Text m_ButtonTitle;
 
 		Color m_OriginalColor;
+		Transform m_RayOrigin;
 
 		public string tooltipText { get; set; }
+
+		public void OnPointerClick(PointerEventData eventData)
+		{
+			this.Pulse(m_RayOrigin, 0.5f, 0.095f, true, true);
+		}
 
 		public bool selected
 		{
@@ -41,10 +49,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_OriginalColor = m_Button.targetGraphic.color;
 		}
 
+		void OnDisable()
+		{
+			m_RayOrigin = null;
+		}
+
 		public void SetData(string name, string description)
 		{
 			m_ButtonTitle.text = name;
 			m_ButtonDescription.text = description;
+		}
+
+		public void OnRayEnter(RayEventData eventData)
+		{
+			m_RayOrigin = eventData.rayOrigin;
+			this.Pulse(eventData.rayOrigin, 0.005f, 0.175f);
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			m_RayOrigin = null;
 		}
 	}
 }
