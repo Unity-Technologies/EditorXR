@@ -13,7 +13,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
+	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IPerformHaptics
 	{
 		static Color s_FrameOpaqueColor;
 		static Color s_SemiTransparentFrameColor;
@@ -377,8 +377,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				if (!m_Highlighted)
 					this.HideTooltip(this);
-				//else
-					// perform haptics here for spatial scrolling
+				else
+					this.Pulse(rayOrigin, 0.005f, 0.2f); // Used for spatial selection highlighting only
 
 				if (implementsSecondaryButton && (!isMainMenu || !isSelectionTool))
 				{
@@ -649,6 +649,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			s_Hovered = true;
 
+			this.Pulse(rayOrigin, 0.005f, 0.175f);
+
 			if (isMainMenu)
 			{
 				m_GradientButton.highlighted = true;
@@ -810,6 +812,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
 			closeButton();
+			this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
 			//deleteHighlightedButton(rayOrigin);
 			//deletePinnedToolButton(rayOrigin, this);
 			ActionButtonHoverExit(false);
