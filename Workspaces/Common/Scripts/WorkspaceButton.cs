@@ -48,9 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			get { return m_Pressed; }
 			set
 			{
-				if (!m_Highlighted)
-					value = false;
-				else if (value != m_Pressed && value) // proceed only if value is true after previously being false
+				if (m_Highlighted && value != m_Pressed && value) // proceed only if value is true after previously being false
 				{
 					m_Pressed = value;
 
@@ -125,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Graphic[] m_HighlightItems;
 
 		[SerializeField]
-		bool m_GrayscaleGradient = false;
+		bool m_GrayscaleGradient;
 
 		[Header("Animated Reveal Settings")]
 		[SerializeField]
@@ -323,13 +321,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			this.Pulse(m_RayOrigin, 0.005f, 0.082f);
+			this.Pulse(m_RayOrigin, 0.005f, 0.175f);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
 			const float kTargetTransitionAmount = 1f;
 			var transitionAmount = Time.deltaTime;
-			var shapedTransitionAmount = 0f;
 			var topColor = Color.clear;
 			var bottomColor = Color.clear;
 			var currentTopColor = m_ButtonMaterial.GetColor(k_MaterialColorTopProperty);
@@ -342,7 +339,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.deltaTime * transitionAmountMultiplier;
-				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
+				var shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				transform.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
 
 				topColor = Color.Lerp(currentTopColor, topHighlightColor, shapedTransitionAmount);
@@ -365,7 +362,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			const float kTargetTransitionAmount = 1f;
 			var transitionAmount = Time.deltaTime;
-			var shapedTransitionAmount = 0f;
 			var topColor = Color.clear;
 			var bottomColor = Color.clear;
 			var currentTopColor = m_ButtonMaterial.GetColor(k_MaterialColorTopProperty);
@@ -377,7 +373,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			while (transitionAmount < kTargetTransitionAmount)
 			{
 				transitionAmount += Time.deltaTime * 3;
-				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
+				var shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
 				topColor = Color.Lerp(currentTopColor, topOriginalColor, shapedTransitionAmount);
 				bottomColor = Color.Lerp(currentBottomColor, bottomOriginalColor, shapedTransitionAmount);
 
@@ -477,7 +473,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnButtonClicked()
 		{
-			this.Pulse(m_RayOrigin, 0.25f, 0.065f, false, true);
+			this.Pulse(m_RayOrigin, 0.25f, 0.15f, true, true);
 		}
 	}
 }

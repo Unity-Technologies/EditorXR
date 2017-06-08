@@ -2,11 +2,12 @@
 using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, ITooltip
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IPerformHaptics, IRayEnterHandler, IPointerClickHandler
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]
@@ -20,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
 		IPinnedToolButton m_HighlightedPinnedToolbutton;
+		Transform m_RayOrigin;
 
 		/// <summary>
 		/// Highlights a pinned tool button when this menu button is highlighted
@@ -29,6 +31,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public string tooltipText { get; set; }
 
 		public Type toolType { get; set; }
+
+		public void OnPointerClick(PointerEventData eventData)
+		{
+			this.Pulse(m_RayOrigin, 0.5f, 0.095f, true, true);
+		}
 
 		public bool selected
 		{
@@ -52,6 +59,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_OriginalColor = m_Button.targetGraphic.color;
 		}
 
+		void OnDisable()
+		{
+			m_RayOrigin = null;
+		}
+
 		public void SetData(string name, string description)
 		{
 			m_ButtonTitle.text = name;
@@ -65,6 +77,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			// Enable preview-mode on a pinned tool button; Display on the opposite proxy device via the HoveringRayOrigin
 			m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(m_HoveringRayOrigin, toolType);
+
+			m_RayOrigin = eventData.rayOrigin;
+			this.Pulse(eventData.rayOrigin, 0.005f, 0.175f);
 		}
 
 		public void OnRayExit(RayEventData eventData)
@@ -75,6 +90,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// Disable preview-mode on pinned tool button
 			if (m_HighlightedPinnedToolbutton != null)
 				m_HighlightedPinnedToolbutton.previewToolType = null;
+
+			m_RayOrigin = null;
 		}
 	}
 }

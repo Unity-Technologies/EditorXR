@@ -10,20 +10,12 @@ using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ICustomRay, IUsesHandedRayOrigin,
+	sealed class BlinkLocomotionTool : MonoBehaviour, ITool, ILocomotor, ISetDefaultRayVisibility, IUsesHandedRayOrigin,
 		ICustomActionMap, ILinkedObject, IUsesProxyType, IUsesViewerScale
-
 	{
-		const float k_FastRotationSpeed = 300f;
-		const float k_RotationThreshold = 0.9f;
-		const float k_SlowRotationSpeed = 15f;
-		const float k_FastMoveSpeed = 10f;
-		const float k_MoveThreshold = 0.9f;
-		const float k_SlowMoveSpeed = 3f;
-
-		const float k_MoveThresholdVive = 0.8f;
-		const float k_RotationThresholdVive = 0.8f;
-
+		const float k_RotationSpeed = 150f;
+		const float k_MoveSpeed = 9f;
+		
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
 		const float k_MinScale = 0.1f;
 		const float k_MaxScale = 1000f;
@@ -105,7 +97,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		private void OnDestroy()
 		{
-			this.ShowDefaultRay(rayOrigin);
+			this.SetDefaultRayVisibility(rayOrigin, true);
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -254,11 +246,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						}
 						else
 						{
-							var speed = yawValue * k_SlowRotationSpeed;
-							var threshold = m_IsVive ? k_RotationThresholdVive : k_RotationThreshold;
-							if (Mathf.Abs(yawValue) > threshold)
-								speed = k_FastRotationSpeed * Mathf.Sign(yawValue);
-
+							var speed = Mathf.Sign(yawValue) * Mathf.Pow(yawValue, 2f) * k_RotationSpeed;
 							cameraRig.RotateAround(viewerCamera.transform.position, Vector3.up, speed * Time.deltaTime);
 						}
 
@@ -287,7 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
-				this.HideDefaultRay(rayOrigin);
+				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
 
 				m_BlinkVisuals.ShowVisuals();
@@ -297,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
 			{
 				this.UnlockRay(rayOrigin, this);
-				this.ShowDefaultRay(rayOrigin);
+				this.SetDefaultRayVisibility(rayOrigin, true);
 
 				if (!m_BlinkVisuals.outOfMaxRange)
 				{
@@ -314,11 +302,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Translate(float inputValue, bool isVive, Vector3 direction)
 		{
-			var speed = inputValue * k_SlowMoveSpeed;
-			var threshold = isVive ? k_MoveThresholdVive : k_MoveThreshold;
-			if (Mathf.Abs(inputValue) > threshold)
-				speed = k_FastMoveSpeed * Mathf.Sign(inputValue);
-
+			var speed = Mathf.Sign(inputValue) * Mathf.Pow(inputValue, 2f) * k_MoveSpeed;
 			speed *= this.GetViewerScale();
 
 			cameraRig.Translate(direction * speed * Time.deltaTime, Space.World);

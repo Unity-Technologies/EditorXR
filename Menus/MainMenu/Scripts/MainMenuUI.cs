@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI
+	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IUsesRayOrigin, IPerformHaptics
 	{
 		public class ButtonData
 		{
@@ -127,6 +127,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public float targetRotation { get; set; }
 
 		public int faceCount { get { return m_MenuFaces.Length; } }
+
+		public Transform rayOrigin { get; set; }
 
 		public bool visible
 		{
@@ -399,6 +401,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningIn;
 
+			this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
+
 			foreach (var face in m_MenuFaces)
 			{
 				face.Show();
@@ -439,6 +443,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield break;
 
 			m_VisibilityState = VisibilityState.TransitioningOut;
+
+			this.Pulse(rayOrigin, 0.75f, 0.075f, false, true);
 
 			foreach (var face in m_MenuFaces)
 			{

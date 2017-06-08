@@ -9,6 +9,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -606,11 +607,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.StopCoroutine(ref m_ActivatorMoveCoroutine);
 			this.StopCoroutine(ref m_HoverCheckCoroutine);
 			this.StopCoroutine(ref m_SecondaryButtonVisibilityCoroutine);
+			this.Pulse(rayOrigin, 0.5f, 0.2f, true, true);
 		}
 
 		void DestroyButton()
 		{
 			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
+		}
+
+		public void OnPointerEnter(PointerEventData eventData)
+		{
+			this.Pulse(rayOrigin, 0.005f, 0.2f);
 		}
 
 		// Create periodic table-style names for types

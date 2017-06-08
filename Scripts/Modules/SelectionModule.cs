@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged
+	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IPerformHaptics
 	{
 		GameObject m_CurrentGroupRoot;
 		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
@@ -63,6 +63,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_CurrentGroupRoot = groupRoot;
 
 			m_SelectedObjects.Clear();
+
+			if (hoveredObject)
+				this.Pulse(rayOrigin, 0.45f, 0.075f, false, true);
 
 			// Multi-Select
 			if (multiSelect)

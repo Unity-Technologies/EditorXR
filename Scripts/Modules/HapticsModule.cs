@@ -133,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public void StopPulses(Transform rayOrigin = null)
 		{
 #if ENABLE_OVR_INPUT
-			// Stop haptic feedback on only one device, if specific via the function parameter
+			// Stop haptic feedback on only one device, if specified via the function parameter
 			// Otherwise stop all haptic feedback on all devices
 			if (rayOrigin == null)
 			{
@@ -145,6 +145,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var channel = GetTargetChannel(rayOrigin);
 				if (channel != null)
 					channel.Clear();
+				else
+					Debug.LogWarning("Only null, or valid ray origins can stop pulse playback.");
 			}
 #endif
 		}
