@@ -4,7 +4,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Gives decorated class ability to perform haptic feedback
+	/// Gives decorated class ability to control haptic feedback
 	/// </summary>
 	public interface IControlHaptics
 	{
@@ -17,9 +17,9 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static PulseDelegate pulse { get; set; }
 
 		/// <summary>
-		/// Perform haptic feedback
+		/// Perform a haptic feedback pulse
 		/// </summary>
-		/// <param name="rayOrigin">Device RayOrigin/Transform on which to perform the pulse. A NULL value will pulse on all devices</param>
+		/// <param name="rayOrigin">Device RayOrigin/Transform on which to control the pulse. A NULL value will pulse on all devices</param>
 		/// <param name="duration">Duration of haptic feedback</param>
 		/// <param name="intensity">Intensity of haptic feedback (optional)</param>
 		/// <param name="fadeIn">Fade the pulse in</param>
