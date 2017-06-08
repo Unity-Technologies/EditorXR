@@ -99,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		// we watch until playmode is done and then relaunch.  
 		static void ReopenOnExitPlaymode()
 		{
-			bool launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
+			var launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
 			if (!launch || !EditorApplication.isPlaying)
 			{
 				EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
@@ -114,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (EditorApplication.isPlayingOrWillChangePlaymode)
 			{
 				EditorPrefs.SetBool(k_LaunchOnExitPlaymode, true);
-				VRView view = VRView.activeView;
+				var view = VRView.activeView;
 				if (view)
 					view.Close();
 			}
