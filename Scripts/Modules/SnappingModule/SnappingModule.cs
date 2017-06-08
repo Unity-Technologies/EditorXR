@@ -429,7 +429,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public bool ManipulatorSnap(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints, PivotMode pivotMode)
+		public bool ManipulatorSnap(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints)
 		{
 			if (transforms.Length == 0)
 				return false;

@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IUsesSnappingMethods
 	{
-		internal delegate bool ManipulatorSnapDelegate(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints, PivotMode pivotMode);
+		internal delegate bool ManipulatorSnapDelegate(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints);
 		internal delegate bool DirectSnapDelegate(Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
 
 		internal static ManipulatorSnapDelegate manipulatorSnap { get; set; }
@@ -29,11 +29,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="rotation">The rotation to be modified if rotation snapping is enabled</param>
 		/// <param name="delta">The position delta to apply</param>
 		/// <param name="constraints">The axis constraints</param>
-		/// <param name="pivotMode">The manipulator's pivot mode</param>
 		/// <returns>Whether the position was set to a snapped position</returns>
-		public static bool ManipulatorSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints, PivotMode pivotMode)
+		public static bool ManipulatorSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints)
 		{
-			return manipulatorSnap(rayOrigin, transforms, ref position, ref rotation, delta, constraints, pivotMode);
+			return manipulatorSnap(rayOrigin, transforms, ref position, ref rotation, delta, constraints);
 		}
 
 		/// <summary>
