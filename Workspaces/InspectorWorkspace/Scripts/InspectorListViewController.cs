@@ -116,7 +116,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		protected override void UpdateRecursively(List<InspectorData> data, ref float offset, ref bool doneSettling, int depth = 0)
+		protected override void UpdateRecursively(List<InspectorData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
 		{
 			for (int i = 0; i < data.Count; i++)
 			{
@@ -140,41 +140,42 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
 					Recycle(index);
 				else
-					UpdateItemRecursive(datum, offset, depth, expanded, ref doneSettling);
+					UpdateItemRecursive(datum, order++, offset, depth, expanded, ref doneSettling);
 
 				offset += itemSize.z;
 
 				if (datum.children != null)
 				{
 					if (expanded)
-						UpdateRecursively(datum.children, ref offset, ref doneSettling, depth + 1);
+						UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling, depth + 1);
 					else
 						RecycleChildren(datum);
 				}
 			}
 		}
 
-		void UpdateItemRecursive(InspectorData data, float offset, int depth, bool expanded, ref bool doneSettling)
+		void UpdateItemRecursive(InspectorData data, int order, float offset, int depth, bool expanded, ref bool doneSettling)
 		{
 			InspectorListItem item;
 			if (!m_ListItems.TryGetValue(data.index, out item))
 			{
 				item = GetItem(data);
-				UpdateItem(item.transform, offset, true, ref doneSettling);
+				UpdateItem(item.transform, order, offset, true, ref doneSettling);
 			}
 
 			item.UpdateSelf(m_Size.x - k_ClipMargin, depth, expanded);
 			item.UpdateClipTexts(transform.worldToLocalMatrix, m_Extents);
 
-			UpdateItem(item.transform, offset, false, ref doneSettling);
+			UpdateItem(item.transform, order, offset, false, ref doneSettling);
 		}
 
-		void UpdateItem(Transform t, float offset, bool dontSettle, ref bool doneSettling)
+		void UpdateItem(Transform t, int order, float offset, bool dontSettle, ref bool doneSettling)
 		{
 			var targetPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
 			var targetRotation = Quaternion.identity;
 
-			UpdateItemTransform(t, targetPosition, targetRotation, dontSettle, ref doneSettling);
+			// order is reversed because Inspector draws bottom-to-top, hence the "0" below
+			UpdateItemTransform(t, 0, targetPosition, targetRotation, dontSettle, ref doneSettling);
 		}
 
 		protected override InspectorListItem GetItem(InspectorData listData)
