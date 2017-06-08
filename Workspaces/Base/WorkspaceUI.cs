@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IPerformHaptics
+	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IControlHaptics
 	{
 		const int k_AngledFaceBlendShapeIndex = 2;
 		const int k_ThinFrameBlendShapeIndex = 3;

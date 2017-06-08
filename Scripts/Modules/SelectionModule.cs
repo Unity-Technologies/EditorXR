@@ -6,7 +6,7 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IPerformHaptics
+	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics
 	{
 		GameObject m_CurrentGroupRoot;
 		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state

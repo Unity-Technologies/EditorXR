@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef, IPerformHaptics
+	sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef, IControlHaptics
 	{
 		const float k_IconHighlightedLocalZOffset = -0.0015f;
 		const string k_MaterialAlphaProperty = "_Alpha";

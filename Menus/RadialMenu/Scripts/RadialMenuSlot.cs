@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler, IPerformHaptics
+	sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler, IControlHaptics
 	{
 		static Color s_FrameOpaqueColor;
 		static readonly Vector3 k_HiddenLocalScale = new Vector3(1f, 0f, 1f);

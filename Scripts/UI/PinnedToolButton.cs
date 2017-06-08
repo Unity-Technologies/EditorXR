@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolButton : MonoBehaviour, ISelectTool, IPointerEnterHandler, IPerformHaptics
+	sealed class PinnedToolButton : MonoBehaviour, ISelectTool, IPointerEnterHandler, IControlHaptics
 	{
 		public Type toolType
 		{

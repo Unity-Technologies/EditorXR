@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IUsesRayOrigin, IPerformHaptics
+	sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IUsesRayOrigin, IControlHaptics
 	{
 		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
 		static readonly float kAlternateLocationOffset = 0.06f;

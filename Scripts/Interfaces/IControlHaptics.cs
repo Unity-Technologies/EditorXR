@@ -6,11 +6,11 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Gives decorated class ability to perform haptic feedback
 	/// </summary>
-	public interface IPerformHaptics
+	public interface IControlHaptics
 	{
 	}
 
-	public static class IPerformHapticsMethods
+	public static class IControlHapticsMethods
 	{
 		internal delegate void PulseDelegate(Transform rayOrigin, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false);
 
@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="intensity">Intensity of haptic feedback (optional)</param>
 		/// <param name="fadeIn">Fade the pulse in</param>
 		/// <param name="fadeOut">Fade the pulse out</param>
-		public static void Pulse(this IPerformHaptics obj, Transform rayOrigin, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
+		public static void Pulse(this IControlHaptics obj, Transform rayOrigin, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
 		{
 			pulse(rayOrigin, duration, intensity, fadeIn, fadeOut);
 		}
@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Stop all haptic feedback on a specific device, or all devices
 		/// </summary>
 		/// <param name="rayOrigin">Device RayOrigin/Transform on which to stop all pulses. A NULL value will stop pulses on all devices</param>
-		public static void StopPulses(this IPerformHaptics obj, Transform rayOrigin)
+		public static void StopPulses(this IControlHaptics obj, Transform rayOrigin)
 		{
 			stopPulses(rayOrigin);
 		}

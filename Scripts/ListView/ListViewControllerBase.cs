@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace ListView
 {
-	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler, IPerformHaptics
+	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler, IControlHaptics
 	{
 		public float scrollOffset { get { return m_ScrollOffset; } set { m_ScrollOffset = value; } }
 

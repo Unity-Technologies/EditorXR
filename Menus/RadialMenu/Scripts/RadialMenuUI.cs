@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces, IPerformHaptics
+	sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces, IControlHaptics
 	{
 		const int k_SlotCount = 16;
 
