@@ -1320,7 +1320,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
-  m_Constraints: 14
+  m_Constraints: 6
 --- !u!114 &114000011250465190
 MonoBehaviour:
   m_ObjectHideFlags: 1

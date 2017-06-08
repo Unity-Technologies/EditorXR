@@ -500,13 +500,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 							var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
 							var startRotation = state.startRotation;
 							var upVector = startRotation * Vector3.back;
-							var maxRayLength = projectedExtents.magnitude;
+							var maxRayLength = projectedExtents.magnitude * 2;
 							var breakDistance = breakScale * k_ManipulatorSurfaceSnapBreakDist;
 
 							switch (constraints)
 							{
 								case ConstrainedAxis.X:
-									if (Vector3.Dot(Vector3.left, direction) > 0)
+									if (Vector3.Dot(Vector3.right, direction) > 0)
 										offset *= -1;
 									break;
 								case ConstrainedAxis.Y:
@@ -519,12 +519,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 									break;
 							}
 
-							Debug.Log(constraints + ", " + offset + ", " + targetPosition + ", " + direction);
-
 							var axisRay = new Ray(targetPosition, direction);
 
 							if (SnapToSurface(axisRay, ref position, ref rotation, state, offset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, maxRayLength)
-								|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance))
+								|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance)
+								)
 								return true;
 
 							axisRay = new Ray(targetPosition, -direction);
@@ -541,8 +540,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			return false;
 		}
-
-		static Color debug = Color.black;
 
 		public bool DirectSnap(Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
 		{
@@ -666,7 +663,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			GameObject go;
 			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
 			{
-				GizmoModule.instance.DrawSphere(hit.point, 0.01f * this.GetViewerScale(), debug);
 				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
 				var hitPoint = hit.point;
@@ -684,6 +680,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				m_CurrentSurfaceSnappingPosition = position;
 				m_CurrentSurfaceSnappingRotation = snappedRotation;
+
 				return true;
 			}
 

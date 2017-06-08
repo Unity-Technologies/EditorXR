@@ -176,8 +176,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
 
-			AddModule<GizmoModule>();
-
 			var sceneObjectModule = AddModule<SceneObjectModule>();
 			sceneObjectModule.tryPlaceObject = (obj, targetScale) =>
 			{

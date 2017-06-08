@@ -74,9 +74,41 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 			var plane = handle as PlaneHandle;
 			if (plane)
+			{
 				constraints = plane.constraints;
-
-			translate(eventData.deltaPosition, eventData.rayOrigin, constraints);
+				var delta = eventData.deltaPosition;
+				switch (constraints)
+				{
+					case ConstrainedAxis.X | ConstrainedAxis.Y:
+					{
+						var xComponent = Vector3.Project(delta, transform.right);
+						translate(xComponent, eventData.rayOrigin, ConstrainedAxis.X);
+						var yComponent = Vector3.Project(delta, transform.up);
+						translate(yComponent, eventData.rayOrigin, ConstrainedAxis.Y);
+					}
+						break;
+					case ConstrainedAxis.Y | ConstrainedAxis.Z:
+					{
+						var yComponent = Vector3.Project(delta, transform.up);
+						translate(yComponent, eventData.rayOrigin, ConstrainedAxis.Y);
+						var zComponent = Vector3.Project(delta, transform.forward);
+						translate(zComponent, eventData.rayOrigin, ConstrainedAxis.Z);
+					}
+						break;
+					case ConstrainedAxis.X | ConstrainedAxis.Z:
+					{
+						var xComponent = Vector3.Project(delta, transform.right);
+						translate(xComponent, eventData.rayOrigin, ConstrainedAxis.X);
+						var zComponent = Vector3.Project(delta, transform.forward);
+						translate(zComponent, eventData.rayOrigin, ConstrainedAxis.Z);
+					}
+						break;
+				}
+			}
+			else
+			{
+				translate(eventData.deltaPosition, eventData.rayOrigin, constraints);
+			}
 		}
 
 		void OnRotateDragging(BaseHandle handle, HandleEventData eventData)
