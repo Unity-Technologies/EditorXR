@@ -51,7 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		class SnappingState
 		{
 			public Vector3 currentPosition { get; set; }
-			public Vector3 snappedPosition { get; set; }
 			public bool groundSnapping { get; set; }
 			public bool surfaceSnapping { get; set; }
 
@@ -633,7 +632,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			if (state.surfaceSnapping)
 			{
-				if (Vector3.Distance(state.snappedPosition, targetPosition) > breakDistance)
+				if (Vector3.Distance(position, targetPosition) > breakDistance)
 				{
 					position = targetPosition;
 					rotation = targetRotation;
@@ -674,13 +673,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastHit hit;
 			GameObject go;
-			GizmoModule.instance.DrawSphere(ray.origin, 0.1f, Color.blue);
-			GizmoModule.instance.DrawRay(ray.origin, ray.direction, Color.blue, raycastDistance);
 			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
 			{
-				GizmoModule.instance.DrawSphere(hit.point, 0.1f, Color.red);
-				GizmoModule.instance.DrawSphere(hit.point + rotation * boundsOffset, 0.1f, Color.blue);
-				GizmoModule.instance.DrawRay(hit.point, boundsOffset, Color.green, boundsOffset.magnitude);
 				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
 				var hitPoint = hit.point;

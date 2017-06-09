@@ -29,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="rotation">The rotation to be modified if rotation snapping is enabled</param>
 		/// <param name="delta">The position delta to apply</param>
 		/// <param name="constraints">The axis constraints</param>
+		/// <param name="pivotMode">The current pivot mode</param>
 		/// <returns>Whether the position was set to a snapped position</returns>
 		public static bool ManipulatorSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints, PivotMode pivotMode)
 		{

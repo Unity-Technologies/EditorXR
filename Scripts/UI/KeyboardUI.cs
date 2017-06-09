@@ -341,12 +341,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			return collapsing || m_EligibleForDrag;
 		}
 
-		bool Translate(Vector3 deltaPosition, Transform rayOrigin, ConstrainedAxis constraints, bool snapping)
+		void Translate(Vector3 deltaPosition, Transform rayOrigin, ConstrainedAxis constraints)
 		{
 			if (m_EligibleForDrag)
 				transform.position += deltaPosition;
-
-			return false;
 		}
 
 		void Rotate(Quaternion deltaRotation)
