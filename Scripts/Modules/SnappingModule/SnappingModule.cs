@@ -429,7 +429,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public bool ManipulatorSnap(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints)
+		public bool ManipulatorSnap(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints, PivotMode pivotMode)
 		{
 			if (transforms.Length == 0)
 				return false;
@@ -492,44 +492,60 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					default:
 						if (surfaceSnappingEnabled)
 						{
-							var bounds = state.identityBounds;
-							var boundsExtents = bounds.extents;
 							var direction = delta.normalized;
-							var projectedExtents = Vector3.Project(boundsExtents, direction);
-							var offset = projectedExtents - bounds.center;
 							var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
 							var startRotation = state.startRotation;
 							var upVector = startRotation * Vector3.back;
-							var maxRayLength = projectedExtents.magnitude * 2;
 							var breakDistance = breakScale * k_ManipulatorSurfaceSnapBreakDist;
 
-							switch (constraints)
+							var axisRay = new Ray(targetPosition, direction);
+							var objectCenter = Vector3.zero;
+							var rayOffset = Vector3.zero;
+							var boundsOffset = Vector3.zero;
+
+							if (!pivotSnappingEnabled)
 							{
-								case ConstrainedAxis.X:
-									if (Vector3.Dot(Vector3.right, direction) > 0)
-										offset *= -1;
-									break;
-								case ConstrainedAxis.Y:
-									if (Vector3.Dot(Vector3.up, direction) > 0)
-										offset *= -1;
-									break;
-								case ConstrainedAxis.Z:
-									if (Vector3.Dot(Vector3.forward, direction) > 0)
-										offset *= -1;
-									break;
+								var bounds = state.identityBounds;
+								rayOffset = Vector3.Project(rotation * bounds.extents, direction);
+								objectCenter = targetPosition;
+								if (pivotMode != PivotMode.Center)
+									objectCenter += targetRotation * bounds.center;
+
+								switch (constraints)
+								{
+									case ConstrainedAxis.X:
+										if (Vector3.Dot(rotation * Vector3.right, direction) > 0)
+											rayOffset *= -1;
+										break;
+									case ConstrainedAxis.Y:
+										if (Vector3.Dot(rotation * Vector3.up, direction) > 0)
+											rayOffset *= -1;
+										break;
+									case ConstrainedAxis.Z:
+										if (Vector3.Dot(rotation * Vector3.forward, direction) > 0)
+											rayOffset *= -1;
+										break;
+								}
+
+								axisRay.origin = objectCenter - rayOffset;
+								boundsOffset = targetPosition - axisRay.origin;
 							}
 
-							var axisRay = new Ray(targetPosition, direction);
-
-							if (SnapToSurface(axisRay, ref position, ref rotation, state, offset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, maxRayLength)
-								|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance)
-								)
+							if (SnapToSurface(axisRay, ref position, ref rotation, state, boundsOffset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, breakDistance * 0.75f))
 								return true;
 
-							axisRay = new Ray(targetPosition, -direction);
+							// Check other direction
+							axisRay.direction *= -1;
+							if (!pivotSnappingEnabled)
+							{
+								axisRay.origin = objectCenter + rayOffset;
+								boundsOffset = targetPosition - axisRay.origin;
+							}
 
-							if (SnapToSurface(axisRay, ref position, ref rotation, state, -offset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, maxRayLength)
-								|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance))
+							if (SnapToSurface(axisRay, ref position, ref rotation, state, boundsOffset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, breakDistance * 0.75f))
+								return true;
+
+							if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance))
 								return true;
 						}
 						break;
@@ -661,8 +677,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastHit hit;
 			GameObject go;
+			GizmoModule.instance.DrawSphere(ray.origin, 0.1f, Color.blue);
+			GizmoModule.instance.DrawRay(ray.origin, ray.direction, Color.blue, raycastDistance);
 			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
 			{
+				GizmoModule.instance.DrawSphere(hit.point, 0.1f, Color.red);
+				GizmoModule.instance.DrawSphere(hit.point + rotation * boundsOffset, 0.1f, Color.blue);
+				GizmoModule.instance.DrawRay(hit.point, boundsOffset, Color.green, boundsOffset.magnitude);
 				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
 				var hitPoint = hit.point;

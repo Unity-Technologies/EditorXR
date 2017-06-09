@@ -539,7 +539,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Translate(Vector3 delta, Transform rayOrigin, ConstrainedAxis constraints)
 		{
-			this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta, constraints);
+			this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta, constraints, m_PivotMode);
 		}
 
 		void Rotate(Quaternion delta)
