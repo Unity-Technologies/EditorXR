@@ -24,6 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_ManipulatorGroundSnapMin = 0.05f;
 		const float k_ManipulatorGroundSnapMax = 0.15f;
 		const float k_ManipulatorSurfaceSnapBreakDist = 0.1f;
+		const float k_ManipulatorSurfaceSearchScale = 0.75f;
 
 		const float k_DirectSurfaceSearchScale = 1.1f;
 		const float k_DirectSurfaceSnapBreakDist = 0.03f;
@@ -50,6 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		class SnappingState
 		{
 			public Vector3 currentPosition { get; set; }
+			public Vector3 snappedPosition { get; set; }
 			public bool groundSnapping { get; set; }
 			public bool surfaceSnapping { get; set; }
 
@@ -450,104 +452,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				AddToIgnoreList(transforms);
 
+				var manipulatorBreakScale = breakScale * k_ManipulatorSurfaceSnapBreakDist;
 				switch (constraints)
 				{
 					case 0:
-						if (surfaceSnappingEnabled && ManipulatorSnapToSurface(rayOrigin, ref position, ref rotation, targetPosition, state, targetRotation, breakScale * k_ManipulatorSurfaceSnapBreakDist))
+						if (surfaceSnappingEnabled && ManipulatorSnapToSurface(rayOrigin, ref position, ref rotation, targetPosition, state, targetRotation, manipulatorBreakScale))
 							return true;
 
 						if (groundSnappingEnabled)
 						{
 							if (localOnly)
 							{
-								if (SnapToGround(ref position, ref rotation, targetPosition, targetRotation, state, breakScale * k_ManipulatorGroundSnapMin, breakScale * k_ManipulatorGroundSnapMax))
+								if (LocalSnapToGround(ref position, ref rotation, targetPosition, targetRotation, state, breakScale * k_ManipulatorGroundSnapMin, breakScale * k_ManipulatorGroundSnapMax))
 									return true;
 							}
 							else
 							{
-								var groundPlane = new Plane(Vector3.up, k_GroundHeight);
-								var origin = rayOrigin.position;
-								var direction = rayOrigin.forward;
-								var pointerRay = new Ray(origin, direction);
-								var raycastDistance = k_GroundSnappingMaxRayLength * this.GetViewerScale();
-								float distance;
-								if (groundPlane.Raycast(pointerRay, out distance) && distance <= raycastDistance)
-								{
-									state.groundSnapping = true;
-
-									position = origin + direction * distance;
-
-									if (rotationSnappingEnabled)
-										rotation = Quaternion.LookRotation(Vector3.up, targetRotation * Vector3.back) * Quaternion.AngleAxis(90, Vector3.right);
-
+								if (GlobalSnapToGround(new Ray(rayOrigin.position, rayOrigin.forward), ref position, ref rotation, targetPosition, targetRotation, state, k_GroundSnappingMaxRayLength * this.GetViewerScale()))
 									return true;
-								}
-
-								state.groundSnapping = false;
-								position = targetPosition;
-								rotation = targetRotation;
 							}
 						}
+
 						break;
 					default:
-						if (surfaceSnappingEnabled)
-						{
-							var direction = delta.normalized;
-							var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
-							var startRotation = state.startRotation;
-							var upVector = startRotation * Vector3.back;
-							var breakDistance = breakScale * k_ManipulatorSurfaceSnapBreakDist;
+						if (ManipulatorSnapConstrained(ref position, ref rotation, delta, targetPosition, state, targetRotation, manipulatorBreakScale, constraints, pivotMode))
+							return true;
 
-							var axisRay = new Ray(targetPosition, direction);
-							var objectCenter = Vector3.zero;
-							var rayOffset = Vector3.zero;
-							var boundsOffset = Vector3.zero;
-
-							if (!pivotSnappingEnabled)
-							{
-								var bounds = state.identityBounds;
-								rayOffset = Vector3.Project(rotation * bounds.extents, direction);
-								objectCenter = targetPosition;
-								if (pivotMode != PivotMode.Center)
-									objectCenter += targetRotation * bounds.center;
-
-								switch (constraints)
-								{
-									case ConstrainedAxis.X:
-										if (Vector3.Dot(rotation * Vector3.right, direction) > 0)
-											rayOffset *= -1;
-										break;
-									case ConstrainedAxis.Y:
-										if (Vector3.Dot(rotation * Vector3.up, direction) > 0)
-											rayOffset *= -1;
-										break;
-									case ConstrainedAxis.Z:
-										if (Vector3.Dot(rotation * Vector3.forward, direction) > 0)
-											rayOffset *= -1;
-										break;
-								}
-
-								axisRay.origin = objectCenter - rayOffset;
-								boundsOffset = targetPosition - axisRay.origin;
-							}
-
-							if (SnapToSurface(axisRay, ref position, ref rotation, state, boundsOffset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, breakDistance * 0.75f))
-								return true;
-
-							// Check other direction
-							axisRay.direction *= -1;
-							if (!pivotSnappingEnabled)
-							{
-								axisRay.origin = objectCenter + rayOffset;
-								boundsOffset = targetPosition - axisRay.origin;
-							}
-
-							if (SnapToSurface(axisRay, ref position, ref rotation, state, boundsOffset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, breakDistance * 0.75f))
-								return true;
-
-							if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance))
-								return true;
-						}
 						break;
 				}
 			}
@@ -573,7 +503,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (surfaceSnappingEnabled && DirectSnapToSurface(ref position, ref rotation, targetPosition, state, targetRotation, breakDistance))
 					return true;
 
-				if (groundSnappingEnabled && SnapToGround(ref position, ref rotation, targetPosition, targetRotation, state, breakScale * k_DirectGroundSnapMin, breakScale * k_DirectGroundSnapMax))
+				if (groundSnappingEnabled && LocalSnapToGround(ref position, ref rotation, targetPosition, targetRotation, state, breakScale * k_DirectGroundSnapMin, breakScale * k_DirectGroundSnapMax))
 					return true;
 			}
 
@@ -599,11 +529,78 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
 		}
 
+		bool ManipulatorSnapConstrained(ref Vector3 position, ref Quaternion rotation, Vector3 delta, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance, ConstrainedAxis constraints, PivotMode pivotMode)
+		{
+			var direction = delta.normalized;
+			var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
+			var startRotation = state.startRotation;
+			var upVector = startRotation * Vector3.back;
+			var raycastDistance = breakDistance * k_ManipulatorSurfaceSearchScale; // Shorten ray to avoid jitter at the edge of the break distance
+
+			var axisRay = new Ray(targetPosition, direction);
+			var objectCenter = Vector3.zero;
+			var rayOffset = Vector3.zero;
+			var boundsOffset = Vector3.zero;
+
+			if (!pivotSnappingEnabled)
+			{
+				var bounds = state.identityBounds;
+				rayOffset = Vector3.Project(rotation * bounds.extents, direction);
+				objectCenter = targetPosition;
+				if (pivotMode != PivotMode.Center)
+					objectCenter += targetRotation * bounds.center;
+
+				switch (constraints)
+				{
+					case ConstrainedAxis.X:
+						if (Vector3.Dot(rotation * Vector3.right, direction) > 0)
+							rayOffset *= -1;
+						break;
+					case ConstrainedAxis.Y:
+						if (Vector3.Dot(rotation * Vector3.up, direction) > 0)
+							rayOffset *= -1;
+						break;
+					case ConstrainedAxis.Z:
+						if (Vector3.Dot(rotation * Vector3.forward, direction) > 0)
+							rayOffset *= -1;
+						break;
+				}
+
+				axisRay.origin = objectCenter - rayOffset;
+				boundsOffset = targetPosition - axisRay.origin;
+			}
+
+			if (surfaceSnappingEnabled && SnapToSurface(axisRay, ref position, ref rotation, state, boundsOffset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, raycastDistance))
+				return true;
+
+			if (groundSnappingEnabled && GlobalSnapToGround(axisRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, boundsOffset))
+				return true;
+
+			// Check other direction
+			axisRay.direction *= -1;
+			if (!pivotSnappingEnabled)
+			{
+				axisRay.origin = objectCenter + rayOffset;
+				boundsOffset = targetPosition - axisRay.origin;
+			}
+
+			if (surfaceSnappingEnabled && SnapToSurface(axisRay, ref position, ref rotation, state, boundsOffset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, raycastDistance))
+				return true;
+
+			if (groundSnappingEnabled && GlobalSnapToGround(axisRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, boundsOffset))
+				return true;
+
+			if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance))
+				return true;
+
+			return false;
+		}
+
 		bool DirectSnapToSurface(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance)
 		{
 			var bounds = state.identityBounds;
 			var boundsCenter = bounds.center;
-			for (int i = 0; i < k_Directions.Length; i++)
+			for (var i = 0; i < k_Directions.Length; i++)
 			{
 				var direction = k_Directions[i];
 				var upVector = targetRotation * direction.upVector;
@@ -636,7 +633,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			if (state.surfaceSnapping)
 			{
-				if (Vector3.Distance(position, targetPosition) > breakDistance)
+				if (Vector3.Distance(state.snappedPosition, targetPosition) > breakDistance)
 				{
 					position = targetPosition;
 					rotation = targetRotation;
@@ -658,7 +655,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			m_CombinedIgnoreList.Clear();
 
-			for (int i = 0; i < transforms.Length; i++)
+			for (var i = 0; i < transforms.Length; i++)
 			{
 				var renderers = transforms[i].GetComponentsInChildren<Renderer>();
 				for (var j = 0; j < renderers.Length; j++)
@@ -667,7 +664,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 			}
 
-			for (int i = 0; i < ignoreList.Length; i++)
+			for (var i = 0; i < ignoreList.Length; i++)
 			{
 				m_CombinedIgnoreList.Add(ignoreList[i].gameObject);
 			}
@@ -677,8 +674,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastHit hit;
 			GameObject go;
+			GizmoModule.instance.DrawSphere(ray.origin, 0.1f, Color.blue);
+			GizmoModule.instance.DrawRay(ray.origin, ray.direction, Color.blue, raycastDistance);
 			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
 			{
+				GizmoModule.instance.DrawSphere(hit.point, 0.1f, Color.red);
+				GizmoModule.instance.DrawSphere(hit.point + rotation * boundsOffset, 0.1f, Color.blue);
+				GizmoModule.instance.DrawRay(hit.point, boundsOffset, Color.green, boundsOffset.magnitude);
 				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
 				var hitPoint = hit.point;
@@ -704,46 +706,68 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 
 
-		bool SnapToGround(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float groundSnapMin, float groundSnapMax)
+		bool LocalSnapToGround(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float groundSnapMin, float groundSnapMax)
 		{
-			if (groundSnappingEnabled)
+			var diffGround = Mathf.Abs(targetPosition.y - k_GroundHeight);
+
+			var bounds = state.rotatedBounds;
+			if (rotationSnappingEnabled)
+				bounds = state.identityBounds;
+
+			var offset = bounds.center.y - bounds.extents.y;
+
+			if (!pivotSnappingEnabled)
+				diffGround = Mathf.Abs(targetPosition.y + offset - k_GroundHeight);
+
+			if (diffGround < groundSnapMin)
+				state.groundSnapping = true;
+
+			if (diffGround > groundSnapMax)
 			{
-				var diffGround = Mathf.Abs(targetPosition.y - k_GroundHeight);
-
-				var bounds = state.rotatedBounds;
-				if (rotationSnappingEnabled)
-					bounds = state.identityBounds;
-
-				var offset = bounds.center.y - bounds.extents.y;
-
-				if (!pivotSnappingEnabled)
-					diffGround = Mathf.Abs(targetPosition.y + offset - k_GroundHeight);
-
-				if (diffGround < groundSnapMin)
-					state.groundSnapping = true;
-
-				if (diffGround > groundSnapMax)
-				{
-					state.groundSnapping = false;
-					position = targetPosition;
-					rotation = targetRotation;
-				}
-
-				if (state.groundSnapping)
-				{
-					if (pivotSnappingEnabled)
-						targetPosition.y = k_GroundHeight;
-					else
-						targetPosition.y = k_GroundHeight - offset;
-
-					position = targetPosition;
-
-					if (rotationSnappingEnabled)
-						rotation = Quaternion.LookRotation(Vector3.up, targetRotation * Vector3.back) * Quaternion.AngleAxis(90, Vector3.right);
-
-					return true;
-				}
+				state.groundSnapping = false;
+				position = targetPosition;
+				rotation = targetRotation;
 			}
+
+			if (state.groundSnapping)
+			{
+				if (pivotSnappingEnabled)
+					targetPosition.y = k_GroundHeight;
+				else
+					targetPosition.y = k_GroundHeight - offset;
+
+				position = targetPosition;
+
+				if (rotationSnappingEnabled)
+					rotation = Quaternion.LookRotation(Vector3.up, targetRotation * Vector3.back) * Quaternion.AngleAxis(90, Vector3.right);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		bool GlobalSnapToGround(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float raycastDistance, Vector3 boundsOffset = default(Vector3))
+		{
+			var groundPlane = new Plane(Vector3.up, k_GroundHeight);
+			float distance;
+			if (groundPlane.Raycast(ray, out distance) && distance <= raycastDistance)
+			{
+				state.groundSnapping = true;
+
+				var hitPoint = ray.origin + ray.direction * distance;
+				var snappedPosition = pivotSnappingEnabled ? hitPoint : hitPoint + boundsOffset;
+				position = snappedPosition;
+
+				if (rotationSnappingEnabled)
+					rotation = Quaternion.LookRotation(Vector3.up, targetRotation * Vector3.back) * Quaternion.AngleAxis(90, Vector3.right);
+
+				return true;
+			}
+
+			state.groundSnapping = false;
+			position = targetPosition;
+			rotation = targetRotation;
 
 			return false;
 		}

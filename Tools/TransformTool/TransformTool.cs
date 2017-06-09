@@ -537,9 +537,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.ClearSnappingState(rayOrigin);
 		}
 
-		void Translate(Vector3 delta, Transform rayOrigin, ConstrainedAxis constraints)
+		bool Translate(Vector3 delta, Transform rayOrigin, ConstrainedAxis constraints, bool snapping)
 		{
-			this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta, constraints, m_PivotMode);
+			if (snapping)
+				return this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta, constraints, m_PivotMode);
+
+			m_TargetPosition += delta;
+			return false;
 		}
 
 		void Rotate(Quaternion delta)

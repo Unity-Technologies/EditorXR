@@ -174,6 +174,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
 
+			AddModule<GizmoModule>();
+
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();

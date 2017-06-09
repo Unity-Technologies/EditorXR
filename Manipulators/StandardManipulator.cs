@@ -82,32 +82,32 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 					case ConstrainedAxis.X | ConstrainedAxis.Y:
 					{
 						var xComponent = Vector3.Project(delta, transform.right);
-						translate(xComponent, eventData.rayOrigin, ConstrainedAxis.X);
+						var snapped = translate(xComponent, eventData.rayOrigin, ConstrainedAxis.X, true);
 						var yComponent = Vector3.Project(delta, transform.up);
-						translate(yComponent, eventData.rayOrigin, ConstrainedAxis.Y);
+						translate(yComponent, eventData.rayOrigin, ConstrainedAxis.Y, !snapped);
 					}
 						break;
 					case ConstrainedAxis.Y | ConstrainedAxis.Z:
 					{
 						var yComponent = Vector3.Project(delta, transform.up);
-						translate(yComponent, eventData.rayOrigin, ConstrainedAxis.Y);
+						var snapped = translate(yComponent, eventData.rayOrigin, ConstrainedAxis.Y, true);
 						var zComponent = Vector3.Project(delta, transform.forward);
-						translate(zComponent, eventData.rayOrigin, ConstrainedAxis.Z);
+						translate(zComponent, eventData.rayOrigin, ConstrainedAxis.Z, !snapped);
 					}
 						break;
 					case ConstrainedAxis.X | ConstrainedAxis.Z:
 					{
 						var xComponent = Vector3.Project(delta, transform.right);
-						translate(xComponent, eventData.rayOrigin, ConstrainedAxis.X);
+						var snapped = translate(xComponent, eventData.rayOrigin, ConstrainedAxis.X, true);
 						var zComponent = Vector3.Project(delta, transform.forward);
-						translate(zComponent, eventData.rayOrigin, ConstrainedAxis.Z);
+						translate(zComponent, eventData.rayOrigin, ConstrainedAxis.Z, !snapped);
 					}
 						break;
 				}
 			}
 			else
 			{
-				translate(eventData.deltaPosition, eventData.rayOrigin, constraints);
+				translate(eventData.deltaPosition, eventData.rayOrigin, constraints, true);
 			}
 		}
 
