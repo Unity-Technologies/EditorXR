@@ -677,13 +677,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastHit hit;
 			GameObject go;
-			GizmoModule.instance.DrawSphere(ray.origin, 0.1f, Color.blue);
-			GizmoModule.instance.DrawRay(ray.origin, ray.direction, Color.blue, raycastDistance);
 			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
 			{
-				GizmoModule.instance.DrawSphere(hit.point, 0.1f, Color.red);
-				GizmoModule.instance.DrawSphere(hit.point + rotation * boundsOffset, 0.1f, Color.blue);
-				GizmoModule.instance.DrawRay(hit.point, boundsOffset, Color.green, boundsOffset.magnitude);
 				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
 				var hitPoint = hit.point;
