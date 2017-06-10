@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		const float k_ManipulatorGroundSnapMin = 0.05f;
 		const float k_ManipulatorGroundSnapMax = 0.15f;
-		const float k_ManipulatorSurfaceSnapBreakDist = 0.1f;
+		const float k_ManipulatorSurfaceSnapBreakDist = 0.2f;
 		const float k_ManipulatorSurfaceSearchScale = 0.75f;
 
 		const float k_DirectSurfaceSearchScale = 1.1f;
@@ -446,16 +446,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var targetPosition = state.currentPosition;
 				var targetRotation = state.startRotation;
 
+				GizmoModule.instance.DrawSphere(targetPosition, 1f, Color.red);
+
 				var camera = CameraUtils.GetMainCamera();
 				var breakScale = Vector3.Distance(camera.transform.position, targetPosition);
 
 				AddToIgnoreList(transforms);
 
-				var manipulatorBreakScale = breakScale * k_ManipulatorSurfaceSnapBreakDist;
+				var bounds = state.identityBounds;
+				var direction = delta.normalized;
+				var projectedExtents = Vector3.Project(rotation * bounds.extents, direction);
+				var manipulatorBreakDistance = (breakScale * k_ManipulatorSurfaceSnapBreakDist + projectedExtents.magnitude) * 0.5f;
+
 				switch (constraints)
 				{
 					case 0:
-						if (surfaceSnappingEnabled && ManipulatorSnapToSurface(rayOrigin, ref position, ref rotation, targetPosition, state, targetRotation, manipulatorBreakScale))
+						if (surfaceSnappingEnabled && ManipulatorSnapToSurface(rayOrigin, ref position, ref rotation, targetPosition, state, targetRotation, manipulatorBreakDistance))
 							return true;
 
 						if (groundSnappingEnabled)
@@ -474,7 +480,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 						break;
 					default:
-						if (ManipulatorSnapConstrained(ref position, ref rotation, delta, targetPosition, state, targetRotation, manipulatorBreakScale, constraints, pivotMode))
+						manipulatorBreakDistance = Mathf.Max(manipulatorBreakDistance, (delta.magnitude / breakScale) / Time.deltaTime);
+						if (ManipulatorSnapConstrained(ref position, ref rotation, direction, targetPosition, state, targetRotation, projectedExtents, manipulatorBreakDistance, constraints, pivotMode))
 							return true;
 
 						break;
@@ -528,9 +535,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
 		}
 
-		bool ManipulatorSnapConstrained(ref Vector3 position, ref Quaternion rotation, Vector3 delta, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance, ConstrainedAxis constraints, PivotMode pivotMode)
+		bool ManipulatorSnapConstrained(ref Vector3 position, ref Quaternion rotation, Vector3 direction, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, Vector3 projectedExtents, float breakDistance, ConstrainedAxis constraints, PivotMode pivotMode)
 		{
-			var direction = delta.normalized;
 			var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
 			var startRotation = state.startRotation;
 			var upVector = startRotation * Vector3.back;
@@ -538,34 +544,31 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			var axisRay = new Ray(targetPosition, direction);
 			var objectCenter = Vector3.zero;
-			var rayOffset = Vector3.zero;
 			var boundsOffset = Vector3.zero;
 
 			if (!pivotSnappingEnabled)
 			{
-				var bounds = state.identityBounds;
-				rayOffset = Vector3.Project(rotation * bounds.extents, direction);
 				objectCenter = targetPosition;
 				if (pivotMode != PivotMode.Center)
-					objectCenter += targetRotation * bounds.center;
+					objectCenter += targetRotation * state.identityBounds.center;
 
 				switch (constraints)
 				{
 					case ConstrainedAxis.X:
 						if (Vector3.Dot(rotation * Vector3.right, direction) > 0)
-							rayOffset *= -1;
+							projectedExtents *= -1;
 						break;
 					case ConstrainedAxis.Y:
 						if (Vector3.Dot(rotation * Vector3.up, direction) > 0)
-							rayOffset *= -1;
+							projectedExtents *= -1;
 						break;
 					case ConstrainedAxis.Z:
 						if (Vector3.Dot(rotation * Vector3.forward, direction) > 0)
-							rayOffset *= -1;
+							projectedExtents *= -1;
 						break;
 				}
 
-				axisRay.origin = objectCenter - rayOffset;
+				axisRay.origin = objectCenter - projectedExtents;
 				boundsOffset = targetPosition - axisRay.origin;
 			}
 
@@ -579,7 +582,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			axisRay.direction *= -1;
 			if (!pivotSnappingEnabled)
 			{
-				axisRay.origin = objectCenter + rayOffset;
+				axisRay.origin = objectCenter + projectedExtents;
 				boundsOffset = targetPosition - axisRay.origin;
 			}
 
