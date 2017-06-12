@@ -111,12 +111,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			const float kTargetDuration = 0.3f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentLength = MathUtilsExt.SmoothDamp(currentLength, 0f, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentLength = MathUtilsExt.SmoothDamp(currentLength, 0f, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 				m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
 				var alpha = currentLength / startLength;
 				m_Bulb.transform.localScale = bulbStartScale * alpha;
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				yield return null;
 			}
 
@@ -137,12 +137,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentLength = MathUtilsExt.SmoothDamp(currentLength, m_StemLength, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentLength = MathUtilsExt.SmoothDamp(currentLength, m_StemLength, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_StemOrigin.localScale = new Vector3(stemScale.x, currentLength, stemScale.z);
 				m_Bulb.transform.localPosition = new Vector3(0f, 0f, currentLength * 2f);
 				var alpha = currentLength / m_StemLength;
 				m_Bulb.transform.localScale = targetBulbScale * alpha;
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				yield return null;
 			}
 

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bcb87ab5055bd3498c8b75ba8ccde1c, type: 3}
+  m_Name: EditorVR
+  m_EditorClassIdentifier: 
+  m_DefaultToolStack:
+  - {fileID: 11500000, guid: 882053426a5f76d46b5505d9a20be912, type: 3}
+  - {fileID: 11500000, guid: aab8fcc587f237c4cb48fb7bc8a59909, type: 3}
+  - {fileID: 11500000, guid: 367f6e7e8089d554ebdb3aff02883660, type: 3}
+  - {fileID: 11500000, guid: 49e533569ecea994c856e43af713e5be, type: 3}
+  - {fileID: 11500000, guid: 403957a6dcd8bfe4a905881513f309b0, type: 3}

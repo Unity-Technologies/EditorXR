@@ -1,20 +1,20 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
-	sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI
+	sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, ISerializeWorkspace
 	{
 		const float k_LeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
-		const float k_PaneMargin = 0.01f;
-		const float k_PanelMargin = 0.01f;
-		const float k_ScrollMargin = 0.03f;
 		const float k_YBounds = 0.2f;
 
 		const float k_MinScale = 0.04f;
@@ -22,8 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		bool m_AssetGridDragging;
 		bool m_FolderPanelDragging;
-		Transform m_AssetGridHighlightContainer;
-		Transform m_FolderPanelHighlightContainer;
 
 		[SerializeField]
 		GameObject m_ContentPrefab;
@@ -36,6 +34,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		ProjectUI m_ProjectUI;
 		FilterUI m_FilterUI;
+		ZoomSliderUI m_ZoomSliderUI;
+
+		List<FolderData> m_FolderData;
+		List<string> m_FilterList;
 
 		public List<FolderData> folderData
 		{
@@ -47,8 +49,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					m_ProjectUI.folderListView.data = value;
 			}
 		}
-
-		List<FolderData> m_FolderData;
 
 		public List<string> filterList
 		{
@@ -62,19 +62,32 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		List<string> m_FilterList;
-
 		public string searchQuery { get { return m_FilterUI.searchQuery; } }
+
+		[Serializable]
+		class Preferences
+		{
+			[SerializeField]
+			float m_ScaleFactor;
+			[SerializeField]
+			string m_SelectedFolder;
+			[SerializeField]
+			List<string> m_ExpandedFolders;
+
+			public float scaleFactor { get { return m_ScaleFactor; } set { m_ScaleFactor = value; } }
+			public string selectedFolder { get { return m_SelectedFolder; } set { m_SelectedFolder = value; } }
+			public List<string> expandedFolders { get { return m_ExpandedFolders; } set { m_ExpandedFolders = value; } }
+		}
 
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
 			minBounds = new Vector3(MinBounds.x, MinBounds.y, 0.5f);
-			m_CustomStartingBounds = minBounds;
+			m_CustomStartingBounds = new Vector3(0.8f, 0.4f, 0.5f);
 
 			base.Setup();
 
-			topPanelDividerOffset = -0.2875f; // enable & position the top-divider(mask) slightly to the left of workspace center
+			topPanelDividerOffset = k_LeftPaneRatio; // enable & position the top-divider(mask) slightly to the left of workspace center
 
 			var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 			m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
@@ -86,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var folderListView = m_ProjectUI.folderListView;
 			this.ConnectInterfaces(folderListView);
-			folderListView.selectFolder = SelectFolder;
+			folderListView.folderSelected += OnFolderSelected;
 			folderData = m_FolderData;
 
 			m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
@@ -97,12 +110,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			filterList = m_FilterList;
 
 			var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
-			var zoomSlider = sliderObject.GetComponent<ZoomSliderUI>();
-			zoomSlider.zoomSlider.minValue = Mathf.Log10(k_MinScale);
-			zoomSlider.zoomSlider.maxValue = Mathf.Log10(k_MaxScale);
-			zoomSlider.zoomSlider.value = Mathf.Log10(m_ProjectUI.assetGridView.scaleFactor);
-			zoomSlider.sliding += Scale;
-			foreach (var mb in zoomSlider.GetComponentsInChildren<MonoBehaviour>())
+			m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
+			m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_MinScale);
+			m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_MaxScale);
+			m_ZoomSliderUI.sliding += Scale;
+			UpdateZoomSliderValue();
+			foreach (var mb in m_ZoomSliderUI.GetComponentsInChildren<MonoBehaviour>())
 			{
 				this.ConnectInterfaces(mb);
 			}
@@ -136,87 +149,75 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ProjectUI.folderScrollHandle.hoverStarted += OnFolderPanelHoverHighlightBegin;
 			m_ProjectUI.folderScrollHandle.hoverEnded += OnFolderPanelHoverHighlightEnd;
 
-			// Assign highlight references
-			m_FolderPanelHighlightContainer = m_ProjectUI.folderPanelHighlight.transform.parent.transform;
-			m_AssetGridHighlightContainer = m_ProjectUI.assetGridHighlight.transform.parent.transform;
-
 			// Propagate initial bounds
 			OnBoundsChanged();
 		}
 
-		protected override void OnBoundsChanged()
+		public object OnSerializeWorkspace()
 		{
-			const float kSideScrollBoundsShrinkAmount = 0.03f;
-			const float depthCompensation = 0.1375f;
-
-			var bounds = contentBounds;
-			var size = bounds.size;
-			size.x -= k_PaneMargin * 2;
-			size.x *= k_LeftPaneRatio;
-			size.y = k_YBounds;
-			size.z = size.z - depthCompensation;
-			bounds.size = size;
-			bounds.center = Vector3.zero;
-
-			var halfScrollMargin = k_ScrollMargin * 0.5f;
-			var doubleScrollMargin = k_ScrollMargin * 2;
-			var xOffset = (contentBounds.size.x - size.x + k_PaneMargin) * -0.5f;
-			var folderScrollHandleXPositionOffset = 0.025f;
-			var folderScrollHandleXScaleOffset = 0.015f;
-
-			var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
-			folderScrollHandleTransform.localPosition = new Vector3(xOffset - halfScrollMargin + folderScrollHandleXPositionOffset, -folderScrollHandleTransform.localScale.y * 0.5f, 0);
-			folderScrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin + folderScrollHandleXScaleOffset, folderScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
-
 			var folderListView = m_ProjectUI.folderListView;
-			size.x -= kSideScrollBoundsShrinkAmount; // set narrow x bounds for scrolling region on left side of folder list view
-			bounds.size = size;
-			folderListView.bounds = bounds;
-			const float kFolderListShrinkAmount = kSideScrollBoundsShrinkAmount / 2.2f; // Empirically determined value to allow for scroll borders
-			folderListView.transform.localPosition = new Vector3(xOffset + kFolderListShrinkAmount, folderListView.itemSize.y * 0.5f, 0); // Center in Y
 
-			var folderPanel = m_ProjectUI.folderPanel;
-			folderPanel.transform.localPosition = xOffset * Vector3.right;
-			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + k_PanelMargin);
-			folderPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + k_PanelMargin);
-
-			m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScrollBoundsShrinkAmount, 1f, size.z);
-
-			m_FolderPanelHighlightContainer.localScale = new Vector3(size.x + kSideScrollBoundsShrinkAmount, 1f, size.z);
-
-			size = contentBounds.size;
-			size.x -= k_PaneMargin * 2; // Reserve space for scroll on both sides
-			size.x *= 1 - k_LeftPaneRatio;
-			size.z = size.z - depthCompensation;
-			bounds.size = size;
-
-			xOffset = (contentBounds.size.x - size.x + k_PaneMargin) * 0.5f;
-
-			var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
-			assetScrollHandleTransform.localPosition = new Vector3(xOffset + halfScrollMargin, -assetScrollHandleTransform.localScale.y * 0.5f);
-			assetScrollHandleTransform.localScale = new Vector3(size.x + k_ScrollMargin, assetScrollHandleTransform.localScale.y, size.z + doubleScrollMargin);
-
-			var assetListView = m_ProjectUI.assetGridView;
-			assetListView.bounds = bounds;
-			assetListView.transform.localPosition = Vector3.right * xOffset;
-
-
-			var assetPanel = m_ProjectUI.assetPanel;
-			assetPanel.transform.localPosition = xOffset * Vector3.right;
-			assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x + k_PanelMargin);
-			assetPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z + k_PanelMargin);
-
-			m_AssetGridHighlightContainer.localScale = new Vector3(size.x, 1f, size.z);
+			var preferences = new Preferences();
+			preferences.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
+			preferences.expandedFolders = folderListView.expandStates.Where(es => es.Value).Select(es => es.Key).ToList();
+			preferences.selectedFolder = folderListView.selectedFolder;
+			return preferences;
 		}
 
+		public void OnDeserializeWorkspace(object obj)
+		{
+			var folderListView = m_ProjectUI.folderListView;
 
-		void SelectFolder(FolderData data)
+			var preferences = (Preferences)obj;
+			m_ProjectUI.assetGridView.scaleFactor = preferences.scaleFactor;
+			preferences.expandedFolders.ForEach(guid => folderListView.expandStates[guid] = true);
+			folderListView.selectedFolder = preferences.selectedFolder;
+			UpdateZoomSliderValue();
+		}
+
+		protected override void OnBoundsChanged()
+		{
+			const float kScrollHandleHeight = 0.001f;
+			const float kScrollHandleYPosition = -0.002f;
+			const float kDividerSize = 0.006f;
+
+			var size = contentBounds.size;
+
+			var contentSizeX = size.x - FaceMargin;
+
+			var sizeX = size.x * k_LeftPaneRatio - kDividerSize;
+			var sizeZ = size.z - FaceMargin + HighlightMargin;
+
+			var xOffset = (contentSizeX - sizeX) * -0.5f - HighlightMargin * 0.5f;
+
+			var folderScrollHandleTransform = m_ProjectUI.folderScrollHandle.transform;
+			folderScrollHandleTransform.localPosition = new Vector3(xOffset, kScrollHandleYPosition, 0);
+			folderScrollHandleTransform.localScale = new Vector3(sizeX, kScrollHandleHeight, sizeZ);
+
+			var folderListView = m_ProjectUI.folderListView;
+			folderListView.size = new Vector3(sizeX - FaceMargin, k_YBounds, sizeZ - FaceMargin);
+			folderListView.transform.localPosition = new Vector3(xOffset, folderListView.itemSize.y * 0.5f, 0); // Center in Y
+
+			sizeX = contentSizeX * (1 - k_LeftPaneRatio);
+			xOffset = (contentSizeX - sizeX) * 0.5f;
+			sizeX += HighlightMargin;
+
+			var assetScrollHandleTransform = m_ProjectUI.assetScrollHandle.transform;
+			assetScrollHandleTransform.localPosition = new Vector3(xOffset, kScrollHandleYPosition, 0);
+			assetScrollHandleTransform.localScale = new Vector3(sizeX, kScrollHandleHeight, sizeZ);
+
+			var assetListView = m_ProjectUI.assetGridView;
+			assetListView.size = new Vector3(sizeX - FaceMargin, k_YBounds, sizeZ - FaceMargin);
+			assetListView.transform.localPosition = Vector3.right * xOffset;
+		}
+
+		void OnFolderSelected(FolderData data)
 		{
 			m_ProjectUI.assetGridView.data = data.assets;
 			m_ProjectUI.assetGridView.scrollOffset = 0;
 		}
 
-		void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			if (handle == m_ProjectUI.folderScrollHandle)
 				m_ProjectUI.folderListView.OnBeginScrolling();
@@ -224,7 +225,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_ProjectUI.assetGridView.OnBeginScrolling();
 		}
 
-		void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnScrollDragging(BaseHandle handle, HandleEventData eventData)
 		{
 			if (handle == m_ProjectUI.folderScrollHandle)
 				m_ProjectUI.folderListView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
@@ -232,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_ProjectUI.assetGridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
 		}
 
-		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			if (handle == m_ProjectUI.folderScrollHandle)
 				m_ProjectUI.folderListView.OnScrollEnded();
@@ -240,47 +241,47 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_ProjectUI.assetGridView.OnScrollEnded();
 		}
 
-		void OnAssetGridDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnAssetGridDragHighlightBegin(BaseHandle handle, HandleEventData eventData)
 		{
 			m_AssetGridDragging = true;
 			m_ProjectUI.assetGridHighlight.visible = true;
 		}
 
-		void OnAssetGridDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnAssetGridDragHighlightEnd(BaseHandle handle, HandleEventData eventData)
 		{
 			m_AssetGridDragging = false;
 			m_ProjectUI.assetGridHighlight.visible = false;
 		}
 
-		void OnAssetGridHoverHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnAssetGridHoverHighlightBegin(BaseHandle handle, HandleEventData eventData)
 		{
 			m_ProjectUI.assetGridHighlight.visible = true;
 		}
 
-		void OnAssetGridHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnAssetGridHoverHighlightEnd(BaseHandle handle, HandleEventData eventData)
 		{
 			if (!m_AssetGridDragging)
 				m_ProjectUI.assetGridHighlight.visible = false;
 		}
 
-		void OnFolderPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnFolderPanelDragHighlightBegin(BaseHandle handle, HandleEventData eventData)
 		{
 			m_FolderPanelDragging = true;
 			m_ProjectUI.folderPanelHighlight.visible = true;
 		}
 
-		void OnFolderPanelDragHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnFolderPanelDragHighlightEnd(BaseHandle handle, HandleEventData eventData)
 		{
 			m_FolderPanelDragging = false;
 			m_ProjectUI.folderPanelHighlight.visible = false;
 		}
 
-		void OnFolderPanelHoverHighlightBegin(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnFolderPanelHoverHighlightBegin(BaseHandle handle, HandleEventData eventData)
 		{
 			m_ProjectUI.folderPanelHighlight.visible = true;
 		}
 
-		void OnFolderPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
+		void OnFolderPanelHoverHighlightEnd(BaseHandle handle, HandleEventData eventData)
 		{
 			if (!m_FolderPanelDragging)
 				m_ProjectUI.folderPanelHighlight.visible = false;
@@ -289,6 +290,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void Scale(float value)
 		{
 			m_ProjectUI.assetGridView.scaleFactor = Mathf.Pow(10, value);
+		}
+
+		void UpdateZoomSliderValue()
+		{
+			m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(m_ProjectUI.assetGridView.scaleFactor);
 		}
 	}
 }

@@ -45,8 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		Coroutine m_MoveKeyboardCoroutine;
 
-		public Func<float> getViewerScale { private get; set; }
-
 		public virtual string text
 		{
 			get
@@ -146,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		IEnumerator MoveKeyboardToInputField(bool instant)
 		{
 			const float kKeyboardYOffset = 0.05f;
-			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset * getViewerScale();
+			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset * this.GetViewerScale();
 
 			if (!instant && !m_Keyboard.collapsed)
 			{
@@ -155,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				{
 					m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / k_MoveKeyboardTime);
 					m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - CameraUtils.GetMainCamera().transform.position);
-					t += Time.unscaledDeltaTime;
+					t += Time.deltaTime;
 					yield return null;
 				}
 			}

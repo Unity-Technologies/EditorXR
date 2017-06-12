@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ICustomRay, ICustomActionMap,
+	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ISetDefaultRayVisibility, ICustomActionMap,
 		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider
 	{
 		const float k_FastMoveSpeed = 25f;
@@ -126,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void OnDestroy()
 		{
-			this.ShowDefaultRay(rayOrigin);
+			this.SetDefaultRayVisibility(rayOrigin, true);
 		}
 
 		void Update()
@@ -254,7 +255,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
-				this.HideDefaultRay(rayOrigin);
+				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
 
 				m_BlinkVisuals.ShowVisuals();
@@ -264,7 +265,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
 			{
 				this.UnlockRay(rayOrigin, this);
-				this.ShowDefaultRay(rayOrigin);
+				this.SetDefaultRayVisibility(rayOrigin, true);
 
 				if (!m_BlinkVisuals.outOfMaxRange)
 				{

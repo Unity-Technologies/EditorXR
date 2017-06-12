@@ -13,76 +13,82 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <summary>
 		/// Random used to aid in lack of repeating color choices
 		/// </summary>
-		private static System.Random s_ColorRandom = new System.Random();
+		static System.Random s_ColorRandom = new System.Random();
 
 		/// <summary>
 		/// Collection of Unity brand color swatches
 		/// </summary>
-		private static readonly List<Color> s_ColorSwatches = new List<Color>();
+		static readonly List<Color> s_ColorSwatches = new List<Color>();
 
 		/// <summary>
 		/// Cache standard color swatch collection size, to reduce further lookups
 		/// </summary>
-		private static int s_ColorSwatchRange;
-		private static int s_RandomSwatchColorPosition;
+		static int s_ColorSwatchRange;
+		static int s_RandomSwatchColorPosition;
+		static int s_RandomGradientPairColorAPosition;
 
 		/// <summary>
-		/// Collection of Unity brand gradients, composed of unity-brand color swatches
+		/// Collection of curated Unity brand gradients; selected pairs of specific unity-brand color swatches
 		/// </summary>
-		private static readonly List<GradientPair> s_Gradients = new List<GradientPair>();
-		private static int s_RandomGradientPairColorAPosition;
-		
-		private static Color s_Red;
-		private static Color s_RedLight;
-		private static Color s_RedDark;
-
-		private static Color s_Magenta;
-		private static Color s_MagentaLight;
-		private static Color s_MagentaDark;
-
-		private static Color s_Purple;
-		private static Color s_PurpleLight;
-		private static Color s_PurpleDark;
-
-		private static Color s_Blue;
-		private static Color s_BlueLight;
-		private static Color s_BlueDark;
-
-		private static Color s_Cyan;
-		private static Color s_CyanLight;
-		private static Color s_CyanDark;
-
-		private static Color s_Teal;
-		private static Color s_TealLight;
-		private static Color s_TealDark;
-
-		private static Color s_Green;
-		private static Color s_GreenLight;
-		private static Color s_GreenDark;
-
-		private static Color s_Lime;
-		private static Color s_LimeLight;
-		private static Color s_LimeDark;
-
-		private static Color s_Yellow;
-		private static Color s_YellowLight;
-		private static Color s_YellowDark;
-
-		private static Color s_Orange;
-		private static Color s_OrangeLight;
-		private static Color s_OrangeDark;
-
-		private static Color s_DarkBlue;
-		private static Color s_DarkBlueLight;
-
-		private static Color s_Dark;
-		private static Color s_Darker;
-		private static Color s_Light;
+		static readonly List<GradientPair> s_CuratedGradientPairs = new List<GradientPair>();
+		static readonly List<GradientPair> s_CuratedLightGradientPairs = new List<GradientPair>();
+		static readonly List<GradientPair> s_CuratedDarkGradientPairs = new List<GradientPair>();
 
 		/// <summary>
-		/// Collection of pre-defined Unity brand gradients
+		/// Cache curated gradients collection size, to reduce further lookups
 		/// </summary>
-		public static List<GradientPair> gradients { get { return s_Gradients; } }
+		static int s_RandomCuratedGradientPairPosition = -1; // Set to -1 in order to allow a zero entry to be initially set
+		static int s_RandomCuratedLightGradientPairPosition =  -1;
+		static int s_RandomCuratedDarkGradientPairPosition = -1;
+
+		static GradientPair s_SessionGradient;
+
+		static Color s_Red;
+		static Color s_RedLight;
+		static Color s_RedDark;
+
+		static Color s_Magenta;
+		static Color s_MagentaLight;
+		static Color s_MagentaDark;
+
+		static Color s_Purple;
+		static Color s_PurpleLight;
+		static Color s_PurpleDark;
+
+		static Color s_Blue;
+		static Color s_BlueLight;
+		static Color s_BlueDark;
+
+		static Color s_Cyan;
+		static Color s_CyanLight;
+		static Color s_CyanDark;
+
+		static Color s_Teal;
+		static Color s_TealLight;
+		static Color s_TealDark;
+
+		static Color s_Green;
+		static Color s_GreenLight;
+		static Color s_GreenDark;
+
+		static Color s_Lime;
+		static Color s_LimeLight;
+		static Color s_LimeDark;
+
+		static Color s_Yellow;
+		static Color s_YellowLight;
+		static Color s_YellowDark;
+
+		static Color s_Orange;
+		static Color s_OrangeLight;
+		static Color s_OrangeDark;
+
+		static Color s_DarkBlue;
+		static Color s_DarkBlueLight;
+
+		static Color s_Dark;
+		static Color s_Darker;
+		static Color s_Light;
 
 		// Unity Swatches 2016
 		public static Color red { get { return s_Red; } }
@@ -136,7 +142,19 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// A unique Unity brand color gradient that can be set manually
 		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
 		/// </summary>
-		public static GradientPair sessionGradient { get; set; }
+		public static GradientPair sessionGradient
+		{
+			get { return s_SessionGradient; }
+			set
+			{
+				s_SessionGradient = value;
+
+				// In order to more easily differentiate curated gradients, they should not match the session gradient
+				RemoveSessionGradientFromCollection(s_CuratedGradientPairs);
+				RemoveSessionGradientFromCollection(s_CuratedLightGradientPairs);
+				RemoveSessionGradientFromCollection(s_CuratedDarkGradientPairs);
+			}
+		}
 
 		/// <summary>
 		/// A high-contrast/grayscale Unity brand color gradient, having no chroma
@@ -219,22 +237,81 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			// cache standard color swatch list size
 			s_ColorSwatchRange = s_ColorSwatches.Count - 1;
 
-			// Define default gradients
-			s_Gradients.Add(new GradientPair(s_Yellow, s_OrangeDark));
-			s_Gradients.Add(new GradientPair(s_Purple, s_Green));
-			s_Gradients.Add(new GradientPair(s_Teal, s_Lime));
-			s_Gradients.Add(new GradientPair(s_Cyan, s_Red));
-			s_Gradients.Add(new GradientPair(s_Blue, s_Magenta));
-			s_Gradients.Add(new GradientPair(s_Red, s_Blue));
-			s_Gradients.Add(new GradientPair(s_Blue, s_Lime));
-			s_Gradients.Add(new GradientPair(s_Orange, s_Lime));
-
 			// Setup default session gradient; can be set with a random gradient externally,
 			// allowing all UI objects fetching this gradient to have a uniform color-scheme
 			sessionGradient = new GradientPair(s_Light, s_Dark);
 
 			// Setup grayscale light/dark contrasting session gradient
 			grayscaleSessionGradient = new GradientPair(MaterialUtils.HexToColor("898A8AFF"), s_Light);
+
+			// Setup neutral-luma curated gradient pairs
+			s_CuratedGradientPairs.Add(new GradientPair(cyan, blueDark));
+			s_CuratedGradientPairs.Add(new GradientPair(teal, tealDark));
+			s_CuratedGradientPairs.Add(new GradientPair(green, tealDark));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, tealDark));
+			s_CuratedGradientPairs.Add(new GradientPair(orange, redDark));
+			s_CuratedGradientPairs.Add(new GradientPair(orange, magenta));
+			s_CuratedGradientPairs.Add(new GradientPair(red, darker));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, red));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, cyan));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, greenDark));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, cyanDark));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, darker));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, darkBlue));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, limeDark));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, magenta));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, purpleDark));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, yellow));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, purpleDark));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, cyanDark));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, blueDark));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, blueDark));
+			s_CuratedGradientPairs.Add(new GradientPair(red, darkBlue));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, darkBlue));
+			s_CuratedGradientPairs.Add(new GradientPair(yellow, red));
+			s_CuratedGradientPairs.Add(new GradientPair(red, blue));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, cyan));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, magenta));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, purple));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, darker));
+			// Slightly lighter pairs added to main curated set
+			s_CuratedGradientPairs.Add(new GradientPair(yellowLight, tealDark));
+			s_CuratedGradientPairs.Add(new GradientPair(orangeDark, orangeLight));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, greenLight));
+			s_CuratedGradientPairs.Add(new GradientPair(red, redLight));
+			s_CuratedGradientPairs.Add(new GradientPair(red, orangeLight));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, orange));
+			s_CuratedGradientPairs.Add(new GradientPair(lime, teal));
+			s_CuratedGradientPairs.Add(new GradientPair(magenta, blueLight));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, blueLight));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, lime));
+			s_CuratedGradientPairs.Add(new GradientPair(blue, yellowLight));
+
+			// Setup dark-luma curated gradient pairs
+			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(blueDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(redDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(yellowDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(cyanDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(greenDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(purpleDark, darkBlue));
+			s_CuratedDarkGradientPairs.Add(new GradientPair(darkBlueLight, darkBlue));
+
+			// Setup light-luma curated gradient pairs
+			s_CuratedLightGradientPairs.Add(new GradientPair(redLight, tealDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, tealDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight,limeDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, blueDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, cyanDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight, greenDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(cyanLight, orange));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, purple));
+			s_CuratedLightGradientPairs.Add(new GradientPair(yellowLight, blue));
+			s_CuratedLightGradientPairs.Add(new GradientPair(orangeLight, lime));
+			s_CuratedLightGradientPairs.Add(new GradientPair(redLight, darkBlue));
+			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, yellow));
+			s_CuratedLightGradientPairs.Add(new GradientPair(blueLight, yellowDark));
+			s_CuratedLightGradientPairs.Add(new GradientPair(greenLight, red));
 		}
 
 		/// <summary>
@@ -293,6 +370,73 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			var difference = Mathf.Abs(swatchA.r - swatchB.r) + Mathf.Abs(swatchA.g - swatchB.g) + Mathf.Abs(swatchA.b - swatchB.b);
 			return difference < requiredMinimumDifference;
+		}
+
+		/// <summary>
+		/// Fetch a curated Unity brand-specific color scheme (pair of differing brand-swatches)
+		/// </summary>
+		/// <returns>Gradient pair of two curated brand-swatches</returns>
+		public static GradientPair GetRandomCuratedGradient()
+		{
+			var curatedGradientPairsRange = s_CuratedGradientPairs.Count;
+			var randomPosition = s_ColorRandom.Next(curatedGradientPairsRange);
+
+			while (randomPosition == s_RandomCuratedGradientPairPosition)
+				randomPosition = s_ColorRandom.Next(curatedGradientPairsRange);
+
+			s_RandomCuratedGradientPairPosition = randomPosition;
+
+			return s_CuratedGradientPairs[s_RandomCuratedGradientPairPosition];;
+		}
+
+		/// <summary>
+		/// Fetch a curated lighter-luma Unity brand-specific color scheme (pair of differing brand-swatches)
+		/// </summary>
+		/// <returns>Gradient pair of two curated lighter-luma brand-swatches</returns>
+		public static GradientPair GetRandomCuratedLightGradient()
+		{
+			var curatedLightGradientPairsRange = s_CuratedLightGradientPairs.Count;
+			var randomPosition = s_ColorRandom.Next(curatedLightGradientPairsRange);
+
+			while (randomPosition == s_RandomCuratedLightGradientPairPosition)
+				randomPosition = s_ColorRandom.Next(curatedLightGradientPairsRange);
+
+			s_RandomCuratedLightGradientPairPosition = randomPosition;
+
+			return s_CuratedLightGradientPairs[s_RandomCuratedLightGradientPairPosition];;
+		}
+
+		/// <summary>
+		/// Fetch a curated darker-luma Unity brand-specific color scheme (pair of differing brand-swatches)
+		/// </summary>
+		/// <returns>Gradient pair of two curated darker-luma brand-swatches</returns>
+		public static GradientPair GetRandomCuratedDarkGradient()
+		{
+			var curatedDarkGradientPairsRange = s_CuratedDarkGradientPairs.Count;
+			var randomPosition = s_ColorRandom.Next(curatedDarkGradientPairsRange);
+
+			while (randomPosition == s_RandomCuratedDarkGradientPairPosition)
+				randomPosition = s_ColorRandom.Next(curatedDarkGradientPairsRange);
+
+			s_RandomCuratedDarkGradientPairPosition = randomPosition;
+
+			return s_CuratedDarkGradientPairs[s_RandomCuratedDarkGradientPairPosition];;
+		}
+
+		/// <summary>
+		/// Remove the session gradient from a GradientPair collection, if it is found in the collection
+		/// </summary>
+		/// <param name="gradientPairCollection">Collection from which the SessionGradient will be removed</param>
+		static void RemoveSessionGradientFromCollection(List<GradientPair> gradientPairCollection)
+		{
+			foreach (GradientPair pair in gradientPairCollection)
+			{
+				if (SwatchesSimilar(pair.a, s_SessionGradient.a, 0f) && SwatchesSimilar(pair.b, s_SessionGradient.b, 0f))
+				{
+					gradientPairCollection.Remove(pair);
+					break;
+				}
+			}
 		}
 	}
 }

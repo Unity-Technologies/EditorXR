@@ -12,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
 
 		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
+		public Func<GameObject, bool> overrideSelectObject { private get; set; }
 
 		public event Action<Transform> selected;
 
@@ -40,6 +41,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (hoveredObject != null)
 			{
+				if (!hoveredObject.activeInHierarchy)
+					return false;
+
 				if (useGrouping)
 					return CanSelectObject(GetSelectionCandidate(hoveredObject, true), false);
 			}
@@ -49,6 +53,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
 		{
+			if (overrideSelectObject(hoveredObject))
+				return;
+
 			var selection = GetSelectionCandidate(hoveredObject, useGrouping);
 
 			var groupRoot = getGroupRoot(hoveredObject);

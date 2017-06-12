@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(0.375f, MinBounds.y, 0.5f);
+			minBounds = new Vector3(0.395f, MinBounds.y, 0.5f);
 			m_CustomStartingBounds = minBounds;
 
 			base.Setup();
@@ -122,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var scrollHandleTransform = m_HierarchyUI.scrollHandle.transform;
 			scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
 			scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
-			scrollHandleTransform.localPosition = new Vector3(0f, -0.01f, 0f); // Offset from content for collision purposes
+			scrollHandleTransform.localPosition = new Vector3(0f, -0.015f, 0f); // Offset from content for collision purposes
 
 			// Propagate initial bounds
 			OnBoundsChanged();
@@ -132,16 +132,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var size = contentBounds.size;
 			var listView = m_HierarchyUI.listView;
-			var bounds = contentBounds;
 			size.y = float.MaxValue; // Add height for dropdowns
-			size.x -= 0.04f; // Shrink the content width, so that there is space allowed to grab and scroll
-			size.z -= 0.15f; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
-			bounds.size = size;
-			listView.bounds = bounds;
-
-			var listPanel = m_HierarchyUI.listPanel;
-			listPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
-			listPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.z);
+			size.x -= FaceMargin * 2; // Shrink the content width, so that there is space allowed to grab and scroll
+			size.z -= FaceMargin * 2; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
+			listView.size = size;
 	}
 
 		static void SelectRow(int index)
@@ -206,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				return;
 
 			var mainCamera = CameraUtils.GetMainCamera().transform;
-			var bounds = ObjectUtils.GetBounds(Selection.gameObjects);
+			var bounds = ObjectUtils.GetBounds(Selection.transforms);
 
 			var size = bounds.size;
 			size.y = 0;

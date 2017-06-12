@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace ListView
 {
-	class NestedListViewController<TData, TItem, TIndex> 
-		: ListViewController<TData, TItem, TIndex>
+	class NestedListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>
 		where TData : ListViewItemNestedData<TData, TIndex>
 		where TItem : ListViewItem<TData, TIndex>
 	{
@@ -91,7 +90,7 @@ namespace ListView
 
 				var itemSize = m_ItemSize.Value;
 
-				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
 					Recycle(index);
 				else
 					UpdateNestedItem(datum, offset, depth, ref doneSettling);
@@ -121,6 +120,43 @@ namespace ListView
 
 				if (child.children != null)
 					RecycleChildren(child);
+			}
+		}
+
+		protected bool GetExpanded(TIndex index)
+		{
+			bool expanded;
+			m_ExpandStates.TryGetValue(index, out expanded);
+			return expanded;
+		}
+
+		protected void SetExpanded(TIndex index, bool expanded)
+		{
+			m_ExpandStates[index] = expanded;
+			StartSettling();
+		}
+
+		protected void ScrollToIndex(TData container, TIndex targetIndex, ref float scrollHeight)
+		{
+			var index = container.index;
+			if (index.Equals(targetIndex))
+			{
+				if (-scrollOffset > scrollHeight || -scrollOffset + m_Size.z < scrollHeight)
+					scrollOffset = -scrollHeight;
+				return;
+			}
+
+			scrollHeight += itemSize.z;
+
+			if (GetExpanded(index))
+			{
+				if (container.children != null)
+				{
+					foreach (var child in container.children)
+					{
+						ScrollToIndex(child, targetIndex, ref scrollHeight);
+					}
+				}
 			}
 		}
 	}

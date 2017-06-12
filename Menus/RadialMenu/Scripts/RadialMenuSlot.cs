@@ -270,7 +270,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var positionWait = orderIndex * 0.05f;
 			while (opacity < 1)
 			{
-				opacity += Time.unscaledDeltaTime / positionWait * 2;
+				opacity += Time.deltaTime / positionWait * 2;
 				var opacityShaped = Mathf.Pow(opacity, opacity);
 
 				transform.localScale = Vector3.Lerp(k_HiddenLocalScale, Vector3.one, opacity);
@@ -300,7 +300,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var positionWait = (orderIndex + 1) * 0.075f;
 			while (duration < 2)
 			{
-				duration += Time.unscaledDeltaTime / positionWait * 2;
+				duration += Time.deltaTime / positionWait * 2;
 				var opacity = duration / 2;
 				opacity *= opacity;
 				m_CanvasGroup.alpha = Mathf.Clamp01(duration - 1);
@@ -322,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_Pressed = false;
 			m_Highlighted = false;
 
-			var opacity = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);;
+			var opacity = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
 			var opacityShaped = Mathf.Pow(opacity, opacity);
 			while (opacity > 0)
 			{
@@ -333,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_BorderRendererMaterial.SetFloat(k_MaterialExpandProperty, opacityShaped);
 				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, opacityShaped);
 				m_MenuInset.localScale = Vector3.Lerp(m_HiddenInsetLocalScale, m_VisibleInsetLocalScale, opacityShaped);
-				opacity -= Time.unscaledDeltaTime * 1.5f;
+				opacity -= Time.deltaTime * 1.5f;
 				opacityShaped = Mathf.Pow(opacity, opacity);
 				CorrectIconRotation();
 				yield return null;
@@ -361,7 +361,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			HighlightIcon();
 
-			var opacity = Time.unscaledDeltaTime;
+			var opacity = Time.deltaTime;
 			var topColor = m_OriginalInsetGradientPair.a;
 			var bottomColor = m_OriginalInsetGradientPair.b;
 			var initialFrameColor = m_FrameMaterial.color;
@@ -370,12 +370,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				if (m_Highlighted)
 				{
-					opacity = Mathf.Clamp01(opacity + Time.unscaledDeltaTime*4); // stay highlighted
+					opacity = Mathf.Clamp01(opacity + Time.deltaTime*4); // stay highlighted
 					currentFrameColor = Color.Lerp(initialFrameColor, s_FrameOpaqueColor, opacity);
 					m_FrameMaterial.SetColor(k_MaterialColorProperty, currentFrameColor);
 				}
 				else
-					opacity = Mathf.Clamp01(opacity - Time.unscaledDeltaTime * 2);
+					opacity = Mathf.Clamp01(opacity - Time.deltaTime * 2);
 
 				topColor = Color.Lerp(m_OriginalInsetGradientPair.a, s_GradientPair.a, opacity * 2f);
 				bottomColor = Color.Lerp(m_OriginalInsetGradientPair.b, s_GradientPair.b, opacity);
@@ -412,12 +412,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			var currentPosition = m_IconContainer.localPosition;
 			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // Raise up for highlight; lower for press
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var transitionAddMultiplier = pressed == false ? 14 : 18; // Faster transition in for standard highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
 				m_IconContainer.localPosition = Vector3.Lerp(currentPosition, targetPosition, transitionAmount);
-				transitionAmount = transitionAmount + Time.unscaledDeltaTime * transitionAddMultiplier * 2;
+				transitionAmount = transitionAmount + Time.deltaTime * transitionAddMultiplier * 2;
 				yield return null;
 			}
 
@@ -433,7 +433,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			while (transitionAmount > 0)
 			{
 				m_IconContainer.localPosition = Vector3.Lerp(m_OriginalIconLocalPosition, currentPosition, transitionAmount);
-				transitionAmount -= Time.unscaledDeltaTime * transitionSubtractMultiplier;
+				transitionAmount -= Time.deltaTime * transitionSubtractMultiplier;
 				yield return null;
 			}
 
@@ -452,7 +452,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			const float kFasterMotionMultiplier = 2f;
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
 			var currentScale = transform.localScale;
 			var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
@@ -478,7 +478,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedTransitionAmount);
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
-				transitionAmount += Time.unscaledDeltaTime * positionWait * 3f;
+				transitionAmount += Time.deltaTime * positionWait * 3f;
 				CorrectIconRotation();
 				yield return null;
 			}
@@ -505,10 +505,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			// Wait before setting highlighted to false if the user is moving the ray between slots
 			// This delay prevents highlight flickering when navigating the menu via ray vs analog input
-			var duration = Time.unscaledDeltaTime;
+			var duration = Time.deltaTime;
 			while (duration < 0.2f)
 			{
-				duration += Time.unscaledDeltaTime;
+				duration += Time.deltaTime;
 				yield return null;
 			}
 

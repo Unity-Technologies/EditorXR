@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	sealed class MultipleRayInputModule : BaseInputModule, IProcessInput
+	sealed class MultipleRayInputModule : BaseInputModule, IProcessInput, IGetPointerLength
 	{
 		public class RaycastSource
 		{
@@ -48,8 +48,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public ActionMap actionMap { get { return m_UIActionMap; } }
 		[SerializeField]
 		private ActionMap m_UIActionMap;
-
-		public Func<Transform, float> getPointerLength { get; set; }
 
 		public event Action<GameObject, RayEventData> rayEntered;
 		public event Action<GameObject, RayEventData> rayExited;
@@ -131,7 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var eventData = source.eventData;
 				eventData.node = source.node;
 				eventData.rayOrigin = rayOrigin;
-				eventData.pointerLength = getPointerLength(eventData.rayOrigin);
+				eventData.pointerLength = this.GetPointerLength(eventData.rayOrigin);
 
 				if (!source.isValid(source))
 					continue;
@@ -149,7 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (!sourceAMI.active)
 				{
 					// If we have an object, the ray is blocked--input should not bleed through
-					if (hasObject)
+					if (hasObject && select.wasJustPressed)
 						consumeControl(select);
 
 					continue;

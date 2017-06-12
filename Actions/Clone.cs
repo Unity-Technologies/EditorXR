@@ -6,11 +6,11 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Clone", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
-	sealed class Clone : BaseAction, IUsesSpatialHash
+	sealed class Clone : BaseAction, IUsesSpatialHash, IUsesViewerScale
 	{
 		public override void ExecuteAction()
 		{
-			var selection = Selection.gameObjects;
+			var selection = Selection.transforms;
 			var clones = new GameObject[selection.Length];
 			var index = 0;
 			var bounds = ObjectUtils.GetBounds(selection);
@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				var cloneTransform = clone.transform;
 				var cameraTransform = CameraUtils.GetMainCamera().transform;
 				var viewDirection = cloneTransform.position - cameraTransform.position;
-				cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude)
+				cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude / this.GetViewerScale())
 					+ cloneTransform.position - bounds.center;
 				this.AddToSpatialHash(clone);
 				clones[index++] = clone;

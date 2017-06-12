@@ -18,21 +18,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var toolActions = obj as IActions;
 					if (toolActions != null)
 					{
-						var evrMenus = evr.m_Menus;
-
-						var actions = toolActions.actions;
-						foreach (var action in actions)
+						// Delay connecting actions to allow tool / module to initialize first
+						EditorApplication.delayCall += () =>
 						{
-							var actionMenuData = new ActionMenuData()
+							var actions = toolActions.actions;
+							if (actions != null)
 							{
-								name = action.GetType().Name,
-								sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
-								priority = int.MaxValue,
-								action = action,
-							};
-							menuActions.Add(actionMenuData);
-						}
-						evrMenus.UpdateAlternateMenuActions();
+								foreach (var action in actions)
+								{
+									var actionMenuData = new ActionMenuData()
+									{
+										name = action.GetType().Name,
+										sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
+										priority = int.MaxValue,
+										action = action,
+									};
+									menuActions.Add(actionMenuData);
+								}
+								Menus.UpdateAlternateMenuActions();
+							}
+						};
 					}
 
 					var alternateMenu = obj as IAlternateMenu;
@@ -49,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var evrActionsModule = evr.GetModule<ActionsModule>();
 
 					evrActionsModule.RemoveActions(toolActions.actions);
-					evr.m_Menus.UpdateAlternateMenuActions();
+					Menus.UpdateAlternateMenuActions();
 				}
 			}
 		}

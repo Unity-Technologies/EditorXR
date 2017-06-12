@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
-using ListView;
 using System;
 using System.Collections.Generic;
+using ListView;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -96,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			base.ComputeConditions();
 
-			m_StartPosition = bounds.extents.z * Vector3.back;
+			m_StartPosition = m_Extents.z * Vector3.back;
 
 			var parentMatrix = transform.worldToLocalMatrix;
 			SetMaterialClip(m_RowCubeMaterial, parentMatrix);
@@ -137,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_ItemSize = m_TemplateSizes[datum.template];
 				var itemSize = m_ItemSize.Value;
 
-				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > bounds.size.z)
+				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
 					Recycle(index);
 				else
 					UpdateItemRecursive(datum, offset, depth, expanded, ref doneSettling);
@@ -163,8 +163,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				UpdateItem(item.transform, offset, true, ref doneSettling);
 			}
 
-			item.UpdateSelf(bounds.size.x - k_ClipMargin, depth, expanded);
-			item.UpdateClipTexts(transform.worldToLocalMatrix, bounds.extents);
+			item.UpdateSelf(m_Size.x - k_ClipMargin, depth, expanded);
+			item.UpdateClipTexts(transform.worldToLocalMatrix, m_Extents);
 
 			UpdateItem(item.transform, offset, false, ref doneSettling);
 		}

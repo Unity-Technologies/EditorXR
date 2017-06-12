@@ -114,7 +114,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnDestroy()
 		{
-			ObjectUtils.Destroy(m_MainMenuUI.gameObject);
+			if (m_MainMenuUI)
+				ObjectUtils.Destroy(m_MainMenuUI.gameObject);
 		}
 
 		void CreateFaceButtons(List<Type> types)
@@ -200,6 +201,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 								provider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, provider.settingsMenuPrefab);
 							});
 						}
+
+						if (customMenuAttribute != null && customMenuAttribute.tooltip != null)
+							b.tooltipText = customMenuAttribute.tooltip.tooltipText;
 					});
 				}
 			}

@@ -18,14 +18,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var selectionChanged = obj as ISelectionChanged;
 				if (selectionChanged != null)
-					evr.m_SelectionChanged += selectionChanged.OnSelectionChanged;
+					evr.selectionChanged += selectionChanged.OnSelectionChanged;
 			}
 
 			public void DisconnectInterface(object obj)
 			{
 				var selectionChanged = obj as ISelectionChanged;
 				if (selectionChanged != null)
-					evr.m_SelectionChanged -= selectionChanged.OnSelectionChanged;
+					evr.selectionChanged -= selectionChanged.OnSelectionChanged;
 			}
 		}
 	}
