@@ -72,9 +72,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					if (usesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
 					{
-						var deltaTime = Time.deltaTime;
-						grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
-						grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
+						//var deltaTime = Time.deltaTime;
+						//grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
+						//grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
+						grabbedObject.position = position;
+						grabbedObject.rotation = rotation;
 					}
 					else
 					{

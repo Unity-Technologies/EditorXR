@@ -27,10 +27,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_ManipulatorSurfaceSearchScale = 0.75f;
 		const float k_ConstrainedBreakTime = 0.0f;
 
-		const float k_DirectSurfaceSearchScale = 1.1f;
-		const float k_DirectSurfaceSnapBreakDist = 0.3f;
+		const float k_DirectBreakDistance = 0.03f;
+		const float k_DirectSurfaceSearchScale = 0.75f;
+		const float k_DirectSurfaceSnapBreakScaleLow = 0.5f;
+		const float k_DirectSurfaceSnapBreakScaleHigh = 5f;
 		const float k_DirectGroundSnapMin = 0.03f;
 		const float k_DirectGroundSnapMax = 0.07f;
+		const float k_MaxRayDot = -0.5f;
 
 		const float k_WidgetScale = 0.03f;
 
@@ -172,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			[SerializeField]
 			bool m_RotationSnappingEnabled;
 			[SerializeField]
-			bool m_LocalOnly;
+			bool m_LocalOnly = true;
 
 			// Sources
 			[SerializeField]
@@ -237,7 +240,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		readonly Dictionary<Transform, Dictionary<Transform, SnappingState>> m_SnappingStates = new Dictionary<Transform, Dictionary<Transform, SnappingState>>();
 		Vector3 m_CurrentSurfaceSnappingHit;
 		Vector3 m_CurrentSurfaceSnappingPosition;
+		Vector3 m_CurrentSurfaceSnappingNormal;
 		Quaternion m_CurrentSurfaceSnappingRotation;
+		GameObject m_CurrentSurfaceSnappingObject;
 
 		public bool widgetEnabled { get; set; }
 
@@ -507,7 +512,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				var viewerScale = this.GetViewerScale();
 				var breakScale = viewerScale;
-				var breakDistance = breakScale * k_DirectSurfaceSnapBreakDist;
+				var breakDistance = breakScale * k_DirectBreakDistance;
 
 				AddToIgnoreList(transform);
 				if (surfaceSnappingEnabled && DirectSnapToSurface(ref position, ref rotation, targetPosition, state, targetRotation, breakDistance))
@@ -605,18 +610,36 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		bool DirectSnapToSurface(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, float breakDistance)
 		{
 			var bounds = state.identityBounds;
+
+			//if (state.surfaceSnapping)
+			//{
+			//	var directionVector = targetPosition - position;
+			//	var boundsExtents = bounds.extents;
+			//	var projectedExtents = Vector3.Project(boundsExtents, directionVector);
+			//	var breakdist = breakDistance;
+			//	if (state.surfaceSnapping && Vector3.Dot(m_CurrentSurfaceSnappingNormal, targetPosition - position) < 0)
+			//		breakdist = Mathf.Max(breakDistance, projectedExtents.magnitude) * k_DirectSurfaceSnapBreakScaleHigh;
+			//	else
+			//		breakdist = Mathf.Max(breakDistance, projectedExtents.magnitude) * k_DirectSurfaceSnapBreakScaleLow;
+
+			//	if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakdist))
+			//		return true;
+			//}
+
+			var breakdist = breakDistance;
+			var directionVector = targetPosition - position;
+			var boundsExtents = bounds.extents;
+			var projectedExtents = Vector3.Project(boundsExtents, directionVector);
 			var boundsCenter = bounds.center;
 			for (var i = 0; i < k_Directions.Length; i++)
 			{
 				var direction = k_Directions[i];
 				var upVector = targetRotation * direction.upVector;
-				var directionVector = direction.direction;
+				directionVector = direction.direction;
 				var rotationOffset = direction.rotationOffset;
-				var boundsRay = new Ray(targetPosition + targetRotation * boundsCenter, targetRotation * directionVector);
 
-				var boundsExtents = bounds.extents;
-				var projectedExtents = Vector3.Project(boundsExtents, directionVector);
-				var raycastDistance = projectedExtents.magnitude * k_DirectSurfaceSearchScale;
+				boundsExtents = bounds.extents;
+				projectedExtents = Vector3.Project(boundsExtents, directionVector);
 				var offset = -boundsCenter;
 				if (i > 2)
 					offset -= projectedExtents;
@@ -625,11 +648,36 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				offset = rotation * offset;
 
-				if (SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetPosition, targetRotation, rotationOffset, upVector, breakDistance, raycastDistance))
+				var raycastDistance = breakDistance * k_DirectSurfaceSearchScale;
+
+				//if (state.surfaceSnapping && Vector3.Dot(m_CurrentSurfaceSnappingNormal, targetPosition - position) < 0)
+				//	breakdist = Mathf.Max(breakDistance, projectedExtents.magnitude) * k_DirectSurfaceSnapBreakScaleHigh;
+				//else
+				//	breakdist = Mathf.Max(breakDistance, projectedExtents.magnitude) * k_DirectSurfaceSnapBreakScaleLow;
+
+				if (state.surfaceSnapping && Vector3.Dot(m_CurrentSurfaceSnappingNormal, targetPosition - position) < 0)
+					breakdist = breakDistance * k_DirectSurfaceSnapBreakScaleHigh;
+				else
+					breakdist = breakDistance * k_DirectSurfaceSnapBreakScaleLow;
+
+				var boundsRay = new Ray(targetPosition - offset, targetRotation * directionVector);
+
+				GizmoModule.instance.DrawRay(boundsRay.origin, boundsRay.direction, Color.yellow, raycastDistance);
+
+				if (SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetPosition, targetRotation, rotationOffset, upVector, breakdist, raycastDistance))
 					return true;
 			}
 
-			if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
+			directionVector = targetPosition - position;
+			boundsExtents = bounds.extents;
+			projectedExtents = Vector3.Project(boundsExtents, directionVector);
+
+			if (state.surfaceSnapping && Vector3.Dot(m_CurrentSurfaceSnappingNormal, targetPosition - position) < 0)
+				breakdist = Mathf.Max(breakDistance, projectedExtents.magnitude) * k_DirectSurfaceSnapBreakScaleHigh;
+			else
+				breakdist = Mathf.Max(breakDistance, projectedExtents.magnitude) * k_DirectSurfaceSnapBreakScaleLow;
+
+			if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakdist))
 				return true;
 
 			return false;
@@ -638,6 +686,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		bool TryBreakSnap(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance, bool withTimer = false)
 		{
 			state.firstFrame = false;
+
+			GizmoModule.instance.DrawRay(position, targetPosition - position, Color.blue, breakDistance);
+			GizmoModule.instance.DrawRay(position, targetPosition - position, Color.green, Vector3.Distance(position, targetPosition));
 
 			if (state.surfaceSnapping)
 			{
@@ -649,6 +700,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					position = targetPosition;
 					rotation = targetRotation;
 					state.surfaceSnapping = false;
+					m_CurrentSurfaceSnappingNormal = Vector3.up;
+					m_CurrentSurfaceSnappingObject = null;
 					state.snapStartTime = 0;
 				}
 
@@ -684,21 +737,27 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		bool SnapToSurface(Ray ray, ref Vector3 position, ref Quaternion rotation, SnappingState state, Vector3 boundsOffset, Vector3 targetPosition, Quaternion targetRotation, Quaternion rotationOffset, Vector3 upVector, float breakDistance, float raycastDistance)
 		{
-			if (state.surfaceSnapping && state.snapStartTime + k_ConstrainedBreakTime > Time.time)
-				return true;
-
 			RaycastHit hit;
 			GameObject go;
 			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
 			{
+				if (m_CurrentSurfaceSnappingObject != null && go != m_CurrentSurfaceSnappingObject)
+					return false;
+
+				if (Vector3.Dot(ray.direction, hit.normal) > k_MaxRayDot)
+					return false;
+
 				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
+				m_CurrentSurfaceSnappingNormal = hit.normal;
 				var hitPoint = hit.point;
 				m_CurrentSurfaceSnappingHit = hitPoint;
 				var snappedPosition = pivotSnappingEnabled ? hitPoint : hitPoint + boundsOffset;
 
 				if (localOnly && Vector3.Distance(snappedPosition, targetPosition) > breakDistance)
 					return false;
+
+				m_CurrentSurfaceSnappingObject = go;
 
 				if (!state.surfaceSnapping && !state.firstFrame)
 					state.snapStartTime = Time.time;
