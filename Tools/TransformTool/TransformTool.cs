@@ -195,6 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Node m_ScaleFirstNode;
 		float m_ScaleFactor;
 		bool m_Scaling;
+		bool m_CurrentlySnapping;
 
 		readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 		readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
@@ -447,7 +448,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				var deltaTime = Time.deltaTime;
 				var manipulatorTransform = manipulatorGameObject.transform;
-				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, k_LazyFollowTranslate * deltaTime);
+				var lerp = m_CurrentlySnapping ? 1f : k_LazyFollowTranslate * deltaTime;
+				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, lerp);
 				if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 					manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, k_LazyFollowRotate * deltaTime);
 
@@ -547,7 +549,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_TargetPosition += delta;
 					break;
 				default:
-					this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta, constraints, m_PivotMode);
+					m_CurrentlySnapping = this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta, constraints, m_PivotMode);
 					break;
 			}
 		}

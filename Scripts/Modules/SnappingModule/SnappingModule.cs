@@ -25,10 +25,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_ManipulatorGroundSnapMax = 0.15f;
 		const float k_ManipulatorSurfaceSnapBreakDist = 0.2f;
 		const float k_ManipulatorSurfaceSearchScale = 0.75f;
-		const float k_ConstrainedBreakTime = 0.4f;
+		const float k_ConstrainedBreakTime = 0.0f;
 
 		const float k_DirectSurfaceSearchScale = 1.1f;
-		const float k_DirectSurfaceSnapBreakDist = 0.03f;
+		const float k_DirectSurfaceSnapBreakDist = 0.3f;
 		const float k_DirectGroundSnapMin = 0.03f;
 		const float k_DirectGroundSnapMax = 0.07f;
 
@@ -54,7 +54,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public Vector3 currentPosition { get; set; }
 			public bool groundSnapping { get; set; }
 			public bool surfaceSnapping { get; set; }
-			public float lastSnapTime { get; set; }
+			public float snapStartTime { get; set; }
+			public bool firstFrame { get; set; }
 
 			public Quaternion startRotation { get; private set; }
 			public Bounds identityBounds { get; private set; }
@@ -64,6 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				currentPosition = position;
 				startRotation = rotation;
+				firstFrame = true;
 
 				Bounds rotatedBounds;
 				Bounds identityBounds;
@@ -380,6 +382,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_Widget.SetActive(false);
 
 			m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
+
+			widgetEnabled = true;
 		}
 
 		public object OnSerializePreferences()
@@ -396,7 +400,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			if (snappingEnabled)
 			{
-				SnappingState surfaceSnapping = null;
+				var surfaceSnapping = false;
 				var shouldActivateGroundPlane = false;
 				foreach (var statesForRay in m_SnappingStates.Values)
 				{
@@ -406,16 +410,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 							shouldActivateGroundPlane = true;
 
 						if (state.surfaceSnapping)
-							surfaceSnapping = state;
+							surfaceSnapping = true;
 					}
 				}
 				m_GroundPlane.SetActive(shouldActivateGroundPlane);
 
 				if (widgetEnabled)
 				{
-					var shouldActivateWidget = surfaceSnapping != null;
-					m_Widget.SetActive(shouldActivateWidget);
-					if (shouldActivateWidget)
+					m_Widget.SetActive(surfaceSnapping);
+					if (surfaceSnapping)
 					{
 						var camera = CameraUtils.GetMainCamera();
 						var distanceToCamera = Vector3.Distance(camera.transform.position, m_CurrentSurfaceSnappingPosition);
@@ -447,6 +450,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				state.currentPosition += delta;
 				var targetPosition = state.currentPosition;
 				var targetRotation = state.startRotation;
+
+				//GizmoModule.instance.DrawSphere(targetPosition, 1f, Color.red);
 
 				var camera = CameraUtils.GetMainCamera();
 				var breakScale = Vector3.Distance(camera.transform.position, targetPosition);
@@ -531,7 +536,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			var pointerRay = new Ray(rayOrigin.position, rayOrigin.forward);
 			return SnapToSurface(pointerRay, ref position, ref rotation, state, offset, targetPosition, targetRotation , rotationOffset, upVector, breakDistance, maxRayLength)
-				|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
+				|| TryBreakSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
 		}
 
 		bool ManipulatorSnapConstrained(ref Vector3 position, ref Quaternion rotation, Vector3 direction, Vector3 targetPosition, SnappingState state, Quaternion targetRotation, Vector3 projectedExtents, float breakDistance, ConstrainedAxis constraints, PivotMode pivotMode)
@@ -591,7 +596,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (groundSnappingEnabled && GlobalSnapToGround(axisRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, boundsOffset))
 				return true;
 
-			if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance, true))
+			if (TryBreakSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance, true))
 				return true;
 
 			return false;
@@ -624,28 +629,27 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					return true;
 			}
 
-			if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
+			if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
 				return true;
 
 			return false;
 		}
 
-		bool TryBreakSurfaceSnap(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance, bool withTimer = false)
+		bool TryBreakSnap(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance, bool withTimer = false)
 		{
+			state.firstFrame = false;
+
 			if (state.surfaceSnapping)
 			{
-				if (state.lastSnapTime + k_ConstrainedBreakTime > Time.time)
-				{
-					GizmoModule.instance.DrawSphere(m_CurrentSurfaceSnappingPosition, 0.3f, Color.red);
+				if (withTimer && state.snapStartTime + k_ConstrainedBreakTime > Time.time)
 					return true;
-				}
 
 				if (Vector3.Distance(position, targetPosition) > breakDistance)
 				{
 					position = targetPosition;
 					rotation = targetRotation;
 					state.surfaceSnapping = false;
-					state.lastSnapTime = 0;
+					state.snapStartTime = 0;
 				}
 
 				return true;
@@ -680,6 +684,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		bool SnapToSurface(Ray ray, ref Vector3 position, ref Quaternion rotation, SnappingState state, Vector3 boundsOffset, Vector3 targetPosition, Quaternion targetRotation, Quaternion rotationOffset, Vector3 upVector, float breakDistance, float raycastDistance)
 		{
+			if (state.surfaceSnapping && state.snapStartTime + k_ConstrainedBreakTime > Time.time)
+				return true;
+
 			RaycastHit hit;
 			GameObject go;
 			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
@@ -693,7 +700,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (localOnly && Vector3.Distance(snappedPosition, targetPosition) > breakDistance)
 					return false;
 
-				state.lastSnapTime = Time.time;
+				if (!state.surfaceSnapping && !state.firstFrame)
+					state.snapStartTime = Time.time;
 
 				state.surfaceSnapping = true;
 				state.groundSnapping = false;
