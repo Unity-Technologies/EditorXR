@@ -25,6 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_ManipulatorGroundSnapMax = 0.15f;
 		const float k_ManipulatorSurfaceSnapBreakDist = 0.2f;
 		const float k_ManipulatorSurfaceSearchScale = 0.75f;
+		const float k_ConstrainedBreakTime = 0.4f;
 
 		const float k_DirectSurfaceSearchScale = 1.1f;
 		const float k_DirectSurfaceSnapBreakDist = 0.03f;
@@ -53,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public Vector3 currentPosition { get; set; }
 			public bool groundSnapping { get; set; }
 			public bool surfaceSnapping { get; set; }
+			public float lastSnapTime { get; set; }
 
 			public Quaternion startRotation { get; private set; }
 			public Bounds identityBounds { get; private set; }
@@ -446,8 +448,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var targetPosition = state.currentPosition;
 				var targetRotation = state.startRotation;
 
-				GizmoModule.instance.DrawSphere(targetPosition, 1f, Color.red);
-
 				var camera = CameraUtils.GetMainCamera();
 				var breakScale = Vector3.Distance(camera.transform.position, targetPosition);
 
@@ -480,10 +480,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 						break;
 					default:
-						manipulatorBreakDistance = Mathf.Max(manipulatorBreakDistance, (delta.magnitude / breakScale) / Time.deltaTime);
+						//manipulatorBreakDistance = Mathf.Max(manipulatorBreakDistance, (delta.magnitude / breakScale) / Time.deltaTime);
 						if (ManipulatorSnapConstrained(ref position, ref rotation, direction, targetPosition, state, targetRotation, projectedExtents, manipulatorBreakDistance, constraints, pivotMode))
 							return true;
-
 						break;
 				}
 			}
@@ -592,7 +591,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (groundSnappingEnabled && GlobalSnapToGround(axisRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, boundsOffset))
 				return true;
 
-			if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance))
+			if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance, true))
 				return true;
 
 			return false;
@@ -631,15 +630,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		static bool TryBreakSurfaceSnap(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance)
+		bool TryBreakSurfaceSnap(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance, bool withTimer = false)
 		{
 			if (state.surfaceSnapping)
 			{
+				if (state.lastSnapTime + k_ConstrainedBreakTime > Time.time)
+				{
+					GizmoModule.instance.DrawSphere(m_CurrentSurfaceSnappingPosition, 0.3f, Color.red);
+					return true;
+				}
+
 				if (Vector3.Distance(position, targetPosition) > breakDistance)
 				{
 					position = targetPosition;
 					rotation = targetRotation;
 					state.surfaceSnapping = false;
+					state.lastSnapTime = 0;
 				}
 
 				return true;
@@ -686,6 +692,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				if (localOnly && Vector3.Distance(snappedPosition, targetPosition) > breakDistance)
 					return false;
+
+				state.lastSnapTime = Time.time;
 
 				state.surfaceSnapping = true;
 				state.groundSnapping = false;
