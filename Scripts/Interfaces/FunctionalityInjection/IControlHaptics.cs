@@ -21,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Perform a haptic feedback pulse
 		/// </summary>
 		/// <param name="rayOrigin">Device RayOrigin/Transform on which to control the pulse. A NULL value will pulse on all devices</param>
+		/// <param name="hapticPulse">Haptic pulse to perform</param>
 		public static void Pulse(this IControlHaptics obj, Transform rayOrigin, HapticPulse hapticPulse)
 		{
 			pulse(rayOrigin, hapticPulse);
