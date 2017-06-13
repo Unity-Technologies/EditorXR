@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -14,7 +15,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		RadialMenuUI m_RadialMenuPrefab;
-		
+
+		[SerializeField]
+		HapticPulse m_ReleasePulse;
+
 		RadialMenuUI m_RadialMenuUI;
 
 		public List<ActionMenuData> menuActions
@@ -103,7 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (radialMenuInput.selectItem.wasJustReleased)
 			{
-				this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
+				this.Pulse(rayOrigin, m_ReleasePulse);
 
 				m_RadialMenuUI.SelectionOccurred();
 
