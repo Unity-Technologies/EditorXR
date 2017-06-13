@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -12,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IControlHapticsMethods
 	{
-		internal delegate void PulseDelegate(Transform rayOrigin, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false);
+		internal delegate void PulseDelegate(Transform rayOrigin, HapticPulse hapticPulse);
 
 		internal static PulseDelegate pulse { get; set; }
 
@@ -20,13 +21,9 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Perform a haptic feedback pulse
 		/// </summary>
 		/// <param name="rayOrigin">Device RayOrigin/Transform on which to control the pulse. A NULL value will pulse on all devices</param>
-		/// <param name="duration">Duration of haptic feedback</param>
-		/// <param name="intensity">Intensity of haptic feedback (optional)</param>
-		/// <param name="fadeIn">Fade the pulse in</param>
-		/// <param name="fadeOut">Fade the pulse out</param>
-		public static void Pulse(this IControlHaptics obj, Transform rayOrigin, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
+		public static void Pulse(this IControlHaptics obj, Transform rayOrigin, HapticPulse hapticPulse)
 		{
-			pulse(rayOrigin, duration, intensity, fadeIn, fadeOut);
+			pulse(rayOrigin, hapticPulse);
 		}
 
 		internal delegate void StopPulsesDelegate(Transform rayOrigin);
