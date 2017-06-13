@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -50,6 +51,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		Transform m_AlternateMenu;
+
+		[SerializeField]
+		HapticPulse m_RotatePulse;
+
+		[SerializeField]
+		HapticPulse m_ShowPulse;
+
+		[SerializeField]
+		HapticPulse m_HidePulse;
 
 		public int targetFaceIndex
 		{
@@ -129,6 +139,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public int faceCount { get { return m_MenuFaces.Length; } }
 
 		public Transform rayOrigin { get; set; }
+
+		public HapticPulse faceRotationPulse { get { return  m_RotatePulse; } }
 
 		public bool visible
 		{
@@ -401,7 +413,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningIn;
 
-			this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
+			this.Pulse(rayOrigin, m_ShowPulse);
 
 			foreach (var face in m_MenuFaces)
 			{
@@ -444,7 +456,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningOut;
 
-			this.Pulse(rayOrigin, 0.75f, 0.075f, false, true);
+			this.Pulse(rayOrigin, m_HidePulse);
 
 			foreach (var face in m_MenuFaces)
 			{

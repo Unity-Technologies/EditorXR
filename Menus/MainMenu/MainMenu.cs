@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -61,6 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		MainMenuUI m_MainMenuPrefab;
 
+		HapticPulse m_FaceRotationPulse; // Not set in inspector, due to instantiation order
 		MainMenuUI m_MainMenuUI;
 		float m_LastRotationInput;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
@@ -84,6 +86,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.Setup();
 			m_MainMenuUI.visible = m_Visible;
 
+			// Pulse reference is set on the UI prefab.  Fetching & cacheing for local use.
+			m_FaceRotationPulse = m_MainMenuUI.faceRotationPulse;
+
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
 			CreateFaceButtons(settingsMenuProviders.Keys.ToList());
@@ -104,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				|| mainMenuInput.flickFace.wasJustReleased)
 			{
 				m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
-				this.Pulse(rayOrigin, 0.5f, 0.055f, true, true);
+				this.Pulse(rayOrigin, m_FaceRotationPulse);
 				consumeControl(mainMenuInput.flickFace);
 			}
 
