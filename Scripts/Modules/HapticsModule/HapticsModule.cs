@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -52,11 +53,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// Pulse haptic feedback
 		/// </summary>
 		/// <param name="rayOrigin">Device RayOrigin Transform on which to perform the pulse. A NULL value will pulse on all devices</param>
-		/// <param name="duration">Duration of pulse. Currently a maximum duration of 0.8f is supported.</param>
-		/// <param name="intensity">Strength of pulse.</param>
-		/// <param name="fadeIn">Fade the pulse in</param>
-		/// <param name="fadeOut">Fade the pulse out</param>
-		public void Pulse(Transform rayOrigin, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
+		/// <param name="hapticPulse">Haptic pulse</param>
+		public void Pulse(Transform rayOrigin, HapticPulse hapticPulse)
 		{
 #if ENABLE_OVR_INPUT
 			// Clip buffer can hold up to 800 milliseconds of samples
@@ -67,6 +65,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_GeneratedHapticClip.Reset();
 
 			const float kMaxDuration = 0.8f;
+			var duration = hapticPulse.duration;
+			var intensity = hapticPulse.intensity;
+			var fadeIn = hapticPulse.fadeIn;
+			var fadeOut = hapticPulse.fadeOut;
 			if (duration > kMaxDuration)
 			{
 				duration = Mathf.Clamp(duration, 0f, kMaxDuration); // Clamp at maxiumum 800ms for sample buffer
