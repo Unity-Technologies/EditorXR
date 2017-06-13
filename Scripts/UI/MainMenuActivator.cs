@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
@@ -52,8 +53,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		Transform m_Icon;
+
 		[SerializeField]
 		Transform m_HighlightedPRS;
+
+		[SerializeField]
+		HapticPulse m_HoverPulse;
 
 		Vector3 m_OriginalActivatorIconLocalScale;
 		Vector3 m_OriginalActivatorIconLocalPosition;
@@ -85,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_HighlightCoroutine = null;
 			m_HighlightCoroutine = StartCoroutine(Highlight());
-			this.Pulse(rayOrigin, 0.005f, 0.2f);
+			this.Pulse(rayOrigin, m_HoverPulse);
 		}
 
 		public void OnPointerExit(PointerEventData eventData)
