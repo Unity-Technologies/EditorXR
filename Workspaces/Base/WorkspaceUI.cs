@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -128,6 +129,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		bool m_DynamicFaceAdjustment = true;
 
+		[SerializeField]
+		static HapticPulse m_ResizePulse; // remove static
+
+		[SerializeField]
+		static HapticPulse m_MovePulse; // remove static
+
+		[SerializeField]
+		HapticPulse m_FrameThicknessPulse; // remove static
+
 		Bounds m_Bounds;
 		float? m_TopPanelDividerOffset;
 
@@ -245,12 +255,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						+ transform.forward * (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward);
 
 					m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
-					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.35f, true, true);
+					m_WorkspaceUI.Pulse(rayOrigin, m_ResizePulse);
 				}
 				else
 				{
 					MathUtilsExt.SetTransformOffset(rayOrigin, m_WorkspaceUI.transform.parent, m_PositionOffset, m_RotationOffset);
-					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.075f, false, true);
+					m_WorkspaceUI.Pulse(rayOrigin, m_MovePulse);
 				}
 			}
 		}
@@ -818,7 +828,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// If hovering the frame, and not dragging, perform haptic feedback
 			if (m_HovereringRayOrigins.Count > 0 && m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
-				this.Pulse(rayOrigin, 0.8f, 0.065f, true, true);
+				this.Pulse(rayOrigin, m_FrameThicknessPulse);
 
 			m_FrameThicknessCoroutine = null;
 		}
