@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	class HapticPulse : ScriptableObject
+	public class HapticPulse : ScriptableObject
 	{
 		[SerializeField]
 		[Range(0.001f, 1f)]
