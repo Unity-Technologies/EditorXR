@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,8 +15,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		private Text m_ButtonDescription;
+
 		[SerializeField]
 		private Text m_ButtonTitle;
+
+		[SerializeField]
+		HapticPulse m_ClickPulse;
+
+		[SerializeField]
+		HapticPulse m_HoverPulse;
 
 		Color m_OriginalColor;
 		Transform m_RayOrigin;
@@ -24,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			this.Pulse(m_RayOrigin, 0.5f, 0.095f, true, true);
+			this.Pulse(m_RayOrigin, m_ClickPulse);
 		}
 
 		public bool selected
@@ -63,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public void OnRayEnter(RayEventData eventData)
 		{
 			m_RayOrigin = eventData.rayOrigin;
-			this.Pulse(eventData.rayOrigin, 0.005f, 0.175f);
+			this.Pulse(eventData.rayOrigin, m_HoverPulse);
 		}
 
 		public void OnRayExit(RayEventData eventData)
