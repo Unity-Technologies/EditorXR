@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -20,6 +21,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		Transform m_SlotContainer;
+
+		[SerializeField]
+		HapticPulse m_SelectionPulse;
 
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_VisibilityCoroutine;
@@ -336,7 +340,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (m_HighlightedButton != null)
 				m_HighlightedButton.button.onClick.Invoke();
 
-			this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
+			this.Pulse(rayOrigin, m_SelectionPulse);
 		}
 	}
 }
