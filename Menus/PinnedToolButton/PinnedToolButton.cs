@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Text;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -34,6 +35,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		GradientButton m_GradientButton;
 
+		[SerializeField]
+		HapticPulse m_HoverPulse;
+
+		[SerializeField]
+		HapticPulse m_ClickPulse;
+
 		public Transform rayOrigin { get; set; }
 
 		void Start()
@@ -45,12 +52,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnClick()
 		{
 			SetButtonGradients(this.SelectTool(rayOrigin, m_ToolType));
-			this.Pulse(rayOrigin, 0.5f, 0.2f, true, true);
+			this.Pulse(rayOrigin, m_ClickPulse);
 		}
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			this.Pulse(rayOrigin, 0.005f, 0.2f);
+			this.Pulse(rayOrigin, m_HoverPulse);
 		}
 
 		// Create periodic table-style names for types
