@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -133,6 +134,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		[Range(0f, 2f)]
 		float m_DelayBeforeReveal = 0.25f;
+
+		[SerializeField]
+		HapticPulse m_ClickPulse;
+
+		[SerializeField]
+		HapticPulse m_HighlightPulse;
 
 		GradientPair m_OriginalGradientPair;
 		GradientPair m_HighlightGradientPair;
@@ -321,7 +328,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			this.Pulse(m_RayOrigin, 0.005f, 0.175f);
+			this.Pulse(m_RayOrigin, m_HighlightPulse);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
@@ -473,7 +480,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnButtonClicked()
 		{
-			this.Pulse(m_RayOrigin, 0.25f, 0.15f, true, true);
+			this.Pulse(m_RayOrigin, m_ClickPulse);
 		}
 	}
 }
