@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -29,6 +30,9 @@ namespace ListView
 		[Tooltip("Item template prefabs (at least one is required)")]
 		[SerializeField]
 		protected GameObject[] m_Templates;
+
+		[SerializeField]
+		HapticPulse m_ScrollPulse;
 
 		[SerializeField]
 		protected float m_SettleSpeed = 0.4f;
@@ -83,7 +87,7 @@ namespace ListView
 			UpdateView();
 
 			if (m_Scrolling)
-				this.Pulse(null, 0.25f, 0.055f, false, true);
+				this.Pulse(null, m_ScrollPulse);
 		}
 
 		protected abstract void Setup();
