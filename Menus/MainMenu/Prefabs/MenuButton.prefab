@@ -163,6 +163,8 @@ MonoBehaviour:
   m_Button: {fileID: 114000011038114608}
   m_ButtonDescription: {fileID: 114000013996147424}
   m_ButtonTitle: {fileID: 114000010258074492}
+  m_ClickPulse: {fileID: 11400000, guid: f66cb0a158f54124aa4158bbad3ed702, type: 2}
+  m_HoverPulse: {fileID: 11400000, guid: dd561ccb8162d1040adba0a7ea60eadc, type: 2}
 --- !u!114 &114000013676702038
 MonoBehaviour:
   m_ObjectHideFlags: 1
