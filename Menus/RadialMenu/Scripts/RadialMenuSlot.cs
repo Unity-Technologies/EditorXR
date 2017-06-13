@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -43,6 +44,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		MeshRenderer m_FrameRenderer;
+
+		[SerializeField]
+		HapticPulse m_HighlightedPulse;
 
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
 		[SerializeField]
@@ -89,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (m_HighlightCoroutine == null)
 						m_HighlightCoroutine = StartCoroutine(Highlight());
 
-					this.Pulse(rayOrigin, 0.005f, 0.2f);
+					this.Pulse(rayOrigin, m_HighlightedPulse);
 				}
 				else
 				{
