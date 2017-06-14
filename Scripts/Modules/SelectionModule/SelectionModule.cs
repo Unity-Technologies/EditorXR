@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -15,6 +16,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public Func<GameObject, bool> overrideSelectObject { private get; set; }
 
 		public event Action<Transform> selected;
+
+		[SerializeField]
+		HapticPulse m_HoverPulse;
 
 		public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
 		{
@@ -65,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_SelectedObjects.Clear();
 
 			if (hoveredObject)
-				this.Pulse(rayOrigin, 0.45f, 0.075f, false, true);
+				//this.Pulse(rayOrigin, 0.45f, 0.075f, false, true); // DO FOR EACH RAYORIGIN HERE
 
 			// Multi-Select
 			if (multiSelect)
