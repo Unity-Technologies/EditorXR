@@ -143,9 +143,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					if (m_PressedObject != null)
 						this.SetHighlight(m_PressedObject, false, rayOrigin);
-
-					if (selectionInput.multiSelect.isHeld)
-						consumeControl(selectionInput.multiSelect);
 				}
 
 				if (m_PressedObject)
@@ -153,6 +150,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				m_PressedObject = null;
 			}
+
+			if (Selection.gameObjects.Length > 0 && selectionInput.multiSelect.wasJustPressed)
+				consumeControl(selectionInput.multiSelect);
 		}
 
 		bool GetSelectionCandidate(ref GameObject hoveredObject)

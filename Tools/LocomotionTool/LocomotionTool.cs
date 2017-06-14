@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -12,8 +11,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ISetDefaultRayVisibility, ICustomActionMap,
 		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider
 	{
-		const float k_FastMoveSpeed = 25f;
-		const float k_SlowMoveSpeed = 5f;
+		const float k_FastMoveSpeed = 20f;
+		const float k_SlowMoveSpeed = 4f;
 		const float k_RotationDamping = 0.2f;
 
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
