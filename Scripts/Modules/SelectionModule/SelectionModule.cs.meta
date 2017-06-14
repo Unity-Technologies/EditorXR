@@ -1,12 +1,11 @@
 fileFormatVersion: 2
 guid: e1e415e42cfe5964e87b18be7792412f
-timeCreated: 1469136056
+timeCreated: 1497400707
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - selectedMaterial: {instanceID: 0}
-  - coneMaterial: {fileID: 2100000, guid: d33a89222f7efbf4a8c087bee7d33cc2, type: 2}
+  - m_HoverPulse: {fileID: 11400000, guid: 964923da60ab9c54cbd2d8d87f614673, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
