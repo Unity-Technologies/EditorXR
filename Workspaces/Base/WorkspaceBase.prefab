@@ -2494,6 +2494,8 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
+  m_ClickPulse: {fileID: 0}
+  m_HighlightPulse: {fileID: 0}
 --- !u!114 &114000012775033414
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2600,6 +2602,8 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
+  m_ClickPulse: {fileID: 0}
+  m_HighlightPulse: {fileID: 0}
 --- !u!114 &114000013720459270
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2744,6 +2748,7 @@ MonoBehaviour:
   m_ResizeHandleMargin: 0.08
   m_ResizeCornerSize: 0.03
   m_DynamicFaceAdjustment: 1
+  m_FrameHoverPulse: {fileID: 11400000, guid: 7eda595fb79c2124fb4ea55f6253a847, type: 2}
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1
