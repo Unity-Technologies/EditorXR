@@ -9,6 +9,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics
 	{
+		[SerializeField]
+		HapticPulse m_HoverPulse;
+
 		GameObject m_CurrentGroupRoot;
 		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
 
@@ -16,9 +19,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public Func<GameObject, bool> overrideSelectObject { private get; set; }
 
 		public event Action<Transform> selected;
-
-		[SerializeField]
-		HapticPulse m_HoverPulse;
 
 		public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
 		{
@@ -69,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_SelectedObjects.Clear();
 
 			if (hoveredObject)
-				//this.Pulse(rayOrigin, 0.45f, 0.075f, false, true); // DO FOR EACH RAYORIGIN HERE
+				this.Pulse(rayOrigin, m_HoverPulse);
 
 			// Multi-Select
 			if (multiSelect)
