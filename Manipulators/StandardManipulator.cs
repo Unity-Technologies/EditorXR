@@ -1,18 +1,25 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	sealed class StandardManipulator : BaseManipulator
+	sealed class StandardManipulator : BaseManipulator, IControlHaptics
 	{
 		[SerializeField]
 		Transform m_PlaneHandlesParent;
 
 		[SerializeField]
 		List<BaseHandle> m_AllHandles;
+
+		[SerializeField]
+		HapticPulse m_DragPulse;
+
+		[SerializeField]
+		HapticPulse m_RotatePulse;
 
 		protected override void OnEnable()
 		{
@@ -68,11 +75,15 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		void OnTranslateDragging(BaseHandle handle, HandleEventData eventData)
 		{
 			translate(eventData.deltaPosition, eventData.rayOrigin, !(handle is SphereHandle));
+
+			this.Pulse(eventData.rayOrigin, m_DragPulse);
 		}
 
 		void OnRotateDragging(BaseHandle handle, HandleEventData eventData)
 		{
 			rotate(eventData.deltaRotation);
+
+			this.Pulse(eventData.rayOrigin, m_RotatePulse);
 		}
 
 		void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
