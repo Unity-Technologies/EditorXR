@@ -13,12 +13,10 @@ using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	[InitializeOnLoad]
 	sealed class VRView : EditorWindow
 	{
 		const string k_ShowDeviceView = "VRView.ShowDeviceView";
 		const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
-		const string k_LaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
 
 		DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
@@ -103,11 +101,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		public Rect guiRect { get; private set; }
 
-		static VRView GetWindow()
-		{
-			return GetWindow<VRView>(true);
-		}
-
 		public static Coroutine StartCoroutine(IEnumerator routine)
 		{
 			if (s_ActiveView && s_ActiveView.m_CameraRig)
@@ -119,25 +112,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return null;
 		}
 
-		// Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
-		// EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
-		// we watch until playmode is done and then relaunch.  
-		static void ReopenOnExitPlaymode()
-		{
-			bool launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
-			if (!launch || !EditorApplication.isPlaying)
-			{
-				EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
-				EditorApplication.update -= ReopenOnExitPlaymode;
-				if (launch)
-					GetWindow<VRView>();
-			}
-		}
-
 		public void OnEnable()
 		{
-			EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
-
 			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
 
 			autoRepaintOnSceneChange = true;
@@ -183,8 +159,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			if (viewDisabled != null)
 				viewDisabled();
-
-			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
 			VRSettings.enabled = false;
 
@@ -323,19 +297,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
-		private void OnPlaymodeStateChanged()
-		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
-			{
-				EditorPrefs.SetBool(k_LaunchOnExitPlaymode, true);
-				Close();
-			}
-		}
-
 		private void Update()
 		{
 			// If code is compiling, then we need to clean up the window resources before classes get re-initialized
-			if (EditorApplication.isCompiling)
+			if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode)
 			{
 				Close();
 				return;

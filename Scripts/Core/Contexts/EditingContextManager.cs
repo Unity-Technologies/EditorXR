@@ -11,13 +11,16 @@ using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	class EditingContextManager : MonoBehaviour
+	[InitializeOnLoad]
+	sealed class EditingContextManager : MonoBehaviour
 	{
 		[SerializeField]
 		UnityObject m_DefaultContext;
 
 		const string k_SettingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
 		const string k_UserSettingsPath = "Library/EditingContextManagerSettings.asset";
+
+		const string k_LaunchOnExitPlaymode = "EditingContextManager.LaunchOnExitPlaymode";
 
 		static EditingContextManager s_Instance;
 		static InputManager s_InputManager;
@@ -54,6 +57,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			VRView.viewEnabled += OnVRViewEnabled;
 			VRView.viewDisabled += OnVRViewDisabled;
+
+			EditorApplication.update += ReopenOnExitPlaymode;
 		}
 
 		static void OnVRViewEnabled()
@@ -89,6 +94,32 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			Selection.activeObject = settings;
 		}
 
+		// Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
+		// EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
+		// we watch until playmode is done and then relaunch.  
+		static void ReopenOnExitPlaymode()
+		{
+			var launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
+			if (!launch || !EditorApplication.isPlaying)
+			{
+				EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
+				EditorApplication.update -= ReopenOnExitPlaymode;
+				if (launch)
+					EditorApplication.delayCall += ShowEditorVR;
+			}
+		}
+
+		private void OnPlaymodeStateChanged()
+		{
+			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			{
+				EditorPrefs.SetBool(k_LaunchOnExitPlaymode, true);
+				var view = VRView.activeView;
+				if (view)
+					view.Close();
+			}
+		}
+
 		void OnEnable()
 		{
 			m_Settings = LoadUserSettings();
@@ -105,10 +136,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			if (m_AvailableContexts.Count > 1)
 				VRView.afterOnGUI += OnVRViewGUI;
+
+			EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
 		}
 
 		void OnDisable()
 		{
+			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+
 			VRView.afterOnGUI -= OnVRViewGUI;
 
 			defaultContext = m_CurrentContext;
