@@ -25,12 +25,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_ManipulatorGroundSnapMax = 0.15f;
 		const float k_ManipulatorSurfaceSnapConstrainedBreakDist = 0.1f;
 
-		const float k_DirectMinSearchDistance = 0.03f;
+		const float k_DirectBreakDistance = 0.05f;
 		const float k_SnapDistanceScale = 0.75f;
 		const float k_BlockedBreakScale = 5f;
 		const float k_DirectGroundSnapMin = 0.03f;
 		const float k_DirectGroundSnapMax = 0.07f;
 		const float k_MaxRayDot = -0.5f;
+		const float k_RayExtra = 0.05f;
 
 		const float k_WidgetScale = 0.03f;
 
@@ -630,7 +631,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var bounds = state.identityBounds;
 			var boundsCenter = bounds.center;
 
-			var breakDistance = this.GetViewerScale() * k_DirectMinSearchDistance;
+			var breakDistance = this.GetViewerScale() * k_DirectBreakDistance;
 
 			if (state.surfaceSnapping)
 			{
@@ -650,31 +651,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				offset = rotation * offset;
 
-				var boundsBreakDist = Mathf.Max(breakDistance, projectedExtents.magnitude);
+				//var boundsBreakDist = Mathf.Max(breakDistance, projectedExtents.magnitude);
 
 				var snappingNormal = state.snappingNormal;
 				var breakVector = targetPosition - position;
 				if (Vector3.Dot(snappingNormal, breakVector) < 0)
 				{
-					boundsBreakDist *= k_BlockedBreakScale;
-					var rayBackOutDist = projectedExtents.magnitude * 2;
-					var raycastDistance = projectedExtents.magnitude * 3;
+					//var boundsBreakDist = Mathf.Max(projectedExtents.magnitude * 2, breakDistance * k_BlockedBreakScale);
+					var boundsBreakDist = breakDistance * k_BlockedBreakScale;
+					var raycastDistance = breakDistance + k_RayExtra * this.GetViewerScale();
+					directionVector = rotation * directionVector;
 
-					var boundsRay = new Ray(targetPosition - offset + snappingNormal * (breakVector.magnitude + rayBackOutDist), -snappingNormal);
+					var boundsRay = new Ray(targetPosition + snappingNormal * breakVector.magnitude, directionVector);
 
-					GizmoModule.instance.DrawRay(boundsRay.origin, boundsRay.direction, Color.blue, boundsBreakDist);
-					GizmoModule.instance.DrawRay(boundsRay.origin, boundsRay.direction, Color.green, breakVector.magnitude);
+					GizmoModule.instance.DrawRay(boundsRay.origin, boundsRay.direction, Color.red, raycastDistance);
+					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.blue, boundsBreakDist);
+					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.green, breakVector.magnitude);
+
+					//if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, targetRotation, state, boundsBreakDist))
+					//	return true;
 
 					if (SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance))
-						return true;
-
-					if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, targetRotation, state, boundsBreakDist))
 						return true;
 				}
 				else
 				{
-					GizmoModule.instance.DrawRay(position, targetPosition - position, Color.blue, breakDistance);
-					GizmoModule.instance.DrawRay(position, targetPosition - position, Color.green, Vector3.Distance(position, targetPosition));
+					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.blue, breakDistance);
+					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.green, breakVector.magnitude);
 				}
 			}
 
@@ -719,9 +722,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			if (state.surfaceSnapping)
 			{
-				GizmoModule.instance.DrawRay(position, targetPosition - position, Color.blue, breakDistance);
-				GizmoModule.instance.DrawRay(position, targetPosition - position, Color.green, Vector3.Distance(position, targetPosition));
-
 				if (Vector3.Distance(position, targetPosition) > breakDistance)
 				{
 					position = targetPosition;
