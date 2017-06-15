@@ -631,7 +631,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var bounds = state.identityBounds;
 			var boundsCenter = bounds.center;
 
-			var breakDistance = this.GetViewerScale() * k_DirectBreakDistance;
+			var viewerScale = this.GetViewerScale();
+			var breakDistance = viewerScale * k_DirectBreakDistance;
 
 			if (state.surfaceSnapping)
 			{
@@ -651,25 +652,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				offset = rotation * offset;
 
-				//var boundsBreakDist = Mathf.Max(breakDistance, projectedExtents.magnitude);
-
 				var snappingNormal = state.snappingNormal;
 				var breakVector = targetPosition - position;
 				if (Vector3.Dot(snappingNormal, breakVector) < 0)
 				{
-					//var boundsBreakDist = Mathf.Max(projectedExtents.magnitude * 2, breakDistance * k_BlockedBreakScale);
 					var boundsBreakDist = breakDistance * k_BlockedBreakScale;
-					var raycastDistance = breakDistance + k_RayExtra * this.GetViewerScale();
+					var raycastDistance = breakDistance + k_RayExtra * viewerScale;
 					directionVector = rotation * directionVector;
 
-					var boundsRay = new Ray(targetPosition + snappingNormal * breakVector.magnitude, directionVector);
+					var boundsRay = new Ray(targetPosition + rotation * boundsCenter - Vector3.Project(breakVector, directionVector), directionVector);
 
-					GizmoModule.instance.DrawRay(boundsRay.origin, boundsRay.direction, Color.red, raycastDistance);
 					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.blue, boundsBreakDist);
 					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.green, breakVector.magnitude);
 
-					//if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, targetRotation, state, boundsBreakDist))
-					//	return true;
+					if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, targetRotation, state, boundsBreakDist))
+						return true;
 
 					if (SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance))
 						return true;
