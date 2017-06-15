@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolButton : MonoBehaviour, ISelectTool, IPointerEnterHandler, IControlHaptics
+	sealed class PinnedToolButton : MonoBehaviour, ISelectTool, IPointerEnterHandler, IControlHaptics, IUsesNode
 	{
 		public Type toolType
 		{
@@ -43,6 +43,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Transform rayOrigin { get; set; }
 
+		public Node? node { get; set; }
+
 		void Start()
 		{
 			m_GradientButton.click += OnClick;
@@ -52,12 +54,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnClick()
 		{
 			SetButtonGradients(this.SelectTool(rayOrigin, m_ToolType));
-			this.Pulse(rayOrigin, m_ClickPulse);
+			this.Pulse(node, m_ClickPulse);
 		}
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			this.Pulse(rayOrigin, m_HoverPulse);
+			this.Pulse(node, m_HoverPulse);
 		}
 
 		// Create periodic table-style names for types
