@@ -197,8 +197,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return false;
 			};
 
-			var hapticsModule = AddModule<HapticsModule>();
-			hapticsModule.getNodeFromRayOrigin = Tools.GetNodeFromRayOrigin;
+			AddModule<HapticsModule>();
 
 			viewer.AddPlayerModel();
 
