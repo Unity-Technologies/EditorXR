@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
+	[CreateAssetMenu(menuName = "EditorVR/EditorVR Haptic Pulse", fileName = "NewHapticPulse.asset")]
 	public class HapticPulse : ScriptableObject
 	{
 		[SerializeField]
