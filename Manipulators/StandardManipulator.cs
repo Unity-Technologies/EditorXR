@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	sealed class StandardManipulator : BaseManipulator, IControlHaptics
+	sealed class StandardManipulator : BaseManipulator, IControlHaptics, IRayToNode
 	{
 		[SerializeField]
 		Transform m_PlaneHandlesParent;
@@ -20,6 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 		[SerializeField]
 		HapticPulse m_RotatePulse;
+
+		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		protected override void OnEnable()
 		{
@@ -76,14 +79,14 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		{
 			translate(eventData.deltaPosition, eventData.rayOrigin, !(handle is SphereHandle));
 
-			this.Pulse(eventData.rayOrigin, m_DragPulse);
+			this.Pulse(requestNodeFromRayOrigin(eventData.rayOrigin), m_DragPulse);
 		}
 
 		void OnRotateDragging(BaseHandle handle, HandleEventData eventData)
 		{
 			rotate(eventData.deltaRotation);
 
-			this.Pulse(eventData.rayOrigin, m_RotatePulse);
+			this.Pulse(requestNodeFromRayOrigin(eventData.rayOrigin), m_RotatePulse);
 		}
 
 		void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
