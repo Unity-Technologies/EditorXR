@@ -165,14 +165,14 @@ namespace ListView
 			m_ScrollOffset = index * itemSize.z;
 		}
 
-		protected virtual void UpdateItem(Transform t, float offset, ref bool doneSettling)
+		protected virtual void UpdateItem(Transform t, int order, float offset, ref bool doneSettling)
 		{
 			var targetPosition = m_StartPosition + offset * Vector3.back;
 			var targetRotation = Quaternion.identity;
-			UpdateItemTransform(t, targetPosition, targetRotation, false, ref doneSettling);
+			UpdateItemTransform(t, order, targetPosition, targetRotation, false, ref doneSettling);
 		}
 
-		protected virtual void UpdateItemTransform(Transform t, Vector3 targetPosition, Quaternion targetRotation, bool dontSettle, ref bool doneSettling)
+		protected virtual void UpdateItemTransform(Transform t, int order, Vector3 targetPosition, Quaternion targetRotation, bool dontSettle, ref bool doneSettling)
 		{
 			if (m_Settling && !dontSettle)
 			{
@@ -189,6 +189,8 @@ namespace ListView
 				t.localPosition = targetPosition;
 				t.localRotation = targetRotation;
 			}
+
+			t.SetSiblingIndex(order);
 		}
 
 		protected virtual Vector3 GetObjectSize(GameObject g)
