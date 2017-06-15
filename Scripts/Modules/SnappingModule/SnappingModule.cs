@@ -25,13 +25,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_ManipulatorGroundSnapMax = 0.15f;
 		const float k_ManipulatorSurfaceSnapConstrainedBreakDist = 0.1f;
 
-		const float k_DirectBreakDistance = 0.05f;
+		const float k_DirectBreakDistance = 0.04f;
 		const float k_SnapDistanceScale = 0.75f;
 		const float k_BlockedBreakScale = 5f;
 		const float k_DirectGroundSnapMin = 0.03f;
 		const float k_DirectGroundSnapMax = 0.07f;
 		const float k_MaxRayDot = -0.5f;
-		const float k_RayExtra = 0.05f;
+		const float k_RayExtra = 0.02f;
 
 		const float k_WidgetScale = 0.03f;
 
@@ -545,7 +545,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var maxRayLength = this.GetViewerScale() * k_SurfaceSnappingMaxRayLength;
 
 			return SnapToSurface(pointerRay, ref position, ref rotation, state, offset, targetRotation , rotationOffset, upVector, maxRayLength)
-				|| TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, 0);
+				|| TryBreakSnap(ref position, ref rotation, targetPosition, startRotation, state, 0);
 		}
 
 		bool ManipulatorSnapConstrained(ref Vector3 position, ref Quaternion rotation, Vector3 delta, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float raycastDistance, ConstrainedAxis constraints, PivotMode pivotMode)
@@ -588,15 +588,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				boundsOffset = targetPosition - axisRay.origin;
 			}
 
-			if (state.surfaceSnapping)
+			if (state.surfaceSnapping || state.groundSnapping)
 			{
 				var breakDistance = raycastDistance;
 				if (Vector3.Dot(targetPosition - position, state.snappingNormal) < 0)
 					breakDistance *= k_BlockedBreakScale;
 
-				TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
+				TryBreakSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
 				return true;
 			}
+
+			//if (axisRay.or)
 
 			if (surfaceSnappingEnabled && SnapToSurface(axisRay, ref position, ref rotation, state, boundsOffset, targetRotation, rotationOffset, upVector, raycastDistance))
 				return true;
@@ -618,10 +620,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (groundSnappingEnabled && GlobalSnapToGround(axisRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, boundsOffset))
 				return true;
 
-			if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, startRotation, state, raycastDistance))
+			if (TryBreakSnap(ref position, ref rotation, targetPosition, startRotation, state, raycastDistance))
 				return true;
-
-			GizmoModule.instance.DrawSphere(targetPosition + Vector3.up, 0.01f, Color.gray);
 
 			return false;
 		}
@@ -657,25 +657,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (Vector3.Dot(snappingNormal, breakVector) < 0)
 				{
 					var boundsBreakDist = breakDistance * k_BlockedBreakScale;
-					var raycastDistance = breakDistance + k_RayExtra * viewerScale;
-					directionVector = rotation * directionVector;
+					var raycastDistance = projectedExtents.magnitude + breakVector.magnitude;
+					directionVector = targetRotation * directionVector;
 
-					var boundsRay = new Ray(targetPosition + rotation * boundsCenter - Vector3.Project(breakVector, directionVector), directionVector);
+					var boundsRay = new Ray(targetPosition - Vector3.Project(breakVector, directionVector), directionVector);
+					if (pivotSnappingEnabled)
+					{
+						var extra = k_RayExtra * viewerScale;
+						raycastDistance += extra;
+						boundsRay.origin -= directionVector * extra;
+					}
+					else
+					{
+						boundsRay.origin += targetRotation * boundsCenter;
+					}
 
-					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.blue, boundsBreakDist);
-					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.green, breakVector.magnitude);
-
-					if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, targetRotation, state, boundsBreakDist))
+					if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, boundsBreakDist))
 						return true;
 
 					if (SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance))
 						return true;
+
+					return true;
 				}
-				else
-				{
-					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.blue, breakDistance);
-					GizmoModule.instance.DrawRay(state.snappingPosition, breakVector, Color.green, breakVector.magnitude);
-				}
+
+				if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
+					return true;
 			}
 
 			for (var i = 0; i < k_Directions.Length; i++)
@@ -693,37 +700,42 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				else
 					offset += projectedExtents;
 
-				var placementOffset = rotation * offset;
-				offset = targetRotation * offset;
+				offset = rotation * offset;
 
-				var raycastDistance = Mathf.Max(breakDistance, projectedExtents.magnitude);
+				var raycastDistance = breakDistance;
+				if (!pivotSnappingEnabled)
+					raycastDistance += projectedExtents.magnitude;
 
-				var boundsRay = new Ray(targetPosition - offset, targetRotation * directionVector);
+				var boundsRay = new Ray(targetPosition, targetRotation * directionVector);
+				if (!pivotSnappingEnabled)
+					boundsRay.origin += targetRotation * boundsCenter;
 
-				GizmoModule.instance.DrawRay(boundsRay.origin, boundsRay.direction, Color.yellow, raycastDistance);
-
-				if (SnapToSurface(boundsRay, ref position, ref rotation, state, placementOffset, targetRotation, rotationOffset, upVector, raycastDistance, k_MaxRayDot))
+				if (SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance, k_MaxRayDot))
 				{
 					state.directionIndex = i;
 					return true;
 				}
 			}
 
-			if (TryBreakSurfaceSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
+			if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
+				return true;
+
+			if (TryBreakSnap(ref position, ref rotation, state.snappingPosition, targetRotation, state, breakDistance))
 				return true;
 
 			return false;
 		}
 
-		static bool TryBreakSurfaceSnap(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance)
+		static bool TryBreakSnap(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance)
 		{
-			if (state.surfaceSnapping)
+			if (state.surfaceSnapping || state.groundSnapping)
 			{
 				if (Vector3.Distance(position, targetPosition) > breakDistance)
 				{
 					position = targetPosition;
 					rotation = targetRotation;
 					state.surfaceSnapping = false;
+					state.groundSnapping = false;
 					state.snappingNormal = Vector3.up;
 					return true;
 				}
@@ -778,7 +790,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				state.surfaceSnapping = true;
 				state.groundSnapping = false;
 
-				GizmoModule.instance.DrawSphere(snappedPosition, 0.01f, Color.green);
 				position = snappedPosition;
 				rotation = rotationSnappingEnabled ? snappedRotation : targetRotation;
 
@@ -835,11 +846,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		bool GlobalSnapToGround(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float raycastDistance, Vector3 boundsOffset = default(Vector3))
 		{
+			if (Mathf.Approximately(Vector3.Dot(ray.direction, Vector3.up), 0))
+				return false;
+
+			GizmoModule.instance.DrawRay(ray.origin, ray.direction, Color.red, raycastDistance);
+
 			var groundPlane = new Plane(Vector3.up, k_GroundHeight);
 			float distance;
 			if (groundPlane.Raycast(ray, out distance) && distance <= raycastDistance)
 			{
 				state.groundSnapping = true;
+
+				state.snappingNormal = -Vector3.Project(ray.direction, Vector3.up).normalized;
 
 				var hitPoint = ray.origin + ray.direction * distance;
 				var snappedPosition = pivotSnappingEnabled ? hitPoint : hitPoint + boundsOffset;
