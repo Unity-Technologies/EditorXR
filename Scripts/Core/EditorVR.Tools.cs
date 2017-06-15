@@ -366,18 +366,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				}
 			}
-
-			internal static Node? RequestNodeFromRayOrigin(Transform rayOrigin)
-			{
-				Node? node = null;
-				Rays.ForEachProxyDevice(deviceData =>
-				{
-					if (deviceData.rayOrigin == rayOrigin)
-						node = deviceData.node;
-				});
-
-				return node;
-			}
 		}
 	}
 }

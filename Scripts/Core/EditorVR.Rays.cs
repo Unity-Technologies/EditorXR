@@ -90,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var rayToNode = obj as IRayToNode;
 				if (rayToNode != null)
-					rayToNode.requestNodeFromRayOrigin = Tools.RequestNodeFromRayOrigin;
+					rayToNode.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
 
 				var selectionModule = obj as SelectionModule;
 				if (selectionModule)
@@ -440,6 +440,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				if (m_ScaleManipulator)
 					m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
+			}
+
+			static Node? RequestNodeFromRayOrigin(Transform rayOrigin)
+			{
+				Node? node = null;
+				var evrDeviceData = evr.m_DeviceData;
+				for (var i = 0; i < evrDeviceData.Count; i++)
+				{
+					var deviceData = evrDeviceData[i];
+					if (!deviceData.proxy.active)
+						continue;
+
+					if (deviceData.rayOrigin == rayOrigin)
+					{
+						node = deviceData.node;
+						break;
+					}
+				}
+
+				return node;
 			}
 		}
 	}
