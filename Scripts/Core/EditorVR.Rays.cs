@@ -36,8 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public Rays()
 			{
-				ICustomRayMethods.showDefaultRay = ShowRay;
-				ICustomRayMethods.hideDefaultRay = HideRay;
+				ISetDefaultRayVisibilityMethods.setDefaultRayVisibility = SetDefaultRayVisibility;
 
 				IUsesRayLockingMethods.lockRay = LockRay;
 				IUsesRayLockingMethods.unlockRay = UnlockRay;
@@ -106,13 +105,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var customMenu = deviceData.customMenu;
 				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
-					HideRay(rayOrigin);
+					SetDefaultRayVisibility(rayOrigin, false);
 					LockRay(rayOrigin, mainMenu);
 				}
 				else
 				{
 					UnlockRay(rayOrigin, mainMenu);
-					ShowRay(rayOrigin);
+					SetDefaultRayVisibility(rayOrigin, true);
 				}
 			}
 
@@ -388,23 +387,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return dpr == null || dpr.rayVisible;
 			}
 
-			internal static void ShowRay(Transform rayOrigin, bool rayOnly = false)
+			internal static void SetDefaultRayVisibility(Transform rayOrigin, bool visible, bool rayOnly = false)
 			{
 				if (rayOrigin)
 				{
 					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 					if (dpr)
-						dpr.Show(rayOnly);
-				}
-			}
-
-			internal static void HideRay(Transform rayOrigin, bool rayOnly = false)
-			{
-				if (rayOrigin)
-				{
-					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-					if (dpr)
-						dpr.Hide(rayOnly);
+					{
+						if (visible)
+							dpr.Show(rayOnly);
+						else
+							dpr.Hide(rayOnly);
+					}
 				}
 			}
 

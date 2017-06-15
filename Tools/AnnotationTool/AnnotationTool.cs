@@ -9,7 +9,7 @@ using UnityEngine.InputNew;
 using UnityEngine.VR;
 
 [MainMenuItem("Annotation", "Create", "Draw in 3D")]
-public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ICustomRay, IUsesRayOrigins,
+public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ISetDefaultRayVisibility, IUsesRayOrigins,
 	IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash
 {
 	public const float TipDistance = 0.05f;
@@ -73,7 +73,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (rayOrigin)
 		{
 			this.UnlockRay(rayOrigin, this);
-			this.ShowDefaultRay(rayOrigin);
+			this.SetDefaultRayVisibility(rayOrigin, true);
 		}
 
 		if (m_ColorPicker)
@@ -89,7 +89,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void Start()
 	{
-		this.HideDefaultRay(rayOrigin);
+		this.SetDefaultRayVisibility(rayOrigin, false);
 		this.LockRay(rayOrigin, this);
 
 		m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
@@ -152,7 +152,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			m_ColorPicker.Show();
 
 		this.UnlockRay(rayOrigin, this);
-		this.ShowDefaultRay(rayOrigin);
+		this.SetDefaultRayVisibility(rayOrigin, true);
 		m_AnnotationPointer.gameObject.SetActive(false);
 	}
 
@@ -161,7 +161,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (m_ColorPicker && m_ColorPicker.enabled)
 		{
 			m_ColorPicker.Hide();
-			this.HideDefaultRay(rayOrigin);
+			this.SetDefaultRayVisibility(rayOrigin, false);
 			this.LockRay(rayOrigin, this);
 			m_AnnotationPointer.gameObject.SetActive(true);
 		}
@@ -185,7 +185,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			{
 				m_BrushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, (value + 1) / 2f);
 			}
-			else // For touch and hydra, let the thumbstick gradually modifiy the width.
+			else // For touch and hydra, let the thumbstick gradually modify the width.
 			{
 				m_BrushSize += value * Time.unscaledDeltaTime * .1f;
 				m_BrushSize = Mathf.Clamp(m_BrushSize, MinBrushSize, MaxBrushSize);
