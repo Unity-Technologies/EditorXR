@@ -427,7 +427,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var matrix = camera.worldToCameraMatrix;
 
 				if (!m_StandardManipulator)
+				{
 					m_StandardManipulator = evr.GetComponentInChildren<StandardManipulator>();
+					ConnectInterface(m_StandardManipulator);
+				}
 
 				if (m_StandardManipulator)
 					m_StandardManipulator.AdjustScale(cameraPosition, matrix);
