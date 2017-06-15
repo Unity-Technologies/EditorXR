@@ -11,7 +11,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IUsesRayOrigin, IControlHaptics
+	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -73,7 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public List<ActionMenuData> menuActions { get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
-		public Transform rayOrigin { get; set; }
+		public Node? node { get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
@@ -109,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				|| mainMenuInput.flickFace.wasJustReleased)
 			{
 				m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
-				this.Pulse(rayOrigin, m_FaceRotationPulse);
+				this.Pulse(node, m_FaceRotationPulse);
 				consumeControl(mainMenuInput.flickFace);
 			}
 
