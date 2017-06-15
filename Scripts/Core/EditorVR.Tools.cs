@@ -367,7 +367,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal static Node? GetNodeFromRayOrigin(Transform rayOrigin)
+			internal static Node? RequestNodeFromRayOrigin(Transform rayOrigin)
 			{
 				Node? node = null;
 				Rays.ForEachProxyDevice(deviceData =>
