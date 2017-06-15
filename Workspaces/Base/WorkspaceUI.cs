@@ -13,7 +13,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IControlHaptics
+	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IControlHaptics, IRayToNode, IUsesNode
 	{
 		const int k_AngledFaceBlendShapeIndex = 2;
 		const int k_ThinFrameBlendShapeIndex = 3;
@@ -165,6 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		class DragState
 		{
 			public Transform rayOrigin { get; private set; }
+			public Node? node { get; private set; }
 			bool m_Resizing;
 			Vector3 m_PositionOffset;
 			Quaternion m_RotationOffset;
@@ -174,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			Vector3 m_BoundsSizeStart;
 			ResizeDirection m_Direction;
 
-			public DragState(WorkspaceUI workspaceUI, Transform rayOrigin, bool resizing)
+			public DragState(WorkspaceUI workspaceUI, Transform rayOrigin, Node? node, bool resizing)
 			{
 				m_WorkspaceUI = workspaceUI;
 				m_Resizing = resizing;
@@ -255,12 +256,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						+ transform.forward * (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward);
 
 					m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
-					m_WorkspaceUI.PerformResizeHaptic(rayOrigin);
+					m_WorkspaceUI.PerformResizeHaptic(node);
 				}
 				else
 				{
 					MathUtilsExt.SetTransformOffset(rayOrigin, m_WorkspaceUI.transform.parent, m_PositionOffset, m_RotationOffset);
-					m_WorkspaceUI.PerformMoveHaptic(rayOrigin);
+					m_WorkspaceUI.PerformMoveHaptic(node);
 				}
 			}
 		}
@@ -347,6 +348,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform leftRayOrigin { private get; set; }
 		public Transform rightRayOrigin { private get; set; }
+		public Node? node { get; set; }
+		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public event Action<Bounds> resize;
 
@@ -760,7 +763,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			if (dragRayOrigin)
 			{
-				m_DragState = new DragState(this, dragRayOrigin, resizing);
+				m_DragState = new DragState(this, dragRayOrigin, requestNodeFromRayOrigin(dragRayOrigin), resizing);
 				if (dragResizeIcon != null)
 					dragResizeIcon.CrossFadeAlpha(0f, k_ResizeIconCrossfadeDuration, true);
 
@@ -828,7 +831,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			// If hovering the frame, and not dragging, perform haptic feedback
 			if (m_HovereringRayOrigins.Count > 0 && m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
-				this.Pulse(rayOrigin, m_FrameHoverPulse);
+				this.Pulse(node, m_FrameHoverPulse);
 
 			m_FrameThicknessCoroutine = null;
 		}
@@ -871,14 +874,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_TopFaceVisibleCoroutine = null;
 		}
 
-		void PerformMoveHaptic(Transform rayOrigin)
+		void PerformMoveHaptic(Node? node)
 		{
-			this.Pulse(rayOrigin, m_MovePulse);
+			this.Pulse(node, m_MovePulse);
 		}
 
-		void PerformResizeHaptic(Transform rayOrigin)
+		void PerformResizeHaptic(Node? node)
 		{
-			this.Pulse(rayOrigin, m_ResizePulse);
+			this.Pulse(node, m_ResizePulse);
 		}
 	}
 }
