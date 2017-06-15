@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics
+	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics, IRayToNode
 	{
 		[SerializeField]
 		HapticPulse m_HoverPulse;
@@ -17,6 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
 		public Func<GameObject, bool> overrideSelectObject { private get; set; }
+		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public event Action<Transform> selected;
 
@@ -69,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_SelectedObjects.Clear();
 
 			if (hoveredObject)
-				this.Pulse(rayOrigin, m_HoverPulse);
+				this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_HoverPulse);
 
 			// Multi-Select
 			if (multiSelect)
