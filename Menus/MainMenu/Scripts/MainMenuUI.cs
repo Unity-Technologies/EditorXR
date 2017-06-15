@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IUsesRayOrigin, IControlHaptics
+	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IControlHaptics, IUsesNode, IConnectInterfaces
 	{
 		public class ButtonData
 		{
@@ -138,9 +138,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public int faceCount { get { return m_MenuFaces.Length; } }
 
-		public Transform rayOrigin { get; set; }
-
 		public HapticPulse faceRotationPulse { get { return  m_RotatePulse; } }
+
+		public Node? node { get; set; }
 
 		public bool visible
 		{
@@ -258,6 +258,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				buttonData.sectionName = k_UncategorizedFaceName;
 
 			mainMenuButton.SetData(buttonData.name, buttonData.description);
+			this.ConnectInterfaces(mainMenuButton);
 
 			var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
 			if (found)
@@ -413,7 +414,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningIn;
 
-			this.Pulse(rayOrigin, m_ShowPulse);
+			this.Pulse(node, m_ShowPulse);
 
 			foreach (var face in m_MenuFaces)
 			{
@@ -456,7 +457,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningOut;
 
-			this.Pulse(rayOrigin, m_HidePulse);
+			this.Pulse(node , m_HidePulse);
 
 			foreach (var face in m_MenuFaces)
 			{
