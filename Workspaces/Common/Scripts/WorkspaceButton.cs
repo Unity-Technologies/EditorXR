@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -10,7 +11,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef, IControlHaptics
+	sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef, IControlHaptics, IRayToNode
 	{
 		const float k_IconHighlightedLocalZOffset = -0.0015f;
 		const string k_MaterialAlphaProperty = "_Alpha";
@@ -143,7 +144,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		GradientPair m_OriginalGradientPair;
 		GradientPair m_HighlightGradientPair;
-		Transform m_RayOrigin;
 		Vector3 m_IconDirection;
 		Material m_ButtonMaterial;
 		Material m_ButtonMaskMaterial;
@@ -155,6 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Color m_OriginalColor;
 		Sprite m_OriginalIconSprite;
 		float m_VisibleLocalZScale;
+		Node? m_Node;
 
 		// The initial button reveal coroutines, before highlighting
 		Coroutine m_VisibilityCoroutine;
@@ -164,12 +165,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 
-		public Button button
-		{
-			get { return m_Button; }
-		}
+		public Button button { get { return m_Button; } }
 
 		public byte stencilRef { get; set; }
+
+		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public void InstantClearState()
 		{
@@ -177,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
 			ResetColors();
-			m_RayOrigin = null;
+			m_Node = null;
 		}
 
 		public void SetMaterialColors(GradientPair gradientPair)
@@ -328,7 +328,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			this.Pulse(m_RayOrigin, m_HighlightPulse);
+			this.Pulse(m_Node, m_HighlightPulse);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
@@ -458,7 +458,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			m_RayOrigin = eventData.rayOrigin;
+			m_Node = requestNodeFromRayOrigin(eventData.rayOrigin);
 
 			if (autoHighlight)
 				highlighted = true;
@@ -466,7 +466,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			m_RayOrigin = null;
+			m_Node = null;
 
 			if (autoHighlight)
 				highlighted = false;
@@ -480,7 +480,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnButtonClicked()
 		{
-			this.Pulse(m_RayOrigin, m_ClickPulse);
+			this.Pulse(m_Node, m_ClickPulse);
 		}
 	}
 }
