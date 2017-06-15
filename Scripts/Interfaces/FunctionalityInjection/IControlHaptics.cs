@@ -13,31 +13,31 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IControlHapticsMethods
 	{
-		internal delegate void PulseDelegate(Transform rayOrigin, HapticPulse hapticPulse);
+		internal delegate void PulseDelegate(Node? node, HapticPulse hapticPulse);
 
 		internal static PulseDelegate pulse { get; set; }
 
 		/// <summary>
 		/// Perform a haptic feedback pulse
 		/// </summary>
-		/// <param name="rayOrigin">Device RayOrigin/Transform on which to control the pulse. A NULL value will pulse on all devices</param>
+		/// <param name="node">Node on which to control the pulse</param>
 		/// <param name="hapticPulse">Haptic pulse to perform</param>
-		public static void Pulse(this IControlHaptics obj, Transform rayOrigin, HapticPulse hapticPulse)
+		public static void Pulse(this IControlHaptics obj, Node? node, HapticPulse hapticPulse)
 		{
-			pulse(rayOrigin, hapticPulse);
+			pulse(node, hapticPulse);
 		}
 
-		internal delegate void StopPulsesDelegate(Transform rayOrigin);
+		internal delegate void StopPulsesDelegate(Node? node);
 
 		internal static StopPulsesDelegate stopPulses { get; set; }
 
 		/// <summary>
 		/// Stop all haptic feedback on a specific device, or all devices
 		/// </summary>
-		/// <param name="rayOrigin">Device RayOrigin/Transform on which to stop all pulses. A NULL value will stop pulses on all devices</param>
-		public static void StopPulses(this IControlHaptics obj, Transform rayOrigin)
+		/// <param name="node">Device RayOrigin/Transform on which to stop all pulses. A NULL value will stop pulses on all devices</param>
+		public static void StopPulses(this IControlHaptics obj, Node? node)
 		{
-			stopPulses(rayOrigin);
+			stopPulses(node);
 		}
 	}
 }
