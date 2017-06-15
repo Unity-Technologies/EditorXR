@@ -7,7 +7,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap, IControlHaptics
+	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap, IControlHaptics, IUsesNode, IConnectInterfaces
 	{
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
@@ -73,14 +73,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
 
+		public Node? node { get; set; }
+
 		void Start()
 		{
 			m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
 			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_RadialMenuUI.actions = menuActions;
+			this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
-			m_RadialMenuUI.rayOrigin = rayOrigin;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -107,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (radialMenuInput.selectItem.wasJustReleased)
 			{
-				this.Pulse(rayOrigin, m_ReleasePulse);
+				this.Pulse(node, m_ReleasePulse);
 
 				m_RadialMenuUI.SelectionOccurred();
 
