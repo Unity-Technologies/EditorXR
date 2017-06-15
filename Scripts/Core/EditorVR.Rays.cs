@@ -88,6 +88,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				}
 
+				var rayToNode = obj as IRayToNode;
+				if (rayToNode != null)
+					rayToNode.requestNodeFromRayOrigin = Tools.RequestNodeFromRayOrigin;
+
 				var selectionModule = obj as SelectionModule;
 				if (selectionModule)
 				{
