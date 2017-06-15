@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces, IControlHaptics
+	sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces, IControlHaptics, IUsesNode
 	{
 		const int k_SlotCount = 16;
 
@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		RadialMenuSlot m_HighlightedButton;
 		float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
 
-		public Transform rayOrigin { private get; set; }
+		public Node? node { get; set; }
 
 		public Transform alternateMenuOrigin
 		{
@@ -340,7 +340,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (m_HighlightedButton != null)
 				m_HighlightedButton.button.onClick.Invoke();
 
-			this.Pulse(rayOrigin, m_SelectionPulse);
+			this.Pulse(node, m_SelectionPulse);
 		}
 	}
 }
