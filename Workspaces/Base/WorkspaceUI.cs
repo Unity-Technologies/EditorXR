@@ -256,12 +256,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						+ transform.forward * (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward);
 
 					m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
-					m_WorkspaceUI.PerformResizeHaptic(node);
+					m_WorkspaceUI.ResizeHapticPulse(node);
 				}
 				else
 				{
 					MathUtilsExt.SetTransformOffset(rayOrigin, m_WorkspaceUI.transform.parent, m_PositionOffset, m_RotationOffset);
-					m_WorkspaceUI.PerformMoveHaptic(node);
+					m_WorkspaceUI.MoveHapticPulse(node);
 				}
 			}
 		}
@@ -874,12 +874,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_TopFaceVisibleCoroutine = null;
 		}
 
-		void PerformMoveHaptic(Node? node)
+		void MoveHapticPulse(Node? node)
 		{
 			this.Pulse(node, m_MovePulse);
 		}
 
-		void PerformResizeHaptic(Node? node)
+		void ResizeHapticPulse(Node? node)
 		{
 			this.Pulse(node, m_ResizePulse);
 		}
