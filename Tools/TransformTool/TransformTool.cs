@@ -72,11 +72,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					if (usesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
 					{
-						//var deltaTime = Time.deltaTime;
-						//grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
-						//grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
-						grabbedObject.position = position;
-						grabbedObject.rotation = rotation;
+						var deltaTime = Time.deltaTime;
+						grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
+						grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
 					}
 					else
 					{
@@ -552,6 +550,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					break;
 				default:
 					m_CurrentlySnapping = this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta, constraints, m_PivotMode);
+
+					if (constraints == 0)
+						m_CurrentlySnapping = false;
 					break;
 			}
 		}
