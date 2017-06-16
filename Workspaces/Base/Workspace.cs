@@ -133,9 +133,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 			this.ConnectInterfaces(m_WorkspaceUI);
-			m_WorkspaceUI.closeClicked += OnCloseClicked;
-			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
-			m_WorkspaceUI.buttonHovered += OnButtonHovered;
+			m_WorkspaceUI.closeClicked += OnCloseClick;
+			m_WorkspaceUI.resetSizeClicked += OnResetClick;
+			m_WorkspaceUI.buttonHovered += OnButtonHover;
 			m_WorkspaceUI.hoveringFrame += HoveringFrame;
 			m_WorkspaceUI.moving += Moving;
 			m_WorkspaceUI.resizing += Resizing;
@@ -162,13 +162,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		protected virtual void OnCloseClicked(Transform rayOrigin)
+		protected virtual void OnCloseClick(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 			Close();
 		}
 
-		protected virtual void OnResetClicked(Transform rayOrigin)
+		protected virtual void OnResetClick(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 
@@ -176,7 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
 		}
 
-		protected void OnButtonHovered(Transform rayOrigin)
+		protected void OnButtonHover(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
@@ -270,7 +270,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);
 		}
 
-		protected void OnButtonClicked(Transform rayOrigin)
+		protected void OnButtonClick(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 		}

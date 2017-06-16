@@ -90,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
 			m_RadialMenuUI.buttonHovered += OnButtonHover;
-			m_RadialMenuUI.buttonClicked += OnButtonClicked;
+			m_RadialMenuUI.buttonClicked += OnButtonClick;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -128,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void OnButtonClicked()
+		void OnButtonClick()
 		{
 			this.Pulse(node, m_ButtonClickedPulse);
 		}

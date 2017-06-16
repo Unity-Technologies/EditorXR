@@ -76,6 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		HapticPulse m_ButtonHoverPulse;
+
 		MainMenuUI m_MainMenuUI;
 		float m_LastRotationInput;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
@@ -99,8 +100,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
 			m_MainMenuUI.visible = m_Visible;
-			m_MainMenuUI.buttonHovered += OnButtonHovered;
-			m_MainMenuUI.buttonClicked += OnButtonClicked;
+			m_MainMenuUI.buttonHovered += OnButtonHover;
+			m_MainMenuUI.buttonClicked += OnButtonClick;
 			m_MainMenuUI.opening += OnOpening;
 			m_MainMenuUI.closing += OnClosing;
 
@@ -223,12 +224,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void OnButtonClicked(Transform rayOrigin)
+		void OnButtonClick(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 		}
 
-		void OnButtonHovered(Transform rayOrigin)
+		void OnButtonHover(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}

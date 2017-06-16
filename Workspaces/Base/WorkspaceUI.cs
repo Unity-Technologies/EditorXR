@@ -426,10 +426,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
 
-			m_CloseButton.clicked += OnCloseClicked;
-			m_CloseButton.hovered += OnButtonHovered;
-			m_ResizeButton.clicked += OnResetSizeClicked;
-			m_ResizeButton.hovered += OnButtonHovered;
+			m_CloseButton.clicked += OnCloseClick;
+			m_CloseButton.hovered += OnButtonHover;
+			m_ResizeButton.clicked += OnResetSizeClick;
+			m_ResizeButton.hovered += OnButtonHover;
 		}
 
 		IEnumerator Start()
@@ -793,25 +793,25 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ObjectUtils.Destroy(m_TopFaceMaterial);
 			ObjectUtils.Destroy(m_FrontFaceMaterial);
 
-			m_CloseButton.clicked -= OnCloseClicked;
+			m_CloseButton.clicked -= OnCloseClick;
 			m_CloseButton.hovered -= buttonHovered;
-			m_ResizeButton.clicked -= OnResetSizeClicked;
+			m_ResizeButton.clicked -= OnResetSizeClick;
 			m_ResizeButton.hovered -= buttonHovered;
 		}
 
-		void OnCloseClicked(Transform rayOrigin)
+		void OnCloseClick(Transform rayOrigin)
 		{
 			if (closeClicked != null)
 				closeClicked(rayOrigin);
 		}
 
-		void OnResetSizeClicked(Transform rayOrigin)
+		void OnResetSizeClick(Transform rayOrigin)
 		{
 			if (resetSizeClicked != null)
 				resetSizeClicked(rayOrigin);
 		}
 
-		void OnButtonHovered(Transform rayOrigin)
+		void OnButtonHover(Transform rayOrigin)
 		{
 			if (buttonHovered != null)
 				buttonHovered(rayOrigin);

@@ -204,7 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.ConnectInterfaces(menuSlot);
 				menuSlot.orderIndex = i;
 				m_RadialMenuSlots.Add(menuSlot);
-				menuSlot.hovered += OnButtonHovered;
+				menuSlot.hovered += OnButtonHover;
 
 				if (slotBorderMaterial == null)
 					slotBorderMaterial = menuSlot.borderRendererMaterial;
@@ -344,7 +344,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				buttonClicked();
 		}
 
-		void OnButtonHovered()
+		void OnButtonHover()
 		{
 			if (buttonHovered != null)
 				buttonHovered();

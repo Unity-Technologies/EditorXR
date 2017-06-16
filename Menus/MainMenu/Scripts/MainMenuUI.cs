@@ -247,8 +247,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.name = buttonData.name;
 			var mainMenuButton = button.GetComponent<MainMenuButton>();
 			buttonCreationCallback(mainMenuButton);
-			mainMenuButton.clicked += OnClicked;
-			mainMenuButton.hovered += OnHover;
+			mainMenuButton.clicked += OnButtonClick;
+			mainMenuButton.hovered += OnButtonHover;
 
 			if (string.IsNullOrEmpty(buttonData.sectionName))
 				buttonData.sectionName = k_UncategorizedFaceName;
@@ -587,13 +587,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			faceTransform.localPosition = targetPosition;
 		}
 
-		void OnHover(Transform rayOrigin)
+		void OnButtonHover(Transform rayOrigin)
 		{
 			if (buttonHovered != null)
 				buttonHovered(rayOrigin);
 		}
 
-		void OnClicked(Transform rayOrigin)
+		void OnButtonClick(Transform rayOrigin)
 		{
 			if (buttonClicked != null)
 				buttonClicked(rayOrigin);

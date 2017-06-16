@@ -125,8 +125,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
 			scrollHandleTransform.localPosition = new Vector3(0f, -0.015f, 0f); // Offset from content for collision purposes
 
-			m_FilterUI.buttonClicked += OnButtonClicked;
-			m_FilterUI.buttonHovered += OnButtonHovered;
+			m_FilterUI.buttonClicked += OnButtonClick;
+			m_FilterUI.buttonHovered += OnButtonHover;
 
 			// Propagate initial bounds
 			OnBoundsChanged();
@@ -134,8 +134,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override void OnDestroy()
 		{
-			m_FilterUI.buttonClicked -= OnButtonClicked;
-			m_FilterUI.buttonHovered -= OnButtonHovered;
+			m_FilterUI.buttonClicked -= OnButtonClick;
+			m_FilterUI.buttonHovered -= OnButtonHover;
 
 			base.OnDestroy();
 		}

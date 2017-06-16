@@ -93,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						OnFilterClick(button);
 					});
 
-					button.clicked += OnClicked;
+					button.clicked += OnClick;
 					button.hovered += OnHover;
 					button.text.text = m_FilterTypes[i];
 				}
@@ -139,7 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				this.StopCoroutine(ref m_HideButtonListCoroutine);
 				m_HideButtonListCoroutine = StartCoroutine(HideButtonList());
 
-				OnClicked(null);
+				OnClick(null);
 			}
 		}
 
@@ -250,7 +250,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_HideButtonListCoroutine = null;
 		}
 
-		void OnClicked(Transform rayOrigin)
+		void OnClick(Transform rayOrigin)
 		{
 			if (buttonClicked != null)
 				buttonClicked(rayOrigin);

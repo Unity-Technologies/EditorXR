@@ -211,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_SwapIconsOnClick && m_AlternateIconSprite)
 				m_Button.onClick.AddListener(SwapIconSprite);
 
-			m_Button.onClick.AddListener(OnButtonClicked);
+			m_Button.onClick.AddListener(OnButtonClick);
 		}
 
 		void Start()
@@ -476,7 +476,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			alternateIconVisible = !alternateIconVisible;
 		}
 
-		void OnButtonClicked()
+		void OnButtonClick()
 		{
 			if (clicked != null)
 				clicked(m_InteractingRayOrigin);
