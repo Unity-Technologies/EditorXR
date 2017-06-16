@@ -388,7 +388,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 
 						// Transfer objects from miniworld to preview state
-						// Don't switch to previewing the objects we are moving if we are still in another mini world
+						// Don't switch to previewing the objects we are dragging if we are still in another mini world
 						if (!containedInOtherMiniWorld)
 						{
 							// Check for player head

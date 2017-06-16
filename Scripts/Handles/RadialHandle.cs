@@ -46,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			{
 				m_HandleTip.gameObject.SetActive(m_HoverSources.Count > 0 || m_DragSources.Count > 0);
 
-				if (m_HoverSources.Count > 0 || m_DragSources.Count > 0) // Reposition handle tip based on current raycast position when hovering (moving is handled in OnDrag)
+				if (m_HoverSources.Count > 0 || m_DragSources.Count > 0) // Reposition handle tip based on current raycast position when hovering (dragging is handled in OnDrag)
 				{
 					if (eventData != null)
 					{

@@ -231,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 			}
 
-			// Re-use InspectorNumberItem for array Size in case we are moving the value
+			// Re-use InspectorNumberItem for array Size in case we are dragging the value
 			if (arraySizeItem)
 			{
 				foreach (var child in newData)
