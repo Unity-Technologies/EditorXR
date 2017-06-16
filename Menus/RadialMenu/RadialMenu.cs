@@ -19,6 +19,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		HapticPulse m_ReleasePulse;
 
+		[SerializeField]
+		HapticPulse m_ButtonHoverPulse;
+
+		[SerializeField]
+		HapticPulse m_ButtonClickedPulse;
+
 		RadialMenuUI m_RadialMenuUI;
 
 		public List<ActionMenuData> menuActions
@@ -83,6 +89,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
+			m_RadialMenuUI.buttonHovered += OnButtonHover;
+			m_RadialMenuUI.buttonClicked += OnButtonClicked;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -118,6 +126,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				consumeControl(radialMenuInput.selectItem);
 			}
+		}
+
+		void OnButtonClicked()
+		{
+			this.Pulse(node, m_ButtonClickedPulse);
+		}
+
+		void OnButtonHover()
+		{
+			this.Pulse(node, m_ButtonHoverPulse);
 		}
 	}
 }

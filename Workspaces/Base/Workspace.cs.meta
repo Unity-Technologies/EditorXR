@@ -1,11 +1,16 @@
 fileFormatVersion: 2
 guid: ca55ef2d1b18e264aa30156a24fec94e
-timeCreated: 1471990296
+timeCreated: 1497573124
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - m_BasePrefab: {instanceID: 0}
+  - m_ActionMap: {instanceID: 0}
+  - m_ButtonClickPulse: {fileID: 11400000, guid: 43f6d76e312f45145bc1ef9af446edfe,
+      type: 2}
+  - m_ButtonHoverPulse: {fileID: 11400000, guid: bf8c18d5dc5c90f4aa0782421bbaaf0e,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

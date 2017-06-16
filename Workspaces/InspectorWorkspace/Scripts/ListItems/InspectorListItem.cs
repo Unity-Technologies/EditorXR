@@ -321,7 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_DraggedField)
 				m_DraggedField.EndSliderDrag(eventData.rayOrigin);
 
-			// Delay call fixes errors when you close the workspace or change data while dragging a field
+			// Delay call fixes errors when you close the workspace or change data while moving a field
 			EditorApplication.delayCall += () =>
 			{
 				if (m_DragClone)

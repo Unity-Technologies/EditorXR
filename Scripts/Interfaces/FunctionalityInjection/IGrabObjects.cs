@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR
 	public interface IGrabObjects : ICanGrabObject
 	{
 		/// <summary>
-		/// Transfer a held object between rayOrigins (i.e. dragging into the MiniWorld)
+		/// Transfer a held object between rayOrigins (i.e. moving into the MiniWorld)
 		/// </summary>
 		/// <param name="rayOrigin">rayOrigin of current held object</param>
 		/// <param name="destRayOrigin">Destination rayOrigin</param>

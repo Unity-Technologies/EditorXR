@@ -84,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			if (m_DragSources.Count == 0)
 				return;
 
-			// Scrolling changes the radius of the sphere while dragging, and accelerates
+			// Scrolling changes the radius of the sphere while moving, and accelerates
 			if (Mathf.Abs(eventData.scrollDelta.y) > 0.5f)
 				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y) * k_ScrollAcceleration * Time.deltaTime;
 			else

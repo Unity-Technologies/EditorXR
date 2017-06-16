@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, ITooltip, IControlHaptics, IRayEnterHandler, IPointerClickHandler, IRayToNode
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IControlHaptics, IRayEnterHandler, IPointerClickHandler
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]
@@ -20,22 +20,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		private Text m_ButtonTitle;
 
-		[SerializeField]
-		HapticPulse m_ClickPulse;
-
-		[SerializeField]
-		HapticPulse m_HoverPulse;
-
 		Color m_OriginalColor;
-		Node? m_InputNode;
+		Transform m_InteractingRayOrigin;
 
 		public string tooltipText { get; set; }
 
-		public Func<Transform, Node?> requestNodeFromRayOrigin { private get; set; }
-
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			this.Pulse(m_InputNode, m_ClickPulse);
+			if (clicked != null)
+				clicked(m_InteractingRayOrigin);
 		}
 
 		public bool selected
@@ -55,6 +48,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public event Action<Transform> hovered;
+		public event Action<Transform> clicked;
+
 		private void Awake()
 		{
 			m_OriginalColor = m_Button.targetGraphic.color;
@@ -62,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnDisable()
 		{
-			m_InputNode = null;
+			m_InteractingRayOrigin = null;
 		}
 
 		public void SetData(string name, string description)
@@ -73,13 +69,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			m_InputNode = requestNodeFromRayOrigin(eventData.rayOrigin);
-			this.Pulse(m_InputNode, m_HoverPulse);
-		}
+			m_InteractingRayOrigin = eventData.rayOrigin;
 
-		public void OnRayExit(RayEventData eventData)
-		{
-			m_InputNode = null;
+			if (hovered != null)
+				hovered(eventData.rayOrigin);
 		}
 	}
 }

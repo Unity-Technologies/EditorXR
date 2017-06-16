@@ -52,15 +52,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Transform m_AlternateMenu;
 
-		[SerializeField]
-		HapticPulse m_RotatePulse;
-
-		[SerializeField]
-		HapticPulse m_ShowPulse;
-
-		[SerializeField]
-		HapticPulse m_HidePulse;
-
 		public int targetFaceIndex
 		{
 			get { return m_TargetFaceIndex; }
@@ -138,8 +129,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public int faceCount { get { return m_MenuFaces.Length; } }
 
-		public HapticPulse faceRotationPulse { get { return  m_RotatePulse; } }
-
 		public Node? node { get; set; }
 
 		public bool visible
@@ -184,6 +173,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; }
 		}
+
+		public event Action<Transform> buttonHovered;
+		public event Action<Transform> buttonClicked;
+		public event Action opening;
+		public event Action closing;
 
 		void Awake()
 		{
@@ -253,6 +247,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.name = buttonData.name;
 			var mainMenuButton = button.GetComponent<MainMenuButton>();
 			buttonCreationCallback(mainMenuButton);
+			mainMenuButton.clicked += OnClicked;
+			mainMenuButton.hovered += OnHover;
 
 			if (string.IsNullOrEmpty(buttonData.sectionName))
 				buttonData.sectionName = k_UncategorizedFaceName;
@@ -414,7 +410,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningIn;
 
-			this.Pulse(node, m_ShowPulse);
+			if (opening != null)
+				opening();
 
 			foreach (var face in m_MenuFaces)
 			{
@@ -457,7 +454,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningOut;
 
-			this.Pulse(node , m_HidePulse);
+			if (closing != null)
+				closing();
 
 			foreach (var face in m_MenuFaces)
 			{
@@ -587,6 +585,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			faceTransform.localScale = targetScale;
 			faceTransform.localPosition = targetPosition;
+		}
+
+		void OnHover(Transform rayOrigin)
+		{
+			if (buttonHovered != null)
+				buttonHovered(rayOrigin);
+		}
+
+		void OnClicked(Transform rayOrigin)
+		{
+			if (buttonClicked != null)
+				buttonClicked(rayOrigin);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces, IControlHaptics, IUsesNode
+	sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces
 	{
 		const int k_SlotCount = 16;
 
@@ -22,15 +23,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Transform m_SlotContainer;
 
-		[SerializeField]
-		HapticPulse m_SelectionPulse;
-
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_VisibilityCoroutine;
 		RadialMenuSlot m_HighlightedButton;
 		float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
 
-		public Node? node { get; set; }
+		public event Action buttonHovered;
+		public event Action buttonClicked; 
 
 		public Transform alternateMenuOrigin
 		{
@@ -205,6 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.ConnectInterfaces(menuSlot);
 				menuSlot.orderIndex = i;
 				m_RadialMenuSlots.Add(menuSlot);
+				menuSlot.hovered += OnButtonHovered;
 
 				if (slotBorderMaterial == null)
 					slotBorderMaterial = menuSlot.borderRendererMaterial;
@@ -340,7 +340,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (m_HighlightedButton != null)
 				m_HighlightedButton.button.onClick.Invoke();
 
-			this.Pulse(node, m_SelectionPulse);
+			if (buttonClicked != null)
+				buttonClicked();
+		}
+
+		void OnButtonHovered()
+		{
+			if (buttonHovered != null)
+				buttonHovered();
 		}
 	}
 }

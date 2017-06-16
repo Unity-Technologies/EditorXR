@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -10,7 +11,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler, IControlHaptics, IUsesNode
+	sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler, IControlHaptics
 	{
 		static Color s_FrameOpaqueColor;
 		static readonly Vector3 k_HiddenLocalScale = new Vector3(1f, 0f, 1f);
@@ -44,9 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		MeshRenderer m_FrameRenderer;
-
-		[SerializeField]
-		HapticPulse m_HighlightedPulse;
 
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
 		[SerializeField]
@@ -93,7 +91,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (m_HighlightCoroutine == null)
 						m_HighlightCoroutine = StartCoroutine(Highlight());
 
-					this.Pulse(node, m_HighlightedPulse);
+					if (hovered != null)
+						hovered();
 				}
 				else
 				{
@@ -212,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Transform rayOrigin { get; set; }
 
-		public Node? node { get; set; }
+		public event Action hovered;
 
 		void Awake()
 		{

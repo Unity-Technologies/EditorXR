@@ -11,7 +11,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode
+	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode, IRayToNode
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -60,9 +60,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_Visible;
 
 		[SerializeField]
+		HapticPulse m_FaceRotationPulse; // Not set in inspector, due to instantiation order
+
+		[SerializeField]
+		HapticPulse m_ShowPulse;
+
+		[SerializeField]
+		HapticPulse m_HidePulse;
+
+		[SerializeField]
 		MainMenuUI m_MainMenuPrefab;
 
-		HapticPulse m_FaceRotationPulse; // Not set in inspector, due to instantiation order
+		[SerializeField]
+		HapticPulse m_ButtonClickPulse;
+
+		[SerializeField]
+		HapticPulse m_ButtonHoverPulse;
 		MainMenuUI m_MainMenuUI;
 		float m_LastRotationInput;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
@@ -74,6 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
 		public Node? node { get; set; }
+		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
@@ -85,9 +99,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
 			m_MainMenuUI.visible = m_Visible;
-
-			// Pulse reference is set on the UI prefab.  Fetching & cacheing for local use.
-			m_FaceRotationPulse = m_MainMenuUI.faceRotationPulse;
+			m_MainMenuUI.buttonHovered += OnButtonHovered;
+			m_MainMenuUI.buttonClicked += OnButtonClicked;
+			m_MainMenuUI.opening += OnOpening;
+			m_MainMenuUI.closing += OnClosing;
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
@@ -206,6 +221,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				kvp.Value.selected = this.IsToolActive(targetRayOrigin, kvp.Key);
 			}
+		}
+
+		void OnButtonClicked(Transform rayOrigin)
+		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+		}
+
+		void OnButtonHovered(Transform rayOrigin)
+		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+		}
+
+		void OnOpening()
+		{
+			this.Pulse(node, m_ShowPulse);
+		}
+
+		void OnClosing()
+		{
+			this.Pulse(node, m_HidePulse);
 		}
 	}
 }

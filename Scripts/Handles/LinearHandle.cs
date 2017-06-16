@@ -59,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			{
 				m_HandleTip.gameObject.SetActive(m_HoverSources.Count > 0 || m_DragSources.Count > 0);
 
-				if (m_HoverSources.Count > 0 || m_DragSources.Count > 0) // Reposition handle tip based on current raycast position when hovering or dragging
+				if (m_HoverSources.Count > 0 || m_DragSources.Count > 0) // Reposition handle tip based on current raycast position when hovering or moving
 				{
 					if (eventData != null)
 						m_HandleTip.position =
@@ -73,7 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		{
 			if (m_OrientDragPlaneToRay)
 			{
-				// Orient a plane for dragging purposes through the axis that rotates to avoid being parallel to the ray, 
+				// Orient a plane for moving purposes through the axis that rotates to avoid being parallel to the ray, 
 				// so that you can prevent intersections at infinity
 				var forward = Quaternion.Inverse(transform.rotation) * (rayOrigin.position - transform.position);
 				forward.z = 0;

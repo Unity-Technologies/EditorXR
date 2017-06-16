@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 			else
 			{
-				// Cache eventData.direct because it is always true while dragging
+				// Cache eventData.direct because it is always true while moving
 				m_DirectGrab = eventData.direct;
 				m_DragObject = null;
 				m_DragStarts[eventData.rayOrigin] = eventData.rayOrigin.position;

@@ -347,7 +347,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				transform.position += deltaPosition;
 		}
 
-		void Rotate(Quaternion deltaRotation)
+		void Rotate(Quaternion deltaRotation, Transform rayOrigin)
 		{
 			if (m_EligibleForDrag)
 				transform.rotation *= deltaRotation;

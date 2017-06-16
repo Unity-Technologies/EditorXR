@@ -16,12 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		[SerializeField]
 		List<BaseHandle> m_AllHandles;
 
-		[SerializeField]
-		HapticPulse m_DragPulse;
-
-		[SerializeField]
-		HapticPulse m_RotatePulse;
-
 		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		protected override void OnEnable()
@@ -78,15 +72,11 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		void OnTranslateDragging(BaseHandle handle, HandleEventData eventData)
 		{
 			translate(eventData.deltaPosition, eventData.rayOrigin, !(handle is SphereHandle));
-
-			this.Pulse(requestNodeFromRayOrigin(eventData.rayOrigin), m_DragPulse);
 		}
 
 		void OnRotateDragging(BaseHandle handle, HandleEventData eventData)
 		{
-			rotate(eventData.deltaRotation);
-
-			this.Pulse(requestNodeFromRayOrigin(eventData.rayOrigin), m_RotatePulse);
+			rotate(eventData.deltaRotation, eventData.rayOrigin);
 		}
 
 		void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)

@@ -1968,8 +1968,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 114000014286123538}
-        m_MethodName: CloseClick
+      - m_Target: {fileID: 0}
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1978,7 +1978,7 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 1
-        m_CallState: 1
+        m_CallState: 0
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &114000010128083748
@@ -2231,8 +2231,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 114000014286123538}
-        m_MethodName: ResetSizeClick
+      - m_Target: {fileID: 0}
+        m_MethodName: 
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2241,7 +2241,7 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 1
-        m_CallState: 1
+        m_CallState: 0
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &114000012017480980
@@ -2494,8 +2494,6 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
-  m_ClickPulse: {fileID: 11400000, guid: 43f6d76e312f45145bc1ef9af446edfe, type: 2}
-  m_HighlightPulse: {fileID: 11400000, guid: bf8c18d5dc5c90f4aa0782421bbaaf0e, type: 2}
 --- !u!114 &114000012775033414
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2602,8 +2600,6 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
-  m_ClickPulse: {fileID: 11400000, guid: 43f6d76e312f45145bc1ef9af446edfe, type: 2}
-  m_HighlightPulse: {fileID: 11400000, guid: bf8c18d5dc5c90f4aa0782421bbaaf0e, type: 2}
 --- !u!114 &114000013720459270
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2748,6 +2744,8 @@ MonoBehaviour:
   m_ResizeHandleMargin: 0.08
   m_ResizeCornerSize: 0.03
   m_DynamicFaceAdjustment: 1
+  m_CloseButton: {fileID: 114000013712785888}
+  m_ResizeButton: {fileID: 114000012661725366}
   m_ResizePulse: {fileID: 11400000, guid: daa1fd8c3e222aa4db108e0a2b0f7a7d, type: 2}
   m_MovePulse: {fileID: 11400000, guid: 83427d10dc20237408e0246b4b672682, type: 2}
   m_FrameHoverPulse: {fileID: 11400000, guid: 7eda595fb79c2124fb4ea55f6253a847, type: 2}

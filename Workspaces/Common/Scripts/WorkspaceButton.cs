@@ -18,6 +18,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const string k_MaterialColorTopProperty = "_ColorTop";
 		const string k_MaterialColorBottomProperty = "_ColorBottom";
 
+		public event Action<Transform> clicked;
+		public event Action<Transform> hovered;
+
 		public bool autoHighlight
 		{
 			get { return m_AutoHighlight; }
@@ -136,12 +139,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[Range(0f, 2f)]
 		float m_DelayBeforeReveal = 0.25f;
 
-		[SerializeField]
-		HapticPulse m_ClickPulse;
-
-		[SerializeField]
-		HapticPulse m_HighlightPulse;
-
 		GradientPair m_OriginalGradientPair;
 		GradientPair m_HighlightGradientPair;
 		Vector3 m_IconDirection;
@@ -155,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Color m_OriginalColor;
 		Sprite m_OriginalIconSprite;
 		float m_VisibleLocalZScale;
-		Node? m_Node;
+		Transform m_InteractingRayOrigin;
 
 		// The initial button reveal coroutines, before highlighting
 		Coroutine m_VisibilityCoroutine;
@@ -177,7 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
 			ResetColors();
-			m_Node = null;
+			m_InteractingRayOrigin = null;
 		}
 
 		public void SetMaterialColors(GradientPair gradientPair)
@@ -328,7 +325,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		IEnumerator BeginHighlight()
 		{
-			this.Pulse(m_Node, m_HighlightPulse);
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
@@ -458,7 +454,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			m_Node = requestNodeFromRayOrigin(eventData.rayOrigin);
+			m_InteractingRayOrigin = eventData.rayOrigin;
+			if (hovered != null)
+				hovered(m_InteractingRayOrigin);
 
 			if (autoHighlight)
 				highlighted = true;
@@ -466,7 +464,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			m_Node = null;
+			m_InteractingRayOrigin = null;
 
 			if (autoHighlight)
 				highlighted = false;
@@ -480,7 +478,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void OnButtonClicked()
 		{
-			this.Pulse(m_Node, m_ClickPulse);
+			if (clicked != null)
+				clicked(m_InteractingRayOrigin);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -92,12 +93,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						OnFilterClick(button);
 					});
 
+					button.clicked += OnClicked;
+					button.hovered += OnHover;
 					button.text.text = m_FilterTypes[i];
 				}
 			}
 		}
 
 		public byte stencilRef { get; set; }
+
+		public event Action<Transform> buttonHovered;
+		public event Action<Transform> buttonClicked;
 
 		void Awake()
 		{
@@ -132,6 +138,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				this.StopCoroutine(ref m_HideButtonListCoroutine);
 				m_HideButtonListCoroutine = StartCoroutine(HideButtonList());
+
+				OnClicked(null);
 			}
 		}
 
@@ -240,6 +248,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_ButtonList.gameObject.SetActive(false);
 			m_HideButtonListCoroutine = null;
+		}
+
+		void OnClicked(Transform rayOrigin)
+		{
+			if (buttonClicked != null)
+				buttonClicked(rayOrigin);
+		}
+
+		void OnHover(Transform rayOrigin)
+		{
+			if (buttonHovered != null)
+				buttonHovered(rayOrigin);
 		}
 	}
 }
