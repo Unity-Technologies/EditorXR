@@ -8,15 +8,13 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	sealed class StandardManipulator : BaseManipulator, IControlHaptics, IRayToNode
+	sealed class StandardManipulator : BaseManipulator, IControlHaptics
 	{
 		[SerializeField]
 		Transform m_PlaneHandlesParent;
 
 		[SerializeField]
 		List<BaseHandle> m_AllHandles;
-
-		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		protected override void OnEnable()
 		{
