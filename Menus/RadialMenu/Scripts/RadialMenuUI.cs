@@ -281,7 +281,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 			while (revealAmount < 1)
 			{
-				revealAmount += Time.unscaledDeltaTime * 8;
+				revealAmount += Time.deltaTime * 8;
 
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
@@ -298,7 +298,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			revealAmount = 0;
 			while (revealAmount < 1)
 			{
-				revealAmount += Time.unscaledDeltaTime;
+				revealAmount += Time.deltaTime;
 				yield return null;
 			}
 
@@ -316,7 +316,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			revealAmount = 1;
 			while (revealAmount > 0)
 			{
-				revealAmount -= Time.unscaledDeltaTime * 8;
+				revealAmount -= Time.deltaTime * 8;
 
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 					m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount);

@@ -77,7 +77,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public IMenu customMenu;
 			public PinnedToolButton previousToolButton;
 			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
-			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
 		}
 
 		class Nested
@@ -85,6 +84,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public static EditorVR evr { protected get; set; }
 
 			internal virtual void OnDestroy() { }
+		}
+
+		static void ResetPreferences()
+		{
+			EditorPrefs.DeleteKey(k_ShowGameObjects);
+			EditorPrefs.DeleteKey(k_PreserveLayout);
+			EditorPrefs.DeleteKey(k_SerializedPreferences);
 		}
 
 		void Awake()
@@ -171,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
 
-			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomGradient();
+			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();
 			sceneObjectModule.tryPlaceObject = (obj, targetScale) =>
@@ -252,7 +258,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var values = Enum.GetValues(consoleFlagsType);
 				var clearOnPlayFlag = values.GetValue(Array.IndexOf(names, "ClearOnPlay"));
 
-				var hasFlagMethod = consoleWindowType.GetMethod("HasFlag", BindingFlags.NonPublic | BindingFlags.Instance);
+				var hasFlagMethod = consoleWindowType.GetMethod("HasFlag", BindingFlags.NonPublic | BindingFlags.Static);
 				var result = (bool)hasFlagMethod.Invoke(window, new[] { clearOnPlayFlag });
 
 				if (result)
@@ -477,6 +483,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), preserveLayout);
 			}
 
+			GUILayout.FlexibleSpace();
+			if (GUILayout.Button("Reset to Defaults", GUILayout.Width(140)))
+				ResetPreferences();
+			
 			EditorGUILayout.EndVertical();
 		}
 	}

@@ -110,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			while (amount < 1f)
 			{
-				amount += Time.unscaledDeltaTime * speed;
+				amount += Time.deltaTime * speed;
 				m_Icon.localScale = Vector3.Lerp(currentScale, targetScale,  Mathf.SmoothStep(0f, 1f, amount));
 				m_Icon.localPosition = Vector3.Lerp(currentPosition, targetLocalPosition,  Mathf.SmoothStep(0f, 1f, amount));
 				yield return null;
@@ -129,7 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			while (amount < 1f)
 			{
-				amount += Time.unscaledDeltaTime * speed;
+				amount += Time.deltaTime * speed;
 				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, Mathf.SmoothStep(0f, 1f, amount));
 				yield return null;
 			}

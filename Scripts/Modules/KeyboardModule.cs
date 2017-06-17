@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class KeyboardModule : MonoBehaviour, ICustomRay, IForEachRayOrigin, IConnectInterfaces
+	sealed class KeyboardModule : MonoBehaviour, ISetDefaultRayVisibility, IForEachRayOrigin, IConnectInterfaces
 	{
 		[SerializeField]
 		KeyboardMallet m_KeyboardMalletPrefab;
@@ -97,10 +97,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (mallet.visible != malletVisible)
 				{
 					mallet.visible = malletVisible;
+					this.SetDefaultRayVisibility(rayOrigin, !malletVisible);
 					if (malletVisible)
-						this.HideDefaultRay(rayOrigin);
+						this.LockRay(rayOrigin, this);
 					else
-						this.ShowDefaultRay(rayOrigin);
+						this.UnlockRay(rayOrigin, this);
 				}
 
 				// TODO remove this after physics is in

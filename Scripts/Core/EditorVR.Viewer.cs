@@ -34,9 +34,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				public float cameraRigScale { get { return m_CameraRigScale; } set { m_CameraRigScale = value; } }
 			}
 
-			const float k_CameraRigTransitionTime = 0.75f;
+			const float k_CameraRigTransitionTime = 0.25f;
 
 			PlayerBody m_PlayerBody;
+			float m_OriginalNearClipPlane;
+			float m_OriginalFarClipPlane;
 
 			readonly Preferences m_Preferences = new Preferences();
 
@@ -52,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
 				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
 				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
+				IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
 
 				VRView.hmdStatusChange += OnHMDStatusChange;
 
@@ -131,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var inverseRotation = Quaternion.Inverse(cameraRotation);
 				cameraRig.position = Vector3.zero;
 				cameraRig.rotation = inverseRotation * preferences.cameraRotation;
-				cameraRig.localScale = Vector3.one * preferences.cameraRigScale;
+				SetViewerScale(preferences.cameraRigScale);
 				cameraRig.position = preferences.cameraPosition - cameraTransform.position;
 			}
 
@@ -142,6 +145,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				cameraRig.hideFlags = defaultHideFlags;
 				var viewerCamera = CameraUtils.GetMainCamera();
 				viewerCamera.gameObject.hideFlags = defaultHideFlags;
+				m_OriginalNearClipPlane = viewerCamera.nearClipPlane;
+				m_OriginalFarClipPlane = viewerCamera.farClipPlane;
 				if (VRSettings.loadedDeviceName == "OpenVR")
 				{
 					// Steam's reference position should be at the feet and not at the head as we do with Oculus
@@ -280,6 +285,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal static float GetViewerScale()
 			{
 				return CameraUtils.GetCameraRig().localScale.x;
+			}
+
+			void SetViewerScale(float scale)
+			{
+				var camera = CameraUtils.GetMainCamera();
+				CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
+				camera.nearClipPlane = m_OriginalNearClipPlane * scale;
+				camera.farClipPlane = m_OriginalFarClipPlane * scale;
 			}
 		}
 	}

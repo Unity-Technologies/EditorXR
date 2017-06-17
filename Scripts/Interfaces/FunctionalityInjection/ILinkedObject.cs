@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static Func<ILinkedObject, bool> isSharedUpdater { get; set; }
 
 		/// <summary>
-		/// Returns whether the current object is designated to do updates for all linked objects
+		/// Returns whether the specified object is designated to perform the duties of all linked objects of this type
 		/// </summary>
 		/// <param name="linkedObject">Object among the linked objects to check if it is the central one</param>
 		public static bool IsSharedUpdater(this ILinkedObject obj, ILinkedObject linkedObject)

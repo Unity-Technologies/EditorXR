@@ -205,7 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MenuFaceContentOriginalLocalScale = m_MenuFaceContentTransforms[0].localScale;
 			m_MenuFaceContentHiddenLocalScale = new Vector3(0f, m_MenuFaceContentOriginalLocalScale.y * 0.5f, m_MenuFaceContentOriginalLocalScale.z);
 
-			var bounds = ObjectUtils.GetBounds(gameObject);
+			var bounds = ObjectUtils.GetBounds(gameObject.transform);
 			m_MenuHeight = bounds.size.y;
 
 			transform.localScale = Vector3.zero;
@@ -384,8 +384,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var smoothSnapSpeed = 0.5f;
 			while (Mathf.Abs(Mathf.DeltaAngle(rotation, faceTargetRotation)) > k_RotationEpsilon)
 			{
-				smoothSnapSpeed = MathUtilsExt.SmoothDamp(smoothSnapSpeed, snapSpeed, ref smoothVelocity, 0.0625f, Mathf.Infinity, Time.unscaledDeltaTime);
-				rotation = Mathf.LerpAngle(rotation, faceTargetRotation, Time.unscaledDeltaTime * smoothSnapSpeed);
+				smoothSnapSpeed = MathUtilsExt.SmoothDamp(smoothSnapSpeed, snapSpeed, ref smoothVelocity, 0.0625f, Mathf.Infinity, Time.deltaTime);
+				rotation = Mathf.LerpAngle(rotation, faceTargetRotation, Time.deltaTime * smoothSnapSpeed);
 				m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, rotation, 0));
 				yield return null;
 			}
@@ -426,8 +426,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
-				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-				currentDuration += Time.unscaledDeltaTime;
+				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
+				currentDuration += Time.deltaTime;
 				transform.localScale = Vector3.one * scale;
 				m_AlternateMenu.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
 				yield return null;
@@ -471,8 +471,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (currentDuration < kSmoothTime)
 			{
-				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-				currentDuration += Time.unscaledDeltaTime;
+				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
+				currentDuration += Time.deltaTime;
 				transform.localScale = Vector3.one * scale;
 				m_AlternateMenu.localScale = m_AlternateMenuOriginOriginalLocalScale * scale;
 				yield return null;
@@ -498,8 +498,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (m_RotationState == rotationState && currentDuration < smoothTime)
 			{
-				currentBlendShapeWeight = MathUtilsExt.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-				currentDuration += Time.unscaledDeltaTime;
+				currentBlendShapeWeight = MathUtilsExt.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.deltaTime);
+				currentDuration += Time.deltaTime;
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, currentBlendShapeWeight);
 				yield return null;
 			}
@@ -522,8 +522,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (m_VisibilityState != VisibilityState.Hidden && currentDuration < smoothTime)
 			{
-				currentBlendShapeWeight = MathUtilsExt.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-				currentDuration += Time.unscaledDeltaTime;
+				currentBlendShapeWeight = MathUtilsExt.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.deltaTime);
+				currentDuration += Time.deltaTime;
 				m_MenuFrameRenderer.SetBlendShapeWeight(1, currentBlendShapeWeight * currentBlendShapeWeight);
 				m_MenuFacesMaterial.color = Color.Lerp(m_MenuFacesColor, k_MenuFacesHiddenColor, currentBlendShapeWeight * kLerpEmphasisWeight);
 				yield return null;
@@ -557,14 +557,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var delayTarget = 0.25f + (faceIndex * 0.1f); // delay duration before starting the face reveal
 			while (currentDelay < delayTarget) // delay the reveal of each face slightly more than the previous
 			{
-				currentDelay += Time.unscaledDeltaTime;
+				currentDelay += Time.deltaTime;
 				yield return null;
 			}
 
 			var smoothVelocity = Vector3.zero;
 			while (!Mathf.Approximately(currentScale.x, targetScale.x))
 			{
-				currentScale = Vector3.SmoothDamp(currentScale, targetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentScale = Vector3.SmoothDamp(currentScale, targetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
 				currentPosition = Vector3.Lerp(currentPosition, targetPosition, Mathf.Pow(currentScale.x / targetScale.x, 2)); // lerp the position with extra emphasis on the beginning transition
 				faceTransform.localScale = currentScale;
 				faceTransform.localPosition = currentPosition;

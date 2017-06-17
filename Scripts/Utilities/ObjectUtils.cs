@@ -24,16 +24,21 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
 		{
-			var go = UnityObject.Instantiate(prefab);
-			go.transform.SetParent(parent, worldPositionStays);
+			var go = UnityObject.Instantiate(prefab, parent, worldPositionStays);
+			if (worldPositionStays)
+			{
+				var goTransform = go.transform;
+				var prefabTransform = prefab.transform;
+				goTransform.position = prefabTransform.position;
+				goTransform.rotation = prefabTransform.rotation;
+			}
+
 			go.SetActive(active);
-#if UNITY_EDITORVR
 			if (!Application.isPlaying && runInEditMode)
 			{
 				SetRunInEditModeRecursively(go, runInEditMode);
 				go.hideFlags = hideFlags;
 			}
-#endif
 
 			return go;
 		}
@@ -65,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			if (string.IsNullOrEmpty(name))
 				name = "New Game Object";
 
-#if UNITY_EDITORVR
+#if UNITY_EDITOR
 			empty = EditorUtility.CreateGameObjectWithHideFlags(name, hideFlags);
 #else
 			empty = new GameObject(name);
@@ -84,7 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static Component CreateGameObjectWithComponent(Type type, Transform parent = null, bool worldPositionStays = true)
 		{
-#if UNITY_EDITORVR
+#if UNITY_EDITOR
 			var component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type).GetComponent(type);
 			if (!Application.isPlaying)
 				SetRunInEditModeRecursively(component.gameObject, true);
@@ -103,10 +108,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				transforms[i].gameObject.layer = layer;
 		}
 
-		public static Bounds GetBounds(GameObject[] gameObjects)
+		public static Bounds GetBounds(Transform[] transforms)
 		{
 			Bounds? bounds = null;
-			foreach (var go in gameObjects)
+			foreach (var go in transforms)
 			{
 				var goBounds = GetBounds(go);
 				if (!bounds.HasValue)
@@ -122,10 +127,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			return bounds ?? new Bounds();
 		}
 
-		public static Bounds GetBounds(GameObject obj)
+		public static Bounds GetBounds(Transform transform)
 		{
-			var b = new Bounds(obj.transform.position, Vector3.zero);
-			var renderers = obj.GetComponentsInChildren<Renderer>();
+			var b = new Bounds(transform.position, Vector3.zero);
+			var renderers = transform.GetComponentsInChildren<Renderer>();
 			for (int i = 0; i < renderers.Length; i++)
 			{
 				var r = renderers[i];
@@ -136,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			// As a fallback when there are no bounds, collect all transform positions
 			if (b.size == Vector3.zero)
 			{
-				var transforms = obj.GetComponentsInChildren<Transform>();
+				var transforms = transform.GetComponentsInChildren<Transform>();
 				foreach (var t in transforms)
 					b.Encapsulate(t.position);
 			}
@@ -146,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static void SetRunInEditModeRecursively(GameObject go, bool enabled)
 		{
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR
 			var monoBehaviours = go.GetComponents<MonoBehaviour>();
 			foreach (var mb in monoBehaviours)
 			{

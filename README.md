@@ -30,7 +30,7 @@ If you're a developer, we recommend that you take a look at the [Getting Started
 ### Cloning
 1. Create a new Unity project or use an existing one
 2. From the command line change directory to your project's `Assets` directory.
-3. Run `git lfs clone --recursive -b development https://github.com/Unity-Technologies/EditorVR`
+3. Run `git lfs clone --recursive -b development https://github.com/Unity-Technologies/EditorVR` **(Use HTTPS!)**
 
 ### Updating
 Because this project uses [git-submodule](https://git-scm.com/docs/git-submodule), you'll need to execute `git submodule update` after pulling whenever a submodule is updated. You could execute this command always just to be safe or if you notice that a submodule is showing as modified after pulling changes.

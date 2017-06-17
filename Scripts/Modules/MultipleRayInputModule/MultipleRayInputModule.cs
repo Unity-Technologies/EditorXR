@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				this.rayOrigin = rayOrigin;
 				this.node = node;
 				this.actionMapInput = actionMapInput;
-				this.isValid = validationCallback ?? delegate { return true; };
+				isValid = validationCallback;
 			}
 		}
 
@@ -132,7 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				eventData.rayOrigin = rayOrigin;
 				eventData.pointerLength = this.GetPointerLength(eventData.rayOrigin);
 
-				if (!source.isValid(source))
+				if (source.isValid != null && !source.isValid(source))
 					continue;
 
 				HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events

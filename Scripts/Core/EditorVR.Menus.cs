@@ -2,12 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -30,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				OverUI = 1 << 1
 			}
 
-			const float k_MenuHideMargin = 0.1f;
+			const float k_MenuHideMargin = 0.8f;
 
 			readonly Dictionary<Type, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
 			List<Type> m_MainMenuTools;
@@ -157,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				OnHover(go, rayEventData, true);
 			}
 
-			static void OnHover(GameObject go, RayEventData rayEventData, bool ended)
+			internal static void OnHover(GameObject go, RayEventData rayEventData, bool ended)
 			{
 				if (go == evr.gameObject)
 					return;

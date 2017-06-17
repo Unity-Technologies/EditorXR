@@ -16,12 +16,12 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000014202086430}
-  - 222: {fileID: 222000012302035594}
-  - 114: {fileID: 114000010163708834}
-  - 114: {fileID: 114000014080701832}
+  - component: {fileID: 224000014202086430}
+  - component: {fileID: 222000012302035594}
+  - component: {fileID: 114000010163708834}
+  - component: {fileID: 114000014080701832}
   m_Layer: 5
   m_Name: NumericField
   m_TagString: Untagged
@@ -34,11 +34,11 @@ GameObject:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000011060018696}
-  - 222: {fileID: 222000012788024114}
-  - 114: {fileID: 114000011995803364}
+  - component: {fileID: 224000011060018696}
+  - component: {fileID: 222000012788024114}
+  - component: {fileID: 114000011995803364}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -51,12 +51,12 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000012845690372}
-  - 222: {fileID: 222000013962122096}
-  - 114: {fileID: 114000010954278952}
-  - 114: {fileID: 114000010142058036}
+  - component: {fileID: 224000012845690372}
+  - component: {fileID: 222000013962122096}
+  - component: {fileID: 114000010954278952}
+  - component: {fileID: 114000010142058036}
   m_Layer: 5
   m_Name: TextMask
   m_TagString: Untagged
@@ -75,7 +75,6 @@ MonoBehaviour:
   m_Script: {fileID: -1200242548, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ShowMaskGraphic: 0
 --- !u!114 &114000010163708834
 MonoBehaviour:
@@ -88,7 +87,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
@@ -116,7 +114,6 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
@@ -144,7 +141,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 850d463c09b0c9e488ed8b42a2a1c9d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Material: {fileID: 0}
   m_Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
   m_RaycastTarget: 1
@@ -180,7 +176,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e3fa1a0ae7d99943910d53a205bc55e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Navigation:
     m_Mode: 3
     m_SelectOnUp: {fileID: 0}
@@ -210,13 +205,12 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
-    m_TypeName: NumericInputField+OnChangeEvent, Assembly-CSharp, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
-  m_ContentType: 0
-  m_KeyboardAnchorTransform: {fileID: 0}
+    m_TypeName: UnityEditor.Experimental.EditorVR.UI.InputField+OnChangeEvent, Assembly-CSharp,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   m_TextComponent: {fileID: 114000011995803364}
   m_CharacterLimit: 0
-  m_UpdateDrag: 0
+  m_Text: 
+  m_NumberType: 0
 --- !u!222 &222000012302035594
 CanvasRenderer:
   m_ObjectHideFlags: 1
@@ -244,10 +238,10 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0.0000000018626451}
   m_LocalScale: {x: 0.001, y: 0.001, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000012845690372}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: -0.0000005811453}
@@ -262,11 +256,11 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000011060018696}
   m_Father: {fileID: 224000014202086430}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0.0005, y: 0}
@@ -281,11 +275,11 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_Children:
   - {fileID: 224000012845690372}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: -0.0000044927, y: 0}

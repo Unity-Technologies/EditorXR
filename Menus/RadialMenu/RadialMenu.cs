@@ -89,11 +89,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var inputDirection = radialMenuInput.navigate.vector2;
 			m_RadialMenuUI.buttonInputDirection = inputDirection;
 
-			if (inputDirection != Vector2.zero)
+			if (inputDirection.magnitude > 0.5f)
 			{
 				// Composite controls need to be consumed separately
 				consumeControl(radialMenuInput.navigateX);
 				consumeControl(radialMenuInput.navigateY);
+			}
+			else
+			{
+				return;
 			}
 
 			m_RadialMenuUI.pressedDown = radialMenuInput.selectItem.wasJustPressed;

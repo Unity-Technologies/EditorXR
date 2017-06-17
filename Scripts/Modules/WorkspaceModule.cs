@@ -120,24 +120,35 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			foreach (var workspaceLayout in preferences.workspaceLayouts)
 			{
 				var layout = workspaceLayout;
-				CreateWorkspace(Type.GetType(workspaceLayout.name), workspace =>
+				var workspaceType = Type.GetType(workspaceLayout.name);
+				if (workspaceType != null)
 				{
-					workspace.transform.localPosition = layout.localPosition;
-					workspace.transform.localRotation = layout.localRotation;
-					workspace.contentBounds = layout.contentBounds;
-
-					var serializeWorkspace = workspace as ISerializeWorkspace;
-					if (serializeWorkspace != null)
+					CreateWorkspace(workspaceType, workspace =>
 					{
-						var payload = JsonUtility.FromJson(layout.payload, Type.GetType(layout.payloadType));
-						serializeWorkspace.OnDeserializeWorkspace(payload);
-					}
-				});
+						workspace.transform.localPosition = layout.localPosition;
+						workspace.transform.localRotation = layout.localRotation;
+						workspace.contentBounds = layout.contentBounds;
+
+						var serializeWorkspace = workspace as ISerializeWorkspace;
+						if (serializeWorkspace != null)
+						{
+							var payload = JsonUtility.FromJson(layout.payload, Type.GetType(layout.payloadType));
+							serializeWorkspace.OnDeserializeWorkspace(payload);
+						}
+					});
+				}
 			}
 		}
 
 		internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
 		{
+			// HACK: MiniWorldWorkspace is not working in single pass yet
+			if (t == typeof(MiniWorldWorkspace) && PlayerSettings.stereoRenderingPath != StereoRenderingPath.MultiPass)
+			{
+				Debug.LogWarning("The MiniWorld workspace is not working on single pass, currently.");
+				return;
+			}
+
 			var cameraTransform = CameraUtils.GetMainCamera().transform;
 
 			var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);

@@ -117,8 +117,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (currentDuration < smoothTime)
 			{
-				startingOpacity = MathUtilsExt.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-				currentDuration += Time.unscaledDeltaTime;
+				startingOpacity = MathUtilsExt.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.deltaTime);
+				currentDuration += Time.deltaTime;
 				m_CanvasGroup.alpha = startingOpacity * startingOpacity;
 				yield return null;
 			}

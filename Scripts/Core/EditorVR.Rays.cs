@@ -36,8 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public Rays()
 			{
-				ICustomRayMethods.showDefaultRay = ShowRay;
-				ICustomRayMethods.hideDefaultRay = HideRay;
+				ISetDefaultRayVisibilityMethods.setDefaultRayVisibility = SetDefaultRayVisibility;
 
 				IUsesRayLockingMethods.lockRay = LockRay;
 				IUsesRayLockingMethods.unlockRay = UnlockRay;
@@ -108,13 +107,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var customMenu = deviceData.customMenu;
 				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
-					HideRay(rayOrigin);
+					SetDefaultRayVisibility(rayOrigin, false);
 					LockRay(rayOrigin, mainMenu);
 				}
 				else
 				{
 					UnlockRay(rayOrigin, mainMenu);
-					ShowRay(rayOrigin);
+					SetDefaultRayVisibility(rayOrigin, true);
 				}
 			}
 
@@ -136,7 +135,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			static bool OverrideSelectObject(GameObject hoveredObject)
 			{
 				// The player head can hovered, but not selected (only directly manipulated)
-				return hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag);
+				if (hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag))
+				{
+					// Clear the selection so that we do not manipulate it when moving the player head
+					Selection.activeObject = null;
+					return true;
+				}
+
+				return false;
 			}
 
 			internal void CreateAllProxies()
@@ -173,6 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						foreach (var rayOriginPair in proxy.rayOrigins)
 						{
 							var node = rayOriginPair.Key;
+							var rayOrigin = rayOriginPair.Value;
 
 							var systemDevices = deviceInputModule.GetSystemDevices();
 							var actionMap = inputModule.actionMap;
@@ -188,17 +195,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									evrDeviceData.Add(deviceData);
 									deviceData.proxy = proxy;
 									deviceData.node = node;
-									deviceData.rayOrigin = rayOriginPair.Value;
+									deviceData.rayOrigin = rayOrigin;
 									deviceData.inputDevice = device;
 									deviceData.uiInput = deviceInputModule.CreateActionMapInput(actionMap, device);
 									deviceData.directSelectInput = deviceInputModule.CreateActionMapInput(deviceInputModule.directSelectActionMap, device);
 
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOriginPair.Value);
+									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOrigin, source =>
+									{
+										if (evr.GetNestedModule<DirectSelection>().IsHovering(source.rayOrigin))
+											return false;
+
+										if (deviceData.mainMenu.visible && source.hoveredObject)
+										{
+											Menus.OnHover(source.hoveredObject, source.eventData, false);
+
+											return false;
+										}
+
+										return true;
+									});
 								}
 							}
 
-							var rayOrigin = rayOriginPair.Value;
+							rayOrigin.name = string.Format("{0} Ray Origin", node);
 							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;
 							rayTransform.position = rayOrigin.position;
 							rayTransform.rotation = rayOrigin.rotation;
@@ -382,23 +402,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return dpr == null || dpr.rayVisible;
 			}
 
-			internal static void ShowRay(Transform rayOrigin, bool rayOnly = false)
+			internal static void SetDefaultRayVisibility(Transform rayOrigin, bool visible, bool rayOnly = false)
 			{
 				if (rayOrigin)
 				{
 					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 					if (dpr)
-						dpr.Show(rayOnly);
-				}
-			}
-
-			internal static void HideRay(Transform rayOrigin, bool rayOnly = false)
-			{
-				if (rayOrigin)
-				{
-					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-					if (dpr)
-						dpr.Hide(rayOnly);
+					{
+						if (visible)
+							dpr.Show(rayOnly);
+						else
+							dpr.Hide(rayOnly);
+					}
 				}
 			}
 

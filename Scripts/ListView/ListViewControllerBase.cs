@@ -102,20 +102,20 @@ namespace ListView
 
 			if (m_Scrolling)
 			{
-				m_ScrollDelta = Mathf.Clamp((m_ScrollOffset - m_LastScrollOffset) / Time.unscaledDeltaTime, -m_MaxMomentum, m_MaxMomentum);
+				m_ScrollDelta = Mathf.Clamp((m_ScrollOffset - m_LastScrollOffset) / Time.deltaTime, -m_MaxMomentum, m_MaxMomentum);
 				m_LastScrollOffset = m_ScrollOffset;
 			}
 			else
 			{
 				//Apply scrolling momentum
-				m_ScrollOffset += m_ScrollDelta * Time.unscaledDeltaTime;
+				m_ScrollOffset += m_ScrollDelta * Time.deltaTime;
 				const float kScrollMomentumShape = 2f;
 				if (m_ScrollReturn < float.MaxValue || m_ScrollOffset > 0)
 					OnScrollEnded();
 
 				if (m_ScrollDelta > 0)
 				{
-					m_ScrollDelta -= Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.unscaledDeltaTime;
+					m_ScrollDelta -= Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.deltaTime;
 					if (m_ScrollDelta < 0)
 					{
 						m_ScrollDelta = 0;
@@ -124,7 +124,7 @@ namespace ListView
 				}
 				else if (m_ScrollDelta < 0)
 				{
-					m_ScrollDelta += Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.unscaledDeltaTime;
+					m_ScrollDelta += Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.deltaTime;
 					if (m_ScrollDelta > 0)
 					{
 						m_ScrollDelta = 0;
@@ -158,14 +158,14 @@ namespace ListView
 			m_ScrollOffset = index * itemSize.z;
 		}
 
-		protected virtual void UpdateItem(Transform t, float offset, ref bool doneSettling)
+		protected virtual void UpdateItem(Transform t, int order, float offset, ref bool doneSettling)
 		{
 			var targetPosition = m_StartPosition + offset * Vector3.back;
 			var targetRotation = Quaternion.identity;
-			UpdateItemTransform(t, targetPosition, targetRotation, false, ref doneSettling);
+			UpdateItemTransform(t, order, targetPosition, targetRotation, false, ref doneSettling);
 		}
 
-		protected virtual void UpdateItemTransform(Transform t, Vector3 targetPosition, Quaternion targetRotation, bool dontSettle, ref bool doneSettling)
+		protected virtual void UpdateItemTransform(Transform t, int order, Vector3 targetPosition, Quaternion targetRotation, bool dontSettle, ref bool doneSettling)
 		{
 			if (m_Settling && !dontSettle)
 			{
@@ -182,6 +182,8 @@ namespace ListView
 				t.localPosition = targetPosition;
 				t.localRotation = targetRotation;
 			}
+
+			t.SetSiblingIndex(order);
 		}
 
 		protected virtual Vector3 GetObjectSize(GameObject g)
@@ -232,7 +234,7 @@ namespace ListView
 			if (m_Settling)
 				return;
 
-			scrollOffset += eventData.scrollDelta.y * scrollSpeed * Time.unscaledDeltaTime;
+			scrollOffset += eventData.scrollDelta.y * scrollSpeed * Time.deltaTime;
 		}
 
 		protected virtual void StartSettling(Action onComplete = null)
