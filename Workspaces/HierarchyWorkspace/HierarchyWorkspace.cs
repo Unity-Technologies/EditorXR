@@ -92,7 +92,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					this.ConnectInterfaces(mb);
 				}
-				focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
+				var button = focusUI.GetComponentInChildren<WorkspaceButton>(true);
+				button.clicked += FocusSelection;
+				button.hovered += OnButtonHover;
 			}
 
 			if (m_CreateEmptyPrefab)
@@ -102,7 +104,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					this.ConnectInterfaces(mb);
 				}
-				createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
+				var button = createEmptyUI.GetComponentInChildren<WorkspaceButton>(true);
+				button.clicked += CreateEmptyGameObject;
+				button.hovered += OnButtonHover;
 			}
 
 			var listView = m_HierarchyUI.listView;
@@ -206,7 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_HierarchyUI.listView.SelectRow(Selection.activeInstanceID);
 		}
 
-		void FocusSelection()
+		void FocusSelection(Transform rayOrigin)
 		{
 			if (Selection.gameObjects.Length == 0)
 				return;
@@ -231,7 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.MoveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
 		}
 
-		static void CreateEmptyGameObject()
+		static void CreateEmptyGameObject(Transform rayOrigin)
 		{
 			var camera = CameraUtils.GetMainCamera().transform;
 			var go = new GameObject();
