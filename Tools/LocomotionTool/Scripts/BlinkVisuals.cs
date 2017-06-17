@@ -5,7 +5,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class BlinkVisuals : MonoBehaviour
+	sealed class BlinkVisuals : MonoBehaviour, IUsesViewerScale
 	{
 		private enum State
 		{
@@ -91,9 +91,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 
 		public bool validTarget { get; private set; }
-		public bool showValidTargetIndicator { private get; set; }
-
-		public float viewerScale { private get; set; }
 
 		private float pointerStrength
 		{
@@ -113,7 +110,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		private void Awake()
 		{
-			viewerScale = 1;
 			m_LineRenderer = GetComponent<VRLineRenderer>();
 			m_LineRendererMeshRenderer = m_LineRenderer.GetComponent<MeshRenderer>();
 			m_BlinkMaterial = MaterialUtils.GetMaterialClone(m_RoomScaleRenderer);
@@ -160,8 +156,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_TubeTransformHiddenScale = new Vector3(m_TubeTransform.localScale.x, 0.0001f, m_TubeTransform.localScale.z);
 
 			ShowLine(false);
-
-			showValidTargetIndicator = true;
 		}
 
 		void Update()
@@ -180,9 +174,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				DrawMotionSpheres();
 
 				m_RoomScaleTransform.position = MathUtilsExt.SmoothDamp(m_RoomScaleLazyPosition, m_LocatorRoot.position,
-					ref m_MovementVelocityDelta, 0.2625f, 100f * viewerScale, Time.deltaTime);
+					ref m_MovementVelocityDelta, 0.2625f, 100f * this.GetViewerScale(), Time.deltaTime);
 
-				// Since the room scale visuals are parented under the locator root it is necessary to cache the position each frame before the locator root gets updated
+				// Since the room scale visuals are parented under the locater root it is necessary to cache the position each frame before the locater root gets updated
 				m_RoomScaleLazyPosition = m_RoomScaleTransform.position;
 				m_MovementMagnitudeDelta = (m_RoomScaleTransform.position - m_LocatorRoot.position).magnitude;
 
@@ -238,6 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			const float kSmoothTime = 0.75f;
 			var currentDuration = 0f;
+			var viewerScale = this.GetViewerScale();
 			while (m_State == State.TransitioningIn && currentDuration < kSmoothTime)
 			{
 				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
@@ -264,12 +259,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			float tubeScale = m_TubeTransform.localScale.x;
 			const float kSmoothTime = 0.75f;
 			var currentDuration = 0f;
+			var viewerScale = this.GetViewerScale();
 			while (m_State == State.TransitioningOut && currentDuration < kSmoothTime)
 			{
 				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
 				var adjustedScale = scale * viewerScale;
 				currentDuration += Time.deltaTime;
-				SetColors(Color.Lerp(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
+				SetColors(Color.Lerp(validTarget ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
 				m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 				m_LineRenderer.SetWidth(scale * adjustedScale, scale * adjustedScale);
 				m_RingTransform.localScale = Vector3.Lerp(m_RingTransform.localScale, m_RingTransformOriginalScale, scale);
@@ -313,7 +309,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_BezierControlPoints[0] = m_ToolPoint.position;
 
 			// first handle -- determines how steep the first part will be
-			m_BezierControlPoints[1] = m_ToolPoint.position + m_ToolPoint.forward * pointerStrength * m_Range * viewerScale;
+			m_BezierControlPoints[1] = m_ToolPoint.position + m_ToolPoint.forward * pointerStrength * m_Range * this.GetViewerScale();
 
 			const float kArcEndHeight = 0f;
 			m_FinalPosition = new Vector3(m_BezierControlPoints[1].x, kArcEndHeight, m_BezierControlPoints[1].z);
@@ -324,7 +320,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			// second handle -- determines how steep the intersection with the ground will be
 			m_BezierControlPoints[2] = m_FinalPosition;
 
-			// set the position of the locator
+			// set the position of the locater
 			m_LocatorRoot.position = m_DetachedWorldArcPosition == null ? m_FinalPosition + k_GroundOffset : (Vector3)m_DetachedWorldArcPosition;
 
 			validTarget = false;
@@ -332,7 +328,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var colliders = Physics.OverlapSphere(m_FinalPosition, m_Radius, m_LayerMask.value);
 			validTarget = colliders != null && colliders.Length > 0;
 
-			SetColors(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor);
+			SetColors(validTarget ? m_ValidLocationColor : m_InvalidLocationColor);
 
 			// calculate and send points to the line renderer
 			m_SegmentPositions = new Vector3[m_LineSegmentCount];
@@ -345,13 +341,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 			m_LineRenderer.SetPositions(m_SegmentPositions);
 
-			// The curve length will be somewhere between a straight line between the points 
+			// The curve length will be somewhere between a straight line between the points
 			// and a path that directly follows the control points.  So we estimate this by just averaging the two.
 			m_CurveLengthEstimate = ((m_BezierControlPoints[3] - m_BezierControlPoints[0]).magnitude + ((m_BezierControlPoints[1] - m_BezierControlPoints[0]).magnitude + (m_BezierControlPoints[1] - m_BezierControlPoints[2]).magnitude)) * 0.5f;
 		}
 
 		public void DrawMotionSpheres()
 		{
+			var viewerScale = this.GetViewerScale();
 			// We estimate how much we should correct our curve time by with a guess step
 			for (int i = 0; i < m_MotionSphereCount; ++i)
 			{
@@ -404,7 +401,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			m_LineRenderer.SetColors(color, color);
 
-			// Set the color for all object sharind the blink material
+			// Set the color for all object sharing the blink material
 			m_BlinkMaterial.SetColor(k_TintColor, color);
 			m_MotionSpheresMaterial.SetColor(k_TintColor, color);
 		}

@@ -1,6 +1,8 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -9,7 +11,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ISetDefaultRayVisibility, ICustomActionMap,
-		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider
+		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 4f;
@@ -39,6 +41,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		[SerializeField]
 		GameObject m_SettingsMenuItemPrefab;
+
+		[Serializable]
+		class Preferences
+		{
+			[SerializeField]
+			bool m_BlinkMode;
+
+			public bool blinkMode { get { return m_BlinkMode; } set { m_BlinkMode = value; } }
+		}
+
+		Preferences m_Preferences = new Preferences();
 
 		ViewerScaleVisuals m_ViewerScaleVisuals;
 
@@ -73,6 +86,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_OriginalNearClipPlane;
 		float m_OriginalFarClipPlane;
 
+		Toggle m_FlyToggle;
+
 		public ActionMap actionMap { get { return m_BlinkActionMap; } }
 
 		public Transform rayOrigin { private get; set; }
@@ -81,21 +96,29 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
-		public bool blinkMode { private get; set; }
-
 		public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 
 		public GameObject settingsMenuItemInstance
 		{
 			set
 			{
+				Debug.Log("set " + this.GetHashCode());
 				foreach (var toggle in value.GetComponentsInChildren<Toggle>())
 				{
 					if (toggle.isOn)
 					{
+						m_FlyToggle = toggle;
+						Debug.Log(m_FlyToggle);
 						toggle.onValueChanged.AddListener(isOn =>
 						{
-							blinkMode = !isOn;
+							foreach (LocomotionTool linkedObject in linkedObjects)
+							{
+								linkedObject.m_Preferences.blinkMode = !isOn;
+
+								Debug.Log(linkedObject + ", " + linkedObject.m_FlyToggle);
+								if (linkedObject != this)
+									linkedObject.m_FlyToggle.isOn = isOn;
+							}
 						});
 					}
 				}
@@ -107,7 +130,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
 			m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
 			m_BlinkVisuals.enabled = false;
-			m_BlinkVisuals.showValidTargetIndicator = false; // We don't define valid targets, so always show green
 			m_BlinkVisualsGO.transform.parent = rayOrigin;
 			m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
 			m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
@@ -127,12 +149,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void OnDestroy()
 		{
 			this.SetDefaultRayVisibility(rayOrigin, true);
-		}
-
-		void Update()
-		{
-			if (UnityEngine.Input.GetKeyUp(KeyCode.Space))
-				blinkMode = !blinkMode;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -161,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				DoCrawl(blinkInput);
 
-				if (blinkMode)
+				if (m_Preferences.blinkMode)
 					DoBlink(consumeControl, blinkInput);
 				else
 					DoFlying(consumeControl, blinkInput);
@@ -366,8 +382,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									m_MainCamera.nearClipPlane = m_OriginalNearClipPlane * currentScale;
 									m_MainCamera.farClipPlane = m_OriginalFarClipPlane * currentScale;
 
-									m_ViewerScaleVisuals.viewerScale = currentScale;
-									m_BlinkVisuals.viewerScale = currentScale;
 									Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / currentScale);
 								}
 								break;
@@ -423,6 +437,27 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			cameraRig.position = targetPosition;
 			m_State = State.Inactive;
+		}
+
+		public object OnSerializePreferences()
+		{
+			if (this.IsSharedUpdater(this))
+			{
+				Debug.Log("asdf");
+				return m_Preferences;
+			}
+
+			return null;
+		}
+
+		public void OnDeserializePreferences(object obj)
+		{
+			Debug.Log(this.IsSharedUpdater(this));
+			var preferences = obj as Preferences;
+			if (preferences != null)
+				m_Preferences = preferences;
+
+			Debug.Log(this.GetHashCode() + ", " + m_FlyToggle);
 		}
 	}
 }

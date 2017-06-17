@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class ViewerScaleVisuals : MonoBehaviour
+	sealed class ViewerScaleVisuals : MonoBehaviour, IUsesViewerScale
 	{
 		[SerializeField]
 		float m_IconTranslateCoefficient = -0.16f;
@@ -32,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Transform leftHand { private get; set; }
 		public Transform rightHand { private get; set; }
-		public float viewerScale { private get; set; }
 
 		void Start()
 		{
@@ -54,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void SetPosition()
 		{
 			var iconContainerLocal = m_IconsContainer.localPosition;
+			var viewerScale = this.GetViewerScale();
 			iconContainerLocal.x = Mathf.Log10(viewerScale) * m_IconTranslateCoefficient + m_IconTranslateOffset;
 			m_IconsContainer.localPosition = iconContainerLocal;
 
