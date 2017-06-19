@@ -106,6 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 				var button = createEmptyUI.GetComponentInChildren<WorkspaceButton>(true);
 				button.clicked += CreateEmptyGameObject;
+				button.clicked += OnButtonClick;
 				button.hovered += OnButtonHover;
 			}
 
@@ -233,6 +234,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			cameraDiff.y = 0;
 
 			this.MoveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
+
+			OnButtonClick(rayOrigin); // Trigger haptics
 		}
 
 		static void CreateEmptyGameObject(Transform rayOrigin)

@@ -626,8 +626,6 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 1
   m_DelayBeforeReveal: 0.125
-  m_ClickPulse: {fileID: 11400000, guid: 43f6d76e312f45145bc1ef9af446edfe, type: 2}
-  m_HighlightPulse: {fileID: 11400000, guid: bf8c18d5dc5c90f4aa0782421bbaaf0e, type: 2}
 --- !u!114 &114000010404580652
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -756,6 +754,8 @@ MonoBehaviour:
   m_ButtonListGrid: {fileID: 114000013631895690}
   m_ButtonListCanvasGroup: {fileID: 225000014235020344}
   m_Background: {fileID: 23000011039186558}
+  m_VisibilityButton: {fileID: 114000013866040058}
+  m_SummaryButton: {fileID: 114000010158068876}
 --- !u!114 &114000011143325692
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1051,8 +1051,6 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 1
   m_DelayBeforeReveal: 0.125
-  m_ClickPulse: {fileID: 11400000, guid: 43f6d76e312f45145bc1ef9af446edfe, type: 2}
-  m_HighlightPulse: {fileID: 11400000, guid: bf8c18d5dc5c90f4aa0782421bbaaf0e, type: 2}
 --- !u!114 &114000013883654872
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -19,9 +19,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		[SerializeField]
-		Button m_WSButton;
-
-		[SerializeField]
 		Button m_Button;
 
 		[SerializeField]

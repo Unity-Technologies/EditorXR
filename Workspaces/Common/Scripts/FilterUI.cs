@@ -53,6 +53,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		MeshRenderer m_Background;
 
+		[SerializeField]
+		WorkspaceButton m_VisibilityButton;
+
+		[SerializeField]
+		WorkspaceButton m_SummaryButton;
+
 		public string searchQuery
 		{
 			get { return m_SearchQuery; }
@@ -114,6 +120,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			m_BackgroundMaterial = MaterialUtils.GetMaterialClone(m_Background);
 			m_BackgroundMaterial.SetInt("_StencilRef", stencilRef);
+
+			m_VisibilityButton.clicked += OnVisibilityButtonClick;
+			m_VisibilityButton.hovered += OnHover;
+			m_SummaryButton.clicked += OnVisibilityButtonClick;
+			m_SummaryButton.hovered += OnHover;
 		}
 
 		void OnDestroy()
@@ -248,6 +259,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_ButtonList.gameObject.SetActive(false);
 			m_HideButtonListCoroutine = null;
+		}
+
+		void OnVisibilityButtonClick(Transform rayOrigin)
+		{
+			SetListVisibility(true);
+			OnClick(rayOrigin);
 		}
 
 		void OnClick(Transform rayOrigin)
