@@ -23,6 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		const string k_WorldScaleProperty = "_WorldScale";
 
+		const int k_RotationSegments = 16;
+
 		enum State
 		{
 			Inactive = 0,
@@ -239,8 +241,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var rotation = Quaternion.Inverse(m_RayOriginStartRotation) * localRayRotation;
 					var filteredRotation = Quaternion.Lerp(m_LastRotationDiff, rotation, k_RotationDamping);
 
-					cameraRig.rotation = m_RigStartRotation * filteredRotation;
-					cameraRig.position = m_CameraStartPosition + filteredRotation * startOffset;
+					var segmentSize = 180f / k_RotationSegments;
+					var segmentedRotation = Quaternion.Euler(0, Mathf.Floor(filteredRotation.eulerAngles.y / segmentSize) * segmentSize, 0);
+
+					cameraRig.rotation = m_RigStartRotation * segmentedRotation;
+					cameraRig.position = m_CameraStartPosition + segmentedRotation * startOffset;
 
 					m_LastRotationDiff = filteredRotation;
 				}
