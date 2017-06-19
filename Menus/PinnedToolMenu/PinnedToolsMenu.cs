@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -15,7 +16,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI
+	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics
 	{
 		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
@@ -29,6 +30,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		PinnedToolButton m_PinnedToolButtonTemplate;
+
+		[SerializeField]
+		HapticPulse m_ButtonClickPulse;
+
+		[SerializeField]
+		HapticPulse m_ButtonHoverPulse;
 
 		PinnedToolsMenuUI m_PinnedToolsMenuUI;
 
@@ -83,8 +90,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					return;
 
 				m_AlternateMenuOrigin = value;
-
-
 			}
 		}
 
@@ -114,6 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PinnedToolsMenuUI.maxButtonCount = k_MaxButtonCount;
 			m_PinnedToolsMenuUI.mainMenuActivatorSelected = mainMenuActivatorSelected;
 			m_PinnedToolsMenuUI.rayOrigin = rayOrigin;
+			m_PinnedToolsMenuUI.buttonHovered += OnButtonHover;
 
 			// Alternate menu origin isnt set when awake or start run
 			var pinnedToolsUITransform = m_PinnedToolsMenuUI.transform;
@@ -135,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (buttons.Any( (x) => x.toolType == toolType))
 			{
-				m_PinnedToolsMenuUI.SelectExistingType(toolType);
+				m_PinnedToolsMenuUI.SelectExistingToolType(toolType);
 				return;
 			}
 
@@ -336,6 +342,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			return normalizedLoopingPosition;
+		}
+
+		void OnButtonClick()
+		{
+			//this.Pulse(node, m_ButtonClickedPulse);
+		}
+
+		void OnButtonHover()
+		{
+			this.Pulse(null, m_ButtonHoverPulse);
 		}
 	}
 }

@@ -3,16 +3,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Permissions;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IControlHaptics
+	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -82,6 +81,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		private bool aboveMinimumButtonCount { get { return m_OrderedButtons.Count > k_ActiveToolOrderPosition + 1; } }
 
+		public event Action buttonHovered;
+		public event Action buttonClicked;
+
+
 		void Awake()
 		{
 			m_OriginalLocalScale = transform.localScale;
@@ -94,9 +97,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.showAllButtons = ShowAllButtons;
 			button.hoverExit = ButtonHoverExitPerformed;
 			button.maxButtonCount = maxButtonCount;
-			button.selectTool = SelectExistingType;
+			button.selectTool = SelectExistingToolType;
 			button.closeButton = DeleteHighlightedButton;
 			button.visibileButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
+			button.hovered += OnButtonHover;
 
 			bool allowSecondaryButton = false; // Secondary button is the close button
 			var insertPosition = k_InactiveButtonInitialOrderPosition;
@@ -276,7 +280,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// Utilized by PinnedToolsMenu to select an existing button by type, without created a new button
 		/// </summary>
 		/// <param name="type">Button ToolType to compare against existing button types</param>
-		public void SelectExistingType(Type type)
+		public void SelectExistingToolType(Type type)
 		{
 			foreach (var button in m_OrderedButtons)
 			{
@@ -417,6 +421,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// Only proceed if no other button is being hovered
 			allButtonsVisible = false;
 			m_ButtonHoverExitDelayCoroutine = null;
+		}
+
+		void OnButtonHover()
+		{
+			if (buttonHovered != null)
+				buttonHovered();
 		}
 	}
 }

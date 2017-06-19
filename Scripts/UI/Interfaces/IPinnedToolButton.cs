@@ -25,6 +25,7 @@ namespace UnityEditor.Experimental.EditorVR
 		bool implementsSecondaryButton { get; set; }
 		Action<IPinnedToolButton> showAllButtons { get; set; }
 		Action hoverExit { get; set; }
+		event Action hovered;
 
 		/*
 		int menuButtonOrderPosition { get; }
