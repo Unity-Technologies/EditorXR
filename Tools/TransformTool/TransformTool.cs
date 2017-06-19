@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ISetDefaultRayVisibility, IProcessInput, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight,
-		ILinkedObject
+		ILinkedObject, IRayToNode, IControlHaptics
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -170,6 +171,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		[SerializeField]
 		GameObject m_ScaleManipulatorPrefab;
 
+		[SerializeField]
+		HapticPulse m_DragPulse;
+
+		[SerializeField]
+		HapticPulse m_RotatePulse;
+
 		BaseManipulator m_CurrentManipulator;
 
 		BaseManipulator m_StandardManipulator;
@@ -207,6 +214,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public bool manipulatorVisible { private get; set; }
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
+
+		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		void Start()
 		{
@@ -543,11 +552,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_TargetPosition += delta;
 			else
 				this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta);
+
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_DragPulse);
 		}
 
-		void Rotate(Quaternion delta)
+		void Rotate(Quaternion delta, Transform rayOrigin)
 		{
 			m_TargetRotation = delta * m_TargetRotation;
+
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_RotatePulse);
 		}
 
 		void Scale(Vector3 delta)

@@ -7,21 +7,24 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, ITooltip, IPerformHaptics, IRayEnterHandler, IPointerClickHandler
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IControlHaptics, IRayEnterHandler, IPointerClickHandler
 	{
-		public Button button { get { return m_Button; } }
-		[SerializeField]
-		private Button m_Button;
+		public Button button
+		{
+			get { return m_Button; }
+		}
 
-		[SerializeField]
-		private Text m_ButtonDescription;
-		[SerializeField]
-		private Text m_ButtonTitle;
+		[SerializeField] private Button m_Button;
+
+		[SerializeField] private Text m_ButtonDescription;
+
+		[SerializeField] private Text m_ButtonTitle;
 
 		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
 		IPinnedToolButton m_HighlightedPinnedToolbutton;
 		Transform m_RayOrigin;
+		Transform m_InteractingRayOrigin;
 
 		/// <summary>
 		/// Highlights a pinned tool button when this menu button is highlighted
@@ -34,7 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			this.Pulse(m_RayOrigin, 0.5f, 0.095f, true, true);
+			if (clicked != null)
+				clicked(m_InteractingRayOrigin);
 		}
 
 		public bool selected
@@ -54,6 +58,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public event Action<Transform> hovered;
+		public event Action<Transform> clicked;
+
 		private void Awake()
 		{
 			m_OriginalColor = m_Button.targetGraphic.color;
@@ -61,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnDisable()
 		{
-			m_RayOrigin = null;
+			m_InteractingRayOrigin = null;
 		}
 
 		public void SetData(string name, string description)
@@ -73,25 +80,31 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public void OnRayEnter(RayEventData eventData)
 		{
 			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
-			m_HoveringRayOrigin = eventData.rayOrigin;
+			m_InteractingRayOrigin = eventData.rayOrigin;
 
 			// Enable preview-mode on a pinned tool button; Display on the opposite proxy device via the HoveringRayOrigin
 			m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(m_HoveringRayOrigin, toolType);
 
-			m_RayOrigin = eventData.rayOrigin;
-			this.Pulse(eventData.rayOrigin, 0.005f, 0.175f);
+			//m_RayOrigin = eventData.rayOrigin; // TODO: evaluate this need for m_RayOrigin
+			if (hovered != null)
+				hovered(eventData.rayOrigin);
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
 			if (m_HoveringRayOrigin == eventData.rayOrigin)
-				m_HoveringRayOrigin = null;
-
+			m_HoveringRayOrigin = null;
+		
 			// Disable preview-mode on pinned tool button
 			if (m_HighlightedPinnedToolbutton != null)
-				m_HighlightedPinnedToolbutton.previewToolType = null;
-
-			m_RayOrigin = null;
+			m_HighlightedPinnedToolbutton.previewToolType = null;
+		
+			//m_RayOrigin = TODO: remove 
+		
+			m_InteractingRayOrigin = eventData.rayOrigin;
+		
+			if (hovered != null)
+			hovered(eventData.rayOrigin);
 		}
 	}
 }

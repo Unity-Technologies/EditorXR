@@ -13,7 +13,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IPerformHaptics
+	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IControlHaptics
 	{
 		static Color s_FrameOpaqueColor;
 		static Color s_SemiTransparentFrameColor;
@@ -378,7 +378,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (!m_Highlighted)
 					this.HideTooltip(this);
 				else
-					this.Pulse(rayOrigin, 0.005f, 0.2f); // Used for spatial selection highlighting only
+				{
+					//this.Pulse(rayOrigin, 0.005f, 0.2f); // Used for spatial selection highlighting only
+					Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
+				}
 
 				if (implementsSecondaryButton && (!isMainMenu || !isSelectionTool))
 				{
@@ -607,7 +610,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.StopCoroutine(ref m_ActivatorMoveCoroutine);
 			this.StopCoroutine(ref m_HoverCheckCoroutine);
 			this.StopCoroutine(ref m_SecondaryButtonVisibilityCoroutine);
-			this.Pulse(rayOrigin, 0.5f, 0.2f, true, true);
+			
+			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
+			//this.Pulse(rayOrigin, 0.5f, 0.2f, true, true);
 		}
 
 		void DestroyButton()
@@ -617,7 +622,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			this.Pulse(rayOrigin, 0.005f, 0.2f);
+			//this.Pulse(rayOrigin, 0.005f, 0.2f);
+			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 		}
 
 		// Create periodic table-style names for types
@@ -649,7 +655,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			s_Hovered = true;
 
-			this.Pulse(rayOrigin, 0.005f, 0.175f);
+			//this.Pulse(rayOrigin, 0.005f, 0.175f);
+			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 
 			if (isMainMenu)
 			{
@@ -812,7 +819,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
 			closeButton();
-			this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
+			//this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
+			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 			//deleteHighlightedButton(rayOrigin);
 			//deletePinnedToolButton(rayOrigin, this);
 			ActionButtonHoverExit(false);

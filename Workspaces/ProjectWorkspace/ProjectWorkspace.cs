@@ -109,6 +109,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 			filterList = m_FilterList;
 
+			foreach (var button in m_FilterUI.GetComponentsInChildren<WorkspaceButton>())
+			{
+				button.clicked += OnButtonClick;
+				button.hovered += OnButtonHover;
+			}
+
 			var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
 			m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
 			m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_MinScale);

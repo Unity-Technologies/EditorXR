@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IPerformHaptics
+	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IControlHaptics
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -59,7 +59,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 				else
 				{
-					this.Pulse(rayOrigin, 0.5f, 0.065f, false, true);
+					Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
+					//this.Pulse(rayOrigin, 0.5f, 0.065f, false, true);
 					ShowOnlyMenuAndActiveToolButtons();
 				}
 			}
@@ -267,7 +268,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (!existingButton)
 				this.SelectTool(rayOrigin, pinnedToolButton.toolType);
 
-			this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
+			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
+			//this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
 		}
 
 		/// <summary>

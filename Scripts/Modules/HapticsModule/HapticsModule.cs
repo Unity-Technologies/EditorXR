@@ -1,10 +1,11 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HapticsModule : MonoBehaviour, IUsesGameObjectLocking
+	sealed class HapticsModule : MonoBehaviour
 	{
 		[SerializeField]
 		float m_MasterIntensity = 1f;
@@ -14,13 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// A value to 0 will mute haptics.
 		/// A value of 1 will allow haptics to be performed at normal intensity
 		/// </summary>
-		public float masterIntensity { set { m_MasterIntensity = Mathf.Clamp01(value); } }
-
-		/// <summary>
-		/// Fetch a corresponding node for a given transform.
-		/// Used to get the device node on which to perform the haptic feedback.
-		/// </summary>
-		public Func<Transform, Node?> getNodeFromRayOrigin { private get; set; }
+		public float masterIntensity { set { m_MasterIntensity = Mathf.Clamp(value, 0f, 10f); } }
 
 #if ENABLE_OVR_INPUT
 		OVRHaptics.OVRHapticsChannel m_LHapticsChannel;
@@ -51,12 +46,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// <summary>
 		/// Pulse haptic feedback
 		/// </summary>
-		/// <param name="rayOrigin">Device RayOrigin Transform on which to perform the pulse. A NULL value will pulse on all devices</param>
-		/// <param name="duration">Duration of pulse. Currently a maximum duration of 0.8f is supported.</param>
-		/// <param name="intensity">Strength of pulse.</param>
-		/// <param name="fadeIn">Fade the pulse in</param>
-		/// <param name="fadeOut">Fade the pulse out</param>
-		public void Pulse(Transform rayOrigin, float duration, float intensity = 1f, bool fadeIn = false, bool fadeOut = false)
+		/// <param name="node">Node on which to perform the pulse.</param>
+		/// <param name="hapticPulse">Haptic pulse</param>
+		public void Pulse(Node? node, HapticPulse hapticPulse)
 		{
 #if ENABLE_OVR_INPUT
 			// Clip buffer can hold up to 800 milliseconds of samples
@@ -67,6 +59,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_GeneratedHapticClip.Reset();
 
 			const float kMaxDuration = 0.8f;
+			var duration = hapticPulse.duration;
+			var intensity = hapticPulse.intensity;
+			var fadeIn = hapticPulse.fadeIn;
+			var fadeOut = hapticPulse.fadeOut;
 			if (duration > kMaxDuration)
 			{
 				duration = Mathf.Clamp(duration, 0f, kMaxDuration); // Clamp at maxiumum 800ms for sample buffer
@@ -98,7 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			const float kMaxSimultaneousClipDuration = 0.25f;
-			var channel = GetTargetChannel(rayOrigin);
+			var channel = GetTargetChannel(node);
 			if (duration > kMaxSimultaneousClipDuration)
 			{
 				// Prevent multiple long clips from playing back simultaneously
@@ -130,32 +126,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
 		}
 
-		public void StopPulses(Transform rayOrigin = null)
+		public void StopPulses(Node? node)
 		{
 #if ENABLE_OVR_INPUT
-			// Stop haptic feedback on only one device, if specified via the function parameter
-			// Otherwise stop all haptic feedback on all devices
-			if (rayOrigin == null)
-			{
-				m_RHapticsChannel.Clear();
-				m_LHapticsChannel.Clear();
-			}
+			var channel = GetTargetChannel(node);
+			if (channel != null)
+				channel.Clear();
 			else
-			{
-				var channel = GetTargetChannel(rayOrigin);
-				if (channel != null)
-					channel.Clear();
-				else
-					Debug.LogWarning("Only null, or valid ray origins can stop pulse playback.");
-			}
+				Debug.LogWarning("Only null, or valid ray origins can stop pulse playback.");
+#endif
+		}
+
+		public void StopPulses()
+		{
+#if ENABLE_OVR_INPUT
+			m_RHapticsChannel.Clear();
+			m_LHapticsChannel.Clear();
 #endif
 		}
 
 #if ENABLE_OVR_INPUT
-		OVRHaptics.OVRHapticsChannel GetTargetChannel(Transform rayOrigin)
+		OVRHaptics.OVRHapticsChannel GetTargetChannel(Node? node)
 		{
 			OVRHaptics.OVRHapticsChannel channel = null;
-			var node = getNodeFromRayOrigin (rayOrigin);
+			if (node == null)
+				return channel;
+
 			switch (node)
 			{
 				case Node.LeftHand:
@@ -163,6 +159,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					break;
 				case Node.RightHand:
 					channel = m_RHapticsChannel;
+					break;
+				default:
+					Debug.LogWarning("Invalid node. Could not fetch haptics channel.");
 					break;
 			}
 

@@ -1,18 +1,23 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IPerformHaptics
+	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics, IRayToNode
 	{
+		[SerializeField]
+		HapticPulse m_HoverPulse;
+
 		GameObject m_CurrentGroupRoot;
 		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
 
 		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
 		public Func<GameObject, bool> overrideSelectObject { private get; set; }
+		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public event Action<Transform> selected;
 
@@ -65,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_SelectedObjects.Clear();
 
 			if (hoveredObject)
-				this.Pulse(rayOrigin, 0.45f, 0.075f, false, true);
+				this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_HoverPulse);
 
 			// Multi-Select
 			if (multiSelect)

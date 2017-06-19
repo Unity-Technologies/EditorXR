@@ -351,6 +351,7 @@ MonoBehaviour:
   m_MaxMomentum: 2
   m_Templates:
   - {fileID: 1000014066556564, guid: 3a8d15e2004808b45bbe8ddf381a4a53, type: 2}
+  m_ScrollPulse: {fileID: 11400000, guid: 77319cd620700db49a9223c7305480f9, type: 2}
   m_SettleSpeed: 0.3
   m_ScrollSpeed: 0.3
   m_TopDropZone: {fileID: 114000012826007938}

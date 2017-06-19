@@ -9,8 +9,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			public void LateBindInterfaceMethods(HapticsModule provider)
 			{
-				IPerformHapticsMethods.pulse = provider.Pulse;
-				IPerformHapticsMethods.stopPulses = provider.StopPulses;
+				IControlHapticsMethods.pulse = provider.Pulse;
+				IControlHapticsMethods.stopPulses = provider.StopPulses;
 			}
 		}
 	}

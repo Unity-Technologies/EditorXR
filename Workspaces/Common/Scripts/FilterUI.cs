@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -52,6 +53,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		MeshRenderer m_Background;
 
+		[SerializeField]
+		WorkspaceButton m_VisibilityButton;
+
+		[SerializeField]
+		WorkspaceButton m_SummaryButton;
+
 		public string searchQuery
 		{
 			get { return m_SearchQuery; }
@@ -92,12 +99,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						OnFilterClick(button);
 					});
 
+					button.clicked += OnClick;
+					button.hovered += OnHover;
 					button.text.text = m_FilterTypes[i];
 				}
 			}
 		}
 
 		public byte stencilRef { get; set; }
+
+		public event Action<Transform> buttonHovered;
+		public event Action<Transform> buttonClicked;
 
 		void Awake()
 		{
@@ -108,6 +120,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			m_BackgroundMaterial = MaterialUtils.GetMaterialClone(m_Background);
 			m_BackgroundMaterial.SetInt("_StencilRef", stencilRef);
+
+			m_VisibilityButton.clicked += OnVisibilityButtonClick;
+			m_VisibilityButton.hovered += OnHover;
+			m_SummaryButton.clicked += OnVisibilityButtonClick;
+			m_SummaryButton.hovered += OnHover;
 		}
 
 		void OnDestroy()
@@ -132,6 +149,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				this.StopCoroutine(ref m_HideButtonListCoroutine);
 				m_HideButtonListCoroutine = StartCoroutine(HideButtonList());
+
+				OnClick(null);
 			}
 		}
 
@@ -240,6 +259,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_ButtonList.gameObject.SetActive(false);
 			m_HideButtonListCoroutine = null;
+		}
+
+		void OnVisibilityButtonClick(Transform rayOrigin)
+		{
+			SetListVisibility(true);
+			OnClick(rayOrigin);
+		}
+
+		void OnClick(Transform rayOrigin)
+		{
+			if (buttonClicked != null)
+				buttonClicked(rayOrigin);
+		}
+
+		void OnHover(Transform rayOrigin)
+		{
+			if (buttonHovered != null)
+				buttonHovered(rayOrigin);
 		}
 	}
 }

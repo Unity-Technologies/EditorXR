@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IPerformHaptics
+	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IControlHaptics, IUsesNode
 	{
 		const int k_AngledFaceBlendShapeIndex = 2;
 		const int k_ThinFrameBlendShapeIndex = 3;
@@ -128,6 +128,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		bool m_DynamicFaceAdjustment = true;
 
+		[SerializeField]
+		WorkspaceButton m_CloseButton;
+
+		[SerializeField]
+		WorkspaceButton m_ResizeButton;
+
 		Bounds m_Bounds;
 		float? m_TopPanelDividerOffset;
 
@@ -155,6 +161,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		class DragState
 		{
 			public Transform rayOrigin { get; private set; }
+			public Node? node { get; private set; }
 			bool m_Resizing;
 			Vector3 m_PositionOffset;
 			Quaternion m_RotationOffset;
@@ -245,12 +252,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						+ transform.forward * (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward);
 
 					m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
-					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.35f, true, true);
+					m_WorkspaceUI.ResizeHapticPulse(rayOrigin);
 				}
 				else
 				{
 					MathUtilsExt.SetTransformOffset(rayOrigin, m_WorkspaceUI.transform.parent, m_PositionOffset, m_RotationOffset);
-					m_WorkspaceUI.Pulse(rayOrigin, 0.25f, 0.075f, false, true);
+					m_WorkspaceUI.MoveHapticPulse(rayOrigin);
 				}
 			}
 		}
@@ -258,8 +265,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		readonly List<Transform> m_HovereringRayOrigins = new List<Transform>();
 		readonly Dictionary<Transform, Image> m_LastResizeIcons = new Dictionary<Transform, Image>();
 
-		public event Action closeClicked;
-		public event Action resetSizeClicked;
+		public event Action<Transform> buttonHovered;
+		public event Action<Transform> closeClicked;
+		public event Action<Transform> resetSizeClicked;
+		public event Action<Transform> resizing;
+		public event Action<Transform> moving;
+		public event Action<Transform> hoveringFrame;
 
 		public bool highlightsVisible
 		{
@@ -337,6 +348,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform leftRayOrigin { private get; set; }
 		public Transform rightRayOrigin { private get; set; }
+		public Node? node { get; set; }
 
 		public event Action<Bounds> resize;
 
@@ -412,6 +424,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				handle.hoverStarted += OnHandleHoverStarted;
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
+
+			m_CloseButton.clicked += OnCloseClick;
+			m_CloseButton.hovered += OnButtonHover;
+			m_ResizeButton.clicked += OnResetSizeClick;
+			m_ResizeButton.hovered += OnButtonHover;
 		}
 
 		IEnumerator Start()
@@ -774,18 +791,29 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			ObjectUtils.Destroy(m_TopFaceMaterial);
 			ObjectUtils.Destroy(m_FrontFaceMaterial);
+
+			m_CloseButton.clicked -= OnCloseClick;
+			m_CloseButton.hovered -= buttonHovered;
+			m_ResizeButton.clicked -= OnResetSizeClick;
+			m_ResizeButton.hovered -= buttonHovered;
 		}
 
-		public void CloseClick()
+		void OnCloseClick(Transform rayOrigin)
 		{
 			if (closeClicked != null)
-				closeClicked();
+				closeClicked(rayOrigin);
 		}
 
-		public void ResetSizeClick()
+		void OnResetSizeClick(Transform rayOrigin)
 		{
 			if (resetSizeClicked != null)
-				resetSizeClicked();
+				resetSizeClicked(rayOrigin);
+		}
+
+		void OnButtonHover(Transform rayOrigin)
+		{
+			if (buttonHovered != null)
+				buttonHovered(rayOrigin);
 		}
 
 		void IncreaseFrameThickness(Transform rayOrigin = null)
@@ -816,9 +844,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				yield return null;
 			}
 
-			// If hovering the frame, and not dragging, perform haptic feedback
-			if (m_HovereringRayOrigins.Count > 0 && m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
-				this.Pulse(rayOrigin, 0.8f, 0.065f, true, true);
+			// If hovering the frame, and not moving, perform haptic feedback
+			if (hoveringFrame != null && m_HovereringRayOrigins.Count > 0 && m_DragState == null && Mathf.Approximately(targetBlendAmount, 0f))
+				hoveringFrame(rayOrigin);
 
 			m_FrameThicknessCoroutine = null;
 		}
@@ -859,6 +887,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 
 			m_TopFaceVisibleCoroutine = null;
+		}
+
+		void MoveHapticPulse(Transform rayOrigin)
+		{
+			if (moving != null)
+				moving(rayOrigin);
+		}
+
+		void ResizeHapticPulse(Transform rayOrigin)
+		{
+			if (resizing != null)
+				resizing(rayOrigin);
 		}
 	}
 }

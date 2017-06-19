@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Delegate that processes the rotation, using the quaternion passed in
 		/// </summary>
-		Action<Quaternion> rotate { set; }
+		Action<Quaternion, Transform> rotate { set; }
 
 		/// <summary>
 		/// Delegate that processes the scale, using the vector3 passed in

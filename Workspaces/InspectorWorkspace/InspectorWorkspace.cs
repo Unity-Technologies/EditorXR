@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
-	sealed class InspectorWorkspace : Workspace, ISelectionChanged
+	sealed class InspectorWorkspace : Workspace, ISelectionChanged, IControlHaptics
 	{
 		public new static readonly Vector3 DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
@@ -38,7 +38,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_LockUI = ObjectUtils.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
 			this.ConnectInterfaces(m_LockUI);
-			m_LockUI.lockButtonPressed += SetIsLocked;
+			m_LockUI.clicked += OnLockButtonClicked;
+			m_LockUI.hovered += OnButtonHover;
 			EditorApplication.delayCall += m_LockUI.Setup; // Need to write stencilRef after WorkspaceButton does it
 
 			var listView = m_InspectorUI.listView;
@@ -346,6 +347,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			if (!m_IsLocked)
 				OnSelectionChanged();
+
+			OnButtonClick(null);
 		}
 
 		protected override void OnDestroy()
@@ -353,6 +356,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			Undo.postprocessModifications -= OnPostprocessModifications;
 			Undo.undoRedoPerformed -= OnUndoRedo;
 			base.OnDestroy();
+		}
+
+		void OnLockButtonClicked(Transform rayOrigin)
+		{
+			SetIsLocked();
+			OnButtonClick(rayOrigin);
 		}
 	}
 }
