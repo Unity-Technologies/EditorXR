@@ -4,14 +4,6 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	[Flags]
-	public enum ConstrainedAxis
-	{
-		X = 1 << 0,
-		Y = 1 << 1,
-		Z = 1 << 2
-	}
-
 	/// <summary>
 	/// Gives decorated class access to the GameObject over which a particular ray is hovering
 	/// </summary>
@@ -19,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		/// <summary>
 		/// Delegate that processes the translation, using the vector3 passed in
-		/// Caller also provides the ray origin that is doing the action, and whether or not this translation is axis-constrained
+		/// Caller also provides the ray origin that is doing the action, and which axes are constrained, if any
 		/// </summary>
 		Action<Vector3, Transform, ConstrainedAxis> translate { set; }
 

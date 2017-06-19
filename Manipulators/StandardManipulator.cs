@@ -68,13 +68,9 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		void OnTranslateDragging(BaseHandle handle, HandleEventData eventData)
 		{
 			ConstrainedAxis constraints = 0;
-			var linear = handle as LinearHandle;
-			if (linear)
-				constraints = linear.constraints;
-
-			var plane = handle as PlaneHandle;
-			if (plane)
-				constraints = plane.constraints;
+			var constrainedHandle = handle as IConstrainedAxis;
+			if (constrainedHandle != null)
+				constraints = constrainedHandle.constraints;
 
 			translate(eventData.deltaPosition, eventData.rayOrigin, constraints);
 		}
