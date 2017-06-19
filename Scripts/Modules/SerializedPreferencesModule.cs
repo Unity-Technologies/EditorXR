@@ -72,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		internal string SerializePreferences()
 		{
 			var preferences = new SerializedPreferences();
+			var payloads = new Dictionary<Type, SerializedPreferenceItem>();
 			foreach (var serializer in m_Serializers)
 			{
 				var payload = serializer.OnSerializePreferences();
@@ -94,8 +95,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 
 				if (item != null)
-					preferences.items.Add(item);
+					payloads[serializer.GetType()] = item;
 			}
+
+			preferences.items.AddRange(payloads.Values);
 			m_Preferences = preferences;
 
 			return JsonUtility.ToJson(preferences);

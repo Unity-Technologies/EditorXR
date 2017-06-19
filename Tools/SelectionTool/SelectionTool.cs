@@ -163,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_PressedObject = null;
 			}
 
-			if (m_DidSelectObjects && selectionInput.multiSelect.wasJustPressed)
+			if (selectionInput.multiSelect.wasJustPressed)
 				consumeControl(selectionInput.multiSelect);
 		}
 

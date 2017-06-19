@@ -93,10 +93,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				consumeControl(radialMenuInput.navigateX);
 				consumeControl(radialMenuInput.navigateY);
 			}
+			else
+			{
+				return;
+			}
 
 			m_RadialMenuUI.pressedDown = radialMenuInput.selectItem.wasJustPressed;
 			if (m_RadialMenuUI.pressedDown)
 			{
+				Debug.Log("select");
 				consumeControl(radialMenuInput.selectItem);
 			}
 

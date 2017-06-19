@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			public bool blinkMode { get { return m_BlinkMode; } set { m_BlinkMode = value; } }
 		}
 
-		Preferences m_Preferences = new Preferences();
+		Preferences m_Preferences;
 
 		ViewerScaleVisuals m_ViewerScaleVisuals;
 
@@ -102,20 +102,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			set
 			{
-				Debug.Log("set " + this.GetHashCode());
 				foreach (var toggle in value.GetComponentsInChildren<Toggle>())
 				{
 					if (toggle.isOn)
 					{
 						m_FlyToggle = toggle;
-						Debug.Log(m_FlyToggle);
 						toggle.onValueChanged.AddListener(isOn =>
 						{
 							foreach (LocomotionTool linkedObject in linkedObjects)
 							{
 								linkedObject.m_Preferences.blinkMode = !isOn;
 
-								Debug.Log(linkedObject + ", " + linkedObject.m_FlyToggle);
 								if (linkedObject != this)
 									linkedObject.m_FlyToggle.isOn = isOn;
 							}
@@ -127,6 +124,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Start()
 		{
+			if (this.IsSharedUpdater(this) && m_Preferences == null)
+			{
+				m_Preferences = new Preferences();
+
+				// Share one preferences object across all instances
+				foreach (LocomotionTool locomotionTool in linkedObjects)
+				{
+					locomotionTool.m_Preferences = m_Preferences;
+				}
+			}
+
 			m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
 			m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
 			m_BlinkVisuals.enabled = false;
@@ -443,7 +451,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			if (this.IsSharedUpdater(this))
 			{
-				Debug.Log("asdf");
+				// Share one preferences object across all instances
+				foreach (LocomotionTool locomotionTool in linkedObjects)
+				{
+					locomotionTool.m_Preferences = m_Preferences;
+				}
+
 				return m_Preferences;
 			}
 
@@ -452,12 +465,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void OnDeserializePreferences(object obj)
 		{
-			Debug.Log(this.IsSharedUpdater(this));
-			var preferences = obj as Preferences;
-			if (preferences != null)
-				m_Preferences = preferences;
+			if (this.IsSharedUpdater(this))
+			{
+				var preferences = obj as Preferences;
+				if (preferences != null)
+					m_Preferences = preferences;
 
-			Debug.Log(this.GetHashCode() + ", " + m_FlyToggle);
+				// Share one preferences object across all instances
+				foreach (LocomotionTool locomotionTool in linkedObjects)
+				{
+					locomotionTool.m_Preferences = m_Preferences;
+				}
+			}
 		}
 	}
 }
