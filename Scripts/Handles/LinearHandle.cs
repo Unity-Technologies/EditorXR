@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	sealed class LinearHandle : BaseHandle, IConstrainedAxis
+	sealed class LinearHandle : BaseHandle, IAxisConstraints
 	{
 		const float k_MaxDragDistance = 1000f;
 

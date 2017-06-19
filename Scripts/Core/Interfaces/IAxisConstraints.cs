@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
-	interface IConstrainedAxis
+	interface IAxisConstraints
 	{
 		ConstrainedAxis constraints { get; }
 	}
