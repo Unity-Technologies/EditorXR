@@ -72,7 +72,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_StartYaw;
 
 		bool m_Rotating;
-		bool m_GrabMoving;
+		bool m_WasRotating;
+		bool m_Crawling;
 		Vector3 m_RayOriginStartPosition;
 		Quaternion m_RayOriginStartRotation;
 		Quaternion m_RigStartRotation;
@@ -200,7 +201,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			if (!m_Scaling)
 			{
-				DoCrawl(blinkInput);
+				if (!m_WasRotating)
+					DoCrawl(blinkInput);
 
 				if (m_Preferences.blinkMode)
 					DoBlink(consumeControl, blinkInput);
@@ -209,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 			else
 			{
-				m_GrabMoving = false;
+				m_Crawling = false;
 			}
 		}
 
@@ -224,6 +226,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!m_Rotating)
 					{
 						m_Rotating = true;
+						m_WasRotating = true;
 						m_RigStartPosition = cameraRig.position;
 						m_RigStartRotation = cameraRig.rotation;
 						m_RayOriginStartRotation = MathUtilsExt.ConstrainYawRotation(
@@ -272,6 +275,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 			else
 			{
+				if (!blinkInput.grip.isHeld)
+					m_WasRotating = false;
+
 				m_Rotating = false;
 			}
 		}
@@ -280,9 +286,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			if (!blinkInput.forward.isHeld && !blinkInput.blink.isHeld && blinkInput.grip.isHeld)
 			{
-				if (!m_GrabMoving)
+				if (!m_Crawling)
 				{
-					m_GrabMoving = true;
+					m_Crawling = true;
 					m_RigStartPosition = cameraRig.position;
 					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
 				}
@@ -294,7 +300,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 			else
 			{
-				m_GrabMoving = false;
+				m_Crawling = false;
 			}
 		}
 
