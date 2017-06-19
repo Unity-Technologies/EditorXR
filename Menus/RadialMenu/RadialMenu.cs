@@ -101,7 +101,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_RadialMenuUI.pressedDown = radialMenuInput.selectItem.wasJustPressed;
 			if (m_RadialMenuUI.pressedDown)
 			{
-				Debug.Log("select");
 				consumeControl(radialMenuInput.selectItem);
 			}
 

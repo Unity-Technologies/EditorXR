@@ -10,7 +10,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
+	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace,
+		ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IUsesRayOrigin
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -67,13 +68,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public List<Type> menuTools { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { private get; set; }
-		public Dictionary<Type, ISettingsMenuItemProvider> settingsMenuItemProviders { private get; set; }
+		public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { private get; set; }
+		public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
+
+		public Transform rayOrigin { private get; set; }
 
 		void Start()
 		{
@@ -84,10 +87,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.Setup();
 			m_MainMenuUI.visible = m_Visible;
 
-			CreateFaceButtons(menuTools);
-			CreateFaceButtons(menuWorkspaces);
-			CreateFaceButtons(settingsMenuProviders.Keys.ToList());
-			CreateFaceButtons(settingsMenuItemProviders.Keys.ToList());
+			var types = new HashSet<Type>();
+			types.UnionWith(menuTools);
+			types.UnionWith(menuWorkspaces);
+			foreach (var provider in settingsMenuProviders.Keys)
+			{
+				types.Add(provider.Key);
+			}
+
+			foreach (var provider in settingsMenuItemProviders.Keys)
+			{
+				types.Add(provider.Key);
+			}
+
+			CreateFaceButtons(types.ToList());
 			m_MainMenuUI.SetupMenuFaces();
 			UpdateToolButtons();
 		}
@@ -123,90 +136,130 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			foreach (var type in types)
 			{
 				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
-				if (customMenuAttribute != null && !customMenuAttribute.shown)
-					continue;
-
 				var isTool = typeof(ITool).IsAssignableFrom(type);
 				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
 				var isSettingsProvider = typeof(ISettingsMenuProvider).IsAssignableFrom(type);
 				var isSettingsItemProvider = typeof(ISettingsMenuItemProvider).IsAssignableFrom(type);
 
-				var buttonData = new MainMenuUI.ButtonData();
-				buttonData.name = type.Name;
+				ITooltip tooltip = null;
+				MainMenuUI.ButtonData buttonData = null;
 
-				if (customMenuAttribute != null)
+				var selectedType = type; // Local variable for closure
+				if (customMenuAttribute != null && customMenuAttribute.shown)
 				{
-					buttonData.name = customMenuAttribute.name;
-					buttonData.sectionName = customMenuAttribute.sectionName;
-					buttonData.description = customMenuAttribute.description;
+					tooltip = customMenuAttribute.tooltip;
+
+					buttonData = new MainMenuUI.ButtonData
+					{
+						name = customMenuAttribute.name,
+						sectionName = customMenuAttribute.sectionName,
+						description = customMenuAttribute.description
+					};
 				}
-				else if (isTool)
+
+				if (isTool)
 				{
-					buttonData.name = type.Name.Replace("Tool", string.Empty);
+					if (buttonData == null)
+						buttonData = new MainMenuUI.ButtonData { name = type.Name.Replace("Tool", string.Empty) };
+
+					CreateFaceButton(buttonData, tooltip, () =>
+					{
+						if (targetRayOrigin)
+						{
+							this.SelectTool(targetRayOrigin, selectedType);
+							UpdateToolButtons();
+						}
+					});
 				}
-				else if (isWorkspace)
+
+				if (isWorkspace)
 				{
 					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
-					buttonData.name = type.Name.Replace("Workspace", string.Empty);
-					buttonData.sectionName = "Workspaces";
+					if (buttonData == null)
+					{
+						buttonData = new MainMenuUI.ButtonData
+						{
+							name = type.Name.Replace("Workspace", string.Empty),
+							sectionName = "Workspaces"
+						};
+					}
+
+					CreateFaceButton(buttonData, tooltip, () =>
+					{
+						this.CreateWorkspace(selectedType);
+					});
 				}
 
-				if (isSettingsProvider || isSettingsItemProvider)
+				if (isSettingsProvider)
 				{
-					buttonData.name = type.Name.Replace("Tool", string.Empty);
-					buttonData.name = type.Name.Replace("Module", string.Empty);
-					buttonData.sectionName = "Settings";
+					foreach (var providerPair in settingsMenuProviders)
+					{
+						var kvp = providerPair.Key;
+						if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
+						{
+							var menuProvider = providerPair.Value;
+							if (buttonData == null)
+							{
+								buttonData = new MainMenuUI.ButtonData
+								{
+									name = type.Name.Replace("Tool", string.Empty).Replace("Module", string.Empty)
+								};
+							}
+
+							buttonData.sectionName = "Settings";
+
+							CreateFaceButton(buttonData, tooltip, () =>
+							{
+								menuProvider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, menuProvider.settingsMenuPrefab);
+							});
+						}
+					}
 				}
 
 				if (isSettingsItemProvider)
 				{
-					var itemProvider = settingsMenuItemProviders[type];
-					m_MainMenuUI.CreateCustomButton(itemProvider.settingsMenuItemPrefab, buttonData, b =>
+					foreach (var providerPair in settingsMenuItemProviders)
 					{
-						itemProvider.settingsMenuItemInstance = b;
-					});
-				}
-				else
-				{
-					var selectedType = type; // Local variable for proper closure
-					m_MainMenuUI.CreateFaceButton(buttonData, b =>
-					{
-						b.button.onClick.RemoveAllListeners();
-						if (isTool)
+						var kvp = providerPair.Key;
+						if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
 						{
-							m_ToolButtons[selectedType] = b;
-
-							b.button.onClick.AddListener(() =>
+							var itemProvider = providerPair.Value;
+							if (buttonData == null)
 							{
-								if (visible && targetRayOrigin)
+								buttonData = new MainMenuUI.ButtonData
 								{
-									this.SelectTool(targetRayOrigin, selectedType);
-									UpdateToolButtons();
-								}
-							});
-						}
-						else if (isWorkspace)
-						{
-							b.button.onClick.AddListener(() =>
-							{
-								if (visible)
-									this.CreateWorkspace(selectedType);
-							});
-						}
-						else if (isSettingsProvider)
-						{
-							b.button.onClick.AddListener(() =>
-							{
-								var provider = settingsMenuProviders[selectedType];
-								provider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, provider.settingsMenuPrefab);
-							});
-						}
+									name = type.Name.Replace("Tool", string.Empty).Replace("Module", string.Empty)
+								};
+							}
 
-						if (customMenuAttribute != null && customMenuAttribute.tooltip != null)
-							b.tooltipText = customMenuAttribute.tooltip.tooltipText;
-					});
+							buttonData.sectionName = "Settings";
+
+							m_MainMenuUI.CreateCustomButton(itemProvider.settingsMenuItemPrefab, buttonData, b =>
+							{
+								itemProvider.settingsMenuItemInstance = b;
+								var mainMenuButton = b.GetComponent<MainMenuButton>();
+								if (mainMenuButton)
+									mainMenuButton.tooltip = tooltip;
+							});
+						}
+					}
 				}
 			}
+		}
+
+		void CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback)
+		{
+			m_MainMenuUI.CreateFaceButton(buttonData, b =>
+			{
+				b.button.onClick.RemoveAllListeners();
+				b.button.onClick.AddListener(() =>
+				{
+					if (visible)
+						buttonClickCallback();
+				});
+
+				b.tooltip = tooltip;
+			});
 		}
 
 		void UpdateToolButtons()

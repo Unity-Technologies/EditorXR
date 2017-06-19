@@ -8,16 +8,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]
-		private Button m_Button;
+		Button m_Button;
 
 		[SerializeField]
-		private Text m_ButtonDescription;
+		Text m_ButtonDescription;
 		[SerializeField]
-		private Text m_ButtonTitle;
+		Text m_ButtonTitle;
 
 		Color m_OriginalColor;
 
-		public string tooltipText { get; set; }
+		public string tooltipText
+		{
+			get
+			{
+				return tooltip != null ? tooltip.tooltipText : null;
+			}
+		}
+
+		public ITooltip tooltip { private get; set; }
 
 		public bool selected
 		{
@@ -36,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		private void Awake()
+		void Awake()
 		{
 			m_OriginalColor = m_Button.targetGraphic.color;
 		}

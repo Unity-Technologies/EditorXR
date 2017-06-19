@@ -87,10 +87,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_OriginalFarClipPlane;
 
 		Toggle m_FlyToggle;
+		Toggle m_BlinkToggle;
+		bool m_BlockValueChangedListener;
 
 		public ActionMap actionMap { get { return m_BlinkActionMap; } }
 
-		public Transform rayOrigin { private get; set; }
+		public Transform rayOrigin { get; set; }
 
 		public Transform cameraRig { private get; set; }
 
@@ -109,14 +111,28 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_FlyToggle = toggle;
 						toggle.onValueChanged.AddListener(isOn =>
 						{
+							if (m_BlockValueChangedListener)
+								return;
+
+							// m_Preferences on all instances refer
+							m_Preferences.blinkMode = !isOn;
 							foreach (LocomotionTool linkedObject in linkedObjects)
 							{
-								linkedObject.m_Preferences.blinkMode = !isOn;
-
 								if (linkedObject != this)
+								{
+									linkedObject.m_BlockValueChangedListener = true;
+									//linkedObject.m_ToggleGroup.NotifyToggleOn(isOn ? m_FlyToggle : m_BlinkToggle);
+									// HACK: Toggle Group claims these toggles are not a part of the group
 									linkedObject.m_FlyToggle.isOn = isOn;
+									linkedObject.m_BlinkToggle.isOn = !isOn;
+									linkedObject.m_BlockValueChangedListener = false;
+								}
 							}
 						});
+					}
+					else
+					{
+						m_BlinkToggle = toggle;
 					}
 				}
 			}
@@ -166,13 +182,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (m_State == State.Moving)
 				return;
 
-			foreach (var linkedObject in linkedObjects)
+			foreach (LocomotionTool locomotionTool in linkedObjects)
 			{
-				if (linkedObject == this)
+				if (locomotionTool == this)
 					continue;
 
-				var blinkTool = (LocomotionTool)linkedObject;
-				if (blinkTool.m_State != State.Inactive)
+				if (locomotionTool.m_State != State.Inactive)
 					return;
 			}
 
@@ -312,20 +327,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (m_AllowScaling)
 					{
 						var otherGrip = false;
-						foreach (var linkedObject in linkedObjects)
+						foreach (LocomotionTool locomotionTool in linkedObjects)
 						{
-							if (linkedObject == this)
+							if (locomotionTool == this)
 								continue;
 
-							var blinkTool = (LocomotionTool)linkedObject;
-							if (blinkTool.m_Grip != null)
+							if (locomotionTool.m_Grip != null)
 							{
 								otherGrip = true;
 								consumeControl(m_Grip);
-								consumeControl(blinkTool.m_Grip);
+								consumeControl(locomotionTool.m_Grip);
 
 								var thisPosition = cameraRig.InverseTransformPoint(rayOrigin.position);
-								var otherRayOrigin = blinkTool.rayOrigin;
+								var otherRayOrigin = locomotionTool.rayOrigin;
 								var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
 								var distance = Vector3.Distance(thisPosition, otherPosition);
 
@@ -345,7 +359,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									m_StartDirection = rayToRay;
 									m_StartYaw = cameraRig.rotation.eulerAngles.y;
 
-									blinkTool.m_Scaling = true;
+									locomotionTool.m_Scaling = true;
 
 									CreateViewerScaleVisuals(rayOrigin, otherRayOrigin);
 								}
@@ -355,7 +369,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								var currentScale = Mathf.Clamp(m_StartScale * (m_StartDistance / distance), k_MinScale, k_MaxScale);
 
 								// Press both thumb buttons to reset
-								if (m_Thumb != null && blinkTool.m_Thumb != null)
+								if (m_Thumb != null && locomotionTool.m_Thumb != null)
 								{
 									m_AllowScaling = false;
 
@@ -370,7 +384,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									m_MainCamera.farClipPlane = m_OriginalFarClipPlane;
 
 									consumeControl(m_Thumb);
-									consumeControl(blinkTool.m_Thumb);
+									consumeControl(locomotionTool.m_Thumb);
 
 									if (m_ViewerScaleVisuals)
 										ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);

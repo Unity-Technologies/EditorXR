@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					evr.selectionChanged += selectionChanged.OnSelectionChanged;
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 				var selectionChanged = obj as ISelectionChanged;
 				if (selectionChanged != null)

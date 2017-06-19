@@ -16,7 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ActionMap m_ActionMap;
 
 		GameObject m_PressedObject;
-		bool m_DidSelectObjects;
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -140,17 +139,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				if (m_PressedObject == hoveredObject)
 				{
-					if (m_PressedObject != null)
-					{
-						m_DidSelectObjects = true;
-
-						foreach (SelectionTool linkedObject in linkedObjects)
-						{
-							if (linkedObject != this)
-								linkedObject.m_DidSelectObjects = false;
-						}
-					}
-
 					this.SelectObject(m_PressedObject, rayOrigin, selectionInput.multiSelect.isHeld, true);
 
 					if (m_PressedObject != null)

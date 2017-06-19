@@ -87,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 			}
 

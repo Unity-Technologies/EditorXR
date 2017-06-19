@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 			}
 
@@ -289,7 +289,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							}
 						}
 					}
-					evr.m_Interfaces.DisconnectInterfaces(tool);
+					evr.m_Interfaces.DisconnectInterfaces(tool, deviceData.inputDevice);
 
 					// Exclusive tools disable other tools underneath, so restore those
 					if (tool is IExclusiveMode)

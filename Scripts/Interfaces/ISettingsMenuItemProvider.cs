@@ -17,6 +17,12 @@ namespace UnityEditor.Experimental.EditorVR
 		/// An instance of the menu face prefab that was added to the menu
 		/// </summary>
 		GameObject settingsMenuItemInstance { set; }
+
+		/// <summary>
+		/// The rayOrigin this provider is associated with
+		/// This will determine which menu is used. If null, both menus are used
+		/// </summary>
+		Transform rayOrigin { get; }
 	}
 }
 #endif

@@ -364,6 +364,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
+		public Transform rayOrigin { get { return null; } }
+
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
 		Transform[] m_SingleTransformArray = new Transform[1];

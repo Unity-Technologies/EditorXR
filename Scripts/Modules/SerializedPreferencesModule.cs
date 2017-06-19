@@ -43,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_Serializers.Add(serializer);
 		}
 
-		public void DisconnectInterface(object obj)
+		public void DisconnectInterface(object obj, Transform rayOrigin = null)
 		{
 			var serializer = obj as ISerializePreferences;
 			if (serializer != null)
