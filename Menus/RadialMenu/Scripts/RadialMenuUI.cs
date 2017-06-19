@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -27,9 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		RadialMenuSlot m_HighlightedButton;
 		float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
-
-		public event Action buttonHovered;
-		public event Action buttonClicked; 
 
 		public Transform alternateMenuOrigin
 		{
@@ -174,6 +170,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 		private bool m_SemiTransparent;
+
+		public event Action buttonHovered;
+		public event Action buttonClicked; 
 
 		void Update()
 		{

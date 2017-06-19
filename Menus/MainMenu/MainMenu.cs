@@ -60,7 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_Visible;
 
 		[SerializeField]
-		HapticPulse m_FaceRotationPulse; // Not set in inspector, due to instantiation order
+		HapticPulse m_FaceRotationPulse;
 
 		[SerializeField]
 		HapticPulse m_ShowPulse;
