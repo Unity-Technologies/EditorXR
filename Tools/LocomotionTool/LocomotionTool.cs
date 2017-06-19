@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences
 	{
 		const float k_FastMoveSpeed = 20f;
-		const float k_SlowMoveSpeed = 4f;
+		const float k_SlowMoveSpeed = 1f;
 		const float k_RotationDamping = 0.2f;
 
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
@@ -224,14 +224,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_Rotating = true;
 						m_RigStartPosition = cameraRig.position;
 						m_RigStartRotation = cameraRig.rotation;
-						m_RayOriginStartRotation = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
+						m_RayOriginStartRotation = MathUtilsExt.ConstrainYawRotation(
+							reverse ? Quaternion.Inverse(rayOrigin.rotation) * cameraRig.rotation
+							: Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
 						m_CameraStartPosition = CameraUtils.GetMainCamera().transform.position;
 						m_LastRotationDiff = Quaternion.identity;
 					}
 
 					consumeControl(blinkInput.grip);
 					var startOffset = m_RigStartPosition - m_CameraStartPosition;
-					var localRayRotation = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
+					var localRayRotation = MathUtilsExt.ConstrainYawRotation(
+						reverse ? Quaternion.Inverse(rayOrigin.rotation) * cameraRig.rotation
+							: Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
 					var rotation = Quaternion.Inverse(m_RayOriginStartRotation) * localRayRotation;
 					var filteredRotation = Quaternion.Lerp(m_LastRotationDiff, rotation, k_RotationDamping);
 
@@ -243,10 +247,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				else
 				{
 					var speed = k_SlowMoveSpeed;
-					if (blinkInput.trigger.isHeld || blinkInput.trigger.wasJustReleased) // Consume control on release to block selection
+					var speedControl = blinkInput.speed;
+					var speedControlValue = speedControl.value;
+					if (!Mathf.Approximately(speedControlValue, 0)) // Consume control to block selection
 					{
-						speed = k_FastMoveSpeed;
-						consumeControl(blinkInput.trigger);
+						speed = k_SlowMoveSpeed + speedControlValue * (k_FastMoveSpeed - k_SlowMoveSpeed);
+						consumeControl(speedControl);
 					}
 
 					speed *= this.GetViewerScale();
