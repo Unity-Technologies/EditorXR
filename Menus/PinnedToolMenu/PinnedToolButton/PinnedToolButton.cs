@@ -13,7 +13,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor, IControlHaptics
+	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
 	{
 		static Color s_FrameOpaqueColor;
 		static Color s_SemiTransparentFrameColor;
@@ -314,6 +314,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//public Action<Transform, bool> revealAllToolButtons { get; set; }
 		//public Action revealAllToolButtons { get; set; }
 		//public Action hideAllToolButtons { get; set; }
+
 		public Action<Transform, Transform> OpenMenu { get; set; }
 		public Action<Type> selectTool { get; set; }
 		public Func<bool> closeButton { get; set; }
@@ -326,6 +327,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action destroy { get { return DestroyButton; } }
 		public Action<IPinnedToolButton> showAllButtons { get; set; }
 		public Action hoverExit { get; set; }
+
+		public event Action hovered;
+		//public event Action<Transform> hovered;
+		//public event Action<Transform> clicked;
 
 		//public event Action<Transform> hoverEnter;
 		//public event Action<Transform> hoverExit;
@@ -668,6 +673,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 			}
 
+			if (hovered != null) // Raised in order to trigger the haptic in the PinnedToolsMenu
+				hovered();
+
 			//if (!m_LeftPinnedToolActionButton.revealed && !m_RightPinnedToolActionButton.revealed)
 			//{
 				//Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
@@ -681,8 +689,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			showAllButtons(this);
 			//HoverButton();
 			//m_ButtonCollider.enabled = false;
+			
 			//}
-
 		}
 
 		/*
