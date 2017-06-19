@@ -16,6 +16,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	{
 		public delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null);
 
+		const float k_GroundPlaneScale = 1000f;
+
 		const float k_GroundSnappingMaxRayLength = 25f;
 		const float k_SurfaceSnappingMaxRayLength = 100f;
 
@@ -422,6 +424,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 
 				m_GroundPlane.SetActive(shouldActivateGroundPlane);
+
+				if (shouldActivateGroundPlane)
+					m_GroundPlane.transform.localScale = Vector3.one * k_GroundPlaneScale * this.GetViewerScale();
 			}
 			else
 			{
