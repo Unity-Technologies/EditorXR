@@ -69,7 +69,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal static void SpawnDefaultTools(IProxy proxy)
 			{
-				Func<Transform, bool> isRayActive = Rays.IsRayActive;
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
 				var lockModule = evr.GetModule<LockModule>();
 				var defaultTools = evr.m_DefaultTools;
@@ -90,10 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var tool = toolData.tool;
 						var selectionTool = tool as SelectionTool;
 						if (selectionTool)
-						{
 							selectionTool.hovered += lockModule.OnHovered;
-							selectionTool.isRayActive = isRayActive;
-						}
 
 						var vacuumTool = tool as VacuumTool;
 						if (vacuumTool)

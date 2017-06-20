@@ -45,6 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
 				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
+				IIsRayActiveMethods.isRayActive = IsRayActive;
 			}
 
 			internal override void OnDestroy()
@@ -207,7 +208,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 										if (deviceData.mainMenu.visible && source.hoveredObject)
 										{
-											Menus.OnHover(source.hoveredObject, source.eventData, false);
+											Menus.OnHover(source.hoveredObject, source.eventData);
 
 											return false;
 										}

@@ -315,8 +315,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			GetModule<DeviceInputModule>().ProcessInput();
 
-			var menus = GetNestedModule<Menus>();
-			menus.UpdateMenuVisibilities();
+			GetNestedModule<Menus>().UpdateMenuVisibilities();
 
 			GetNestedModule<UI>().UpdateManipulatorVisibilites();
 		}

@@ -7,7 +7,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
-		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, ISetDefaultRayVisibility, IIsHoveringOverUI
+		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, ISetDefaultRayVisibility, IIsHoveringOverUI,
+		IIsMainMenuVisible
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
@@ -46,6 +47,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			if (!IsActive())
+				return;
+
 			var standardInput = (Standard)input;
 
 			switch (m_State)
@@ -144,6 +148,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				consumeControl(standardInput.action);
 			}
+		}
+
+		bool IsActive()
+		{
+			if (this.IsMainMenuVisible(rayOrigin))
+				return false;
+
+			return true;
 		}
 
 		void Close()

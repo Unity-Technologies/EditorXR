@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject, IUsesNode
+		ICanGrabObject, IUsesNode, IIsRayActive
 	{
 		[SerializeField]
 		ActionMap m_ActionMap;
@@ -27,7 +27,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Transform rayOrigin { private get; set; }
 		public Node? node { private get; set; }
 
-		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
 
 		public List<ILinkedObject> linkedObjects { get; set; }
@@ -188,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (this.IsHoveringOverUI(rayOrigin))
 				return false;
 
-			if (!isRayActive(rayOrigin))
+			if (!this.IsRayActive(rayOrigin))
 				return false;
 
 			return true;
