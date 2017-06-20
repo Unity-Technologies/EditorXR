@@ -100,8 +100,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
 			m_MainMenuUI.visible = m_Visible;
-			m_MainMenuUI.buttonHovered += OnButtonHover;
-			m_MainMenuUI.buttonClicked += OnButtonClick;
+			m_MainMenuUI.buttonHovered += OnButtonHovered;
+			m_MainMenuUI.buttonClicked += OnButtonClicked;
 			m_MainMenuUI.opening += OnOpening;
 			m_MainMenuUI.closing += OnClosing;
 
@@ -224,12 +224,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void OnButtonClick(Transform rayOrigin)
+		void OnButtonClicked(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 		}
 
-		void OnButtonHover(Transform rayOrigin)
+		void OnButtonHovered(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}

@@ -111,8 +111,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			foreach (var button in m_FilterUI.GetComponentsInChildren<WorkspaceButton>())
 			{
-				button.clicked += OnButtonClick;
-				button.hovered += OnButtonHover;
+				button.clicked += OnButtonClicked;
+				button.hovered += OnButtonHovered;
 			}
 
 			var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);

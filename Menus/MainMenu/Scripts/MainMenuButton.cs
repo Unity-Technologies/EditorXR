@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, ITooltip, IControlHaptics, IRayEnterHandler, IPointerClickHandler
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IPointerClickHandler
 	{
 		public Button button { get { return m_Button; } }
 		[SerializeField]

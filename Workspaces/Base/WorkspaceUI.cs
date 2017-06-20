@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IControlHaptics, IUsesNode
+	sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IUsesNode
 	{
 		const int k_AngledFaceBlendShapeIndex = 2;
 		const int k_ThinFrameBlendShapeIndex = 3;
@@ -252,12 +252,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						+ transform.forward * (absForward - (currentExtents.z - extents.z)) * Mathf.Sign(positionOffsetForward);
 
 					m_WorkspaceUI.transform.parent.position = m_PositionStart + positionOffset * viewerScale;
-					m_WorkspaceUI.ResizeHapticPulse(rayOrigin);
+					m_WorkspaceUI.OnResizing(rayOrigin);
 				}
 				else
 				{
 					MathUtilsExt.SetTransformOffset(rayOrigin, m_WorkspaceUI.transform.parent, m_PositionOffset, m_RotationOffset);
-					m_WorkspaceUI.MoveHapticPulse(rayOrigin);
+					m_WorkspaceUI.OnMoving(rayOrigin);
 				}
 			}
 		}
@@ -425,10 +425,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				handle.hoverEnded += OnHandleHoverEnded;
 			}
 
-			m_CloseButton.clicked += OnCloseClick;
-			m_CloseButton.hovered += OnButtonHover;
-			m_ResizeButton.clicked += OnResetSizeClick;
-			m_ResizeButton.hovered += OnButtonHover;
+			m_CloseButton.clicked += OnCloseClicked;
+			m_CloseButton.hovered += OnButtonHovered;
+			m_ResizeButton.clicked += OnResetSizeClicked;
+			m_ResizeButton.hovered += OnButtonHovered;
 		}
 
 		IEnumerator Start()
@@ -792,25 +792,25 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ObjectUtils.Destroy(m_TopFaceMaterial);
 			ObjectUtils.Destroy(m_FrontFaceMaterial);
 
-			m_CloseButton.clicked -= OnCloseClick;
+			m_CloseButton.clicked -= OnCloseClicked;
 			m_CloseButton.hovered -= buttonHovered;
-			m_ResizeButton.clicked -= OnResetSizeClick;
+			m_ResizeButton.clicked -= OnResetSizeClicked;
 			m_ResizeButton.hovered -= buttonHovered;
 		}
 
-		void OnCloseClick(Transform rayOrigin)
+		void OnCloseClicked(Transform rayOrigin)
 		{
 			if (closeClicked != null)
 				closeClicked(rayOrigin);
 		}
 
-		void OnResetSizeClick(Transform rayOrigin)
+		void OnResetSizeClicked(Transform rayOrigin)
 		{
 			if (resetSizeClicked != null)
 				resetSizeClicked(rayOrigin);
 		}
 
-		void OnButtonHover(Transform rayOrigin)
+		void OnButtonHovered(Transform rayOrigin)
 		{
 			if (buttonHovered != null)
 				buttonHovered(rayOrigin);
@@ -889,13 +889,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_TopFaceVisibleCoroutine = null;
 		}
 
-		void MoveHapticPulse(Transform rayOrigin)
+		void OnMoving(Transform rayOrigin)
 		{
 			if (moving != null)
 				moving(rayOrigin);
 		}
 
-		void ResizeHapticPulse(Transform rayOrigin)
+		void OnResizing(Transform rayOrigin)
 		{
 			if (resizing != null)
 				resizing(rayOrigin);

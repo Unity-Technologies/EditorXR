@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	sealed class StandardManipulator : BaseManipulator, IControlHaptics
+	sealed class StandardManipulator : BaseManipulator
 	{
 		[SerializeField]
 		Transform m_PlaneHandlesParent;

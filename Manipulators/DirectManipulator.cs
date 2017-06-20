@@ -75,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 			var rayOrigin = eventData.rayOrigin;
 			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position, rayOrigin, false);
-			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset, eventData.rayOrigin);
+			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset, rayOrigin);
 		}
 
 		void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
