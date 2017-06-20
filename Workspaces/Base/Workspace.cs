@@ -134,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 			this.ConnectInterfaces(m_WorkspaceUI);
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
-			m_WorkspaceUI.resetSizeClicked += OnResetClick;
+			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
 			m_WorkspaceUI.buttonHovered += OnButtonHovered;
 			m_WorkspaceUI.hoveringFrame += OnHoveringFrame;
 			m_WorkspaceUI.moving += OnMoving;
@@ -168,7 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			Close();
 		}
 
-		protected virtual void OnResetClick(Transform rayOrigin)
+		protected virtual void OnResetClicked(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 

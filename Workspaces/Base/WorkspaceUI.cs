@@ -793,9 +793,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ObjectUtils.Destroy(m_FrontFaceMaterial);
 
 			m_CloseButton.clicked -= OnCloseClicked;
-			m_CloseButton.hovered -= buttonHovered;
+			m_CloseButton.hovered -= OnButtonHovered;
 			m_ResizeButton.clicked -= OnResetSizeClicked;
-			m_ResizeButton.hovered -= buttonHovered;
+			m_ResizeButton.hovered -= OnButtonHovered;
 		}
 
 		void OnCloseClicked(Transform rayOrigin)

@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IControlHaptics, IUsesNode, IConnectInterfaces
+	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IConnectInterfaces
 	{
 		public class ButtonData
 		{

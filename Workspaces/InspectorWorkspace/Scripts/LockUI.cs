@@ -32,17 +32,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				sm.SetInt("_StencilRef", stencilRef);
 			}
 
-			m_Button.clicked += OnClick;
-			m_Button.hovered += OnHover;
+			m_Button.clicked += OnClicked;
+			m_Button.hovered += OnHovered;
 		}
 
-		void OnClick(Transform rayOrigin)
+		void OnClicked(Transform rayOrigin)
 		{
 			if (clicked != null)
 				clicked(rayOrigin);
 		}
 
-		void OnHover(Transform rayOrigin)
+		void OnHovered(Transform rayOrigin)
 		{
 			if (hovered != null)
 				hovered(rayOrigin);
