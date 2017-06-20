@@ -181,6 +181,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
 				{
+					if (go.transform.IsChildOf(deviceData.rayOrigin))
+						return;
+
 					var scaledPointerDistance = rayEventData.pointerCurrentRaycast.distance / Viewer.GetViewerScale();
 					var isManipulator = go.GetComponentInParent<IManipulator>() != null;
 					var menus = deviceData.menuHideFlags.Keys.ToList();

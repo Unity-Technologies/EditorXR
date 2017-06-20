@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
-		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool
+		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, ISetDefaultRayVisibility, IIsHoveringOverUI
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
@@ -69,6 +69,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					CheckForTriggerRelease(standardInput, consumeControl);
 					break;
 				}
+			}
+
+			if (this.IsHoveringOverUI(rayOrigin))
+			{
+				this.UnlockRay(rayOrigin, this);
+				this.SetDefaultRayVisibility(rayOrigin, true, true);
+			}
+			else
+			{
+				this.SetDefaultRayVisibility(rayOrigin, false, true);
+				this.LockRay(rayOrigin, this);
 			}
 		}
 
@@ -142,6 +153,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void OnDestroy()
 		{
+			this.UnlockRay(rayOrigin, this);
+			this.SetDefaultRayVisibility(rayOrigin, true, true);
 			ObjectUtils.Destroy(m_ToolMenu);
 		}
 	}

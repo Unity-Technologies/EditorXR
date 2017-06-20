@@ -11,7 +11,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, IUsesViewerBody
+	sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, 
+		IUsesViewerBody, ISetDefaultRayVisibility
 	{
 		const float k_PreviewDuration = 0.1f;
 		const float k_MaxPreviewScale = 0.2f;
@@ -280,7 +281,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			base.OnDragStarted(handle, eventData);
 
-			var clone = (GameObject)Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
+			var rayOrigin = eventData.rayOrigin;
+			this.SetDefaultRayVisibility(rayOrigin, false);
+			this.LockRay(rayOrigin, this);
+
+			var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 			var cloneItem = clone.GetComponent<AssetGridItem>();
 
 			if (cloneItem.m_PreviewObjectTransform)
@@ -326,6 +331,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			var gridItem = m_DragObject.GetComponent<AssetGridItem>();
+
+			var rayOrigin = eventData.rayOrigin;
+			this.UnlockRay(rayOrigin, this);
+			this.SetDefaultRayVisibility(rayOrigin, true);
 
 			if (!this.IsOverShoulder(eventData.rayOrigin))
 			{

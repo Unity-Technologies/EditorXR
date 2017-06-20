@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ISetDefaultRayVisibility, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight,
-		ILinkedObject, IUsesNode, ICustomActionMap
+		ILinkedObject, IUsesRayOrigin, IUsesNode, ICustomActionMap
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -214,6 +214,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
+		public Transform rayOrigin { private get; set; }
 		public Node? node { private get; set; }
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
@@ -307,6 +308,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					var transformInput = transformTool.m_Input;
 
+					this.SetDefaultRayVisibility(directRayOrigin, false, true); // This will also unhighlight the object
+					this.LockRay(directRayOrigin, this);
+
 					if (transformInput.select.wasJustPressed)
 					{
 						this.ClearSnappingState(directRayOrigin);
@@ -336,9 +340,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							objectsGrabbed(directRayOrigin, grabbedObjects);
 
 						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray());
-
-						this.SetDefaultRayVisibility(directRayOrigin, false, true); // This will also unhighlight the object
-						this.LockRay(directRayOrigin, this);
 
 						// A direct selection has been made. Hide the manipulator until the selection changes
 						m_DirectSelected = true;
@@ -452,7 +453,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				// Reset direct selection state in case of a ray selection
 				foreach (TransformTool transformTool in linkedObjects)
 				{
-					if (transformTool.m_Input != null && transformTool.m_Input.select.wasJustReleased)
+					var rayOrigin = transformTool.rayOrigin;
+					this.UnlockRay(rayOrigin, this);
+					this.SetDefaultRayVisibility(rayOrigin, true, true);
+
+					var transformInput = transformTool.m_Input;
+					if (transformInput != null && transformInput.select.wasJustReleased)
 					{
 						m_DirectSelected = false;
 						break;
