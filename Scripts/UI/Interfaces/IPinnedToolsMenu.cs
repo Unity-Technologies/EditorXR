@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Gives decorated class Pinned Tools Menu functionality
 	/// </summary>
-	public interface IPinnedToolsMenu : IUsesMenuOrigins, ICustomActionMap
+	public interface IPinnedToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode
 	{
 		Dictionary<Type, Sprite> icons { set; }
 		int activeToolOrderPosition  { get; }
@@ -19,7 +19,6 @@ namespace UnityEditor.Experimental.EditorVR
 		Transform rayOrigin { get; set; }
 		Type previewToolType { set; }
 		Vector3 alternateMenuItem { get; } // Shared active button offset from the alternate menu
-		Node node { set; } // Used for button and tooltip alignment
 
 		event Action<Transform> hoverEnter;
 		event Action<Transform> hoverExit;

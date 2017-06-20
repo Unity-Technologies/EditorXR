@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 800ff7c94496eac41ab0b6df27863704
-timeCreated: 1497914753
+timeCreated: 1497920492
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -15,6 +15,10 @@ MonoImporter:
       type: 2}
   - m_ButtonHoverPulse: {fileID: 11400000, guid: 53f100a1dd0839141bcace2ecd8cc6b1,
       type: 2}
+  - m_ActivationPulse: {fileID: 11400000, guid: c3a3fe0d1f5495c4db58b5282c37a962,
+      type: 2}
+  - m_ScrollingPulse: {fileID: 11400000, guid: e3b61c818f641ce4fb27eb9d16770364, type: 2}
+  - m_HidingPulse: {fileID: 11400000, guid: 2e01cf9fae741534eaf75d6f0910be3a, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

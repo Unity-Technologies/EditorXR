@@ -37,7 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_OriginalLocalScale;
 		bool m_RayHovered;
 
-		public Node node { get; set; }
 		public int maxButtonCount { get; set; }
 		public Transform buttonContainer { get { return m_ButtonContainer; } }
 		public Transform rayOrigin { get; set; }
@@ -301,10 +300,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void HighlightSingleButtonWithoutMenu(int buttonOrderPosition)
 		{
+			
 			//Debug.LogError("Highlighting SINGLE BUTTON at position : "+ buttonOrderPosition);
 			for (int i = 1; i < m_OrderedButtons.Count; ++i)
 			{
-				m_OrderedButtons[i].highlighted = i == buttonOrderPosition;
+				var button = m_OrderedButtons[i];
+				if (i == buttonOrderPosition)
+				{
+					if (!button.highlighted && buttonHovered != null) // Process haptic pulse if button was not already highlighted
+						buttonHovered();
+
+					button.highlighted = true;
+				}
+				else
+				{
+					button.highlighted = false;
+				}
 			}
 		}
 
@@ -319,6 +330,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					Debug.LogError("<color=orange>Selecting highlighted button : </color>"+ button.toolType);
 					// Force the selection of the button regardless of it previously existing via a call to EVR that triggers a call to SelectExistingType()
 					this.SelectTool(rayOrigin, button.toolType);
+					if (buttonClicked != null)
+						buttonClicked();
+
 					return;
 				}
 			}

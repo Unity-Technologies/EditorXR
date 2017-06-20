@@ -37,12 +37,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		HapticPulse m_ButtonHoverPulse;
 
+		[SerializeField]
+		HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection, but not passing the trigger threshold
+
+		[SerializeField]
+		HapticPulse m_ScrollingPulse; // The pulse performed when spatially scrolling
+
+		[SerializeField]
+		HapticPulse m_HidingPulse; // The pulse performed when ending a spatial selection
+
 		PinnedToolsMenuUI m_PinnedToolsMenuUI;
 
 		//public int menuButtonOrderPosition { get { return k_MenuButtonOrderPosition; } }
 		//public int activeToolOrderPosition { get { return k_ActiveToolOrderPosition; } }
 
 		Transform m_RayOrigin;
+		Transform m_AlternateMenuOrigin;
 
 		public Transform menuOrigin { get; set; }
 		List<IPinnedToolButton> buttons { get { return m_PinnedToolsMenuUI.buttons; } }
@@ -52,7 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public bool moveToAlternatePosition { set { m_PinnedToolsMenuUI.moveToAlternatePosition = value; } }
 		public Type previewToolType { get; set; }
 		public Vector3 alternateMenuItem { get; private set; }
-		public Node node { set { m_PinnedToolsMenuUI.node = value; } }
+
 		public Action<Transform, int, bool> HighlightSingleButton { get; set; }
 		public Action<Transform> SelectHighlightedButton { get; set; }
 		public Action<Transform> deleteHighlightedButton { get; set; }
@@ -61,8 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Transform, GradientPair> highlightDevice { get; set; }
 		public Action<Type, Sprite, Node> createPinnedToolButton { get; set; }
 		public Action<Transform> mainMenuActivatorSelected { get; set; }
-
-		Transform m_AlternateMenuOrigin;
+		public Node? node { get; set; }
 
 		public Action<Transform, Type> selectTool { get; set; }
 
@@ -120,6 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PinnedToolsMenuUI.mainMenuActivatorSelected = mainMenuActivatorSelected;
 			m_PinnedToolsMenuUI.rayOrigin = rayOrigin;
 			m_PinnedToolsMenuUI.buttonHovered += OnButtonHover;
+			m_PinnedToolsMenuUI.buttonClicked += OnButtonClick;
 
 			// Alternate menu origin isnt set when awake or start run
 			var pinnedToolsUITransform = m_PinnedToolsMenuUI.transform;
@@ -270,7 +280,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					consumeControl(pinnedToolInput.show);
 					consumeControl(pinnedToolInput.select);
 				}
-
+				else // User hasn't dragged beyond the trigger magnitude; spatial scrolling hasn't been activated yet
+				{
+					this.Pulse(node, m_ActivationPulse);
+				}
 			}
 			else if (pinnedToolInput.show.wasJustReleased)
 			{
@@ -285,11 +298,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_PinnedToolsMenuUI.SelectHighlightedButton();
 					spatialDirection = null;
 					consumeControl(pinnedToolInput.select);
+					this.Pulse(node, m_HidingPulse);
 				}
 				else if (Time.realtimeSinceStartup < allowToolToggleBeforeThisTime)
 				{
 					// Allow for single press+release to cycle through tools
 					m_PinnedToolsMenuUI.SelectNextExistingToolButton();
+					OnButtonClick();
 				}
 			}
 
@@ -299,7 +314,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		// TODO ADD SUPPORT FOR VIEWERSCALE SIZE CHANGES
 		// TODO refact into ISpatialScrolling interface; allow axis locking/selection/isolation
-		float processSpatialScrolling(Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange,bool velocitySensitive)
+		float processSpatialScrolling(Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, bool velocitySensitive)
 		{
 			var normalizedLoopingPosition = 0f;
 			var directionVector = currentPosition - startingPosition;
@@ -346,12 +361,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnButtonClick()
 		{
-			//this.Pulse(node, m_ButtonClickedPulse);
+			this.Pulse(node, m_ButtonClickPulse);
 		}
 
 		void OnButtonHover()
 		{
-			this.Pulse(null, m_ButtonHoverPulse);
+			this.Pulse(node, m_ButtonHoverPulse);
 		}
 	}
 }
