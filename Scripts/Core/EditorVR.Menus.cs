@@ -25,7 +25,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				Hidden = 1 << 0,
 				OverUI = 1 << 1,
-				OverWorkspace = 1 << 2
+				OverWorkspace = 1 << 2,
+				Overridden = 1 << 3
 			}
 
 			const float k_MenuHideMargin = 0.8f;
@@ -109,15 +110,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							otherHideFlags[otherDeviceData.mainMenu] |= MenuHideFlags.Hidden;
 
 							if (otherCustomMenu != null)
-								otherHideFlags[otherCustomMenu] |= MenuHideFlags.Hidden;
+								otherHideFlags[otherCustomMenu] |= MenuHideFlags.Overridden;
 						}
 
 						menuHideFlags[alternateMenu] |= MenuHideFlags.Hidden;
 					}
 
+					// Hide custom menu if main menu opened on same hand
 					if (customMenu != null && menuHideFlags[mainMenu] == 0 && menuHideFlags[customMenu] == 0)
 					{
-						menuHideFlags[customMenu] |= MenuHideFlags.Hidden;
+						menuHideFlags[customMenu] |= MenuHideFlags.Overridden;
 					}
 
 					// Check workspaces
@@ -189,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
 				{
-					if (go.transform.IsChildOf(deviceData.rayOrigin))
+					if (go.transform.IsChildOf(deviceData.rayOrigin)) // Don't let UI on this hand block the menu
 						return;
 
 					var scaledPointerDistance = rayEventData.pointerCurrentRaycast.distance / Viewer.GetViewerScale();
@@ -216,8 +218,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var alternateMenu = deviceData.alternateMenu;
 					if (alternateMenu != null)
 					{
+						var menuHideFlags = deviceData.menuHideFlags;
 						var flags = deviceData.menuHideFlags[alternateMenu];
 						deviceData.menuHideFlags[alternateMenu] = (deviceData.rayOrigin == rayOrigin) && visible ? flags & ~MenuHideFlags.Hidden : flags | MenuHideFlags.Hidden;
+
+						var customMenu = deviceData.customMenu;
+						// Show custom menu if overridden
+						if (customMenu != null && menuHideFlags[customMenu] == MenuHideFlags.Overridden
+							&& menuHideFlags[deviceData.mainMenu] != 0 && menuHideFlags[alternateMenu] != 0)
+							menuHideFlags[customMenu] &= ~MenuHideFlags.Overridden;
 					}
 				});
 			}
@@ -227,23 +236,45 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var deviceData in evr.m_DeviceData)
 				{
 					var mainMenu = deviceData.mainMenu;
-					var menuHideFlags = deviceData.menuHideFlags;
 					if (mainMenu != null)
 					{
+						var customMenu = deviceData.customMenu;
+						var alternateMenu = deviceData.alternateMenu;
+						var menuHideFlags = deviceData.menuHideFlags;
 						if (deviceData.rayOrigin == rayOrigin)
 						{
 							menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
-
-							var customMenu = deviceData.customMenu;
-							if (customMenu != null)
-								menuHideFlags[customMenu] &= ~MenuHideFlags.Hidden;
-
 							mainMenu.targetRayOrigin = targetRayOrigin;
 						}
 						else
 						{
 							menuHideFlags[mainMenu] |= MenuHideFlags.Hidden;
+
+							// Move alternate menu if overriding custom menu
+							if (customMenu != null && (menuHideFlags[customMenu] & MenuHideFlags.Overridden) != 0
+								&& alternateMenu != null && (menuHideFlags[alternateMenu] & MenuHideFlags.Hidden) == 0)
+							{
+								foreach (var otherDeviceData in evr.m_DeviceData)
+								{
+									if (deviceData == otherDeviceData)
+										continue;
+
+									var otherAlternateMenu = otherDeviceData.alternateMenu;
+									var otherHideFlags = otherDeviceData.menuHideFlags;
+									if (otherAlternateMenu != null)
+									{
+										menuHideFlags[alternateMenu] |= MenuHideFlags.Hidden;
+										otherHideFlags[otherAlternateMenu] = 0;
+									}
+
+								}
+							}
 						}
+
+						// Show custom menu if overridden
+						if (customMenu != null && (menuHideFlags[customMenu] & MenuHideFlags.Overridden) != 0
+							&& menuHideFlags[mainMenu] != 0 && alternateMenu != null && menuHideFlags[alternateMenu] != 0)
+							menuHideFlags[customMenu] &= ~MenuHideFlags.Overridden;
 					}
 				}
 			}
