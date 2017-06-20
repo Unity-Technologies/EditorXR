@@ -233,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			this.MoveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
 
-			OnButtonClicked(rayOrigin); // Trigger haptics
+			OnButtonClicked(rayOrigin);
 		}
 
 		static void CreateEmptyGameObject(Transform rayOrigin)
