@@ -16,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
 		const float k_RotationDamping = 0.2f;
+		const float k_RotationThreshold = 0.75f;
 
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
 		const float k_MinScale = 0.1f;
@@ -227,6 +228,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (blinkInput.grip.isHeld)
 				{
 					var localRayRotation = Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation;
+					var localRayForward = localRayRotation * Vector3.forward;
+					if (Mathf.Abs(Vector3.Dot(localRayForward, Vector3.up)) > k_RotationThreshold)
+						return;
+
+					localRayForward.y = 0;
+					localRayForward.Normalize();
 					if (!m_Rotating)
 					{
 						m_Rotating = true;
@@ -234,9 +241,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_RigStartPosition = cameraRig.position;
 						m_RigStartRotation = cameraRig.rotation;
 
-						m_RayOriginStartForward = localRayRotation * Vector3.forward;
-						m_RayOriginStartForward.y = 0;
-						m_RayOriginStartForward.Normalize();
+						m_RayOriginStartForward = localRayForward;
 						m_RayOriginStartRight = localRayRotation * (reverse ? Vector3.left : Vector3.right);
 						m_RayOriginStartRight.y = 0;
 						m_RayOriginStartRight.Normalize();
@@ -247,10 +252,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					consumeControl(blinkInput.grip);
 					var startOffset = m_RigStartPosition - m_CameraStartPosition;
-					
-					var localRayForward = localRayRotation * Vector3.forward;
-					localRayForward.y = 0;
-					localRayForward.Normalize();
 
 					var angle = Vector3.Angle(m_RayOriginStartForward, localRayForward);
 					var dot = Vector3.Dot(m_RayOriginStartRight, localRayForward);
