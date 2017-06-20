@@ -199,6 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Node m_ScaleFirstNode;
 		float m_ScaleFactor;
 		bool m_Scaling;
+		bool m_CurrentlySnapping;
 
 		TransformInput m_Input;
 
@@ -482,7 +483,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				var deltaTime = Time.deltaTime;
 				var manipulatorTransform = manipulatorGameObject.transform;
-				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, k_LazyFollowTranslate * deltaTime);
+				var lerp = m_CurrentlySnapping ? 1f : k_LazyFollowTranslate * deltaTime;
+				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, lerp);
 				if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 					manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, k_LazyFollowRotate * deltaTime);
 
@@ -572,12 +574,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.ClearSnappingState(rayOrigin);
 		}
 
-		void Translate(Vector3 delta, Transform rayOrigin, bool constrained)
+		void Translate(Vector3 delta, Transform rayOrigin, ConstrainedAxis constraints)
 		{
-			if (constrained)
-				m_TargetPosition += delta;
-			else
-				this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta);
+			switch (constraints)
+			{
+				case ConstrainedAxis.X | ConstrainedAxis.Y:
+				case ConstrainedAxis.Y | ConstrainedAxis.Z:
+				case ConstrainedAxis.X | ConstrainedAxis.Z:
+					m_TargetPosition += delta;
+					break;
+				default:
+					m_CurrentlySnapping = this.ManipulatorSnap(rayOrigin, Selection.transforms, ref m_TargetPosition, ref m_TargetRotation, delta, constraints, m_PivotMode);
+
+					if (constraints == 0)
+						m_CurrentlySnapping = false;
+					break;
+			}
 		}
 
 		void Rotate(Quaternion delta)

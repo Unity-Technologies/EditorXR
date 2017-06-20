@@ -229,7 +229,7 @@ namespace ListView
 			material.SetVector("_ClipExtents", m_Extents);
 		}
 
-		public void OnScroll(PointerEventData eventData)
+		public virtual void OnScroll(PointerEventData eventData)
 		{
 			if (m_Settling)
 				return;
