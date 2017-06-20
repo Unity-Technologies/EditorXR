@@ -341,7 +341,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			return collapsing || m_EligibleForDrag;
 		}
 
-		void Translate(Vector3 deltaPosition, Transform rayOrigin, bool constrained)
+		void Translate(Vector3 deltaPosition, Transform rayOrigin, ConstrainedAxis constraints)
 		{
 			if (m_EligibleForDrag)
 				transform.position += deltaPosition;

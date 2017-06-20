@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -22,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Toggle m_RotationSnappingEnabled;
 
 		[SerializeField]
-		Toggle m_LocalOnly;
+		Toggle m_LimitRadius;
 
 		[SerializeField]
 		Toggle m_ManipulatorSnappingEnabled;
@@ -55,9 +56,9 @@ namespace UnityEditor.Experimental.EditorVR
 			get { return m_RotationSnappingEnabled; }
 		}
 
-		public Toggle localOnly
+		public Toggle limitRadius
 		{
-			get { return m_LocalOnly; }
+			get { return m_LimitRadius; }
 		}
 
 		public Toggle manipulatorSnappingEnabled

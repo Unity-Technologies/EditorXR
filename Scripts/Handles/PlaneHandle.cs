@@ -1,13 +1,16 @@
 ﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	sealed class PlaneHandle : BaseHandle
+	sealed class PlaneHandle : BaseHandle, IAxisConstraints
 	{
-		private class PlaneHandleEventData : HandleEventData
+		const float k_MaxDragDistance = 1000f;
+
+		class PlaneHandleEventData : HandleEventData
 		{
 			public Vector3 raycastHitWorldPosition;
 
@@ -15,12 +18,16 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		}
 
 		[SerializeField]
-		private Material m_PlaneMaterial;
+		Material m_PlaneMaterial;
 
-		private const float k_MaxDragDistance = 1000f;
+		[FlagsProperty]
+		[SerializeField]
+		ConstrainedAxis m_Constraints;
 
-		private Plane m_Plane;
-		private Vector3 m_LastPosition;
+		Plane m_Plane;
+		Vector3 m_LastPosition;
+
+		public ConstrainedAxis constraints { get { return m_Constraints; } }
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
@@ -39,12 +46,12 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		protected override void OnHandleDragging(HandleEventData eventData)
 		{
-			Transform rayOrigin = eventData.rayOrigin;
+			var rayOrigin = eventData.rayOrigin;
 
 			var worldPosition = m_LastPosition;
 
 			float distance;
-			Ray ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			if (m_Plane.Raycast(ray, out distance))
 				worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), k_MaxDragDistance));
 
