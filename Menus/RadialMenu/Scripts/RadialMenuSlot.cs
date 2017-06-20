@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler, IControlHaptics
+	sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
 	{
 		static Color s_FrameOpaqueColor;
 		static readonly Vector3 k_HiddenLocalScale = new Vector3(1f, 0f, 1f);
@@ -204,8 +204,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		// For overriding text (i.e. TransformActions)
 		public ITooltip tooltip { private get; set; }
-
-		public Transform rayOrigin { get; set; }
 
 		public event Action hovered;
 

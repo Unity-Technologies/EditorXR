@@ -89,8 +89,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
-			m_RadialMenuUI.buttonHovered += OnButtonHover;
-			m_RadialMenuUI.buttonClicked += OnButtonClick;
+			m_RadialMenuUI.buttonHovered += OnButtonHovered;
+			m_RadialMenuUI.buttonClicked += OnButtonClicked;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -128,12 +128,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void OnButtonClick()
+		void OnButtonClicked()
 		{
 			this.Pulse(node, m_ButtonClickedPulse);
 		}
 
-		void OnButtonHover()
+		void OnButtonHovered()
 		{
 			this.Pulse(node, m_ButtonHoverPulse);
 		}

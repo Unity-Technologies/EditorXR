@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		Vector3 m_PositionOffset;
 		Quaternion m_RotationOffset;
 
-		public Action<Vector3, Transform, bool> translate { private get; set; }
+		public Action<Vector3, Transform, ConstrainedAxis> translate { private get; set; }
 		public Action<Quaternion, Transform> rotate { private get; set; }
 		public Action<Vector3> scale { private get; set; }
 
@@ -74,8 +74,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			var target = m_Target == null ? transform : m_Target;
 
 			var rayOrigin = eventData.rayOrigin;
-			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position, rayOrigin, false);
-			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset, eventData.rayOrigin);
+			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position, rayOrigin, 0);
+			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset, rayOrigin);
 		}
 
 		void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)

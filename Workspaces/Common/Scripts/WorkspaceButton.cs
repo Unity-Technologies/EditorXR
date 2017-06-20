@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -10,7 +11,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef, IControlHaptics, IRayToNode
+	sealed class WorkspaceButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler, IUsesStencilRef
 	{
 		const float k_IconHighlightedLocalZOffset = -0.0015f;
 		const string k_MaterialAlphaProperty = "_Alpha";
@@ -210,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_SwapIconsOnClick && m_AlternateIconSprite)
 				m_Button.onClick.AddListener(SwapIconSprite);
 
-			m_Button.onClick.AddListener(OnButtonClick);
+			m_Button.onClick.AddListener(OnButtonClicked);
 		}
 
 		void Start()
@@ -475,7 +476,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			alternateIconVisible = !alternateIconVisible;
 		}
 
-		void OnButtonClick()
+		void OnButtonClicked()
 		{
 			if (clicked != null)
 				clicked(m_InteractingRayOrigin);

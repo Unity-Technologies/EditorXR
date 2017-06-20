@@ -2,7 +2,7 @@
 using System;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	/// <summary>
 	/// Provide the ability to request a corresponding node for a ray origin

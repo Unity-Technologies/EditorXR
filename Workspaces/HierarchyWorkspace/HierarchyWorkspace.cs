@@ -92,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 				var button = focusUI.GetComponentInChildren<WorkspaceButton>(true);
 				button.clicked += FocusSelection;
-				button.hovered += OnButtonHover;
+				button.hovered += OnButtonHovered;
 			}
 
 			if (m_CreateEmptyPrefab)
@@ -104,8 +104,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 				var button = createEmptyUI.GetComponentInChildren<WorkspaceButton>(true);
 				button.clicked += CreateEmptyGameObject;
-				button.clicked += OnButtonClick;
-				button.hovered += OnButtonHover;
+				button.clicked += OnButtonClicked;
+				button.hovered += OnButtonHovered;
 			}
 
 			var listView = m_HierarchyUI.listView;
@@ -128,8 +128,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
 			scrollHandleTransform.localPosition = new Vector3(0f, -0.015f, 0f); // Offset from content for collision purposes
 
-			m_FilterUI.buttonClicked += OnButtonClick;
-			m_FilterUI.buttonHovered += OnButtonHover;
+			m_FilterUI.buttonClicked += OnButtonClicked;
+			m_FilterUI.buttonHovered += OnButtonHovered;
 
 			// Propagate initial bounds
 			OnBoundsChanged();
@@ -137,8 +137,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override void OnDestroy()
 		{
-			m_FilterUI.buttonClicked -= OnButtonClick;
-			m_FilterUI.buttonHovered -= OnButtonHover;
+			m_FilterUI.buttonClicked -= OnButtonClicked;
+			m_FilterUI.buttonHovered -= OnButtonHovered;
 
 			base.OnDestroy();
 		}
@@ -233,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			this.MoveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
 
-			OnButtonClick(rayOrigin); // Trigger haptics
+			OnButtonClicked(rayOrigin); // Trigger haptics
 		}
 
 		static void CreateEmptyGameObject(Transform rayOrigin)

@@ -133,12 +133,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 			this.ConnectInterfaces(m_WorkspaceUI);
-			m_WorkspaceUI.closeClicked += OnCloseClick;
+			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.resetSizeClicked += OnResetClick;
-			m_WorkspaceUI.buttonHovered += OnButtonHover;
-			m_WorkspaceUI.hoveringFrame += HoveringFrame;
-			m_WorkspaceUI.moving += Moving;
-			m_WorkspaceUI.resizing += Resizing;
+			m_WorkspaceUI.buttonHovered += OnButtonHovered;
+			m_WorkspaceUI.hoveringFrame += OnHoveringFrame;
+			m_WorkspaceUI.moving += OnMoving;
+			m_WorkspaceUI.resizing += OnResizing;
 
 			m_WorkspaceUI.leftRayOrigin = leftRayOrigin;
 			m_WorkspaceUI.rightRayOrigin = rightRayOrigin;
@@ -162,7 +162,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		protected virtual void OnCloseClick(Transform rayOrigin)
+		protected virtual void OnCloseClicked(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 			Close();
@@ -176,7 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
 		}
 
-		protected void OnButtonHover(Transform rayOrigin)
+		protected void OnButtonHovered(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
@@ -270,22 +270,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);
 		}
 
-		protected void OnButtonClick(Transform rayOrigin)
+		protected void OnButtonClicked(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 		}
 
-		void Moving(Transform rayOrigin)
+		void OnMoving(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_MovePulse);
 		}
 
-		void Resizing(Transform rayOrigin)
+		void OnResizing(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
 		}
 
-		void HoveringFrame(Transform rayOrigin)
+		void OnHoveringFrame(Transform rayOrigin)
 		{
 			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
 		}

@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	sealed class StandardManipulator : BaseManipulator, IControlHaptics
+	sealed class StandardManipulator : BaseManipulator
 	{
 		[SerializeField]
 		Transform m_PlaneHandlesParent;
@@ -69,7 +69,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 		void OnTranslateDragging(BaseHandle handle, HandleEventData eventData)
 		{
-			translate(eventData.deltaPosition, eventData.rayOrigin, !(handle is SphereHandle));
+			ConstrainedAxis constraints = 0;
+			var constrainedHandle = handle as IAxisConstraints;
+			if (constrainedHandle != null)
+				constraints = constrainedHandle.constraints;
+
+			translate(eventData.deltaPosition, eventData.rayOrigin, constraints);
 		}
 
 		void OnRotateDragging(BaseHandle handle, HandleEventData eventData)

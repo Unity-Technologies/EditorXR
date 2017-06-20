@@ -11,9 +11,9 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		/// <summary>
 		/// Delegate that processes the translation, using the vector3 passed in
-		/// Caller also provides the ray origin that is doing the action, and whether or not this translation is axis-constrained
+		/// Caller also provides the ray origin that is doing the action, and which axes are constrained, if any
 		/// </summary>
-		Action<Vector3, Transform, bool> translate { set; }
+		Action<Vector3, Transform, ConstrainedAxis> translate { set; }
 
 		/// <summary>
 		/// Delegate that processes the rotation, using the quaternion passed in

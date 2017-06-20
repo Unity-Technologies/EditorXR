@@ -99,8 +99,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						OnFilterClick(button);
 					});
 
-					button.clicked += OnClick;
-					button.hovered += OnHover;
+					button.clicked += OnClicked;
+					button.hovered += OnHovered;
 					button.text.text = m_FilterTypes[i];
 				}
 			}
@@ -121,10 +121,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_BackgroundMaterial = MaterialUtils.GetMaterialClone(m_Background);
 			m_BackgroundMaterial.SetInt("_StencilRef", stencilRef);
 
-			m_VisibilityButton.clicked += OnVisibilityButtonClick;
-			m_VisibilityButton.hovered += OnHover;
-			m_SummaryButton.clicked += OnVisibilityButtonClick;
-			m_SummaryButton.hovered += OnHover;
+			m_VisibilityButton.clicked += OnVisibilityButtonClicked;
+			m_VisibilityButton.hovered += OnHovered;
+			m_SummaryButton.clicked += OnVisibilityButtonClicked;
+			m_SummaryButton.hovered += OnHovered;
 		}
 
 		void OnDestroy()
@@ -150,7 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				this.StopCoroutine(ref m_HideButtonListCoroutine);
 				m_HideButtonListCoroutine = StartCoroutine(HideButtonList());
 
-				OnClick(null);
+				OnClicked(null);
 			}
 		}
 
@@ -261,19 +261,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_HideButtonListCoroutine = null;
 		}
 
-		void OnVisibilityButtonClick(Transform rayOrigin)
+		void OnVisibilityButtonClicked(Transform rayOrigin)
 		{
 			SetListVisibility(true);
-			OnClick(rayOrigin);
+			OnClicked(rayOrigin);
 		}
 
-		void OnClick(Transform rayOrigin)
+		void OnClicked(Transform rayOrigin)
 		{
 			if (buttonClicked != null)
 				buttonClicked(rayOrigin);
 		}
 
-		void OnHover(Transform rayOrigin)
+		void OnHovered(Transform rayOrigin)
 		{
 			if (buttonHovered != null)
 				buttonHovered(rayOrigin);

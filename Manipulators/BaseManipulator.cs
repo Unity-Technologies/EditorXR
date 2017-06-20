@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 		public bool adjustScaleForCamera { get; set; }
 
-		public Action<Vector3, Transform, bool> translate { protected get; set; }
+		public Action<Vector3, Transform, ConstrainedAxis> translate { protected get; set; }
 		public Action<Quaternion, Transform> rotate { protected get; set; }
 		public Action<Vector3> scale { protected get; set; }
 
