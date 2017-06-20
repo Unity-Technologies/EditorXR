@@ -296,6 +296,8 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.5
+  m_ClickPulse: {fileID: 11400000, guid: 43f6d76e312f45145bc1ef9af446edfe, type: 2}
+  m_HighlightPulse: {fileID: 11400000, guid: bf8c18d5dc5c90f4aa0782421bbaaf0e, type: 2}
 --- !u!114 &114000010255987122
 MonoBehaviour:
   m_ObjectHideFlags: 1
