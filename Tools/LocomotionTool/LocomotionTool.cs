@@ -83,10 +83,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Vector3 m_CameraStartPosition;
 		Quaternion m_LastRotationDiff;
 
-		// Allow shared updater to consume these controls for another linked instance
-		InputControl m_Grip;
-		InputControl m_Thumb;
-		InputControl m_Trigger;
+		// Allow shared updater to check input values and consume controls
+		Locomotion m_LocomotionInput;
 
 		Camera m_MainCamera;
 		float m_OriginalNearClipPlane;
@@ -183,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var blinkInput = (Locomotion)input;
+			m_LocomotionInput = (Locomotion)input;
 
 			if (m_State == State.Moving)
 				return;
@@ -197,21 +195,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					return;
 			}
 
-			m_Grip = blinkInput.grip.isHeld ? blinkInput.grip : null;
-			m_Thumb = blinkInput.thumb.isHeld ? blinkInput.thumb : null;
-			m_Trigger = blinkInput.trigger.isHeld ? blinkInput.trigger : null;
-
 			DoTwoHandedScaling(consumeControl);
 
 			if (!m_Scaling)
 			{
 				if (!m_WasRotating)
-					DoCrawl(blinkInput);
+					DoCrawl(m_LocomotionInput);
 
 				if (m_Preferences.blinkMode)
-					DoBlink(consumeControl, blinkInput);
+					DoBlink(consumeControl, m_LocomotionInput);
 				else
-					DoFlying(consumeControl, blinkInput);
+					DoFlying(consumeControl, m_LocomotionInput);
 			}
 			else
 			{
@@ -219,13 +213,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		void DoFlying(ConsumeControlDelegate consumeControl, Locomotion blinkInput)
+		void DoFlying(ConsumeControlDelegate consumeControl, Locomotion locomotionInput)
 		{
-			var reverse = blinkInput.reverse.isHeld;
-			var moving = blinkInput.forward.isHeld || reverse;
+			var reverse = locomotionInput.reverse.isHeld;
+			var moving = locomotionInput.forward.isHeld || reverse;
 			if (moving)
 			{
-				if (blinkInput.grip.isHeld)
+				if (locomotionInput.grip.isHeld)
 				{
 					var localRayRotation = Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation;
 					var localRayForward = localRayRotation * Vector3.forward;
@@ -250,7 +244,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_LastRotationDiff = Quaternion.identity;
 					}
 
-					consumeControl(blinkInput.grip);
+					consumeControl(locomotionInput.grip);
 					var startOffset = m_RigStartPosition - m_CameraStartPosition;
 
 					var angle = Vector3.Angle(m_RayOriginStartForward, localRayForward);
@@ -269,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				else
 				{
 					var speed = k_SlowMoveSpeed;
-					var speedControl = blinkInput.speed;
+					var speedControl = locomotionInput.speed;
 					var speedControlValue = speedControl.value;
 					if (!Mathf.Approximately(speedControlValue, 0)) // Consume control to block selection
 					{
@@ -285,20 +279,20 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
 				}
 
-				consumeControl(blinkInput.forward);
+				consumeControl(locomotionInput.forward);
 			}
 			else
 			{
-				if (!blinkInput.grip.isHeld)
+				if (!locomotionInput.grip.isHeld)
 					m_WasRotating = false;
 
 				m_Rotating = false;
 			}
 		}
 
-		void DoCrawl(Locomotion blinkInput)
+		void DoCrawl(Locomotion locomotionInput)
 		{
-			if (!blinkInput.forward.isHeld && !blinkInput.blink.isHeld && blinkInput.grip.isHeld)
+			if (!locomotionInput.forward.isHeld && !locomotionInput.blink.isHeld && locomotionInput.grip.isHeld)
 			{
 				if (!m_Crawling)
 				{
@@ -318,10 +312,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		void DoBlink(ConsumeControlDelegate consumeControl, Locomotion blinkInput)
+		void DoBlink(ConsumeControlDelegate consumeControl, Locomotion locomotionInput)
 		{
 			m_Rotating = false;
-			if (blinkInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
+			if (locomotionInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
 				this.SetDefaultRayVisibility(rayOrigin, false);
@@ -329,9 +323,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				m_BlinkVisuals.ShowVisuals();
 
-				consumeControl(blinkInput.blink);
+				consumeControl(locomotionInput.blink);
 			}
-			else if (m_State == State.Aiming && blinkInput.blink.wasJustReleased)
+			else if (m_State == State.Aiming && locomotionInput.blink.wasJustReleased)
 			{
 				this.UnlockRay(rayOrigin, this);
 				this.SetDefaultRayVisibility(rayOrigin, true);
@@ -353,21 +347,24 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			if (this.IsSharedUpdater(this))
 			{
-				if (m_Grip != null)
+				var grip = m_LocomotionInput.grip;
+				if (grip.isHeld)
 				{
 					if (m_AllowScaling)
 					{
-						var otherGrip = false;
+						var otherGripHeld = false;
 						foreach (LocomotionTool locomotionTool in linkedObjects)
 						{
 							if (locomotionTool == this)
 								continue;
 
-							if (locomotionTool.m_Grip != null)
+							var otherLocomotionInput = locomotionTool.m_LocomotionInput;
+							var otherGrip = otherLocomotionInput.grip;
+							if (otherGrip.isHeld)
 							{
-								otherGrip = true;
-								consumeControl(m_Grip);
-								consumeControl(locomotionTool.m_Grip);
+								otherGripHeld = true;
+								consumeControl(grip);
+								consumeControl(otherGrip);
 
 								var thisPosition = cameraRig.InverseTransformPoint(rayOrigin.position);
 								var otherRayOrigin = locomotionTool.rayOrigin;
@@ -399,14 +396,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 								var currentScale = Mathf.Clamp(m_StartScale * (m_StartDistance / distance), k_MinScale, k_MaxScale);
 
-								if (m_Thumb != null)
-									consumeControl(m_Thumb);
+								var thumb = m_LocomotionInput.thumb;
+								var thumbHeld = thumb.isHeld;
+								if (thumbHeld)
+									consumeControl(thumb);
 
-								if (locomotionTool.m_Thumb != null)
-									consumeControl(locomotionTool.m_Thumb);
+								var otherThumb = otherLocomotionInput.thumb;
+								var otherThumbHeld = otherThumb.isHeld;
+								if (otherThumbHeld)
+									consumeControl(otherThumb);
 
 								// Press both thumb buttons to reset scale
-								if (m_Thumb != null && locomotionTool.m_Thumb != null)
+								if (thumbHeld && otherThumbHeld)
 								{
 									m_AllowScaling = false;
 
@@ -420,14 +421,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									ResetViewerScale();
 								}
 
-								if (m_Thumb != null)
-									consumeControl(m_Thumb);
+								var trigger = m_LocomotionInput.trigger;
+								var triggerHeld = trigger.isHeld;
+								if (triggerHeld)
+									consumeControl(trigger);
 
-								if (locomotionTool.m_Thumb != null)
-									consumeControl(locomotionTool.m_Thumb);
+								var otherTrigger = otherLocomotionInput.trigger;
+								var otherTriggerHeld = otherTrigger.isHeld;
+								if (otherTriggerHeld)
+									consumeControl(otherTrigger);
 
 								// Press both triggers to reset to origin
-								if (m_Trigger != null && locomotionTool.m_Trigger != null)
+								if (triggerHeld && otherTriggerHeld)
 								{
 									m_AllowScaling = false;
 
@@ -457,7 +462,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							}
 						}
 
-						if (!otherGrip)
+						if (!otherGripHeld)
 							CancelScale();
 					}
 				}
