@@ -84,6 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		// Allow shared updater to consume these controls for another linked instance
 		InputControl m_Grip;
 		InputControl m_Thumb;
+		InputControl m_Trigger;
 
 		Camera m_MainCamera;
 		float m_OriginalNearClipPlane;
@@ -196,6 +197,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			m_Grip = blinkInput.grip.isHeld ? blinkInput.grip : null;
 			m_Thumb = blinkInput.thumb.isHeld ? blinkInput.thumb : null;
+			m_Trigger = blinkInput.trigger.isHeld ? blinkInput.trigger : null;
 
 			DoTwoHandedScaling(consumeControl);
 
@@ -385,7 +387,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 								var currentScale = Mathf.Clamp(m_StartScale * (m_StartDistance / distance), k_MinScale, k_MaxScale);
 
-								// Press both thumb buttons to reset
+								if (m_Thumb != null)
+									consumeControl(m_Thumb);
+
+								if (locomotionTool.m_Thumb != null)
+									consumeControl(locomotionTool.m_Thumb);
+
+								// Press both thumb buttons to reset scale
 								if (m_Thumb != null && locomotionTool.m_Thumb != null)
 								{
 									m_AllowScaling = false;
@@ -393,18 +401,28 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									rayToRay = otherRayOrigin.position - rayOrigin.position;
 									midPoint = rayOrigin.position + rayToRay * 0.5f;
 									var currOffset = midPoint - cameraRig.position;
-									cameraRig.localScale = Vector3.one;
+
 									cameraRig.position = midPoint - currOffset / currentScale;
 									cameraRig.rotation = Quaternion.AngleAxis(m_StartYaw, Vector3.up);
 
-									m_MainCamera.nearClipPlane = m_OriginalNearClipPlane;
-									m_MainCamera.farClipPlane = m_OriginalFarClipPlane;
+									ResetViewerScale();
+								}
 
+								if (m_Thumb != null)
 									consumeControl(m_Thumb);
+
+								if (locomotionTool.m_Thumb != null)
 									consumeControl(locomotionTool.m_Thumb);
 
-									if (m_ViewerScaleVisuals)
-										ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
+								// Press both triggers to reset to origin
+								if (m_Trigger != null && locomotionTool.m_Trigger != null)
+								{
+									m_AllowScaling = false;
+
+									cameraRig.position = Vector3.up * VRView.HeadHeight;
+									cameraRig.rotation = Quaternion.identity;
+
+									ResetViewerScale();
 								}
 
 								if (m_AllowScaling)
@@ -436,6 +454,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					CancelScale();
 				}
 			}
+		}
+
+		void ResetViewerScale()
+		{
+			cameraRig.localScale = Vector3.one;
+			m_MainCamera.nearClipPlane = m_OriginalNearClipPlane;
+			m_MainCamera.farClipPlane = m_OriginalFarClipPlane;
+
+			if (m_ViewerScaleVisuals)
+				ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
 		}
 
 		void CreateViewerScaleVisuals(Transform leftHand, Transform rightHand)

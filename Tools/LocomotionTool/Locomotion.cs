@@ -13,5 +13,6 @@ namespace UnityEngine.InputNew
 		public AxisInputControl @speed { get { return (AxisInputControl)this[3]; } }
 		public ButtonInputControl @reverse { get { return (ButtonInputControl)this[4]; } }
 		public ButtonInputControl @forward { get { return (ButtonInputControl)this[5]; } }
+		public ButtonInputControl @trigger { get { return (ButtonInputControl)this[6]; } }
 	}
 }
