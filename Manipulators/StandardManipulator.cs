@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -77,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 		void OnRotateDragging(BaseHandle handle, HandleEventData eventData)
 		{
-			rotate(eventData.deltaRotation);
+			rotate(eventData.deltaRotation, eventData.rayOrigin);
 		}
 
 		void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)

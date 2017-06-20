@@ -4,7 +4,6 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -91,7 +90,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					this.ConnectInterfaces(mb);
 				}
-				focusUI.GetComponentInChildren<Button>(true).onClick.AddListener(FocusSelection);
+				var button = focusUI.GetComponentInChildren<WorkspaceButton>(true);
+				button.clicked += FocusSelection;
+				button.hovered += OnButtonHovered;
 			}
 
 			if (m_CreateEmptyPrefab)
@@ -101,7 +102,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				{
 					this.ConnectInterfaces(mb);
 				}
-				createEmptyUI.GetComponentInChildren<Button>(true).onClick.AddListener(CreateEmptyGameObject);
+				var button = createEmptyUI.GetComponentInChildren<WorkspaceButton>(true);
+				button.clicked += CreateEmptyGameObject;
+				button.clicked += OnButtonClicked;
+				button.hovered += OnButtonHovered;
 			}
 
 			var listView = m_HierarchyUI.listView;
@@ -124,8 +128,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
 			scrollHandleTransform.localPosition = new Vector3(0f, -0.015f, 0f); // Offset from content for collision purposes
 
+			m_FilterUI.buttonClicked += OnButtonClicked;
+			m_FilterUI.buttonHovered += OnButtonHovered;
+
 			// Propagate initial bounds
 			OnBoundsChanged();
+		}
+
+		protected override void OnDestroy()
+		{
+			m_FilterUI.buttonClicked -= OnButtonClicked;
+			m_FilterUI.buttonHovered -= OnButtonHovered;
+
+			base.OnDestroy();
 		}
 
 		protected override void OnBoundsChanged()
@@ -194,7 +209,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_HierarchyUI.listView.SelectRow(Selection.activeInstanceID);
 		}
 
-		void FocusSelection()
+		void FocusSelection(Transform rayOrigin)
 		{
 			if (Selection.gameObjects.Length == 0)
 				return;
@@ -217,9 +232,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			cameraDiff.y = 0;
 
 			this.MoveCameraRig(bounds.center - cameraDiff - viewDirection * maxSize);
+
+			OnButtonClicked(rayOrigin);
 		}
 
-		static void CreateEmptyGameObject()
+		static void CreateEmptyGameObject(Transform rayOrigin)
 		{
 			var camera = CameraUtils.GetMainCamera().transform;
 			var go = new GameObject();

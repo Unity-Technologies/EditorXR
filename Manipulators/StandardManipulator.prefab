@@ -1431,6 +1431,8 @@ MonoBehaviour:
   - {fileID: 114000012656813054}
   - {fileID: 114000010105022974}
   - {fileID: 114000011169532704}
+  m_DragPulse: {fileID: 11400000, guid: a187e6c970cfc58498747aee6dca2919, type: 2}
+  m_RotatePulse: {fileID: 11400000, guid: 2e2c8d33e61b196448657254e78ba15c, type: 2}
 --- !u!114 &114000013109644058
 MonoBehaviour:
   m_ObjectHideFlags: 1

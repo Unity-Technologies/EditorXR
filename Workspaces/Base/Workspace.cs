@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -8,7 +9,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
+	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale, IControlHaptics, IRayToNode
 	{
 		const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 
@@ -26,6 +27,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		[SerializeField]
 		ActionMap m_ActionMap;
+
+		[SerializeField]
+		HapticPulse m_ButtonClickPulse;
+
+		[SerializeField]
+		HapticPulse m_ButtonHoverPulse;
+
+		[SerializeField]
+		HapticPulse m_ResizePulse;
+
+		[SerializeField]
+		HapticPulse m_MovePulse;
+
+		[SerializeField]
+		HapticPulse m_FrameHoverPulse;
 
 		Bounds m_ContentBounds;
 
@@ -108,6 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform leftRayOrigin { protected get; set; }
 		public Transform rightRayOrigin { protected get; set; }
+		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public virtual void Setup()
 		{
@@ -118,6 +135,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.ConnectInterfaces(m_WorkspaceUI);
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
+			m_WorkspaceUI.buttonHovered += OnButtonHovered;
+			m_WorkspaceUI.hoveringFrame += OnHoveringFrame;
+			m_WorkspaceUI.moving += OnMoving;
+			m_WorkspaceUI.resizing += OnResizing;
 
 			m_WorkspaceUI.leftRayOrigin = leftRayOrigin;
 			m_WorkspaceUI.rightRayOrigin = rightRayOrigin;
@@ -141,16 +162,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		protected virtual void OnCloseClicked()
+		protected virtual void OnCloseClicked(Transform rayOrigin)
 		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 			Close();
 		}
 
-		protected virtual void OnResetClicked()
+		protected virtual void OnResetClicked(Transform rayOrigin)
 		{
-			this.StopCoroutine(ref m_ResetSizeCoroutine);
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 
+			this.StopCoroutine(ref m_ResetSizeCoroutine);
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
+		}
+
+		protected void OnButtonHovered(Transform rayOrigin)
+		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
 
 		public void SetUIHighlightsVisible(bool value)
@@ -240,6 +268,26 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public virtual void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);
+		}
+
+		protected void OnButtonClicked(Transform rayOrigin)
+		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+		}
+
+		void OnMoving(Transform rayOrigin)
+		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_MovePulse);
+		}
+
+		void OnResizing(Transform rayOrigin)
+		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
+		}
+
+		void OnHoveringFrame(Transform rayOrigin)
+		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
 		}
 	}
 }

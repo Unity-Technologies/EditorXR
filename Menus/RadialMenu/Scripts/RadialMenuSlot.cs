@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -88,6 +89,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					// Only start the highlight coroutine if the highlight coroutine isnt already playing. Otherwise allow it to gracefully finish.
 					if (m_HighlightCoroutine == null)
 						m_HighlightCoroutine = StartCoroutine(Highlight());
+
+					if (hovered != null)
+						hovered();
 				}
 				else
 				{
@@ -203,6 +207,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		// For overriding text (i.e. TransformActions)
 		public ITooltip tooltip { private get; set; }
+
+		public event Action hovered;
 
 		void Awake()
 		{
