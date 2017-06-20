@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		const string k_WorldScaleProperty = "_WorldScale";
 
-		const int k_RotationSegments = 16;
+		const int k_RotationSegments = 32;
 
 		enum State
 		{
@@ -75,7 +75,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		bool m_WasRotating;
 		bool m_Crawling;
 		Vector3 m_RayOriginStartPosition;
-		Quaternion m_RayOriginStartRotation;
+		Vector3 m_RayOriginStartForward;
+		Vector3 m_RayOriginStartRight;
 		Quaternion m_RigStartRotation;
 		Vector3 m_RigStartPosition;
 		Vector3 m_CameraStartPosition;
@@ -225,29 +226,39 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				if (blinkInput.grip.isHeld)
 				{
+					var localRayRotation = Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation;
 					if (!m_Rotating)
 					{
 						m_Rotating = true;
 						m_WasRotating = true;
 						m_RigStartPosition = cameraRig.position;
 						m_RigStartRotation = cameraRig.rotation;
-						m_RayOriginStartRotation = MathUtilsExt.ConstrainYawRotation(
-							reverse ? Quaternion.Inverse(rayOrigin.rotation) * cameraRig.rotation
-							: Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
+
+						m_RayOriginStartForward = localRayRotation * Vector3.forward;
+						m_RayOriginStartForward.y = 0;
+						m_RayOriginStartForward.Normalize();
+						m_RayOriginStartRight = localRayRotation * (reverse ? Vector3.left : Vector3.right);
+						m_RayOriginStartRight.y = 0;
+						m_RayOriginStartRight.Normalize();
+
 						m_CameraStartPosition = CameraUtils.GetMainCamera().transform.position;
 						m_LastRotationDiff = Quaternion.identity;
 					}
 
 					consumeControl(blinkInput.grip);
 					var startOffset = m_RigStartPosition - m_CameraStartPosition;
-					var localRayRotation = MathUtilsExt.ConstrainYawRotation(
-						reverse ? Quaternion.Inverse(rayOrigin.rotation) * cameraRig.rotation
-							: Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation);
-					var rotation = Quaternion.Inverse(m_RayOriginStartRotation) * localRayRotation;
+					
+					var localRayForward = localRayRotation * Vector3.forward;
+					localRayForward.y = 0;
+					localRayForward.Normalize();
+
+					var angle = Vector3.Angle(m_RayOriginStartForward, localRayForward);
+					var dot = Vector3.Dot(m_RayOriginStartRight, localRayForward);
+					var rotation = Quaternion.Euler(0, angle * Mathf.Sign(dot), 0);
 					var filteredRotation = Quaternion.Lerp(m_LastRotationDiff, rotation, k_RotationDamping);
 
-					var segmentSize = 180f / k_RotationSegments;
-					var segmentedRotation = Quaternion.Euler(0, Mathf.Floor(filteredRotation.eulerAngles.y / segmentSize) * segmentSize, 0);
+					const float segmentSize = 360f / k_RotationSegments;
+					var segmentedRotation = Quaternion.Euler(0, Mathf.Round(filteredRotation.eulerAngles.y / segmentSize) * segmentSize, 0);
 
 					cameraRig.rotation = m_RigStartRotation * segmentedRotation;
 					cameraRig.position = m_CameraStartPosition + segmentedRotation * startOffset;

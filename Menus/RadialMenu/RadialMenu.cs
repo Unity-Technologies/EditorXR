@@ -8,6 +8,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap
 	{
+		const float k_ActivationThreshold = 0.5f;
+
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
 		ActionMap m_RadialMenuActionMap;
@@ -85,16 +87,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 			
 			var inputDirection = radialMenuInput.navigate.vector2;
-			m_RadialMenuUI.buttonInputDirection = inputDirection;
 
-			if (inputDirection != Vector2.zero)
+			if (inputDirection.magnitude > k_ActivationThreshold)
 			{
 				// Composite controls need to be consumed separately
 				consumeControl(radialMenuInput.navigateX);
 				consumeControl(radialMenuInput.navigateY);
+				m_RadialMenuUI.buttonInputDirection = inputDirection;
 			}
 			else
 			{
+				m_RadialMenuUI.buttonInputDirection = Vector3.zero;
 				return;
 			}
 
