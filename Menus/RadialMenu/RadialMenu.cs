@@ -1,12 +1,13 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap
+	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap, IControlHaptics, IUsesNode, IConnectInterfaces
 	{
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
@@ -14,7 +15,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		RadialMenuUI m_RadialMenuPrefab;
-		
+
+		[SerializeField]
+		HapticPulse m_ReleasePulse;
+
+		[SerializeField]
+		HapticPulse m_ButtonHoverPulse;
+
+		[SerializeField]
+		HapticPulse m_ButtonClickedPulse;
+
 		RadialMenuUI m_RadialMenuUI;
 
 		public List<ActionMenuData> menuActions
@@ -69,6 +79,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
 
+		public Node? node { get; set; }
+
 		public float hideDistance {get { return Mathf.Infinity; } }
 
 		void Start()
@@ -76,8 +88,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
 			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_RadialMenuUI.actions = menuActions;
+			this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.visible = m_Visible;
+			m_RadialMenuUI.buttonHovered += OnButtonHovered;
+			m_RadialMenuUI.buttonClicked += OnButtonClicked;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -108,6 +123,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (radialMenuInput.selectItem.wasJustReleased)
 			{
+				this.Pulse(node, m_ReleasePulse);
+
 				m_RadialMenuUI.SelectionOccurred();
 
 				if (itemWasSelected != null)
@@ -115,6 +132,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				consumeControl(radialMenuInput.selectItem);
 			}
+		}
+
+		void OnButtonClicked()
+		{
+			this.Pulse(node, m_ButtonClickedPulse);
+		}
+
+		void OnButtonHovered()
+		{
+			this.Pulse(node, m_ButtonHoverPulse);
 		}
 	}
 }

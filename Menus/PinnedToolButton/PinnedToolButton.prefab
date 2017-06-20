@@ -368,6 +368,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_GradientButton: {fileID: 114000010373680160}
+  m_HoverPulse: {fileID: 11400000, guid: 53f100a1dd0839141bcace2ecd8cc6b1, type: 2}
+  m_ClickPulse: {fileID: 11400000, guid: 90be55fd9292d1e4eb8af66c479333b6, type: 2}
 --- !u!114 &114000012566785296
 MonoBehaviour:
   m_ObjectHideFlags: 1

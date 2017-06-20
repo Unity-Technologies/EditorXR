@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI
+	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IConnectInterfaces
 	{
 		public class ButtonData
 		{
@@ -128,6 +128,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public int faceCount { get { return m_MenuFaces.Length; } }
 
+		public Node? node { get; set; }
+
 		public bool visible
 		{
 			get { return m_VisibilityState == VisibilityState.Visible || m_VisibilityState == VisibilityState.TransitioningIn; }
@@ -172,6 +174,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; }
 		}
+
+		public event Action<Transform> buttonHovered;
+		public event Action<Transform> buttonClicked;
+		public event Action opening;
+		public event Action closing;
 
 		void Awake()
 		{
@@ -244,11 +251,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.name = buttonData.name;
 			var mainMenuButton = button.GetComponent<MainMenuButton>();
 			buttonCreationCallback(mainMenuButton);
+			mainMenuButton.clicked += OnButtonClick;
+			mainMenuButton.hovered += OnButtonHover;
 
 			if (string.IsNullOrEmpty(buttonData.sectionName))
 				buttonData.sectionName = k_UncategorizedFaceName;
 
 			mainMenuButton.SetData(buttonData.name, buttonData.description);
+			this.ConnectInterfaces(mainMenuButton);
 
 			var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
 			if (found)
@@ -404,6 +414,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningIn;
 
+			if (opening != null)
+				opening();
+
 			foreach (var face in m_MenuFaces)
 			{
 				face.Show();
@@ -444,6 +457,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield break;
 
 			m_VisibilityState = VisibilityState.TransitioningOut;
+
+			if (closing != null)
+				closing();
 
 			foreach (var face in m_MenuFaces)
 			{
@@ -573,6 +589,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			faceTransform.localScale = targetScale;
 			faceTransform.localPosition = targetPosition;
+		}
+
+		void OnButtonHover(Transform rayOrigin)
+		{
+			if (buttonHovered != null)
+				buttonHovered(rayOrigin);
+		}
+
+		void OnButtonClick(Transform rayOrigin)
+		{
+			if (buttonClicked != null)
+				buttonClicked(rayOrigin);
 		}
 	}
 }

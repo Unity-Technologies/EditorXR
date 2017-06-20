@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -10,7 +11,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType
+	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode, IRayToNode
 	{
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
@@ -59,7 +60,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_Visible;
 
 		[SerializeField]
+		HapticPulse m_FaceRotationPulse;
+
+		[SerializeField]
+		HapticPulse m_ShowPulse;
+
+		[SerializeField]
+		HapticPulse m_HidePulse;
+
+		[SerializeField]
 		MainMenuUI m_MainMenuPrefab;
+
+		[SerializeField]
+		HapticPulse m_ButtonClickPulse;
+
+		[SerializeField]
+		HapticPulse m_ButtonHoverPulse;
 
 		MainMenuUI m_MainMenuUI;
 		float m_LastRotationInput;
@@ -71,6 +87,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public List<ActionMenuData> menuActions { get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
+		public Node? node { get; set; }
+		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
@@ -84,6 +102,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
 			m_MainMenuUI.visible = m_Visible;
+			m_MainMenuUI.buttonHovered += OnButtonHovered;
+			m_MainMenuUI.buttonClicked += OnButtonClicked;
+			m_MainMenuUI.opening += OnOpening;
+			m_MainMenuUI.closing += OnClosing;
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
@@ -105,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				|| mainMenuInput.flickFace.wasJustReleased)
 			{
 				m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
-
+				this.Pulse(node, m_FaceRotationPulse);
 				consumeControl(mainMenuInput.flickFace);
 			}
 
@@ -202,6 +224,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				kvp.Value.selected = this.IsToolActive(targetRayOrigin, kvp.Key);
 			}
+		}
+
+		void OnButtonClicked(Transform rayOrigin)
+		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+		}
+
+		void OnButtonHovered(Transform rayOrigin)
+		{
+			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+		}
+
+		void OnOpening()
+		{
+			this.Pulse(node, m_ShowPulse);
+		}
+
+		void OnClosing()
+		{
+			this.Pulse(node, m_HidePulse);
 		}
 	}
 }

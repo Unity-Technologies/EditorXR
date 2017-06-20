@@ -199,6 +199,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return false;
 			};
 
+			AddModule<HapticsModule>();
+
 			viewer.AddPlayerModel();
 
 			GetNestedModule<Rays>().CreateAllProxies();

@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
@@ -8,7 +9,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IUsesRayOrigin
+	sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IControlHaptics, IUsesHandedRayOrigin
 	{
 		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
 		static readonly float kAlternateLocationOffset = 0.06f;
@@ -52,8 +53,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		Transform m_Icon;
+
 		[SerializeField]
 		Transform m_HighlightedPRS;
+
+		[SerializeField]
+		HapticPulse m_HoverPulse;
 
 		Vector3 m_OriginalActivatorIconLocalScale;
 		Vector3 m_OriginalActivatorIconLocalPosition;
@@ -65,6 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Transform rayOrigin { private get; set; }
 		public Transform menuOrigin { private get; set; }
+		public Node? node { get; set; }
 
 		public event Action<Transform, Transform> selected;
 
@@ -78,6 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_HighlightCoroutine = null;
 			m_HighlightCoroutine = StartCoroutine(Highlight());
+			this.Pulse(node, m_HoverPulse);
 		}
 
 		public void OnPointerExit(PointerEventData eventData)

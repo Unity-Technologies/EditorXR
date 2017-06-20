@@ -1,12 +1,13 @@
 ﻿#if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace ListView
 {
-	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler
+	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler, IControlHaptics
 	{
 		public float scrollOffset { get { return m_ScrollOffset; } set { m_ScrollOffset = value; } }
 
@@ -29,6 +30,9 @@ namespace ListView
 		[Tooltip("Item template prefabs (at least one is required)")]
 		[SerializeField]
 		protected GameObject[] m_Templates;
+
+		[SerializeField]
+		HapticPulse m_ScrollPulse;
 
 		[SerializeField]
 		protected float m_SettleSpeed = 0.4f;
@@ -81,6 +85,9 @@ namespace ListView
 		void Update()
 		{
 			UpdateView();
+
+			if (m_Scrolling)
+				this.Pulse(null, m_ScrollPulse);
 		}
 
 		protected abstract void Setup();

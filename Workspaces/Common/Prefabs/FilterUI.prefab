@@ -754,6 +754,8 @@ MonoBehaviour:
   m_ButtonListGrid: {fileID: 114000013631895690}
   m_ButtonListCanvasGroup: {fileID: 225000014235020344}
   m_Background: {fileID: 23000011039186558}
+  m_VisibilityButton: {fileID: 114000013866040058}
+  m_SummaryButton: {fileID: 114000010158068876}
 --- !u!114 &114000011143325692
 MonoBehaviour:
   m_ObjectHideFlags: 1
