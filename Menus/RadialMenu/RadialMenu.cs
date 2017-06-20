@@ -101,20 +101,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 			}
 
-			m_RadialMenuUI.pressedDown = radialMenuInput.selectItem.wasJustPressed;
+			var selectControl = radialMenuInput.selectItem;
+			m_RadialMenuUI.pressedDown = selectControl.wasJustPressed;
 			if (m_RadialMenuUI.pressedDown)
-			{
-				consumeControl(radialMenuInput.selectItem);
-			}
+				consumeControl(selectControl);
 
-			if (radialMenuInput.selectItem.wasJustReleased)
+			if (selectControl.wasJustReleased)
 			{
 				m_RadialMenuUI.SelectionOccurred();
 
 				if (itemWasSelected != null)
 					itemWasSelected(rayOrigin);
 
-				consumeControl(radialMenuInput.selectItem);
+				consumeControl(selectControl);
 			}
 		}
 	}

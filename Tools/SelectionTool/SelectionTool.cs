@@ -17,6 +17,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		GameObject m_PressedObject;
 
+		SelectionInput m_SelectionInput;
+
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
 		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
@@ -30,6 +32,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			m_SelectionInput = (SelectionInput)input;
+
 			if (this.IsSharedUpdater(this))
 			{
 				var directSelection = this.GetDirectSelection();
@@ -114,10 +118,20 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
+			var selectionInput = (SelectionInput)input;
+			var multiSelectControl = selectionInput.multiSelect;
+			this.SetManipulatorsVisible(this, !multiSelectControl.isHeld);
+
 			if (!IsActive())
 				return;
 
-			var selectionInput = (SelectionInput)input;
+			var multiSelect = false;
+			foreach (SelectionTool selectionTool in linkedObjects)
+			{
+				var toolInput = selectionTool.m_SelectionInput;
+				if (toolInput != null && toolInput.multiSelect.isHeld)
+					multiSelect = true;
+			}
 
 			// Need to call GetFirstGameObject a second time because we do not guarantee shared updater executes first
 			var hoveredObject = this.GetFirstGameObject(rayOrigin);
@@ -128,8 +142,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (!GetSelectionCandidate(ref hoveredObject))
 				return;
 
-			this.SetManipulatorsVisible(this, !selectionInput.multiSelect.isHeld);
-
 			// Capture object on press
 			if (selectionInput.select.wasJustPressed)
 				m_PressedObject = hoveredObject;
@@ -139,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				if (m_PressedObject == hoveredObject)
 				{
-					this.SelectObject(m_PressedObject, rayOrigin, selectionInput.multiSelect.isHeld, true);
+					this.SelectObject(m_PressedObject, rayOrigin, multiSelect, true);
 
 					if (m_PressedObject != null)
 						this.SetHighlight(m_PressedObject, false, rayOrigin);
@@ -151,8 +163,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_PressedObject = null;
 			}
 
-			if (selectionInput.multiSelect.wasJustPressed)
-				consumeControl(selectionInput.multiSelect);
+			if (multiSelectControl.wasJustPressed)
+				consumeControl(multiSelectControl);
 		}
 
 		bool GetSelectionCandidate(ref GameObject hoveredObject)
