@@ -349,7 +349,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							maps.Add(alternateMenuInput);
 					}
 
-					maps.Add(deviceData.directSelectInput);
 					maps.Add(deviceData.uiInput);
 				}
 

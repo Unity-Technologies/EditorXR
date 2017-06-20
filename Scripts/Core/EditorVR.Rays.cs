@@ -198,7 +198,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									deviceData.rayOrigin = rayOrigin;
 									deviceData.inputDevice = device;
 									deviceData.uiInput = deviceInputModule.CreateActionMapInput(actionMap, device);
-									deviceData.directSelectInput = deviceInputModule.CreateActionMapInput(deviceInputModule.directSelectActionMap, device);
 
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOrigin, source =>

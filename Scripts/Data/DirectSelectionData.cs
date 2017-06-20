@@ -18,11 +18,6 @@ namespace UnityEditor.Experimental.EditorVR
 		/// The object which is selected
 		/// </summary>
 		public GameObject gameObject { get; set; }
-
-		/// <summary>
-		/// The input which is associated with the rayOrigin
-		/// </summary>
-		public ActionMapInput input { get; set; }
 	}
 }
 #endif

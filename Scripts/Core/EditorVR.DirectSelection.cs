@@ -96,15 +96,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var rayOrigin = deviceData.rayOrigin;
-					var input = deviceData.directSelectInput;
 					var obj = GetDirectSelectionForRayOrigin(rayOrigin);
 					if (obj && !obj.CompareTag(k_VRPlayerTag))
 					{
 						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = obj,
-							node = deviceData.node,
-							input = input
+							node = deviceData.node
 						};
 					}
 				});
@@ -112,16 +110,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var ray in evr.GetNestedModule<MiniWorlds>().rays)
 				{
 					var rayOrigin = ray.Key;
-					var miniWorldRay = ray.Value;
-					var input = miniWorldRay.directSelectInput;
 					var go = GetDirectSelectionForRayOrigin(rayOrigin);
 					if (go != null)
 					{
 						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = go,
-							node = ray.Value.node,
-							input = input
+							node = ray.Value.node
 						};
 					}
 				}

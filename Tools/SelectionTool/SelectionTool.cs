@@ -9,19 +9,23 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject
+		ICanGrabObject, IUsesNode
 	{
-		GameObject m_PressedObject;
-
-		public ActionMap actionMap { get { return m_ActionMap; } }
 		[SerializeField]
 		ActionMap m_ActionMap;
+
+		GameObject m_PressedObject;
+
+		SelectionInput m_Input;
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
 		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
 
+		public ActionMap actionMap { get { return m_ActionMap; } }
+
 		public Transform rayOrigin { private get; set; }
+		public Node? node { private get; set; }
 
 		public Func<Transform, bool> isRayActive;
 		public event Action<GameObject, Transform> hovered;
@@ -30,6 +34,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			m_Input = (SelectionInput)input;
+
 			if (this.IsSharedUpdater(this))
 			{
 				var directSelection = this.GetDirectSelection();
@@ -93,12 +99,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
-					var directSelectInput = (DirectSelectInput)directSelectionData.input;
+					var grabbingNode = directSelectionData.node;
+					var selectionTool = linkedObjects.Cast<SelectionTool>().FirstOrDefault(linkedObject => linkedObject.node == grabbingNode);
+					if (selectionTool == null)
+						continue;
+
+					var selectionToolInput = selectionTool.m_Input;
 
 					// Only overwrite an existing selection if it does not contain the hovered object
 					// In the case of multi-select, only add, do not remove
-					if (directSelectInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
-						this.SelectObject(directHoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+					if (selectionToolInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
+						this.SelectObject(directHoveredObject, rayOrigin, selectionToolInput.multiSelect.isHeld);
 
 					GameObject lastHover;
 					if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
