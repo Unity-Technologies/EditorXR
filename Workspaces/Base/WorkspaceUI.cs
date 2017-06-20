@@ -728,16 +728,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			if (!dragRayOrigin)
 			{
-				var leftPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
-				if (moveResizeLeft.wasJustPressed && adjustedBounds.Contains(leftPosition))
+				var leftPosition = transform.InverseTransformPoint(leftRayOrigin.position);
+				var leftPointerPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
+				if (moveResizeLeft.wasJustPressed && (adjustedBounds.Contains(leftPosition) || adjustedBounds.Contains(leftPointerPosition)))
 				{
 					dragRayOrigin = leftRayOrigin;
 					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
 					consumeControl(moveResizeLeft);
 				}
 
-				var rightPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
-				if (moveResizeRight.wasJustPressed && adjustedBounds.Contains(rightPosition))
+				var rightPosition = transform.InverseTransformPoint(rightRayOrigin.position);
+				var rightPointerPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
+				if (moveResizeRight.wasJustPressed && (adjustedBounds.Contains(rightPosition) || adjustedBounds.Contains(rightPointerPosition)))
 				{
 					dragRayOrigin = rightRayOrigin;
 					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);

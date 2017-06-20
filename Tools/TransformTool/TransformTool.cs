@@ -271,7 +271,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 
 				// Disable manipulator on direct hover or drag
-				if (manipulatorGameObject.activeSelf && (hoveringSelection || hasObject))
+				if (manipulatorGameObject.activeSelf && (hoveringSelection || hasLeft || hasRight))
 					manipulatorGameObject.SetActive(false);
 
 				foreach (var kvp in directSelection)

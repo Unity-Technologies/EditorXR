@@ -133,7 +133,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				eventData.pointerLength = this.GetPointerLength(eventData.rayOrigin);
 
 				if (source.isValid != null && !source.isValid(source))
+				{
+					HandlePointerExitAndEnter(eventData, hoveredObject, true); // Send only exit events
 					continue;
+				}
 
 				HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
 
@@ -229,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return clone;
 		}
 
-		void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget)
+		void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget, bool exitOnly = false)
 		{
 			// Cache properties before executing base method, so we can complete additional ray events later
 			var cachedEventData = GetTempEventDataClone(eventData);
@@ -254,19 +257,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			Transform t = null;
 
-			// if we have not changed hover target
-			if (cachedEventData.pointerEnter == newEnterTarget && newEnterTarget)
+			if (!exitOnly)
 			{
-				t = newEnterTarget.transform;
-				while (t != null)
+				// if we have not changed hover target
+				if (cachedEventData.pointerEnter == newEnterTarget && newEnterTarget)
 				{
-					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
-					if (rayHovering != null)
-						rayHovering(t.gameObject, cachedEventData);
+					t = newEnterTarget.transform;
+					while (t != null)
+					{
+						ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
+						if (rayHovering != null)
+							rayHovering(t.gameObject, cachedEventData);
 
-					t = t.parent;
+						t = t.parent;
+					}
+					return;
 				}
-				return;
 			}
 
 			GameObject commonRoot = FindCommonRoot(cachedEventData.pointerEnter, newEnterTarget);
@@ -292,16 +298,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 			}
 
-			// now issue the enter call up to but not including the common root
-			cachedEventData.pointerEnter = newEnterTarget;
-			t = newEnterTarget.transform;
-			while (t != null && t.gameObject != commonRoot)
+			if (!exitOnly)
 			{
-				ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
-				if (rayEntered != null)
-					rayEntered(t.gameObject, cachedEventData);
+				// now issue the enter call up to but not including the common root
+				cachedEventData.pointerEnter = newEnterTarget;
+				t = newEnterTarget.transform;
+				while (t != null && t.gameObject != commonRoot)
+				{
+					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
+					if (rayEntered != null)
+						rayEntered(t.gameObject, cachedEventData);
 
-				t = t.parent;
+					t = t.parent;
+				}
 			}
 		}
 

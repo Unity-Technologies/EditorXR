@@ -24,7 +24,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal enum MenuHideFlags
 			{
 				Hidden = 1 << 0,
-				OverUI = 1 << 1
+				OverUI = 1 << 1,
+				OverWorkspace = 1 << 2
 			}
 
 			const float k_MenuHideMargin = 0.8f;
@@ -120,6 +121,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					{
 						menuHideFlags[customMenu] |= MenuHideFlags.Hidden;
 					}
+
+					// Check workspaces
+					var hoveringWorkspace = false;
+					foreach (var workspace in evr.GetModule<WorkspaceModule>().workspaces)
+					{
+						if (workspace.outerBounds.Contains(workspace.transform.InverseTransformPoint(deviceData.rayOrigin.position)))
+							hoveringWorkspace = true;
+					}
+
+					var menus = deviceData.menuHideFlags.Keys.ToList();
+					foreach (var menu in menus)
+					{
+						if (hoveringWorkspace)
+							deviceData.menuHideFlags[menu] |= MenuHideFlags.OverWorkspace;
+						else
+							deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverWorkspace;
+					}
 				}
 
 				// Apply state to UI visibility
@@ -165,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					var scaledPointerDistance = rayEventData.pointerCurrentRaycast.distance / Viewer.GetViewerScale();
 					var isManipulator = go.GetComponentInParent<IManipulator>() != null;
-					var menus = new List<IMenu>(deviceData.menuHideFlags.Keys);
+					var menus = deviceData.menuHideFlags.Keys.ToList();
 					foreach (var menu in menus)
 					{
 						if (ended || isManipulator || scaledPointerDistance > menu.hideDistance + k_MenuHideMargin)
