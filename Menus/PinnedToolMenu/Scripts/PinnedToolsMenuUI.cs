@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Tools;
@@ -11,7 +12,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool
+	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -27,15 +28,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Vector3 m_AlternateLocalScale;
 
+		[SerializeField]
+		Transform m_HintContentContainer;
+
 		bool m_AllButtonsVisible;
 		List<IPinnedToolButton> m_OrderedButtons;
 		Coroutine m_ShowHideAllButtonsCoroutine;
 		Coroutine m_MoveCoroutine;
 		Coroutine m_ButtonHoverExitDelayCoroutine;
+		Coroutine m_HintContentVisibilityCoroutine;
 		int m_VisibleButtonCount;
 		bool m_MoveToAlternatePosition;
 		Vector3 m_OriginalLocalScale;
 		bool m_RayHovered;
+		float m_SpatialDragDistance;
+		float m_SmoothedSpatialDragDistance;
+		Quaternion m_HintContentContainerRotation;
+		Vector3 m_HintContentWorldPosition;
+		Quaternion m_SpatialScrollOrientation;
 
 		public int maxButtonCount { get; set; }
 		public Transform buttonContainer { get { return m_ButtonContainer; } }
@@ -60,6 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 					//this.Pulse(rayOrigin, 0.5f, 0.065f, false, true);
 					ShowOnlyMenuAndActiveToolButtons();
+					this.RestartCoroutine(ref m_HintContentVisibilityCoroutine, HideHintContent());
 				}
 			}
 		}
@@ -80,15 +91,58 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		private bool aboveMinimumButtonCount { get { return m_OrderedButtons.Count > k_ActiveToolOrderPosition + 1; } }
 
+		public float spatialDragDistance
+		{
+			set
+			{
+				if (Mathf.Approximately(value, 0f))
+				{
+					m_SpatialDragDistance = 0f;
+					m_SmoothedSpatialDragDistance = 0f;
+					m_SpatialScrollOrientation = Quaternion.identity;
+					m_HintContentWorldPosition = transform.position;
+					m_HintContentContainerRotation = Quaternion.identity;
+					this.RestartCoroutine(ref m_HintContentVisibilityCoroutine, ShowHintContent());
+				}
+
+				m_SpatialDragDistance = value;
+				//m_SpatialScrollOrientation = transform.rotation;
+			}
+		}
+
+		public Vector3? spatialDirectionVector
+		{
+			set
+			{
+				var orig = m_HintContentContainer.rotation;
+				m_HintContentContainer.LookAt(value.Value);
+				m_SpatialScrollOrientation = m_HintContentContainer.rotation;
+				m_HintContentContainer.rotation = orig;
+			}
+		}
+
 		public event Action buttonHovered;
 		public event Action buttonClicked;
-
 
 		void Awake()
 		{
 			m_OriginalLocalScale = transform.localScale;
 			m_OrderedButtons = new List<IPinnedToolButton>();
 			Debug.LogError("<color=green>PinnedToolsMenuUI initialized</color>");
+		}
+
+		void Update()
+		{
+			if (m_SpatialDragDistance > 1f && m_SmoothedSpatialDragDistance < 1)
+			{
+				Debug.LogError("INSIDE rotation update loop");
+				m_SmoothedSpatialDragDistance = Mathf.Clamp01(m_SmoothedSpatialDragDistance += Time.unscaledDeltaTime * 1.5f);
+				var shapedDragAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(m_SmoothedSpatialDragDistance), 6);
+				m_HintContentContainerRotation = Quaternion.Lerp(Quaternion.identity, m_SpatialScrollOrientation, shapedDragAmount);
+			}
+
+			m_HintContentContainer.rotation = m_HintContentContainerRotation;
+			m_HintContentContainer.position = m_HintContentWorldPosition;
 		}
 
 		public void AddButton(IPinnedToolButton button, Transform buttonTransform)
@@ -300,7 +354,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void HighlightSingleButtonWithoutMenu(int buttonOrderPosition)
 		{
-			
 			//Debug.LogError("Highlighting SINGLE BUTTON at position : "+ buttonOrderPosition);
 			for (int i = 1; i < m_OrderedButtons.Count; ++i)
 			{
@@ -441,6 +494,40 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (buttonHovered != null)
 				buttonHovered();
+		}
+
+		IEnumerator ShowHintContent()
+		{
+			var currentScale = m_HintContentContainer.localScale;
+			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
+			var targetScale = Vector3.one;
+			while (timeElapsed < 1f)
+			{
+				timeElapsed += Time.unscaledDeltaTime * 5f;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(timeElapsed), 2);
+				m_HintContentContainer.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
+				yield return null;
+			}
+
+			m_HintContentContainer.localScale = targetScale;
+			m_HintContentVisibilityCoroutine = null;
+		}
+
+		IEnumerator HideHintContent()
+		{
+			var currentScale = m_HintContentContainer.localScale;
+			var timeElapsed = 1 - currentScale.x;
+			var targetScale = Vector3.zero;
+			while (timeElapsed < 1f)
+			{
+				timeElapsed += Time.unscaledDeltaTime * 2f;
+				var durationShaped = MathUtilsExt.SmoothInOutLerpFloat(timeElapsed);
+				m_HintContentContainer.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
+				yield return null;
+			}
+
+			m_HintContentContainer.localScale = targetScale;
+			m_HintContentVisibilityCoroutine = null;
 		}
 	}
 }

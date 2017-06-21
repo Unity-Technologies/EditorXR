@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -238,6 +239,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				spatialScrollStartPosition = m_PinnedToolsMenuUI.transform.position;
 				allowSpatialScrollBeforeThisTime = Time.realtimeSinceStartup + kAutoHideDuration;
 				allowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
+				m_PinnedToolsMenuUI.spatialDragDistance = 0f; // Triggers the display of the directional hint arrows
+
 				//Dont show if the user hasnt passed the threshold in the given duration
 			}
 			else if (pinnedToolInput.show.isHeld && !pinnedToolInput.select.isHeld && !pinnedToolInput.select.wasJustPressed)
@@ -257,7 +260,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 							//return;
 
 						//allowSpatialScrollBeforeThisTime = null;
-						//spatialDirection = null;
+						//spatialDirection = null; 
 					}
 
 					if (buttonCount <= k_ActiveToolOrderPosition + 1)
@@ -279,6 +282,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_PinnedToolsMenuUI.HighlightSingleButtonWithoutMenu((int) (buttonCount * normalizedRepeatingPosition) + 1);
 					consumeControl(pinnedToolInput.show);
 					consumeControl(pinnedToolInput.select);
+					
 				}
 				else // User hasn't dragged beyond the trigger magnitude; spatial scrolling hasn't been activated yet
 				{
@@ -323,9 +327,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (spatialDirection == null)
 			{
 				const float kNewDirectionVectorThreshold = 0.0175f; // Initial magnitude beyond which spatial scrolling will be evaluated
-				directionVector = currentPosition - startingPosition;
-				if (Vector3.Magnitude(directionVector) > kNewDirectionVectorThreshold)
+				var dragAmount = Vector3.Magnitude(directionVector);
+				m_PinnedToolsMenuUI.spatialDragDistance = dragAmount > 0 ? dragAmount / kNewDirectionVectorThreshold : 0f; // Set normalized value representing how much of the pre-scroll drag amount has occurred
+				if (dragAmount > kNewDirectionVectorThreshold)
+				{
 					spatialDirection = directionVector; // initialize vector defining the spatial scroll direciton
+					m_PinnedToolsMenuUI.spatialDirectionVector = spatialDirection;
+				}
 			}
 			else
 			{
