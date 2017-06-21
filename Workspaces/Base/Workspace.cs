@@ -124,7 +124,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform leftRayOrigin { protected get; set; }
 		public Transform rightRayOrigin { protected get; set; }
-		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public virtual void Setup()
 		{
@@ -164,13 +163,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected virtual void OnCloseClicked(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 			Close();
 		}
 
 		protected virtual void OnResetClicked(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 
 			this.StopCoroutine(ref m_ResetSizeCoroutine);
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
@@ -178,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected void OnButtonHovered(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
 
 		public void SetUIHighlightsVisible(bool value)
@@ -272,22 +271,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected void OnButtonClicked(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 		}
 
 		void OnMoving(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_MovePulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_MovePulse);
 		}
 
 		void OnResizing(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
 		}
 
 		void OnHoveringFrame(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
 		}
 	}
 }

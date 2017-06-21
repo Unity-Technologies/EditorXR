@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -166,8 +165,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public byte stencilRef { get; set; }
 
-		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
-
 		public void InstantClearState()
 		{
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
@@ -207,11 +204,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_OriginalIconSprite = m_Icon.sprite;
 
-			// Hookup button OnClick event if there is an alternate icon sprite set
-			if (m_SwapIconsOnClick && m_AlternateIconSprite)
-				m_Button.onClick.AddListener(SwapIconSprite);
+			if (m_Button)
+			{
+				// Hookup button OnClick event if there is an alternate icon sprite set
+				if (m_SwapIconsOnClick && m_AlternateIconSprite)
+					m_Button.onClick.AddListener(SwapIconSprite);
 
-			m_Button.onClick.AddListener(OnButtonClicked);
+				m_Button.onClick.AddListener(OnButtonClicked);
+			}
 		}
 
 		void Start()
@@ -235,7 +235,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ObjectUtils.Destroy(m_ButtonMaterial);
 			ObjectUtils.Destroy(m_ButtonMaskMaterial);
 
-			m_Button.onClick.RemoveAllListeners();
+			if (m_Button)
+				m_Button.onClick.RemoveAllListeners();
 		}
 
 		void OnDisable()
