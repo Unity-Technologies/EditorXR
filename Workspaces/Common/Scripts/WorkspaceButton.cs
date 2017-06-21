@@ -204,12 +204,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_OriginalIconSprite = m_Icon.sprite;
 
-			// Hookup button OnClick event if there is an alternate icon sprite set
-			if (m_SwapIconsOnClick && m_AlternateIconSprite)
-				m_Button.onClick.AddListener(SwapIconSprite);
-
 			if (m_Button)
+			{
+				// Hookup button OnClick event if there is an alternate icon sprite set
+				if (m_SwapIconsOnClick && m_AlternateIconSprite)
+					m_Button.onClick.AddListener(SwapIconSprite);
+
 				m_Button.onClick.AddListener(OnButtonClicked);
+			}
 		}
 
 		void Start()
