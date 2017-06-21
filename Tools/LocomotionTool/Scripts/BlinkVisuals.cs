@@ -91,6 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 
 		public bool validTarget { get; private set; }
+		public bool showValidTargetIndicator { private get; set; }
 
 		private float pointerStrength
 		{
@@ -265,7 +266,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				scale = MathUtilsExt.SmoothDamp(scale, kTargetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
 				var adjustedScale = scale * viewerScale;
 				currentDuration += Time.deltaTime;
-				SetColors(Color.Lerp(validTarget ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
+				SetColors(Color.Lerp(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor, Color.clear, 1f - scale));
 				m_TubeTransform.localScale = new Vector3(tubeScale, scale, tubeScale);
 				m_LineRenderer.SetWidth(scale * adjustedScale, scale * adjustedScale);
 				m_RingTransform.localScale = Vector3.Lerp(m_RingTransform.localScale, m_RingTransformOriginalScale, scale);
@@ -328,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var colliders = Physics.OverlapSphere(m_FinalPosition, m_Radius, m_LayerMask.value);
 			validTarget = colliders != null && colliders.Length > 0;
 
-			SetColors(validTarget ? m_ValidLocationColor : m_InvalidLocationColor);
+			SetColors(!showValidTargetIndicator || validTarget ? m_ValidLocationColor : m_InvalidLocationColor);
 
 			// calculate and send points to the line renderer
 			m_SegmentPositions = new Vector3[m_LineSegmentCount];
