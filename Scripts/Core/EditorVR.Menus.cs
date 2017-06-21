@@ -26,10 +26,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				Hidden = 1 << 0,
 				OverUI = 1 << 1,
 				OverWorkspace = 1 << 2,
-				Overridden = 1 << 3
+				Overridden = 1 << 3,
+				HasDirectSelection = 1 << 4
 			}
 
 			const float k_MenuHideMargin = 0.8f;
+			const float k_TwoHandHideDistance = 0.25f;
 
 			readonly Dictionary<Type, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
 			List<Type> m_MainMenuTools;
@@ -101,9 +103,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var mainMenuVisible = mainMenu != null && (menuHideFlags[mainMenu] & MenuHideFlags.Hidden) == 0;
 					var customMenuVisible = customMenu != null && (menuHideFlags[customMenu] & MenuHideFlags.Hidden) == 0 && (menuHideFlags[customMenu] & MenuHideFlags.Overridden) == 0;
 					var alternateMenuVisible = alternateMenu != null && (menuHideFlags[alternateMenu] & MenuHideFlags.Hidden) == 0;
-					var hasDirectSelection = directSelection != null && directSelection.GetHeldObjects(deviceData.rayOrigin) != null;
 
-					if (alternateMenuVisible && (mainMenuVisible || customMenuVisible || hasDirectSelection))
+					if (alternateMenuVisible && (mainMenuVisible || customMenuVisible))
 					{
 						foreach (var otherDeviceData in m_ActiveDeviceData)
 						{
@@ -119,9 +120,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						menuHideFlags[customMenu] |= MenuHideFlags.Overridden;
 
 					var hoveringWorkspace = false;
+					var rayOrigin = deviceData.rayOrigin;
+					var rayOriginPosition = rayOrigin.position;
 					foreach (var workspace in evr.GetModule<WorkspaceModule>().workspaces)
 					{
-						if (workspace.outerBounds.Contains(workspace.transform.InverseTransformPoint(deviceData.rayOrigin.position)))
+						if (workspace.outerBounds.Contains(workspace.transform.InverseTransformPoint(rayOriginPosition)))
 							hoveringWorkspace = true;
 					}
 
@@ -132,6 +135,33 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							deviceData.menuHideFlags[menu] |= MenuHideFlags.OverWorkspace;
 						else
 							deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverWorkspace;
+					}
+
+					var heldObjects = directSelection.GetHeldObjects(rayOrigin);
+					var hasDirectSelection = directSelection != null && heldObjects != null;
+					if (hasDirectSelection)
+					{
+						foreach (var menu in menus)
+						{
+							deviceData.menuHideFlags[menu] |= MenuHideFlags.HasDirectSelection;
+						}
+
+						foreach (var otherDeviceData in m_ActiveDeviceData)
+						{
+							if (otherDeviceData == deviceData)
+								continue;
+
+							var otherRayOrigin = otherDeviceData.rayOrigin;
+							if (directSelection.IsHovering(otherRayOrigin) || Vector3.Distance(otherRayOrigin.position, rayOriginPosition) < k_TwoHandHideDistance * Viewer.GetViewerScale())
+							{
+								var otherMenus = otherDeviceData.menuHideFlags.Keys.ToList();
+								foreach (var menu in otherMenus)
+								{
+									otherDeviceData.menuHideFlags[menu] |= MenuHideFlags.HasDirectSelection;
+								}
+								break;
+							}
+						}
 					}
 				}
 
@@ -149,13 +179,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
 				}
 
-				// Reset OverUI state
+				// Reset Temporary states
 				foreach (var deviceData in m_ActiveDeviceData)
 				{
 					var menus = deviceData.menuHideFlags.Keys.ToList();
 					foreach (var menu in menus)
 					{
 						deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverUI;
+						deviceData.menuHideFlags[menu] &= ~MenuHideFlags.HasDirectSelection;
 					}
 				}
 
