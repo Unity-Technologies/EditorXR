@@ -1,6 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -15,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
 			readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
 			readonly List<IGrabObjects> m_ObjectGrabbers = new List<IGrabObjects>();
+			readonly List<ITwoHandedScaler> m_TwoHandedScalers = new List<ITwoHandedScaler>();
 
 			IntersectionModule m_IntersectionModule;
 
@@ -41,6 +43,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					grabObjects.objectsDropped += OnObjectsDropped;
 					grabObjects.objectsTransferred += OnObjectsTransferred;
 				}
+
+				var twoHandedScaler = obj as ITwoHandedScaler;
+				if (twoHandedScaler != null)
+					m_TwoHandedScalers.Add(twoHandedScaler);
 			}
 
 			public void DisconnectInterface(object obj)
@@ -87,6 +93,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal bool IsHovering(Transform rayOrigin)
 			{
 				return m_DirectSelections.ContainsKey(rayOrigin);
+			}
+
+			internal bool IsScaling(Transform rayOrigin)
+			{
+				return m_TwoHandedScalers.Any(twoHandedScaler => twoHandedScaler.IsTwoHandedScaling(rayOrigin));
 			}
 
 			internal void UpdateDirectSelection()

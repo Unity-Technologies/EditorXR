@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ISetDefaultRayVisibility, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight,
-		ILinkedObject, IRayToNode, IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap
+		ILinkedObject, IRayToNode, IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -719,6 +719,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var isStandard = m_CurrentManipulator == m_StandardManipulator;
 			m_ManipulatorToggleAction.tooltipText = isStandard ? "Switch to Scale Manipulator" : "Switch to Standard Manipulator";
 			m_ManipulatorToggleAction.icon = isStandard ? m_ScaleManipulatorIcon : m_StandardManipulatorIcon;
+		}
+
+		public bool IsTwoHandedScaling(Transform rayOrigin)
+		{
+			return m_Scaling && m_GrabData.Any(kvp => kvp.Value.rayOrigin == rayOrigin);
 		}
 	}
 }

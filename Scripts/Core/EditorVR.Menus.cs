@@ -152,7 +152,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								continue;
 
 							var otherRayOrigin = otherDeviceData.rayOrigin;
-							if (directSelection.IsHovering(otherRayOrigin) || Vector3.Distance(otherRayOrigin.position, rayOriginPosition) < k_TwoHandHideDistance * Viewer.GetViewerScale())
+							if (directSelection.IsHovering(otherRayOrigin) || directSelection.IsScaling(otherRayOrigin)
+								|| Vector3.Distance(otherRayOrigin.position, rayOriginPosition) < k_TwoHandHideDistance * Viewer.GetViewerScale())
 							{
 								var otherMenus = otherDeviceData.menuHideFlags.Keys.ToList();
 								foreach (var menu in otherMenus)
