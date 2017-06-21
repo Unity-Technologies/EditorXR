@@ -224,8 +224,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						var customMenu = deviceData.customMenu;
 						// Show custom menu if overridden
-						if (customMenu != null && menuHideFlags[customMenu] == MenuHideFlags.Overridden
-							&& menuHideFlags[deviceData.mainMenu] != 0 && menuHideFlags[alternateMenu] != 0)
+						if (customMenu != null && (menuHideFlags[customMenu] & MenuHideFlags.Overridden) != 0
+							&& menuHideFlags[deviceData.mainMenu] != 0 && alternateMenu != null && menuHideFlags[alternateMenu] != 0)
 							menuHideFlags[customMenu] &= ~MenuHideFlags.Overridden;
 					}
 				});
@@ -259,22 +259,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									if (deviceData == otherDeviceData)
 										continue;
 
-									var otherAlternateMenu = otherDeviceData.alternateMenu;
-									var otherHideFlags = otherDeviceData.menuHideFlags;
-									if (otherAlternateMenu != null)
-									{
-										menuHideFlags[alternateMenu] |= MenuHideFlags.Hidden;
-										otherHideFlags[otherAlternateMenu] = 0;
-									}
-
+									if (otherDeviceData.alternateMenu != null)
+										SetAlternateMenuVisibility(rayOrigin, true);
 								}
 							}
 						}
-
-						// Show custom menu if overridden
-						if (customMenu != null && (menuHideFlags[customMenu] & MenuHideFlags.Overridden) != 0
-							&& menuHideFlags[mainMenu] != 0 && alternateMenu != null && menuHideFlags[alternateMenu] != 0)
-							menuHideFlags[customMenu] &= ~MenuHideFlags.Overridden;
 					}
 				}
 			}

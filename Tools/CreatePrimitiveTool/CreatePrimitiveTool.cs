@@ -165,9 +165,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void OnDestroy()
 		{
+			ObjectUtils.Destroy(m_ToolMenu);
+
+			if (rayOrigin == null)
+				return;
+
 			this.UnlockRay(rayOrigin, this);
 			this.SetDefaultRayVisibility(rayOrigin, true, true);
-			ObjectUtils.Destroy(m_ToolMenu);
 		}
 	}
 }
