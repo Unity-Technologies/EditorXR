@@ -84,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Quaternion m_LastRotationDiff;
 
 		// Allow shared updater to check input values and consume controls
-		Locomotion m_LocomotionInput;
+		LocomotionInput m_LocomotionInput;
 
 		Camera m_MainCamera;
 		float m_OriginalNearClipPlane;
@@ -181,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			m_LocomotionInput = (Locomotion)input;
+			m_LocomotionInput = (LocomotionInput)input;
 
 			if (m_State == State.Moving)
 				return;
@@ -213,7 +213,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		void DoFlying(ConsumeControlDelegate consumeControl, Locomotion locomotionInput)
+		void DoFlying(ConsumeControlDelegate consumeControl, LocomotionInput locomotionInput)
 		{
 			var reverse = locomotionInput.reverse.isHeld;
 			var moving = locomotionInput.forward.isHeld || reverse;
@@ -290,7 +290,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		void DoCrawl(Locomotion locomotionInput)
+		void DoCrawl(LocomotionInput locomotionInput)
 		{
 			if (!locomotionInput.forward.isHeld && !locomotionInput.blink.isHeld && locomotionInput.grip.isHeld)
 			{
@@ -312,7 +312,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		void DoBlink(ConsumeControlDelegate consumeControl, Locomotion locomotionInput)
+		void DoBlink(ConsumeControlDelegate consumeControl, LocomotionInput locomotionInput)
 		{
 			m_Rotating = false;
 			if (locomotionInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)

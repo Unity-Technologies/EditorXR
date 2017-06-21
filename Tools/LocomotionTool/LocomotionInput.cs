@@ -4,8 +4,8 @@ using UnityEngine.InputNew;
 // GENERATED FILE - DO NOT EDIT MANUALLY
 namespace UnityEngine.InputNew
 {
-	public class Locomotion : ActionMapInput {
-		public Locomotion (ActionMap actionMap) : base (actionMap) { }
+	public class LocomotionInput : ActionMapInput {
+		public LocomotionInput (ActionMap actionMap) : base (actionMap) { }
 		
 		public ButtonInputControl @blink { get { return (ButtonInputControl)this[0]; } }
 		public ButtonInputControl @grip { get { return (ButtonInputControl)this[1]; } }
