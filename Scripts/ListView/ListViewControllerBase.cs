@@ -87,7 +87,11 @@ namespace ListView
 			UpdateView();
 
 			if (m_Scrolling)
+			{
+				if (!m_ScrollPulse)
+				Debug.Log(this, this);
 				this.Pulse(null, m_ScrollPulse);
+			}
 		}
 
 		protected abstract void Setup();

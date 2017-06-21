@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -165,8 +164,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Button button { get { return m_Button; } }
 
 		public byte stencilRef { get; set; }
-
-		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public void InstantClearState()
 		{
