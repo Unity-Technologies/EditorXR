@@ -45,6 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
 				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
+				IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
 				IIsRayActiveMethods.isRayActive = IsRayActive;
 			}
 
@@ -88,10 +89,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 				}
-
-				var rayToNode = obj as IRayToNode;
-				if (rayToNode != null)
-					rayToNode.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
 
 				var selectionModule = obj as SelectionModule;
 				if (selectionModule)

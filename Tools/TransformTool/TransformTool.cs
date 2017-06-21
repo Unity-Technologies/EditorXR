@@ -222,8 +222,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
-		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
-
 		public Transform rayOrigin { private get; set; }
 		public Node? node { private get; set; }
 
@@ -600,14 +598,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					break;
 			}
 
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_DragPulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_DragPulse);
 		}
 
 		void Rotate(Quaternion delta, Transform rayOrigin)
 		{
 			m_TargetRotation = delta * m_TargetRotation;
 
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_RotatePulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_RotatePulse);
 		}
 
 		void Scale(Vector3 delta)
