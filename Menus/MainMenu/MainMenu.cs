@@ -158,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			foreach (var type in types)
 			{
 				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
-				var isTool = typeof(ITool).IsAssignableFrom(type);
+				var isTool = typeof(ITool).IsAssignableFrom(type) && menuTools.Contains(type);
 				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
 				var isSettingsProvider = typeof(ISettingsMenuProvider).IsAssignableFrom(type);
 				var isSettingsItemProvider = typeof(ISettingsMenuItemProvider).IsAssignableFrom(type);
