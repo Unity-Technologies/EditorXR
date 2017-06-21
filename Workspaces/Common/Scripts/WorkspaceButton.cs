@@ -211,7 +211,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (m_SwapIconsOnClick && m_AlternateIconSprite)
 				m_Button.onClick.AddListener(SwapIconSprite);
 
-			m_Button.onClick.AddListener(OnButtonClicked);
+			if (m_Button)
+				m_Button.onClick.AddListener(OnButtonClicked);
 		}
 
 		void Start()
@@ -235,7 +236,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			ObjectUtils.Destroy(m_ButtonMaterial);
 			ObjectUtils.Destroy(m_ButtonMaskMaterial);
 
-			m_Button.onClick.RemoveAllListeners();
+			if (m_Button)
+				m_Button.onClick.RemoveAllListeners();
 		}
 
 		void OnDisable()
