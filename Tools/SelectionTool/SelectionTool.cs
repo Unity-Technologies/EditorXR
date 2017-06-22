@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject, IUsesNode, IIsRayActive, IIsMainMenuVisible
+		ICanGrabObject, IUsesNode, IIsRayActive, IIsMainMenuVisible, IIsInMiniWorld
 	{
 		[SerializeField]
 		ActionMap m_ActionMap;
@@ -45,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var selectionTool = (SelectionTool)linkedObject;
 					var selectionRayOrigin = selectionTool.rayOrigin;
 
-					if (!selectionTool.IsActive())
+					if (!selectionTool.IsRayActive())
 						continue;
 
 					var hover = this.GetFirstGameObject(selectionRayOrigin);
@@ -103,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (selectionTool == null)
 						continue;
 
-					if (!selectionTool.IsActive())
+					if (!selectionTool.IsDirectActive())
 						continue;
 
 					var selectionToolInput = selectionTool.m_Input;
@@ -127,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			if (!IsActive())
+			if (!IsRayActive())
 				return;
 
 			var selectionInput = (SelectionInput)input;
@@ -182,7 +182,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			return true;
 		}
 
-		bool IsActive()
+		bool IsDirectActive()
+		{
+			if (rayOrigin == null)
+				return false;
+
+			if (this.IsInMiniWorld(rayOrigin))
+				return true;
+
+			if (this.IsMainMenuVisible(rayOrigin))
+				return false;
+
+			return true;
+		}
+
+		bool IsRayActive()
 		{
 			if (rayOrigin == null)
 				return false;
@@ -190,10 +204,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (this.IsHoveringOverUI(rayOrigin))
 				return false;
 
-			if (!this.IsRayActive(rayOrigin))
+			if (this.IsMainMenuVisible(rayOrigin))
 				return false;
 
-			if (this.IsMainMenuVisible(rayOrigin))
+			if (this.IsInMiniWorld(rayOrigin))
+				return false;
+
+			if (!this.IsRayActive(rayOrigin))
 				return false;
 
 			return true;

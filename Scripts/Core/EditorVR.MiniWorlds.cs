@@ -13,7 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale, IUsesSpatialHash
+		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale,
+			IUsesSpatialHash
 		{
 			internal class MiniWorldRay
 			{
@@ -181,6 +182,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public MiniWorlds()
 			{
 				EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
+				IIsInMiniWorldMethods.isInMiniWorld = IsInMiniWorld;
+			}
+
+			bool IsInMiniWorld(Transform rayOrigin)
+			{
+				foreach (var miniWorld in m_Worlds)
+				{
+					var rayOriginPosition = rayOrigin.position;
+					var pointerPosition = rayOriginPosition + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin);
+					if (miniWorld.Contains(rayOrigin.position) || miniWorld.Contains(pointerPosition))
+						return true;
+				}
+				return false;
 			}
 
 			internal override void OnDestroy()
