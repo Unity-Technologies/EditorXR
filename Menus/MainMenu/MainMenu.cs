@@ -112,15 +112,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var types = new HashSet<Type>();
 			types.UnionWith(menuTools);
 			types.UnionWith(menuWorkspaces);
-			foreach (var provider in settingsMenuProviders.Keys)
-			{
-				types.Add(provider.Key);
-			}
-
-			foreach (var provider in settingsMenuItemProviders.Keys)
-			{
-				types.Add(provider.Key);
-			}
+			types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Key));
+			types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Key));
 
 			CreateFaceButtons(types.ToList());
 			m_MainMenuUI.SetupMenuFaces();
@@ -239,13 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 							buttonData.sectionName = "Settings";
 
-							m_MainMenuUI.CreateCustomButton(itemProvider.settingsMenuItemPrefab, buttonData, b =>
-							{
-								itemProvider.settingsMenuItemInstance = b;
-								var mainMenuButton = b.GetComponent<MainMenuButton>();
-								if (mainMenuButton)
-									mainMenuButton.tooltip = tooltip;
-							});
+							itemProvider.settingsMenuItemInstance = m_MainMenuUI.CreateCustomButton(itemProvider.settingsMenuItemPrefab, buttonData);
 						}
 					}
 				}
@@ -254,17 +241,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback)
 		{
-			m_MainMenuUI.CreateFaceButton(buttonData, b =>
+			var mainMenuButton = m_MainMenuUI.CreateFaceButton(buttonData);
+			mainMenuButton.button.onClick.RemoveAllListeners();
+			mainMenuButton.button.onClick.AddListener(() =>
 			{
-				b.button.onClick.RemoveAllListeners();
-				b.button.onClick.AddListener(() =>
-				{
-					if (visible)
-						buttonClickCallback();
-				});
-
-				b.tooltip = tooltip;
+				if (visible)
+					buttonClickCallback();
 			});
+
+			mainMenuButton.tooltip = tooltip;
 		}
 
 		void UpdateToolButtons()

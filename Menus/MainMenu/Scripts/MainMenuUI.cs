@@ -246,12 +246,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				ObjectUtils.Destroy(face.gameObject);
 		}
 
-		public void CreateFaceButton(ButtonData buttonData, Action<MainMenuButton> buttonCreationCallback)
+		public MainMenuButton CreateFaceButton(ButtonData buttonData)
 		{
 			var button = ObjectUtils.Instantiate(m_ButtonTemplatePrefab.gameObject);
 			button.name = buttonData.name;
 			var mainMenuButton = button.GetComponent<MainMenuButton>();
-			buttonCreationCallback(mainMenuButton);
 			mainMenuButton.clicked += OnButtonClick;
 			mainMenuButton.hovered += OnButtonHover;
 
@@ -271,13 +270,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				m_FaceButtons.Add(buttonData.sectionName, new List<Transform> { button.transform });
 			}
+
+			return mainMenuButton;
 		}
 
-		public void CreateCustomButton(GameObject prefab, ButtonData buttonData, Action<GameObject> buttonCreationCallback)
+		public GameObject CreateCustomButton(GameObject prefab, ButtonData buttonData)
 		{
 			var button = ObjectUtils.Instantiate(prefab);
 			button.name = buttonData.name;
-			buttonCreationCallback(button);
 
 			if (string.IsNullOrEmpty(buttonData.sectionName))
 				buttonData.sectionName = k_UncategorizedFaceName;
@@ -292,6 +292,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				m_FaceButtons.Add(buttonData.sectionName, new List<Transform> { button.transform });
 			}
+
+			return button;
 		}
 
 		public void SetupMenuFaces()
