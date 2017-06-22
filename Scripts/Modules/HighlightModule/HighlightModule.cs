@@ -2,12 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
 	{
+		const string k_SelectionOutlinePrefsKey = "Scene/Selected Outline";
+
 		[SerializeField]
 		Material m_DefaultHighlightMaterial;
 
@@ -29,12 +32,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Color leftColor
 		{
-			get { return m_LeftHighlightMaterial.color; }
+			get { return m_LeftHighlightMaterial.GetVector("_Color"); }
 		}
 
 		public Color rightColor
 		{
-			get { return m_RightHighlightMaterial.color; }
+			get { return m_RightHighlightMaterial.GetVector("_Color"); }
+		}
+
+		void Awake()
+		{
+			if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
+			{
+				var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
+				selectionColor.a = 1;
+
+				m_LeftHighlightMaterial = Instantiate(m_LeftHighlightMaterial);
+				m_LeftHighlightMaterial.color = selectionColor.gamma;
+				m_RightHighlightMaterial = Instantiate(m_RightHighlightMaterial);
+				m_RightHighlightMaterial.color = selectionColor.gamma;
+			}
 		}
 
 		void LateUpdate()
@@ -118,10 +135,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (active) // Highlight
 			{
-				// Do not highlight if the selection contains this object or any of its parents
-				if (!force && Selection.transforms.Any(selection => go.transform == selection || go.transform.IsChildOf(selection)))
-					return;
-
 				HashSet<GameObject> gameObjects;
 				if (!m_Highlights.TryGetValue(material, out gameObjects))
 				{

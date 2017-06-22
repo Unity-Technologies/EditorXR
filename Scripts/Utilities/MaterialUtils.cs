@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -67,6 +68,32 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			var a = hex.Length == 8 ? byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber) : (byte)255;
 
 			return new Color32(r, g, b, a);
+		}
+
+		public static Color PrefToColor(string pref)
+		{
+			string[] split = pref.Split(';');
+			if (split.Length != 5)
+			{
+				Debug.LogError("Parsing PrefColor failed");
+				return default(Color);
+			}
+
+			split[1] = split[1].Replace(',', '.');
+			split[2] = split[2].Replace(',', '.');
+			split[3] = split[3].Replace(',', '.');
+			split[4] = split[4].Replace(',', '.');
+			float r, g, b, a;
+			bool success = float.TryParse(split[1], NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out r);
+			success &= float.TryParse(split[2], NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out g);
+			success &= float.TryParse(split[3], NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out b);
+			success &= float.TryParse(split[4], NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out a);
+
+			if (success)
+				return new Color(r, g, b, a);
+
+			Debug.LogError("Parsing PrefColor failed");
+			return default(Color);
 		}
 
 		public static Color RandomColor()

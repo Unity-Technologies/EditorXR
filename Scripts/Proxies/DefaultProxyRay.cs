@@ -145,6 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public void SetColor(Color c)
 		{
+			m_LineRenderer.SetColors(c, c);
 			m_RayMaterial.color = c;
 		}
 
