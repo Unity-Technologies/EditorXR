@@ -177,8 +177,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public event Action<Transform> buttonHovered;
 		public event Action<Transform> buttonClicked;
-		public event Action opening;
-		public event Action closing;
 
 		void Awake()
 		{
@@ -414,9 +412,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningIn;
 
-			if (opening != null)
-				opening();
-
 			foreach (var face in m_MenuFaces)
 			{
 				face.Show();
@@ -457,9 +452,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield break;
 
 			m_VisibilityState = VisibilityState.TransitioningOut;
-
-			if (closing != null)
-				closing();
 
 			foreach (var face in m_MenuFaces)
 			{

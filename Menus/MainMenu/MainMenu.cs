@@ -103,8 +103,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.visible = m_Visible;
 			m_MainMenuUI.buttonHovered += OnButtonHovered;
 			m_MainMenuUI.buttonClicked += OnButtonClicked;
-			m_MainMenuUI.opening += OnOpening;
-			m_MainMenuUI.closing += OnClosing;
 
 			CreateFaceButtons(menuTools);
 			CreateFaceButtons(menuWorkspaces);
@@ -235,14 +233,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
 
-		void OnOpening()
+		public void SendVisibilityPulse()
 		{
-			this.Pulse(node, m_ShowPulse);
-		}
-
-		void OnClosing()
-		{
-			this.Pulse(node, m_HidePulse);
+			this.Pulse(node, visible ? m_HidePulse : m_ShowPulse);
 		}
 	}
 }

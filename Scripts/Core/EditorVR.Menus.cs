@@ -281,6 +281,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						{
 							menuHideFlags[mainMenu] ^= MenuHideFlags.Hidden;
 							mainMenu.targetRayOrigin = targetRayOrigin;
+							mainMenu.SendVisibilityPulse();
 						}
 						else
 						{
