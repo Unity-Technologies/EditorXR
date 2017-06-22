@@ -4,7 +4,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Decorates types that can provide a sub-menu on the Settings menu. The class should also use a MainMenuItemAttribute
+	/// Decorates types that can provide an item on the Settings menu
 	/// </summary>
 	public interface ISettingsMenuItemProvider
 	{

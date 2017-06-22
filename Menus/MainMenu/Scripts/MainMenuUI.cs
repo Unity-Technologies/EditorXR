@@ -14,9 +14,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		public class ButtonData
 		{
-			public string name { get; set; }
+			public string name { get; private set; }
 			public string sectionName { get; set; }
 			public string description { get; set; }
+
+			public ButtonData(string name)
+			{
+				this.name = name.Replace("Tool", string.Empty).Replace("Module", string.Empty)
+					.Replace("Workspace", string.Empty);
+			}
 		}
 
 		enum RotationState

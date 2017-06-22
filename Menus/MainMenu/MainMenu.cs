@@ -171,9 +171,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					tooltip = customMenuAttribute.tooltip;
 
-					buttonData = new MainMenuUI.ButtonData
+					buttonData = new MainMenuUI.ButtonData(customMenuAttribute.name)
 					{
-						name = customMenuAttribute.name,
 						sectionName = customMenuAttribute.sectionName,
 						description = customMenuAttribute.description
 					};
@@ -182,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (isTool)
 				{
 					if (buttonData == null)
-						buttonData = new MainMenuUI.ButtonData { name = type.Name.Replace("Tool", string.Empty) };
+						buttonData = new MainMenuUI.ButtonData(type.Name);
 
 					CreateFaceButton(buttonData, tooltip, () =>
 					{
@@ -198,13 +197,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
 					if (buttonData == null)
-					{
-						buttonData = new MainMenuUI.ButtonData
-						{
-							name = type.Name.Replace("Workspace", string.Empty),
-							sectionName = "Workspaces"
-						};
-					}
+						buttonData = new MainMenuUI.ButtonData(type.Name) { sectionName = "Workspaces" };
 
 					CreateFaceButton(buttonData, tooltip, () =>
 					{
@@ -221,12 +214,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						{
 							var menuProvider = providerPair.Value;
 							if (buttonData == null)
-							{
-								buttonData = new MainMenuUI.ButtonData
-								{
-									name = type.Name.Replace("Tool", string.Empty).Replace("Module", string.Empty)
-								};
-							}
+								buttonData = new MainMenuUI.ButtonData(type.Name);
 
 							buttonData.sectionName = "Settings";
 
@@ -247,12 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						{
 							var itemProvider = providerPair.Value;
 							if (buttonData == null)
-							{
-								buttonData = new MainMenuUI.ButtonData
-								{
-									name = type.Name.Replace("Tool", string.Empty).Replace("Module", string.Empty)
-								};
-							}
+								buttonData = new MainMenuUI.ButtonData(type.Name);
 
 							buttonData.sectionName = "Settings";
 
