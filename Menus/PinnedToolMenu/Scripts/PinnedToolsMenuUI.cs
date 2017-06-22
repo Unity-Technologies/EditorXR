@@ -43,7 +43,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_RayHovered;
 		float m_SpatialDragDistance;
 		float m_SmoothedSpatialDragDistance;
-		Quaternion m_HintContentContainerRotation;
+		Quaternion m_HintContentContainerInitialRotation;
+		Quaternion m_HintContentContainerCurrentRotation;
 		Vector3 m_HintContentWorldPosition;
 		Quaternion m_SpatialScrollOrientation;
 
@@ -100,9 +101,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_SpatialDragDistance = 0f;
 					m_SmoothedSpatialDragDistance = 0f;
 					m_SpatialScrollOrientation = Quaternion.identity;
-					m_HintContentWorldPosition = transform.position;
-					m_HintContentContainerRotation = Quaternion.identity;
+					var currentRotation = transform.rotation.eulerAngles;
+					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f); // Quaternion.AngleAxis(transform.forward.y, Vector3.up);
 					this.RestartCoroutine(ref m_HintContentVisibilityCoroutine, ShowHintContent());
+					m_HintContentWorldPosition = transform.position;
+					m_HintContentContainer.position = m_HintContentWorldPosition;
 				}
 
 				m_SpatialDragDistance = value;
@@ -116,6 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				var orig = m_HintContentContainer.rotation;
 				m_HintContentContainer.LookAt(value.Value);
+				Debug.LogError(value);
 				m_SpatialScrollOrientation = m_HintContentContainer.rotation;
 				m_HintContentContainer.rotation = orig;
 			}
@@ -133,15 +137,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Update()
 		{
+			var newHintContainerRotation = m_HintContentContainerInitialRotation;
 			if (m_SpatialDragDistance > 1f && m_SmoothedSpatialDragDistance < 1)
 			{
+				// Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold
 				Debug.LogError("INSIDE rotation update loop");
 				m_SmoothedSpatialDragDistance = Mathf.Clamp01(m_SmoothedSpatialDragDistance += Time.unscaledDeltaTime * 1.5f);
 				var shapedDragAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(m_SmoothedSpatialDragDistance), 6);
-				m_HintContentContainerRotation = Quaternion.Lerp(Quaternion.identity, m_SpatialScrollOrientation, shapedDragAmount);
+				m_HintContentContainerCurrentRotation = Quaternion.Lerp(m_HintContentContainerInitialRotation, m_SpatialScrollOrientation, shapedDragAmount);
+				newHintContainerRotation = m_HintContentContainerCurrentRotation;
 			}
+			else if (Mathf.Approximately(m_SmoothedSpatialDragDistance, 1f))
+				newHintContainerRotation = m_HintContentContainerCurrentRotation;
+			else
+				m_HintContentWorldPosition = Vector3.Lerp(m_HintContentWorldPosition, transform.position, Time.unscaledDeltaTime * 6);
 
-			m_HintContentContainer.rotation = m_HintContentContainerRotation;
+			//Debug.LogError("Hint Container" + m_HintContentContainerInitialRotation);
+			//Debug.LogError("UI" + transform.rotation);
+
+			m_HintContentContainer.rotation = newHintContainerRotation;
 			m_HintContentContainer.position = m_HintContentWorldPosition;
 		}
 
@@ -498,6 +512,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator ShowHintContent()
 		{
+			m_HintContentContainer.gameObject.SetActive(true);
 			var currentScale = m_HintContentContainer.localScale;
 			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
 			var targetScale = Vector3.one;
@@ -528,6 +543,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_HintContentContainer.localScale = targetScale;
 			m_HintContentVisibilityCoroutine = null;
+			m_HintContentContainer.gameObject.SetActive(false);
 		}
 	}
 }
