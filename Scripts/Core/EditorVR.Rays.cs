@@ -204,15 +204,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOrigin, source =>
 									{
-										if (!source.draggedObject && evr.GetNestedModule<DirectSelection>().IsHovering(source.rayOrigin))
-											return false;
-
-										if (deviceData.mainMenu.visible && source.hoveredObject)
+										if ((deviceData.menuHideFlags[deviceData.mainMenu] & Menus.MenuHideFlags.Hidden) == 0)
 										{
-											Menus.OnHover(source.hoveredObject, source.eventData);
+											if (source.hoveredObject)
+											{
+												Menus.OnHover(source.hoveredObject, source.eventData);
+												return true;
+											}
 
 											return false;
 										}
+
+										if (!source.draggedObject && evr.GetNestedModule<DirectSelection>().IsHovering(source.rayOrigin))
+											return false;
 
 										return true;
 									});

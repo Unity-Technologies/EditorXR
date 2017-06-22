@@ -9,7 +9,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale, IControlHaptics, IRayToNode
+	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces,
+		IUsesViewerScale, IControlHaptics, IRayToNode
 	{
 		const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 
@@ -40,9 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		HapticPulse m_MovePulse;
 
-		[SerializeField]
-		HapticPulse m_FrameHoverPulse;
-
 		Bounds m_ContentBounds;
 
 		Coroutine m_VisibilityCoroutine;
@@ -61,12 +59,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				if (!value.Equals(contentBounds))
 				{
-					Vector3 size = value.size;
+					m_ContentBounds = value;
+					var size = value.size;
 					size.x = Mathf.Clamp(Mathf.Max(size.x, minBounds.x), 0, k_MaxFrameSize);
 					size.y = Mathf.Max(size.y, minBounds.y);
 					size.z = Mathf.Clamp(Mathf.Max(size.z, minBounds.z), 0, k_MaxFrameSize);
+					m_ContentBounds.size = size;
 
-					m_ContentBounds.size = size; //Only set size, ignore center.
 					UpdateBounds();
 					OnBoundsChanged();
 				}
@@ -77,11 +76,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			get
 			{
-				const float kOuterBoundsCenterOffset = 0.225f; //Amount to lower the center of the outerBounds for better interaction with menus
-				return new Bounds(contentBounds.center + Vector3.down * kOuterBoundsCenterOffset,
+				const float kOuterBoundsCenterOffset = 0.09275f; //Amount to extend the bounds to include frame
+				return new Bounds(contentBounds.center + Vector3.down * kOuterBoundsCenterOffset * 0.5f,
 					new Vector3(
 						contentBounds.size.x,
-						contentBounds.size.y,
+						contentBounds.size.y + kOuterBoundsCenterOffset,
 						contentBounds.size.z
 						));
 			}
@@ -142,12 +141,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_WorkspaceUI.leftRayOrigin = leftRayOrigin;
 			m_WorkspaceUI.rightRayOrigin = rightRayOrigin;
 
-			m_WorkspaceUI.resize += bounds => { contentBounds = bounds; };
+			m_WorkspaceUI.resize += bounds =>
+			{
+				var size = contentBounds.size;
+				var boundsSize = bounds.size;
+				size.x = boundsSize.x;
+				size.z = boundsSize.z;
+				var content = contentBounds;
+				content.size = size;
+				contentBounds = content;
+			};
 
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
+			var startingBounds = m_CustomStartingBounds ?? DefaultBounds;
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * DefaultBounds.y * 0.5f, m_CustomStartingBounds ?? DefaultBounds); // If custom bounds have been set, use them as the initial bounds
+			m_ContentBounds = new Bounds(Vector3.up * startingBounds.y * 0.5f, startingBounds); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
 			this.StopCoroutine(ref m_VisibilityCoroutine);

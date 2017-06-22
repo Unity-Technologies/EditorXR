@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject, IUsesNode, IIsRayActive
+		ICanGrabObject, IUsesNode, IIsRayActive, IIsMainMenuVisible
 	{
 		[SerializeField]
 		ActionMap m_ActionMap;
@@ -103,6 +103,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (selectionTool == null)
 						continue;
 
+					if (!selectionTool.IsActive())
+						continue;
+
 					var selectionToolInput = selectionTool.m_Input;
 
 					// Only overwrite an existing selection if it does not contain the hovered object
@@ -188,6 +191,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return false;
 
 			if (!this.IsRayActive(rayOrigin))
+				return false;
+
+			if (this.IsMainMenuVisible(rayOrigin))
 				return false;
 
 			return true;

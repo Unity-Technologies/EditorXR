@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		Coroutine m_RayVisibilityCoroutine;
 		Coroutine m_ConeVisibilityCoroutine;
 		Material m_RayMaterial;
+		float m_LastPointerLength;
 
 		/// <summary>
 		/// The object that is set when LockRay is called while the ray is unlocked.
@@ -67,7 +68,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// </summary>
 		public float pointerLength
 		{
-			get { return (m_Cone.transform.TransformPoint(m_Cone.sharedMesh.bounds.size.z * Vector3.forward) - m_Cone.transform.position).magnitude; }
+			get
+			{
+				if (!coneVisible || m_ConeVisibilityCoroutine != null)
+					return m_LastPointerLength;
+
+				m_LastPointerLength = (m_Cone.transform.TransformPoint(m_Cone.sharedMesh.bounds.size.z * Vector3.forward) - m_Cone.transform.position).magnitude;
+				return m_LastPointerLength;
+			}
 		}
 
 		public bool rayVisible { get; private set; }

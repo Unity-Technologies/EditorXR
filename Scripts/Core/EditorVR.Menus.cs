@@ -124,7 +124,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var rayOriginPosition = rayOrigin.position;
 					foreach (var workspace in evr.GetModule<WorkspaceModule>().workspaces)
 					{
-						if (workspace.outerBounds.Contains(workspace.transform.InverseTransformPoint(rayOriginPosition)))
+						var workspaceTransform = workspace.transform;
+						var localPosition = workspaceTransform.InverseTransformPoint(rayOriginPosition);
+						var localPointerPosition = workspaceTransform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+						if (workspace.outerBounds.Contains(localPosition) || workspace.outerBounds.Contains(localPointerPosition))
 							hoveringWorkspace = true;
 					}
 
@@ -138,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 
 					var heldObjects = directSelection.GetHeldObjects(rayOrigin);
-					var hasDirectSelection = directSelection != null && heldObjects != null;
+					var hasDirectSelection = directSelection != null && heldObjects != null && heldObjects.Count > 0;
 					if (hasDirectSelection)
 					{
 						foreach (var menu in menus)
@@ -194,19 +197,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
 			}
 
-			internal static void OnUIHoverStarted(GameObject go, RayEventData rayEventData)
+			static Vector3 GetPointerPositionForRayOrigin(Transform rayOrigin)
 			{
-				OnHover(go, rayEventData);
-			}
-
-			internal static void OnUIHovering(GameObject go, RayEventData rayEventData)
-			{
-				OnHover(go, rayEventData);
-			}
-
-			internal static void OnUIHoverEnded(GameObject go, RayEventData rayEventData)
-			{
-				OnHover(go, rayEventData);
+				return rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin);
 			}
 
 			internal static void OnHover(GameObject go, RayEventData rayEventData)
@@ -400,7 +393,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var deviceData in evr.m_DeviceData)
 				{
 					if (deviceData.rayOrigin == rayOrigin)
-						return deviceData.mainMenu.visible;
+						return (deviceData.menuHideFlags[deviceData.mainMenu] & MenuHideFlags.Hidden) == 0;
 				}
 
 				return false;

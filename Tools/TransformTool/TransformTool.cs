@@ -12,7 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ISetDefaultRayVisibility, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight,
-		ILinkedObject, IRayToNode, IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler
+		ILinkedObject, IRayToNode, IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler,
+		IIsMainMenuVisible
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -294,6 +295,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				foreach (var kvp in directSelection)
 				{
 					var directRayOrigin = kvp.Key;
+
+					if (m_GrabData.Count == 0 && this.IsMainMenuVisible(directRayOrigin))
+						continue;
+
 					var directSelectionData = kvp.Value;
 					var directHoveredObject = directSelectionData.gameObject;
 
