@@ -9,6 +9,7 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using System.Text;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -119,8 +120,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				var orig = m_HintContentContainer.rotation;
 				m_HintContentContainer.LookAt(value.Value);
-				Debug.LogError(value);
-				m_SpatialScrollOrientation = m_HintContentContainer.rotation;
+				Debug.LogError(value.Value.ToString("F4"));
+				m_SpatialScrollOrientation =  Quaternion.FromToRotation(m_HintContentContainer.forward, value.Value); // Quaternion.Euler(value.Value); Quaternion.RotateTowards(m_HintContentContainerInitialRotation, Quaternion.Euler(value.Value), 180f);
 				m_HintContentContainer.rotation = orig;
 			}
 		}
@@ -141,7 +142,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (m_SpatialDragDistance > 1f && m_SmoothedSpatialDragDistance < 1)
 			{
 				// Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold
-				Debug.LogError("INSIDE rotation update loop");
+				//Debug.LogError("INSIDE rotation update loop");
 				m_SmoothedSpatialDragDistance = Mathf.Clamp01(m_SmoothedSpatialDragDistance += Time.unscaledDeltaTime * 1.5f);
 				var shapedDragAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(m_SmoothedSpatialDragDistance), 6);
 				m_HintContentContainerCurrentRotation = Quaternion.Lerp(m_HintContentContainerInitialRotation, m_SpatialScrollOrientation, shapedDragAmount);

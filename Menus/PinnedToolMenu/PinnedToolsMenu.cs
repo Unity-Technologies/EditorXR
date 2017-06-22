@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using NUnit.Framework.Internal.Filters;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -236,7 +237,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				//consumeControl(pinnedToolInput.show);
 				//m_PinnedToolsMenuUI.allButtonsVisible = true;
-				m_SpatialScrollStartPosition = m_PinnedToolsMenuUI.transform.position;
+				m_SpatialScrollStartPosition = m_AlternateMenuOrigin.position;
 				Debug.LogError("Start position : <color=green>" + m_SpatialScrollStartPosition + "</color>");
 				allowSpatialScrollBeforeThisTime = Time.realtimeSinceStartup + kAutoHideDuration;
 				allowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
@@ -274,7 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				// normalized input should loop after reaching the 0.15f length
 				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-				var normalizedRepeatingPosition = processSpatialScrolling(m_SpatialScrollStartPosition, m_PinnedToolsMenuUI.transform.position, 0.15f, true);
+				var normalizedRepeatingPosition = processSpatialScrolling(m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.15f, true);
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{
 					if (!m_PinnedToolsMenuUI.allButtonsVisible)
@@ -321,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		// TODO refact into ISpatialScrolling interface; allow axis locking/selection/isolation
 		float processSpatialScrolling(Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, bool velocitySensitive)
 		{
-			Debug.LogError("Start position : <color=red>" + startingPosition + "</color> - Current Position : " + currentPosition);
+			//Debug.LogError("Start position : <color=red>" + startingPosition + "</color> - Current Position : " + currentPosition);
 			var normalizedLoopingPosition = 0f;
 			var directionVector = currentPosition - startingPosition;
 			const float kMaxFineTuneVelocity = 0.0005f;
@@ -334,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (dragAmount > kNewDirectionVectorThreshold)
 				{
 					spatialDirection = directionVector; // initialize vector defining the spatial scroll direciton
-					Debug.LogError("<color=green>" + spatialDirection + "</color>");
+					Debug.LogError("<color=green>" + spatialDirection.Value.ToString("F4") + "</color>");
 					m_PinnedToolsMenuUI.spatialDirectionVector = spatialDirection;
 				}
 			}
