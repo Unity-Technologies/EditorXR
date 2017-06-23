@@ -170,6 +170,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
 
 			Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
+
+			var viewerScaleObject = ObjectUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
+			m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
+			viewerScaleObject.SetActive(false);
 		}
 
 		void OnDisable()
@@ -180,6 +184,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void OnDestroy()
 		{
 			this.SetDefaultRayVisibility(rayOrigin, true);
+
+			if (m_ViewerScaleVisuals)
+				ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -398,7 +405,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									locomotionTool.m_Scaling = true;
 									locomotionTool.m_Crawling = false;
 
-									CreateViewerScaleVisuals(rayOrigin, otherRayOrigin);
+									m_ViewerScaleVisuals.leftHand = rayOrigin;
+									m_ViewerScaleVisuals.rightHand = otherRayOrigin;
+									m_ViewerScaleVisuals.gameObject.SetActive(true);
 								}
 
 								m_Scaling = true;
@@ -492,16 +501,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			cameraRig.localScale = Vector3.one;
 			m_MainCamera.nearClipPlane = m_OriginalNearClipPlane;
 			m_MainCamera.farClipPlane = m_OriginalFarClipPlane;
-
-			if (m_ViewerScaleVisuals)
-				ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
-		}
-
-		void CreateViewerScaleVisuals(Transform leftHand, Transform rightHand)
-		{
-			m_ViewerScaleVisuals = ObjectUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false).GetComponent<ViewerScaleVisuals>();
-			m_ViewerScaleVisuals.leftHand = leftHand;
-			m_ViewerScaleVisuals.rightHand = rightHand;
+			m_ViewerScaleVisuals.gameObject.SetActive(false);
 		}
 
 		void CancelScale()
@@ -514,8 +514,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				((LocomotionTool)linkedObject).m_Scaling = false;
 			}
 
-			if (m_ViewerScaleVisuals)
-				ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
+			m_ViewerScaleVisuals.gameObject.SetActive(false);
 		}
 
 		IEnumerator MoveTowardTarget(Vector3 targetPosition)

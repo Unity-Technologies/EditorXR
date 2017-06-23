@@ -33,16 +33,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Transform leftHand { private get; set; }
 		public Transform rightHand { private get; set; }
 
-		void Start()
+		void Awake()
 		{
 			foreach (var icon in m_Icons)
 			{
-				var image = ((GameObject)Instantiate(m_IconPrefab, m_IconsContainer, false)).GetComponent<Image>();
+				var image = Instantiate(m_IconPrefab, m_IconsContainer, false).GetComponent<Image>();
 				image.sprite = icon;
 			}
 
 			m_LineWidth = m_Line.widthStart;
-			SetPosition();
+		}
+
+		void OnEnable()
+		{
+			if (leftHand && rightHand)
+				SetPosition();
 		}
 
 		void Update()
