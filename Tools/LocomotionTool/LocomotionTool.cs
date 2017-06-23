@@ -415,18 +415,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 								var currentScale = Mathf.Clamp(m_StartScale * (m_StartDistance / distance), k_MinScale, k_MaxScale);
 
-								var thumb = m_LocomotionInput.thumb;
-								var thumbHeld = thumb.isHeld;
-								if (thumbHeld)
-									consumeControl(thumb);
+								var scaleReset = m_LocomotionInput.scaleReset;
+								var scaleResetHeld = scaleReset.isHeld;
+								if (scaleResetHeld)
+									consumeControl(scaleReset);
 
-								var otherThumb = otherLocomotionInput.thumb;
-								var otherThumbHeld = otherThumb.isHeld;
-								if (otherThumbHeld)
-									consumeControl(otherThumb);
+								var otherScaleReset = otherLocomotionInput.scaleReset;
+								var otherScaleResetHeld = otherScaleReset.isHeld;
+								if (otherScaleResetHeld)
+									consumeControl(otherScaleReset);
 
 								// Press both thumb buttons to reset scale
-								if (thumbHeld && otherThumbHeld)
+								if (scaleResetHeld && otherScaleResetHeld)
 								{
 									m_AllowScaling = false;
 
@@ -440,18 +440,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									ResetViewerScale();
 								}
 
-								var trigger = m_LocomotionInput.trigger;
-								var triggerHeld = trigger.isHeld;
-								if (triggerHeld)
-									consumeControl(trigger);
+								var worldReset = m_LocomotionInput.worldReset;
+								var worldResetHeld = worldReset.isHeld;
+								if (worldResetHeld)
+									consumeControl(worldReset);
 
-								var otherTrigger = otherLocomotionInput.trigger;
-								var otherTriggerHeld = otherTrigger.isHeld;
-								if (otherTriggerHeld)
-									consumeControl(otherTrigger);
+								var otherWorldReset = otherLocomotionInput.worldReset;
+								var otherWorldResetHeld = otherWorldReset.isHeld;
+								if (otherWorldResetHeld)
+									consumeControl(otherWorldReset);
 
 								// Press both triggers to reset to origin
-								if (triggerHeld && otherTriggerHeld)
+								if (worldResetHeld && otherWorldResetHeld)
 								{
 									m_AllowScaling = false;
 

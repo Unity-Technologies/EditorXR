@@ -15,7 +15,7 @@ MonoBehaviour:
   - {fileID: 114000010095369560}
   - {fileID: 114000010106806814}
   m_ControlSchemes:
-  - m_Name: Sixense
+  - m_Name: SelectionInput
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
@@ -25,7 +25,7 @@ MonoBehaviour:
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 22
+      - controlIndex: 3
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []

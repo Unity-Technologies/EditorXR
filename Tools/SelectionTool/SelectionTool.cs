@@ -34,6 +34,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			m_SelectionInput = (SelectionInput)input;
 
+			var multiSelect = false;
+			foreach (var linkedObject in linkedObjects)
+			{
+				var selectionTool = (SelectionTool)linkedObject;
+				var toolInput = selectionTool.m_SelectionInput;
+				if (toolInput != null && toolInput.multiSelect.isHeld)
+					multiSelect = true;
+			}
+
 			if (this.IsSharedUpdater(this))
 			{
 				var directSelection = this.GetDirectSelection();
@@ -102,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					// Only overwrite an existing selection if it does not contain the hovered object
 					// In the case of multi-select, only add, do not remove
 					if (directSelectInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
-						this.SelectObject(directHoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+						this.SelectObject(directHoveredObject, rayOrigin, multiSelect);
 
 					GameObject lastHover;
 					if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
@@ -123,15 +132,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			if (!IsActive())
 				return;
-
-			var multiSelect = false;
-			foreach (var linkedObject in linkedObjects)
-			{
-				var selectionTool = (SelectionTool)linkedObject;
-				var toolInput = selectionTool.m_SelectionInput;
-				if (toolInput != null && toolInput.multiSelect.isHeld)
-					multiSelect = true;
-			}
 
 			// Need to call GetFirstGameObject a second time because we do not guarantee shared updater executes first
 			var hoveredObject = this.GetFirstGameObject(rayOrigin);

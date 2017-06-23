@@ -39,7 +39,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 3
+      - controlIndex: 22
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -48,7 +48,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 22
+      - controlIndex: 3
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -164,7 +164,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Thumb
+  m_Name: ScaleReset
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 2
@@ -173,7 +173,7 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: Thumb
+    name: ScaleReset
     defaultValue: 0
 --- !u!114 &114000013424161920
 MonoBehaviour:
@@ -204,7 +204,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Grip
+  m_Name: Crawl
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 1
@@ -213,7 +213,7 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: Grip
+    name: Crawl
     defaultValue: 0
 --- !u!114 &114022299328106344
 MonoBehaviour:
@@ -224,7 +224,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Trigger
+  m_Name: WorldReset
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 6
@@ -233,5 +233,5 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: Trigger
+    name: WorldReset
     defaultValue: 0
