@@ -308,6 +308,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_Crawling = true;
 					m_RigStartPosition = cameraRig.position;
 					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
+
+					this.SetDefaultRayVisibility(rayOrigin, false);
+					this.LockRay(rayOrigin, this);
 				}
 
 				var localRayPosition = cameraRig.position - rayOrigin.position;
@@ -315,6 +318,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				return true;
 			}
+
+			this.UnlockRay(rayOrigin, this);
+			this.SetDefaultRayVisibility(rayOrigin, true);
 
 			m_Crawling = false;
 			return false;
@@ -390,6 +396,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								var otherRayOrigin = locomotionTool.rayOrigin;
 								var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
 								var distance = Vector3.Distance(thisPosition, otherPosition);
+
+								this.SetDefaultRayVisibility(rayOrigin, false);
+								this.LockRay(rayOrigin, this);
+								this.SetDefaultRayVisibility(otherRayOrigin, false);
+								this.LockRay(otherRayOrigin, this);
 
 								var rayToRay = otherPosition - thisPosition;
 								var midPoint = thisPosition + rayToRay * 0.5f;
@@ -516,8 +527,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			foreach (var linkedObject in linkedObjects)
 			{
-				((LocomotionTool)linkedObject).m_Scaling = false;
+				var locomotionTool = (LocomotionTool)linkedObject;
+				locomotionTool.m_Scaling = false;
+
+				if (!locomotionTool.m_Crawling)
+				{
+					var rayOrigin = locomotionTool.rayOrigin;
+					this.UnlockRay(rayOrigin, this);
+					this.SetDefaultRayVisibility(rayOrigin, true);
+				}
 			}
+
 
 			m_ViewerScaleVisuals.gameObject.SetActive(false);
 		}
