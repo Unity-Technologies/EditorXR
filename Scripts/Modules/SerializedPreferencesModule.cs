@@ -73,29 +73,31 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var preferences = new SerializedPreferences();
 			var payloads = new Dictionary<Type, SerializedPreferenceItem>();
+
+			// Use the previously saved preferences as defaults
+			if (m_Preferences != null)
+			{
+				foreach (var serializer in m_Serializers)
+				{
+					var type = serializer.GetType();
+					payloads[type] = m_Preferences.items.SingleOrDefault(pi => pi.name == type.FullName);
+				}
+			}
+
 			foreach (var serializer in m_Serializers)
 			{
 				var payload = serializer.OnSerializePreferences();
 
-				SerializedPreferenceItem item = null;
 				if (payload == null)
-				{
-					if (m_Preferences != null)
-					{
-						// Use the previously saved preferences for this serializer
-						item = m_Preferences.items.SingleOrDefault(pi => pi.name == serializer.GetType().FullName);
-					}
-				}
-				else
-				{
-					item = new SerializedPreferenceItem();
-					item.name = serializer.GetType().FullName;
-					item.payloadType = payload.GetType().FullName;
-					item.payload = JsonUtility.ToJson(payload);
-				}
+					continue;
 
-				if (item != null)
-					payloads[serializer.GetType()] = item;
+				var type = serializer.GetType();
+				payloads[type] = new SerializedPreferenceItem
+				{
+					name = type.FullName,
+					payloadType = payload.GetType().FullName,
+					payload = JsonUtility.ToJson(payload)
+				};
 			}
 
 			preferences.items.AddRange(payloads.Values);

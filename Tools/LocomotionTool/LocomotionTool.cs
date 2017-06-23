@@ -199,36 +199,35 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					return;
 			}
 
-			DoTwoHandedScaling(consumeControl);
+			if (DoTwoHandedScaling(consumeControl))
+				return;
 
-			if (!m_Scaling)
+			if (m_Preferences.blinkMode)
 			{
-				if (!m_WasRotating)
-					DoCrawl(m_LocomotionInput);
-
-				if (m_Preferences.blinkMode)
-					DoBlink(consumeControl, m_LocomotionInput);
-				else
-					DoFlying(consumeControl, m_LocomotionInput);
+				if (DoBlink(consumeControl, m_LocomotionInput))
+					return;
 			}
 			else
 			{
-				m_Crawling = false;
+				if (DoFlying(consumeControl, m_LocomotionInput))
+					return;
 			}
+
+			DoCrawl(m_LocomotionInput);
 		}
 
-		void DoFlying(ConsumeControlDelegate consumeControl, LocomotionInput locomotionInput)
+		bool DoFlying(ConsumeControlDelegate consumeControl, LocomotionInput locomotionInput)
 		{
 			var reverse = locomotionInput.reverse.isHeld;
 			var moving = locomotionInput.forward.isHeld || reverse;
 			if (moving)
 			{
-				if (locomotionInput.grip.isHeld)
+				if (locomotionInput.crawl.isHeld)
 				{
 					var localRayRotation = Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation;
 					var localRayForward = localRayRotation * Vector3.forward;
 					if (Mathf.Abs(Vector3.Dot(localRayForward, Vector3.up)) > k_RotationThreshold)
-						return;
+						return true;
 
 					localRayForward.y = 0;
 					localRayForward.Normalize();
@@ -248,7 +247,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_LastRotationDiff = Quaternion.identity;
 					}
 
-					consumeControl(locomotionInput.grip);
+					consumeControl(locomotionInput.crawl);
 					var startOffset = m_RigStartPosition - m_CameraStartPosition;
 
 					var angle = Vector3.Angle(m_RayOriginStartForward, localRayForward);
@@ -284,19 +283,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 
 				consumeControl(locomotionInput.forward);
+				return true;
 			}
-			else
-			{
-				if (!locomotionInput.grip.isHeld)
-					m_WasRotating = false;
 
-				m_Rotating = false;
-			}
+			if (!locomotionInput.crawl.isHeld)
+				m_WasRotating = false;
+
+			m_Rotating = false;
+			return false;
 		}
 
-		void DoCrawl(LocomotionInput locomotionInput)
+		bool DoCrawl(LocomotionInput locomotionInput)
 		{
-			if (!locomotionInput.forward.isHeld && !locomotionInput.blink.isHeld && locomotionInput.grip.isHeld)
+			if (!locomotionInput.forward.isHeld && !locomotionInput.blink.isHeld && locomotionInput.crawl.isHeld)
 			{
 				if (!m_Crawling)
 				{
@@ -308,17 +307,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var localRayPosition = cameraRig.position - rayOrigin.position;
 				cameraRig.position = m_RigStartPosition + (localRayPosition - m_RayOriginStartPosition);
 
-				// Do not consume grip control to allow passing through for multi-select
+				return true;
 			}
-			else
-			{
-				m_Crawling = false;
-			}
+
+			m_Crawling = false;
+			return false;
 		}
 
-		void DoBlink(ConsumeControlDelegate consumeControl, LocomotionInput locomotionInput)
+		bool DoBlink(ConsumeControlDelegate consumeControl, LocomotionInput locomotionInput)
 		{
-			m_Rotating = false;
 			if (locomotionInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
@@ -328,8 +325,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_BlinkVisuals.ShowVisuals();
 
 				consumeControl(locomotionInput.blink);
+				return true;
 			}
-			else if (m_State == State.Aiming && locomotionInput.blink.wasJustReleased)
+
+			if (m_State == State.Aiming && locomotionInput.blink.wasJustReleased)
 			{
 				this.UnlockRay(rayOrigin, this);
 				this.SetDefaultRayVisibility(rayOrigin, true);
@@ -345,13 +344,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_State = State.Inactive;
 				}
 			}
+
+			return false;
 		}
 
-		void DoTwoHandedScaling(ConsumeControlDelegate consumeControl)
+		bool DoTwoHandedScaling(ConsumeControlDelegate consumeControl)
 		{
+			var result = false;
+
 			if (this.IsSharedUpdater(this))
 			{
-				var grip = m_LocomotionInput.grip;
+				var grip = m_LocomotionInput.crawl;
 				if (grip.isHeld)
 				{
 					if (m_AllowScaling)
@@ -364,7 +367,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								continue;
 
 							var otherLocomotionInput = locomotionTool.m_LocomotionInput;
-							var otherGrip = otherLocomotionInput.grip;
+							var otherGrip = otherLocomotionInput.crawl;
 							if (otherGrip.isHeld)
 							{
 								otherGripHeld = true;
@@ -393,11 +396,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									m_StartYaw = cameraRig.rotation.eulerAngles.y;
 
 									locomotionTool.m_Scaling = true;
+									locomotionTool.m_Crawling = false;
 
 									CreateViewerScaleVisuals(rayOrigin, otherRayOrigin);
 								}
 
 								m_Scaling = true;
+								m_Crawling = false;
 
 								var currentScale = Mathf.Clamp(m_StartScale * (m_StartDistance / distance), k_MinScale, k_MaxScale);
 
@@ -463,6 +468,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 									Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / currentScale);
 								}
+
+								result = true;
 								break;
 							}
 						}
@@ -476,6 +483,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					CancelScale();
 				}
 			}
+
+			return result;
 		}
 
 		void ResetViewerScale()
@@ -556,6 +565,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				foreach (var linkedObject in linkedObjects)
 				{
 					((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
+					m_BlinkToggle.isOn = m_Preferences.blinkMode;
+					m_FlyToggle.isOn = !m_Preferences.blinkMode;
 				}
 			}
 		}
