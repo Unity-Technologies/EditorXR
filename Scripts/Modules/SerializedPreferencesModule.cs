@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					if (type != null)
 					{
 						if (m_ItemDictionary.ContainsKey(type))
-							Debug.LogWarning("Multiple payloads of the same type");
+							Debug.LogWarning("Multiple payloads of the same type on deserialization");
 
 						m_ItemDictionary[type] = item;
 					}
@@ -93,7 +93,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal string SerializePreferences()
 		{
-			var preferences = new SerializedPreferences();
+			if (m_Preferences == null)
+				m_Preferences = new SerializedPreferences();
 
 			foreach (var serializer in m_Serializers)
 			{
@@ -103,6 +104,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					continue;
 
 				var type = serializer.GetType();
+
+				if (m_Preferences.items.ContainsKey(type))
+					Debug.LogWarning("Multiple payloads of the same type on serialization");
+
 				m_Preferences.items[type] = new SerializedPreferenceItem
 				{
 					name = type.FullName,
@@ -110,9 +115,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					payload = JsonUtility.ToJson(payload)
 				};
 			}
-			m_Preferences = preferences;
 
-			return JsonUtility.ToJson(preferences);
+			return JsonUtility.ToJson(m_Preferences);
 		}
 	}
 }
