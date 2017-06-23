@@ -96,6 +96,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (m_Preferences == null)
 				m_Preferences = new SerializedPreferences();
 
+			var serializerTypes = new HashSet<Type>();
+
 			foreach (var serializer in m_Serializers)
 			{
 				var payload = serializer.OnSerializePreferences();
@@ -105,8 +107,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				var type = serializer.GetType();
 
-				if (m_Preferences.items.ContainsKey(type))
-					Debug.LogWarning("Multiple payloads of the same type on serialization");
+				if (!serializerTypes.Add(type))
+					Debug.LogWarning(string.Format("Multiple payloads of type {0} on serialization", type));
 
 				m_Preferences.items[type] = new SerializedPreferenceItem
 				{

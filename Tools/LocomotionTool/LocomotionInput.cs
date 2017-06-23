@@ -14,5 +14,8 @@ namespace UnityEngine.InputNew
 		public ButtonInputControl @reverse { get { return (ButtonInputControl)this[4]; } }
 		public ButtonInputControl @forward { get { return (ButtonInputControl)this[5]; } }
 		public ButtonInputControl @worldReset { get { return (ButtonInputControl)this[6]; } }
+		public ButtonInputControl @rotate { get { return (ButtonInputControl)this[7]; } }
+		public AxisInputControl @horizontal { get { return (AxisInputControl)this[8]; } }
+		public AxisInputControl @vertical { get { return (AxisInputControl)this[9]; } }
 	}
 }

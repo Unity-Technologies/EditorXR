@@ -162,9 +162,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				m_PressedObject = null;
 			}
-
-			if (multiSelectControl.wasJustPressed)
-				consumeControl(multiSelectControl);
 		}
 
 		bool GetSelectionCandidate(ref GameObject hoveredObject)
