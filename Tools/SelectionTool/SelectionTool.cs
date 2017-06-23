@@ -118,16 +118,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			var selectionInput = (SelectionInput)input;
-			var multiSelectControl = selectionInput.multiSelect;
+			var multiSelectControl = m_SelectionInput.multiSelect;
 			this.SetManipulatorsVisible(this, !multiSelectControl.isHeld);
 
 			if (!IsActive())
 				return;
 
 			var multiSelect = false;
-			foreach (SelectionTool selectionTool in linkedObjects)
+			foreach (var linkedObject in linkedObjects)
 			{
+				var selectionTool = (SelectionTool)linkedObject;
 				var toolInput = selectionTool.m_SelectionInput;
 				if (toolInput != null && toolInput.multiSelect.isHeld)
 					multiSelect = true;
@@ -143,11 +143,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return;
 
 			// Capture object on press
-			if (selectionInput.select.wasJustPressed)
+			if (m_SelectionInput.select.wasJustPressed)
 				m_PressedObject = hoveredObject;
 
 			// Select button on release
-			if (selectionInput.select.wasJustReleased)
+			if (m_SelectionInput.select.wasJustReleased)
 			{
 				if (m_PressedObject == hoveredObject)
 				{
@@ -158,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 
 				if (m_PressedObject)
-					consumeControl(selectionInput.select);
+					consumeControl(m_SelectionInput.select);
 
 				m_PressedObject = null;
 			}

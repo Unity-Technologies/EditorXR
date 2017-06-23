@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -108,9 +109,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			set
 			{
+				var defaultToggleGroup = value.GetComponentInChildren<DefaultToggleGroup>();
 				foreach (var toggle in value.GetComponentsInChildren<Toggle>())
 				{
-					if (toggle.isOn)
+					if (toggle == defaultToggleGroup.defaultToggle)
 					{
 						m_FlyToggle = toggle;
 						toggle.onValueChanged.AddListener(isOn =>
@@ -120,16 +122,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 							// m_Preferences on all instances refer
 							m_Preferences.blinkMode = !isOn;
-							foreach (LocomotionTool linkedObject in linkedObjects)
+							foreach (var linkedObject in linkedObjects)
 							{
-								if (linkedObject != this)
+								var locomotionTool = (LocomotionTool)linkedObject;
+								if (locomotionTool != this)
 								{
-									linkedObject.m_BlockValueChangedListener = true;
+									locomotionTool.m_BlockValueChangedListener = true;
 									//linkedObject.m_ToggleGroup.NotifyToggleOn(isOn ? m_FlyToggle : m_BlinkToggle);
 									// HACK: Toggle Group claims these toggles are not a part of the group
-									linkedObject.m_FlyToggle.isOn = isOn;
-									linkedObject.m_BlinkToggle.isOn = !isOn;
-									linkedObject.m_BlockValueChangedListener = false;
+									locomotionTool.m_FlyToggle.isOn = isOn;
+									locomotionTool.m_BlinkToggle.isOn = !isOn;
+									locomotionTool.m_BlockValueChangedListener = false;
 								}
 							}
 						});
@@ -149,9 +152,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_Preferences = new Preferences();
 
 				// Share one preferences object across all instances
-				foreach (LocomotionTool locomotionTool in linkedObjects)
+				foreach (var linkedObject in linkedObjects)
 				{
-					locomotionTool.m_Preferences = m_Preferences;
+					((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
 				}
 			}
 
@@ -186,8 +189,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (m_State == State.Moving)
 				return;
 
-			foreach (LocomotionTool locomotionTool in linkedObjects)
+			foreach (var linkedObject in linkedObjects)
 			{
+				var locomotionTool = (LocomotionTool)linkedObject;
 				if (locomotionTool == this)
 					continue;
 
@@ -353,8 +357,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (m_AllowScaling)
 					{
 						var otherGripHeld = false;
-						foreach (LocomotionTool locomotionTool in linkedObjects)
+						foreach (var linkedObject in linkedObjects)
 						{
+							var locomotionTool = (LocomotionTool)linkedObject;
 							if (locomotionTool == this)
 								continue;
 
@@ -528,9 +533,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (this.IsSharedUpdater(this))
 			{
 				// Share one preferences object across all instances
-				foreach (LocomotionTool locomotionTool in linkedObjects)
+				foreach (var linkedObject in linkedObjects)
 				{
-					locomotionTool.m_Preferences = m_Preferences;
+					((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
 				}
 
 				return m_Preferences;
@@ -548,9 +553,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_Preferences = preferences;
 
 				// Share one preferences object across all instances
-				foreach (LocomotionTool locomotionTool in linkedObjects)
+				foreach (var linkedObject in linkedObjects)
 				{
-					locomotionTool.m_Preferences = m_Preferences;
+					((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
 				}
 			}
 		}

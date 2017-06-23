@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap, IControlHaptics, IUsesNode, IConnectInterfaces
 	{
-		const float k_ActivationThreshold = 0.5f;
+		const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
 
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]

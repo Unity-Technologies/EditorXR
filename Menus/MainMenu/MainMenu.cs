@@ -14,6 +14,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace,
 		ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin
 	{
+		const string k_SettingsMenuSectionName = "Settings";
+
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
 		ActionMap m_MainMenuActionMap;
@@ -209,11 +211,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 							if (buttonData == null)
 								buttonData = new MainMenuUI.ButtonData(type.Name);
 
-							buttonData.sectionName = "Settings";
+							buttonData.sectionName = k_SettingsMenuSectionName;
 
 							CreateFaceButton(buttonData, tooltip, () =>
 							{
-								menuProvider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, menuProvider.settingsMenuPrefab);
+								menuProvider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(k_SettingsMenuSectionName, menuProvider.settingsMenuPrefab);
 							});
 						}
 					}

@@ -282,8 +282,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (string.IsNullOrEmpty(buttonData.sectionName))
 				buttonData.sectionName = k_UncategorizedFaceName;
 
-			var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
-			if (found)
+			if (m_FaceButtons.Any(x => x.Key == buttonData.sectionName))
 			{
 				var kvp = m_FaceButtons.First(x => x.Key == buttonData.sectionName);
 				kvp.Value.Add(button.transform);
