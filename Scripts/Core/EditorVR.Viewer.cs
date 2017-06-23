@@ -78,16 +78,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var locomotion = obj as ILocomotor;
-				if (locomotion != null)
-					locomotion.cameraRig = VRView.cameraRig;
-
 				var usesCameraRig = obj as IUsesCameraRig;
 				if (usesCameraRig != null)
 					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 			}
 

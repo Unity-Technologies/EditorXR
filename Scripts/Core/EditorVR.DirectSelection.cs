@@ -49,7 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_TwoHandedScalers.Add(twoHandedScaler);
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 				var grabObjects = obj as IGrabObjects;
 				if (grabObjects != null)

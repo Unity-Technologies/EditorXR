@@ -14,9 +14,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		public class ButtonData
 		{
-			public string name { get; set; }
+			public string name { get; private set; }
 			public string sectionName { get; set; }
 			public string description { get; set; }
+
+			public ButtonData(string name)
+			{
+				this.name = name.Replace("Tool", string.Empty).Replace("Module", string.Empty)
+					.Replace("Workspace", string.Empty);
+			}
 		}
 
 		enum RotationState
@@ -243,12 +249,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				ObjectUtils.Destroy(face.gameObject);
 		}
 
-		public void CreateFaceButton(ButtonData buttonData, Action<MainMenuButton> buttonCreationCallback)
+		public MainMenuButton CreateFaceButton(ButtonData buttonData)
 		{
 			var button = ObjectUtils.Instantiate(m_ButtonTemplatePrefab.gameObject);
 			button.name = buttonData.name;
 			var mainMenuButton = button.GetComponent<MainMenuButton>();
-			buttonCreationCallback(mainMenuButton);
 			mainMenuButton.clicked += OnButtonClick;
 			mainMenuButton.hovered += OnButtonHover;
 
@@ -268,6 +273,29 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				m_FaceButtons.Add(buttonData.sectionName, new List<Transform> { button.transform });
 			}
+
+			return mainMenuButton;
+		}
+
+		public GameObject CreateCustomButton(GameObject prefab, ButtonData buttonData)
+		{
+			var button = ObjectUtils.Instantiate(prefab);
+			button.name = buttonData.name;
+
+			if (string.IsNullOrEmpty(buttonData.sectionName))
+				buttonData.sectionName = k_UncategorizedFaceName;
+
+			if (m_FaceButtons.Any(x => x.Key == buttonData.sectionName))
+			{
+				var kvp = m_FaceButtons.First(x => x.Key == buttonData.sectionName);
+				kvp.Value.Add(button.transform);
+			}
+			else
+			{
+				m_FaceButtons.Add(buttonData.sectionName, new List<Transform> { button.transform });
+			}
+
+			return button;
 		}
 
 		public void SetupMenuFaces()
