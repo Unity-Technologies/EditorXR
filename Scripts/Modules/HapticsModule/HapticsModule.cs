@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class HapticsModule : MonoBehaviour
 	{
 		[SerializeField]
-		float m_MasterIntensity = 4f;
+		float m_MasterIntensity = 0.8f;
 
 		/// <summary>
 		/// Overall intensity of haptics.
