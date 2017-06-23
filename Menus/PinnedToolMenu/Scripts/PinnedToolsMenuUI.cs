@@ -32,6 +32,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Transform m_HintContentContainer;
 
+		[SerializeField]
+		CanvasGroup m_HintArrowsCanvasGroup;
+
+		[SerializeField]
+		HintArrow[] m_SecondaryHintArrows;
+
 		bool m_AllButtonsVisible;
 		List<IPinnedToolButton> m_OrderedButtons;
 		Coroutine m_ShowHideAllButtonsCoroutine;
@@ -513,7 +519,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator ShowHintContent()
 		{
-			m_HintContentContainer.gameObject.SetActive(true);
+			foreach (var arrow in m_SecondaryHintArrows)
+			{
+				arrow.visible = true;
+			}
+
 			var currentScale = m_HintContentContainer.localScale;
 			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
 			var targetScale = Vector3.one;
@@ -531,6 +541,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator HideHintContent()
 		{
+			foreach (var arrow in m_SecondaryHintArrows)
+			{
+				arrow.visible = false;
+			}
+
 			var currentScale = m_HintContentContainer.localScale;
 			var timeElapsed = 1 - currentScale.x;
 			var targetScale = Vector3.zero;
@@ -544,7 +559,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_HintContentContainer.localScale = targetScale;
 			m_HintContentVisibilityCoroutine = null;
-			m_HintContentContainer.gameObject.SetActive(false);
 		}
 	}
 }
