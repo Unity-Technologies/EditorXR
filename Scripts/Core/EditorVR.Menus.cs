@@ -212,28 +212,43 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin);
 			}
 
-			internal static void OnHover(GameObject go, RayEventData rayEventData)
+			internal static bool OnHover(MultipleRayInputModule.RaycastSource source)
 			{
-				if (go == evr.gameObject)
-					return;
+				var go = source.draggedObject;
+				if (!go)
+					go = source.hoveredObject;
 
-				var rayOrigin = rayEventData.rayOrigin;
+				if (go == null)
+					return false;
+
+				if (go == evr.gameObject)
+					return false;
+
+				var eventData = source.eventData;
+				var rayOrigin = eventData.rayOrigin;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 				if (deviceData != null)
 				{
 					if (go.transform.IsChildOf(deviceData.rayOrigin)) // Don't let UI on this hand block the menu
-						return;
+						return false;
 
-					var scaledPointerDistance = rayEventData.pointerCurrentRaycast.distance / Viewer.GetViewerScale();
+					var scaledPointerDistance = eventData.pointerCurrentRaycast.distance / Viewer.GetViewerScale();
 					var isManipulator = go.GetComponentInParent<IManipulator>() != null;
 					var menus = deviceData.menuHideFlags.Keys.ToList();
-					foreach (var menu in menus)
+					var hideDistance = deviceData.mainMenu.hideDistance;
+					if (!(isManipulator || scaledPointerDistance > hideDistance + k_MenuHideMargin))
 					{
-						// Only set if hidden--value is reset every frame
-						if (!(isManipulator || scaledPointerDistance > menu.hideDistance + k_MenuHideMargin))
+						foreach (var menu in menus)
+						{
+							// Only set if hidden--value is reset every frame
 							deviceData.menuHideFlags[menu] |= MenuHideFlags.OverUI;
+						}
+
+						return true;
 					}
 				}
+
+				return false;
 			}
 
 			internal static void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)

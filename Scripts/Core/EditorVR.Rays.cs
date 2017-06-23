@@ -206,11 +206,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									{
 										if ((deviceData.menuHideFlags[deviceData.mainMenu] & Menus.MenuHideFlags.Hidden) == 0)
 										{
-											if (source.hoveredObject)
-											{
-												Menus.OnHover(source.hoveredObject, source.eventData);
+											if (Menus.OnHover(source))
 												return true;
-											}
 
 											return false;
 										}
