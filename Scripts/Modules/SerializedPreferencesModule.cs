@@ -13,12 +13,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		SerializedPreferences m_Preferences;
 
 		[Serializable]
-		class SerializedPreferences
+		class SerializedPreferences : ISerializationCallbackReceiver
 		{
 			[SerializeField]
-			List<SerializedPreferenceItem> m_Items = new List<SerializedPreferenceItem>();
+			SerializedPreferenceItem[] m_Items;
 
-			public List<SerializedPreferenceItem> items { get { return m_Items; } }
+			readonly Dictionary<Type, SerializedPreferenceItem> m_ItemDictionary = new Dictionary<Type, SerializedPreferenceItem>();
+
+			public Dictionary<Type, SerializedPreferenceItem> items { get { return m_ItemDictionary; } }
+
+			public void OnBeforeSerialize()
+			{
+				m_Items = m_ItemDictionary.Values.ToArray();
+			}
+
+			public void OnAfterDeserialize()
+			{
+				foreach (var item in m_Items)
+				{
+					var type = Type.GetType(item.name);
+					if (type != null)
+					{
+						if (m_ItemDictionary.ContainsKey(type))
+							Debug.LogWarning("Multiple payloads of the same type");
+
+						m_ItemDictionary[type] = item;
+					}
+				}
+			}
 		}
 
 		[Serializable]
@@ -59,8 +81,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				foreach (var serializer in m_Serializers)
 				{
-					var item = preferences.items.SingleOrDefault(pi => pi.name == serializer.GetType().FullName);
-					if (item != null)
+					SerializedPreferenceItem item;
+					if (m_Preferences.items.TryGetValue(serializer.GetType(), out item))
 					{
 						var payload = JsonUtility.FromJson(item.payload, Type.GetType(item.payloadType));
 						serializer.OnDeserializePreferences(payload);
@@ -72,17 +94,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		internal string SerializePreferences()
 		{
 			var preferences = new SerializedPreferences();
-			var payloads = new Dictionary<Type, SerializedPreferenceItem>();
-
-			// Use the previously saved preferences as defaults
-			if (m_Preferences != null)
-			{
-				foreach (var serializer in m_Serializers)
-				{
-					var type = serializer.GetType();
-					payloads[type] = m_Preferences.items.SingleOrDefault(pi => pi.name == type.FullName);
-				}
-			}
 
 			foreach (var serializer in m_Serializers)
 			{
@@ -92,15 +103,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					continue;
 
 				var type = serializer.GetType();
-				payloads[type] = new SerializedPreferenceItem
+				m_Preferences.items[type] = new SerializedPreferenceItem
 				{
 					name = type.FullName,
 					payloadType = payload.GetType().FullName,
 					payload = JsonUtility.ToJson(payload)
 				};
 			}
-
-			preferences.items.AddRange(payloads.Values);
 			m_Preferences = preferences;
 
 			return JsonUtility.ToJson(preferences);
