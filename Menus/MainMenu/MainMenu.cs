@@ -92,7 +92,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
 		public Node? node { get; set; }
-		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
@@ -264,12 +263,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnButtonClicked(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 		}
 
 		void OnButtonHovered(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
 
 		void OnOpening()

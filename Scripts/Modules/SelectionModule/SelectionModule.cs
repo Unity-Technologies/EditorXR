@@ -17,7 +17,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
 		public Func<GameObject, bool> overrideSelectObject { private get; set; }
-		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public event Action<Transform> selected;
 
@@ -70,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_SelectedObjects.Clear();
 
 			if (hoveredObject)
-				this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_HoverPulse);
+				this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_HoverPulse);
 
 			// Multi-Select
 			if (multiSelect)
