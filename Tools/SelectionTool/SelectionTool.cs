@@ -119,8 +119,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					// Only overwrite an existing selection if it does not contain the hovered object
 					// In the case of multi-select, only add, do not remove
-					if (m_SelectionInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
-						this.SelectObject(directHoveredObject, rayOrigin, multiSelect);
+					if (selectionTool.m_SelectionInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
+						this.SelectObject(directHoveredObject, directRayOrigin, multiSelect);
 
 					GameObject lastHover;
 					if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
