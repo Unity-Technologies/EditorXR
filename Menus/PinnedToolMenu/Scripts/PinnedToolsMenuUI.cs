@@ -3,13 +3,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using System.Text;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -36,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		CanvasGroup m_HintArrowsCanvasGroup;
 
 		[SerializeField]
-		HintArrow[] m_SecondaryHintArrows;
+		SpatialHintUI m_SpatialHintUI;
 
 		bool m_AllButtonsVisible;
 		List<IPinnedToolButton> m_OrderedButtons;
@@ -147,17 +144,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var newHintContainerRotation = m_HintContentContainerInitialRotation;
 			if (m_SpatialDragDistance > 1f && m_SmoothedSpatialDragDistance < 1)
 			{
+			/*
 				// Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold
 				//Debug.LogError("INSIDE rotation update loop");
 				m_SmoothedSpatialDragDistance = Mathf.Clamp01(m_SmoothedSpatialDragDistance += Time.unscaledDeltaTime * 1.5f);
 				var shapedDragAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(m_SmoothedSpatialDragDistance), 6);
 				m_HintContentContainerCurrentRotation = Quaternion.Lerp(m_HintContentContainerInitialRotation, m_SpatialScrollOrientation, shapedDragAmount);
 				newHintContainerRotation = m_HintContentContainerCurrentRotation;
+			*/
 			}
+			/*
 			else if (Mathf.Approximately(m_SmoothedSpatialDragDistance, 1f))
 				newHintContainerRotation = m_HintContentContainerCurrentRotation;
 			else
 				m_HintContentWorldPosition = Vector3.Lerp(m_HintContentWorldPosition, transform.position, Time.unscaledDeltaTime * 6);
+			*/
 
 			//Debug.LogError("Hint Container" + m_HintContentContainerInitialRotation);
 			//Debug.LogError("UI" + transform.rotation);
@@ -296,6 +297,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void ShowAllExceptMenuButton()
 		{
 			Debug.LogError("ShowAllExceptMenuButton");
+
+			m_SpatialHintUI.enableSelectVisuals = true;
 			m_VisibleButtonCount = Mathf.Max(0, m_OrderedButtons.Count - 1); // The MainMenu button will be hidden, subtract 1 from the m_VisibleButtonCount
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
@@ -519,10 +522,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator ShowHintContent()
 		{
-			foreach (var arrow in m_SecondaryHintArrows)
-			{
-				arrow.visible = true;
-			}
+			m_SpatialHintUI.enablePreSelectVisuals = true;
 
 			var currentScale = m_HintContentContainer.localScale;
 			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
@@ -541,17 +541,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator HideHintContent()
 		{
-			foreach (var arrow in m_SecondaryHintArrows)
-			{
-				arrow.visible = false;
-			}
+			m_SpatialHintUI.enableSelectVisuals = false;
+
+			yield break;
 
 			var currentScale = m_HintContentContainer.localScale;
 			var timeElapsed = 1 - currentScale.x;
 			var targetScale = Vector3.zero;
 			while (timeElapsed < 1f)
 			{
-				timeElapsed += Time.unscaledDeltaTime * 2f;
+				timeElapsed += Time.unscaledDeltaTime * 4f;
 				var durationShaped = MathUtilsExt.SmoothInOutLerpFloat(timeElapsed);
 				m_HintContentContainer.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
 				yield return null;
