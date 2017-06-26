@@ -30,7 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				NearWorkspace = 1 << 2,
 			}
 
-			readonly Dictionary<Type, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<Type, ISettingsMenuProvider>();
+			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
+			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
 			List<Type> m_MainMenuTools;
 
 			// Local method use only -- created here to reduce garbage collection
@@ -46,7 +47,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var settingsMenuProvider = obj as ISettingsMenuProvider;
 				if (settingsMenuProvider != null)
-					m_SettingsMenuProviders[obj.GetType()] = settingsMenuProvider;
+					m_SettingsMenuProviders[new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin)] = settingsMenuProvider;
+
+				var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
+				if (settingsMenuItemProvider != null)
+					m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin)] = settingsMenuItemProvider;
 
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
@@ -54,14 +59,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					mainMenu.menuTools = m_MainMenuTools;
 					mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
 					mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
+					mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
 				}
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 				var settingsMenuProvider = obj as ISettingsMenuProvider;
 				if (settingsMenuProvider != null)
-					m_SettingsMenuProviders.Remove(obj.GetType());
+					m_SettingsMenuProviders.Remove(new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin));
+
+				var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
+				if (settingsMenuItemProvider != null)
+					m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin));
 			}
 
 			public void LateBindInterfaceMethods(Tools provider)

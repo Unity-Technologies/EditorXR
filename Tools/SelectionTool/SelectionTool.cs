@@ -11,11 +11,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
 		ICanGrabObject
 	{
-		GameObject m_PressedObject;
-
 		public ActionMap actionMap { get { return m_ActionMap; } }
 		[SerializeField]
 		ActionMap m_ActionMap;
+
+		GameObject m_PressedObject;
+
+		SelectionInput m_SelectionInput;
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -30,6 +32,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			m_SelectionInput = (SelectionInput)input;
+
+			var multiSelect = false;
+			foreach (var linkedObject in linkedObjects)
+			{
+				var selectionTool = (SelectionTool)linkedObject;
+				var toolInput = selectionTool.m_SelectionInput;
+				if (toolInput != null && toolInput.multiSelect.isHeld)
+					multiSelect = true;
+			}
+
 			if (this.IsSharedUpdater(this))
 			{
 				var directSelection = this.GetDirectSelection();
@@ -98,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					// Only overwrite an existing selection if it does not contain the hovered object
 					// In the case of multi-select, only add, do not remove
 					if (directSelectInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
-						this.SelectObject(directHoveredObject, rayOrigin, directSelectInput.multiSelect.isHeld);
+						this.SelectObject(directHoveredObject, rayOrigin, multiSelect);
 
 					GameObject lastHover;
 					if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
@@ -114,10 +127,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
+			var multiSelectControl = m_SelectionInput.multiSelect;
+			this.SetManipulatorsVisible(this, !multiSelectControl.isHeld);
+
 			if (!IsActive())
 				return;
-
-			var selectionInput = (SelectionInput)input;
 
 			// Need to call GetFirstGameObject a second time because we do not guarantee shared updater executes first
 			var hoveredObject = this.GetFirstGameObject(rayOrigin);
@@ -128,28 +142,23 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (!GetSelectionCandidate(ref hoveredObject))
 				return;
 
-			this.SetManipulatorsVisible(this, !selectionInput.multiSelect.isHeld);
-
 			// Capture object on press
-			if (selectionInput.select.wasJustPressed)
+			if (m_SelectionInput.select.wasJustPressed)
 				m_PressedObject = hoveredObject;
 
 			// Select button on release
-			if (selectionInput.select.wasJustReleased)
+			if (m_SelectionInput.select.wasJustReleased)
 			{
 				if (m_PressedObject == hoveredObject)
 				{
-					this.SelectObject(m_PressedObject, rayOrigin, selectionInput.multiSelect.isHeld, true);
+					this.SelectObject(m_PressedObject, rayOrigin, multiSelect, true);
 
 					if (m_PressedObject != null)
 						this.SetHighlight(m_PressedObject, false, rayOrigin);
-
-					if (selectionInput.multiSelect.isHeld)
-						consumeControl(selectionInput.multiSelect);
 				}
 
 				if (m_PressedObject)
-					consumeControl(selectionInput.select);
+					consumeControl(m_SelectionInput.select);
 
 				m_PressedObject = null;
 			}

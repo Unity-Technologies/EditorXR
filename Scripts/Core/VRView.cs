@@ -15,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	sealed class VRView : EditorWindow
 	{
+		public const float HeadHeight = 1.7f;
 		const string k_ShowDeviceView = "VRView.ShowDeviceView";
 		const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
 
@@ -132,9 +133,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Camera.farClipPlane = 1000f;
 
 			// Generally, we want to be at a standing height, so default to that
-			const float kHeadHeight = 1.7f;
 			Vector3 position = m_CameraRig.position;
-			position.y = kHeadHeight;
+			position.y = HeadHeight;
 			m_CameraRig.position = position;
 			m_CameraRig.rotation = Quaternion.identity;
 

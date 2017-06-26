@@ -9,6 +9,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap, IControlHaptics, IUsesNode, IConnectInterfaces
 	{
+		const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
+
 		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
 		[SerializeField]
 		ActionMap m_RadialMenuActionMap;
@@ -100,22 +102,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 			
 			var inputDirection = radialMenuInput.navigate.vector2;
-			m_RadialMenuUI.buttonInputDirection = inputDirection;
 
-			if (inputDirection != Vector2.zero)
+			if (inputDirection.magnitude > k_ActivationThreshold)
 			{
 				// Composite controls need to be consumed separately
 				consumeControl(radialMenuInput.navigateX);
 				consumeControl(radialMenuInput.navigateY);
+				m_RadialMenuUI.buttonInputDirection = inputDirection;
 			}
-
-			m_RadialMenuUI.pressedDown = radialMenuInput.selectItem.wasJustPressed;
-			if (m_RadialMenuUI.pressedDown)
+			else
 			{
-				consumeControl(radialMenuInput.selectItem);
+				m_RadialMenuUI.buttonInputDirection = Vector3.zero;
+				return;
 			}
 
-			if (radialMenuInput.selectItem.wasJustReleased)
+			var selectControl = radialMenuInput.selectItem;
+			m_RadialMenuUI.pressedDown = selectControl.wasJustPressed;
+			if (m_RadialMenuUI.pressedDown)
+				consumeControl(selectControl);
+
+			if (selectControl.wasJustReleased)
 			{
 				this.Pulse(node, m_ReleasePulse);
 
@@ -124,7 +130,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (itemWasSelected != null)
 					itemWasSelected(rayOrigin);
 
-				consumeControl(radialMenuInput.selectItem);
+				consumeControl(selectControl);
 			}
 		}
 

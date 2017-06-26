@@ -13,12 +13,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		SerializedPreferences m_Preferences;
 
 		[Serializable]
-		class SerializedPreferences
+		class SerializedPreferences : ISerializationCallbackReceiver
 		{
 			[SerializeField]
-			List<SerializedPreferenceItem> m_Items = new List<SerializedPreferenceItem>();
+			SerializedPreferenceItem[] m_Items;
 
-			public List<SerializedPreferenceItem> items { get { return m_Items; } }
+			readonly Dictionary<Type, SerializedPreferenceItem> m_ItemDictionary = new Dictionary<Type, SerializedPreferenceItem>();
+
+			public Dictionary<Type, SerializedPreferenceItem> items { get { return m_ItemDictionary; } }
+
+			public void OnBeforeSerialize()
+			{
+				m_Items = m_ItemDictionary.Values.ToArray();
+			}
+
+			public void OnAfterDeserialize()
+			{
+				foreach (var item in m_Items)
+				{
+					var type = Type.GetType(item.name);
+					if (type != null)
+					{
+						if (m_ItemDictionary.ContainsKey(type))
+							Debug.LogWarning("Multiple payloads of the same type on deserialization");
+
+						m_ItemDictionary[type] = item;
+					}
+				}
+			}
 		}
 
 		[Serializable]
@@ -43,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_Serializers.Add(serializer);
 		}
 
-		public void DisconnectInterface(object obj)
+		public void DisconnectInterface(object obj, Transform rayOrigin = null)
 		{
 			var serializer = obj as ISerializePreferences;
 			if (serializer != null)
@@ -59,8 +81,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				foreach (var serializer in m_Serializers)
 				{
-					var item = preferences.items.SingleOrDefault(pi => pi.name == serializer.GetType().FullName);
-					if (item != null)
+					SerializedPreferenceItem item;
+					if (m_Preferences.items.TryGetValue(serializer.GetType(), out item))
 					{
 						var payload = JsonUtility.FromJson(item.payload, Type.GetType(item.payloadType));
 						serializer.OnDeserializePreferences(payload);
@@ -71,34 +93,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal string SerializePreferences()
 		{
-			var preferences = new SerializedPreferences();
+			if (m_Preferences == null)
+				m_Preferences = new SerializedPreferences();
+
+			var serializerTypes = new HashSet<Type>();
+
 			foreach (var serializer in m_Serializers)
 			{
 				var payload = serializer.OnSerializePreferences();
 
-				SerializedPreferenceItem item = null;
 				if (payload == null)
-				{
-					if (m_Preferences != null)
-					{
-						// Use the previously saved preferences for this serializer
-						item = m_Preferences.items.SingleOrDefault(pi => pi.name == serializer.GetType().FullName);
-					}
-				}
-				else
-				{
-					item = new SerializedPreferenceItem();
-					item.name = serializer.GetType().FullName;
-					item.payloadType = payload.GetType().FullName;
-					item.payload = JsonUtility.ToJson(payload);
-				}
+					continue;
 
-				if (item != null)
-					preferences.items.Add(item);
+				var type = serializer.GetType();
+
+				if (!serializerTypes.Add(type))
+					Debug.LogWarning(string.Format("Multiple payloads of type {0} on serialization", type));
+
+				m_Preferences.items[type] = new SerializedPreferenceItem
+				{
+					name = type.FullName,
+					payloadType = payload.GetType().FullName,
+					payload = JsonUtility.ToJson(payload)
+				};
 			}
-			m_Preferences = preferences;
 
-			return JsonUtility.ToJson(preferences);
+			return JsonUtility.ToJson(m_Preferences);
 		}
 	}
 }

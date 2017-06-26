@@ -8,7 +8,6 @@ namespace UnityEngine.InputNew
 		public DirectSelectInput (ActionMap actionMap) : base (actionMap) { }
 		
 		public ButtonInputControl @select { get { return (ButtonInputControl)this[0]; } }
-		public ButtonInputControl @multiSelect { get { return (ButtonInputControl)this[1]; } }
-		public ButtonInputControl @cancel { get { return (ButtonInputControl)this[2]; } }
+		public ButtonInputControl @cancel { get { return (ButtonInputControl)this[1]; } }
 	}
 }
