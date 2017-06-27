@@ -44,11 +44,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (m_ToolType != null)
 				{
 					Debug.LogError("Setting up button type : " + m_ToolType.ToString());
+					gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
 					if (isSelectionTool || isMainMenu)
 					{
 						//order = isMainMenu ? menuButtonOrderPosition : activeToolOrderPosition;
 						tooltipText = isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText;
-						gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
 						secondaryButtonCollidersEnabled = false;
 					}
 					else
@@ -56,7 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						tooltipText = toolType.Name;
 
 						// Tools other than select fetch a random gradientPair; also used by the device when revealed
-						gradientPair = UnityBrandColorScheme.GetRandomCuratedLightGradient();
+						//gradientPair = UnityBrandColorScheme.GetRandomCuratedLightGradient();
 					}
 
 					activeTool = activeTool;

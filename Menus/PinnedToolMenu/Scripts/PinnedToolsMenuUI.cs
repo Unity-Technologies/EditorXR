@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -10,7 +11,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale
+	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -46,11 +47,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_OriginalLocalScale;
 		bool m_RayHovered;
 		float m_SpatialDragDistance;
-		float m_SmoothedSpatialDragDistance;
+		float m_SmoothDragDuration;
 		Quaternion m_HintContentContainerInitialRotation;
 		Quaternion m_HintContentContainerCurrentRotation;
 		Vector3 m_HintContentWorldPosition;
-		Quaternion m_SpatialScrollOrientation;
+		//Quaternion m_SpatialScrollOrientation;
 
 		public int maxButtonCount { get; set; }
 		public Transform buttonContainer { get { return m_ButtonContainer; } }
@@ -103,8 +104,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (Mathf.Approximately(value, 0f))
 				{
 					m_SpatialDragDistance = 0f;
-					m_SmoothedSpatialDragDistance = 0f;
-					m_SpatialScrollOrientation = Quaternion.identity;
+					m_SmoothDragDuration = 0f;
+					m_SpatialHintUI.scrollVisualsRotation = Vector3.zero;
 					var currentRotation = transform.rotation.eulerAngles;
 					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f); // Quaternion.AngleAxis(transform.forward.y, Vector3.up);
 					this.RestartCoroutine(ref m_HintContentVisibilityCoroutine, ShowHintContent());
@@ -117,20 +118,27 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public Vector3? spatialDirectionVector
+		public Vector3? startingDragOrigin
 		{
 			set
 			{
+				Debug.LogWarning("SETTING STARGIN DRAG DEFINITON POSITION : " + value.Value.ToString("F4"));
+				m_StartingDragOrigin = transform.position;
+
 				var orig = m_HintContentContainer.rotation;
 				m_HintContentContainer.LookAt(value.Value);
 				Debug.LogError(value.Value.ToString("F4"));
-				m_SpatialScrollOrientation =  Quaternion.FromToRotation(m_HintContentContainer.forward, value.Value); // Quaternion.Euler(value.Value); Quaternion.RotateTowards(m_HintContentContainerInitialRotation, Quaternion.Euler(value.Value), 180f);
+				//m_SpatialScrollOrientation = Quaternion.Euler(value.Value); // Quaternion.FromToRotation(m_HintContentContainer.forward, value.Value); // Quaternion.Euler(value.Value); Quaternion.RotateTowards(m_HintContentContainerInitialRotation, Quaternion.Euler(value.Value), 180f);
 				m_HintContentContainer.rotation = orig;
 			}
 		}
 
 		public event Action buttonHovered;
 		public event Action buttonClicked;
+
+		private Vector3 m_StartingDragOrigin;
+		private Vector3 m_InitialDragTarget;
+		private IUsesNode m_UsesNodeImplementation;
 
 		void Awake()
 		{
@@ -142,17 +150,29 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void Update()
 		{
 			var newHintContainerRotation = m_HintContentContainerInitialRotation;
-			if (m_SpatialDragDistance > 1f && m_SmoothedSpatialDragDistance < 1)
+			if (m_SpatialDragDistance > 1f && m_SmoothDragDuration < 0.99)
 			{
-			/*
+				if (Mathf.Approximately(m_SmoothDragDuration, 0f))
+					m_InitialDragTarget = transform.position; // Cache the initial drag target position
+
+				//m_SpatialDragDistance = 0f; // reset drag distance
+				m_SpatialHintUI.enablePrimaryArrowVisuals = false;
+				m_SpatialHintUI.scrollVisualsRotation = Vector3.Lerp(m_InitialDragTarget, transform.position, m_SmoothDragDuration);
 				// Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold
-				//Debug.LogError("INSIDE rotation update loop");
-				m_SmoothedSpatialDragDistance = Mathf.Clamp01(m_SmoothedSpatialDragDistance += Time.unscaledDeltaTime * 1.5f);
-				var shapedDragAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(m_SmoothedSpatialDragDistance), 6);
-				m_HintContentContainerCurrentRotation = Quaternion.Lerp(m_HintContentContainerInitialRotation, m_SpatialScrollOrientation, shapedDragAmount);
-				newHintContainerRotation = m_HintContentContainerCurrentRotation;
-			*/
+				Debug.LogError("INSIDE rotation update loop");
+
+				m_SpatialDragDistance += Time.unscaledDeltaTime;
+				var smoothDuration = m_SpatialDragDistance - 1f;
+				m_SmoothDragDuration = 1 - MathUtilsExt.SmoothInOutLerpFloat(m_SmoothDragDuration += Time.unscaledDeltaTime * 0.5f);
+
+				/*
+					var shapedDragAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(m_SmoothedSpatialDragDistance), 6);
+					m_HintContentContainerCurrentRotation = Quaternion.Lerp(m_HintContentContainerInitialRotation, m_SpatialScrollOrientation, shapedDragAmount);
+					newHintContainerRotation = m_HintContentContainerCurrentRotation;
+				*/
 			}
+
+			//m_SpatialHintUI.scrollVisualsRotation = Quaternion.Euler(endingDragDefinitionPosition - startingDragDefinitionPosition);
 			/*
 			else if (Mathf.Approximately(m_SmoothedSpatialDragDistance, 1f))
 				newHintContainerRotation = m_HintContentContainerCurrentRotation;
@@ -165,6 +185,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_HintContentContainer.rotation = newHintContainerRotation;
 			m_HintContentContainer.position = m_HintContentWorldPosition;
+
+			Debug.LogError(gameObject.GetInstanceID() + " : <color=green>World position of UI : " + transform.position + " - starting drag definition position : " + m_StartingDragOrigin + "</color>");
 		}
 
 		public void AddButton(IPinnedToolButton button, Transform buttonTransform)
@@ -297,8 +319,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void ShowAllExceptMenuButton()
 		{
 			Debug.LogError("ShowAllExceptMenuButton");
-
-			m_SpatialHintUI.enableSelectVisuals = true;
+			//m_SpatialHintUI.enableVisuals = true;
+			//m_SpatialHintUI.scrollVisualsRotation = m_SpatialScrollOrientation;
 			m_VisibleButtonCount = Mathf.Max(0, m_OrderedButtons.Count - 1); // The MainMenu button will be hidden, subtract 1 from the m_VisibleButtonCount
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
@@ -522,7 +544,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator ShowHintContent()
 		{
-			m_SpatialHintUI.enablePreSelectVisuals = true;
+			m_SpatialHintUI.enablePreviewVisuals = true;
 
 			var currentScale = m_HintContentContainer.localScale;
 			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
@@ -541,7 +563,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator HideHintContent()
 		{
-			m_SpatialHintUI.enableSelectVisuals = false;
+			m_SpatialHintUI.enableVisuals = false;
 
 			yield break;
 
@@ -558,6 +580,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_HintContentContainer.localScale = targetScale;
 			m_HintContentVisibilityCoroutine = null;
+		}
+
+		public Node? node
+		{
+			set { m_UsesNodeImplementation.node = value; }
 		}
 	}
 }

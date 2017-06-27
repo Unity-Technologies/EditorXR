@@ -336,7 +336,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					spatialDirection = directionVector; // initialize vector defining the spatial scroll direciton
 					Debug.LogError("<color=green>" + spatialDirection.Value.ToString("F4") + "</color>");
-					m_PinnedToolsMenuUI.spatialDirectionVector = spatialDirection;
+					m_PinnedToolsMenuUI.startingDragOrigin = spatialDirection;
 				}
 			}
 			else
