@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -47,7 +46,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_OriginalLocalScale;
 		bool m_RayHovered;
 		float m_SpatialDragDistance;
-		float m_SmoothDragDuration;
 		Quaternion m_HintContentContainerInitialRotation;
 		Quaternion m_HintContentContainerCurrentRotation;
 		Vector3 m_HintContentWorldPosition;
@@ -97,6 +95,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		private bool aboveMinimumButtonCount { get { return m_OrderedButtons.Count > k_ActiveToolOrderPosition + 1; } }
 
+		public bool spatialScrollVisualsVisible
+		{
+			set
+			{
+				if (!value)
+					m_SpatialHintUI.scrollVisualsRotation = Vector3.zero;
+			}
+		}
+
 		public float spatialDragDistance
 		{
 			set
@@ -104,7 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (Mathf.Approximately(value, 0f))
 				{
 					m_SpatialDragDistance = 0f;
-					m_SmoothDragDuration = 0f;
 					m_SpatialHintUI.scrollVisualsRotation = Vector3.zero;
 					var currentRotation = transform.rotation.eulerAngles;
 					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f); // Quaternion.AngleAxis(transform.forward.y, Vector3.up);
@@ -137,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public event Action buttonClicked;
 
 		private Vector3 m_StartingDragOrigin;
-		private Vector3 m_InitialDragTarget;
+		private Vector3 m_DragTarget;
 		private IUsesNode m_UsesNodeImplementation;
 
 		void Awake()
@@ -150,26 +156,41 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void Update()
 		{
 			var newHintContainerRotation = m_HintContentContainerInitialRotation;
-			if (m_SpatialDragDistance > 1f && m_SmoothDragDuration < 0.99)
+	
+			// Perform activation of visuals after the user has dragged beyond the initial drag trigger threshold
+			// The drag distance is a 0-1 lerped value, based off of the origin to trigger magnitude
+			if (m_SpatialDragDistance >= 1f && m_SpatialDragDistance < 2)
 			{
-				if (Mathf.Approximately(m_SmoothDragDuration, 0f))
-					m_InitialDragTarget = transform.position; // Cache the initial drag target position
+				if (Mathf.Approximately(m_SpatialDragDistance, 1f))
+				{
+					m_DragTarget = transform.position; // Cache the initial drag target position, before performing any extra shapting to the target Vec3
+					m_SpatialHintUI.enablePrimaryArrowVisuals = false;
+					m_SpatialHintUI.enablePreviewVisuals = false;
+				}
 
-				//m_SpatialDragDistance = 0f; // reset drag distance
-				m_SpatialHintUI.enablePrimaryArrowVisuals = false;
-				m_SpatialHintUI.scrollVisualsRotation = Vector3.Lerp(m_InitialDragTarget, transform.position, m_SmoothDragDuration);
+				// Follow the user's input for a short additional period of time
+				// Update the dragTarget with the current device position, to allow for visuals to better match the expected rotation/position
+				m_DragTarget = transform.position;
+
 				// Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold
-				Debug.LogError("INSIDE rotation update loop");
+				m_SpatialDragDistance += Time.unscaledDeltaTime; // Continue to increase the amount
+				/////var extentedDragDurationSmoothed = 1 - MathUtilsExt.SmoothInOutLerpFloat(m_SpatialDragDistance - 1f);
+				/////m_SpatialHintUI.scrollVisualsRotation = Vector3.Lerp(m_InitialDragTarget, transform.position, extentedDragDurationSmoothed);
 
-				m_SpatialDragDistance += Time.unscaledDeltaTime;
-				var smoothDuration = m_SpatialDragDistance - 1f;
-				m_SmoothDragDuration = 1 - MathUtilsExt.SmoothInOutLerpFloat(m_SmoothDragDuration += Time.unscaledDeltaTime * 0.5f);
+				// Add additional smoothed rotation to the scroll visuals to better align them with the user's continued device movemet after crossing the threshold
+				// The m_InitialDragTarget is the actualy vector being scrolled against, however adding a slight continuation of the user's device input position
+				// allows for the scroll visuals to appear to be more closely aligned to the user's expected rotation.
 
+				//Debug.LogError("INSIDE rotation update loop");
 				/*
 					var shapedDragAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(m_SmoothedSpatialDragDistance), 6);
 					m_HintContentContainerCurrentRotation = Quaternion.Lerp(m_HintContentContainerInitialRotation, m_SpatialScrollOrientation, shapedDragAmount);
 					newHintContainerRotation = m_HintContentContainerCurrentRotation;
 				*/
+			}
+			else if (m_SpatialDragDistance > 2)
+			{
+				m_SpatialHintUI.scrollVisualsRotation = m_DragTarget;
 			}
 
 			//m_SpatialHintUI.scrollVisualsRotation = Quaternion.Euler(endingDragDefinitionPosition - startingDragDefinitionPosition);

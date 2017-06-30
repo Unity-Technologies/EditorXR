@@ -2161,8 +2161,6 @@ MonoBehaviour:
   - {fileID: 114039844972246400}
   - {fileID: 114265858466807592}
   - {fileID: 114451923332080912}
-  m_PrimaryRotationalHintArrows: []
-  m_SecondaryRotationalHintArrows: []
   m_ScrollVisualsCanvasGroup: {fileID: 225496513774942428}
 --- !u!114 &114709129698682498
 MonoBehaviour:
@@ -2885,8 +2883,8 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1049941617855090}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.00007861845}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.00007861798}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4967341377978414}
@@ -2896,7 +2894,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.00007836966, y: 0}
+  m_AnchoredPosition: {x: 0.00007836922, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224523839693825596
@@ -3159,7 +3157,7 @@ CanvasGroup:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1243100648521718}
   m_Enabled: 1
-  m_Alpha: 0.05
+  m_Alpha: 0.025
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0

@@ -1,5 +1,8 @@
-﻿using UnityEngine;
-using UnityEngine.Serialization;
+﻿using System.Collections;
+using System.Security.Cryptography.X509Certificates;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -7,24 +10,27 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		readonly Color k_PrimaryArrowColor = Color.white;
 
-		[SerializeField] [FormerlySerializedAs("m_PrimaryHintArrows")]
+		[SerializeField]
 		HintIcon[] m_PrimaryDirectionalHintArrows;
 
-		[SerializeField] [FormerlySerializedAs("m_SecondaryHintArrows")]
+		[SerializeField]
 		HintIcon[] m_SecondaryDirectionalHintArrows;
 
+		/*
 		[SerializeField]
 		HintIcon[] m_PrimaryRotationalHintArrows;
 
 		[SerializeField]
 		HintIcon[] m_SecondaryRotationalHintArrows;
+		*/
 
 		[SerializeField]
 		CanvasGroup m_ScrollVisualsCanvasGroup;
 
-		Vector3? m_ScrollVisualsRotation;
+		Vector3 m_ScrollVisualsRotation;
 		Transform m_ScrollVisualsTransform;
 		GameObject m_ScrollVisualsGameObject;
+		Coroutine m_ScrollVisualsVisibilityCoroutine;
 
 		/// <summary>
 		/// Enables/disables the visual elements that should be shown when beginning to initiate a spatial selection action
@@ -42,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				foreach (var arrow in m_SecondaryDirectionalHintArrows)
 				{
-					arrow.visible = true;
+					arrow.visible = value;
 				}
 			}
 		}
@@ -102,37 +108,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <summary>
 		/// If non-null, enable and set the world rotation of the scroll visuals
 		/// </summary>
-		public Vector3? scrollVisualsRotation
+		public Vector3 scrollVisualsRotation
 		{
 			// Set null In order to hide the scroll visuals
 			set
 			{
-				if (m_ScrollVisualsRotation == null && value == null)
+				if (value == Vector3.zero)
+					Debug.LogError("<color=red>??????????????????????!!!!!!!!!!!!!!!!!!!!!!!</color>");
+
+				if (m_ScrollVisualsRotation == value)
 					return;
 
-				var newRotation = value;
-
-				//if (m_ScrollVisualsRotation == newRotation)
-					//return;
-
-				m_ScrollVisualsRotation = newRotation;
-				if (m_ScrollVisualsRotation != null)
+				m_ScrollVisualsRotation = value;
+				if (m_ScrollVisualsRotation != Vector3.zero)
 				{
-					Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color>");
-
-					// Display two arrows denoting the positive and negative directions allow for spatial scrolling, as defined by the drag vector
-					m_ScrollVisualsGameObject.SetActive(true);
-					m_ScrollVisualsCanvasGroup.alpha = 1f;
-					//m_ScrollVisualsTransform.rotation = m_ScrollVisualsRotation.Value;
-					m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation.Value);
+					this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, ShowScrollVisuals());
 				}
 				else
 				{
-					Debug.LogError("<color=red>HIDING SPATIAL SCROLL VISUALS</color>");
-
-					// Hide the scroll visuals
-					m_ScrollVisualsCanvasGroup.alpha = 1;
-					m_ScrollVisualsGameObject.SetActive(false);
+					this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, HideScrollVisuals());
 				}
 			}
 		}
@@ -142,6 +136,46 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsTransform = m_ScrollVisualsCanvasGroup.transform;
 			m_ScrollVisualsGameObject = m_ScrollVisualsTransform.gameObject;
 			m_ScrollVisualsCanvasGroup.alpha = 0f;
+			m_ScrollVisualsGameObject.SetActive(false);
+		}
+
+		IEnumerator ShowScrollVisuals()
+		{
+			Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color>");
+
+			enableVisuals = false;
+			// Display two arrows denoting the positive and negative directions allow for spatial scrolling, as defined by the drag vector
+			m_ScrollVisualsGameObject.SetActive(true);
+			m_ScrollVisualsCanvasGroup.alpha = 1f;
+			//m_ScrollVisualsTransform.rotation = m_ScrollVisualsRotation.Value;
+			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation);
+			m_ScrollVisualsTransform.localScale = Vector3.one;
+			yield break;
+		}
+
+		IEnumerator HideScrollVisuals()
+		{
+			Debug.LogError("<color=red>HIDING SPATIAL SCROLL VISUALS</color>");
+			// Hide the scroll visuals
+
+			const float kTargetDuration = 1f;
+			var hiddenLocalScale = Vector3.zero;
+			var currentDuration = 0f;
+			var currentLocalScale = m_ScrollVisualsTransform.localScale;
+			var currentAlpha = m_ScrollVisualsCanvasGroup.alpha;
+			while (currentDuration < kTargetDuration)
+			{
+				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / kTargetDuration);
+				m_ScrollVisualsTransform.localScale = Vector3.Lerp(currentLocalScale, hiddenLocalScale, shapedDuration);
+				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 0f, shapedDuration);
+				//m_Icon.color = Color.Lerp(currentColor, m_HiddenColor, currentDuration);
+				currentDuration += Time.unscaledDeltaTime * 2f;
+				yield return null;
+			}
+
+			m_ScrollVisualsCanvasGroup.alpha = 0;
+			m_ScrollVisualsTransform.localScale = hiddenLocalScale;
+			//m_ScrollVisualsTransform.localRotation = Quaternion.identity;
 			m_ScrollVisualsGameObject.SetActive(false);
 		}
 	}

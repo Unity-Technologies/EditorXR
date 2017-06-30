@@ -230,6 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				// Hide if no direction as been defined after a given duration
 				m_PinnedToolsMenuUI.allButtonsVisible = false;
 				allowSpatialScrollBeforeThisTime = null;
+				m_PinnedToolsMenuUI.spatialScrollVisualsVisible = false;
 				return;
 			}
 
@@ -302,6 +303,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (spatialDirection != null)
 				{
 					m_PinnedToolsMenuUI.SelectHighlightedButton();
+					m_PinnedToolsMenuUI.spatialDragDistance = 0f; // Triggers the display of the directional hint arrows
 					spatialDirection = null;
 					consumeControl(pinnedToolInput.select);
 					this.Pulse(node, m_HidingPulse);
