@@ -1094,7 +1094,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1559511730278864}
   m_LocalRotation: {x: 0.7071068, y: 0.0000055134296, z: 0.000007599592, w: 0.7071068}
-  m_LocalPosition: {x: -0.000080108635, y: -0.00007824039, z: -0.35749817}
+  m_LocalPosition: {x: -0.000080108635, y: -0.00007824039, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224965907269186458}
@@ -1363,7 +1363,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1269561316698028}
   m_LocalRotation: {x: 0.7071068, y: 0.0000055134296, z: 0.000007599592, w: 0.7071068}
-  m_LocalPosition: {x: -0.000080108635, y: -0.00007824039, z: 0.3574982}
+  m_LocalPosition: {x: -0.000080108635, y: -0.00007824039, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224968954540649746}
@@ -2162,6 +2162,7 @@ MonoBehaviour:
   - {fileID: 114265858466807592}
   - {fileID: 114451923332080912}
   m_ScrollVisualsCanvasGroup: {fileID: 225496513774942428}
+  m_ScrollVisualsDragTargetArrow: {fileID: 4967341377978414}
 --- !u!114 &114709129698682498
 MonoBehaviour:
   m_ObjectHideFlags: 1

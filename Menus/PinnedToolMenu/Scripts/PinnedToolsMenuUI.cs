@@ -173,7 +173,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_DragTarget = transform.position;
 
 				// Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold
-				m_SpatialDragDistance += Time.unscaledDeltaTime; // Continue to increase the amount
+				m_SpatialDragDistance += Time.unscaledDeltaTime * 8; // Continue to increase the amount
 				/////var extentedDragDurationSmoothed = 1 - MathUtilsExt.SmoothInOutLerpFloat(m_SpatialDragDistance - 1f);
 				/////m_SpatialHintUI.scrollVisualsRotation = Vector3.Lerp(m_InitialDragTarget, transform.position, extentedDragDurationSmoothed);
 
@@ -193,6 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_SpatialHintUI.scrollVisualsRotation = m_DragTarget;
 			}
 
+			m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition = transform.position;
 			//m_SpatialHintUI.scrollVisualsRotation = Quaternion.Euler(endingDragDefinitionPosition - startingDragDefinitionPosition);
 			/*
 			else if (Mathf.Approximately(m_SmoothedSpatialDragDistance, 1f))

@@ -27,6 +27,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		CanvasGroup m_ScrollVisualsCanvasGroup;
 
+		[SerializeField]
+		Transform m_ScrollVisualsDragTargetArrow;
+
 		Vector3 m_ScrollVisualsRotation;
 		Transform m_ScrollVisualsTransform;
 		GameObject m_ScrollVisualsGameObject;
@@ -131,6 +134,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public Vector3 scrollVisualsDragThresholdTriggerPosition { get; set; }
+
 		void Awake()
 		{
 			m_ScrollVisualsTransform = m_ScrollVisualsCanvasGroup.transform;
@@ -142,15 +147,30 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator ShowScrollVisuals()
 		{
 			Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color>");
-
-			enableVisuals = false;
 			// Display two arrows denoting the positive and negative directions allow for spatial scrolling, as defined by the drag vector
 			m_ScrollVisualsGameObject.SetActive(true);
-			m_ScrollVisualsCanvasGroup.alpha = 1f;
-			//m_ScrollVisualsTransform.rotation = m_ScrollVisualsRotation.Value;
-			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation);
+			enableVisuals = false;
 			m_ScrollVisualsTransform.localScale = Vector3.one;
-			yield break;
+			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation);
+			m_ScrollVisualsCanvasGroup.alpha = 1f; // remove
+			m_ScrollVisualsDragTargetArrow.localPosition = Vector3.zero;
+
+			const float kTargetDuration = 1f;
+			var currentDuration = 0f;
+			var currentLocalScale = m_ScrollVisualsTransform.localScale;
+			var currentAlpha = m_ScrollVisualsCanvasGroup.alpha;
+			var secondArrowCurrentPosition = m_ScrollVisualsDragTargetArrow.position;
+			while (currentDuration < kTargetDuration)
+			{
+				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / kTargetDuration);
+				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 1f, shapedDuration);
+				m_ScrollVisualsDragTargetArrow.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
+				currentDuration += Time.unscaledDeltaTime * 2f;
+				yield return null;
+			}
+
+			//m_ScrollVisualsTransform.rotation = m_ScrollVisualsRotation.Value;
+			m_ScrollVisualsCanvasGroup.alpha = 1f;
 		}
 
 		IEnumerator HideScrollVisuals()
