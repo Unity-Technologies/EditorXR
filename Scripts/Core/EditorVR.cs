@@ -96,6 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void Awake()
 		{
+			ObjectUtils.hideFlags = defaultHideFlags;
 			Nested.evr = this; // Set this once for the convenience of all nested classes 
 			m_DefaultTools = defaultTools;
 
@@ -437,8 +438,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		static EditorVR()
 		{
-			ObjectUtils.hideFlags = defaultHideFlags;
-
 			if (!PlayerSettings.virtualRealitySupported)
 				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
 
