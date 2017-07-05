@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 
 		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
-		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
+		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0f, 0.1f);
 
 		public const float FaceMargin = 0.025f;
 		public const float HighlightMargin = 0.002f;
@@ -65,6 +65,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					size.y = Mathf.Max(size.y, minBounds.y);
 					size.z = Mathf.Clamp(Mathf.Max(size.z, minBounds.z), 0, k_MaxFrameSize);
 					m_ContentBounds.size = size;
+
+					// Offset by half height
+					var center = m_ContentBounds.center;
+					center.y = size.y * 0.5f;
+					m_ContentBounds.center = center;
 
 					UpdateBounds();
 					OnBoundsChanged();
