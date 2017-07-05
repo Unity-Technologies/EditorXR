@@ -459,22 +459,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (hasRight && rightHeld)
 						rightData.UpdatePositions(this);
 				}
-			}
 
-			if (!hasObject)
-			{
 				// Reset direct selection state in case of a ray selection
 				foreach (TransformTool transformTool in linkedObjects)
 				{
 					var rayOrigin = transformTool.rayOrigin;
-					this.UnlockRay(rayOrigin, this);
-					this.SetDefaultRayVisibility(rayOrigin, true, true);
-
-					var transformInput = transformTool.m_Input;
-					if (transformInput != null && transformInput.select.wasJustReleased)
+					if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node.Value)))
 					{
-						m_DirectSelected = false;
-						break;
+						this.UnlockRay(rayOrigin, this);
+						this.SetDefaultRayVisibility(rayOrigin, true, true);
+
+						var transformInput = transformTool.m_Input;
+						if (transformInput != null && transformInput.select.wasJustReleased)
+						{
+							m_DirectSelected = false;
+							break;
+						}
 					}
 				}
 			}
