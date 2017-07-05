@@ -283,7 +283,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							}
 						}
 					}
-					evr.m_Interfaces.DisconnectInterfaces(tool, deviceData.inputDevice);
+					evr.m_Interfaces.DisconnectInterfaces(tool, deviceData.rayOrigin);
 
 					// Exclusive tools disable other tools underneath, so restore those
 					if (tool is IExclusiveMode)
