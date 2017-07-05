@@ -438,6 +438,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		static EditorVR()
 		{
+			ObjectUtils.hideFlags = defaultHideFlags;
+
 			if (!PlayerSettings.virtualRealitySupported)
 				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
 
