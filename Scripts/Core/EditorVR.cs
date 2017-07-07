@@ -76,6 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public IMenu customMenu;
 			public PinnedToolButton previousToolButton;
 			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
+			public readonly Dictionary<IMenu, float> menuAutoHideTimes = new Dictionary<IMenu, float>();
 		}
 
 		class Nested
@@ -197,6 +198,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			};
 
 			AddModule<HapticsModule>();
+
+			AddModule<GizmoModule>();
 
 			viewer.AddPlayerModel();
 

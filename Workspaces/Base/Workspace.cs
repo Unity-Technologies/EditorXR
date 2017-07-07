@@ -278,6 +278,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
+		void Update()
+		{
+			GizmoModule.instance.DrawCube(transform.position + transform.rotation * outerBounds.center,
+				transform.rotation, Vector3.Scale(transform.lossyScale, outerBounds.size), Color.white);
+		}
+
 		public virtual void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);

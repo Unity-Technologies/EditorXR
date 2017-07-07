@@ -12,6 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
+		const float k_MainMenuAutoHideDelay = 0.25f;
+
 		[SerializeField]
 		MainMenuActivator m_MainMenuActivatorPrefab;
 
@@ -24,9 +26,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal enum MenuHideFlags
 			{
 				Hidden = 1 << 0,
-				OverUI = 1 << 1,
-				OverWorkspace = 1 << 2,
-				Overridden = 1 << 3,
+				Overridden = 1 << 1,
+				OverUI = 1 << 2,
+				OverWorkspace = 1 << 3,
 				HasDirectSelection = 1 << 4
 			}
 
@@ -141,13 +143,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							hoveringWorkspace = true;
 					}
 
-					var menus = deviceData.menuHideFlags.Keys.ToList();
+					var menus = menuHideFlags.Keys.ToList();
 					foreach (var menu in menus)
 					{
 						if (hoveringWorkspace)
-							deviceData.menuHideFlags[menu] |= MenuHideFlags.OverWorkspace;
-						else
-							deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverWorkspace;
+							menuHideFlags[menu] |= MenuHideFlags.OverWorkspace;
 					}
 
 					var heldObjects = directSelection.GetHeldObjects(rayOrigin);
@@ -156,7 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					{
 						foreach (var menu in menus)
 						{
-							deviceData.menuHideFlags[menu] |= MenuHideFlags.HasDirectSelection;
+							menuHideFlags[menu] |= MenuHideFlags.HasDirectSelection;
 						}
 
 						foreach (var otherDeviceData in m_ActiveDeviceData)
@@ -168,10 +168,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							if (directSelection.IsHovering(otherRayOrigin) || directSelection.IsScaling(otherRayOrigin)
 								|| Vector3.Distance(otherRayOrigin.position, rayOriginPosition) < k_TwoHandHideDistance * Viewer.GetViewerScale())
 							{
-								var otherMenus = otherDeviceData.menuHideFlags.Keys.ToList();
+								var otherHideFlags = otherDeviceData.menuHideFlags;
+								var otherMenus = otherHideFlags.Keys.ToList();
 								foreach (var menu in otherMenus)
 								{
-									otherDeviceData.menuHideFlags[menu] |= MenuHideFlags.HasDirectSelection;
+									otherHideFlags[menu] |= MenuHideFlags.HasDirectSelection;
 								}
 								break;
 							}
@@ -183,7 +184,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var deviceData in m_ActiveDeviceData)
 				{
 					var mainMenu = deviceData.mainMenu;
-					mainMenu.visible = deviceData.menuHideFlags[mainMenu] == 0;
+					var mainMenuHideFlags = deviceData.menuHideFlags[mainMenu];
+					if (mainMenuHideFlags != 0)
+					{
+						if ((mainMenuHideFlags & MenuHideFlags.Hidden) != 0)
+						{
+							mainMenu.visible = false;
+						}
+						else if (Time.time > deviceData.menuAutoHideTimes[mainMenu] + k_MainMenuAutoHideDelay)
+						{
+							mainMenu.visible = false;
+						}
+						else
+						{
+							mainMenu.visible = true;
+						}
+					}
+					else
+					{
+						mainMenu.visible = true;
+					}
 
 					var customMenu = deviceData.customMenu;
 					if (customMenu != null)
@@ -196,11 +216,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				// Reset Temporary states
 				foreach (var deviceData in m_ActiveDeviceData)
 				{
-					var menus = deviceData.menuHideFlags.Keys.ToList();
+					var menuHideFlags = deviceData.menuHideFlags;
+					var menus = menuHideFlags.Keys.ToList();
 					foreach (var menu in menus)
 					{
-						deviceData.menuHideFlags[menu] &= ~MenuHideFlags.OverUI;
-						deviceData.menuHideFlags[menu] &= ~MenuHideFlags.HasDirectSelection;
+						var hideFlags = menuHideFlags[menu];
+						if ((hideFlags & ~MenuHideFlags.Hidden & ~MenuHideFlags.Overridden) == 0)
+							deviceData.menuAutoHideTimes[menu] = Time.time;
+
+						menuHideFlags[menu] = hideFlags & ~MenuHideFlags.OverUI & ~MenuHideFlags.HasDirectSelection
+							& ~MenuHideFlags.OverWorkspace;
 					}
 				}
 
@@ -233,10 +258,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						return false;
 
 					var scaledPointerDistance = eventData.pointerCurrentRaycast.distance / Viewer.GetViewerScale();
-					var isManipulator = go.GetComponentInParent<IManipulator>() != null;
 					var menus = deviceData.menuHideFlags.Keys.ToList();
 					var hideDistance = deviceData.mainMenu.hideDistance;
-					if (!(isManipulator || scaledPointerDistance > hideDistance + k_MenuHideMargin))
+					if (scaledPointerDistance < hideDistance + k_MenuHideMargin)
 					{
 						foreach (var menu in menus)
 						{
