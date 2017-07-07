@@ -11,8 +11,11 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace, ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode, IRayToNode
+	sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace,
+		ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin
 	{
+		const string k_SettingsMenuSectionName = "Settings";
+
 		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
 		ActionMap m_MainMenuActionMap;
@@ -83,16 +86,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public List<Type> menuTools { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { private get; set; }
+		public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { private get; set; }
+		public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { private get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
 		public Func<Transform, Type, IPinnedToolButton> previewToolInPinnedToolButton { private get; set; }
 		public Transform rayOrigin { get; set; } // TODO: still needed for previewToolInPinnedToolButton - consider changing to NODE
 		public Node? node { get; set; }
-		public Func<Transform, Node?> requestNodeFromRayOrigin { get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
+
+		public Transform rayOrigin { private get; set; }
 
 		void Start()
 		{
@@ -107,9 +112,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.opening += OnOpening;
 			m_MainMenuUI.closing += OnClosing;
 
-			CreateFaceButtons(menuTools);
-			CreateFaceButtons(menuWorkspaces);
-			CreateFaceButtons(settingsMenuProviders.Keys.ToList());
+			var types = new HashSet<Type>();
+			types.UnionWith(menuTools);
+			types.UnionWith(menuWorkspaces);
+			types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Key));
+			types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Key));
+
+			CreateFaceButtons(types.ToList());
 			m_MainMenuUI.SetupMenuFaces();
 			UpdateToolButtons();
 		}
@@ -145,81 +154,109 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			foreach (var type in types)
 			{
 				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
-				if (customMenuAttribute != null && !customMenuAttribute.shown)
-					continue;
-
-				var isTool = typeof(ITool).IsAssignableFrom(type);
+				var isTool = typeof(ITool).IsAssignableFrom(type) && menuTools.Contains(type);
 				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
 				var isSettingsProvider = typeof(ISettingsMenuProvider).IsAssignableFrom(type);
+				var isSettingsItemProvider = typeof(ISettingsMenuItemProvider).IsAssignableFrom(type);
 
-				var buttonData = new MainMenuUI.ButtonData();
-				buttonData.name = type.Name;
+				ITooltip tooltip = null;
+				MainMenuUI.ButtonData buttonData = null;
 
-				if (customMenuAttribute != null)
+				var selectedType = type; // Local variable for closure
+				if (customMenuAttribute != null && customMenuAttribute.shown)
 				{
-					buttonData.name = customMenuAttribute.name;
-					buttonData.sectionName = customMenuAttribute.sectionName;
-					buttonData.description = customMenuAttribute.description;
-				}
-				else if (isTool)
-				{
-					buttonData.name = type.Name.Replace("Tool", string.Empty);
-				}
-				else if (isWorkspace)
-				{
-					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
-					buttonData.name = type.Name.Replace("Workspace", string.Empty);
-					buttonData.sectionName = "Workspaces";
-				}
-				else if (isSettingsProvider)
-				{
-					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
-					buttonData.name = type.Name.Replace("Module", string.Empty);
-					buttonData.sectionName = "Settings";
-				}
+					tooltip = customMenuAttribute.tooltip;
 
-				var selectedType = type; // Local variable for proper closure
-				m_MainMenuUI.CreateFaceButton(buttonData, b =>
-				{
-					b.button.onClick.RemoveAllListeners();
-					if (isTool)
+					buttonData = new MainMenuUI.ButtonData(customMenuAttribute.name)
 					{
-						m_ToolButtons[selectedType] = b;
+						sectionName = customMenuAttribute.sectionName,
+						description = customMenuAttribute.description
+					};
+				}
 
-						b.button.onClick.AddListener(() =>
+				if (isTool)
+				{
+					if (buttonData == null)
+						buttonData = new MainMenuUI.ButtonData(type.Name);
+
+					CreateFaceButton(buttonData, tooltip, () =>
+					{
+						if (targetRayOrigin)
 						{
-							if (visible && targetRayOrigin)
+							this.SelectTool(targetRayOrigin, selectedType);
+							UpdateToolButtons();
+						}
+					});
+				}
+
+				if (isWorkspace)
+				{
+					// For workspaces that haven't specified a custom attribute, do some menu categorization automatically
+					if (buttonData == null)
+						buttonData = new MainMenuUI.ButtonData(type.Name) { sectionName = "Workspaces" };
+
+					CreateFaceButton(buttonData, tooltip, () =>
+					{
+						this.CreateWorkspace(selectedType);
+					});
+				}
+
+				if (isSettingsProvider)
+				{
+					foreach (var providerPair in settingsMenuProviders)
+					{
+						var kvp = providerPair.Key;
+						if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
+						{
+							var menuProvider = providerPair.Value;
+							if (buttonData == null)
+								buttonData = new MainMenuUI.ButtonData(type.Name);
+
+							buttonData.sectionName = k_SettingsMenuSectionName;
+
+							CreateFaceButton(buttonData, tooltip, () =>
 							{
-								this.SelectTool(targetRayOrigin, selectedType);
-								UpdateToolButtons();
-							}
-						});
+								menuProvider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(k_SettingsMenuSectionName, menuProvider.settingsMenuPrefab);
+							});
+						}
 					}
-					else if (isWorkspace)
-					{
-						b.button.onClick.AddListener(() =>
-						{
-							if (visible)
-								this.CreateWorkspace(selectedType);
-						});
-					}
-					else if (isSettingsProvider)
-					{
-						b.button.onClick.AddListener(() =>
-						{
-							var provider = settingsMenuProviders[selectedType];
-							provider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(buttonData.sectionName, provider.settingsMenuPrefab);
-						});
-					}
+				}
 
-					if (customMenuAttribute != null && customMenuAttribute.tooltip != null)
-						b.tooltipText = customMenuAttribute.tooltip.tooltipText;
+				if (isSettingsItemProvider)
+				{
+					foreach (var providerPair in settingsMenuItemProviders)
+					{
+						var kvp = providerPair.Key;
+						if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
+						{
+							var itemProvider = providerPair.Value;
+							if (buttonData == null)
+								buttonData = new MainMenuUI.ButtonData(type.Name);
 
-					// Assign pinned tool button preview properties
-					b.toolType = selectedType;
-					b.previewToolInPinnedToolButton = previewToolInPinnedToolButton;
-				});
+							buttonData.sectionName = "Settings";
+
+							itemProvider.settingsMenuItemInstance = m_MainMenuUI.CreateCustomButton(itemProvider.settingsMenuItemPrefab, buttonData);
+						}
+					}
+				}
 			}
+		}
+
+		void CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback)
+		{
+			var mainMenuButton = m_MainMenuUI.CreateFaceButton(buttonData);
+			mainMenuButton.button.onClick.RemoveAllListeners();
+			mainMenuButton.button.onClick.AddListener(() =>
+			{
+				if (visible)
+					buttonClickCallback();
+			});
+
+			mainMenuButton.tooltip = tooltip;
+
+			// Assign pinned tool button preview properties
+			b.toolType = selectedType;
+			b.previewToolInPinnedToolButton = previewToolInPinnedToolButton;
 		}
 
 		void UpdateToolButtons()
@@ -232,12 +269,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnButtonClicked(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 		}
 
 		void OnButtonHovered(Transform rayOrigin)
 		{
-			this.Pulse(requestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
 
 		void OnOpening()

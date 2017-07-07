@@ -9,17 +9,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
-  m_Name: BlinkLocomotion
+  m_Name: LocomotionInput
   m_EditorClassIdentifier: 
   m_Actions:
   - {fileID: 114000011114386886}
-  - {fileID: 114000014052142292}
-  - {fileID: 114000011232169852}
   - {fileID: 114000013530790504}
   - {fileID: 114000011708774044}
-  - {fileID: 114000014215053452}
+  - {fileID: 114000011230901436}
+  - {fileID: 114000010166273910}
+  - {fileID: 114000013424161920}
+  - {fileID: 114022299328106344}
+  - {fileID: 114894458248566326}
+  - {fileID: 114795339600363638}
+  - {fileID: 114866277550077874}
   m_ControlSchemes:
-  - m_Name: BlinkLocomotion
+  - m_Name: LocomotionInput
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
@@ -30,6 +34,69 @@ MonoBehaviour:
     m_Bindings:
     - sources:
       - controlIndex: 18
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 22
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 3
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 2
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 17
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 18
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 2
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 3
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -55,36 +122,29 @@ MonoBehaviour:
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 3
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 22
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 17
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-  m_MapTypeName: BlinkLocomotion, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+  m_MapTypeName: LocomotionInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   m_CustomNamespace: 
+--- !u!114 &114000010166273910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Reverse
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 4
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Reverse
+    defaultValue: 0
 --- !u!114 &114000011114386886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -105,7 +165,47 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Blink
     defaultValue: 0
---- !u!114 &114000011232169852
+--- !u!114 &114000011230901436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Speed
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 3
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Speed
+    defaultValue: 0
+--- !u!114 &114000011708774044
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: ScaleReset
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 2
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: ScaleReset
+    defaultValue: 0
+--- !u!114 &114000013424161920
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -117,33 +217,13 @@ MonoBehaviour:
   m_Name: Forward
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 2
-  m_ControlData:
-    componentControlIndices: 
-    controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-    name: Forward
-    defaultValue: 0
---- !u!114 &114000011708774044
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Thumb
-  m_EditorClassIdentifier: 
-  m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 4
+  m_ActionIndex: 5
   m_ControlData:
     componentControlIndices: 
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: Thumb
+    name: Forward
     defaultValue: 0
 --- !u!114 &114000013530790504
 MonoBehaviour:
@@ -154,38 +234,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Grip
-  m_EditorClassIdentifier: 
-  m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 3
-  m_ControlData:
-    componentControlIndices: 
-    controlType:
-      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-    name: Grip
-    defaultValue: 0
---- !u!114 &114000014052142292
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Yaw
+  m_Name: Crawl
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 1
   m_ControlData:
     componentControlIndices: 
     controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: Yaw
+    name: Crawl
     defaultValue: 0
---- !u!114 &114000014215053452
+--- !u!114 &114022299328106344
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -194,15 +254,74 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Trigger
+  m_Name: WorldReset
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 5
+  m_ActionIndex: 6
   m_ControlData:
     componentControlIndices: 
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: Trigger
+    name: WorldReset
+    defaultValue: 0
+--- !u!114 &114795339600363638
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Horizontal
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 8
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Horizontal
+    defaultValue: 0
+--- !u!114 &114866277550077874
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Vertical
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 9
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Vertical
+    defaultValue: 0
+--- !u!114 &114894458248566326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Rotate
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 7
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Rotate
     defaultValue: 0

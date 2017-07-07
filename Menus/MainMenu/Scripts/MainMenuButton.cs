@@ -9,16 +9,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IPointerClickHandler
 	{
-		public Button button
-		{
-			get { return m_Button; }
-		}
+		[SerializeField]
+		Button m_Button;
 
-		[SerializeField] private Button m_Button;
+		[SerializeField]
+		Text m_ButtonDescription;
 
-		[SerializeField] private Text m_ButtonDescription;
-
-		[SerializeField] private Text m_ButtonTitle;
+		[SerializeField]
+		Text m_ButtonTitle;
 
 		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
@@ -31,9 +29,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public Func<Transform, Type, IPinnedToolButton> previewToolInPinnedToolButton { private get; set; }
 
-		public string tooltipText { get; set; }
+		public Button button { get { return m_Button; } }
 
-		public Type toolType { get; set; }
+		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : null; } }
+
+		public ITooltip tooltip { private get; set; }
 
 		public void OnPointerClick(PointerEventData eventData)
 		{
@@ -61,7 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public event Action<Transform> hovered;
 		public event Action<Transform> clicked;
 
-		private void Awake()
+		void Awake()
 		{
 			m_OriginalColor = m_Button.targetGraphic.color;
 		}
