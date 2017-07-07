@@ -66,7 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			foreach (var pulse in m_HapticPulses)
 			{
 				GUILayout.BeginHorizontal();
-				EditorGUILayout.ObjectField(pulse, typeof(HapticPulse), GUILayout.Width(nameColumnWidth));
+				EditorGUILayout.ObjectField(pulse, typeof(HapticPulse), false, GUILayout.Width(nameColumnWidth));
 				EditorGUI.BeginChangeCheck();
 				pulse.duration = EditorGUILayout.FloatField(pulse.duration, GUILayout.Width(durationColumnWidth));
 				pulse.intensity = GUILayout.HorizontalSlider(pulse.intensity, 0, 1);
