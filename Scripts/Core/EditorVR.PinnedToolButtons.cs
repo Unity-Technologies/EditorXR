@@ -21,9 +21,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					mainMenu.previewToolInPinnedToolButton = PreviewToolInPinnedToolButton;
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
+				var mainMenu = obj as IMainMenu;
+				if (mainMenu != null)
+					mainMenu.previewToolInPinnedToolButton = null;
 			}
+
 /* TODO remove after removal of main menu activator codebase
 			internal MainMenuActivator SpawnMainMenuActivator(InputDevice device)
 			{

@@ -92,12 +92,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
 		public Func<Transform, Type, IPinnedToolButton> previewToolInPinnedToolButton { private get; set; }
-		public Transform rayOrigin { get; set; } // TODO: still needed for previewToolInPinnedToolButton - consider changing to NODE
 		public Node? node { get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
-		public Transform rayOrigin { private get; set; }
+		public Transform rayOrigin { private get; set; } // TODO: still needed for previewToolInPinnedToolButton - consider changing to NODE
 
 		void Start()
 		{
@@ -171,6 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						sectionName = customMenuAttribute.sectionName,
 						description = customMenuAttribute.description
+						
 					};
 				}
 
@@ -186,7 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 							this.SelectTool(targetRayOrigin, selectedType);
 							UpdateToolButtons();
 						}
-					});
+					}, selectedType);
 				}
 
 				if (isWorkspace)
@@ -242,7 +242,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback)
+		void CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback, Type selectedType = null)
 		{
 			var mainMenuButton = m_MainMenuUI.CreateFaceButton(buttonData);
 			mainMenuButton.button.onClick.RemoveAllListeners();
@@ -254,9 +254,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			mainMenuButton.tooltip = tooltip;
 
-			// Assign pinned tool button preview properties
-			b.toolType = selectedType;
-			b.previewToolInPinnedToolButton = previewToolInPinnedToolButton;
+			if (selectedType != null)
+			{
+				// Assign pinned tool button preview properties
+				mainMenuButton.toolType = selectedType;
+				mainMenuButton.previewToolInPinnedToolButton = previewToolInPinnedToolButton;
+			}
 		}
 
 		void UpdateToolButtons()

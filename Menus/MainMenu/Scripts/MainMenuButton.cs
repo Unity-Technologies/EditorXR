@@ -35,6 +35,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public ITooltip tooltip { private get; set; }
 
+		public Type toolType { get; set; }
+
 		public void OnPointerClick(PointerEventData eventData)
 		{
 			if (clicked != null)

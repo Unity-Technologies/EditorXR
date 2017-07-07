@@ -352,25 +352,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (altMenuInput != null && altMenu.visible)
 					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
 
-				ActionMapInput testBlinkActionMap = null; // HACK - implement proper fetching of action map input that minds the grip move/zoom
-
 				foreach (var toolData in deviceData.toolData)
 				{
-					var blink = (toolData.tool as BlinkLocomotionTool);
-					if (blink)
-					{
-						testBlinkActionMap = toolData.input;
-					}
 					var process = toolData.tool as IProcessInput;
 					if (process != null && ((MonoBehaviour)toolData.tool).enabled
 						&& processedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
 						process.ProcessInput(toolData.input, consumeControl);
 				}
-
-				var pinnedToolsMenu = deviceData.pinnedToolsMenu;
-				var pinnedToolsMenuInput = pinnedToolsMenu as IProcessInput;
-				if (pinnedToolsMenuInput != null)
-					pinnedToolsMenuInput.ProcessInput(deviceData.pinnedToolsMenuInput, consumeControl);
 			}
 		}
 
