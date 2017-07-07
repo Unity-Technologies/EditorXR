@@ -208,7 +208,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_HintContentContainer.rotation = newHintContainerRotation;
 			m_HintContentContainer.position = m_HintContentWorldPosition;
 
-			Debug.LogError(gameObject.GetInstanceID() + " : <color=green>World position of UI : " + transform.position + " - starting drag definition position : " + m_StartingDragOrigin + "</color>");
+			//Debug.LogError(gameObject.GetInstanceID() + " : <color=green>World position of UI : " + transform.position + " - starting drag definition position : " + m_StartingDragOrigin + "</color>");
 		}
 
 		public void AddButton(IPinnedToolButton button, Transform buttonTransform)
@@ -403,6 +403,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <param name="type">Button ToolType to compare against existing button types</param>
 		public void SelectExistingToolType(Type type)
 		{
+			Debug.LogError("Selecting Existing ToolType : " + type.ToString());
 			foreach (var button in m_OrderedButtons)
 			{
 				if (button.toolType == type)

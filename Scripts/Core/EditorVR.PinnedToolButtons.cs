@@ -23,9 +23,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var mainMenu = obj as IMainMenu;
-				if (mainMenu != null)
-					mainMenu.previewToolInPinnedToolButton = null;
 			}
 
 /* TODO remove after removal of main menu activator codebase
@@ -212,7 +209,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void ToolButtonClicked(Transform rayOrigin, Type toolType)
 			{
-				Debug.LogError("TOOL BUTTON CLICKED : " + toolType.ToString());
+				Debug.LogError("<color=green>TOOL BUTTON CLICKED : </color>" + toolType.ToString());
+
 				if (toolType == typeof(IMainMenu))
 					OnMainMenuActivatorSelected(rayOrigin);
 				else
