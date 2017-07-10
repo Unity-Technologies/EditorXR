@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 	{
 		public override void ExecuteAction()
 		{
-			Paste.buffer = Selection.transforms;
+			Unsupported.CopyGameObjectsToPasteboard();
+			Paste.SetBufferDistance(Selection.transforms);
 		}
 	}
 }
