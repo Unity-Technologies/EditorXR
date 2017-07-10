@@ -20,7 +20,12 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		const float k_ScaleBump = 1.1f;
 		const float k_HideScale = 0.1f;
-		
+
+		const float k_DistanceScale = 0.1f;
+
+		[SerializeField]
+		bool m_ScaleBump;
+
 		float m_ScrollRate;
 		Vector3 m_LastPosition;
 		float m_CurrentRadius;
@@ -63,19 +68,24 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		protected override void OnHandleHoverStarted(HandleEventData eventData)
 		{
-			transform.localScale *= k_ScaleBump;
+			if (m_ScaleBump)
+				transform.localScale *= k_ScaleBump;
+
 			base.OnHandleHoverStarted(eventData);
 		}
 
 		protected override void OnHandleHoverEnded(HandleEventData eventData)
 		{
-			transform.localScale /= k_ScaleBump;
+			if (m_ScaleBump)
+				transform.localScale /= k_ScaleBump;
+
 			base.OnHandleHoverStarted(eventData);
 		}
 
 		public void ChangeRadius(float delta)
 		{
-			m_CurrentRadius += delta;
+			var distance = Vector3.Distance(CameraUtils.GetMainCamera().transform.position, transform.position);
+			m_CurrentRadius += delta * distance * k_DistanceScale;
 			m_CurrentRadius = Mathf.Max(m_CurrentRadius, 0f);
 		}
 

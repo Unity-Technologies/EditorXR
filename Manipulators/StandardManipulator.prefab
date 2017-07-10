@@ -1306,6 +1306,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
+  m_ScaleBump: 1
   m_Constraints: 5
 --- !u!114 &114000011169532704
 MonoBehaviour:
@@ -1320,6 +1321,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
+  m_ScaleBump: 1
   m_Constraints: 6
 --- !u!114 &114000011250465190
 MonoBehaviour:
@@ -1335,6 +1337,7 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_HandleTip: {fileID: 4000014115655252}
   m_OrientDragPlaneToRay: 1
+  m_ScaleBump: 1
   m_Constraints: 1
 --- !u!114 &114000011261594914
 MonoBehaviour:
@@ -1350,6 +1353,7 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_HandleTip: {fileID: 4000013116023314}
   m_OrientDragPlaneToRay: 1
+  m_ScaleBump: 1
   m_Constraints: 4
 --- !u!114 &114000011660595710
 MonoBehaviour:
@@ -1365,6 +1369,7 @@ MonoBehaviour:
   m_SelectionFlags: 3
   m_HandleTip: {fileID: 4000012695962256}
   m_OrientDragPlaneToRay: 1
+  m_ScaleBump: 1
   m_Constraints: 2
 --- !u!114 &114000012004783302
 MonoBehaviour:
@@ -1407,6 +1412,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
   m_PlaneMaterial: {fileID: 2100000, guid: faae2cd60c5292c48a46def9df717604, type: 2}
+  m_ScaleBump: 1
   m_Constraints: 3
 --- !u!114 &114000012657926048
 MonoBehaviour:
@@ -1431,8 +1437,6 @@ MonoBehaviour:
   - {fileID: 114000012656813054}
   - {fileID: 114000010105022974}
   - {fileID: 114000011169532704}
-  m_DragPulse: {fileID: 11400000, guid: a187e6c970cfc58498747aee6dca2919, type: 2}
-  m_RotatePulse: {fileID: 11400000, guid: 2e2c8d33e61b196448657254e78ba15c, type: 2}
 --- !u!114 &114000013109644058
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1459,6 +1463,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
+  m_ScaleBump: 1
 --- !u!135 &135000012924084782
 SphereCollider:
   m_ObjectHideFlags: 1
