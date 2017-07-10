@@ -460,9 +460,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 					manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, k_LazyFollowRotate * deltaTime);
 
-				Undo.RecordObjects(Selection.transforms, "Move");
+				var selectionTransforms = Selection.transforms;
+				Undo.RecordObjects(selectionTransforms, "Move");
 
-				foreach (var t in Selection.transforms)
+				foreach (var t in selectionTransforms)
 				{
 					t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], k_LazyFollowRotate * deltaTime);
 
@@ -617,7 +618,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			UpdateSelectionBounds();
 			var manipulatorTransform = manipulatorGameObject.transform;
-			var activeTransform = Selection.activeTransform;
+			var activeTransform = Selection.activeTransform ?? selectionTransforms[0];
 			manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? activeTransform.position : m_SelectionBounds.center;
 			manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : activeTransform.rotation;
 			m_TargetPosition = manipulatorTransform.position;
