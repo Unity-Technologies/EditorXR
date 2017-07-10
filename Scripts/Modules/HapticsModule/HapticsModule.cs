@@ -37,11 +37,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
 		}
 
+#if ENABLE_OVR_INPUT
 		void LateUpdate()
 		{
 			// Perform a manual update of OVR haptics
 			OVRHaptics.Process();
 		}
+#endif
 
 		/// <summary>
 		/// Pulse haptic feedback
@@ -50,12 +52,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// <param name="hapticPulse">Haptic pulse</param>
 		public void Pulse(Node? node, HapticPulse hapticPulse)
 		{
-#if ENABLE_OVR_INPUT
 			// Clip buffer can hold up to 800 milliseconds of samples
 			// At 320Hz, each sample is 3.125f milliseconds
 			if (Mathf.Approximately(m_MasterIntensity, 0))
 				return;
 
+#if ENABLE_OVR_INPUT
 			m_GeneratedHapticClip.Reset();
 
 			const float kMaxDuration = 0.8f;
