@@ -16,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	{
 		const float k_PreviewDuration = 0.1f;
 		const float k_MinPreviewScale = 0.01f;
+		const float k_IconPreviewScale = 0.1f;
 		const float k_MaxPreviewScale = 0.2f;
 		const float k_RotateSpeed = 50f;
 		const float k_TransitionDuration = 0.1f;
@@ -498,6 +499,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var currentLocalScale = m_DragObject.localScale;
 			var currentPreviewOffset = Vector3.zero;
+			var currentPreviewRotationOffset = Quaternion.identity;
 
 			if (m_PreviewObjectClone)
 				currentPreviewOffset = m_PreviewObjectClone.localPosition;
@@ -506,31 +508,39 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var currentVelocity = 0f;
 			const float kDuration = 1f;
 
-			var viewerScale = this.GetViewerScale();
-			var maxComponent = m_PreviewBounds.size.MaxComponent() / viewerScale;
-			var targetScale = Vector3.one * maxComponent;
-			
-			// Object will preview at the same size when grabbed
-			var previewExtents = m_PreviewBounds.extents / viewerScale;
-			var pivotOffset = m_PreviewPivotOffset / viewerScale;
+			var targetScale = Vector3.one * k_IconPreviewScale;
+			var pivotOffset = Vector3.zero;
+			var rotationOffset = Quaternion.AngleAxis(30, Vector3.right);
+			if (m_PreviewObjectClone)
+			{
+				var viewerScale = this.GetViewerScale();
+				var maxComponent = m_PreviewBounds.size.MaxComponent() / viewerScale;
+				targetScale = Vector3.one * maxComponent;
 
-			// If bounds are greater than offset, set to bounds
-			if (previewExtents.y > pivotOffset.y)
-				pivotOffset.y = previewExtents.y;
+				// Object will preview at the same size when grabbed
+				var previewExtents = m_PreviewBounds.extents / viewerScale;
+				pivotOffset = m_PreviewPivotOffset / viewerScale;
 
-			if (previewExtents.z > pivotOffset.z)
-				pivotOffset.z = previewExtents.z;
+				// If bounds are greater than offset, set to bounds
+				if (previewExtents.y > pivotOffset.y)
+					pivotOffset.y = previewExtents.y;
 
-			if (maxComponent < k_MinPreviewScale) {
-				// Object will be preview at the maximum scale
-				targetScale = Vector3.one * k_MinPreviewScale;
-				pivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MinPreviewScale;
-			}
+				if (previewExtents.z > pivotOffset.z)
+					pivotOffset.z = previewExtents.z;
 
-			if (maxComponent > k_MaxPreviewScale) {
-				// Object will be preview at the maximum scale
-				targetScale = Vector3.one * k_MaxPreviewScale;
-				pivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MaxPreviewScale;
+				if (maxComponent < k_MinPreviewScale)
+				{
+					// Object will be preview at the maximum scale
+					targetScale = Vector3.one * k_MinPreviewScale;
+					pivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MinPreviewScale;
+				}
+
+				if (maxComponent > k_MaxPreviewScale)
+				{
+					// Object will be preview at the maximum scale
+					targetScale = Vector3.one * k_MaxPreviewScale;
+					pivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MaxPreviewScale;
+				}
 			}
 
 			while (currentTime < kDuration - 0.05f)
@@ -542,7 +552,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetScale, currentTime);
 
 				if (m_PreviewObjectClone)
+				{
 					m_PreviewObjectClone.localPosition = Vector3.Lerp(currentPreviewOffset, pivotOffset, currentTime);
+					m_PreviewObjectClone.localRotation = Quaternion.Lerp(currentPreviewRotationOffset, rotationOffset, currentTime); // Compensate for preview origin rotation
+				}
 
 				yield return null;
 			}
