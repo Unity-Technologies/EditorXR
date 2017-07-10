@@ -77,26 +77,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_Cube.gameObject.SetActive(false);
 				m_Sphere.gameObject.SetActive(false);
 
-				if (m_IconPrefab == value)
+				if (m_IconPrefab == value) // If this GridItem already has this icon loaded, jus trefresh it's active state
 				{
-					m_Icon.SetActive(true);
-					if (m_PreviewObjectTransform && !m_AutoHidePreview)
-						m_Icon.SetActive(false);
-
+					m_Icon.SetActive(!m_PreviewObjectTransform || m_AutoHidePreview);
 					return;
 				}
 
 				if (m_Icon)
 					ObjectUtils.Destroy(m_Icon);
 
+				if (m_PreviewObjectTransform && !m_AutoHidePreview) // We don't need the icon if we never hide the preview
+					return;
+
 				m_IconPrefab = value;
 				m_Icon = ObjectUtils.Instantiate(m_IconPrefab, transform, false);
 				m_Icon.transform.localPosition = Vector3.up * 0.5f;
 				m_Icon.transform.localRotation = Quaternion.AngleAxis(90, Vector3.down);
 				m_Icon.transform.localScale = Vector3.one;
-
-				if (m_PreviewObjectTransform && !m_AutoHidePreview)
-					m_Icon.SetActive(false);
 			}
 		}
 
@@ -530,7 +527,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				if (maxComponent < k_MinPreviewScale)
 				{
-					// Object will be preview at the maximum scale
+					// Object will be preview at the minimum scale
 					targetScale = Vector3.one * k_MinPreviewScale;
 					pivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MinPreviewScale;
 				}
