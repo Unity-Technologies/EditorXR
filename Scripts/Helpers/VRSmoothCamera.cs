@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 	/// </summary>
 	[RequireComponent(typeof(Camera))]
 	[RequiresLayer(k_HMDOnlyLayer)]
-	sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera, IUsesViewerScale
+	sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera
 	{
 		/// <summary>
 		/// The camera drawing the preview
@@ -27,8 +27,13 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 		[SerializeField]
 		int m_TargetDisplay;
+
 		[SerializeField, Range(1, 180)]
 		int m_FieldOfView = 40;
+
+		[SerializeField]
+		float m_PullBackDistance = 0.8f;
+
 		[SerializeField]
 		float m_SmoothingMultiplier = 3;
 
@@ -52,11 +57,11 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 		void Start()
 		{
-			transform.position = m_VRCamera.transform.position;
-			transform.rotation = m_VRCamera.transform.rotation;
+			transform.position = m_VRCamera.transform.localPosition;
+			transform.localRotation = m_VRCamera.transform.localRotation;
 
-			m_Position = transform.position;
-			m_Forward = transform.forward;
+			m_Position = transform.localPosition;
+			m_Forward = transform.localRotation * Vector3.forward;
 		}
 
 		void LateUpdate()
@@ -78,12 +83,11 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			m_SmoothCamera.stereoTargetEye = StereoTargetEyeMask.None;
 			m_SmoothCamera.fieldOfView = m_FieldOfView;
 
-			m_Position = Vector3.Lerp(m_Position, m_VRCamera.transform.position, Time.deltaTime * m_SmoothingMultiplier);
-			m_Forward = Vector3.Lerp(m_Forward, m_VRCamera.transform.forward, Time.deltaTime * m_SmoothingMultiplier);
+			m_Position = Vector3.Lerp(m_Position, m_VRCamera.transform.localPosition, Time.deltaTime * m_SmoothingMultiplier);
+			m_Forward = Vector3.Lerp(m_Forward, m_VRCamera.transform.localRotation * Vector3.forward, Time.deltaTime * m_SmoothingMultiplier);
 
-			const float kPullBackDistance = 1.1f;
-			transform.forward = m_Forward;
-			transform.position = m_Position - transform.forward * kPullBackDistance * this.GetViewerScale();
+			transform.localRotation = Quaternion.LookRotation(m_Forward, Vector3.up);
+			transform.localPosition = m_Position - transform.localRotation * Vector3.forward * m_PullBackDistance;
 
 			// Don't render any HMD-related visual proxies
 			var hidden = m_VRCamera.GetComponentsInChildren<Renderer>();
