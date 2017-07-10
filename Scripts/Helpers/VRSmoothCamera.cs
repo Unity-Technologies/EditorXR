@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		RenderTexture m_RenderTexture;
 
 		Vector3 m_Position;
-		Vector3 m_Forward;
+		Quaternion m_Rotation;
 
 		/// <summary>
 		/// A layer mask that controls what will always render in the HMD and not in the preview
@@ -61,7 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			transform.localRotation = m_VRCamera.transform.localRotation;
 
 			m_Position = transform.localPosition;
-			m_Forward = transform.localRotation * Vector3.forward;
+			m_Rotation = transform.localRotation;
 		}
 
 		void LateUpdate()
@@ -84,9 +84,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 			m_SmoothCamera.fieldOfView = m_FieldOfView;
 
 			m_Position = Vector3.Lerp(m_Position, m_VRCamera.transform.localPosition, Time.deltaTime * m_SmoothingMultiplier);
-			m_Forward = Vector3.Lerp(m_Forward, m_VRCamera.transform.localRotation * Vector3.forward, Time.deltaTime * m_SmoothingMultiplier);
+			m_Rotation = Quaternion.Slerp(m_Rotation, m_VRCamera.transform.localRotation, Time.deltaTime * m_SmoothingMultiplier);
 
-			transform.localRotation = Quaternion.LookRotation(m_Forward, Vector3.up);
+			transform.localRotation = Quaternion.LookRotation(m_Rotation * Vector3.forward, Vector3.up);
 			transform.localPosition = m_Position - transform.localRotation * Vector3.forward * m_PullBackDistance;
 
 			// Don't render any HMD-related visual proxies
