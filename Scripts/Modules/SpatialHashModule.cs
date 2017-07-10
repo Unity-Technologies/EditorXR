@@ -27,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void SetupObjects()
 		{
-			MeshFilter[] meshFilters = FindObjectsOfType<MeshFilter>();
+			var meshFilters = FindObjectsOfType<MeshFilter>();
 			foreach (var mf in meshFilters)
 			{
 				if (mf.sharedMesh)
@@ -40,9 +40,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						spatialHash.AddObject(renderer, renderer.bounds);
 				}
 			}
+
+			var skinnedMeshRenderers = FindObjectsOfType<SkinnedMeshRenderer>();
+			foreach (var skinnedMeshRenderer in skinnedMeshRenderers) {
+				if (skinnedMeshRenderer.sharedMesh) {
+					if (shouldExcludeObject != null && shouldExcludeObject(skinnedMeshRenderer.gameObject))
+						continue;
+
+					spatialHash.AddObject(skinnedMeshRenderer, skinnedMeshRenderer.bounds);
+				}
+			}
 		}
 
-		private IEnumerator UpdateDynamicObjects()
+		IEnumerator UpdateDynamicObjects()
 		{
 			while (true)
 			{
