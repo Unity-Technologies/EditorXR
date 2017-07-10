@@ -72,6 +72,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
 					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
 			}
+
+			foreach (var m in go.GetComponentsInChildren<SkinnedMeshRenderer>())
+			{
+				if (m.sharedMesh == null)
+					continue;
+
+				for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
+					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
+			}
 		}
 
 		public void AddRayOriginForNode(Node node, Transform rayOrigin)

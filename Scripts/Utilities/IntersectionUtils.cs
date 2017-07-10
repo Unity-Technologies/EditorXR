@@ -20,6 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			var transform = obj.transform;
 
+			SetupCollisionTester(collisionTester, transform);
+
 			// Try a simple test with specific rays located at vertices
 			for (var j = 0; j < tester.rays.Length; j++)
 			{
@@ -47,10 +49,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
 		public static bool TestEdges(MeshCollider collisionTester, Transform obj, IntersectionTester tester)
 		{
-			var mf = obj.GetComponent<MeshFilter>();
-			if (mf)
-				collisionTester.sharedMesh = mf.sharedMesh;
-
 			var boundsMagnitude = collisionTester.bounds.size.magnitude;
 
 			var triangles = tester.triangles;
@@ -132,10 +130,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
 		public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray)
 		{
-			var mf = obj.GetComponent<MeshFilter>();
-			if (mf)
-				collisionTester.sharedMesh = mf.sharedMesh;
-
 			ray.origin = obj.InverseTransformPoint(ray.origin);
 			ray.direction = obj.InverseTransformDirection(ray.direction);
 		
@@ -179,15 +173,25 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>The result of whether the ray intersects with the object</returns>
 		public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
 		{
-			var mf = obj.GetComponent<MeshFilter>();
-			if (mf)
-				collisionTester.sharedMesh = mf.sharedMesh;
-
 			ray.origin = obj.InverseTransformPoint(ray.origin);
 			ray.direction = obj.InverseTransformVector(ray.direction);
 			maxDistance = obj.InverseTransformVector(ray.direction * maxDistance).magnitude;
 
 			return collisionTester.Raycast(ray, out hit, maxDistance);
+		}
+
+		public static void SetupCollisionTester(MeshCollider collisionTester, Transform obj)
+		{
+			var mf = obj.GetComponent<MeshFilter>();
+			if (mf)
+				collisionTester.sharedMesh = mf.sharedMesh;
+
+			if (!mf)
+			{
+				var smr = obj.GetComponent<SkinnedMeshRenderer>();
+				if (smr)
+					collisionTester.sharedMesh = smr.sharedMesh;
+			}
 		}
 	}
 }
