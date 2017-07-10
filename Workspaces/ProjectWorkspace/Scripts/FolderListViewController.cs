@@ -136,6 +136,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ToggleExpanded(string index)
 		{
+			if (data.Count == 1 && m_ListItems[index].data == data[0]) // Do not collapse Assets folder
+				return;
+
 			m_ExpandStates[index] = !m_ExpandStates[index];
 			StartSettling();
 		}
