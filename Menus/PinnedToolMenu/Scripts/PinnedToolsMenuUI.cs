@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode
+	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode, IInstantiateUI
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -25,12 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		Vector3 m_AlternateLocalScale;
-
-		[SerializeField]
-		Transform m_HintContentContainer;
-
-		[SerializeField]
-		CanvasGroup m_HintArrowsCanvasGroup;
 
 		[SerializeField]
 		SpatialHintUI m_SpatialHintUI;
@@ -49,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Quaternion m_HintContentContainerInitialRotation;
 		Quaternion m_HintContentContainerCurrentRotation;
 		Vector3 m_HintContentWorldPosition;
+		Transform m_SpatialHintContentContainer;
 		//Quaternion m_SpatialScrollOrientation;
 
 		public int maxButtonCount { get; set; }
@@ -116,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f); // Quaternion.AngleAxis(transform.forward.y, Vector3.up);
 					this.RestartCoroutine(ref m_HintContentVisibilityCoroutine, ShowHintContent());
 					m_HintContentWorldPosition = transform.position;
-					m_HintContentContainer.position = m_HintContentWorldPosition;
+					m_SpatialHintContentContainer.position = m_HintContentWorldPosition;
 				}
 
 				m_SpatialDragDistance = value;
@@ -131,11 +126,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				Debug.LogWarning("SETTING STARGIN DRAG DEFINITON POSITION : " + value.Value.ToString("F4"));
 				m_StartingDragOrigin = transform.position;
 
-				var orig = m_HintContentContainer.rotation;
-				m_HintContentContainer.LookAt(value.Value);
+				var orig = m_SpatialHintContentContainer.rotation;
+				m_SpatialHintContentContainer.LookAt(value.Value);
 				Debug.LogError(value.Value.ToString("F4"));
 				//m_SpatialScrollOrientation = Quaternion.Euler(value.Value); // Quaternion.FromToRotation(m_HintContentContainer.forward, value.Value); // Quaternion.Euler(value.Value); Quaternion.RotateTowards(m_HintContentContainerInitialRotation, Quaternion.Euler(value.Value), 180f);
-				m_HintContentContainer.rotation = orig;
+				m_SpatialHintContentContainer.rotation = orig;
 			}
 		}
 
@@ -151,6 +146,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_OriginalLocalScale = transform.localScale;
 			m_OrderedButtons = new List<IPinnedToolButton>();
 			Debug.LogError("<color=green>PinnedToolsMenuUI initialized</color>");
+
+			m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
+			m_SpatialHintContentContainer = m_SpatialHintUI.contentContainer;
 		}
 
 		void Update()
@@ -205,8 +203,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//Debug.LogError("Hint Container" + m_HintContentContainerInitialRotation);
 			//Debug.LogError("UI" + transform.rotation);
 
-			m_HintContentContainer.rotation = newHintContainerRotation;
-			m_HintContentContainer.position = m_HintContentWorldPosition;
+			m_SpatialHintContentContainer.rotation = newHintContainerRotation;
+			m_SpatialHintContentContainer.position = m_HintContentWorldPosition;
 
 			//Debug.LogError(gameObject.GetInstanceID() + " : <color=green>World position of UI : " + transform.position + " - starting drag definition position : " + m_StartingDragOrigin + "</color>");
 		}
@@ -569,18 +567,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			m_SpatialHintUI.enablePreviewVisuals = true;
 
-			var currentScale = m_HintContentContainer.localScale;
+			var currentScale = m_SpatialHintContentContainer.localScale;
 			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
 			var targetScale = Vector3.one;
 			while (timeElapsed < 1f)
 			{
 				timeElapsed += Time.unscaledDeltaTime * 5f;
 				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(timeElapsed), 2);
-				m_HintContentContainer.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
+				m_SpatialHintContentContainer.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
 				yield return null;
 			}
 
-			m_HintContentContainer.localScale = targetScale;
+			m_SpatialHintContentContainer.localScale = targetScale;
 			m_HintContentVisibilityCoroutine = null;
 		}
 
@@ -590,18 +588,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			yield break;
 
-			var currentScale = m_HintContentContainer.localScale;
+			var currentScale = m_SpatialHintContentContainer.localScale;
 			var timeElapsed = 1 - currentScale.x;
 			var targetScale = Vector3.zero;
 			while (timeElapsed < 1f)
 			{
 				timeElapsed += Time.unscaledDeltaTime * 4f;
 				var durationShaped = MathUtilsExt.SmoothInOutLerpFloat(timeElapsed);
-				m_HintContentContainer.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
+				m_SpatialHintContentContainer.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
 				yield return null;
 			}
 
-			m_HintContentContainer.localScale = targetScale;
+			m_SpatialHintContentContainer.localScale = targetScale;
 			m_HintContentVisibilityCoroutine = null;
 		}
 

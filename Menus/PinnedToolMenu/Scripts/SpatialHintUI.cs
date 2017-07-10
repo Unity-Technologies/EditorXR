@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Security.Cryptography.X509Certificates;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -9,6 +8,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	public class SpatialHintUI : MonoBehaviour
 	{
 		readonly Color k_PrimaryArrowColor = Color.white;
+
+		[SerializeField]
+		CanvasGroup m_ScrollVisualsCanvasGroup;
+
+		[SerializeField]
+		Transform m_ScrollVisualsDragTargetArrow;
+
+		//[SerializeField]
+		//CanvasGroup m_HintArrowsCanvasGroup; // TODO: add back in later
 
 		[SerializeField]
 		HintIcon[] m_PrimaryDirectionalHintArrows;
@@ -23,12 +31,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		HintIcon[] m_SecondaryRotationalHintArrows;
 		*/
-
-		[SerializeField]
-		CanvasGroup m_ScrollVisualsCanvasGroup;
-
-		[SerializeField]
-		Transform m_ScrollVisualsDragTargetArrow;
 
 		Vector3 m_ScrollVisualsRotation;
 		Transform m_ScrollVisualsTransform;
@@ -135,6 +137,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 
 		public Vector3 scrollVisualsDragThresholdTriggerPosition { get; set; }
+
+		public Transform contentContainer { get { return transform; } }
 
 		void Awake()
 		{
