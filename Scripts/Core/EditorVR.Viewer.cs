@@ -153,6 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (evr.m_PreviewCameraPrefab)
 				{
 					var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
+					go.transform.SetParent(CameraUtils.GetCameraRig(), false);
 
 					customPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
 					if (customPreviewCamera != null)
