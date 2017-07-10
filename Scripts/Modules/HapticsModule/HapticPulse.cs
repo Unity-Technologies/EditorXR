@@ -21,8 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		bool m_FadeOut = false;
 
 		// Don't allow public setting of value; use inspector-set values
-		public float duration { get { return m_Duration; } }
-		public float intensity { get { return m_Intensity; } }
+		public float duration { get { return m_Duration; } internal set { m_Duration = value; } }
+		public float intensity { get { return m_Intensity; } internal set { m_Intensity = value; } }
 		public bool fadeIn { get { return m_FadeIn; } }
 		public bool fadeOut { get { return m_FadeOut; } }
 	}

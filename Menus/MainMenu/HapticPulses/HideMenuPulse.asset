@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: HideMenuPulse
   m_EditorClassIdentifier: 
   m_Duration: 0.75
-  m_Intensity: 0.075
+  m_Intensity: 0.2
   m_FadeIn: 0
   m_FadeOut: 1

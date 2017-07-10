@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: DragPulse
   m_EditorClassIdentifier: 
   m_Duration: 0.2
-  m_Intensity: 0.175
+  m_Intensity: 0.4
   m_FadeIn: 1
   m_FadeOut: 1
