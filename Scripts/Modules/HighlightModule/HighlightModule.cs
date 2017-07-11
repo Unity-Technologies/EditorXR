@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -19,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
+		readonly Dictionary<Camera, CommandBuffer> m_CommandBuffers = new Dictionary<Camera, CommandBuffer>();
 
 		public event Func<GameObject, Material, bool> customHighlight
 		{
@@ -37,8 +39,31 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			get { return m_RightHighlightMaterial.color; }
 		}
 
+		void OnEnable()
+		{
+			foreach (var currentCamera in Resources.FindObjectsOfTypeAll<Camera>())
+			{
+				var buffer = new CommandBuffer();
+				currentCamera.AddCommandBuffer(CameraEvent.AfterForwardAlpha, buffer);
+				m_CommandBuffers[currentCamera] = buffer;
+			}
+		}
+
+		void OnDisable()
+		{
+			foreach (var kvp in m_CommandBuffers) {
+				kvp.Key.RemoveCommandBuffer(CameraEvent.AfterForwardOpaque, kvp.Value);
+			}
+			m_CommandBuffers.Clear();
+		}
+
 		void LateUpdate()
 		{
+			foreach (var kvp in m_CommandBuffers)
+			{
+				kvp.Value.Clear();
+			}
+
 			foreach (var highlight in m_Highlights)
 			{
 				var material = highlight.Key;
@@ -62,24 +87,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		static void HighlightObject(GameObject go, Material material)
+		void HighlightObject(GameObject go, Material material)
 		{
-			foreach (var m in go.GetComponentsInChildren<MeshFilter>())
+			//foreach (var m in go.GetComponentsInChildren<MeshFilter>())
+			//{
+			//	if (m.sharedMesh == null)
+			//		continue;
+
+			//	for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
+			//		Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
+			//}
+
+			foreach (var kvp in m_CommandBuffers)
 			{
-				if (m.sharedMesh == null)
-					continue;
+				var buffer = kvp.Value;
+				foreach (var m in go.GetComponentsInChildren<Renderer>())
+				{
+					//if (m.sharedMesh == null)
+					//	continue;
 
-				for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
-					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
-			}
+					//s_CommandBuffer.Clear();
+					//s_CommandBuffer.SetRenderTarget(RenderTexture.active);
+					//Debug.Log(m + ", " + m.gameObject.hideFlags);
+					buffer.DrawRenderer(m, material);
+					Graphics.ExecuteCommandBuffer(buffer);
 
-			foreach (var m in go.GetComponentsInChildren<SkinnedMeshRenderer>())
-			{
-				if (m.sharedMesh == null)
-					continue;
-
-				for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
-					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
+					//for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
+					//	Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
+				}
 			}
 		}
 
