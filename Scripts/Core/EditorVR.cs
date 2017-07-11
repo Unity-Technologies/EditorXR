@@ -100,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		void Awake()
 		{
 			s_Instance = this; // Used only by PreferencesGUI
-			Nested.evr = this; // Set this once for the convenience of all nested classes 
+			Nested.evr = this; // Set this once for the convenience of all nested classes
 			m_DefaultTools = defaultTools;
 			SetHideFlags(defaultHideFlags);
 
@@ -445,12 +445,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void SetHideFlags(HideFlags hideFlags)
 		{
-			foreach (var manager in FindObjectsOfType<InputManager>())
+			foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
 			{
 				manager.gameObject.hideFlags = hideFlags;
 			}
 
-			foreach (var manager in FindObjectsOfType<EditingContextManager>())
+			foreach (var manager in Resources.FindObjectsOfTypeAll<EditingContextManager>())
 			{
 				manager.gameObject.hideFlags = hideFlags;
 			}
@@ -460,15 +460,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				child.gameObject.hideFlags = hideFlags;
 			}
 
-			EditorApplication.delayCall += () =>
-			{
-				gameObject.hideFlags = hideFlags;
-
-				Debug.Log(gameObject.hideFlags);
-
-				EditorApplication.RepaintHierarchyWindow();
-			};
-		
+			EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
+		}
 
 		static EditorVR()
 		{
