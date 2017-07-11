@@ -13,8 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		[SerializeField]
 		List<BaseHandle> m_AxesHandles;
 
-		readonly List<BaseHandle> m_AllHandles = new List<BaseHandle>();
-
 		void Awake()
 		{
 			m_AllHandles.Add(m_UniformHandle);

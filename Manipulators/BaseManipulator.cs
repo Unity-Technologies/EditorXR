@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
@@ -7,6 +9,18 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 	class BaseManipulator : MonoBehaviour, IManipulator
 	{
 		protected const float k_BaseManipulatorSize = 0.3f;
+
+		[SerializeField]
+		protected List<BaseHandle> m_AllHandles;
+
+		[SerializeField]
+		float m_LinearHandleScaleBump = 1.3f;
+
+		[SerializeField]
+		float m_PlaneHandleScaleBump = 1.1f;
+
+		[SerializeField]
+		float m_SphereHandleScaleBump = 1.1f;
 
 		public bool adjustScaleForCamera { get; set; }
 
@@ -18,10 +32,46 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		public event Action dragStarted;
 		public event Action<Transform> dragEnded;
 
+		readonly Dictionary<Type, float> m_ScaleBumps = new Dictionary<Type, float>();
+
+		void Awake()
+		{
+			m_ScaleBumps[typeof(LinearHandle)] = m_LinearHandleScaleBump;
+			m_ScaleBumps[typeof(PlaneHandle)] = m_LinearHandleScaleBump;
+			m_ScaleBumps[typeof(SphereHandle)] = m_LinearHandleScaleBump;
+		}
+
+		protected virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData, float scaleBump)
+		{
+			handle.transform.localScale *= scaleBump;
+		}
+
+		protected virtual void OnHandleHovering(BaseHandle handle, HandleEventData eventData, float scaleBump)
+		{
+
+		}
+
+		void OnHoverEnded(BaseHandle handle, HandleEventData eventData, float scaleBump)
+		{
+			handle.transform.localScale /= scaleBump;
+		}
+
 		protected virtual void OnEnable()
 		{
 			if (adjustScaleForCamera)
 				Camera.onPreRender += OnCameraPreRender;
+
+			foreach (var h in m_AllHandles) {
+				SetUpHandle(h);
+			}
+		}
+
+		protected virtual void SetUpHandle(BaseHandle handle)
+		{
+			handle.hoverStarted += 
+		}
+
+		protected virtual void TakeDownHandle(BaseHandle handle) {
 		}
 
 		protected virtual void OnDisable()

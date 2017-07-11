@@ -1,53 +1,38 @@
 ﻿#if UNITY_EDITOR
-using System;
-using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Manipulators
-{
+namespace UnityEditor.Experimental.EditorVR.Manipulators {
 	sealed class StandardManipulator : BaseManipulator
 	{
 		[SerializeField]
 		Transform m_PlaneHandlesParent;
 
-		[SerializeField]
-		List<BaseHandle> m_AllHandles;
-
-		protected override void OnEnable()
+		protected override void SetUpHandle(BaseHandle handle)
 		{
-			base.OnEnable();
+			base.SetUpHandle(handle);
+			if (handle is LinearHandle || handle is PlaneHandle || handle is SphereHandle)
+				handle.dragging += OnTranslateDragging;
 
-			foreach (var h in m_AllHandles)
-			{
-				if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-					h.dragging += OnTranslateDragging;
+			if (handle is RadialHandle)
+				handle.dragging += OnRotateDragging;
 
-				if (h is RadialHandle)
-					h.dragging += OnRotateDragging;
-
-				h.dragStarted += OnHandleDragStarted;
-				h.dragEnded += OnHandleDragEnded;
-			}
+			handle.dragStarted += OnHandleDragStarted;
+			handle.dragEnded += OnHandleDragEnded;
 		}
 
-		protected override void OnDisable()
+		protected override void TakeDownHandle(BaseHandle handle)
 		{
-			base.OnDisable();
+			base.TakeDownHandle(handle);
+			if (handle is LinearHandle || handle is PlaneHandle || handle is SphereHandle)
+				handle.dragging -= OnTranslateDragging;
 
-			foreach (var h in m_AllHandles)
-			{
-				if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-					h.dragging -= OnTranslateDragging;
+			if (handle is RadialHandle)
+				handle.dragging -= OnRotateDragging;
 
-				if (h is RadialHandle)
-					h.dragging -= OnRotateDragging;
-
-				h.dragStarted -= OnHandleDragStarted;
-				h.dragEnded -= OnHandleDragEnded;
-			}
+			handle.dragStarted -= OnHandleDragStarted;
+			handle.dragEnded -= OnHandleDragEnded;
 		}
 
 		void Update()
