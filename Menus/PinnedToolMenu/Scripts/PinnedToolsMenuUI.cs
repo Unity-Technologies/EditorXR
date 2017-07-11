@@ -69,8 +69,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					//this.Pulse(rayOrigin, 0.5f, 0.065f, false, true);
 					ShowOnlyMenuAndActiveToolButtons();
 
-					m_SpatialHintUI.enablePreviewVisuals = false;
-					m_SpatialHintUI.enablePrimaryArrowVisuals = false;
+					m_SpatialHintUI.preScrollVisualsVisible = false;
+					m_SpatialHintUI.primaryArrowsVisible = false;
 				}
 			}
 		}
@@ -110,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_SpatialHintUI.scrollVisualsRotation = Vector3.zero;
 					var currentRotation = transform.rotation.eulerAngles;
 					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f); // Quaternion.AngleAxis(transform.forward.y, Vector3.up);
-					m_SpatialHintUI.enablePreviewVisuals = true;
+					m_SpatialHintUI.preScrollVisualsVisible = true;
 					m_HintContentWorldPosition = transform.position;
 					m_SpatialHintContentContainer.position = m_HintContentWorldPosition;
 				}
@@ -164,8 +164,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (Mathf.Approximately(m_SpatialDragDistance, 1f))
 				{
 					m_DragTarget = transform.position; // Cache the initial drag target position, before performing any extra shapting to the target Vec3
-					m_SpatialHintUI.enablePrimaryArrowVisuals = false;
-					m_SpatialHintUI.enablePreviewVisuals = false;
+					m_SpatialHintUI.primaryArrowsVisible = false;
+					m_SpatialHintUI.preScrollVisualsVisible = false;
 				}
 
 				// Follow the user's input for a short additional period of time

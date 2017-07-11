@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Security.Cryptography.X509Certificates;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -38,11 +39,42 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_ScrollVisualsVisibilityCoroutine;
 		Coroutine m_VisibilityCoroutine;
 
+		public bool vislble
+		{
+			set
+			{
+				if (value)
+				{
+					foreach (var arrow in m_PrimaryDirectionalHintArrows)
+					{
+						arrow.visibleColor = k_PrimaryArrowColor;
+					}
+
+					foreach (var arrow in m_SecondaryDirectionalHintArrows)
+					{
+						arrow.visible = false;
+					}
+				}
+				else
+				{
+					foreach (var arrow in m_PrimaryDirectionalHintArrows)
+					{
+						arrow.visible = false;
+					}
+
+					foreach (var arrow in m_SecondaryDirectionalHintArrows)
+					{
+						arrow.visible = false;
+					}
+				}
+			}
+		}
+
 		/// <summary>
 		/// Enables/disables the visual elements that should be shown when beginning to initiate a spatial selection action
 		/// This is only enabled before the enabling of the main select visuals
 		/// </summary>
-		public bool enablePreviewVisuals
+		public bool preScrollVisualsVisible
 		{
 			set
 			{
@@ -64,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public bool enablePrimaryArrowVisuals
+		public bool primaryArrowsVisible
 		{
 			set
 			{
@@ -78,37 +110,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				else
 				{
 					foreach (var arrow in m_PrimaryDirectionalHintArrows)
-					{
-						arrow.visible = false;
-					}
-				}
-			}
-		}
-
-		public bool enableVisuals
-		{
-			set
-			{
-				if (value)
-				{
-					foreach (var arrow in m_PrimaryDirectionalHintArrows)
-					{
-						arrow.visibleColor = k_PrimaryArrowColor;
-					}
-
-					foreach (var arrow in m_SecondaryDirectionalHintArrows)
-					{
-						arrow.visible = false;
-					}
-				}
-				else
-				{
-					foreach (var arrow in m_PrimaryDirectionalHintArrows)
-					{
-						arrow.visible = false;
-					}
-
-					foreach (var arrow in m_SecondaryDirectionalHintArrows)
 					{
 						arrow.visible = false;
 					}
@@ -199,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color> : viewscale is " + this.GetViewerScale());
 			// Display two arrows denoting the positive and negative directions allow for spatial scrolling, as defined by the drag vector
 			m_ScrollVisualsGameObject.SetActive(true);
-			enableVisuals = false;
+			vislble = false;
 			m_ScrollVisualsTransform.localScale = Vector3.one;
 			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, CameraUtils.GetMainCamera().transform.forward); // Scroll arrows should face/billboard the user.
 			m_ScrollVisualsCanvasGroup.alpha = 1f; // remove
@@ -210,11 +211,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentLocalScale = m_ScrollVisualsTransform.localScale;
 			var currentAlpha = m_ScrollVisualsCanvasGroup.alpha;
 			var secondArrowCurrentPosition = m_ScrollVisualsDragTargetArrow.position;
+			var normalizedScrollVisualsForward = Vector3.Normalize(m_ScrollVisualsTransform.forward);
+
 			while (currentDuration < kTargetDuration)
 			{
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / kTargetDuration);
 				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 1f, shapedDuration);
-				m_ScrollVisualsDragTargetArrow.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
+
+				// Only validate movement in the initial direction with which the user began the drag
+				var movingAwayFromSource = Vector3.Dot(normalizedScrollVisualsForward, Vector3.Normalize(scrollVisualsDragThresholdTriggerPosition - secondArrowCurrentPosition)) > 0;
+				if (movingAwayFromSource && (scrollVisualsDragThresholdTriggerPosition - secondArrowCurrentPosition).magnitude >= (m_ScrollVisualsDragTargetArrow.position - secondArrowCurrentPosition).magnitude)
+					m_ScrollVisualsDragTargetArrow.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
+
 				currentDuration += Time.unscaledDeltaTime * 2f;
 				yield return null;
 			}
