@@ -201,7 +201,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsGameObject.SetActive(true);
 			enableVisuals = false;
 			m_ScrollVisualsTransform.localScale = Vector3.one;
-			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation);
+			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, CameraUtils.GetMainCamera().transform.forward); // Scroll arrows should face/billboard the user.
 			m_ScrollVisualsCanvasGroup.alpha = 1f; // remove
 			m_ScrollVisualsDragTargetArrow.localPosition = Vector3.zero;
 
@@ -219,7 +219,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield return null;
 			}
 
-			//m_ScrollVisualsTransform.rotation = m_ScrollVisualsRotation.Value;
 			m_ScrollVisualsCanvasGroup.alpha = 1f;
 		}
 
