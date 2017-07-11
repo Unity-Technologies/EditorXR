@@ -18,7 +18,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics
+	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics, IUsesViewerScale
 	{
 		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
@@ -331,10 +331,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//const float kMinFineTuneVelocity = 0.000001f;
 			if (spatialDirection == null)
 			{
-				const float kNewDirectionVectorThreshold = 0.0175f; // Initial magnitude beyond which spatial scrolling will be evaluated
+				var newDirectionVectorThreshold = 0.0175f * this.GetViewerScale(); // Initial magnitude beyond which spatial scrolling will be evaluated
 				var dragAmount = Vector3.Magnitude(directionVector);
-				m_PinnedToolsMenuUI.spatialDragDistance = dragAmount > 0 ? dragAmount / kNewDirectionVectorThreshold : 0f; // Set normalized value representing how much of the pre-scroll drag amount has occurred
-				if (dragAmount > kNewDirectionVectorThreshold)
+				m_PinnedToolsMenuUI.spatialDragDistance = dragAmount > 0 ? dragAmount / newDirectionVectorThreshold : 0f; // Set normalized value representing how much of the pre-scroll drag amount has occurred
+				if (dragAmount > newDirectionVectorThreshold)
 				{
 					spatialDirection = directionVector; // initialize vector defining the spatial scroll direciton
 					Debug.LogError("<color=green>" + spatialDirection.Value.ToString("F4") + "</color>");

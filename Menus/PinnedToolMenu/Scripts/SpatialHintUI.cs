@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class SpatialHintUI : MonoBehaviour
+	public class SpatialHintUI : MonoBehaviour, IUsesViewerScale
 	{
 		readonly Color k_PrimaryArrowColor = Color.white;
 
@@ -36,6 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Transform m_ScrollVisualsTransform;
 		GameObject m_ScrollVisualsGameObject;
 		Coroutine m_ScrollVisualsVisibilityCoroutine;
+		Coroutine m_VisibilityCoroutine;
 
 		/// <summary>
 		/// Enables/disables the visual elements that should be shown when beginning to initiate a spatial selection action
@@ -45,6 +46,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			set
 			{
+				transform.localScale = Vector3.one * this.GetViewerScale();
+				Debug.LogError("<color=black>Spatial Hint Viewer Scale : </color>" + this.GetViewerScale());
+
+				this.RestartCoroutine(ref m_VisibilityCoroutine, value ? AnimateShow() : AnimateHide());
+
 				var semiTransparentWhite = new Color(1f, 1f, 1f, 0.5f);
 				foreach (var arrow in m_PrimaryDirectionalHintArrows)
 				{
@@ -148,9 +154,49 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsGameObject.SetActive(false);
 		}
 
+		IEnumerator AnimateShow()
+		{
+			//m_SpatialHintUI.enablePreviewVisuals = true;
+
+			var currentScale = transform.localScale;
+			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
+			var targetScale = Vector3.one * this.GetViewerScale();
+			while (timeElapsed < 1f)
+			{
+				timeElapsed += Time.unscaledDeltaTime * 5f;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(timeElapsed), 2);
+				transform.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
+				yield return null;
+			}
+
+			transform.localScale = targetScale;
+			m_VisibilityCoroutine = null;
+		}
+
+		IEnumerator AnimateHide()
+		{
+			//m_SpatialHintUI.enableVisuals = false;
+
+			yield break;
+
+			var currentScale = transform.localScale;
+			var timeElapsed = 1 - currentScale.x;
+			var targetScale = Vector3.zero;
+			while (timeElapsed < 1f)
+			{
+				timeElapsed += Time.unscaledDeltaTime * 4f;
+				var durationShaped = MathUtilsExt.SmoothInOutLerpFloat(timeElapsed);
+				transform.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
+				yield return null;
+			}
+
+			transform.localScale = targetScale;
+			m_VisibilityCoroutine = null;
+		}
+
 		IEnumerator ShowScrollVisuals()
 		{
-			Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color>");
+			Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color> : viewscale is " + this.GetViewerScale());
 			// Display two arrows denoting the positive and negative directions allow for spatial scrolling, as defined by the drag vector
 			m_ScrollVisualsGameObject.SetActive(true);
 			enableVisuals = false;

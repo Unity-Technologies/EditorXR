@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode, IInstantiateUI
+	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode, IInstantiateUI, IConnectInterfaces
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -34,7 +34,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_ShowHideAllButtonsCoroutine;
 		Coroutine m_MoveCoroutine;
 		Coroutine m_ButtonHoverExitDelayCoroutine;
-		Coroutine m_HintContentVisibilityCoroutine;
 		int m_VisibleButtonCount;
 		bool m_MoveToAlternatePosition;
 		Vector3 m_OriginalLocalScale;
@@ -69,7 +68,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 					//this.Pulse(rayOrigin, 0.5f, 0.065f, false, true);
 					ShowOnlyMenuAndActiveToolButtons();
-					this.RestartCoroutine(ref m_HintContentVisibilityCoroutine, HideHintContent());
+
+					m_SpatialHintUI.enablePreviewVisuals = false;
+					m_SpatialHintUI.enablePrimaryArrowVisuals = false;
 				}
 			}
 		}
@@ -109,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_SpatialHintUI.scrollVisualsRotation = Vector3.zero;
 					var currentRotation = transform.rotation.eulerAngles;
 					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f); // Quaternion.AngleAxis(transform.forward.y, Vector3.up);
-					this.RestartCoroutine(ref m_HintContentVisibilityCoroutine, ShowHintContent());
+					m_SpatialHintUI.enablePreviewVisuals = true;
 					m_HintContentWorldPosition = transform.position;
 					m_SpatialHintContentContainer.position = m_HintContentWorldPosition;
 				}
@@ -148,6 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			Debug.LogError("<color=green>PinnedToolsMenuUI initialized</color>");
 
 			m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
+			this.ConnectInterfaces(m_SpatialHintUI);
 			m_SpatialHintContentContainer = m_SpatialHintUI.contentContainer;
 		}
 
@@ -561,46 +563,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (buttonHovered != null)
 				buttonHovered();
-		}
-
-		IEnumerator ShowHintContent()
-		{
-			m_SpatialHintUI.enablePreviewVisuals = true;
-
-			var currentScale = m_SpatialHintContentContainer.localScale;
-			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
-			var targetScale = Vector3.one;
-			while (timeElapsed < 1f)
-			{
-				timeElapsed += Time.unscaledDeltaTime * 5f;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(timeElapsed), 2);
-				m_SpatialHintContentContainer.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
-				yield return null;
-			}
-
-			m_SpatialHintContentContainer.localScale = targetScale;
-			m_HintContentVisibilityCoroutine = null;
-		}
-
-		IEnumerator HideHintContent()
-		{
-			m_SpatialHintUI.enableVisuals = false;
-
-			yield break;
-
-			var currentScale = m_SpatialHintContentContainer.localScale;
-			var timeElapsed = 1 - currentScale.x;
-			var targetScale = Vector3.zero;
-			while (timeElapsed < 1f)
-			{
-				timeElapsed += Time.unscaledDeltaTime * 4f;
-				var durationShaped = MathUtilsExt.SmoothInOutLerpFloat(timeElapsed);
-				m_SpatialHintContentContainer.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
-				yield return null;
-			}
-
-			m_SpatialHintContentContainer.localScale = targetScale;
-			m_HintContentVisibilityCoroutine = null;
 		}
 
 		public Node? node
