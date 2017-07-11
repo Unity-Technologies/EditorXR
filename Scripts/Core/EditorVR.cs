@@ -35,6 +35,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		bool m_HasDeserialized;
 
+		static EditorVR s_Instance;
+
 		static HideFlags defaultHideFlags
 		{
 			get { return showGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave; }
@@ -97,8 +99,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void Awake()
 		{
+			s_Instance = this; // Used only by PreferencesGUI
 			Nested.evr = this; // Set this once for the convenience of all nested classes 
 			m_DefaultTools = defaultTools;
+			SetHideFlags(defaultHideFlags);
 
 			ClearDeveloperConsoleIfNecessary();
 
@@ -296,6 +300,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void OnDestroy()
 		{
+			s_Instance = null;
 			foreach (var nested in m_NestedModules.Values)
 			{
 				nested.OnDestroy();
@@ -438,6 +443,33 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
+		void SetHideFlags(HideFlags hideFlags)
+		{
+			foreach (var manager in FindObjectsOfType<InputManager>())
+			{
+				manager.gameObject.hideFlags = hideFlags;
+			}
+
+			foreach (var manager in FindObjectsOfType<EditingContextManager>())
+			{
+				manager.gameObject.hideFlags = hideFlags;
+			}
+
+			foreach (var child in GetComponentsInChildren<Transform>(true))
+			{
+				child.gameObject.hideFlags = hideFlags;
+			}
+
+			EditorApplication.delayCall += () =>
+			{
+				gameObject.hideFlags = hideFlags;
+
+				Debug.Log(gameObject.hideFlags);
+
+				EditorApplication.RepaintHierarchyWindow();
+			};
+		
+
 		static EditorVR()
 		{
 			ObjectUtils.hideFlags = defaultHideFlags;
@@ -474,7 +506,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				string title = "Show EditorVR GameObjects";
 				string tooltip = "Normally, EditorVR GameObjects are hidden in the Hierarchy. Would you like to show them?";
+
+				EditorGUI.BeginChangeCheck();
 				showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
+				if (EditorGUI.EndChangeCheck() && s_Instance)
+					s_Instance.SetHideFlags(defaultHideFlags);
 			}
 
 			// Preserve Layout
