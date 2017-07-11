@@ -357,7 +357,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 
 				//Debug.LogError(directionVector.magnitude);
-				var projectedAmount = Vector3.Project(directionVector, spatialDirection.Value).magnitude;
+				var projectedAmount = Vector3.Project(directionVector, spatialDirection.Value).magnitude / this.GetViewerScale();
 				normalizedLoopingPosition = (Mathf.Abs(projectedAmount) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
 
 				//Debug.LogError("<color=green>" + velocity + "</color>");
