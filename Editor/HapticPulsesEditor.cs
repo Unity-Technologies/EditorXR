@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
@@ -21,8 +19,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		Vector2 m_Scroll;
 		float m_Multiplier = 1;
 
-		HapticsModule m_HapticsModule;
-
 		[MenuItem("Edit/Project Settings/EditorVR/Haptic Pulses")]
 		static void Init()
 		{
@@ -32,10 +28,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		void OnEnable()
 		{
 			Reset();
-
-			m_HapticsModule = ObjectUtils.CreateGameObjectWithComponent<HapticsModule>();
-			m_HapticsModule.name = "Haptics Module";
-			m_HapticsModule.gameObject.hideFlags = HideFlags.HideAndDontSave;
 
 			Undo.undoRedoPerformed += OnUndoRedo;
 		}
@@ -63,20 +55,19 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		void OnDisable()
 		{
-			ObjectUtils.Destroy(m_HapticsModule.gameObject);
 			Undo.undoRedoPerformed -= OnUndoRedo;
 		}
 
 		void OnGUI()
 		{
-			if (Event.current.Equals(Event.KeyboardEvent("^w"))) {
+			if (Event.current.Equals(Event.KeyboardEvent("^w")))
+			{
 				Close();
 				GUIUtility.ExitGUI();
 			}
 
 			const float nameColumnWidth = 250f;
 			const float durationColumnWidth = 60f;
-			const float previewColumnWidth = 80f;
 
 			m_Scroll = GUILayout.BeginScrollView(m_Scroll);
 
@@ -116,12 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				pulse.intensity.floatValue = GUILayout.HorizontalSlider(pulse.intensity.floatValue, 0, 1);
 				pulse.intensity.floatValue = EditorGUILayout.FloatField(pulse.intensity.floatValue, GUILayout.Width(durationColumnWidth));
 				if (EditorGUI.EndChangeCheck())
-				{
 					pulse.serializedObject.ApplyModifiedProperties();
-				}
-
-				if (GUILayout.Button("Preview", GUILayout.Width(previewColumnWidth)))
-					m_HapticsModule.Pulse(Node.LeftHand, pulse.pulse);
 
 				GUILayout.EndHorizontal();
 			}

@@ -67,7 +67,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 		void OnGUI()
 		{
-			if (Event.current.Equals(Event.KeyboardEvent("^w"))) {
+			if (Event.current.Equals(Event.KeyboardEvent("^w")))
+			{
 				Close();
 				GUIUtility.ExitGUI();
 			}
