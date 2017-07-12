@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: WorkspaceButtonHover
   m_EditorClassIdentifier: 
   m_Duration: 0.005
-  m_Intensity: 0.175
+  m_Intensity: 0.7
   m_FadeIn: 0
   m_FadeOut: 0
