@@ -3,9 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using NUnit.Framework.Internal.Filters;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -242,7 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				Debug.LogError("Start position : <color=green>" + m_SpatialScrollStartPosition + "</color>");
 				allowSpatialScrollBeforeThisTime = Time.realtimeSinceStartup + kAutoHideDuration;
 				allowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
-				m_PinnedToolsMenuUI.spatialDragDistance = 0f; // Triggers the display of the directional hint arrows
+				m_PinnedToolsMenuUI.beginningSpatialScrolling = true; // Triggers the display of the directional hint arrows
 
 				//Dont show if the user hasnt passed the threshold in the given duration
 			}
@@ -302,8 +300,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				allowSpatialScrollBeforeThisTime = null;
 				if (spatialDirection != null)
 				{
+					Debug.LogWarning("PinnedToolButton was just released");
 					m_PinnedToolsMenuUI.SelectHighlightedButton();
-					m_PinnedToolsMenuUI.spatialDragDistance = 0f; // Triggers the display of the directional hint arrows
+					//m_PinnedToolsMenuUI.spatialDragDistance = 0f; // Triggers the display of the directional hint arrows
 					spatialDirection = null;
 					consumeControl(pinnedToolInput.select);
 					this.Pulse(node, m_HidingPulse);
@@ -333,6 +332,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				var newDirectionVectorThreshold = 0.0175f * this.GetViewerScale(); // Initial magnitude beyond which spatial scrolling will be evaluated
 				var dragAmount = Vector3.Magnitude(directionVector);
+				Debug.LogWarning("spatial Direction is NULL - setting new one in pricessSpatialScrolling");
 				m_PinnedToolsMenuUI.spatialDragDistance = dragAmount > 0 ? dragAmount / newDirectionVectorThreshold : 0f; // Set normalized value representing how much of the pre-scroll drag amount has occurred
 				if (dragAmount > newDirectionVectorThreshold)
 				{

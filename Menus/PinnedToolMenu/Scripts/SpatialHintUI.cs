@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_ScrollVisualsVisibilityCoroutine;
 		Coroutine m_VisibilityCoroutine;
 
-		public bool vislble
+		public bool visible
 		{
 			set
 			{
@@ -66,6 +66,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						arrow.visible = false;
 					}
+
+					scrollVisualsRotation = Vector3.zero;
 				}
 			}
 		}
@@ -79,7 +81,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				transform.localScale = Vector3.one * this.GetViewerScale();
-				Debug.LogError("<color=black>Spatial Hint Viewer Scale : </color>" + this.GetViewerScale());
 
 				this.RestartCoroutine(ref m_VisibilityCoroutine, value ? AnimateShow() : AnimateHide());
 
@@ -117,6 +118,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public bool secondaryArrowsVisible
+		{
+			set
+			{
+				foreach (var arrow in m_SecondaryDirectionalHintArrows)
+				{
+					arrow.visible = value;
+				}
+			}
+		}
+
 		/// <summary>
 		/// If non-null, enable and set the world rotation of the scroll visuals
 		/// </summary>
@@ -134,7 +146,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ScrollVisualsRotation = value;
 				if (m_ScrollVisualsRotation != Vector3.zero)
 				{
-					this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, ShowScrollVisuals());
+					Debug.LogError("scrollVisualsRotation was set to a Vec3 non-zero value' beginning showing of scroll visuals : " + m_ScrollVisualsRotation);
+					
+					if (m_ScrollVisualsVisibilityCoroutine == null)
+						this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, ShowScrollVisuals());
 				}
 				else
 				{
@@ -200,7 +215,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color> : viewscale is " + this.GetViewerScale());
 			// Display two arrows denoting the positive and negative directions allow for spatial scrolling, as defined by the drag vector
 			m_ScrollVisualsGameObject.SetActive(true);
-			vislble = false;
+			primaryArrowsVisible = false;
+			secondaryArrowsVisible = false;
 			m_ScrollVisualsTransform.localScale = Vector3.one;
 			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, CameraUtils.GetMainCamera().transform.forward); // Scroll arrows should face/billboard the user.
 			m_ScrollVisualsCanvasGroup.alpha = 1f; // remove
@@ -224,6 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_ScrollVisualsDragTargetArrow.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
 
 				currentDuration += Time.unscaledDeltaTime * 2f;
+				m_ScrollVisualsVisibilityCoroutine = null;
 				yield return null;
 			}
 
@@ -246,13 +263,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ScrollVisualsTransform.localScale = Vector3.Lerp(currentLocalScale, hiddenLocalScale, shapedDuration);
 				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 0f, shapedDuration);
 				//m_Icon.color = Color.Lerp(currentColor, m_HiddenColor, currentDuration);
-				currentDuration += Time.unscaledDeltaTime * 2f;
+				currentDuration += Time.unscaledDeltaTime * 3.5f;
 				yield return null;
 			}
 
 			m_ScrollVisualsCanvasGroup.alpha = 0;
 			m_ScrollVisualsTransform.localScale = hiddenLocalScale;
 			//m_ScrollVisualsTransform.localRotation = Quaternion.identity;
+			m_ScrollVisualsVisibilityCoroutine = null;
 			m_ScrollVisualsGameObject.SetActive(false);
 		}
 	}

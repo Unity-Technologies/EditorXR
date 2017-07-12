@@ -71,6 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					m_SpatialHintUI.preScrollVisualsVisible = false;
 					m_SpatialHintUI.primaryArrowsVisible = false;
+					m_SpatialHintUI.scrollVisualsRotation = Vector3.zero;
 				}
 			}
 		}
@@ -100,12 +101,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public float spatialDragDistance
+		public bool beginningSpatialScrolling
 		{
 			set
 			{
-				if (Mathf.Approximately(value, 0f))
+				if (value)
 				{
+					Debug.LogWarning("SETTING Spatial Drag Distance  : " + value);
 					m_SpatialDragDistance = 0f;
 					m_SpatialHintUI.scrollVisualsRotation = Vector3.zero;
 					var currentRotation = transform.rotation.eulerAngles;
@@ -114,7 +116,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_HintContentWorldPosition = transform.position;
 					m_SpatialHintContentContainer.position = m_HintContentWorldPosition;
 				}
+			}
+		}
 
+		public float spatialDragDistance
+		{
+			set
+			{
 				m_SpatialDragDistance = value;
 				//m_SpatialScrollOrientation = transform.rotation;
 			}
@@ -188,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					newHintContainerRotation = m_HintContentContainerCurrentRotation;
 				*/
 			}
-			else if (m_SpatialDragDistance > 2)
+			else if (m_AllButtonsVisible && m_SpatialDragDistance > 2)
 			{
 				m_SpatialHintUI.scrollVisualsRotation = m_DragTarget;
 			}
@@ -206,7 +214,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//Debug.LogError("UI" + transform.rotation);
 
 			m_SpatialHintContentContainer.rotation = newHintContainerRotation;
-			m_SpatialHintContentContainer.position = m_HintContentWorldPosition;
+			//m_SpatialHintContentContainer.position = m_HintContentWorldPosition;
 
 			//Debug.LogError(gameObject.GetInstanceID() + " : <color=green>World position of UI : " + transform.position + " - starting drag definition position : " + m_StartingDragOrigin + "</color>");
 		}
@@ -454,6 +462,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					this.SelectTool(rayOrigin, button.toolType);
 					if (buttonClicked != null)
 						buttonClicked();
+
+					m_SpatialHintUI.visible = false;
 
 					return;
 				}
