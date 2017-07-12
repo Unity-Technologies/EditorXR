@@ -216,6 +216,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 					var transform = renderer.transform;
 
+					IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
+
 					RaycastHit tmp;
 					if (IntersectionUtils.TestRay(m_CollisionTester, transform, ray, out tmp, maxDistance))
 					{
