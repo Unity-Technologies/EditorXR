@@ -10,6 +10,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	public class HintIcon : MonoBehaviour
 	{
 		[SerializeField]
+		bool m_HideOnInitialize = true;
+
+		[SerializeField]
 		Image m_Icon;
 
 		[SerializeField]
@@ -18,11 +21,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Color m_HiddenColor = Color.clear;
 
+		[SerializeField]
+		Color m_PulseColor = Color.white;
+
 		readonly Vector3 k_HiddenScale = Vector3.zero;
 
 		Transform m_IconTransform;
 		Vector3 m_VisibleLocalScale;
 		Coroutine m_VisibilityCoroutine;
+		Coroutine m_ScrollArrowPulseCoroutine;
 
 		public bool visible
 		{
@@ -49,7 +56,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_IconTransform = m_Icon.transform;
 			m_VisibleLocalScale = m_IconTransform.localScale * 1.25F;
 			m_Icon.color = m_VisibleColor;
-			visible = false;
+
+			if (m_HideOnInitialize)
+				visible = false;
 		}
 
 		IEnumerator AnimateShow()
@@ -98,6 +107,36 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			m_IconTransform.localScale = k_HiddenScale;
+		}
+
+		public void PulseColor()
+		{
+			this.RestartCoroutine(ref m_ScrollArrowPulseCoroutine, AnimatePulseColor());
+		}
+
+		IEnumerator AnimatePulseColor()
+		{
+			Debug.LogError("Pulsing color of hint arrow : " + gameObject.name);
+			const float kTargetDuration = 1f;
+			var currentDuration = 0f;
+			var currentColor = m_Icon.color;
+			while (currentDuration < kTargetDuration)
+			{
+				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / kTargetDuration);
+				m_Icon.color = Color.Lerp(currentColor, m_PulseColor, shapedDuration);
+				currentDuration += Time.unscaledDeltaTime * 4;
+				yield return null;
+			}
+
+			while (currentDuration > 0f)
+			{
+				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / kTargetDuration);
+				m_Icon.color = Color.Lerp(m_VisibleColor, m_PulseColor, shapedDuration);
+				currentDuration -= Time.unscaledDeltaTime * 2;
+				yield return null;
+			}
+
+			m_Icon.color = m_VisibleColor;
 		}
 	}
 }

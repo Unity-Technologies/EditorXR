@@ -10,15 +10,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		readonly Color k_PrimaryArrowColor = Color.white;
 
+		[Header("Scroll Visuals")]
 		[SerializeField]
 		CanvasGroup m_ScrollVisualsCanvasGroup;
 
 		[SerializeField]
 		Transform m_ScrollVisualsDragTargetArrow;
 
+		[SerializeField]
+		HintIcon[] m_ScrollHintArrows;
+
 		//[SerializeField]
 		//CanvasGroup m_HintArrowsCanvasGroup; // TODO: add back in later
 
+		[Header("Primary Directional Visuals")]
 		[SerializeField]
 		HintIcon[] m_PrimaryDirectionalHintArrows;
 
@@ -268,6 +273,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsTransform.localScale = hiddenLocalScale;
 			//m_ScrollVisualsTransform.localRotation = Quaternion.identity;
 			m_ScrollVisualsGameObject.SetActive(false);
+		}
+
+		public void PulseScrollArrows()
+		{
+			foreach (var arrow in m_ScrollHintArrows)
+			{
+				arrow.PulseColor();
+			}
 		}
 	}
 }

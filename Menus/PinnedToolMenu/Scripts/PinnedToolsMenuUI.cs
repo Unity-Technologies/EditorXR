@@ -438,8 +438,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var button = m_OrderedButtons[i];
 				if (i == buttonOrderPosition)
 				{
-					if (!button.highlighted && buttonHovered != null) // Process haptic pulse if button was not already highlighted
+					if (!button.highlighted && buttonHovered != null)
+					{
+						// Process haptic pulse if button was not already highlighted
+						m_SpatialHintUI.PulseScrollArrows();
 						buttonHovered();
+					}
 
 					button.highlighted = true;
 				}
