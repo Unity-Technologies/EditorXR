@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
@@ -67,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			}
 
 			const float nameColumnWidth = 250f;
-			const float durationColumnWidth = 60f;
+			const float floatFieldColumnWidth = 60f;
 
 			m_Scroll = GUILayout.BeginScrollView(m_Scroll);
 
@@ -94,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 			GUILayout.BeginHorizontal();
 			GUILayout.Label("Haptic Pulses", EditorStyles.boldLabel, GUILayout.Width(nameColumnWidth));
-			GUILayout.Label("Duration", GUILayout.Width(durationColumnWidth));
+			GUILayout.Label("Duration");
 			GUILayout.Label("Intensity");
 			GUILayout.EndHorizontal();
 
@@ -103,9 +104,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				GUILayout.BeginHorizontal();
 				EditorGUILayout.ObjectField(pulse.pulse, typeof(HapticPulse), false, GUILayout.Width(nameColumnWidth));
 				EditorGUI.BeginChangeCheck();
-				pulse.duration.floatValue = EditorGUILayout.FloatField(pulse.duration.floatValue, GUILayout.Width(durationColumnWidth));
-				pulse.intensity.floatValue = GUILayout.HorizontalSlider(pulse.intensity.floatValue, 0, 1);
-				pulse.intensity.floatValue = EditorGUILayout.FloatField(pulse.intensity.floatValue, GUILayout.Width(durationColumnWidth));
+				var durationProperty = pulse.duration;
+				durationProperty.floatValue = GUILayout.HorizontalSlider(durationProperty.floatValue, 0, HapticsModule.MaxDuration);
+				durationProperty.floatValue = EditorGUILayout.FloatField(durationProperty.floatValue, GUILayout.Width(floatFieldColumnWidth));
+				durationProperty.floatValue = Mathf.Clamp(durationProperty.floatValue, 0, HapticsModule.MaxDuration);
+				var intensityProperty = pulse.intensity;
+				intensityProperty.floatValue = GUILayout.HorizontalSlider(intensityProperty.floatValue, 0, 1);
+				intensityProperty.floatValue = EditorGUILayout.FloatField(intensityProperty.floatValue, GUILayout.Width(floatFieldColumnWidth));
+				intensityProperty.floatValue = Mathf.Clamp01(intensityProperty.floatValue);
 				if (EditorGUI.EndChangeCheck())
 					pulse.serializedObject.ApplyModifiedProperties();
 
