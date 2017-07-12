@@ -15,10 +15,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		float m_Intensity = 1f;
 
 		[SerializeField]
-		bool m_FadeIn = false;
+		bool m_FadeIn;
 	
 		[SerializeField]
-		bool m_FadeOut = false;
+		bool m_FadeOut;
 
 		// Don't allow public setting of value; use inspector-set values
 		public float duration { get { return m_Duration; } internal set { m_Duration = value; } }
