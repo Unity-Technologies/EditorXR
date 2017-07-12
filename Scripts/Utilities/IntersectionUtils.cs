@@ -7,8 +7,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	static class IntersectionUtils
 	{
 		// Local method use only -- created here to reduce garbage collection
-		static readonly Vector3[] s_TriangleVertices = new Vector3[3];
-		static Mesh s_BakedMesh = new Mesh();
+		static readonly Vector3[] k_TriangleVertices = new Vector3[3];
+		static readonly Mesh k_BakedMesh = new Mesh();
 
 		/// <summary>
 		/// Test whether an object collides with the tester
@@ -58,16 +58,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			var testerTransform = tester.transform;
 			for (var i = 0; i < triangles.Length; i += 3)
 			{
-				s_TriangleVertices[0] = vertices[triangles[i]];
-				s_TriangleVertices[1] = vertices[triangles[i + 1]];
-				s_TriangleVertices[2] = vertices[triangles[i + 2]];
+				k_TriangleVertices[0] = vertices[triangles[i]];
+				k_TriangleVertices[1] = vertices[triangles[i + 1]];
+				k_TriangleVertices[2] = vertices[triangles[i + 2]];
 
 				for (var j = 0; j < 3; j++)
 				{
 					RaycastHit hitInfo;
 
-					var start = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[j]));
-					var end = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[(j + 1) % 3]));
+					var start = obj.InverseTransformPoint(testerTransform.TransformPoint(k_TriangleVertices[j]));
+					var end = obj.InverseTransformPoint(testerTransform.TransformPoint(k_TriangleVertices[(j + 1) % 3]));
 					var edge = end - start;
 					var maxDistance = Mathf.Max(edge.magnitude, boundsMagnitude);
 					var direction = edge.normalized;
@@ -192,8 +192,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				var smr = obj.GetComponent<SkinnedMeshRenderer>();
 				if (smr)
 				{
-					smr.BakeMesh(s_BakedMesh);
-					collisionTester.sharedMesh = s_BakedMesh;
+					smr.BakeMesh(k_BakedMesh);
+					collisionTester.sharedMesh = k_BakedMesh;
 				}
 			}
 		}

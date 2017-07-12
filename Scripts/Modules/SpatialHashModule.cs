@@ -42,8 +42,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			var skinnedMeshRenderers = FindObjectsOfType<SkinnedMeshRenderer>();
-			foreach (var skinnedMeshRenderer in skinnedMeshRenderers) {
-				if (skinnedMeshRenderer.sharedMesh) {
+			foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
+			{
+				if (skinnedMeshRenderer.sharedMesh)
+				{
 					if (shouldExcludeObject != null && shouldExcludeObject(skinnedMeshRenderer.gameObject))
 						continue;
 

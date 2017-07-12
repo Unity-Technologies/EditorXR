@@ -3,10 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
-{
+namespace UnityEditor.Experimental.EditorVR.Modules {
 	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		[SerializeField]
@@ -20,7 +18,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
-		readonly Dictionary<Camera, CommandBuffer> m_CommandBuffers = new Dictionary<Camera, CommandBuffer>();
+
+		static Mesh s_BakedMesh;
 
 		public event Func<GameObject, Material, bool> customHighlight
 		{
@@ -39,31 +38,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			get { return m_RightHighlightMaterial.color; }
 		}
 
-		void OnEnable()
+		void Awake()
 		{
-			foreach (var currentCamera in Resources.FindObjectsOfTypeAll<Camera>())
-			{
-				var buffer = new CommandBuffer();
-				currentCamera.AddCommandBuffer(CameraEvent.AfterForwardAlpha, buffer);
-				m_CommandBuffers[currentCamera] = buffer;
-			}
-		}
-
-		void OnDisable()
-		{
-			foreach (var kvp in m_CommandBuffers) {
-				kvp.Key.RemoveCommandBuffer(CameraEvent.AfterForwardOpaque, kvp.Value);
-			}
-			m_CommandBuffers.Clear();
+			s_BakedMesh = new Mesh();
 		}
 
 		void LateUpdate()
 		{
-			foreach (var kvp in m_CommandBuffers)
-			{
-				kvp.Value.Clear();
-			}
-
 			foreach (var highlight in m_Highlights)
 			{
 				var material = highlight.Key;
@@ -87,33 +68,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		void HighlightObject(GameObject go, Material material)
+		static void HighlightObject(GameObject go, Material material)
 		{
-			//foreach (var m in go.GetComponentsInChildren<MeshFilter>())
-			//{
-			//	if (m.sharedMesh == null)
-			//		continue;
-
-			//	for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
-			//		Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
-			//}
-
-			foreach (var kvp in m_CommandBuffers)
+			foreach (var meshFilter in go.GetComponentsInChildren<MeshFilter>())
 			{
-				var buffer = kvp.Value;
-				foreach (var m in go.GetComponentsInChildren<Renderer>())
+				var mesh = meshFilter.sharedMesh;
+				if (meshFilter.sharedMesh == null)
+					continue;
+
+				var localToWorldMatrix = meshFilter.transform.localToWorldMatrix;
+				var layer = meshFilter.gameObject.layer;
+				for (var i = 0; i < meshFilter.sharedMesh.subMeshCount; i++)
 				{
-					//if (m.sharedMesh == null)
-					//	continue;
+					Graphics.DrawMesh(mesh, localToWorldMatrix, material, layer, null, i);
+				}
+			}
 
-					//s_CommandBuffer.Clear();
-					//s_CommandBuffer.SetRenderTarget(RenderTexture.active);
-					//Debug.Log(m + ", " + m.gameObject.hideFlags);
-					buffer.DrawRenderer(m, material);
-					Graphics.ExecuteCommandBuffer(buffer);
+			foreach (var skinnedMeshRenderer in go.GetComponentsInChildren<SkinnedMeshRenderer>())
+			{
+				if (skinnedMeshRenderer.sharedMesh == null)
+					continue;
 
-					//for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
-					//	Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
+				skinnedMeshRenderer.BakeMesh(s_BakedMesh);
+
+				var localToWorldMatrix = skinnedMeshRenderer.transform.localToWorldMatrix;
+				var layer = skinnedMeshRenderer.gameObject.layer;
+				for (var i = 0; i < s_BakedMesh.subMeshCount; i++)
+				{
+					Graphics.DrawMesh(s_BakedMesh, localToWorldMatrix, material, layer, null, i);
 				}
 			}
 		}
