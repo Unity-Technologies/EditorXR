@@ -57,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_AllButtonsVisible = value;
+				Debug.LogError("AllButtonsVisible set to : " + value);
 
 				if (m_AllButtonsVisible)
 				{
@@ -65,8 +66,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 				else
 				{
-					Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 					//this.Pulse(rayOrigin, 0.5f, 0.065f, false, true);
+					//spatialDragDistance = 0f;
 					ShowOnlyMenuAndActiveToolButtons();
 
 					m_SpatialHintUI.preScrollVisualsVisible = false;
@@ -463,6 +464,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (buttonClicked != null)
 						buttonClicked();
 
+					allButtonsVisible = false;
 					m_SpatialHintUI.visible = false;
 
 					return;

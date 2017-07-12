@@ -147,9 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (m_ScrollVisualsRotation != Vector3.zero)
 				{
 					Debug.LogError("scrollVisualsRotation was set to a Vec3 non-zero value' beginning showing of scroll visuals : " + m_ScrollVisualsRotation);
-					
-					if (m_ScrollVisualsVisibilityCoroutine == null)
-						this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, ShowScrollVisuals());
+					this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, ShowScrollVisuals());
 				}
 				else
 				{
@@ -240,7 +238,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_ScrollVisualsDragTargetArrow.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
 
 				currentDuration += Time.unscaledDeltaTime * 2f;
-				m_ScrollVisualsVisibilityCoroutine = null;
 				yield return null;
 			}
 
@@ -270,7 +267,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsCanvasGroup.alpha = 0;
 			m_ScrollVisualsTransform.localScale = hiddenLocalScale;
 			//m_ScrollVisualsTransform.localRotation = Quaternion.identity;
-			m_ScrollVisualsVisibilityCoroutine = null;
 			m_ScrollVisualsGameObject.SetActive(false);
 		}
 	}
