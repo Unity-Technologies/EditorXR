@@ -11,7 +11,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-		IGrabObjects, ISetDefaultRayVisibility, IProcessInput, ISelectObject, IManipulatorVisibility, IUsesSnapping, ISetHighlight,
+		IGrabObjects, ISetDefaultRayVisibility, IProcessInput, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight,
 		ILinkedObject, IRayToNode, IControlHaptics
 	{
 		const float k_LazyFollowTranslate = 8f;
@@ -213,6 +213,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public event Action<Transform, Transform> objectsTransferred;
 
 		public bool manipulatorVisible { private get; set; }
+
+		public bool manipulatorDragging
+		{
+			get
+			{
+				return
+					m_StandardManipulator && m_StandardManipulator.dragging
+					|| m_ScaleManipulator && m_ScaleManipulator.dragging;
+			}
+		}
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
@@ -457,7 +467,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var manipulatorTransform = manipulatorGameObject.transform;
 				var lerp = m_CurrentlySnapping ? 1f : k_LazyFollowTranslate * deltaTime;
 				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, lerp);
-				if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
+				// Manipulator does not rotate when in global mode
+				if (m_PivotRotation == PivotRotation.Local && m_CurrentManipulator == m_StandardManipulator)
 					manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, k_LazyFollowRotate * deltaTime);
 
 				var selectionTransforms = Selection.transforms;
@@ -620,7 +631,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var manipulatorTransform = manipulatorGameObject.transform;
 			var activeTransform = Selection.activeTransform ?? selectionTransforms[0];
 			manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? activeTransform.position : m_SelectionBounds.center;
-			manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global ? Quaternion.identity : activeTransform.rotation;
+			manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global && m_CurrentManipulator == m_StandardManipulator
+				? Quaternion.identity : activeTransform.rotation;
 			m_TargetPosition = manipulatorTransform.position;
 			m_TargetRotation = manipulatorTransform.rotation;
 			m_StartRotation = m_TargetRotation;

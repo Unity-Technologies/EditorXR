@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject
+		ICanGrabObject, IGetManipulatorDragState
 	{
 		public ActionMap actionMap { get { return m_ActionMap; } }
 		[SerializeField]
@@ -32,6 +32,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			if (this.GetManipulatorDragState())
+				return;
+
 			m_SelectionInput = (SelectionInput)input;
 
 			var multiSelect = false;

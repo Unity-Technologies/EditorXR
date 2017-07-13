@@ -15,6 +15,8 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 	class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler,
 		IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IPointerClickHandler, IDropReceiver, IDroppable
 	{
+		protected const int k_DefaultCapacity = 2; // i.e. 2 controllers
+
 		public SelectionFlags selectionFlags
 		{
 			get { return m_SelectionFlags; }
@@ -24,8 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		[SerializeField]
 		[FlagsProperty]
 		SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
-
-		const int k_DefaultCapacity = 2; // i.e. 2 controllers
 
 		protected readonly List<Transform> m_HoverSources = new List<Transform>(k_DefaultCapacity);
 		protected readonly List<Transform> m_DragSources = new List<Transform>(k_DefaultCapacity);
@@ -66,19 +66,22 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			if (m_HoverSources.Count > 0 || m_DragSources.Count > 0)
 			{
 				var eventData = GetHandleEventData(new RayEventData(EventSystem.current));
-				foreach (var rayOrigin in m_HoverSources)
+				var sources = new List<Transform>(m_HoverSources);
+				m_HoverSources.Clear();
+				foreach (var rayOrigin in sources)
 				{
 					eventData.rayOrigin = rayOrigin;
 					OnHandleHoverEnded(eventData);
 				}
-				m_HoverSources.Clear();
 
-				foreach (var rayOrigin in m_DragSources)
+				sources.Clear();
+				sources.AddRange(m_DragSources);
+				m_DragSources.Clear();
+				foreach (var rayOrigin in sources)
 				{
 					eventData.rayOrigin = rayOrigin;
 					OnHandleDragEnded(eventData);
 				}
-				m_DragSources.Clear();
 			}
 		}
 

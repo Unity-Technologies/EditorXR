@@ -1,8 +1,8 @@
 ﻿#if UNITY_EDITOR
-using UnityEngine.EventSystems;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Handles
 {
@@ -35,23 +35,33 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		{
 			var sphereEventData = (SphereHandleEventData)eventData;
 
-			m_CurrentRadius = sphereEventData.raycastHitDistance;
+			var rayOrigin = eventData.rayOrigin;
+			if (IndexOfDragSource(rayOrigin) == 0)
+			{
+				m_CurrentRadius = sphereEventData.raycastHitDistance;
+				m_ScrollRate = k_InitialScrollRate;
+				m_LastPosition = GetRayPoint(eventData);
 
-			m_LastPosition = GetRayPoint(eventData);
-
-			m_ScrollRate = k_InitialScrollRate;
-
-			base.OnHandleDragStarted(eventData);
+				base.OnHandleDragStarted(eventData);
+			}
 		}
 
 		protected override void OnHandleDragging(HandleEventData eventData)
 		{
-			var worldPosition = GetRayPoint(eventData);
+			if (IndexOfDragSource(eventData.rayOrigin) == 0)
+			{
+				var worldPosition = GetRayPoint(eventData);
+				eventData.deltaPosition = worldPosition - m_LastPosition;
+				m_LastPosition = worldPosition;
 
-			eventData.deltaPosition = worldPosition - m_LastPosition;
-			m_LastPosition = worldPosition;
+				base.OnHandleDragging(eventData);
+			}
+		}
 
-			base.OnHandleDragging(eventData);
+		protected override void OnHandleDragEnded(HandleEventData eventData)
+		{
+			if (!hasDragSource)
+				base.OnHandleDragEnded(eventData);
 		}
 
 		public void ChangeRadius(float delta)

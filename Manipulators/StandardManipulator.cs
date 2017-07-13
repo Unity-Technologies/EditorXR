@@ -48,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		{
 			base.OnHandleHoverEnded(handle, eventData);
 
-			if (!handle.hasDragSource && handle is RadialHandle)
+			if (!handle.hasDragSource && !handle.hasHoverSource && handle is RadialHandle)
 				handle.GetComponent<MeshFilter>().sharedMesh = m_RadialHandleMesh;
 		}
 

@@ -1,5 +1,6 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -33,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			Camera m_EventCamera;
 
-			readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
+			readonly List<IManipulatorController> m_ManipulatorVisibilities = new List<IManipulatorController>();
 			readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
 
 			public UI()
@@ -41,11 +42,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IInstantiateUIMethods.instantiateUI = InstantiateUI;
 				IRequestStencilRefMethods.requestStencilRef = RequestStencilRef;
 				ISetManipulatorsVisibleMethods.setManipulatorsVisible = SetManipulatorsVisible;
+				IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var manipulatorVisiblity = obj as IManipulatorVisibility;
+				var manipulatorVisiblity = obj as IManipulatorController;
 				if (manipulatorVisiblity != null)
 					m_ManipulatorVisibilities.Add(manipulatorVisiblity);
 
@@ -73,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var manipulatorVisiblity = obj as IManipulatorVisibility;
+				var manipulatorVisiblity = obj as IManipulatorController;
 				if (manipulatorVisiblity != null)
 					m_ManipulatorVisibilities.Remove(manipulatorVisiblity);
 			}
@@ -126,11 +128,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_ManipulatorsHiddenRequests.Add(setter);
 			}
 
+			bool GetManipulatorDragState()
+			{
+				return m_ManipulatorVisibilities.Any(controller => controller.manipulatorDragging);
+			}
+
 			internal void UpdateManipulatorVisibilites()
 			{
 				var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
 				foreach (var mv in m_ManipulatorVisibilities)
+				{
 					mv.manipulatorVisible = manipulatorsVisible;
+				}
 			}
 
 			byte RequestStencilRef()

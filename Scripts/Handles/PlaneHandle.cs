@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -22,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		ConstrainedAxis m_Constraints;
 
 		Plane m_Plane;
-		Vector3 m_LastPosition;
+		readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
 
 		public ConstrainedAxis constraints { get { return m_Constraints; } }
 
@@ -34,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		protected override void OnHandleDragStarted(HandleEventData eventData)
 		{
 			var planeEventData = eventData as PlaneHandleEventData;
-			m_LastPosition = planeEventData.raycastHitWorldPosition;
+			m_LastPositions[eventData.rayOrigin] = planeEventData.raycastHitWorldPosition;
 
 			m_Plane.SetNormalAndPosition(transform.forward, transform.position);
 
@@ -45,15 +46,16 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		{
 			var rayOrigin = eventData.rayOrigin;
 
-			var worldPosition = m_LastPosition;
+			var lastPosition = m_LastPositions[eventData.rayOrigin];
+			var worldPosition = lastPosition;
 
 			float distance;
 			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			if (m_Plane.Raycast(ray, out distance))
 				worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), k_MaxDragDistance * this.GetViewerScale()));
 
-			var deltaPosition = worldPosition - m_LastPosition;
-			m_LastPosition = worldPosition;
+			var deltaPosition = worldPosition - lastPosition;
+			m_LastPositions[eventData.rayOrigin] = worldPosition;
 
 			deltaPosition = transform.InverseTransformVector(deltaPosition);
 			deltaPosition.z = 0;

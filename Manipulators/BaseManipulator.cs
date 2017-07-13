@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 	{
 		protected const float k_BaseManipulatorSize = 0.3f;
 		const float k_MinHandleTipDirectionDelta = 0.01f;
+		const float k_LazyFollow = 50f;
 
 		class HandleTip
 		{
@@ -151,7 +152,9 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 			active = active && (handle is LinearHandle || handle is RadialHandle);
 
-			handleTipRenderer.gameObject.SetActive(active);
+			var handleTipGameObject = handleTipRenderer.gameObject;
+			var wasActive = handleTipGameObject.activeSelf;
+			handleTipGameObject.SetActive(active);
 
 			if (active) // Reposition handle tip based on current raycast position when hovering or dragging
 			{
@@ -163,11 +166,13 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 				var distanceFromRayOrigin = Vector3.Distance(handleTipPosition, rayOrigin.position);
 
 				var linearEventData = eventData as LinearHandle.LinearHandleEventData;
+				var lerp = wasActive ? k_LazyFollow * Time.deltaTime : 1;
 				if (linearEventData != null)
 				{
-					handleTipTransform.position =
+					handleTipTransform.position = Vector3.Lerp(handleTipPosition,
 						handleTransform.TransformPoint(new Vector3(0, 0,
-							handleTransform.InverseTransformPoint(linearEventData.raycastHitWorldPosition).z));
+							handleTransform.InverseTransformPoint(linearEventData.raycastHitWorldPosition).z)),
+						lerp);
 
 					var handleForward = handleTransform.forward;
 					var delta = handleTipPosition - handleTip.lastPosition;
@@ -192,7 +197,9 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 					{
 						var newLocalPos = handleTransform.InverseTransformPoint(radialEventData.raycastHitWorldPosition);
 						newLocalPos.y = 0;
-						handleTipTransform.position = handleTransform.TransformPoint(newLocalPos.normalized * 0.5f * handleTransform.localScale.x);
+						handleTipTransform.position = Vector3.Lerp(handleTipPosition,
+							handleTransform.TransformPoint(newLocalPos.normalized * 0.5f * handleTransform.localScale.x),
+							lerp);
 					}
 
 					var forward = Vector3.Cross(handleTransform.up, (handleTipPosition - handleTransform.position).normalized);
@@ -203,8 +210,16 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 						handleTip.lastPosition = handleTipPosition;
 					}
 
-					handleTipTransform.forward = forward * handleTip.direction;
+					if (forward != Vector3.zero)
+						handleTipTransform.forward = forward * handleTip.direction;
 				}
+
+				if (handle.hasDragSource && !handleTip.positionOffset.HasValue)
+					handleTip.positionOffset = handle.transform.InverseTransformPoint(handleTip.handleTip.transform.position);
+			}
+			else if(!handle.hasDragSource)
+			{
+				handleTip.positionOffset = null;
 			}
 		}
 
@@ -225,8 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			if (handle.IndexOfHoverSource(eventData.rayOrigin) > 0)
 				return;
 
-			if (!handle.hasDragSource)
-				UpdateHandleTip(handle, eventData, true);
+			UpdateHandleTip(handle, eventData, !handle.hasDragSource);
 		}
 
 		protected virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData)
@@ -257,9 +271,6 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 			dragging = true;
 
-			var handleTip = m_HandleTips[rayOrigin];
-			handleTip.positionOffset = handle.transform.InverseTransformPoint(handleTip.handleTip.transform.position);
-
 			UpdateHandleTip(handle, eventData, true);
 		}
 
@@ -274,11 +285,10 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		protected virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			var rayOrigin = eventData.rayOrigin;
-			m_HandleTips[rayOrigin].positionOffset = null;
 
 			UpdateHandleTip(handle, eventData, false);
 
-			if (!handle.hasDragSource)
+			if (handle.hasDragSource)
 				return;
 
 			foreach (var h in m_AllHandles)

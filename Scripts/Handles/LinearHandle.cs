@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		[SerializeField]
 		ConstrainedAxis m_Constraints;
 
-		readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>();
+		readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
 
 		Plane m_Plane;
 
