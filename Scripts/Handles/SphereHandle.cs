@@ -68,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		{
 			var distance = Vector3.Distance(CameraUtils.GetMainCamera().transform.position, transform.position);
 			m_CurrentRadius += delta * distance * k_DistanceScale;
-			m_CurrentRadius = Mathf.Min(Mathf.Max(m_CurrentRadius, 0f), k_MaxSphereRadius * this.GetViewerScale());
+			m_CurrentRadius = Mathf.Clamp(m_CurrentRadius, 0f, k_MaxSphereRadius * this.GetViewerScale());
 		}
 
 		public void OnScroll(PointerEventData eventData)
