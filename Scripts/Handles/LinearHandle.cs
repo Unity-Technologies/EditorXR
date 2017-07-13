@@ -29,10 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		Plane m_Plane;
 
-		public ConstrainedAxis constraints
-		{
-			get { return m_Constraints; }
-		}
+		public ConstrainedAxis constraints { get { return m_Constraints; } }
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{

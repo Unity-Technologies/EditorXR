@@ -40,6 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		public Func<BaseHandle, object, bool> canDrop { private get; set; }
 		public Action<BaseHandle, object> receiveDrop { private get; set; }
 		public Func<BaseHandle, object> getDropObject { private get; set; }
+
 		public event Action<BaseHandle> dropHoverStarted;
 		public event Action<BaseHandle> dropHoverEnded;
 
