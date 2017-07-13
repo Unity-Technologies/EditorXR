@@ -6,10 +6,9 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	sealed class PlaneHandle : BaseHandle, IAxisConstraints
+	sealed class PlaneHandle : BaseHandle, IAxisConstraints, IUsesViewerScale
 	{
 		const float k_MaxDragDistance = 1000f;
-		const float k_ScaleBump = 1.1f;
 
 		class PlaneHandleEventData : HandleEventData
 		{
@@ -17,12 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 			public PlaneHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) { }
 		}
-
-		[SerializeField]
-		Material m_PlaneMaterial;
-
-		[SerializeField]
-		bool m_ScaleBump;
 
 		[FlagsProperty]
 		[SerializeField]
@@ -57,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			float distance;
 			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
 			if (m_Plane.Raycast(ray, out distance))
-				worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), k_MaxDragDistance));
+				worldPosition = ray.GetPoint(Mathf.Min(Mathf.Abs(distance), k_MaxDragDistance * this.GetViewerScale()));
 
 			var deltaPosition = worldPosition - m_LastPosition;
 			m_LastPosition = worldPosition;
@@ -68,20 +61,6 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			eventData.deltaPosition = deltaPosition;
 
 			base.OnHandleDragging(eventData);
-		}
-
-		protected override void OnHandleHoverStarted(HandleEventData eventData) {
-			if (m_ScaleBump)
-				transform.localScale *= k_ScaleBump;
-
-			base.OnHandleHoverStarted(eventData);
-		}
-
-		protected override void OnHandleHoverEnded(HandleEventData eventData) {
-			if (m_ScaleBump)
-				transform.localScale /= k_ScaleBump;
-
-			base.OnHandleHoverStarted(eventData);
 		}
 	}
 }

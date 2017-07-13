@@ -152,6 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (m_PressedObject == hoveredObject)
 				{
 					this.SelectObject(m_PressedObject, rayOrigin, multiSelect, true);
+					this.ResetDirectSelectionState();
 
 					if (m_PressedObject != null)
 						this.SetHighlight(m_PressedObject, false, rayOrigin);
@@ -200,6 +201,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 			m_HoverGameObjects.Clear();
 		}
+
+		public void OnResetDirectSelectionState() { }
 	}
 }
 #endif

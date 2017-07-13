@@ -15,7 +15,12 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 	class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler,
 		IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IPointerClickHandler, IDropReceiver, IDroppable
 	{
-		public SelectionFlags selectionFlags { get { return m_SelectionFlags; } set { m_SelectionFlags = value; } }
+		public SelectionFlags selectionFlags
+		{
+			get { return m_SelectionFlags; }
+			set { m_SelectionFlags = value; }
+		}
+
 		[SerializeField]
 		[FlagsProperty]
 		SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
@@ -24,9 +29,13 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 		protected readonly List<Transform> m_HoverSources = new List<Transform>(k_DefaultCapacity);
 		protected readonly List<Transform> m_DragSources = new List<Transform>(k_DefaultCapacity);
+		protected readonly Dictionary<Transform, Vector3> m_StartDragPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
 		protected DateTime m_LastClickTime;
 
-		public Vector3 startDragPosition { get; protected set; }
+		public bool hasHoverSource { get { return m_HoverSources.Count > 0; } }
+		public bool hasDragSource { get { return m_DragSources.Count > 0; } }
+
+		public Dictionary<Transform, Vector3> startDragPositions { get { return m_StartDragPositions; } }
 
 		public Func<BaseHandle, object, bool> canDrop { private get; set; }
 		public Action<BaseHandle, object> receiveDrop { private get; set; }
@@ -51,21 +60,21 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			gameObject.layer = LayerMask.NameToLayer("UI");
 		}
 
-		private void OnDisable()
+		void OnDisable()
 		{
 			if (m_HoverSources.Count > 0 || m_DragSources.Count > 0)
 			{
 				var eventData = GetHandleEventData(new RayEventData(EventSystem.current));
-				for (int i = 0; i < m_HoverSources.Count; i++)
+				foreach (var rayOrigin in m_HoverSources)
 				{
-					eventData.rayOrigin = m_HoverSources[i];
+					eventData.rayOrigin = rayOrigin;
 					OnHandleHoverEnded(eventData);
 				}
 				m_HoverSources.Clear();
 
-				for (int i = 0; i < m_DragSources.Count; i++)
+				foreach (var rayOrigin in m_DragSources)
 				{
-					eventData.rayOrigin = m_DragSources[i];
+					eventData.rayOrigin = rayOrigin;
 					OnHandleDragEnded(eventData);
 				}
 				m_DragSources.Clear();
@@ -77,23 +86,32 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			return new HandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData));
 		}
 
+		public int IndexOfHoverSource(Transform rayOrigin)
+		{
+			return m_HoverSources.IndexOf(rayOrigin);
+		}
+
+		public int IndexOfDragSource(Transform rayOrigin)
+		{
+			return m_DragSources.IndexOf(rayOrigin);
+		}
+
 		public void OnBeginDrag(RayEventData eventData)
 		{
 			if (!UIUtils.IsValidEvent(eventData, selectionFlags))
 				return;
 
-			m_DragSources.Add(eventData.rayOrigin);
-			startDragPosition = eventData.pointerCurrentRaycast.worldPosition;
+			var rayOrigin = eventData.rayOrigin;
+			m_DragSources.Add(rayOrigin);
+			startDragPositions[rayOrigin] = eventData.pointerCurrentRaycast.worldPosition;
 
 			var handleEventData = GetHandleEventData(eventData);
 
 			//Double-click logic
-			var timeSinceLastClick = (float) (DateTime.Now - m_LastClickTime).TotalSeconds;
+			var timeSinceLastClick = (float)(DateTime.Now - m_LastClickTime).TotalSeconds;
 			m_LastClickTime = DateTime.Now;
 			if (UIUtils.IsDoubleClick(timeSinceLastClick))
-			{
 				OnDoubleClick(handleEventData);
-			}
 
 			OnHandleDragStarted(handleEventData);
 		}

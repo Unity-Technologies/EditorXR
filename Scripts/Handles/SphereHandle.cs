@@ -6,8 +6,10 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	sealed class SphereHandle : BaseHandle, IScrollHandler
+	sealed class SphereHandle : BaseHandle, IScrollHandler, IUsesViewerScale
 	{
+		const float k_MaxSphereRadius = 1000f;
+
 		class SphereHandleEventData : HandleEventData
 		{
 			public float raycastHitDistance;
@@ -18,13 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		const float k_InitialScrollRate = 2f;
 		const float k_ScrollAcceleration = 14f;
 
-		const float k_ScaleBump = 1.1f;
-		const float k_HideScale = 0.1f;
-
 		const float k_DistanceScale = 0.1f;
-
-		[SerializeField]
-		bool m_ScaleBump;
 
 		float m_ScrollRate;
 		Vector3 m_LastPosition;
@@ -45,8 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
 			m_ScrollRate = k_InitialScrollRate;
 
-			transform.localScale *= k_HideScale;
-
 			base.OnHandleDragStarted(eventData);
 		}
 
@@ -60,33 +54,11 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			base.OnHandleDragging(eventData);
 		}
 
-		protected override void OnHandleDragEnded(HandleEventData eventData)
-		{
-			transform.localScale /= k_HideScale;
-			base.OnHandleDragEnded(eventData);
-		}
-
-		protected override void OnHandleHoverStarted(HandleEventData eventData)
-		{
-			if (m_ScaleBump)
-				transform.localScale *= k_ScaleBump;
-
-			base.OnHandleHoverStarted(eventData);
-		}
-
-		protected override void OnHandleHoverEnded(HandleEventData eventData)
-		{
-			if (m_ScaleBump)
-				transform.localScale /= k_ScaleBump;
-
-			base.OnHandleHoverStarted(eventData);
-		}
-
 		public void ChangeRadius(float delta)
 		{
 			var distance = Vector3.Distance(CameraUtils.GetMainCamera().transform.position, transform.position);
 			m_CurrentRadius += delta * distance * k_DistanceScale;
-			m_CurrentRadius = Mathf.Max(m_CurrentRadius, 0f);
+			m_CurrentRadius = Mathf.Min(Mathf.Max(m_CurrentRadius, 0f), k_MaxSphereRadius * this.GetViewerScale());
 		}
 
 		public void OnScroll(PointerEventData eventData)

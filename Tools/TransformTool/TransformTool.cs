@@ -640,6 +640,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
+		public void OnResetDirectSelectionState()
+		{
+			m_DirectSelected = false;
+		}
+
 		bool TogglePivotMode()
 		{
 			m_PivotMode = m_PivotMode == PivotMode.Pivot ? PivotMode.Center : PivotMode.Pivot;
