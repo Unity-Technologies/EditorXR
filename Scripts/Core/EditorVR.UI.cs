@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			Camera m_EventCamera;
 
-			readonly List<IManipulatorController> m_ManipulatorVisibilities = new List<IManipulatorController>();
+			readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
 			readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
 
 			public UI()
@@ -47,9 +47,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var manipulatorVisiblity = obj as IManipulatorController;
-				if (manipulatorVisiblity != null)
-					m_ManipulatorVisibilities.Add(manipulatorVisiblity);
+				var manipulatorController = obj as IManipulatorController;
+				if (manipulatorController != null)
+					m_ManipulatorControllers.Add(manipulatorController);
 
 				var usesStencilRef = obj as IUsesStencilRef;
 				if (usesStencilRef != null)
@@ -75,9 +75,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var manipulatorVisiblity = obj as IManipulatorController;
-				if (manipulatorVisiblity != null)
-					m_ManipulatorVisibilities.Remove(manipulatorVisiblity);
+				var manipulatorController = obj as IManipulatorController;
+				if (manipulatorController != null)
+					m_ManipulatorControllers.Remove(manipulatorController);
 			}
 
 			internal void Initialize()
@@ -130,15 +130,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			bool GetManipulatorDragState()
 			{
-				return m_ManipulatorVisibilities.Any(controller => controller.manipulatorDragging);
+				return m_ManipulatorControllers.Any(controller => controller.manipulatorDragging);
 			}
 
 			internal void UpdateManipulatorVisibilites()
 			{
 				var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
-				foreach (var mv in m_ManipulatorVisibilities)
+				foreach (var controller in m_ManipulatorControllers)
 				{
-					mv.manipulatorVisible = manipulatorsVisible;
+					controller.manipulatorVisible = manipulatorsVisible;
 				}
 			}
 

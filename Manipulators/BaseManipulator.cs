@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 		class HandleTip
 		{
-			public Renderer handleTip;
+			public Renderer renderer;
 			public float direction = 1;
 			public Vector3 lastPosition;
 			public Vector3? positionOffset;
@@ -78,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 			foreach (var kvp in m_HandleTips)
 			{
-				kvp.Value.handleTip.gameObject.SetActive(false);
+				kvp.Value.renderer.gameObject.SetActive(false);
 			}
 		}
 
@@ -142,12 +142,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 					handleTipRenderer = ObjectUtils.Instantiate(handleTipRenderer.gameObject, transform).GetComponent<Renderer>();
 				MaterialUtils.CloneMaterials(handleTipRenderer);
 
-				handleTip = new HandleTip { handleTip = handleTipRenderer };
+				handleTip = new HandleTip { renderer = handleTipRenderer };
 				m_HandleTips[rayOrigin] = handleTip;
 			}
 			else
 			{
-				handleTipRenderer = handleTip.handleTip;
+				handleTipRenderer = handleTip.renderer;
 			}
 
 			active = active && (handle is LinearHandle || handle is RadialHandle);
@@ -215,7 +215,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 				}
 
 				if (handle.hasDragSource && !handleTip.positionOffset.HasValue)
-					handleTip.positionOffset = handle.transform.InverseTransformPoint(handleTip.handleTip.transform.position);
+					handleTip.positionOffset = handle.transform.InverseTransformPoint(handleTransform.position);
 			}
 			else if(!handle.hasDragSource)
 			{
