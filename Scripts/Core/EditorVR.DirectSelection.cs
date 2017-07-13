@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		class DirectSelection : Nested, IInterfaceConnector
 		{
-			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
+			readonly Dictionary<Transform, GameObject> m_DirectSelections = new Dictionary<Transform, GameObject>();
 			readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
 			readonly List<IGrabObjects> m_ObjectGrabbers = new List<IGrabObjects>();
 			readonly List<ITwoHandedScaler> m_TwoHandedScalers = new List<ITwoHandedScaler>();
@@ -109,13 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var rayOrigin = deviceData.rayOrigin;
 					var obj = GetDirectSelectionForRayOrigin(rayOrigin);
 					if (obj && !obj.CompareTag(k_VRPlayerTag))
-					{
-						m_DirectSelections[rayOrigin] = new DirectSelectionData
-						{
-							gameObject = obj,
-							node = deviceData.node
-						};
-					}
+						m_DirectSelections[rayOrigin] = obj;
 				});
 
 				foreach (var ray in evr.GetNestedModule<MiniWorlds>().rays)
@@ -123,13 +117,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var rayOrigin = ray.Key;
 					var go = GetDirectSelectionForRayOrigin(rayOrigin);
 					if (go != null)
-					{
-						m_DirectSelections[rayOrigin] = new DirectSelectionData
-						{
-							gameObject = go,
-							node = ray.Value.node
-						};
-					}
+						m_DirectSelections[rayOrigin] = go;
 				}
 			}
 

@@ -299,8 +299,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (m_GrabData.Count == 0 && this.IsMainMenuVisible(directRayOrigin))
 						continue;
 
-					var directSelectionData = kvp.Value;
-					var directHoveredObject = directSelectionData.gameObject;
+					var directHoveredObject = kvp.Value;
 
 					var selectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
 
@@ -314,7 +313,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
-					var grabbingNode = directSelectionData.node;
+					var grabbingNode =  this.RequestNodeFromRayOrigin(directRayOrigin);
 					var transformTool = linkedObjects.Cast<TransformTool>().FirstOrDefault(linkedObject => linkedObject.node == grabbingNode);
 					if (transformTool == null)
 						continue;
@@ -352,7 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						if (objectsGrabbed != null && !m_Scaling)
 							objectsGrabbed(directRayOrigin, grabbedObjects);
 
-						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray());
+						m_GrabData[grabbingNode.Value] = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray());
 
 						// A direct selection has been made. Hide the manipulator until the selection changes
 						m_DirectSelected = true;

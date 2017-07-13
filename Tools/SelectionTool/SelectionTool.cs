@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -9,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject, IUsesNode, IIsRayActive, IIsMainMenuVisible, IIsInMiniWorld
+		ICanGrabObject, IUsesNode, IIsRayActive, IIsMainMenuVisible, IIsInMiniWorld, IRayToNode
 	{
 		[SerializeField]
 		ActionMap m_ActionMap;
@@ -94,8 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				foreach (var kvp in directSelection)
 				{
 					var directRayOrigin = kvp.Key;
-					var directSelectionData = kvp.Value;
-					var directHoveredObject = directSelectionData.gameObject;
+					var directHoveredObject = kvp.Value;
 
 					var directSelectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
 
@@ -109,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
-					var grabbingNode = directSelectionData.node;
+					var grabbingNode = this.RequestNodeFromRayOrigin(directRayOrigin);
 					var selectionTool = linkedObjects.Cast<SelectionTool>().FirstOrDefault(linkedObject => linkedObject.node == grabbingNode);
 					if (selectionTool == null)
 						continue;
