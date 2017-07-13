@@ -462,22 +462,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			static Node? RequestNodeFromRayOrigin(Transform rayOrigin)
 			{
-				Node? node = null;
-				var evrDeviceData = evr.m_DeviceData;
-				for (var i = 0; i < evrDeviceData.Count; i++)
+				foreach (var deviceData in evr.m_DeviceData)
 				{
-					var deviceData = evrDeviceData[i];
 					if (!deviceData.proxy.active)
 						continue;
 
 					if (deviceData.rayOrigin == rayOrigin)
-					{
-						node = deviceData.node;
-						break;
-					}
+						return deviceData.node;
 				}
 
-				return node;
+				foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
+				{
+					if (kvp.Key == rayOrigin)
+						return kvp.Value.node;
+				}
+
+				return null;
 			}
 		}
 	}
