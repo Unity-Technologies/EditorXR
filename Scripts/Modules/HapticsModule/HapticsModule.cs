@@ -7,6 +7,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class HapticsModule : MonoBehaviour
 	{
+		public const float MaxDuration = 0.8f;
+
 		[SerializeField]
 		float m_MasterIntensity = 0.8f;
 
@@ -37,11 +39,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
 		}
 
+#if ENABLE_OVR_INPUT
 		void LateUpdate()
 		{
 			// Perform a manual update of OVR haptics
 			OVRHaptics.Process();
 		}
+#endif
 
 		/// <summary>
 		/// Pulse haptic feedback
@@ -50,22 +54,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// <param name="hapticPulse">Haptic pulse</param>
 		public void Pulse(Node? node, HapticPulse hapticPulse)
 		{
-#if ENABLE_OVR_INPUT
 			// Clip buffer can hold up to 800 milliseconds of samples
 			// At 320Hz, each sample is 3.125f milliseconds
 			if (Mathf.Approximately(m_MasterIntensity, 0))
 				return;
 
+#if ENABLE_OVR_INPUT
 			m_GeneratedHapticClip.Reset();
 
-			const float kMaxDuration = 0.8f;
 			var duration = hapticPulse.duration;
 			var intensity = hapticPulse.intensity;
 			var fadeIn = hapticPulse.fadeIn;
 			var fadeOut = hapticPulse.fadeOut;
-			if (duration > kMaxDuration)
+			if (duration > MaxDuration)
 			{
-				duration = Mathf.Clamp(duration, 0f, kMaxDuration); // Clamp at maxiumum 800ms for sample buffer
+				duration = Mathf.Clamp(duration, 0f, MaxDuration); // Clamp at maxiumum 800ms for sample buffer
 
 				if (!m_SampleLengthWarningShown)
 					Debug.LogWarning("Pulse durations greater than 0.8f are not currently supported");

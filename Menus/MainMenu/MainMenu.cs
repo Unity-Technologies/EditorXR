@@ -135,8 +135,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
 				this.Pulse(node, m_FaceRotationPulse);
-				consumeControl(mainMenuInput.flickFace);
 			}
+
+			if (visible)
+				consumeControl(mainMenuInput.flickFace);
 
 			m_LastRotationInput = rotationInput;
 		}

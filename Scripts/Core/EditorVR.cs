@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -33,6 +34,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
 
 		bool m_HasDeserialized;
+
+		static EditorVR s_Instance;
 
 		static HideFlags defaultHideFlags
 		{
@@ -95,8 +98,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void Awake()
 		{
-			Nested.evr = this; // Set this once for the convenience of all nested classes 
+			s_Instance = this; // Used only by PreferencesGUI
+			Nested.evr = this; // Set this once for the convenience of all nested classes
 			m_DefaultTools = defaultTools;
+			SetHideFlags(defaultHideFlags);
 
 			ClearDeveloperConsoleIfNecessary();
 
@@ -188,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					obj.transform.parent = null;
 					obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
 					obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
-					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
+					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale.Inverse());
 
 					spatialHashModule.AddObject(obj.gameObject);
 					return true;
@@ -295,6 +300,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void OnDestroy()
 		{
+			s_Instance = null;
 			foreach (var nested in m_NestedModules.Values)
 			{
 				nested.OnDestroy();
@@ -435,6 +441,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
+		void SetHideFlags(HideFlags hideFlags)
+		{
+			foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
+			{
+				manager.gameObject.hideFlags = hideFlags;
+			}
+
+			foreach (var manager in Resources.FindObjectsOfTypeAll<EditingContextManager>())
+			{
+				manager.gameObject.hideFlags = hideFlags;
+			}
+
+			foreach (var child in GetComponentsInChildren<Transform>(true))
+			{
+				child.gameObject.hideFlags = hideFlags;
+			}
+
+			EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
+		}
+
 		static EditorVR()
 		{
 			ObjectUtils.hideFlags = defaultHideFlags;
@@ -471,7 +497,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				string title = "Show EditorVR GameObjects";
 				string tooltip = "Normally, EditorVR GameObjects are hidden in the Hierarchy. Would you like to show them?";
+
+				EditorGUI.BeginChangeCheck();
 				showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
+				if (EditorGUI.EndChangeCheck() && s_Instance)
+					s_Instance.SetHideFlags(defaultHideFlags);
 			}
 
 			// Preserve Layout

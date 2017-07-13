@@ -407,8 +407,11 @@ MonoBehaviour:
   m_NoClipExpandArrow: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba, type: 2}
   m_NoClipBackingCube: {fileID: 2100000, guid: 1a070009f7968b74abbf1a1ae823b472, type: 2}
   m_NoClipText: {fileID: 2100000, guid: 0b1d2d3c4b2d7d948bcd67e085daa7d4, type: 2}
-  m_HoverColor: {r: 0.20344828, g: 0.20344828, b: 0.20344828, a: 0}
-  m_SelectedColor: {r: 0.36896548, g: 0.36896548, b: 0.36896548, a: 0}
+  m_HoverColor: {r: 0.15686275, g: 0.15686275, b: 0.15686275, a: 0}
+  m_SelectedColor: {r: 0.23529412, g: 0.23529412, b: 0.23529412, a: 0}
+  m_SelectedHoverColor: {r: 0.3137255, g: 0.3137255, b: 0.3137255, a: 0}
+  m_PrefabTextColor: {r: 0.28627452, g: 0.45490196, b: 0.7490196, a: 1}
+  m_SelectedPrefabTextColor: {r: 0.382199, g: 0.60733, b: 1, a: 1}
   m_StackingFraction: 0.3
 --- !u!114 &114000011951837648
 MonoBehaviour:

@@ -5,8 +5,7 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules
-{
+namespace UnityEditor.Experimental.EditorVR.Modules {
 	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		const string k_SelectionOutlinePrefsKey = "Scene/Selected Outline";
@@ -22,6 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
+
+		static Mesh s_BakedMesh;
 
 		public event Func<GameObject, Material, bool> customHighlight
 		{
@@ -42,6 +43,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
+			s_BakedMesh = new Mesh();
+
 			if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
 			{
 				var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
@@ -81,13 +84,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		static void HighlightObject(GameObject go, Material material)
 		{
-			foreach (var m in go.GetComponentsInChildren<MeshFilter>())
+			foreach (var meshFilter in go.GetComponentsInChildren<MeshFilter>())
 			{
-				if (m.sharedMesh == null)
+				var mesh = meshFilter.sharedMesh;
+				if (meshFilter.sharedMesh == null)
 					continue;
 
-				for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
-					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
+				var localToWorldMatrix = meshFilter.transform.localToWorldMatrix;
+				var layer = meshFilter.gameObject.layer;
+				for (var i = 0; i < meshFilter.sharedMesh.subMeshCount; i++)
+				{
+					Graphics.DrawMesh(mesh, localToWorldMatrix, material, layer, null, i);
+				}
+			}
+
+			foreach (var skinnedMeshRenderer in go.GetComponentsInChildren<SkinnedMeshRenderer>())
+			{
+				if (skinnedMeshRenderer.sharedMesh == null)
+					continue;
+
+				skinnedMeshRenderer.BakeMesh(s_BakedMesh);
+
+				var localToWorldMatrix = skinnedMeshRenderer.transform.localToWorldMatrix;
+				var layer = skinnedMeshRenderer.gameObject.layer;
+				for (var i = 0; i < s_BakedMesh.subMeshCount; i++)
+				{
+					Graphics.DrawMesh(s_BakedMesh, localToWorldMatrix, material, layer, null, i);
+				}
 			}
 		}
 
