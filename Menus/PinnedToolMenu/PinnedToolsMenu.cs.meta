@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 800ff7c94496eac41ab0b6df27863704
-timeCreated: 1497920492
+timeCreated: 1499972770
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -11,9 +11,9 @@ MonoImporter:
       type: 2}
   - m_PinnedToolButtonTemplate: {fileID: 114000011260412956, guid: 7221a75a049ac3949a505c7c2f06bd8e,
       type: 2}
-  - m_ButtonClickPulse: {fileID: 11400000, guid: 90be55fd9292d1e4eb8af66c479333b6,
+  - m_ButtonClickPulse: {fileID: 11400000, guid: ddf15856c41896c42bfd9a7b61028844,
       type: 2}
-  - m_ButtonHoverPulse: {fileID: 11400000, guid: 53f100a1dd0839141bcace2ecd8cc6b1,
+  - m_ButtonHoverPulse: {fileID: 11400000, guid: 4b4b7c3ee967062409632272431dc428,
       type: 2}
   - m_ActivationPulse: {fileID: 11400000, guid: c3a3fe0d1f5495c4db58b5282c37a962,
       type: 2}

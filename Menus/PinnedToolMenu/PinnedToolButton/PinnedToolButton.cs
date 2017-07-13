@@ -265,9 +265,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Image m_ButtonIcon;
 
-		[SerializeField]
-		AudioClip m_HighlightedHapticClip;
-
 		Coroutine m_PositionCoroutine;
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_HighlightCoroutine;
