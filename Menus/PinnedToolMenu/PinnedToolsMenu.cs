@@ -149,6 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 			}
 
+			// Select an existing ToolButton if the type is already present in a button
 			if (buttons.Any( (x) => x.toolType == toolType))
 			{
 				m_PinnedToolsMenuUI.SelectExistingToolType(toolType);

@@ -91,7 +91,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		private bool aboveMinimumButtonCount { get { return m_OrderedButtons.Count > k_ActiveToolOrderPosition + 1; } }
+		private bool aboveMinimumButtonCount
+		{
+			get
+			{
+				const int selectionToolButtonHideCount = 2;
+				var count = m_OrderedButtons.Count;
+				var aboveMinCount = count > selectionToolButtonHideCount; // Has at least one tool been added beyond the default MainMenu & SelectionTool
+
+				// Prevent the display of the SelectionTool button, if only the MainMenu and SelectionTool buttons reside in the buttons collection
+				if (count == selectionToolButtonHideCount)
+					aboveMinCount = buttons.All( x => x.toolType != typeof(SelectionTool) );
+
+				return aboveMinCount;
+			}
+		}
 
 		public bool spatialScrollVisualsVisible
 		{
@@ -243,7 +257,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			m_OrderedButtons.Insert(insertPosition, button);
-			m_VisibleButtonCount = m_OrderedButtons.Count;
+			// If only the MainMenu & SelectionTool buttons exist, set visible button count to 1
+			m_VisibleButtonCount = aboveMinimumButtonCount ? m_OrderedButtons.Count : 1;
 
 			button.implementsSecondaryButton = allowSecondaryButton;
 			button.activeTool = true;
@@ -288,7 +303,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			// Hide all but menu and active tool buttons after visually adding new button
 			allButtonsVisible = false;
-
 			m_ShowHideAllButtonsCoroutine = null;
 		}
 
@@ -343,16 +357,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				var button = m_OrderedButtons[i];
 				button.activeTool = i == k_ActiveToolOrderPosition;
-				button.order = i;
+				// Allow settings of regular button order if there are more buttons that just the MainMenu & SelectionTool
+				button.order = aboveMinimumButtonCount || IsMainMenuButton(button) ? i : k_InactiveButtonInitialOrderPosition;
 			}
 		}
 
 		void ShowAllExceptMenuButton()
 		{
 			Debug.LogError("ShowAllExceptMenuButton");
-			//m_SpatialHintUI.enableVisuals = true;
-			//m_SpatialHintUI.scrollVisualsRotation = m_SpatialScrollOrientation;
-			m_VisibleButtonCount = Mathf.Max(0, m_OrderedButtons.Count - 1); // The MainMenu button will be hidden, subtract 1 from the m_VisibleButtonCount
+			// The MainMenu button will be hidden, subtract 1 from the m_VisibleButtonCount
+			m_VisibleButtonCount = Mathf.Max(0, m_OrderedButtons.Count - 1);
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];

@@ -124,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / kTargetDuration);
 				m_Icon.color = Color.Lerp(currentColor, m_PulseColor, shapedDuration);
-				currentDuration += Time.unscaledDeltaTime * 4;
+				currentDuration += Time.unscaledDeltaTime * 5;
 				yield return null;
 			}
 
