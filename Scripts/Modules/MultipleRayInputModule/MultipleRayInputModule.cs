@@ -135,6 +135,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (source.isValid != null && !source.isValid(source))
 				{
 					HandlePointerExitAndEnter(eventData, hoveredObject, true); // Send only exit events
+					var currentRaycast = eventData.pointerCurrentRaycast;
+					currentRaycast.gameObject = null;
+					eventData.pointerCurrentRaycast = currentRaycast;
+					source.hoveredObject = null;
 					continue;
 				}
 
