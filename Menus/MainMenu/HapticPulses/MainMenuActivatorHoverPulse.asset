@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: MainMenuActivatorHoverPulse
   m_EditorClassIdentifier: 
   m_Duration: 0.005
-  m_Intensity: 0.2
+  m_Intensity: 0.4
   m_FadeIn: 0
   m_FadeOut: 0
