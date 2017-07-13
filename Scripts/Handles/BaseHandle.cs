@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		protected readonly List<Transform> m_HoverSources = new List<Transform>(k_DefaultCapacity);
 		protected readonly List<Transform> m_DragSources = new List<Transform>(k_DefaultCapacity);
 		protected readonly Dictionary<Transform, Vector3> m_StartDragPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
-		protected DateTime m_LastClickTime;
+		protected readonly Dictionary<Transform, DateTime> m_LastClickTimes = new Dictionary<Transform, DateTime>(k_DefaultCapacity);
 
 		public bool hasHoverSource { get { return m_HoverSources.Count > 0; } }
 		public bool hasDragSource { get { return m_DragSources.Count > 0; } }
@@ -112,8 +112,12 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			var handleEventData = GetHandleEventData(eventData);
 
 			//Double-click logic
-			var timeSinceLastClick = (float)(DateTime.Now - m_LastClickTime).TotalSeconds;
-			m_LastClickTime = DateTime.Now;
+			DateTime lastClickTime;
+			if (!m_LastClickTimes.TryGetValue(rayOrigin, out lastClickTime))
+				m_LastClickTimes[rayOrigin] = new DateTime();
+
+			var timeSinceLastClick = (float)(DateTime.Now - lastClickTime).TotalSeconds;
+			m_LastClickTimes[rayOrigin] = DateTime.Now;
 			if (UIUtils.IsDoubleClick(timeSinceLastClick))
 				OnDoubleClick(handleEventData);
 
