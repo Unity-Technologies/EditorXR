@@ -284,11 +284,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_PinnedToolsMenuUI.HighlightSingleButtonWithoutMenu((int) (buttonCount * normalizedRepeatingPosition) + 1);
 					consumeControl(pinnedToolInput.show);
 					consumeControl(pinnedToolInput.select);
-					
-				}
-				else if (allowSpatialScrollBeforeThisTime != null) // User hasn't dragged beyond the trigger magnitude; spatial scrolling hasn't been activated yet
-				{
-					this.Pulse(node, m_ActivationPulse);
 				}
 			}
 			else if (pinnedToolInput.show.wasJustReleased)
@@ -331,11 +326,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//const float kMinFineTuneVelocity = 0.000001f;
 			if (spatialDirection == null)
 			{
-				var newDirectionVectorThreshold = 0.0175f * this.GetViewerScale(); // Initial magnitude beyond which spatial scrolling will be evaluated
-				var dragAmount = Vector3.Magnitude(directionVector);
 				Debug.LogWarning("spatial Direction is NULL - setting new one in pricessSpatialScrolling");
-				m_PinnedToolsMenuUI.spatialDragDistance = dragAmount > 0 ? dragAmount / newDirectionVectorThreshold : 0f; // Set normalized value representing how much of the pre-scroll drag amount has occurred
-				if (dragAmount > newDirectionVectorThreshold)
+				var newDirectionVectorThreshold = 0.0175f * this.GetViewerScale(); // Initial magnitude beyond which spatial scrolling will be evaluated
+				var dragMagnitude = Vector3.Magnitude(directionVector);
+				var dragPercentage = dragMagnitude / newDirectionVectorThreshold;
+				var repeatingPulseAmount = Mathf.Sin(Time.realtimeSinceStartup * 20) > 0.5f ? 1f : 0f;
+				m_PinnedToolsMenuUI.spatialDragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set normalized value representing how much of the pre-scroll drag amount has occurred
+				this.Pulse(node, m_ActivationPulse, repeatingPulseAmount, repeatingPulseAmount);
+				if (dragMagnitude > newDirectionVectorThreshold)
 				{
 					spatialDirection = directionVector; // initialize vector defining the spatial scroll direciton
 					Debug.LogError("<color=green>" + spatialDirection.Value.ToString("F4") + "</color>");
