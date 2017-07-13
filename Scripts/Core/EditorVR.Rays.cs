@@ -206,23 +206,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									{
 										if (!source.draggedObject)
 										{
-											if (evr.GetNestedModule<DirectSelection>().IsHovering(source.rayOrigin))
+											var sourceRayOrigin = source.rayOrigin;
+											if (evr.GetNestedModule<DirectSelection>().IsHovering(sourceRayOrigin))
 												return false;
 
-											var isManipulator = source.hoveredObject && source.hoveredObject.GetComponentInParent<IManipulator>() != null;
-											float distance;
-											var raycastObject = intersectionModule.GetFirstGameObject(source.rayOrigin, out distance);
-											if (!isManipulator && raycastObject && distance < source.eventData.pointerCurrentRaycast.distance)
+											var hoveredObject = source.hoveredObject;
+											var isManipulator = hoveredObject && hoveredObject.GetComponentInParent<IManipulator>() != null;
+											float sceneObjectDistance;
+											var raycastObject = intersectionModule.GetFirstGameObject(sourceRayOrigin, out sceneObjectDistance);
+											var uiDistance = source.eventData.pointerCurrentRaycast.distance;
+											if (!isManipulator && raycastObject && sceneObjectDistance < uiDistance)
 												return false;
 										}
 
 										if ((deviceData.menuHideFlags[deviceData.mainMenu] & Menus.MenuHideFlags.Hidden) == 0)
-										{
-											if (Menus.OnHover(source))
-												return true;
-
-											return false;
-										}
+											return Menus.OnHover(source);
 
 										return true;
 									});
