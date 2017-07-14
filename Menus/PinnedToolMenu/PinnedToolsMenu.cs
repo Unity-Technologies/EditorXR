@@ -16,7 +16,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics, IUsesViewerScale
+	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics, IUsesViewerScale, IControlSpatialHinting
 	{
 		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
@@ -112,6 +112,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform rayOrigin { get; set; }
 		public event Action<Transform> itemWasSelected;
 		*/
+
+		// Spatial Hint Module implementation
+		public bool spatialHintVisualsVisible { get; set; }
+		public bool spatialHintPreScrollVisualsVisible { get; set; }
+		public bool spatialHintPrimaryArrowsVisible { get; set; }
+		public bool spatialHintSecondaryArrowsVisible { get; set; }
+		public Vector3 spatialHintScrollVisualsRotation { get; set; }
+		public Vector3 spatialHintScrollVisualsDragThresholdTriggerPosition { get; set; }
+		public Transform spatialHintContentContainer { get; set; }
 
 		void Awake()
 		{

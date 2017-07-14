@@ -204,6 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return false;
 			};
 
+			AddModule<SpatialHintModule>();
 			AddModule<HapticsModule>();
 
 			viewer.AddPlayerModel();

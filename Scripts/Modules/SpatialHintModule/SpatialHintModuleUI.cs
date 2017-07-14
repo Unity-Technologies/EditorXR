@@ -1,12 +1,11 @@
 ﻿using System.Collections;
-using System.Security.Cryptography.X509Certificates;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class SpatialHintUI : MonoBehaviour, IUsesViewerScale
+	public class SpatialHintModuleUI : MonoBehaviour, IUsesViewerScale
 	{
 		readonly Color k_PrimaryArrowColor = Color.white;
 
@@ -38,6 +37,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		HintIcon[] m_SecondaryRotationalHintArrows;
 		*/
 
+		bool m_Visible;
+		bool m_PreScrollVisualsVisible;
+		bool m_PrimaryArrowsVisible;
+		bool m_SecondaryArrowsVisible;
 		Vector3 m_ScrollVisualsRotation;
 		Transform m_ScrollVisualsTransform;
 		GameObject m_ScrollVisualsGameObject;
@@ -46,9 +49,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public bool visible
 		{
+			get { return m_Visible; }
 			set
 			{
-				if (value)
+				m_Visible = value;
+
+				if (m_Visible)
 				{
 					foreach (var arrow in m_PrimaryDirectionalHintArrows)
 					{
@@ -83,11 +89,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public bool preScrollVisualsVisible
 		{
+			get { return m_PreScrollVisualsVisible; }
 			set
 			{
+				m_PreScrollVisualsVisible = value;
+
 				transform.localScale = Vector3.one * this.GetViewerScale();
 
-				this.RestartCoroutine(ref m_VisibilityCoroutine, value ? AnimateShow() : AnimateHide());
+				this.RestartCoroutine(ref m_VisibilityCoroutine, m_PreScrollVisualsVisible ? AnimateShow() : AnimateHide());
 
 				var semiTransparentWhite = new Color(1f, 1f, 1f, 0.5f);
 				foreach (var arrow in m_PrimaryDirectionalHintArrows)
@@ -97,16 +106,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				foreach (var arrow in m_SecondaryDirectionalHintArrows)
 				{
-					arrow.visible = value;
+					arrow.visible = m_PreScrollVisualsVisible;
 				}
 			}
 		}
 
 		public bool primaryArrowsVisible
 		{
+			get { return m_PrimaryArrowsVisible; }
 			set
 			{
-				if (value)
+				m_PrimaryArrowsVisible = value;
+				if (m_PrimaryArrowsVisible)
 				{
 					foreach (var arrow in m_PrimaryDirectionalHintArrows)
 					{
@@ -125,8 +136,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public bool secondaryArrowsVisible
 		{
+			get { return m_SecondaryArrowsVisible; }
 			set
 			{
+				m_SecondaryArrowsVisible = value;
+
 				foreach (var arrow in m_SecondaryDirectionalHintArrows)
 				{
 					arrow.visible = value;
@@ -139,9 +153,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public Vector3 scrollVisualsRotation
 		{
-			// Set null In order to hide the scroll visuals
+			get { return m_ScrollVisualsRotation ; }
 			set
 			{
+				// Set null In order to hide the scroll visuals
 				if (value == Vector3.zero)
 					Debug.LogError("<color=red>??????????????????????!!!!!!!!!!!!!!!!!!!!!!!</color>");
 
@@ -170,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsTransform = m_ScrollVisualsCanvasGroup.transform;
 			m_ScrollVisualsGameObject = m_ScrollVisualsTransform.gameObject;
 			m_ScrollVisualsCanvasGroup.alpha = 0f;
-			m_ScrollVisualsGameObject.SetActive(false);
+			//m_ScrollVisualsGameObject.SetActive(false);
 		}
 
 		IEnumerator AnimateShow()
@@ -217,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color> : viewscale is " + this.GetViewerScale());
 			// Display two arrows denoting the positive and negative directions allow for spatial scrolling, as defined by the drag vector
-			m_ScrollVisualsGameObject.SetActive(true);
+			//m_ScrollVisualsGameObject.SetActive(true);
 			primaryArrowsVisible = false;
 			secondaryArrowsVisible = false;
 			m_ScrollVisualsTransform.localScale = Vector3.one;
@@ -272,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsCanvasGroup.alpha = 0;
 			m_ScrollVisualsTransform.localScale = hiddenLocalScale;
 			//m_ScrollVisualsTransform.localRotation = Quaternion.identity;
-			m_ScrollVisualsGameObject.SetActive(false);
+			//m_ScrollVisualsGameObject.SetActive(false);
 		}
 
 		public void PulseScrollArrows()

@@ -54,6 +54,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					linkedObjectList.Add(linkedObject);
 					linkedObject.linkedObjects = linkedObjectList;
 				}
+
+				var spatialHintModule = evr.GetModule<SpatialHintModule>();
+				var controlSpatialHinting = obj as IControlSpatialHinting;
+				if (controlSpatialHinting != null)
+				{
+					controlSpatialHinting.spatialHintContentContainer = spatialHintModule.spatialHintContentContainer;
+					controlSpatialHinting.spatialHintVisualsVisible = spatialHintModule.spatialHintVisualsVisible;
+					controlSpatialHinting.spatialHintPreScrollVisualsVisible = spatialHintModule.spatialHintPreScrollVisualsVisible;
+					controlSpatialHinting.spatialHintPrimaryArrowsVisible = spatialHintModule.spatialHintPrimaryArrowsVisible;
+					controlSpatialHinting.spatialHintSecondaryArrowsVisible = spatialHintModule.spatialHintSecondaryArrowsVisible;
+					controlSpatialHinting.spatialHintScrollVisualsRotation = spatialHintModule.spatialHintScrollVisualsRotation;
+					controlSpatialHinting.spatialHintScrollVisualsDragThresholdTriggerPosition = spatialHintModule.spatialHintScrollVisualsDragThresholdTriggerPosition;
+				}
 			}
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
@@ -78,6 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var lockModule = evr.GetModule<LockModule>();
 				var defaultTools = evr.m_DefaultTools;
 				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();
+				var spatialHintModule = evr.GetModule<SpatialHintModule>();
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -136,6 +150,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					pinnedToolsMenu.createPinnedToolButton(typeof(SelectionTool), selectionToolData.icon, deviceData.node);
 					// Initialize PinnedToolButtons & set SelectionTool as the active tool type
 					//pinnedTools.SetupPinnedToolButtonsForDevice(deviceData.rayOrigin, typeof(SelectionTool), deviceData.node);
+
+					// Hook up Spatial Hinting functionality, if the PinnedToolsMenu implements the interface
+					/*
+					var spatialPinnedToolsMenu = pinnedToolsMenu as IControlSpatialHinting;
+					if (spatialPinnedToolsMenu != null)
+					{
+						//evr.m_Interfaces.ConnectInterfaces(pinnedToolsMenu);
+						spatialPinnedToolsMenu.spatialHintContentContainer = spatialHintModule.spatialHintContentContainer;
+						spatialPinnedToolsMenu.spatialHintVisualsVisible = spatialHintModule.spatialHintVisualsVisible;
+						spatialPinnedToolsMenu.spatialHintPreScrollVisualsVisible = spatialHintModule.spatialHintPreScrollVisualsVisible;
+						spatialPinnedToolsMenu.spatialHintPrimaryArrowsVisible = spatialHintModule.spatialHintPrimaryArrowsVisible;
+						spatialPinnedToolsMenu.spatialHintSecondaryArrowsVisible = spatialHintModule.spatialHintSecondaryArrowsVisible;
+						spatialPinnedToolsMenu.spatialHintScrollVisualsRotation = spatialHintModule.spatialHintScrollVisualsRotation;
+						spatialPinnedToolsMenu.spatialHintScrollVisualsDragThresholdTriggerPosition = spatialHintModule.spatialHintScrollVisualsDragThresholdTriggerPosition;
+					}
+					*/
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
