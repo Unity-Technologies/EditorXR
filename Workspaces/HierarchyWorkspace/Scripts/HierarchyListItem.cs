@@ -189,6 +189,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void UpdateSelf(float width, int depth, bool? expanded, bool selected, bool locked)
 		{
+			var childCount = data.children == null ? 0 : data.children.Count;
+			m_Text.text = data.name + "(" + childCount + ")";
+
 			var cubeScale = m_CubeTransform.localScale;
 			cubeScale.x = width;
 			m_CubeTransform.localScale = cubeScale;
@@ -208,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			// Text is next to arrow, with a margin and indent, rotated toward camera
 			var gameObject = data.gameObject;
 			if (gameObject == null)
-				indent = k_Indent * 2;
+				indent = k_Indent;
 
 			var textTransform = gameObject ? m_Text.transform : m_SceneText.transform;
 			var textRectTransform = gameObject ? m_Text.rectTransform : m_SceneText.rectTransform;
@@ -218,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var sceneIconPosition = m_SceneIcon.localPosition;
 			m_SceneIcon.localPosition = new Vector3(-halfWidth + k_Margin + arrowWidth + k_Indent, sceneIconPosition.y, sceneIconPosition.z);
 
-			var localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
+			var localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent);
 			textTransform.localRotation = localRotation;
 			lockIconTransform.localRotation = localRotation;
 			m_SceneIcon.localRotation = localRotation;

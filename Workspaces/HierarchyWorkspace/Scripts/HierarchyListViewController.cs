@@ -41,6 +41,39 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		readonly List<KeyValuePair<Transform, GameObject>> m_HoveredGameObjects = new List<KeyValuePair<Transform, GameObject>>();
 
+		public override List<HierarchyData> data
+		{
+			set
+			{
+				base.data = value;
+
+				if (m_Data != null && m_Data.Count > 0)
+				{
+					// Remove any objects that don't exist any more
+					var missingKeys = m_Data.Select(d => d.index).Except(m_ExpandStates.Keys);
+					foreach (var key in missingKeys)
+					{
+						m_ExpandStates.Remove(key);
+					}
+
+					// Expand the scenes by default
+					foreach (var scene in m_Data)
+					{
+						Debug.Log(scene);
+						var instanceID = scene.index;
+						if (!m_ExpandStates.ContainsKey(instanceID))
+							m_ExpandStates[instanceID] = true;
+					}
+
+					foreach (var d in m_Data)
+					{
+						if (!m_ExpandStates.ContainsKey(d.index))
+							m_ExpandStates[d.index] = false;
+					}
+				}
+			}
+		}
+
 		public string lockedQueryString { private get; set; }
 
 		public Action<int> selectRow { private get; set; }

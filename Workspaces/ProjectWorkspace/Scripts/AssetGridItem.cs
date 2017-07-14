@@ -201,7 +201,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			transform.localScale = Vector3.one * scale;
 
-			m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
+			m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent);
 
 			if (m_Sphere.gameObject.activeInHierarchy)
 				m_Sphere.transform.Rotate(Vector3.up, k_RotateSpeed * Time.deltaTime, Space.Self);
