@@ -21,13 +21,13 @@ namespace UnityEditor.Experimental.EditorVR
 
 		public HashSet<string> types { get; set; }
 
-		public HierarchyData(string name, int instanceID, HashSet<string> types, List<HierarchyData> children = null)
+
+		public HierarchyData(HierarchyProperty property, HashSet<string> types)
 		{
 			template = k_TemplateName;
-			this.name = name;
-			this.instanceID = instanceID;
+			name = property.name;
+			instanceID = property.instanceID;
 			this.types = types;
-			m_Children = children;
 		}
 	}
 }

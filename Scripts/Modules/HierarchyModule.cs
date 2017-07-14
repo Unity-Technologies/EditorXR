@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class HierarchyModule : MonoBehaviour, ISelectionChanged
 	{
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
-		HierarchyData m_HierarchyData;
+		readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
 		HierarchyProperty m_HierarchyProperty;
 
 		readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
@@ -60,128 +60,81 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		List<HierarchyData> GetHierarchyData()
 		{
-			if (m_HierarchyData == null)
-				return new List<HierarchyData>();
-
-			return m_HierarchyData.children;
+			return m_HierarchyData ?? new List<HierarchyData>();
 		}
 
 		void UpdateHierarchyData()
 		{
 			m_ObjectTypes.Clear();
+			m_HierarchyData.Clear();
 
 			if (m_HierarchyProperty == null)
-			{
 				m_HierarchyProperty = new HierarchyProperty(HierarchyType.GameObjects);
-				m_HierarchyProperty.Next(null);
-			}
 			else
-			{
 				m_HierarchyProperty.Reset();
-				m_HierarchyProperty.Next(null);
-			}
 
-			var hasChanged = false;
-			var hasNext = true;
-			m_HierarchyData = CollectHierarchyData(ref hasNext, ref hasChanged, m_HierarchyData, m_HierarchyProperty, m_ObjectTypes);
-
-			if (hasChanged)
+			var lastDepth = 0;
+			var stack = new Stack<HierarchyData>();
+			while (m_HierarchyProperty.Next(null))
 			{
-				foreach (var list in m_HierarchyLists)
+				var instanceID = m_HierarchyProperty.instanceID;
+				var go = EditorUtility.InstanceIDToObject(instanceID);
+				var currentDepth = m_HierarchyProperty.depth;
+				if (go == gameObject)
 				{
-					list.hierarchyData = GetHierarchyData();
+					var depth = currentDepth;
+					// skip children of EVR to prevent the display of EVR contents
+					while (m_HierarchyProperty.Next(null) && m_HierarchyProperty.depth > depth) { }
+
+					currentDepth = m_HierarchyProperty.depth;
+					instanceID = m_HierarchyProperty.instanceID;
+					// If EVR is the last object, early out
+					if (instanceID == 0)
+						break;
 				}
 
-				// Send new data to existing filterUIs
-				foreach (var filterUI in m_FilterUIs)
+				var types = InstanceIDToComponentTypes(instanceID, m_ObjectTypes);
+				var currentHierarchyData = new HierarchyData(m_HierarchyProperty, types);
+
+				HierarchyData parent = null;
+				if (currentDepth <= lastDepth)
 				{
-					filterUI.filterList = GetFilterList();
-				}
-			}
-		}
-
-		HierarchyData CollectHierarchyData(ref bool hasNext, ref bool hasChanged, HierarchyData hd, HierarchyProperty hp, HashSet<string> objectTypes)
-		{
-			var depth = hp.depth;
-			var name = hp.name;
-			var instanceID = hp.instanceID;
-			var types = InstanceIDToComponentTypes(instanceID, objectTypes);
-
-			List<HierarchyData> children = null;
-			if (hp.hasChildren)
-			{
-				if (hd != null && hd.children == null)
-					hasChanged = true;
-
-				children = hd == null || hd.children == null ? new List<HierarchyData>() : hd.children;
-
-				hasNext = hp.Next(null);
-				var i = 0;
-				while (hasNext && hp.depth > depth)
-				{
-					var go = EditorUtility.InstanceIDToObject(hp.instanceID);
-
-					if (go == gameObject)
+					// Add one to pop off last sibling
+					var count = lastDepth - currentDepth + 1;
+					while (count-- > 0 && stack.Count > 0)
 					{
-						// skip children of EVR to prevent the display of EVR contents
-						while (hp.Next(null) && hp.depth > depth + 1) { }
-
-						// If EVR is the last object, don't add anything to the list
-						if (hp.instanceID == 0)
-							break;
-
-						name = hp.name;
-						instanceID = hp.instanceID;
-						types = InstanceIDToComponentTypes(instanceID, objectTypes);
+						stack.Pop();
 					}
-
-					if (i >= children.Count)
-					{
-						children.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp, objectTypes));
-						hasChanged = true;
-					}
-					else if (children[i].index != hp.instanceID)
-					{
-						children[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp, objectTypes);
-						hasChanged = true;
-					}
-					else
-					{
-						children[i] = CollectHierarchyData(ref hasNext, ref hasChanged, children[i], hp, objectTypes);
-					}
-
-					if (hasNext)
-						hasNext = hp.Next(null);
-
-					i++;
 				}
 
-				if (i != children.Count)
+				if (stack.Count > 0)
+					parent = stack.Peek();
+
+				if (parent != null)
 				{
-					children.RemoveRange(i, children.Count - i);
-					hasChanged = true;
+					if (parent.children == null)
+						parent.children = new List<HierarchyData>();
+					parent.children.Add(currentHierarchyData);
+				}
+				else
+				{
+					m_HierarchyData.Add(currentHierarchyData);
 				}
 
-				if (children.Count == 0)
-					children = null;
-
-				if (hasNext)
-					hp.Previous(null);
+				stack.Push(currentHierarchyData);
+				lastDepth = currentDepth;
 			}
-			else if (hd != null && hd.children != null)
+
+			foreach (var list in m_HierarchyLists)
 			{
-				hasChanged = true;
+				list.hierarchyData = GetHierarchyData();
 			}
 
-			if (hd != null)
+			// Send new data to existing filterUIs
+			foreach (var filterUI in m_FilterUIs)
 			{
-				hd.children = children;
-				hd.name = name;
-				hd.instanceID = instanceID;
-				hd.types = types;
+				filterUI.filterList = GetFilterList();
 			}
-
-			return hd ?? new HierarchyData(name, instanceID, types, children);
 		}
 
 		static HashSet<string> InstanceIDToComponentTypes(int instanceID, HashSet<string> allTypes)
@@ -191,10 +144,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (go)
 			{
 				var components = go.GetComponents<Component>();
-				for (int i = 0; i < components.Length; i++)
+				foreach (var component in components)
 				{
-					var component = components[i];
-
 					if (!component)
 						continue;
 
