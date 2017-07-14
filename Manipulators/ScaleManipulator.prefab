@@ -312,7 +312,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0c0bcbee36e026343a113109292ee771, type: 2}
+  - {fileID: 2100000, guid: 60ba0d848a3eeec49a02ffe6f85017f2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -486,6 +486,8 @@ MonoBehaviour:
   m_LinearHandleScaleBump: 1.5
   m_PlaneHandleScaleBump: 1.1
   m_SphereHandleScaleBump: 1.1
+  m_HandleAlpha: 0.39215687
+  m_HandleHoverAlpha: 1
   m_UniformHandle: {fileID: 114000010053947466}
 --- !u!136 &136000010215347092
 CapsuleCollider:

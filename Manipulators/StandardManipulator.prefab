@@ -667,7 +667,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: 0c0bcbee36e026343a113109292ee771, type: 2}
+  - {fileID: 2100000, guid: 60ba0d848a3eeec49a02ffe6f85017f2, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1076,6 +1076,7 @@ MonoBehaviour:
   m_LinearHandleScaleBump: 1.5
   m_PlaneHandleScaleBump: 1.1
   m_SphereHandleScaleBump: 1.1
+  m_OpaqueMaterial: {fileID: 2100000, guid: 60ba0d848a3eeec49a02ffe6f85017f2, type: 2}
   m_PlaneHandlesParent: {fileID: 4000012837354530}
   m_RadialHandleMesh: {fileID: 4300008, guid: cdace0cf368873c4796b9f9ade156c53, type: 3}
   m_FatRadialHandleMesh: {fileID: 4300010, guid: cdace0cf368873c4796b9f9ade156c53,
