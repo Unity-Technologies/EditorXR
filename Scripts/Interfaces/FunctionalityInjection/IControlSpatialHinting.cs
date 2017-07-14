@@ -48,7 +48,6 @@ namespace UnityEditor.Experimental.EditorVR
 	public static class IControlSpatialHintingMethods
 	{
 		internal delegate void PulseScrollArrowsDelegate();
-
 		internal static PulseScrollArrowsDelegate pulseScrollArrows { get; set; }
 
 		/// <summary>

@@ -55,10 +55,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					linkedObject.linkedObjects = linkedObjectList;
 				}
 
-				var spatialHintModule = evr.GetModule<SpatialHintModule>();
 				var controlSpatialHinting = obj as IControlSpatialHinting;
 				if (controlSpatialHinting != null)
 				{
+					var spatialHintModule = evr.GetModule<SpatialHintModule>();
 					controlSpatialHinting.spatialHintContentContainer = spatialHintModule.spatialHintContentContainer;
 					controlSpatialHinting.spatialHintVisualsVisible = spatialHintModule.spatialHintVisualsVisible;
 					controlSpatialHinting.spatialHintPreScrollVisualsVisible = spatialHintModule.spatialHintPreScrollVisualsVisible;
@@ -91,7 +91,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var lockModule = evr.GetModule<LockModule>();
 				var defaultTools = evr.m_DefaultTools;
 				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();
-				var spatialHintModule = evr.GetModule<SpatialHintModule>();
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -153,6 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					// Hook up Spatial Hinting functionality, if the PinnedToolsMenu implements the interface
 					/*
+					var spatialHintModule = evr.GetModule<SpatialHintModule>();
 					var spatialPinnedToolsMenu = pinnedToolsMenu as IControlSpatialHinting;
 					if (spatialPinnedToolsMenu != null)
 					{
