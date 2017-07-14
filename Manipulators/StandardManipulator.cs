@@ -1,7 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
-using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -14,41 +11,13 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		Transform m_PlaneHandlesParent;
 
 		[SerializeField]
-		List<BaseHandle> m_AllHandles;
+		Mesh m_RadialHandleMesh;
 
-		protected override void OnEnable()
-		{
-			base.OnEnable();
+		[SerializeField]
+		Mesh m_FatRadialHandleMesh;
 
-			foreach (var h in m_AllHandles)
-			{
-				if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-					h.dragging += OnTranslateDragging;
-
-				if (h is RadialHandle)
-					h.dragging += OnRotateDragging;
-
-				h.dragStarted += OnHandleDragStarted;
-				h.dragEnded += OnHandleDragEnded;
-			}
-		}
-
-		protected override void OnDisable()
-		{
-			base.OnDisable();
-
-			foreach (var h in m_AllHandles)
-			{
-				if (h is LinearHandle || h is PlaneHandle || h is SphereHandle)
-					h.dragging -= OnTranslateDragging;
-
-				if (h is RadialHandle)
-					h.dragging -= OnRotateDragging;
-
-				h.dragStarted -= OnHandleDragStarted;
-				h.dragEnded -= OnHandleDragEnded;
-			}
-		}
+		[SerializeField]
+		float m_SphereHandleHideScale = 0.1f;
 
 		void Update()
 		{
@@ -67,40 +36,68 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			}
 		}
 
-		void OnTranslateDragging(BaseHandle handle, HandleEventData eventData)
+		protected override void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			ConstrainedAxis constraints = 0;
-			var constrainedHandle = handle as IAxisConstraints;
-			if (constrainedHandle != null)
-				constraints = constrainedHandle.constraints;
+			base.OnHandleHoverStarted(handle, eventData);
 
-			translate(eventData.deltaPosition, eventData.rayOrigin, constraints);
+			if (!handle.hasDragSource && handle is RadialHandle)
+				handle.GetComponent<MeshFilter>().sharedMesh = m_FatRadialHandleMesh;
 		}
 
-		void OnRotateDragging(BaseHandle handle, HandleEventData eventData)
+		protected override void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData)
 		{
-			rotate(eventData.deltaRotation, eventData.rayOrigin);
+			base.OnHandleHoverEnded(handle, eventData);
+
+			if (!handle.hasDragSource && !handle.hasHoverSource && handle is RadialHandle)
+				handle.GetComponent<MeshFilter>().sharedMesh = m_RadialHandleMesh;
 		}
 
-		void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
+		protected override void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			foreach (var h in m_AllHandles)
-				h.gameObject.SetActive(h == handle);
+			base.OnHandleDragStarted(handle, eventData);
 
-			OnDragStarted();
+			if (handle.IndexOfDragSource(eventData.rayOrigin) > 0)
+				return;
 
-			dragging = true;
+			if (handle is SphereHandle)
+				handle.transform.localScale *= m_SphereHandleHideScale;
 		}
 
-		void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+		protected override void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
 		{
-			if (gameObject.activeSelf)
-				foreach (var h in m_AllHandles)
-					h.gameObject.SetActive(true);
+			base.OnHandleDragging(handle, eventData);
 
-			OnDragEnded(eventData.rayOrigin);
+			var rayOrigin = eventData.rayOrigin;
+			if (handle.IndexOfDragSource(rayOrigin) > 0)
+				return;
 
-			dragging = false;
+			if (handle is RadialHandle)
+			{
+				rotate(eventData.deltaRotation, rayOrigin);
+			}
+			else
+			{
+				ConstrainedAxis constraints = 0;
+				var constrainedHandle = handle as IAxisConstraints;
+				if (constrainedHandle != null)
+					constraints = constrainedHandle.constraints;
+
+				translate(eventData.deltaPosition, rayOrigin, constraints);
+			}
+		}
+
+		protected override void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+		{
+			base.OnHandleDragEnded(handle, eventData);
+
+			if (handle.IndexOfDragSource(eventData.rayOrigin) > 0)
+				return;
+
+			if (handle is SphereHandle)
+				handle.transform.localScale /= m_SphereHandleHideScale;
+
+			if (handle is RadialHandle && !handle.hasDragSource && !handle.hasHoverSource)
+				handle.GetComponent<MeshFilter>().sharedMesh = m_RadialHandleMesh;
 		}
 	}
 }

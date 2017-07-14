@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,19 +7,16 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	sealed class LinearHandle : BaseHandle, IAxisConstraints
+	sealed class LinearHandle : BaseHandle, IAxisConstraints, IUsesViewerScale
 	{
 		const float k_MaxDragDistance = 1000f;
 
-		class LinearHandleEventData : HandleEventData
+		internal class LinearHandleEventData : HandleEventData
 		{
 			public Vector3 raycastHitWorldPosition;
 
 			public LinearHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) { }
 		}
-
-		[SerializeField]
-		Transform m_HandleTip;
 
 		[SerializeField]
 		bool m_OrientDragPlaneToRay = true;
@@ -27,57 +25,23 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		[SerializeField]
 		ConstrainedAxis m_Constraints;
 
+		readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
+
 		Plane m_Plane;
-		Vector3 m_LastPosition;
 
 		public ConstrainedAxis constraints { get { return m_Constraints; } }
-
-		void OnDisable()
-		{
-			if (m_HandleTip != null)
-				m_HandleTip.gameObject.SetActive(false);
-		}
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
 			return new LinearHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
 		}
 
-		protected override void OnHandleHovering(HandleEventData eventData)
+		void UpdateEventData(LinearHandleEventData eventData, bool setLastPosition = true)
 		{
-			UpdateHandleTip(eventData as LinearHandleEventData);
-		}
+			var rayOrigin = eventData.rayOrigin;
+			var lastPosition = m_LastPositions[rayOrigin];
+			var worldPosition = lastPosition;
 
-		protected override void OnHandleHoverStarted(HandleEventData eventData)
-		{
-			UpdateHandleTip(eventData as LinearHandleEventData);
-			base.OnHandleHoverStarted(eventData);
-		}
-
-		protected override void OnHandleHoverEnded(HandleEventData eventData)
-		{
-			UpdateHandleTip(eventData as LinearHandleEventData);
-			base.OnHandleHoverEnded(eventData);
-		}
-
-		void UpdateHandleTip(LinearHandleEventData eventData)
-		{
-			if (m_HandleTip != null)
-			{
-				m_HandleTip.gameObject.SetActive(m_HoverSources.Count > 0 || m_DragSources.Count > 0);
-
-				if (m_HoverSources.Count > 0 || m_DragSources.Count > 0) // Reposition handle tip based on current raycast position when hovering or dragging
-				{
-					if (eventData != null)
-						m_HandleTip.position =
-							transform.TransformPoint(new Vector3(0, 0,
-								transform.InverseTransformPoint(eventData.raycastHitWorldPosition).z));
-				}
-			}
-		}
-
-		void UpdatePlaneOrientation(Transform rayOrigin)
-		{
 			if (m_OrientDragPlaneToRay)
 			{
 				// Orient a plane for dragging purposes through the axis that rotates to avoid being parallel to the ray, 
@@ -90,48 +54,55 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			{
 				m_Plane.SetNormalAndPosition(transform.up, transform.position);
 			}
+
+			float distance;
+			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+			if (m_Plane.Raycast(ray, out distance))
+				worldPosition = ray.GetPoint(Mathf.Min(distance, k_MaxDragDistance * this.GetViewerScale()));
+
+			eventData.raycastHitWorldPosition = worldPosition;
+
+			eventData.deltaPosition = Vector3.Project(worldPosition - lastPosition, transform.forward);
+
+			if (setLastPosition)
+				m_LastPositions[rayOrigin] = worldPosition;
+		}
+
+		protected override void OnHandleHoverStarted(HandleEventData eventData)
+		{
+			var linearEventData = (LinearHandleEventData)eventData;
+
+			if (m_DragSources.Count == 0)
+			{
+				m_LastPositions[eventData.rayOrigin] = linearEventData.raycastHitWorldPosition;
+				UpdateEventData(linearEventData);
+			}
+
+			base.OnHandleHoverStarted(eventData);
+		}
+
+		protected override void OnHandleHovering(HandleEventData eventData)
+		{
+			if (m_DragSources.Count == 0)
+				UpdateEventData((LinearHandleEventData)eventData);
+
+			base.OnHandleHovering(eventData);
 		}
 
 		protected override void OnHandleDragStarted(HandleEventData eventData)
 		{
-			var linearEventData = eventData as LinearHandleEventData;
-			m_LastPosition = linearEventData.raycastHitWorldPosition;
-
-			UpdatePlaneOrientation(eventData.rayOrigin);
-			UpdateHandleTip(linearEventData);
+			var linearEventData = (LinearHandleEventData)eventData;
+			m_LastPositions[eventData.rayOrigin] = linearEventData.raycastHitWorldPosition;
+			UpdateEventData(linearEventData);
 
 			base.OnHandleDragStarted(eventData);
 		}
 
 		protected override void OnHandleDragging(HandleEventData eventData)
 		{
-			var rayOrigin = eventData.rayOrigin;
-			var worldPosition = m_LastPosition;
-
-			UpdatePlaneOrientation(rayOrigin);
-
-			float distance;
-			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-			if (m_Plane.Raycast(ray, out distance))
-				worldPosition = ray.GetPoint(Mathf.Min(distance, k_MaxDragDistance));
-
-			var linearEventData = eventData as LinearHandleEventData;
-			linearEventData.raycastHitWorldPosition = worldPosition;
-
-			eventData.deltaPosition = Vector3.Project(worldPosition - m_LastPosition, transform.forward);
-
-			m_LastPosition = worldPosition;
-
-			UpdateHandleTip(linearEventData);
+			UpdateEventData((LinearHandleEventData)eventData);
 
 			base.OnHandleDragging(eventData);
-		}
-
-		protected override void OnHandleDragEnded(HandleEventData eventData)
-		{
-			UpdateHandleTip(eventData as LinearHandleEventData);
-
-			base.OnHandleDragEnded(eventData);
 		}
 	}
 }
