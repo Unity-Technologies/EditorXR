@@ -155,12 +155,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			var handleTipGameObject = handleTipRenderer.gameObject;
 			var wasActive = handleTipGameObject.activeSelf;
 			handleTipGameObject.SetActive(active);
+			var handleTipTransform = handleTipRenderer.transform;
 
 			if (active) // Reposition handle tip based on current raycast position when hovering or dragging
 			{
 				handleTipRenderer.sharedMaterial.color = handle.GetComponent<Renderer>().sharedMaterial.color;
 
-				var handleTipTransform = handleTipRenderer.transform;
 				var handleTransform = handle.transform;
 				var handleTipPosition = handleTipTransform.position;
 				var distanceFromRayOrigin = Vector3.Distance(handleTipPosition, rayOrigin.position);
@@ -215,7 +215,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 				}
 
 				if (handle.hasDragSource && !handleTip.positionOffset.HasValue)
-					handleTip.positionOffset = handle.transform.InverseTransformPoint(handleTransform.position);
+					handleTip.positionOffset = handle.transform.InverseTransformPoint(handleTipTransform.position);
 			}
 			else if(!handle.hasDragSource)
 			{
