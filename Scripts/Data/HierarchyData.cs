@@ -29,29 +29,6 @@ namespace UnityEditor.Experimental.EditorVR
 			instanceID = property.instanceID;
 			this.types = types;
 		}
-
-		//public HierarchyData(string name, int instanceID, HashSet<string> types, List<HierarchyData> children = null)
-		//{
-		//	template = k_TemplateName;
-		//	this.name = name;
-		//	this.instanceID = instanceID;
-		//	this.types = types;
-		//	m_Children = children;
-		//}
-
-		public void Print(int depth = 0)
-		{
-			var log = name;
-			for (var i = 0; i < depth; i++)
-			{
-				log = "    " + log;
-			}
-			Debug.Log(depth + ": " + log);
-
-			if (children != null)
-				foreach (var hierarchyData in children)
-					hierarchyData.Print(depth + 1);
-		}
 	}
 }
 #endif

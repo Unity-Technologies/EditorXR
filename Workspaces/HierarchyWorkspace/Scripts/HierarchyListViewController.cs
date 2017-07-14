@@ -59,7 +59,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 					// Expand the scenes by default
 					foreach (var scene in m_Data)
 					{
-						Debug.Log(scene);
 						var instanceID = scene.index;
 						if (!m_ExpandStates.ContainsKey(instanceID))
 							m_ExpandStates[instanceID] = true;

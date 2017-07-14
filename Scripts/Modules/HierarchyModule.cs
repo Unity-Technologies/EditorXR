@@ -1,14 +1,13 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class HierarchyModule : MonoBehaviour, ISelectionChanged
 	{
-		readonly string[] k_IgnoredTypes = { "InputManager", "EditingContextManager" };
-
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 		readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
 		HierarchyProperty m_HierarchyProperty;
@@ -73,8 +72,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			else
 				m_HierarchyProperty.Reset();
 
-			//Debug.Log("update");
-
 			var hasChanged = false;
 			var lastDepth = 0;
 			var dataStack = new Stack<HierarchyData>();
@@ -85,9 +82,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				var instanceID = m_HierarchyProperty.instanceID;
 				var types = InstanceIDToComponentTypes(instanceID, m_ObjectTypes);
-				var go = EditorUtility.InstanceIDToObject(instanceID);
+				var go = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 				var currentDepth = m_HierarchyProperty.depth;
-				if (go == gameObject || types.Overlaps(k_IgnoredTypes))
+				if (go == gameObject)
 				{
 					var depth = currentDepth;
 					// skip children of EVR to prevent the display of EVR contents
@@ -100,32 +97,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						break;
 				}
 
-				//if (currentDepth > lastDepth)
-				//	siblingIndexStack.Push(0);
+				if (go && (go.GetComponent<InputManager>() || go.GetComponent<EditingContextManager>()))
+					continue;
 
 				if (currentDepth <= lastDepth)
 				{
-					//Debug.Log(dataStack.Count);
 					if (dataStack.Count > 1) // Pop off last sibling
 					{
 						if (CleanUpHierarchyData(dataStack.Pop(), siblingIndexStack.Pop()))
 							hasChanged = true;
 					}
-
-					//if (currentDepth < lastDepth)
-					//{
-					//	if (CleanUpHierarchyData(dataStack.Peek(), siblingIndexStack.Peek()))
-					//		hasChanged = true;
-					//	//var lastParent = dataStack.Peek();
-					//	//var lastChildren = lastParent == null ? m_HierarchyData : lastParent.children;
-					//	//var lastSiblingIndex = siblingIndexStack.Peek();
-					//	//var childrenCount = lastChildren.Count;
-					//	//if (lastSiblingIndex != childrenCount)
-					//	//{
-					//	//	lastChildren.RemoveRange(lastSiblingIndex, childrenCount - lastSiblingIndex);
-					//	//	hasChanged = true;
-					//	//}
-					//}
 
 					var count = lastDepth - currentDepth;
 					while (count-- > 0)
@@ -137,13 +118,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				var parent = dataStack.Peek();
 				var siblingIndex = siblingIndexStack.Pop();
-
-				//var log = m_HierarchyProperty.name;
-				//for (var i = 0; i < m_HierarchyProperty.depth; i++)
-				//{
-				//	log = "    " + log;
-				//}
-				//Debug.Log(lastDepth + " - " + currentDepth + "(" + siblingIndex + "): " + log);
 
 				if (parent != null && parent.children == null)
 					parent.children = new List<HierarchyData>();
@@ -183,36 +157,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (CleanUpHierarchyData(dataStack.Pop(), siblingIndexStack.Pop()))
 					hasChanged = true;
-
-				//var siblingIndex = siblingIndexStack.Pop();
-				//HierarchyData parent = null;
-				//if (dataStack.Count > 0)
-				//	parent = dataStack.Pop();
-				//Debug.Log(siblingIndex + ", " + (parent == null ? "no parent" : parent.name));
-				//var children = parent == null ? m_HierarchyData : parent.children;
-				//if (children != null)
-				//{
-				//	var childrenCount = children.Count;
-				//	Debug.Log(siblingIndex + ", " + childrenCount);
-				//	if (siblingIndex != childrenCount)
-				//	{
-				//		children.RemoveRange(siblingIndex, childrenCount - siblingIndex);
-				//		hasChanged = true;
-				//	}
-
-				//	if (parent != null && children.Count == 0)
-				//		parent.children = null;
-				//}
 			}
-
-			//foreach (var hierarchyData in m_HierarchyData)
-			//{
-			//	hierarchyData.Print();
-			//}
 
 			if (hasChanged)
 			{
-				Debug.Log("change");
 				foreach (var list in m_HierarchyLists)
 				{
 					list.hierarchyData = GetHierarchyData();
@@ -226,96 +174,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		//HierarchyData CollectHierarchyData(HierarchyProperty hp, HashSet<string> objectTypes)
-		//{
-		//	var depth = hp.depth;
-		//	var name = hp.name;
-		//	var instanceID = hp.instanceID;
-		//	var types = InstanceIDToComponentTypes(instanceID, objectTypes);
-
-		//	Stack<HierarchyData> stack = new Stack<HierarchyData>();
-		//	if (hp.hasChildren)
-		//	{
-		//		if (hd != null && hd.children == null)
-		//			hasChanged = true;
-
-		//		children = hd == null || hd.children == null ? new List<HierarchyData>() : hd.children;
-
-		//		hasNext = hp.Next(null);
-		//		var i = 0;
-		//		while (hasNext && hp.depth > depth)
-		//		{
-		//			var go = EditorUtility.InstanceIDToObject(hp.instanceID);
-
-		//			if (go == gameObject)
-		//			{
-		//				// skip children of EVR to prevent the display of EVR contents
-		//				while (hp.Next(null) && hp.depth > depth + 1) { }
-
-		//				// If EVR is the last object, don't add anything to the list
-		//				if (hp.instanceID == 0)
-		//					break;
-
-		//				name = hp.name;
-		//				instanceID = hp.instanceID;
-		//				types = InstanceIDToComponentTypes(instanceID, objectTypes);
-		//			}
-
-		//			if (i >= children.Count)
-		//			{
-		//				children.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp, objectTypes));
-		//				hasChanged = true;
-		//			}
-		//			else if (children[i].index != hp.instanceID)
-		//			{
-		//				children[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp, objectTypes);
-		//				hasChanged = true;
-		//			}
-		//			else
-		//			{
-		//				children[i] = CollectHierarchyData(ref hasNext, ref hasChanged, children[i], hp, objectTypes);
-		//			}
-
-		//			if (hasNext)
-		//				hasNext = hp.Next(null);
-
-		//			i++;
-		//		}
-
-		//		if (i != children.Count)
-		//		{
-		//			children.RemoveRange(i, children.Count - i);
-		//			hasChanged = true;
-		//		}
-
-		//		if (children.Count == 0)
-		//			children = null;
-
-		//		if (hasNext)
-		//			hp.Previous(null);
-		//	}
-		//	else if (hd != null && hd.children != null)
-		//	{
-		//		hasChanged = true;
-		//	}
-
-		//	if (hd != null)
-		//	{
-		//		hd.children = children;
-		//		hd.name = name;
-		//		hd.instanceID = instanceID;
-		//		hd.types = types;
-		//	}
-
-		//	return hd ?? new HierarchyData(name, instanceID, types, children);
-		//}
-
 		bool CleanUpHierarchyData(HierarchyData data, int lastSiblingIndex)
 		{
 			var children = data == null ? m_HierarchyData : data.children;
 			var childrenCount = children == null ? 0 : children.Count;
-			//Debug.Log(name + ", " + childrenCount + " - " + lastSiblingIndex);
-
 			if (children != null && lastSiblingIndex < childrenCount)
 			{
 				children.RemoveRange(lastSiblingIndex, childrenCount - lastSiblingIndex);

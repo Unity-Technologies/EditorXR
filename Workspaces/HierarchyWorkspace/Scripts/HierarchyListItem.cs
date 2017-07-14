@@ -189,9 +189,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public void UpdateSelf(float width, int depth, bool? expanded, bool selected, bool locked)
 		{
-			var childCount = data.children == null ? 0 : data.children.Count;
-			m_Text.text = data.name + "(" + childCount + ")";
-
 			var cubeScale = m_CubeTransform.localScale;
 			cubeScale.x = width;
 			m_CubeTransform.localScale = cubeScale;
