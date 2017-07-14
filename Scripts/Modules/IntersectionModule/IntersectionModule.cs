@@ -38,6 +38,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public float distance;
 		}
 
+		void Awake()
+		{
+			IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
+		}
+
 		internal void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
