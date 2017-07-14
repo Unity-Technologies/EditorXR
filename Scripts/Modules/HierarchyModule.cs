@@ -17,7 +17,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		readonly List<GameObject> m_IgnoreList = new List<GameObject>();
 
 		// Local method use only -- created here to reduce garbage collection
-		readonly HashSet<string> m_CompareTypes = new HashSet<string>();
+		readonly Stack<HierarchyData> m_DataStack = new Stack<HierarchyData>();
+		readonly Stack<int> m_SiblingIndexStack = new Stack<int>();
 
 		void Awake()
 		{
@@ -92,10 +93,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			var hasChanged = false;
 			var lastDepth = 0;
-			var dataStack = new Stack<HierarchyData>();
-			var siblingIndexStack = new Stack<int>();
-			dataStack.Push(null);
-			siblingIndexStack.Push(0);
+			m_DataStack.Clear();
+			m_SiblingIndexStack.Clear();
+			m_DataStack.Push(null);
+			m_SiblingIndexStack.Push(0);
 			while (m_HierarchyProperty.Next(null))
 			{
 				var instanceID = m_HierarchyProperty.instanceID;
@@ -116,22 +117,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				if (currentDepth <= lastDepth)
 				{
-					if (dataStack.Count > 1) // Pop off last sibling
+					if (m_DataStack.Count > 1) // Pop off last sibling
 					{
-						if (CleanUpHierarchyData(dataStack.Pop(), siblingIndexStack.Pop()))
+						if (CleanUpHierarchyData(m_DataStack.Pop(), m_SiblingIndexStack.Pop()))
 							hasChanged = true;
 					}
 
 					var count = lastDepth - currentDepth;
 					while (count-- > 0)
 					{
-						if (CleanUpHierarchyData(dataStack.Pop(), siblingIndexStack.Pop()))
+						if (CleanUpHierarchyData(m_DataStack.Pop(), m_SiblingIndexStack.Pop()))
 							hasChanged = true;
 					}
 				}
 
-				var parent = dataStack.Peek();
-				var siblingIndex = siblingIndexStack.Pop();
+				var parent = m_DataStack.Peek();
+				var siblingIndex = m_SiblingIndexStack.Pop();
 
 				if (parent != null && parent.children == null)
 					parent.children = new List<HierarchyData>();
@@ -160,23 +161,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				else
 				{
 					currentHierarchyData = children[siblingIndex];
-					var currentTypes = currentHierarchyData.types;
-					m_CompareTypes.Clear();
-					m_CompareTypes.UnionWith(currentTypes);
-					InstanceIDToComponentTypes(instanceID, currentTypes, m_ObjectTypes);
-					if (!currentTypes.SetEquals(m_CompareTypes)) // Compare old types in case of changes to components
-						hasChanged = true;
+					InstanceIDToComponentTypes(instanceID, currentHierarchyData.types, m_ObjectTypes);
 				}
 
-				dataStack.Push(currentHierarchyData);
-				siblingIndexStack.Push(siblingIndex + 1);
-				siblingIndexStack.Push(0);
+				m_DataStack.Push(currentHierarchyData);
+				m_SiblingIndexStack.Push(siblingIndex + 1);
+				m_SiblingIndexStack.Push(0);
 				lastDepth = currentDepth;
 			}
 
-			while (siblingIndexStack.Count > 0 && dataStack.Count > 0)
+			while (m_SiblingIndexStack.Count > 0 && m_DataStack.Count > 0)
 			{
-				if (CleanUpHierarchyData(dataStack.Pop(), siblingIndexStack.Pop()))
+				if (CleanUpHierarchyData(m_DataStack.Pop(), m_SiblingIndexStack.Pop()))
 					hasChanged = true;
 			}
 
