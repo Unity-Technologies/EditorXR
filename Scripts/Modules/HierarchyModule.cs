@@ -14,6 +14,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 		readonly HashSet<string> m_ObjectTypes = new HashSet<string>();
+		readonly List<GameObject> m_IgnoreList = new List<GameObject>();
+
+		// Local method use only -- created here to reduce garbage collection
+		readonly HashSet<string> m_CompareTypes = new HashSet<string>();
+
+		void Awake()
+		{
+			m_IgnoreList.Add(gameObject); // Ignore EditorVR
+			foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
+			{
+				m_IgnoreList.Add(manager.gameObject);
+			}
+
+			foreach (var manager in Resources.FindObjectsOfTypeAll<EditingContextManager>())
+			{
+				m_IgnoreList.Add(manager.gameObject);
+			}
+		}
 
 		void OnEnable()
 		{
@@ -81,10 +99,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			while (m_HierarchyProperty.Next(null))
 			{
 				var instanceID = m_HierarchyProperty.instanceID;
-				var types = InstanceIDToComponentTypes(instanceID, m_ObjectTypes);
 				var go = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 				var currentDepth = m_HierarchyProperty.depth;
-				if (go == gameObject)
+				if (m_IgnoreList.Contains(go))
 				{
 					var depth = currentDepth;
 					// skip children of EVR to prevent the display of EVR contents
@@ -96,9 +113,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					if (instanceID == 0)
 						break;
 				}
-
-				if (go && (go.GetComponent<InputManager>() || go.GetComponent<EditingContextManager>()))
-					continue;
 
 				if (currentDepth <= lastDepth)
 				{
@@ -127,24 +141,31 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				HierarchyData currentHierarchyData;
 				if (siblingIndex >= children.Count)
 				{
-					currentHierarchyData = new HierarchyData(m_HierarchyProperty, types);
+					currentHierarchyData = new HierarchyData(m_HierarchyProperty);
+					var types = new HashSet<string>();
+					InstanceIDToComponentTypes(instanceID, types, m_ObjectTypes);
+					currentHierarchyData.types = types;
 					children.Add(currentHierarchyData);
 					hasChanged = true;
 				}
 				else if (children[siblingIndex].index != instanceID)
 				{
-					currentHierarchyData = new HierarchyData(m_HierarchyProperty, types);
+					currentHierarchyData = new HierarchyData(m_HierarchyProperty);
+					var types = new HashSet<string>();
+					InstanceIDToComponentTypes(instanceID, types, m_ObjectTypes);
+					currentHierarchyData.types = types;
 					children[siblingIndex] = currentHierarchyData;
 					hasChanged = true;
 				}
 				else
 				{
 					currentHierarchyData = children[siblingIndex];
-
-					if (!currentHierarchyData.types.SetEquals(types))
+					var currentTypes = currentHierarchyData.types;
+					m_CompareTypes.Clear();
+					m_CompareTypes.UnionWith(currentTypes);
+					InstanceIDToComponentTypes(instanceID, currentTypes, m_ObjectTypes);
+					if (!currentTypes.SetEquals(m_CompareTypes)) // Compare old types in case of changes to components
 						hasChanged = true;
-
-					currentHierarchyData.types = types; // In case of added components
 				}
 
 				dataStack.Push(currentHierarchyData);
@@ -190,17 +211,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return false;
 		}
 
-		static HashSet<string> InstanceIDToComponentTypes(int instanceID, HashSet<string> allTypes)
+		static void InstanceIDToComponentTypes(int instanceID, HashSet<string> types, HashSet<string> allTypes)
 		{
-			var types = new HashSet<string>();
+			types.Clear();
 			var go = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 			if (go)
 			{
 				var components = go.GetComponents<Component>();
-				for (int i = 0; i < components.Length; i++)
+				foreach (var component in components)
 				{
-					var component = components[i];
-
 					if (!component)
 						continue;
 
@@ -215,7 +234,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					allTypes.Add(typeName);
 				}
 			}
-			return types;
 		}
 	}
 }
