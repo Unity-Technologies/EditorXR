@@ -75,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			if (this.IsHoveringOverUI(rayOrigin))
+			if (m_State == PrimitiveCreationStates.StartPoint && this.IsHoveringOverUI(rayOrigin))
 			{
 				this.UnlockRay(rayOrigin, this);
 				this.SetDefaultRayVisibility(rayOrigin, true, true);
