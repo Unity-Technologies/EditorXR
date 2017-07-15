@@ -156,19 +156,25 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		[SerializeField]
 		Sprite m_OriginCenterIcon;
+
 		[SerializeField]
 		Sprite m_OriginPivotIcon;
+
 		[SerializeField]
 		Sprite m_RotationGlobalIcon;
+
 		[SerializeField]
 		Sprite m_RotationLocalIcon;
+
 		[SerializeField]
 		Sprite m_StandardManipulatorIcon;
+
 		[SerializeField]
 		Sprite m_ScaleManipulatorIcon;
 
 		[SerializeField]
 		GameObject m_StandardManipulatorPrefab;
+
 		[SerializeField]
 		GameObject m_ScaleManipulatorPrefab;
 
@@ -202,7 +208,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		readonly Dictionary<Node, GrabData> m_GrabData = new Dictionary<Node, GrabData>();
 		bool m_DirectSelected;
-		bool m_WasDirectSelected; // Hold directSelected state for a frame
 		float m_ScaleStartDistance;
 		Node m_ScaleFirstNode;
 		float m_ScaleFactor;
@@ -368,9 +373,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						Undo.IncrementCurrentGroup();
 					}
-
-					if (transformInput.select.wasJustReleased)
-						m_DirectSelected = true;
 				}
 
 				GrabData leftData;
@@ -469,33 +471,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						rightData.UpdatePositions(this);
 				}
 
-				// Reset direct selection state in case of a ray selection
-				foreach (TransformTool transformTool in linkedObjects)
+				foreach (var linkedObject in linkedObjects)
 				{
+					var transformTool = (TransformTool)linkedObject;
 					var rayOrigin = transformTool.rayOrigin;
 					if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node.Value)))
 					{
 						this.UnlockRay(rayOrigin, this);
 						this.SetDefaultRayVisibility(rayOrigin, true, true);
-
-						var transformInput = transformTool.m_Input;
-						if (transformInput != null && transformInput.select.wasJustReleased)
-						{
-							m_DirectSelected = false;
-							break;
-						}
 					}
 				}
 			}
 
 			// Manipulator is disabled while direct manipulation is happening
-			if (hasObject || m_DirectSelected || m_WasDirectSelected)
-			{
-				m_WasDirectSelected = m_DirectSelected;
+			if (hasObject || m_DirectSelected)
 				return;
-			}
-
-			m_WasDirectSelected = m_DirectSelected;
 
 			if (Selection.gameObjects.Length > 0)
 			{
