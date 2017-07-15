@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	{
 		// Local method use only -- created here to reduce garbage collection
 		static readonly Vector3[] k_TriangleVertices = new Vector3[3];
-		static readonly Mesh k_BakedMesh = new Mesh();
+		public static Mesh BakedMesh { private get; set; }
 
 		/// <summary>
 		/// Test whether an object collides with the tester
@@ -192,8 +192,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				var smr = obj.GetComponent<SkinnedMeshRenderer>();
 				if (smr)
 				{
-					smr.BakeMesh(k_BakedMesh);
-					collisionTester.sharedMesh = k_BakedMesh;
+					smr.BakeMesh(BakedMesh);
+					collisionTester.sharedMesh = BakedMesh;
 				}
 			}
 		}
