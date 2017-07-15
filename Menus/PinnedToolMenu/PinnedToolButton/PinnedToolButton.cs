@@ -382,7 +382,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				else
 				{
 					//this.Pulse(rayOrigin, 0.005f, 0.2f); // Used for spatial selection highlighting only
-					Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
+					Debug.LogWarning("Perform Pulse up in PinnedToolsMenu level");
 				}
 
 				if (implementsSecondaryButton && (!isMainMenu || !isSelectionTool))

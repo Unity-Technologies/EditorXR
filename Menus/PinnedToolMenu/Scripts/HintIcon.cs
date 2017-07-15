@@ -116,7 +116,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimatePulseColor()
 		{
-			Debug.LogError("Pulsing color of hint arrow : " + gameObject.name);
+			//Debug.LogError("Pulsing color of hint arrow : " + gameObject.name);
 			const float kTargetDuration = 1f;
 			var currentDuration = 0f;
 			var currentColor = m_Icon.color;

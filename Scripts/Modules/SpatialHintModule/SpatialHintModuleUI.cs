@@ -53,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_Visible; }
 			set
 			{
+				Debug.LogError("<color=orange>Setting Hint Module visibility to : </color>" + value);
 				m_Visible = value;
 
 				if (m_Visible)

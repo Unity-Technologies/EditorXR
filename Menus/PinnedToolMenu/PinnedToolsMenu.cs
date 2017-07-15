@@ -8,6 +8,7 @@ using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -114,13 +115,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		*/
 
 		// Spatial Hint Module implementation
-		public bool spatialHintVisualsVisible { get; set; }
-		public bool spatialHintPreScrollVisualsVisible { get; set; }
-		public bool spatialHintPrimaryArrowsVisible { get; set; }
-		public bool spatialHintSecondaryArrowsVisible { get; set; }
-		public Vector3 spatialHintScrollVisualsRotation { get; set; }
-		public Vector3 spatialHintScrollVisualsDragThresholdTriggerPosition { get; set; }
-		public Transform spatialHintContentContainer { get; set; }
+		
 
 		void Awake()
 		{
@@ -335,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//const float kMinFineTuneVelocity = 0.000001f;
 			if (spatialDirection == null)
 			{
-				Debug.LogWarning("spatial Direction is NULL - setting new one in pricessSpatialScrolling");
+				Debug.LogWarning("spatial Direction is NULL - setting new one in processSpatialScrolling");
 				var newDirectionVectorThreshold = 0.0175f * this.GetViewerScale(); // Initial magnitude beyond which spatial scrolling will be evaluated
 				var dragMagnitude = Vector3.Magnitude(directionVector);
 				var dragPercentage = dragMagnitude / newDirectionVectorThreshold;

@@ -1,14 +1,57 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI
+	public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI
 	{
+		[Flags]
+		public enum SpatialHintStateFlags
+		{
+			Hidden = 1 << 0,
+			PreDragReveal = 1 << 1,
+			Scrolling = 1 << 2,
+		}
+
 		[SerializeField]
 		SpatialHintModuleUI m_SpatialHintModuleUI;
 
+		SpatialHintStateFlags m_State;
+
+		public SpatialHintStateFlags state
+		{
+			get { return m_State; }
+			set
+			{
+				//if (m_State == value)
+					//return;
+
+				m_State = value;
+				switch (m_State)
+				{
+					case SpatialHintStateFlags.Hidden:
+						Debug.LogError("<color=orange>SpatialHintState : </color>Hidden");
+						m_SpatialHintModuleUI.preScrollVisualsVisible = false;
+						m_SpatialHintModuleUI.primaryArrowsVisible = false;
+						m_SpatialHintModuleUI.secondaryArrowsVisible = false;
+						//spatialHintPrimaryArrowsVisible = false;
+						//spatialHintSecondaryArrowsVisible = false;
+						break;
+					case SpatialHintStateFlags.PreDragReveal:
+						Debug.LogError("<color=orange>SpatialHintState : </color>Pre drag reveal state");
+						m_SpatialHintModuleUI.preScrollVisualsVisible = true;;
+						m_SpatialHintModuleUI.primaryArrowsVisible = true;
+						m_SpatialHintModuleUI.secondaryArrowsVisible = true;
+						break;
+					case SpatialHintStateFlags.Scrolling:
+						break;
+				}
+			}
+		}
+
+		/*
 		/// <summary>
 		/// Description
 		/// </summary>
@@ -22,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// Enables/disables the visual elements that should be shown when beginning to initiate a spatial selection action
 		/// This is only enabled before the enabling of the main select visuals
 		/// </summary>
-		public bool spatialHintPreScrollVisualsVisible
+		bool spatialHintPreScrollVisualsVisible
 		{
 			get { return m_SpatialHintModuleUI.preScrollVisualsVisible; }
 			set { m_SpatialHintModuleUI.preScrollVisualsVisible = value; }
@@ -31,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// <summary>
 		/// Description
 		/// </summary>
-		public bool spatialHintPrimaryArrowsVisible
+		bool spatialHintPrimaryArrowsVisible
 		{
 			get { return m_SpatialHintModuleUI.primaryArrowsVisible; }
 			set { m_SpatialHintModuleUI.primaryArrowsVisible = value; }
@@ -40,19 +83,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// <summary>
 		/// Description
 		/// </summary>
-		public bool spatialHintSecondaryArrowsVisible
+		bool spatialHintSecondaryArrowsVisible
 		{
 			get { return m_SpatialHintModuleUI.secondaryArrowsVisible; }
 			set { m_SpatialHintModuleUI.secondaryArrowsVisible = value; }
-		}
-
-		/// <summary>
-		/// Description
-		/// </summary>
-		public Vector3 spatialHintScrollVisualsRotation
-		{
-			get { return m_SpatialHintModuleUI.scrollVisualsRotation; }
-			set { m_SpatialHintModuleUI.scrollVisualsRotation = value; }
 		}
 
 		/// <summary>
@@ -63,11 +97,27 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			get { return m_SpatialHintModuleUI.scrollVisualsDragThresholdTriggerPosition; }
 			set { m_SpatialHintModuleUI.scrollVisualsDragThresholdTriggerPosition = value; }
 		}
+		*/
 
 		/// <summary>
 		/// Description
 		/// </summary>
-		public Transform spatialHintContentContainer { get { return m_SpatialHintModuleUI.contentContainer; } }
+		Vector3 spatialHintScrollVisualsRotation
+		{
+			get { return m_SpatialHintModuleUI.scrollVisualsRotation; }
+			set
+			{
+				if (value == Vector3.zero)
+					state = SpatialHintStateFlags.Hidden; // Hide the non-spatial-scrolling visuals
+
+				m_SpatialHintModuleUI.scrollVisualsRotation = value;
+			}
+		}
+
+		/// <summary>
+		/// Description
+		/// </summary>
+		Transform spatialHintContentContainer { get { return m_SpatialHintModuleUI.contentContainer; } }
 
 		void Awake()
 		{
@@ -83,6 +133,43 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			Debug.LogError("<color=green>Pulse scroll arrows called !!!!!!!!!! <-------------------------------------------------</color>");
 			m_SpatialHintModuleUI.PulseScrollArrows();
+		}
+
+		public void SetState(SpatialHintStateFlags newState)
+		{
+			state = newState;
+		}
+
+		public void SetPosition(Vector3 newPosition)
+		{
+			spatialHintContentContainer.position = newPosition;
+		}
+
+		public void SetRotation(Quaternion newRotation)
+		{
+			m_SpatialHintModuleUI.transform.rotation = newRotation;
+		}
+
+		public void SetRotationTarget(Vector3 target)
+		{
+			spatialHintScrollVisualsRotation = target;
+		}
+
+		public void LookAt(Vector3 position)
+		{
+			var orig = spatialHintContentContainer.rotation;
+			spatialHintContentContainer.LookAt(position);
+			//this.SetSpatialHintLookAT(value.Value);
+			//spatialHintContentContainer.LookAt(value.Value);
+			//Debug.LogError(value.Value.ToString("F4"));
+			//m_SpatialScrollOrientation = Quaternion.Euler(value.Value); // Quaternion.FromToRotation(m_HintContentContainer.forward, value.Value); // Quaternion.Euler(value.Value); Quaternion.RotateTowards(m_HintContentContainerInitialRotation, Quaternion.Euler(value.Value), 180f);
+			//m_SpatialHintModuleUI.rotation (orig);
+			spatialHintContentContainer.rotation = orig;
+		}
+
+		public void SetDragThresholdTriggerPosition(Vector3 position)
+		{
+			m_SpatialHintModuleUI.scrollVisualsDragThresholdTriggerPosition = position;
 		}
 	}
 }
