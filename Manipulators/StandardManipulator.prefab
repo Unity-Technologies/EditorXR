@@ -151,7 +151,7 @@ GameObject:
   - component: {fileID: 33000013153004220}
   - component: {fileID: 23000012097216674}
   m_Layer: 5
-  m_Name: Arrow
+  m_Name: HandleTip
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -667,7 +667,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: 60ba0d848a3eeec49a02ffe6f85017f2, type: 2}
+  - {fileID: 2100000, guid: 0c0bcbee36e026343a113109292ee771, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1073,10 +1073,11 @@ MonoBehaviour:
   - {fileID: 114000012656813054}
   - {fileID: 114000010105022974}
   - {fileID: 114000011169532704}
-  m_LinearHandleScaleBump: 1.5
-  m_PlaneHandleScaleBump: 1.1
+  m_LinearHandleScaleBump: 1.8
+  m_PlaneHandleScaleBump: 1.2
   m_SphereHandleScaleBump: 1.1
-  m_OpaqueMaterial: {fileID: 2100000, guid: 60ba0d848a3eeec49a02ffe6f85017f2, type: 2}
+  m_HandleAlpha: 0.4
+  m_HandleHoverAlpha: 0.8
   m_PlaneHandlesParent: {fileID: 4000012837354530}
   m_RadialHandleMesh: {fileID: 4300008, guid: cdace0cf368873c4796b9f9ade156c53, type: 3}
   m_FatRadialHandleMesh: {fileID: 4300010, guid: cdace0cf368873c4796b9f9ade156c53,
