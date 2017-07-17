@@ -100,9 +100,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 
+					var menuHideFlags = deviceData.menuHideFlags;
 					var mainMenu = Menus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
 					deviceData.mainMenu = mainMenu;
-					deviceData.menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
+					menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
 
 					var mainMenuActivator = Menus.SpawnMainMenuActivator(inputDevice);
 					deviceData.mainMenuActivator = mainMenuActivator;
@@ -116,8 +117,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					var alternateMenu = Menus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 					deviceData.alternateMenu = alternateMenu;
-					deviceData.menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
+					menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
 					alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
+
+					var autoHideTimes = deviceData.menuAutoHideTimes;
+					var autoShowTimes = deviceData.menuAutoShowTimes;
+					foreach (var kvp in menuHideFlags)
+					{
+						var menu = kvp.Key;
+						autoHideTimes[menu] = 0;
+						autoShowTimes[menu] = 0;
+					}
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();

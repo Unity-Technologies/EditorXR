@@ -80,6 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public PinnedToolButton previousToolButton;
 			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
 			public readonly Dictionary<IMenu, float> menuAutoHideTimes = new Dictionary<IMenu, float>();
+			public readonly Dictionary<IMenu, float> menuAutoShowTimes = new Dictionary<IMenu, float>();
 		}
 
 		class Nested
