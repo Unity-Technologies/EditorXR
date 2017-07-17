@@ -20,6 +20,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Text m_Text;
 
 		[SerializeField]
+		Text m_SceneText;
+
+		[SerializeField]
 		BaseHandle m_Lock;
 
 		[SerializeField]
@@ -27,6 +30,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		[SerializeField]
 		BaseHandle m_ExpandArrow;
+
+		[SerializeField]
+		Transform m_SceneIcon;
 
 		[SerializeField]
 		BaseHandle m_DropZone;
@@ -77,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Material m_LockIconMaterial;
 		Material m_UnlockIconMaterial;
 
-		bool m_HoveringLock = false;
+		bool m_HoveringLock;
 
 		public bool hovering { get; private set; }
 		public Transform hoveringRayOrigin { get; private set; }
@@ -150,7 +156,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_CubeTransform = m_Cube.transform;
 			m_DropZoneTransform = m_DropZone.transform;
-			m_Text.text = data.name;
+
+			var name = data.name;
+			if (data.gameObject == null)
+			{
+				m_SceneText.text = string.IsNullOrEmpty(name) ? "Untitled" : name;
+				m_SceneIcon.gameObject.SetActive(true);
+				m_SceneText.gameObject.SetActive(true);
+				m_Text.gameObject.SetActive(false);
+			}
+			else
+			{
+				m_Text.text = name;
+				m_SceneIcon.gameObject.SetActive(false);
+				m_SceneText.gameObject.SetActive(false);
+				m_Text.gameObject.SetActive(true);
+			}
 
 			hovering = false;
 		}
@@ -158,6 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public void SetMaterials(Material textMaterial, Material expandArrowMaterial, Material lockIconMaterial, Material unlockIconMaterial)
 		{
 			m_Text.material = textMaterial;
+			m_SceneText.material = textMaterial;
 			m_ExpandArrowMaterial = expandArrowMaterial;
 			m_ExpandArrowRenderer.sharedMaterial = expandArrowMaterial;
 			m_LockIconMaterial = lockIconMaterial;
@@ -182,17 +204,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_LockRenderer.sharedMaterial = (!locked && m_HoveringLock) || (locked && !m_HoveringLock) ? m_LockIconMaterial : m_UnlockIconMaterial;
 			var lockIconTransform = m_Lock.transform;
 			var lockWidth = lockIconTransform.localScale.x * 0.5f;
-			
+
 			// Text is next to arrow, with a margin and indent, rotated toward camera
-			var textTransform = m_Text.transform;
-			m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / textTransform.localScale.x);
+			var gameObject = data.gameObject;
+			if (gameObject == null)
+				indent = k_Indent;
+
+			var textTransform = gameObject ? m_Text.transform : m_SceneText.transform;
+			var textRectTransform = gameObject ? m_Text.rectTransform : m_SceneText.rectTransform;
+			textRectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / textTransform.localScale.x);
 			textTransform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, textTransform.localPosition.y, 0);
-
 			lockIconTransform.localPosition = new Vector3(halfWidth - lockWidth - k_Margin, lockIconTransform.localPosition.y, 0);
+			var sceneIconPosition = m_SceneIcon.localPosition;
+			m_SceneIcon.localPosition = new Vector3(-halfWidth + k_Margin + arrowWidth + k_Indent, sceneIconPosition.y, sceneIconPosition.z);
 
-			var localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
+			var localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent);
 			textTransform.localRotation = localRotation;
 			lockIconTransform.localRotation = localRotation;
+			m_SceneIcon.localRotation = localRotation;
 
 			var dropZoneScale = m_DropZoneTransform.localScale;
 			dropZoneScale.x = width - indent;
@@ -203,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			UpdateArrow(expanded);
 
-			var isPrefab = PrefabUtility.GetPrefabType(data.gameObject) == PrefabType.PrefabInstance;
+			var isPrefab = gameObject && PrefabUtility.GetPrefabType(gameObject) == PrefabType.PrefabInstance;
 			// Set selected/hover/normal color
 			if (selected)
 			{
