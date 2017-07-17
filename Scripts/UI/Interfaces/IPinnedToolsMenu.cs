@@ -1,8 +1,8 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {

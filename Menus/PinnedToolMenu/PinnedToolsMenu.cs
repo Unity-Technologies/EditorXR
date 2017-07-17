@@ -1,19 +1,12 @@
 ﻿#if UNITY_EDITOR
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -279,7 +272,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				// normalized input should loop after reaching the 0.15f length
 				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-				var normalizedRepeatingPosition = processSpatialScrolling(m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.15f, true);
+				var normalizedRepeatingPosition = processSpatialScrolling(m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.15f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{
 					if (!m_PinnedToolsMenuUI.allButtonsVisible)
@@ -321,7 +314,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		// TODO ADD SUPPORT FOR VIEWERSCALE SIZE CHANGES
 		// TODO refact into ISpatialScrolling interface; allow axis locking/selection/isolation
-		float processSpatialScrolling(Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, bool velocitySensitive)
+		float processSpatialScrolling(Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1)
 		{
 			//Debug.LogError("Start position : <color=red>" + startingPosition + "</color> - Current Position : " + currentPosition);
 			var normalizedLoopingPosition = 0f;
@@ -361,7 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				//Debug.LogError(directionVector.magnitude);
 				var projectedAmount = Vector3.Project(directionVector, spatialDirection.Value).magnitude / this.GetViewerScale();
-				normalizedLoopingPosition = (Mathf.Abs(projectedAmount) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
+				normalizedLoopingPosition = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
 
 				//Debug.LogError("<color=green>" + velocity + "</color>");
 				//if (velocity < kMaxFineTuneVelocity && velocity > kMinFineTuneVelocity)
