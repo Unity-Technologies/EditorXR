@@ -149,20 +149,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_RayMaterial.color = c;
 		}
 
-		private void Awake()
+		void Awake()
 		{
 			m_RayMaterial = MaterialUtils.GetMaterialClone(m_LineRenderer.GetComponent<MeshRenderer>());
 			m_ConeTransform = m_Cone.transform;
 			m_OriginalConeLocalScale = m_ConeTransform.localScale;
 		}
 
-		private void Start()
+		void Start()
 		{
 			m_TipStartScale = m_Tip.transform.localScale;
 			rayVisible = true;
 		}
 
-		private IEnumerator HideRay()
+		IEnumerator HideRay()
 		{
 			m_Tip.transform.localScale = Vector3.zero;
 
@@ -184,7 +184,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_RayVisibilityCoroutine = null;
 		}
 
-		private IEnumerator ShowRay()
+		IEnumerator ShowRay()
 		{
 			m_Tip.transform.localScale = m_TipStartScale;
 
@@ -244,6 +244,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			m_ConeTransform.localScale = m_OriginalConeLocalScale;
 			m_ConeVisibilityCoroutine = null;
+		}
+
+		public Color GetColor()
+		{
+			return m_RayMaterial.color;
 		}
 
 		void OnDestroy()

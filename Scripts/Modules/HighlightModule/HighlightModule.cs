@@ -1,11 +1,11 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.Modules {
+namespace UnityEditor.Experimental.EditorVR.Modules
+{
 	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		const string k_SelectionOutlinePrefsKey = "Scene/Selected Outline";
@@ -14,10 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules {
 		Material m_DefaultHighlightMaterial;
 
 		[SerializeField]
-		Material m_LeftHighlightMaterial;
-
-		[SerializeField]
-		Material m_RightHighlightMaterial;
+		Material m_RayHighlightMaterial;
 
 		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
@@ -31,14 +28,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules {
 		}
 		readonly List<Func<GameObject, Material, bool>> m_CustomHighlightFuncs = new List<Func<GameObject, Material, bool>>();
 
-		public Color leftColor
+		public Color highlightColor
 		{
-			get { return m_LeftHighlightMaterial.GetVector("_Color"); }
-		}
-
-		public Color rightColor
-		{
-			get { return m_RightHighlightMaterial.GetVector("_Color"); }
+			get { return m_RayHighlightMaterial.GetVector("_Color"); }
+			set { m_RayHighlightMaterial.color = value; }
 		}
 
 		void Awake()
@@ -50,10 +43,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules {
 				var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
 				selectionColor.a = 1;
 
-				m_LeftHighlightMaterial = Instantiate(m_LeftHighlightMaterial);
-				m_LeftHighlightMaterial.color = selectionColor.gamma;
-				m_RightHighlightMaterial = Instantiate(m_RightHighlightMaterial);
-				m_RightHighlightMaterial.color = selectionColor.gamma;
+				m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
+				m_RayHighlightMaterial.color = selectionColor.gamma;
 			}
 		}
 
@@ -136,24 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules {
 
 			if (material == null)
 			{
-				if (rayOrigin)
-				{
-					var node = Node.LeftHand;
-					foreach (var kvp in m_NodeMap)
-					{
-						if (kvp.Value.Contains(rayOrigin))
-						{
-							node = kvp.Key;
-							break;
-						}
-					}
-
-					material = node == Node.LeftHand ? m_LeftHighlightMaterial : m_RightHighlightMaterial;
-				}
-				else
-				{
-					material = m_DefaultHighlightMaterial;
-				}
+				material = rayOrigin ? m_RayHighlightMaterial : m_DefaultHighlightMaterial;
 			}
 
 			if (active) // Highlight

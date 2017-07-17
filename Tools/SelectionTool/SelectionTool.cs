@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -10,14 +11,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IIsRayActive, IIsMainMenuVisible, IIsInMiniWorld, IRayToNode
+		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IIsRayActive, IIsMainMenuVisible, IIsInMiniWorld, IRayToNode,
+		IGetDefaultRayColor, ISetDefaultRayColor
 	{
+		const float k_MultiselectSaturationDrop = 0.5f;
+
 		[SerializeField]
 		ActionMap m_ActionMap;
 
 		GameObject m_PressedObject;
 
 		SelectionInput m_SelectionInput;
+
+		float m_LastMultiSelectClickTime;
+		Color m_NormalRayColor;
+		Color m_MultiselectRayColor;
+		bool m_MultiSelect;
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -32,6 +41,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { get; set; }
 
+		void Start()
+		{
+			m_NormalRayColor = this.GetDefaultRayColor(rayOrigin);
+			m_MultiselectRayColor = m_NormalRayColor;
+			Vector3 hsv;
+			Color.RGBToHSV(m_MultiselectRayColor, out hsv.x, out hsv.y, out hsv.z);
+			hsv.y -= k_MultiselectSaturationDrop;
+			m_MultiselectRayColor = Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
+		}
+
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			if (this.GetManipulatorDragState())
@@ -39,14 +58,27 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			m_SelectionInput = (SelectionInput)input;
 
+			var multiSelectControl = m_SelectionInput.multiSelect;
+			if (multiSelectControl.wasJustPressed)
+			{
+				var realTime = Time.realtimeSinceStartup;
+				if (UIUtils.IsDoubleClick(realTime - m_LastMultiSelectClickTime))
+				{
+					m_MultiSelect = !m_MultiSelect;
+					consumeControl(multiSelectControl);
+				}
+
+				m_LastMultiSelectClickTime = realTime;
+			}
+
 			var multiSelect = false;
 			foreach (var linkedObject in linkedObjects)
 			{
 				var selectionTool = (SelectionTool)linkedObject;
-				var toolInput = selectionTool.m_SelectionInput;
-				if (toolInput != null && toolInput.multiSelect.isHeld)
-					multiSelect = true;
+				multiSelect |= selectionTool.m_MultiSelect;
 			}
+
+			this.SetDefaultRayColor(rayOrigin, multiSelect ? m_MultiselectRayColor : m_NormalRayColor);
 
 			if (this.IsSharedUpdater(this))
 			{

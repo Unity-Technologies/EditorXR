@@ -37,6 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public Rays()
 			{
 				ISetDefaultRayVisibilityMethods.setDefaultRayVisibility = SetDefaultRayVisibility;
+				ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
+				IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
 
 				IUsesRayLockingMethods.lockRay = LockRay;
 				IUsesRayLockingMethods.unlockRay = UnlockRay;
@@ -229,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							rayTransform.position = rayOrigin.position;
 							rayTransform.rotation = rayOrigin.rotation;
 							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
-							dpr.SetColor(node == Node.LeftHand ? highlightModule.leftColor : highlightModule.rightColor);
+							dpr.SetColor(highlightModule.highlightColor);
 							m_DefaultRays.Add(rayOrigin, dpr);
 
 							keyboardModule.SpawnKeyboardMallet(rayOrigin);
@@ -475,6 +477,35 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				return null;
+			}
+
+			static void SetDefaultRayColor(Transform rayOrigin, Color color)
+			{
+				if (rayOrigin)
+				{
+					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					if (dpr)
+					{
+						dpr.SetColor(color);
+					}
+				}
+
+				var highlightModule = evr.GetModule<HighlightModule>();
+				highlightModule.highlightColor = color;
+			}
+
+			static Color GetDefaultRayColor(Transform rayOrigin)
+			{
+				if (rayOrigin)
+				{
+					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					if (dpr)
+					{
+						return dpr.GetColor();
+					}
+				}
+
+				return default(Color);
 			}
 		}
 	}
