@@ -30,6 +30,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		HintIcon[] m_SecondaryDirectionalHintArrows;
 
+		[SerializeField]
+		private VRLineRenderer m_ScrollLineRenderer;
+
 		/*
 		[SerializeField]
 		HintIcon[] m_PrimaryRotationalHintArrows;
@@ -188,6 +191,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsGameObject = m_ScrollVisualsTransform.gameObject;
 			m_ScrollVisualsCanvasGroup.alpha = 0f;
 			//m_ScrollVisualsGameObject.SetActive(false);
+
+			m_ScrollLineRenderer.SetVertexCount(4);
+			m_ScrollLineRenderer.useWorldSpace = true;
+			m_ScrollLineRenderer.SetWidth(3, 3);
 		}
 
 		IEnumerator AnimateShow()
@@ -260,6 +267,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_ScrollVisualsDragTargetArrow.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
 
 				currentDuration += Time.unscaledDeltaTime * 2f;
+
+				var lineRendererPositions = new Vector3[] { m_ScrollVisualsTransform.position, m_ScrollVisualsDragTargetArrow.position };
+				m_ScrollLineRenderer.SetPositions(lineRendererPositions);
+				m_ScrollLineRenderer.SetWidth(shapedDuration, shapedDuration);
+
 				yield return null;
 			}
 
@@ -283,6 +295,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 0f, shapedDuration);
 				//m_Icon.color = Color.Lerp(currentColor, m_HiddenColor, currentDuration);
 				currentDuration += Time.unscaledDeltaTime * 3.5f;
+				m_ScrollLineRenderer.SetWidth(1 - shapedDuration, 1 - shapedDuration);
 				yield return null;
 			}
 
