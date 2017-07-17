@@ -131,7 +131,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// </summary>
 		public void PulseScrollArrows()
 		{
-			Debug.LogError("<color=green>Pulse scroll arrows called !!!!!!!!!! <-------------------------------------------------</color>");
 			m_SpatialHintModuleUI.PulseScrollArrows();
 		}
 

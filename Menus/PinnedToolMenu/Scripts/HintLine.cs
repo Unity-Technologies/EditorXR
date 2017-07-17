@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Security.Cryptography.X509Certificates;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -8,13 +7,19 @@ using Random = UnityEngine.Random;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class HintIcon : MonoBehaviour
+	public class HintLine : MonoBehaviour
 	{
 		[SerializeField]
 		bool m_HideOnInitialize = true;
 
+		//[SerializeField]
+		//Image m_Icon;
+
 		[SerializeField]
-		Image m_Icon;
+		VRLineRenderer m_ScrollLineRenderer;
+
+		[SerializeField]
+		float m_LineWidth = 1f;
 
 		[SerializeField]
 		Color m_VisibleColor = Color.white;
@@ -33,6 +38,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_ScrollArrowPulseCoroutine;
 		float m_PulseDuration;
 
+		public float LineWidth { set { m_ScrollLineRenderer.SetWidth(value, value); } }
+		public Vector3[] Positions { set { m_ScrollLineRenderer.SetPositions(value) ; } }
+
+		/*
 		public bool visible
 		{
 			set
@@ -52,17 +61,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
 			}
 		}
+		*/
 
 		void Awake()
 		{
+			/*
 			m_IconTransform = m_Icon.transform;
 			m_VisibleLocalScale = m_IconTransform.localScale * 1.25F;
 			m_Icon.color = m_VisibleColor;
 
 			if (m_HideOnInitialize)
 				visible = false;
+			*/
+
+			m_ScrollLineRenderer.SetVertexCount(4);
+			m_ScrollLineRenderer.useWorldSpace = true;
+			m_ScrollLineRenderer.SetWidth(0f, 0f);
 		}
 
+		/*
 		IEnumerator AnimateShow()
 		{
 			var currentDuration = 0f;
@@ -110,6 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_IconTransform.localScale = k_HiddenScale;
 		}
+		*/
 
 		public void PulseColor()
 		{
@@ -122,24 +140,28 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//Debug.LogError("Pulsing color of hint arrow : " + gameObject.name);
 			const float kTargetDuration = 1f;
 			m_PulseDuration = 0f;
-			var currentColor = m_Icon.color;
+			var currentColor = m_ScrollLineRenderer.Colors[0]; // The line stand & end colors are the same; fetch only one of them
 			while (m_PulseDuration < kTargetDuration)
 			{
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(m_PulseDuration / kTargetDuration);
-				m_Icon.color = Color.Lerp(currentColor, m_PulseColor, shapedDuration);
+				var newColor = Color.Lerp(currentColor, m_PulseColor, shapedDuration);
+				m_ScrollLineRenderer.SetColors(newColor, newColor);
 				m_PulseDuration += Time.unscaledDeltaTime * 5;
 				yield return null;
 			}
 
+			
+
 			while (m_PulseDuration > 0f)
 			{
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(m_PulseDuration / kTargetDuration);
-				m_Icon.color = Color.Lerp(m_VisibleColor, m_PulseColor, shapedDuration);
+				var newColor = Color.Lerp(m_VisibleColor, m_PulseColor, shapedDuration); 
+				m_ScrollLineRenderer.SetColors(newColor, newColor);
 				m_PulseDuration -= Time.unscaledDeltaTime * 2;
 				yield return null;
 			}
 
-			m_Icon.color = m_VisibleColor;
+			m_ScrollLineRenderer.SetColors(m_VisibleColor, m_VisibleColor);
 			m_PulseDuration = 0f;
 		}
 	}
