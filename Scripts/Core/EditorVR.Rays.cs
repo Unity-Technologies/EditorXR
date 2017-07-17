@@ -219,10 +219,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 												return false;
 										}
 
-										if ((deviceData.menuHideFlags[deviceData.mainMenu] & Menus.MenuHideFlags.Hidden) == 0)
-											return Menus.OnHover(source);
-
-										return true;
+										return Menus.IsValidHover(source);
 									});
 								}
 							}

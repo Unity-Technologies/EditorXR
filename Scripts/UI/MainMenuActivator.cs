@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IControlHaptics, IUsesHandedRayOrigin
 	{
 		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
-		static readonly float kAlternateLocationOffset = 0.06f;
+		static readonly float k_AlternateLocationOffset = 0.06f;
 
 		public Transform alternateMenuOrigin
 		{
@@ -25,11 +25,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				transform.localRotation = Quaternion.identity;
 				transform.localScale = Vector3.one;
 
-				m_OriginalActivatorIconLocalScale = m_Icon.localScale;
-				m_OriginalActivatorIconLocalPosition = m_Icon.localPosition;
+				var iconTransform = m_Icon.transform;
+				m_OriginalActivatorIconLocalScale = iconTransform.localScale;
+				m_OriginalActivatorIconLocalPosition = iconTransform.localPosition;
 				m_HighlightedActivatorIconLocalScale = m_HighlightedPRS.localScale;
 				m_HighlightedActivatorIconLocalPosition = m_HighlightedPRS.localPosition;
-				m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.back * kAlternateLocationOffset;
+				m_AlternateActivatorLocalPosition = m_OriginalActivatorLocalPosition + Vector3.back * k_AlternateLocationOffset;
 			}
 		}
 		Transform m_AlternateMenuOrigin;
@@ -52,13 +53,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_ActivatorButtonMoveAway;
 
 		[SerializeField]
-		Transform m_Icon;
+		Renderer m_Icon;
+
+		[SerializeField]
+		Renderer m_Base;
 
 		[SerializeField]
 		Transform m_HighlightedPRS;
 
 		[SerializeField]
 		HapticPulse m_HoverPulse;
+
+		[SerializeField]
+		Material m_DisabledIconMaterial;
+
+		[SerializeField]
+		Material m_DisabledBaseMaterial;
 
 		Vector3 m_OriginalActivatorIconLocalScale;
 		Vector3 m_OriginalActivatorIconLocalPosition;
@@ -68,15 +78,40 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_ActivatorMoveCoroutine;
 		Vector3 m_AlternateActivatorLocalPosition;
 
+		bool m_Disabled;
+		Material m_IconMaterial;
+		Material m_BaseMaterial;
+
 		public Transform rayOrigin { private get; set; }
 		public Transform menuOrigin { private get; set; }
 		public Node? node { get; set; }
 
 		public event Action<Transform, Transform> selected;
 
+		public bool disabled
+		{
+			get { return m_Disabled; }
+			set
+			{
+				if (value != m_Disabled)
+				{
+					m_Icon.sharedMaterial = value ? m_DisabledIconMaterial : m_IconMaterial;
+					m_Base.sharedMaterial = value ? m_DisabledBaseMaterial : m_BaseMaterial;
+				}
+
+				m_Disabled = value;
+			}
+		}
+
+		void Awake()
+		{
+			m_IconMaterial = m_Icon.sharedMaterial;
+			m_BaseMaterial = m_Base.sharedMaterial;
+		}
+
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			if (eventData.used)
+			if (eventData.used || m_Disabled)
 				return;
 
 			if (m_HighlightCoroutine != null)
@@ -109,8 +144,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator Highlight(bool transitionIn = true)
 		{
 			var amount = 0f;
-			var currentScale = m_Icon.localScale;
-			var currentPosition = m_Icon.localPosition;
+			var iconTransform = m_Icon.transform;
+			var currentScale = iconTransform.localScale;
+			var currentPosition = iconTransform.localPosition;
 			var targetScale = transitionIn == true ? m_HighlightedActivatorIconLocalScale : m_OriginalActivatorIconLocalScale;
 			var targetLocalPosition = transitionIn == true ? m_HighlightedActivatorIconLocalPosition : m_OriginalActivatorIconLocalPosition;
 			var speed = (currentScale.x + 0.5f / targetScale.x) * 4; // perform faster is returning to original position
@@ -118,13 +154,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			while (amount < 1f)
 			{
 				amount += Time.deltaTime * speed;
-				m_Icon.localScale = Vector3.Lerp(currentScale, targetScale,  Mathf.SmoothStep(0f, 1f, amount));
-				m_Icon.localPosition = Vector3.Lerp(currentPosition, targetLocalPosition,  Mathf.SmoothStep(0f, 1f, amount));
+				iconTransform.localScale = Vector3.Lerp(currentScale, targetScale,  Mathf.SmoothStep(0f, 1f, amount));
+				iconTransform.localPosition = Vector3.Lerp(currentPosition, targetLocalPosition,  Mathf.SmoothStep(0f, 1f, amount));
 				yield return null;
 			}
 
-			m_Icon.localScale = targetScale;
-			m_Icon.localPosition = targetLocalPosition;
+			iconTransform.localScale = targetScale;
+			iconTransform.localPosition = targetLocalPosition;
 		}
 
 		IEnumerator AnimateMoveActivatorButton(bool moveAway = true)

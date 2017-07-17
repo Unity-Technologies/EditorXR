@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				Temporary = OverUI | OverWorkspace | HasDirectSelection
 			}
 
-			const float k_MenuHideMargin = 0.8f;
+			const float k_MenuHideMargin = 0.075f;
 			const float k_TwoHandHideDistance = 0.25f;
 
 			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
@@ -223,6 +223,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						mainMenu.visible = true;
 					}
 
+					deviceData.mainMenuActivator.disabled = (mainMenuHideFlags & MenuHideFlags.Temporary) != 0;
+
 					var customMenu = deviceData.customMenu;
 					if (customMenu != null)
 						customMenu.visible = deviceData.menuHideFlags[customMenu] == 0;
@@ -250,17 +252,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin);
 			}
 
-			internal static bool OnHover(MultipleRayInputModule.RaycastSource source)
+			internal static bool IsValidHover(MultipleRayInputModule.RaycastSource source)
 			{
 				var go = source.draggedObject;
 				if (!go)
 					go = source.hoveredObject;
 
 				if (go == null)
-					return false;
+					return true;
 
 				if (go == evr.gameObject)
-					return false;
+					return true;
 
 				var eventData = source.eventData;
 				var rayOrigin = eventData.rayOrigin;
@@ -283,9 +285,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						return true;
 					}
+
+					return (deviceData.menuHideFlags[deviceData.mainMenu] & MenuHideFlags.Hidden) != 0;
 				}
 
-				return false;
+				return true;
 			}
 
 			internal static void UpdateAlternateMenuOnSelectionChanged(Transform rayOrigin)
@@ -322,6 +326,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal static void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
 			{
+				if (evr.m_DeviceData.Any(deviceData => deviceData.rayOrigin == rayOrigin && deviceData.mainMenuActivator.disabled))
+					return;
+
 				foreach (var deviceData in evr.m_DeviceData)
 				{
 					var mainMenu = deviceData.mainMenu;
