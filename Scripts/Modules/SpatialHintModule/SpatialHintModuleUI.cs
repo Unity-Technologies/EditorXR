@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class SpatialHintModuleUI : MonoBehaviour, IUsesViewerScale
+	public class SpatialHintModuleUI : MonoBehaviour, IUsesViewerScale, IControlHaptics
 	{
 		readonly Color k_PrimaryArrowColor = Color.white;
 
@@ -18,10 +18,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Transform m_ScrollVisualsDragTargetArrow;
 
 		[SerializeField]
-		HintIcon[] m_ScrollHintArrows;
+		HintLine m_ScrollHintLine;
 
 		[SerializeField]
-		HintLine m_ScrollHintLine;
+		HintIcon[] m_ScrollHintArrows;
 
 		//[SerializeField]
 		//CanvasGroup m_HintArrowsCanvasGroup; // TODO: add back in later
@@ -269,7 +269,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				var lineRendererPositions = new Vector3[] { m_ScrollVisualsTransform.position, m_ScrollVisualsDragTargetArrow.position };
 				m_ScrollHintLine.Positions = lineRendererPositions;
-				m_ScrollHintLine.LineWidth = shapedDuration;
+				m_ScrollHintLine.LineWidth = shapedDuration * this.GetViewerScale();
 
 				yield return null;
 			}
@@ -294,7 +294,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 0f, shapedDuration);
 				//m_Icon.color = Color.Lerp(currentColor, m_HiddenColor, currentDuration);
 				currentDuration += Time.unscaledDeltaTime * 3.5f;
-				m_ScrollHintLine.LineWidth = 1 - shapedDuration;
+				m_ScrollHintLine.LineWidth = (1 - shapedDuration) * this.GetViewerScale();
 				yield return null;
 			}
 
