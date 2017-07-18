@@ -359,6 +359,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (altMenuInput != null && altMenu.visible)
 					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
 
+				var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+				var pinnedToolsMenuInput = pinnedToolsMenu as IProcessInput;
+				if (pinnedToolsMenuInput != null)
+					pinnedToolsMenuInput.ProcessInput(deviceData.pinnedToolsMenuInput, consumeControl);
+
 				foreach (var toolData in deviceData.toolData)
 				{
 					var process = toolData.tool as IProcessInput;
@@ -366,11 +371,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						&& processedInputs.Add(process)) // Only process inputs for an instance of a tool once (e.g. two-handed tools)
 						process.ProcessInput(toolData.input, consumeControl);
 				}
-
-				var pinnedToolsMenu = deviceData.pinnedToolsMenu;
-				var pinnedToolsMenuInput = pinnedToolsMenu as IProcessInput;
-				if (pinnedToolsMenuInput != null)
-					pinnedToolsMenuInput.ProcessInput(deviceData.pinnedToolsMenuInput, consumeControl);
 			}
 		}
 
