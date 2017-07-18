@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (currentLocalScale == k_HiddenScale)
 			{
 				// Only perform delay if fully hidden; otherwise resume showing
-				targetDuration = Random.Range(0.25f, 0.35f); // Set an initial random wait duration
+				targetDuration = Random.Range(0.125f, 0.175f); // Set an initial random wait duration
 				while (currentDuration < targetDuration)
 				{
 					currentDuration += Time.unscaledDeltaTime;
@@ -85,9 +85,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			while (currentDuration < targetDuration)
 			{
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / targetDuration);
+				shapedDuration = Mathf.Pow(shapedDuration, 4);
 				m_IconTransform.localScale = Vector3.Lerp(currentLocalScale, m_VisibleLocalScale, shapedDuration);
 				m_Icon.color = Color.Lerp(currentColor, m_VisibleColor, shapedDuration);
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.unscaledDeltaTime * 1.5f;
 				yield return null;
 			}
 
@@ -97,7 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator AnimateHide()
 		{
 			var currentDuration = 0f;
-			var targetDuration = Random.Range(0.125f, 0.25f); // Set an initial random wait duration
+			var targetDuration = Random.Range(0.125f, 0.2f); // Set an initial random wait duration
 			var currentLocalScale = m_IconTransform.localScale;
 			var currentColor = m_Icon.color;
 			while (currentDuration < targetDuration)
