@@ -207,7 +207,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (buttonCount <= k_ActiveToolOrderPosition + 1)
 				return;
 
-			const float kAutoHideDuration = 1f;
+			const float kAutoHideDuration = 10f;
 			const float kAllowToggleDuration = 0.25f;
 			var pinnedToolInput = (PinnedToolslMenuInput) input;
 			/*
@@ -232,6 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (allowSpatialScrollBeforeThisTime != null && spatialDirection == null && Time.realtimeSinceStartup > allowSpatialScrollBeforeThisTime.Value)
 			{
 				// Hide if no direction as been defined after a given duration
+				Debug.LogWarning("Perform an increasing visual presence of visuals as time progresses, and the drag threshold hasn't been met.");
 				m_PinnedToolsMenuUI.allButtonsVisible = false;
 				allowSpatialScrollBeforeThisTime = null;
 				m_PinnedToolsMenuUI.spatialScrollVisualsVisible = false;
