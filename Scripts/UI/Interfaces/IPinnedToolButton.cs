@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEngine;
-using UnityEditor.Experimental.EditorVR.Helpers;
 
 namespace UnityEditor.Experimental.EditorVR
 {

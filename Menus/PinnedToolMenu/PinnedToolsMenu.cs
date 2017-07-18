@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics, IUsesViewerScale, IControlSpatialHinting
+	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics, IUsesViewerScale, IControlSpatialHinting, ISetDefaultRayVisibility
 	{
 		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
@@ -113,6 +113,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void Awake()
 		{
 			createPinnedToolButton = CreatePinnedToolButton;
+		}
+
+		void OnDestroy()
+		{
+			this.SetDefaultRayVisibility(rayOrigin, true);
 		}
 
 		void CreatePinnedToolsUI()
@@ -221,6 +226,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (pinnedToolInput.select.wasJustPressed)
 				Debug.LogError("<color=black>SELECT pressed in PinnedToolButton</color>");
 
+			if (pinnedToolInput.cancel.wasJustPressed)
+				Debug.LogError("CANCELLING SPATIAL SELECTION!!!!");
+
 			if (allowSpatialScrollBeforeThisTime != null && spatialDirection == null && Time.realtimeSinceStartup > allowSpatialScrollBeforeThisTime.Value)
 			{
 				// Hide if no direction as been defined after a given duration
@@ -232,6 +240,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (pinnedToolInput.show.wasJustPressed)
 			{
+				this.SetDefaultRayVisibility(rayOrigin, false);
+				this.LockRay(rayOrigin, this);
 				//consumeControl(pinnedToolInput.show);
 				//m_PinnedToolsMenuUI.allButtonsVisible = true;
 				m_SpatialScrollStartPosition = m_AlternateMenuOrigin.position;
@@ -306,6 +316,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_PinnedToolsMenuUI.SelectNextExistingToolButton();
 					OnButtonClick();
 				}
+
+				this.SetDefaultRayVisibility(rayOrigin, true);
+				this.UnlockRay(rayOrigin, this);
 			}
 
 			// cache current position for delta comparison on next frame for fine tuned scrolling with low velocity
