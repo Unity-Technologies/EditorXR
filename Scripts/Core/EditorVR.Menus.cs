@@ -37,6 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			const float k_MenuHideMargin = 0.075f;
 			const float k_TwoHandHideDistance = 0.25f;
+			const int k_PossibleOverlaps = 16;
 
 			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
 			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
@@ -44,6 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
+			readonly Collider[] m_WorkspaceOverlaps = new Collider[k_PossibleOverlaps];
 
 			public Menus()
 			{
@@ -135,15 +137,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						menuHideFlags[customMenu] |= MenuHideFlags.OtherMenu;
 
 					var hoveringWorkspace = false;
-					var rayOrigin = deviceData.rayOrigin;
-					var rayOriginPosition = rayOrigin.position;
-					foreach (var workspace in evr.GetModule<WorkspaceModule>().workspaces)
+					var menuTransform = mainMenu.menuContent.transform;
+					var menuBounds = mainMenu.localBounds;
+					var menuRotation = menuTransform.rotation;
+					var center = menuTransform.position + menuRotation * menuBounds.center;
+					Array.Clear(m_WorkspaceOverlaps, 0, m_WorkspaceOverlaps.Length);
+					if (Physics.OverlapBoxNonAlloc(center, menuBounds.extents, m_WorkspaceOverlaps, menuRotation) > 0)
 					{
-						var workspaceTransform = workspace.transform;
-						var localPosition = workspaceTransform.InverseTransformPoint(rayOriginPosition);
-						var localPointerPosition = workspaceTransform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
-						if (workspace.outerBounds.Contains(localPosition) || workspace.outerBounds.Contains(localPointerPosition))
-							hoveringWorkspace = true;
+						foreach (var overlap in m_WorkspaceOverlaps)
+						{
+							if (overlap && overlap.GetComponent<IWorkspace>() != null)
+								hoveringWorkspace = true;
+						}
 					}
 
 					var menus = menuHideFlags.Keys.ToList();
@@ -154,6 +159,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							menuHideFlags[menu] |= MenuHideFlags.OverWorkspace;
 					}
 
+					var rayOrigin = deviceData.rayOrigin;
+					var rayOriginPosition = rayOrigin.position;
 					var heldObjects = directSelection.GetHeldObjects(rayOrigin);
 					var hasDirectSelection = directSelection != null && heldObjects != null && heldObjects.Count > 0;
 					if (hasDirectSelection)
@@ -207,7 +214,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					var mainMenu = deviceData.mainMenu;
 					var mainMenuHideFlags = deviceData.menuHideFlags[mainMenu];
-					if (mainMenuHideFlags != 0)
+					if (mainMenuHideFlags != 0 && !mainMenu.hovering)
 					{
 						if ((mainMenuHideFlags & MenuHideFlags.Hidden) != 0)
 						{

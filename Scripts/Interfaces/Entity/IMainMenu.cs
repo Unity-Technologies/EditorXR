@@ -36,6 +36,16 @@ namespace UnityEditor.Experimental.EditorVR
 		Transform targetRayOrigin { set; }
 
 		/// <summary>
+		/// The local bounds of this menu
+		/// </summary>
+		Bounds localBounds { get; }
+
+		/// <summary>
+		/// Is the UI pointer hovering over the menu?
+		/// </summary>
+		bool hovering { get; }
+
+		/// <summary>
 		/// Send a haptic pulse indicating the menu visibility has changed
 		/// </summary>
 		void SendVisibilityPulse();

@@ -543,6 +543,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e42a33a060806cc4d9f35476fbc32b84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_MenuHeight: 0.277
   m_ButtonTemplatePrefab: {fileID: 114000012845136458, guid: 489a926cc8991484cbc6c611717af0d2,
     type: 2}
   m_MenuFaceContainers:
@@ -555,9 +556,6 @@ MonoBehaviour:
   m_MenuFaceRotationOrigin: {fileID: 4000012948932736}
   m_MenuFrameRenderer: {fileID: 137000013719920994}
   m_AlternateMenu: {fileID: 4000011216484522}
-  m_RotatePulse: {fileID: 11400000, guid: f5f56317312943d4da218b9b2e6ea9d0, type: 2}
-  m_ShowPulse: {fileID: 11400000, guid: 7c69a56582b55ec41b36b49c44a42905, type: 2}
-  m_HidePulse: {fileID: 11400000, guid: 29832200cc7e1744b9e98febd6d30db8, type: 2}
 --- !u!137 &137000013719920994
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

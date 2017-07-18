@@ -4,13 +4,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IConnectInterfaces
+	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IConnectInterfaces, IRayEnterHandler, IRayExitHandler
 	{
 		public class ButtonData
 		{
@@ -38,6 +38,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			TransitioningIn,
 			TransitioningOut
 		}
+
+		[SerializeField]
+		float m_MenuHeight = 0.2f;
 
 		[SerializeField]
 		MainMenuButton m_ButtonTemplatePrefab;
@@ -94,13 +97,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_FrameRevealCoroutine;
 		int m_Direction;
-		float m_MenuHeight;
 
 		Transform[] m_MenuFaceContentTransforms;
 		Vector3[] m_MenuFaceContentOriginalLocalPositions;
 		Vector3[] m_MenuFaceContentOffsetLocalPositions;
 		Vector3 m_MenuFaceContentOriginalLocalScale;
 		Vector3 m_MenuFaceContentHiddenLocalScale;
+
+		Bounds m_LocalBounds;
+
+		bool m_Hovering;
 
 		readonly Dictionary<string, List<GameObject>> m_FaceSubmenus = new Dictionary<string, List<GameObject>>();
 
@@ -176,10 +182,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		float currentRotation
-		{
-			get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; }
-		}
+		float currentRotation { get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; } }
+
+		public Bounds localBounds { get { return m_LocalBounds; } }
+
+		public bool hovering { get { return m_Hovering; } }
 
 		public event Action<Transform> buttonHovered;
 		public event Action<Transform> buttonClicked;
@@ -188,6 +195,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			m_MenuFacesMaterial = MaterialUtils.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
 			m_MenuFacesColor = m_MenuFacesMaterial.color;
+
+			m_LocalBounds = ObjectUtils.GetBounds(transform);
 		}
 
 		public void Setup()
@@ -215,9 +224,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_MenuFaceContentOriginalLocalScale = m_MenuFaceContentTransforms[0].localScale;
 			m_MenuFaceContentHiddenLocalScale = new Vector3(0f, m_MenuFaceContentOriginalLocalScale.y * 0.5f, m_MenuFaceContentOriginalLocalScale.z);
-
-			var bounds = ObjectUtils.GetBounds(gameObject.transform);
-			m_MenuHeight = bounds.size.y;
 
 			transform.localScale = Vector3.zero;
 			m_AlternateMenu.localScale = Vector3.zero;
@@ -621,6 +627,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (buttonClicked != null)
 				buttonClicked(rayOrigin);
+		}
+
+		public void OnRayEnter(RayEventData eventData)
+		{
+			m_Hovering = true;
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			m_Hovering = false;
 		}
 	}
 }

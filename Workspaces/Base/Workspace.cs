@@ -42,6 +42,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		HapticPulse m_MovePulse;
 
 		Bounds m_ContentBounds;
+		BoxCollider m_OuterCollider;
+		BoxCollider m_FrameCollider;
 
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ResetSizeCoroutine;
@@ -159,6 +161,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
+			m_OuterCollider = gameObject.AddComponent<BoxCollider>();
+			m_OuterCollider.isTrigger = true;
+			m_FrameCollider = gameObject.AddComponent<BoxCollider>();
+			m_FrameCollider.isTrigger = true;
+
 			var startingBounds = m_CustomStartingBounds ?? DefaultBounds;
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
 			m_ContentBounds = new Bounds(Vector3.up * startingBounds.y * 0.5f, startingBounds); // If custom bounds have been set, use them as the initial bounds
@@ -202,6 +209,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void UpdateBounds()
 		{
 			m_WorkspaceUI.bounds = contentBounds;
+
+			var outerBounds = this.outerBounds;
+			m_OuterCollider.size = outerBounds.size;
+			m_OuterCollider.center = outerBounds.center;
 		}
 
 		protected virtual void OnDestroy()
@@ -281,6 +292,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public virtual void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);
+
+			var frameBounds = m_WorkspaceUI.adjustedBounds;
+			m_FrameCollider.size = frameBounds.size;
+			m_FrameCollider.center = frameBounds.center;
 		}
 
 		protected void OnButtonClicked(Transform rayOrigin)

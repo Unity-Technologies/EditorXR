@@ -407,6 +407,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
+		public Bounds adjustedBounds
+		{
+			get
+			{
+				var adjustedBounds = bounds;
+				adjustedBounds.size += Vector3.forward * m_FrontZOffset;
+				adjustedBounds.center += Vector3.back * m_FrontZOffset * 0.5f;
+				return adjustedBounds;
+			}
+		}
+
 		void Awake()
 		{
 			foreach (var icon in m_ResizeIcons)
@@ -668,9 +679,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				return;
 			}
 
-			var adjustedBounds = bounds;
-			adjustedBounds.size += Vector3.forward * m_FrontZOffset;
-			adjustedBounds.center += Vector3.back * m_FrontZOffset * 0.5f;
 			Transform dragRayOrigin = null;
 			Image dragResizeIcon = null;
 			var resizing = false;
@@ -746,6 +754,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				iconTransform.localPosition = iconPosition;
 			}
 
+			var adjustedBounds = this.adjustedBounds;
 			if (!dragRayOrigin)
 			{
 				var leftPosition = transform.InverseTransformPoint(leftRayOrigin.position);
