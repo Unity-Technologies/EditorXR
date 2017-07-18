@@ -35,8 +35,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					case SpatialHintStateFlags.Hidden:
 						Debug.LogError("<color=orange>SpatialHintState : </color>Hidden");
-						m_SpatialHintModuleUI.preScrollVisualsVisible = false;
-						m_SpatialHintModuleUI.primaryArrowsVisible = false;
+						//m_SpatialHintModuleUI.preScrollVisualsVisible = false;
+						m_SpatialHintModuleUI.preScrollArrowsVisible = false;
 						m_SpatialHintModuleUI.secondaryArrowsVisible = false;
 						controllingRayOrigin = null;
 						//spatialHintPrimaryArrowsVisible = false;
@@ -44,12 +44,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						break;
 					case SpatialHintStateFlags.PreDragReveal:
 						Debug.LogError("<color=orange>SpatialHintState : </color>Pre drag reveal state");
-						m_SpatialHintModuleUI.preScrollVisualsVisible = true;
-						m_SpatialHintModuleUI.primaryArrowsVisible = true;
+						//m_SpatialHintModuleUI.preScrollVisualsVisible = true;
+						m_SpatialHintModuleUI.preScrollArrowsVisible = true;
 						m_SpatialHintModuleUI.secondaryArrowsVisible = true;
 						break;
 					case SpatialHintStateFlags.Scrolling:
-						m_SpatialHintModuleUI.preScrollVisualsVisible = false;
+						//m_SpatialHintModuleUI.preScrollVisualsVisible = false;
+						m_SpatialHintModuleUI.preScrollArrowsVisible = false;
 						m_SpatialHintModuleUI.scrollVisualsVisible = true;
 						Debug.LogError("<color=orange>SpatialHintState : </color>Scrolling");
 						break;
@@ -140,6 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			set
 			{
+				Debug.LogError("Spatial Rotation target being set to : " + value);
 				//if (value == Vector3.zero)
 					//state = SpatialHintStateFlags.Hidden; // Hide the non-spatial-scrolling visuals
 

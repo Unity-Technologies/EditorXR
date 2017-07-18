@@ -988,7 +988,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1477005998831424}
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0.7071068, w: 0}
+  m_LocalRotation: {x: -0, y: 0.7071068, z: 0.7071068, w: 0}
   m_LocalPosition: {x: 0, y: 0, z: 0.35741758}
   m_LocalScale: {x: 1.0000002, y: 1.0000002, z: 1}
   m_Children:
@@ -1072,8 +1072,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1278946252185714}
-  m_LocalRotation: {x: -0.27060428, y: -0.27060556, z: -0.0000000074505797, w: 0.9238756}
-  m_LocalPosition: {x: -0.05239579, y: -0.3051027, z: 0.17873496}
+  m_LocalRotation: {x: -0.27060425, y: -0.27060556, z: -0, w: 0.9238756}
+  m_LocalPosition: {x: -0.052380234, y: -0.30514538, z: 0.17879039}
   m_LocalScale: {x: 1.0000012, y: 1.0000001, z: 1.0000013}
   m_Children:
   - {fileID: 224935697657075864}
@@ -1124,7 +1124,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4542884266341674
 Transform:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1789767321393858}
@@ -1468,8 +1468,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114066956829426356}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114004058444794040
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1484,8 +1487,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114817553842003248}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114006901110602492
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1529,6 +1535,9 @@ MonoBehaviour:
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
   m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114041376699156020
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1543,8 +1552,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114291859005184956}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114066956829426356
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1642,6 +1654,9 @@ MonoBehaviour:
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
   m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114201708188467934
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1656,8 +1671,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114974932015195176}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114261942396204950
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1669,7 +1687,7 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 3980a4724962e184695df6cbba6e11d8, type: 2}
+  m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.428}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
@@ -1728,6 +1746,9 @@ MonoBehaviour:
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
   m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114291859005184956
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1769,8 +1790,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114894859978596498}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114347973994711784
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1785,8 +1809,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114502893213131780}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114383021260469988
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1872,8 +1899,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114929323479965660}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114478667145759116
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1888,8 +1918,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114757945073081772}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114502893213131780
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1931,8 +1964,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114790131153619060}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114534977170210908
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1976,6 +2012,9 @@ MonoBehaviour:
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
   m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114549952638618038
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1990,8 +2029,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114403956001920920}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114595085207455294
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2005,9 +2047,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HideOnInitialize: 0
   m_Icon: {fileID: 114261942396204950}
-  m_VisibleColor: {r: 0, g: 0, b: 0, a: 0.42745098}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 1}
+  m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
+  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.5
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114602193729648712
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2022,8 +2067,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114719726697718162}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114647227679990130
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2038,8 +2086,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114006901110602492}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114650107410517210
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2083,6 +2134,9 @@ MonoBehaviour:
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
   m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114693150127021580
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2096,9 +2150,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_HideOnInitialize: 0
   m_Icon: {fileID: 114878598031735610}
-  m_VisibleColor: {r: 0, g: 0, b: 0, a: 0.42745098}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 1}
+  m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
+  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.5
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114699673652902324
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2167,8 +2224,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114889128424409716}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114728711746979180
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2318,8 +2378,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114992378279027252}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114873114538619666
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2336,6 +2399,9 @@ MonoBehaviour:
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
   m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114873812632177310
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2350,8 +2416,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114439371215997622}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114878598031735610
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2363,7 +2432,7 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 2100000, guid: 3980a4724962e184695df6cbba6e11d8, type: 2}
+  m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0.428}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
@@ -2381,7 +2450,7 @@ MonoBehaviour:
   m_FillOrigin: 2
 --- !u!114 &114885606894613528
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1789767321393858}
@@ -2647,8 +2716,11 @@ MonoBehaviour:
   m_HideOnInitialize: 1
   m_Icon: {fileID: 114106693815540416}
   m_VisibleColor: {r: 1, g: 1, b: 1, a: 1}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+  m_HiddenColor: {r: 0, g: 0, b: 0, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
+  m_ShowDuration: 0.125
+  m_HideDuration: 0.25
+  m_SlightlyRandomizeHideDuration: 1
 --- !u!114 &114973295192596792
 MonoBehaviour:
   m_ObjectHideFlags: 1

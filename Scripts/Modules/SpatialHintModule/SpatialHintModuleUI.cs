@@ -50,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		bool m_Visible;
 		bool m_PreScrollVisualsVisible;
-		bool m_PrimaryArrowsVisible;
+		bool m_PreScrollArrowsVisible;
 		bool m_SecondaryArrowsVisible;
 		Vector3 m_ScrollVisualsRotation;
 		Transform m_ScrollVisualsTransform;
@@ -95,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		/*
 		/// <summary>
 		/// Enables/disables the visual elements that should be shown when beginning to initiate a spatial selection action
 		/// This is only enabled before the enabling of the main select visuals
@@ -120,6 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 		}
+		*/
 
 		public bool scrollVisualsVisible
 		{
@@ -133,13 +135,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public bool primaryArrowsVisible
+		public bool preScrollArrowsVisible
 		{
-			get { return m_PrimaryArrowsVisible; }
+			get { return m_PreScrollArrowsVisible; }
 			set
 			{
-				m_PrimaryArrowsVisible = value;
-				if (m_PrimaryArrowsVisible)
+				m_PreScrollArrowsVisible = value;
+				if (m_PreScrollArrowsVisible)
 				{
 					foreach (var arrow in m_PrimaryDirectionalHintArrows)
 					{
@@ -164,6 +166,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_SecondaryArrowsVisible = value;
 
 				foreach (var arrow in m_SecondaryDirectionalHintArrows)
+				{
+					arrow.visible = value;
+				}
+			}
+		}
+
+		bool scrollArrowsVisible
+		{
+			set
+			{
+				foreach (var arrow in m_ScrollHintArrows)
 				{
 					arrow.visible = value;
 				}
@@ -275,7 +288,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color> : viewscale is " + this.GetViewerScale());
 			// Display two arrows denoting the positive and negative directions allow for spatial scrolling, as defined by the drag vector
 			//m_ScrollVisualsGameObject.SetActive(true);
-			primaryArrowsVisible = false;
+			scrollArrowsVisible = true;
+			preScrollArrowsVisible = false;
 			secondaryArrowsVisible = false;
 			m_ScrollVisualsTransform.localScale = Vector3.one;
 			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, CameraUtils.GetMainCamera().transform.forward); // Scroll arrows should face/billboard the user.
@@ -317,6 +331,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			Debug.LogError("<color=red>HIDING SPATIAL SCROLL VISUALS</color>");
 			// Hide the scroll visuals
+			scrollArrowsVisible = false;
 
 			const float kTargetDuration = 1f;
 			var hiddenLocalScale = Vector3.zero;
