@@ -75,6 +75,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool m_Rotating;
 		bool m_Crawling;
+		float m_CrawlStartTime;
+		Vector3 m_ActualRayOriginStartPosition;
 		Vector3 m_RayOriginStartPosition;
 		Vector3 m_RayOriginStartForward;
 		Vector3 m_RayOriginStartRight;
@@ -299,22 +301,34 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			if (!m_LocomotionInput.forward.isHeld && !m_LocomotionInput.blink.isHeld && m_LocomotionInput.crawl.isHeld)
 			{
-				consumeControl(m_LocomotionInput.crawl);
+				//consumeControl(m_LocomotionInput.crawl);
 				// Also consume thumbstick axes to disable radial menu
-				consumeControl(m_LocomotionInput.horizontal);
-				consumeControl(m_LocomotionInput.vertical);
+				//consumeControl(m_LocomotionInput.horizontal);
+				//consumeControl(m_LocomotionInput.vertical);
 				if (!m_Crawling)
 				{
 					m_Crawling = true;
 					m_RigStartPosition = cameraRig.position;
 					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
+					m_ActualRayOriginStartPosition = m_RayOriginStartPosition;
+					m_CrawlStartTime = Time.time;
 
 					this.SetDefaultRayVisibility(rayOrigin, false);
 					this.LockRay(rayOrigin, this);
 				}
 
+
 				var localRayPosition = cameraRig.position - rayOrigin.position;
-				cameraRig.position = m_RigStartPosition + (localRayPosition - m_RayOriginStartPosition);
+				var delta = m_ActualRayOriginStartPosition - localRayPosition;
+				if (Time.time > m_CrawlStartTime + UIUtils.DoubleClickIntervalMax || delta.magnitude > 0.015f * this.GetViewerScale())
+				{
+					cameraRig.position = m_RigStartPosition + localRayPosition - m_RayOriginStartPosition;
+				}
+				else
+				{
+					m_RigStartPosition = cameraRig.position;
+					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
+				}
 
 				return true;
 			}
