@@ -1124,7 +1124,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4542884266341674
 Transform:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1789767321393858}
@@ -2381,7 +2381,7 @@ MonoBehaviour:
   m_FillOrigin: 2
 --- !u!114 &114885606894613528
 MonoBehaviour:
-  m_ObjectHideFlags: 1
+  m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1789767321393858}
@@ -2392,10 +2392,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ScrollVisualsCanvasGroup: {fileID: 225476474272170592}
   m_ScrollVisualsDragTargetArrow: {fileID: 4630278991888076}
+  m_ScrollHintLine: {fileID: 114383021260469988}
   m_ScrollHintArrows:
   - {fileID: 114693150127021580}
   - {fileID: 114595085207455294}
-  m_ScrollHintLine: {fileID: 114383021260469988}
+  m_ScrollBarDefineHapticPulse: {fileID: 11400000, guid: ab0ad30bb9a141c44a3beea4c62c510e,
+    type: 2}
   m_PrimaryDirectionalHintArrows:
   - {fileID: 114650385070507634}
   - {fileID: 114279174847565634}

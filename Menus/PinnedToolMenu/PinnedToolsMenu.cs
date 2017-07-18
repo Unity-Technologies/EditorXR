@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -235,7 +236,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				Debug.LogWarning("Perform an increasing visual presence of visuals as time progresses, and the drag threshold hasn't been met.");
 				m_PinnedToolsMenuUI.allButtonsVisible = false;
 				allowSpatialScrollBeforeThisTime = null;
-				m_PinnedToolsMenuUI.spatialScrollVisualsVisible = false;
+
+				this.SetSpatialHintControlObject(null); // Hide Spatial Hint Visuals
+
 				return;
 			}
 
@@ -249,6 +252,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				Debug.LogError("Start position : <color=green>" + m_SpatialScrollStartPosition + "</color>");
 				allowSpatialScrollBeforeThisTime = Time.realtimeSinceStartup + kAutoHideDuration;
 				allowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
+				this.SetSpatialHintControlObject(rayOrigin);
 				m_PinnedToolsMenuUI.beginningSpatialScrolling = true; // Triggers the display of the directional hint arrows
 
 				//Dont show if the user hasnt passed the threshold in the given duration
@@ -287,7 +291,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{
 					if (!m_PinnedToolsMenuUI.allButtonsVisible)
+					{
+						this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Scrolling);
 						m_PinnedToolsMenuUI.allButtonsVisible = true;
+					}
 
 					m_PinnedToolsMenuUI.HighlightSingleButtonWithoutMenu((int) (buttonCount * normalizedRepeatingPosition) + 1);
 					consumeControl(pinnedToolInput.show);
@@ -320,6 +327,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				this.SetDefaultRayVisibility(rayOrigin, true);
 				this.UnlockRay(rayOrigin, this);
+				this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
 			}
 
 			// cache current position for delta comparison on next frame for fine tuned scrolling with low velocity
@@ -386,6 +394,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnButtonClick()
 		{
 			this.Pulse(node, m_ButtonClickPulse);
+			this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
 		}
 
 		void OnButtonHover()

@@ -1,11 +1,12 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI
+	public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, IRayToNode
 	{
 		[Flags]
 		public enum SpatialHintStateFlags
@@ -19,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		SpatialHintModuleUI m_SpatialHintModuleUI;
 
 		SpatialHintStateFlags m_State;
+		Transform m_ControllingRayOrigin;
 
 		public SpatialHintStateFlags state
 		{
@@ -36,17 +38,47 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						m_SpatialHintModuleUI.preScrollVisualsVisible = false;
 						m_SpatialHintModuleUI.primaryArrowsVisible = false;
 						m_SpatialHintModuleUI.secondaryArrowsVisible = false;
+						controllingRayOrigin = null;
 						//spatialHintPrimaryArrowsVisible = false;
 						//spatialHintSecondaryArrowsVisible = false;
 						break;
 					case SpatialHintStateFlags.PreDragReveal:
 						Debug.LogError("<color=orange>SpatialHintState : </color>Pre drag reveal state");
-						m_SpatialHintModuleUI.preScrollVisualsVisible = true;;
+						m_SpatialHintModuleUI.preScrollVisualsVisible = true;
 						m_SpatialHintModuleUI.primaryArrowsVisible = true;
 						m_SpatialHintModuleUI.secondaryArrowsVisible = true;
 						break;
 					case SpatialHintStateFlags.Scrolling:
+						m_SpatialHintModuleUI.preScrollVisualsVisible = false;
+						m_SpatialHintModuleUI.scrollVisualsVisible = true;
+						Debug.LogError("<color=orange>SpatialHintState : </color>Scrolling");
 						break;
+				}
+			}
+		}
+
+		private Transform controllingRayOrigin
+		{
+			get
+			{
+				return m_ControllingRayOrigin;
+			}
+
+			set
+			{
+				if (value == m_ControllingRayOrigin)
+					return;
+
+				m_ControllingRayOrigin = value;
+				if (m_ControllingRayOrigin == null)
+				{
+					m_SpatialHintModuleUI.controllingNode = null;
+				}
+				else
+				{
+					state = SpatialHintModule.SpatialHintStateFlags.PreDragReveal;
+					m_SpatialHintModuleUI.controllingNode = this.RequestNodeFromRayOrigin(m_ControllingRayOrigin);
+					//spatialHintScrollVisualsRotation = Vector3.zero;
 				}
 			}
 		}
@@ -105,10 +137,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Vector3 spatialHintScrollVisualsRotation
 		{
 			get { return m_SpatialHintModuleUI.scrollVisualsRotation; }
+
 			set
 			{
-				if (value == Vector3.zero)
-					state = SpatialHintStateFlags.Hidden; // Hide the non-spatial-scrolling visuals
+				//if (value == Vector3.zero)
+					//state = SpatialHintStateFlags.Hidden; // Hide the non-spatial-scrolling visuals
 
 				m_SpatialHintModuleUI.scrollVisualsRotation = value;
 			}
@@ -166,9 +199,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			spatialHintContentContainer.rotation = orig;
 		}
 
-		public void SetDragThresholdTriggerPosition(Vector3 position)
+		public void SetDragThresholdTriggerPosition (Vector3 position)
 		{
 			m_SpatialHintModuleUI.scrollVisualsDragThresholdTriggerPosition = position;
+		}
+
+		public void SetSpatialHintControlObject(Transform controlObject)
+		{
+			controllingRayOrigin = controlObject;
 		}
 	}
 }

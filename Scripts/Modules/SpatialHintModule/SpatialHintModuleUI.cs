@@ -1,12 +1,13 @@
 ﻿#if UNITY_EDITOR
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class SpatialHintModuleUI : MonoBehaviour, IUsesViewerScale, IControlHaptics
+	public class SpatialHintModuleUI : MonoBehaviour, IUsesViewerScale, IControlHaptics, IRayToNode
 	{
 		readonly Color k_PrimaryArrowColor = Color.white;
 
@@ -22,6 +23,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		HintIcon[] m_ScrollHintArrows;
+
+		[SerializeField]
+		HapticPulse m_ScrollBarDefineHapticPulse; // Haptic pulse performed when dragging out the spatial scroll bar
 
 		//[SerializeField]
 		//CanvasGroup m_HintArrowsCanvasGroup; // TODO: add back in later
@@ -102,8 +106,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				m_PreScrollVisualsVisible = value;
 
-				transform.localScale = Vector3.one * this.GetViewerScale();
-
 				this.RestartCoroutine(ref m_VisibilityCoroutine, m_PreScrollVisualsVisible ? AnimateShow() : AnimateHide());
 
 				var semiTransparentWhite = new Color(1f, 1f, 1f, 0.5f);
@@ -115,6 +117,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				foreach (var arrow in m_SecondaryDirectionalHintArrows)
 				{
 					arrow.visible = m_PreScrollVisualsVisible;
+				}
+			}
+		}
+
+		public bool scrollVisualsVisible
+		{
+			set
+			{
+				if (value)
+				{
+					Debug.LogError("scrollVisualsRotation was set to a Vec3 non-zero value' beginning showing of scroll visuals : " + m_ScrollVisualsRotation);
+					this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, ShowScrollVisuals());
 				}
 			}
 		}
@@ -172,14 +186,33 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					return;
 
 				m_ScrollVisualsRotation = value;
-				if (m_ScrollVisualsRotation != Vector3.zero)
+			}
+		}
+
+		Node? m_ControllingNode;
+		public Node? controllingNode
+		{
+			get
+			{
+				return m_ControllingNode;
+			}
+
+			set
+			{
+				//if (m_ControllingNode == value.Value)
+					//return;
+
+				m_ControllingNode = value;
+
+				if (m_ControllingNode != null)
 				{
-					Debug.LogError("scrollVisualsRotation was set to a Vec3 non-zero value' beginning showing of scroll visuals : " + m_ScrollVisualsRotation);
-					this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, ShowScrollVisuals());
+					Debug.LogError("Setting Spatial Hinting Control node to : " + m_ControllingNode);
 				}
 				else
 				{
+					scrollVisualsRotation = Vector3.zero;
 					this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, HideScrollVisuals());
+					scrollVisualsVisible = false;
 				}
 			}
 		}
@@ -200,13 +233,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			//m_SpatialHintUI.enablePreviewVisuals = true;
 
+			transform.localScale = Vector3.zero;
 			var currentScale = transform.localScale;
 			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
 			var targetScale = Vector3.one * this.GetViewerScale();
 			while (timeElapsed < 1f)
 			{
-				timeElapsed += Time.unscaledDeltaTime * 5f;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(timeElapsed), 2);
+				timeElapsed += Time.unscaledDeltaTime * 3f;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(timeElapsed), 6);
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
 				yield return null;
 			}
@@ -270,6 +304,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var lineRendererPositions = new Vector3[] { m_ScrollVisualsTransform.position, m_ScrollVisualsDragTargetArrow.position };
 				m_ScrollHintLine.Positions = lineRendererPositions;
 				m_ScrollHintLine.LineWidth = shapedDuration * this.GetViewerScale();
+
+				this.Pulse(controllingNode, m_ScrollBarDefineHapticPulse, 1f, 1f + 8 * currentDuration);
 
 				yield return null;
 			}

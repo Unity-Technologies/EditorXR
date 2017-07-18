@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Tools;
@@ -11,7 +12,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode, IInstantiateUI, IConnectInterfaces, IControlSpatialHinting
+	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode, IInstantiateUI, IConnectInterfaces, IControlSpatialHinting, IControlHaptics
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -101,15 +102,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public bool spatialScrollVisualsVisible
-		{
-			set
-			{
-				if (!value)
-					this.SetSpatialHintRotationTarget(Vector3.zero);
-			}
-		}
-
 		public bool beginningSpatialScrolling
 		{
 			set
@@ -120,10 +112,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_SpatialDragDistance = 0f;
 					var currentRotation = transform.rotation.eulerAngles;
 					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f); // Quaternion.AngleAxis(transform.forward.y, Vector3.up);
-					//spatialHintScrollVisualsRotation = Vector3.zero;
-					this.SetSpatialHintRotationTarget(Vector3.zero);
-					this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.PreDragReveal);
-					//SpatialHintState = SpatialHintModule.SpatialHintStateFlags.PreDragReveal;
 					m_HintContentWorldPosition = transform.position;
 					this.SetSpatialHintPosition(m_HintContentWorldPosition);
 					//spatialHintContentContainer.position = m_HintContentWorldPosition;
@@ -481,7 +469,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					allButtonsVisible = false;
 					//SpatialHintState = SpatialHintModule.SpatialHintStateFlags.Hidden;
-					this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
 
 					return;
 				}

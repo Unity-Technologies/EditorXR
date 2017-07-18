@@ -83,11 +83,22 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static SetSpatialHintDragThresholdTriggerPositionDelegate setSpatialHintDragThresholdTriggerPosition { get; set; }
 
 		/// <summary>
-		/// Visually pulse the spatial-scroll arrows; the arrows shown when performing a spatiatil scroll
+		/// 
 		/// </summary>
 		public static void SetSpatialHintDragThresholdTriggerPosition(this IControlSpatialHinting obj, Vector3 position)
 		{
 			setSpatialHintDragThresholdTriggerPosition(position);
+		}
+
+		internal delegate void SetSpatialHintControlObjectDelegate(Transform controlObject);
+		internal static SetSpatialHintControlObjectDelegate setSpatialHintControlObject { get; set; }
+
+		/// <summary>
+		/// Set reference to the object, RayOrigin, controlling the Spatial Hint visuals
+		/// </summary>
+		public static void SetSpatialHintControlObject(this IControlSpatialHinting obj, Transform controlObject)
+		{
+			setSpatialHintControlObject(controlObject);
 		}
 	}
 }
