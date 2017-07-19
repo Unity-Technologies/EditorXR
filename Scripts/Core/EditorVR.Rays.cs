@@ -40,7 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
 				IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
 
-				IUsesRayLockingMethods.lockRay = LockRay;
 				IUsesRayLockingMethods.unlockRay = UnlockRay;
 
 				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
@@ -111,12 +110,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var customMenu = deviceData.customMenu;
 				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
-					LockRay(rayOrigin, mainMenu);
-					SetDefaultRayVisibility(rayOrigin, mainMenu, false);
+					SetDefaultRayVisibility(rayOrigin, mainMenu, false, false);
 				}
 				else
 				{
-					SetDefaultRayVisibility(rayOrigin, mainMenu, true);
+					SetDefaultRayVisibility(rayOrigin, mainMenu, true, true);
 					UnlockRay(rayOrigin, mainMenu);
 				}
 			}
@@ -410,31 +408,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return dpr == null || dpr.rayVisible;
 			}
 
-			internal static void SetDefaultRayVisibility(Transform rayOrigin, object caller, bool visible, bool rayOnly = false)
+			internal static void SetDefaultRayVisibility(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
 			{
 				if (rayOrigin)
 				{
 					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 					if (dpr)
-					{
-						if (visible)
-							dpr.Show(caller, rayOnly);
-						else
-							dpr.Hide(caller, rayOnly);
-					}
+						dpr.SetVisibility(caller, rayVisible, coneVisible, priority);
 				}
 			}
 
-			internal static bool LockRay(Transform rayOrigin, object obj, int priority = 0)
+			internal static void UnlockRay(Transform rayOrigin, object obj)
 			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-				return dpr && dpr.LockRay(obj, priority);
-			}
-
-			internal static bool UnlockRay(Transform rayOrigin, object obj)
-			{
-				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-				return dpr && dpr.UnlockRay(obj);
+				if (dpr)
+					dpr.UnlockRay(obj);
 			}
 
 			internal void PreProcessRaycastSource(Transform rayOrigin)

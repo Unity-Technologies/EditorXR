@@ -6,17 +6,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class IntersectionTester : MonoBehaviour
 	{
 		[SerializeField]
-		private Transform[] m_RayTransforms;
+		Transform[] m_RayTransforms;
 
 		[SerializeField]
-		private bool m_ShowRays = false;
+		bool m_ShowRays;
+
+		bool m_Active = true;
+		Ray[] m_Rays;
+		int[] m_Triangles;
+		Vector3[] m_Vertices;
+		Renderer m_Renderer;
 
 		public bool active
 		{
 			get { return m_Active && gameObject.activeInHierarchy; }
 			set { m_Active = value; }
 		}
-		private bool m_Active = true;
 
 		public Ray[] rays
 		{
@@ -35,7 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				return m_Rays;
 			}
 		}
-		private Ray[] m_Rays;
 
 		public int[] triangles
 		{
@@ -43,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (m_Triangles == null)
 				{
-					var mf = GetComponent<MeshFilter>();
+					var mf = GetComponentInChildren<MeshFilter>();
 					var mesh = mf.sharedMesh;
 					m_Triangles = mesh.triangles;
 				}
@@ -51,7 +55,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				return m_Triangles;
 			}
 		}
-		private int[] m_Triangles;
 
 		public Vector3[] vertices
 		{
@@ -59,7 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (m_Vertices == null)
 				{
-					var mf = GetComponent<MeshFilter>();
+					var mf = GetComponentInChildren<MeshFilter>();
 					var mesh = mf.sharedMesh;
 					m_Vertices = mesh.vertices;
 				}
@@ -67,7 +70,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				return m_Vertices;
 			}
 		}
-		private Vector3[] m_Vertices;
 
 #if !UNITY_EDITOR
 #pragma warning disable 109
@@ -77,15 +79,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			get
 			{
 				if (!m_Renderer)
-					m_Renderer = GetComponent<Renderer>();
+					m_Renderer = GetComponentInChildren<Renderer>();
 				return m_Renderer;
 			}
 		}
-		private Renderer m_Renderer;
 
-		public Renderer grabbedObject { get; set; }
-
-		private void OnDrawGizmos()
+		void OnDrawGizmos()
 		{
 			if (m_ShowRays)
 			{

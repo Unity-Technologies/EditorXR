@@ -100,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					if (malletVisible)
 						this.LockRay(rayOrigin, this);
 
-					this.SetDefaultRayVisibility(rayOrigin, this, !malletVisible);
+					this.SetDefaultRayVisibility(rayOrigin, this, !malletVisible, !malletVisible);
 
 					if (!malletVisible)
 						this.UnlockRay(rayOrigin, this);

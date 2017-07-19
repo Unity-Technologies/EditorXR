@@ -299,7 +299,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			var rayOrigin = eventData.rayOrigin;
 			this.LockRay(rayOrigin, this);
-			this.SetDefaultRayVisibility(rayOrigin, this, false);
+			this.SetDefaultRayVisibility(rayOrigin, this, false, false);
 
 			var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 			var cloneItem = clone.GetComponent<AssetGridItem>();
@@ -349,7 +349,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
 			var rayOrigin = eventData.rayOrigin;
-			this.SetDefaultRayVisibility(rayOrigin, this, true);
+			this.SetDefaultRayVisibility(rayOrigin, this, true, true);
 			this.UnlockRay(rayOrigin, this);
 
 			if (!this.IsOverShoulder(eventData.rayOrigin))

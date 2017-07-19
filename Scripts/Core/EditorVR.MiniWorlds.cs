@@ -475,10 +475,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 
 					if (isContained && !wasContained)
-					{
-						Rays.LockRay(rayOrigin, this);
 						Rays.SetDefaultRayVisibility(rayOrigin, this, false, true);
-					}
 
 					if (!isContained && wasContained)
 					{

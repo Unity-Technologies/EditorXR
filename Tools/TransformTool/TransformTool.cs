@@ -20,6 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		const float k_DirectLazyFollowTranslate = 20f;
 		const float k_DirectLazyFollowRotate = 30f;
 
+		const int k_RayHidePriority = 1;
+
 		class GrabData
 		{
 			Vector3[] m_PositionOffsets;
@@ -336,7 +338,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var transformInput = transformTool.m_Input;
 
 					this.LockRay(directRayOrigin, this);
-					this.SetDefaultRayVisibility(directRayOrigin, this, false, true); // This will also unhighlight the object
+					this.SetDefaultRayVisibility(directRayOrigin, this, false, true, k_RayHidePriority); // This will also unhighlight the object
 
 					if (transformInput.select.wasJustPressed)
 					{
