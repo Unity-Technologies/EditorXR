@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class ISetDefaultRayVisibilityMethods
 	{
-		internal delegate void DefaultRayVisibilityDelegate(Transform rayOrigin, bool visible, bool rayOnly = false);
+		internal delegate void DefaultRayVisibilityDelegate(Transform rayOrigin, object caller, bool visible, bool rayOnly = false);
 
 		internal static DefaultRayVisibilityDelegate setDefaultRayVisibility { get; set; }
 
@@ -20,11 +20,12 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Show the default proxy ray/cone
 		/// </summary>
 		/// <param name="rayOrigin">The ray to hide or show</param>
+		/// <param name="caller">The object which has locked the ray</param>
 		/// <param name="visible">Show or hide</param>
 		/// <param name="rayOnly">An optional parameter to hide or show only the ray and not the cone</param>
-		public static void SetDefaultRayVisibility(this ISetDefaultRayVisibility customRay, Transform rayOrigin, bool visible, bool rayOnly = false)
+		public static void SetDefaultRayVisibility(this ISetDefaultRayVisibility customRay, Transform rayOrigin, object caller, bool visible, bool rayOnly = false)
 		{
-			setDefaultRayVisibility(rayOrigin, visible, rayOnly);
+			setDefaultRayVisibility(rayOrigin, caller, visible, rayOnly);
 		}
 	}
 }

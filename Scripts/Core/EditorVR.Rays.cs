@@ -111,13 +111,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var customMenu = deviceData.customMenu;
 				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
-					SetDefaultRayVisibility(rayOrigin, false);
 					LockRay(rayOrigin, mainMenu);
+					SetDefaultRayVisibility(rayOrigin, mainMenu, false);
 				}
 				else
 				{
+					SetDefaultRayVisibility(rayOrigin, mainMenu, true);
 					UnlockRay(rayOrigin, mainMenu);
-					SetDefaultRayVisibility(rayOrigin, true);
 				}
 			}
 
@@ -410,7 +410,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return dpr == null || dpr.rayVisible;
 			}
 
-			internal static void SetDefaultRayVisibility(Transform rayOrigin, bool visible, bool rayOnly = false)
+			internal static void SetDefaultRayVisibility(Transform rayOrigin, object caller, bool visible, bool rayOnly = false)
 			{
 				if (rayOrigin)
 				{
@@ -418,17 +418,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (dpr)
 					{
 						if (visible)
-							dpr.Show(rayOnly);
+							dpr.Show(caller, rayOnly);
 						else
-							dpr.Hide(rayOnly);
+							dpr.Hide(caller, rayOnly);
 					}
 				}
 			}
 
-			internal static bool LockRay(Transform rayOrigin, object obj)
+			internal static bool LockRay(Transform rayOrigin, object obj, int priority = 0)
 			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-				return dpr && dpr.LockRay(obj);
+				return dpr && dpr.LockRay(obj, priority);
 			}
 
 			internal static bool UnlockRay(Transform rayOrigin, object obj)

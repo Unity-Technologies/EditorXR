@@ -187,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void OnDestroy()
 		{
-			this.SetDefaultRayVisibility(rayOrigin, true);
+			this.SetDefaultRayVisibility(rayOrigin, this, true);
 
 			if (m_ViewerScaleVisuals)
 				ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
@@ -326,8 +326,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_Crawling = true;
 					m_RigStartPosition = cameraRig.position;
 					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
-					this.SetDefaultRayVisibility(rayOrigin, false);
 					this.LockRay(rayOrigin, this);
+					this.SetDefaultRayVisibility(rayOrigin, this, false);
 				}
 
 				if (m_Crawling)
@@ -336,8 +336,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return true;
 			}
 
+			this.SetDefaultRayVisibility(rayOrigin, this, true);
 			this.UnlockRay(rayOrigin, this);
-				this.SetDefaultRayVisibility(rayOrigin, true);
 
 			m_StartCrawling = false;
 			m_Crawling = false;
@@ -349,8 +349,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (m_LocomotionInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
-				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
+				this.SetDefaultRayVisibility(rayOrigin, this, false);
 
 				m_BlinkVisuals.ShowVisuals();
 
@@ -360,8 +360,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			if (m_State == State.Aiming && m_LocomotionInput.blink.wasJustReleased)
 			{
+				this.SetDefaultRayVisibility(rayOrigin, this, true);
 				this.UnlockRay(rayOrigin, this);
-				this.SetDefaultRayVisibility(rayOrigin, true);
 
 				if (!m_BlinkVisuals.outOfMaxRange)
 				{
@@ -413,10 +413,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
 								var distance = Vector3.Distance(thisPosition, otherPosition);
 
-								this.SetDefaultRayVisibility(rayOrigin, false);
 								this.LockRay(rayOrigin, this);
-								this.SetDefaultRayVisibility(otherRayOrigin, false);
+								this.SetDefaultRayVisibility(rayOrigin, this, false);
 								this.LockRay(otherRayOrigin, this);
+								this.SetDefaultRayVisibility(otherRayOrigin, this, false);
 
 								var rayToRay = otherPosition - thisPosition;
 								var midPoint = thisPosition + rayToRay * 0.5f;
@@ -548,8 +548,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (!locomotionTool.m_StartCrawling && locomotionTool.m_Scaling)
 				{
 					var rayOrigin = locomotionTool.rayOrigin;
+					this.SetDefaultRayVisibility(rayOrigin, this, true);
 					this.UnlockRay(rayOrigin, this);
-					this.SetDefaultRayVisibility(rayOrigin, true);
 				}
 
 				locomotionTool.m_Scaling = false;

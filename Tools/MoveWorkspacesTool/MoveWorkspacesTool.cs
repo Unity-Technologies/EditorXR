@@ -158,8 +158,8 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 				m_State = State.MoveWorkspaces;
 
-				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
+				this.SetDefaultRayVisibility(rayOrigin, this, false);
 
 				foreach (var ws in allWorkspaces)
 				{
@@ -193,8 +193,8 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 	{
 		m_State = State.WaitingForInput;
 
+		this.SetDefaultRayVisibility(rayOrigin, this, true);
 		this.UnlockRay(rayOrigin, this);
-		this.SetDefaultRayVisibility(rayOrigin, true);
 
 		foreach (var ws in allWorkspaces)
 		{

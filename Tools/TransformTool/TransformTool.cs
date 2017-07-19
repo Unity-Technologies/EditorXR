@@ -335,8 +335,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					var transformInput = transformTool.m_Input;
 
-						this.SetDefaultRayVisibility(directRayOrigin, false, true); // This will also unhighlight the object
 					this.LockRay(directRayOrigin, this);
+					this.SetDefaultRayVisibility(directRayOrigin, this, false, true); // This will also unhighlight the object
 
 					if (transformInput.select.wasJustPressed)
 					{
@@ -477,8 +477,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var rayOrigin = transformTool.rayOrigin;
 					if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node.Value)))
 					{
+						this.SetDefaultRayVisibility(rayOrigin, this, true, true);
 						this.UnlockRay(rayOrigin, this);
-						this.SetDefaultRayVisibility(rayOrigin, true, true);
 					}
 				}
 			}
@@ -581,8 +581,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			m_GrabData.Remove(node);
 
+			this.SetDefaultRayVisibility(grabData.rayOrigin, this, true, true);
 			this.UnlockRay(grabData.rayOrigin, this);
-			this.SetDefaultRayVisibility(grabData.rayOrigin, true, true);
 
 			this.ClearSnappingState(rayOrigin);
 		}

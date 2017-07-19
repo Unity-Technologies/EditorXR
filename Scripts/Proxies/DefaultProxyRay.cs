@@ -1,28 +1,34 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections;
-using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
 	sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
 	{
+		//class LockObject
+		//{
+		//	public object lockObject;
+		//	public int priority;
+		//}
 		[SerializeField]
-		private VRLineRenderer m_LineRenderer;
+		VRLineRenderer m_LineRenderer;
 
 		[SerializeField]
-		private GameObject m_Tip;
+		GameObject m_Tip;
 
 		[SerializeField]
-		private float m_LineWidth;
+		float m_LineWidth;
 
 		[SerializeField]
-		private MeshFilter m_Cone;
+		MeshFilter m_Cone;
 
-		private Vector3 m_TipStartScale;
+		Vector3 m_TipStartScale;
 		Transform m_ConeTransform;
 		Vector3 m_OriginalConeLocalScale;
 		Coroutine m_RayVisibilityCoroutine;
@@ -36,33 +42,42 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
 		/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
 		/// </summary>
-		private object m_LockRayObject;
+		readonly SortedList<int, object> m_LockRayObjects = new SortedList<int, object>();
 
-		public bool LockRay(object lockCaller)
-
+		public bool LockRay(object lockCaller, int priority = 0)
 		{
 			// Allow the caller to lock the ray
 			// If the reference to the lockCaller is destroyed, and the ray was not properly
 			// unlocked by the original locking caller, then allow locking by another object
-			if (m_LockRayObject == null)
+			if (!m_LockRayObjects.ContainsValue(lockCaller))
+				m_LockRayObjects.Add(priority, lockCaller);
+
+			return HasLock(lockCaller);
+		}
+
+		public bool UnlockRay(object caller)
+		{
+			var index = m_LockRayObjects.IndexOfValue(caller);
+			if (index >= 0)
 			{
-				m_LockRayObject = lockCaller;
+				m_LockRayObjects.RemoveAt(index);
 				return true;
 			}
 
 			return false;
 		}
 
-		public bool UnlockRay(object unlockCaller)
+		bool HasLock(object caller)
 		{
-			// Only allow unlocking if the original lock caller is null or there is no locker caller set
-			if (m_LockRayObject == unlockCaller)
-			{
-				m_LockRayObject = null;
+			if (m_LockRayObjects.Count == 0)
 				return true;
+
+			while (m_LockRayObjects.Count > 0 && m_LockRayObjects.Last().Value == null)
+			{
+				m_LockRayObjects.RemoveAt(m_LockRayObjects.Count - 1);
 			}
 
-			return false;
+			return m_LockRayObjects.Last().Value == caller;
 		}
 
 		/// <summary>
@@ -89,9 +104,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			this.StopCoroutine(ref m_ConeVisibilityCoroutine);
 		}
 
-		public void Hide(bool rayOnly = false)
+		public void Hide(object caller, bool rayOnly = false)
 		{
-			if (isActiveAndEnabled && m_LockRayObject == null)
+			if (isActiveAndEnabled && HasLock(caller))
 			{
 				if (rayVisible)
 				{
@@ -109,9 +124,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 		}
 
-		public void Show(bool rayOnly = false)
+		public void Show(object caller, bool rayOnly = false)
 		{
-			if (isActiveAndEnabled && m_LockRayObject == null)
+			if (isActiveAndEnabled && HasLock(caller))
 			{
 				if (!rayVisible)
 				{

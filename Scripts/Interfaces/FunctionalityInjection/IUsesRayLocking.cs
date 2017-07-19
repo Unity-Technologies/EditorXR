@@ -13,17 +13,18 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IUsesRayLockingMethods
 	{
-		internal delegate bool RayLockingDelegate(Transform rayOrigin, object obj);
+		internal delegate bool RayLockingDelegate(Transform rayOrigin, object obj, int priority = 0);
 
 		internal static RayLockingDelegate lockRay { get; set; }
-		internal static RayLockingDelegate unlockRay { get; set; }
+		internal static Func<Transform, object, bool> unlockRay { get; set; }
 
 		/// <summary>
 		/// Lock the default ray's show/hide state.
 		/// </summary>
 		/// <param name="rayOrigin">The ray to lock</param>
 		/// <param name="obj">The object performing the lock is passed in and must be used for unlocking</param>
-		public static void LockRay(this IUsesRayLocking customRay, Transform rayOrigin, object obj)
+		/// <param name="priority">The priority used for locking (higher is more important)</param>
+		public static void LockRay(this IUsesRayLocking customRay, Transform rayOrigin, object obj, int priority = 0)
 		{
 			lockRay(rayOrigin, obj);
 		}
