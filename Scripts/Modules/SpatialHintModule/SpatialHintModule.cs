@@ -141,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			set
 			{
-				Debug.LogError("Spatial Rotation target being set to : " + value);
+				//Debug.LogError("Spatial Rotation target being set to : " + value);
 				//if (value == Vector3.zero)
 					//state = SpatialHintStateFlags.Hidden; // Hide the non-spatial-scrolling visuals
 
@@ -203,6 +203,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void SetDragThresholdTriggerPosition (Vector3 position)
 		{
+			if (state == SpatialHintStateFlags.Hidden || position == m_SpatialHintModuleUI.scrollVisualsDragThresholdTriggerPosition)
+				return;
+
 			m_SpatialHintModuleUI.scrollVisualsDragThresholdTriggerPosition = position;
 		}
 
