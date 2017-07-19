@@ -11,8 +11,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ISetDefaultRayVisibility, ICustomActionMap,
-		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences
+	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ISetDefaultRayVisibility,
+		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -435,6 +435,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									m_StartYaw = cameraRig.rotation.eulerAngles.y;
 
 									locomotionTool.m_Scaling = true;
+									locomotionTool.m_Crawling = false;
 									locomotionTool.m_StartCrawling = false;
 
 									m_ViewerScaleVisuals.leftHand = rayOrigin;

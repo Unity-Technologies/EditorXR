@@ -12,9 +12,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IIsRayActive, IIsMainMenuVisible, IIsInMiniWorld, IRayToNode,
-		IGetDefaultRayColor, ISetDefaultRayColor
+		IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility
 	{
 		const float k_MultiselectHueShift = 0.5f;
+		static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
+		static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
 
 		[SerializeField]
 		ActionMap m_ActionMap;
@@ -27,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Color m_NormalRayColor;
 		Color m_MultiselectRayColor;
 		bool m_MultiSelect;
+		Transform m_TooltipTarget;
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -41,6 +44,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { get; set; }
 
+		public string tooltipText { get { return m_MultiSelect ? "Multi-Select Enabled" : ""; } }
+		public Transform tooltipTarget { get { return m_TooltipTarget; } }
+		public Transform tooltipSource { get { return rayOrigin; } }
+		public TextAlignment tooltipAlignment { get { return TextAlignment.Center; } }
+
 		void Start()
 		{
 			m_NormalRayColor = this.GetDefaultRayColor(rayOrigin);
@@ -49,6 +57,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			Color.RGBToHSV(m_MultiselectRayColor, out hsv.x, out hsv.y, out hsv.z);
 			hsv.x = Mathf.Repeat(hsv.x + k_MultiselectHueShift, 1f);
 			m_MultiselectRayColor = Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
+
+			m_TooltipTarget = ObjectUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
+			m_TooltipTarget.localPosition = k_TooltipPosition;
+			m_TooltipTarget.localRotation = k_TooltipRotation;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -68,7 +80,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					{
 						var selectionTool = (SelectionTool)linkedObject;
 						selectionTool.m_MultiSelect = !selectionTool.m_MultiSelect;
+						this.HideTooltip(selectionTool);
 					}
+
+					if (m_MultiSelect)
+						this.ShowTooltip(this);
 
 					consumeControl(multiSelectControl);
 				}

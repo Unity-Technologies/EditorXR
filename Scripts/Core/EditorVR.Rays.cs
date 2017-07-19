@@ -1,5 +1,4 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Helpers;
