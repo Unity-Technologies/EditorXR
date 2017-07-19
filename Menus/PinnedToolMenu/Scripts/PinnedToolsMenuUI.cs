@@ -176,6 +176,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				// Follow the user's input for a short additional period of time
 				// Update the dragTarget with the current device position, to allow for visuals to better match the expected rotation/position
 				m_DragTarget = transform.position;
+				this.SetSpatialHintDragThresholdTriggerPosition(transform.position);
+				this.SetSpatialHintRotation(newHintContainerRotation);
 
 				// Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold
 				m_SpatialDragDistance += Time.unscaledDeltaTime * 8; // Continue to increase the amount
@@ -196,11 +198,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			else if (m_AllButtonsVisible && m_SpatialDragDistance > 2)
 			{
 				//spatialHintScrollVisualsRotation = m_DragTarget;
+				this.SetSpatialHintDragThresholdTriggerPosition(transform.position);
+				this.SetSpatialHintRotation(newHintContainerRotation);
 				this.SetSpatialHintRotationTarget(m_DragTarget);
 			}
 
 			//spatialHintScrollVisualsDragThresholdTriggerPosition = transform.position;
-			this.SetSpatialHintDragThresholdTriggerPosition(transform.position);
+			
 			//m_SpatialHintUI.scrollVisualsRotation = Quaternion.Euler(endingDragDefinitionPosition - startingDragDefinitionPosition);
 			/*
 			else if (Mathf.Approximately(m_SmoothedSpatialDragDistance, 1f))
@@ -213,7 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//Debug.LogError("UI" + transform.rotation);
 
 			//spatialHintContentContainer.rotation = newHintContainerRotation;
-			this.SetSpatialHintRotation(newHintContainerRotation);
+			
 			//m_SpatialHintContentContainer.position = m_HintContentWorldPosition;
 
 			//Debug.LogError(gameObject.GetInstanceID() + " : <color=green>World position of UI : " + transform.position + " - starting drag definition position : " + m_StartingDragOrigin + "</color>");
