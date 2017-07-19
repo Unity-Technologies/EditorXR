@@ -195,7 +195,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			m_MenuFacesMaterial = MaterialUtils.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
 			m_MenuFacesColor = m_MenuFacesMaterial.color;
-
 			m_LocalBounds = ObjectUtils.GetBounds(transform);
 		}
 

@@ -335,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					var transformInput = transformTool.m_Input;
 
-					this.SetDefaultRayVisibility(directRayOrigin, false, true); // This will also unhighlight the object
+						this.SetDefaultRayVisibility(directRayOrigin, false, true); // This will also unhighlight the object
 					this.LockRay(directRayOrigin, this);
 
 					if (transformInput.select.wasJustPressed)

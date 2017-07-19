@@ -4,6 +4,7 @@ using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -56,19 +57,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Renderer m_Icon;
 
 		[SerializeField]
-		Renderer m_Base;
-
-		[SerializeField]
 		Transform m_HighlightedPRS;
 
 		[SerializeField]
 		HapticPulse m_HoverPulse;
 
 		[SerializeField]
-		Material m_DisabledIconMaterial;
-
-		[SerializeField]
-		Material m_DisabledBaseMaterial;
+		Color m_DisabledColor;
 
 		Vector3 m_OriginalActivatorIconLocalScale;
 		Vector3 m_OriginalActivatorIconLocalPosition;
@@ -80,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		bool m_Disabled;
 		Material m_IconMaterial;
-		Material m_BaseMaterial;
+		Color m_EnabledColor;
 
 		public Transform rayOrigin { private get; set; }
 		public Transform menuOrigin { private get; set; }
@@ -95,8 +90,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				if (value != m_Disabled)
 				{
-					m_Icon.sharedMaterial = value ? m_DisabledIconMaterial : m_IconMaterial;
-					m_Base.sharedMaterial = value ? m_DisabledBaseMaterial : m_BaseMaterial;
+					m_Icon.sharedMaterial.color = value ? m_DisabledColor : m_EnabledColor;
+
+					if (value)
+						SetHighlight(false);
 				}
 
 				m_Disabled = value;
@@ -105,8 +102,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Awake()
 		{
-			m_IconMaterial = m_Icon.sharedMaterial;
-			m_BaseMaterial = m_Base.sharedMaterial;
+			m_IconMaterial = MaterialUtils.GetMaterialClone(m_Icon);
+			m_EnabledColor = m_IconMaterial.color;
 		}
 
 		public void OnPointerEnter(PointerEventData eventData)
@@ -114,11 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (eventData.used || m_Disabled)
 				return;
 
-			if (m_HighlightCoroutine != null)
-				StopCoroutine(m_HighlightCoroutine);
-
-			m_HighlightCoroutine = null;
-			m_HighlightCoroutine = StartCoroutine(Highlight());
+			SetHighlight(true);
 			this.Pulse(node, m_HoverPulse);
 		}
 
@@ -127,11 +120,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (eventData.used)
 				return;
 
+			SetHighlight(false);
+		}
+
+		void SetHighlight(bool highlighted)
+		{
 			if (m_HighlightCoroutine != null)
 				StopCoroutine(m_HighlightCoroutine);
 
 			m_HighlightCoroutine = null;
-			m_HighlightCoroutine = StartCoroutine(Highlight(false));
+			m_HighlightCoroutine = StartCoroutine(Highlight(highlighted));
 		}
 
 		public void OnPointerClick(PointerEventData eventData)

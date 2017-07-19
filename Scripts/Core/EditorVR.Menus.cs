@@ -136,13 +136,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (customMenuVisible && (mainMenuVisible || alternateMenuVisible))
 						menuHideFlags[customMenu] |= MenuHideFlags.OtherMenu;
 
+					Array.Clear(m_WorkspaceOverlaps, 0, m_WorkspaceOverlaps.Length);
 					var hoveringWorkspace = false;
 					var menuTransform = mainMenu.menuContent.transform;
 					var menuBounds = mainMenu.localBounds;
 					var menuRotation = menuTransform.rotation;
-					var center = menuTransform.position + menuRotation * menuBounds.center;
-					Array.Clear(m_WorkspaceOverlaps, 0, m_WorkspaceOverlaps.Length);
-					if (Physics.OverlapBoxNonAlloc(center, menuBounds.extents, m_WorkspaceOverlaps, menuRotation) > 0)
+					var viewerScale = Viewer.GetViewerScale();
+					var center = menuTransform.position + menuRotation * menuBounds.center * viewerScale;
+					if (Physics.OverlapBoxNonAlloc(center, menuBounds.extents * viewerScale, m_WorkspaceOverlaps, menuRotation) > 0)
 					{
 						foreach (var overlap in m_WorkspaceOverlaps)
 						{
@@ -178,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 							var otherRayOrigin = otherDeviceData.rayOrigin;
 							if (directSelection.IsHovering(otherRayOrigin) || directSelection.IsScaling(otherRayOrigin)
-								|| Vector3.Distance(otherRayOrigin.position, rayOriginPosition) < k_TwoHandHideDistance * Viewer.GetViewerScale())
+								|| Vector3.Distance(otherRayOrigin.position, rayOriginPosition) < k_TwoHandHideDistance * viewerScale)
 							{
 								var otherHideFlags = otherDeviceData.menuHideFlags;
 								var otherMenus = otherHideFlags.Keys.ToList();
@@ -252,11 +253,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
-			}
-
-			static Vector3 GetPointerPositionForRayOrigin(Transform rayOrigin)
-			{
-				return rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin);
 			}
 
 			internal static bool IsValidHover(MultipleRayInputModule.RaycastSource source)

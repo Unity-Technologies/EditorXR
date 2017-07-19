@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IIsRayActive, IIsMainMenuVisible, IIsInMiniWorld, IRayToNode,
 		IGetDefaultRayColor, ISetDefaultRayColor
 	{
-		const float k_MultiselectSaturationDrop = 0.5f;
+		const float k_MultiselectHueShift = 0.5f;
 
 		[SerializeField]
 		ActionMap m_ActionMap;
@@ -47,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_MultiselectRayColor = m_NormalRayColor;
 			Vector3 hsv;
 			Color.RGBToHSV(m_MultiselectRayColor, out hsv.x, out hsv.y, out hsv.z);
-			hsv.y -= k_MultiselectSaturationDrop;
+			hsv.x = Mathf.Repeat(hsv.x + k_MultiselectHueShift, 1f);
 			m_MultiselectRayColor = Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
 		}
 
@@ -64,25 +64,23 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var realTime = Time.realtimeSinceStartup;
 				if (UIUtils.IsDoubleClick(realTime - m_LastMultiSelectClickTime))
 				{
-					m_MultiSelect = !m_MultiSelect;
+					foreach (var linkedObject in linkedObjects)
+					{
+						var selectionTool = (SelectionTool)linkedObject;
+						selectionTool.m_MultiSelect = !selectionTool.m_MultiSelect;
+					}
+
 					consumeControl(multiSelectControl);
 				}
 
 				m_LastMultiSelectClickTime = realTime;
 			}
 
-			var multiSelect = false;
-			foreach (var linkedObject in linkedObjects)
-			{
-				var selectionTool = (SelectionTool)linkedObject;
-				multiSelect |= selectionTool.m_MultiSelect;
-			}
-
-			this.SetDefaultRayColor(rayOrigin, multiSelect ? m_MultiselectRayColor : m_NormalRayColor);
+			this.SetDefaultRayColor(rayOrigin, m_MultiSelect ? m_MultiselectRayColor : m_NormalRayColor);
 
 			if (this.IsSharedUpdater(this))
 			{
-				this.SetManipulatorsVisible(this, !multiSelect);
+				this.SetManipulatorsVisible(this, !m_MultiSelect);
 
 				var directSelection = this.GetDirectSelection();
 
@@ -155,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					// Only overwrite an existing selection if it does not contain the hovered object
 					// In the case of multi-select, only add, do not remove
 					if (selectionTool.m_SelectionInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
-						this.SelectObject(directHoveredObject, directRayOrigin, multiSelect);
+						this.SelectObject(directHoveredObject, directRayOrigin, m_MultiSelect);
 
 					GameObject lastHover;
 					if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
@@ -192,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				if (m_PressedObject == hoveredObject)
 				{
-					this.SelectObject(m_PressedObject, rayOrigin, multiSelect, true);
+					this.SelectObject(m_PressedObject, rayOrigin, m_MultiSelect, true);
 					this.ResetDirectSelectionState();
 
 					if (m_PressedObject != null)

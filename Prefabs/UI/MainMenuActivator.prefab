@@ -247,10 +247,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Icon: {fileID: 23000012609994424}
-  m_Base: {fileID: 23000010303846554}
   m_HighlightedPRS: {fileID: 4000011430756646}
   m_HoverPulse: {fileID: 11400000, guid: d4ac399f781bc824c8c1392fb126398e, type: 2}
-  m_DisabledIconMaterial: {fileID: 2100000, guid: fef48755e9696f54c951b4b7ca22110e,
-    type: 2}
-  m_DisabledBaseMaterial: {fileID: 2100000, guid: 5dde6844012df164eb0b16b790991401,
-    type: 2}
+  m_DisabledColor: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0}

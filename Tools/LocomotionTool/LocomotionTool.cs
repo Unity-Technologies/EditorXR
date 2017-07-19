@@ -18,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		const float k_SlowMoveSpeed = 1f;
 		const float k_RotationDamping = 0.2f;
 		const float k_RotationThreshold = 0.75f;
+		const float k_DistanceThreshold = 0.02f;
 
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
 		const float k_MinScale = 0.1f;
@@ -74,7 +75,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_StartYaw;
 
 		bool m_Rotating;
+		bool m_StartCrawling;
 		bool m_Crawling;
+		bool m_WasRotating;
 		float m_CrawlStartTime;
 		Vector3 m_ActualRayOriginStartPosition;
 		Vector3 m_RayOriginStartPosition;
@@ -242,11 +245,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!m_Rotating)
 					{
 						m_Rotating = true;
+						m_WasRotating = true;
 						m_RigStartPosition = cameraRig.position;
 						m_RigStartRotation = cameraRig.rotation;
 
 						m_RayOriginStartForward = localRayForward;
-						m_RayOriginStartRight = localRayRotation * (reverse ? Vector3.left : Vector3.right);
+						m_RayOriginStartRight = localRayRotation * (reverse ? Vector3.right : Vector3.left);
 						m_RayOriginStartRight.y = 0;
 						m_RayOriginStartRight.Normalize();
 
@@ -254,7 +258,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_LastRotationDiff = Quaternion.identity;
 					}
 
-					consumeControl(m_LocomotionInput.rotate);
 					var startOffset = m_RigStartPosition - m_CameraStartPosition;
 
 					var angle = Vector3.Angle(m_RayOriginStartForward, localRayForward);
@@ -269,6 +272,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					cameraRig.position = m_CameraStartPosition + segmentedRotation * startOffset;
 
 					m_LastRotationDiff = filteredRotation;
+
+					m_StartCrawling = false;
+					m_Crawling = false;
 				}
 				else
 				{
@@ -293,6 +299,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return true;
 			}
 
+			if (!m_LocomotionInput.rotate.isHeld)
+				m_WasRotating = false;
+
 			m_Rotating = false;
 			return false;
 		}
@@ -301,41 +310,36 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			if (!m_LocomotionInput.forward.isHeld && !m_LocomotionInput.blink.isHeld && m_LocomotionInput.crawl.isHeld)
 			{
-				//consumeControl(m_LocomotionInput.crawl);
-				// Also consume thumbstick axes to disable radial menu
-				//consumeControl(m_LocomotionInput.horizontal);
-				//consumeControl(m_LocomotionInput.vertical);
-				if (!m_Crawling)
+				if (!m_StartCrawling && !m_WasRotating)
+				{
+					m_StartCrawling = true;
+					m_ActualRayOriginStartPosition = m_RayOriginStartPosition;
+					m_CrawlStartTime = Time.time;
+				}
+
+				var localRayPosition = cameraRig.position - rayOrigin.position;
+				var distance = Vector3.Distance(m_ActualRayOriginStartPosition, localRayPosition);
+				var distanceThreshold = distance > k_DistanceThreshold * this.GetViewerScale();
+				var timeThreshold = Time.time > m_CrawlStartTime + UIUtils.DoubleClickIntervalMax;
+				if (!m_Crawling && m_StartCrawling && (timeThreshold || distanceThreshold))
 				{
 					m_Crawling = true;
 					m_RigStartPosition = cameraRig.position;
 					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
-					m_ActualRayOriginStartPosition = m_RayOriginStartPosition;
-					m_CrawlStartTime = Time.time;
-
 					this.SetDefaultRayVisibility(rayOrigin, false);
 					this.LockRay(rayOrigin, this);
 				}
 
-
-				var localRayPosition = cameraRig.position - rayOrigin.position;
-				var delta = m_ActualRayOriginStartPosition - localRayPosition;
-				if (Time.time > m_CrawlStartTime + UIUtils.DoubleClickIntervalMax || delta.magnitude > 0.015f * this.GetViewerScale())
-				{
+				if (m_Crawling)
 					cameraRig.position = m_RigStartPosition + localRayPosition - m_RayOriginStartPosition;
-				}
-				else
-				{
-					m_RigStartPosition = cameraRig.position;
-					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
-				}
 
 				return true;
 			}
 
 			this.UnlockRay(rayOrigin, this);
-			this.SetDefaultRayVisibility(rayOrigin, true);
+				this.SetDefaultRayVisibility(rayOrigin, true);
 
+			m_StartCrawling = false;
 			m_Crawling = false;
 			return false;
 		}
@@ -376,8 +380,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool DoTwoHandedScaling(ConsumeControlDelegate consumeControl)
 		{
-			var result = false;
-
 			if (this.IsSharedUpdater(this))
 			{
 				var crawl = m_LocomotionInput.crawl;
@@ -433,7 +435,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									m_StartYaw = cameraRig.rotation.eulerAngles.y;
 
 									locomotionTool.m_Scaling = true;
-									locomotionTool.m_Crawling = false;
+									locomotionTool.m_StartCrawling = false;
 
 									m_ViewerScaleVisuals.leftHand = rayOrigin;
 									m_ViewerScaleVisuals.rightHand = otherRayOrigin;
@@ -441,6 +443,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								}
 
 								m_Scaling = true;
+								m_StartCrawling = false;
 								m_Crawling = false;
 
 								var currentScale = Mathf.Clamp(m_StartScale * (m_StartDistance / distance), k_MinScale, k_MaxScale);
@@ -507,8 +510,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 									Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / currentScale);
 								}
-
-								result = true;
 								break;
 							}
 						}
@@ -523,7 +524,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			return result;
+			return m_Scaling;
 		}
 
 		void ResetViewerScale()
@@ -542,14 +543,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			foreach (var linkedObject in linkedObjects)
 			{
 				var locomotionTool = (LocomotionTool)linkedObject;
-				locomotionTool.m_Scaling = false;
 
-				if (!locomotionTool.m_Crawling)
+				if (!locomotionTool.m_StartCrawling && locomotionTool.m_Scaling)
 				{
 					var rayOrigin = locomotionTool.rayOrigin;
 					this.UnlockRay(rayOrigin, this);
 					this.SetDefaultRayVisibility(rayOrigin, true);
 				}
+
+				locomotionTool.m_Scaling = false;
 			}
 
 
