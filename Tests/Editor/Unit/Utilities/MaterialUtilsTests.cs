@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using NUnit.Framework;
-using System;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Tests.TestHelpers;
 
@@ -46,10 +45,11 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
         // creating them based on the float coming from this results in mismatches due to rounding
         private void AssertColorsEqual(Color expected, Color actual)
         {
-            Assert.AreEqual(Math.Round(expected.r, 3), Math.Round(actual.r, 3));
-            Assert.AreEqual(Math.Round(expected.g, 3), Math.Round(actual.g, 3));
-            Assert.AreEqual(Math.Round(expected.b, 3), Math.Round(actual.b, 3));
-            Assert.AreEqual(Math.Round(expected.a, 3), Math.Round(actual.a, 3));
+            float tolerance = 0.334f;
+            Assert.That(actual.r, Is.EqualTo(expected.r).Within(tolerance));
+            Assert.That(actual.g, Is.EqualTo(expected.g).Within(tolerance));
+            Assert.That(actual.b, Is.EqualTo(expected.b).Within(tolerance));
+            Assert.That(actual.a, Is.EqualTo(expected.a).Within(tolerance));
         }
 
         [TestCase("#000000", 0f, 0f, 0f, 1f)]                      // rgb: 0, 0, 0
@@ -58,9 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
         [TestCase("#FFFFFF", 1f, 1f, 1f, 1f)]                      // rgb: 255,255,255 
         public void HextoColor_DoesValidConversion(string hex, float r, float g, float b, float a)
         {
-            Color expected = new Color(r, g, b, a);
-            Color output = MaterialUtils.HexToColor(hex);
-            AssertColorsEqual(expected, output);
+            AssertColorsEqual(new Color(r, g, b, a), MaterialUtils.HexToColor(hex));
         }
 
         [TearDown]
