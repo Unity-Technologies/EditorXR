@@ -8,6 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
     public class TransformExtensionsTests
     {
         GameObject go;
+        float delta = 0.00000001f;
 
         [OneTimeSetUp]
         public void Setup()
@@ -21,11 +22,11 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
             var size = new Vector3(2, 2, 2);
             var offset = new Vector3(1, 2, 3);
             go.transform.position += offset;
-            var localBounds = new Bounds(go.transform.position, size);
-            var worldBounds = go.transform.TransformBounds(localBounds);
+            var local = new Bounds(go.transform.position, size);
+            var world = go.transform.TransformBounds(local);
 
-            Assert.AreEqual(localBounds.center, worldBounds.center - offset);
-            Assert.AreEqual(localBounds.extents, worldBounds.extents);
+            Assert.That(local.center, Is.EqualTo(world.center - offset).Within(delta));
+            Assert.That(local.extents, Is.EqualTo(world.extents).Within(delta));
         }
     }
 }

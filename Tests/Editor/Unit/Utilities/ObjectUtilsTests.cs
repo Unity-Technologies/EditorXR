@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
     public class ObjectUtilsTests
     {
         GameObject go, parent, other;
+        float delta = 0.00000001f;
 
         [SetUp]
         public void BeforeEach()
@@ -142,7 +143,8 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 
             var bounds = ObjectUtils.GetBounds(transforms);
             Bounds expected = new Bounds(new Vector3(-1.5f, 2f, 6f), new Vector3(7f, 8f, 4f));
-            Assert.AreEqual(expected, bounds);
+
+            Assert.That(bounds, Is.EqualTo(expected).Within(delta));
         }
 
         [TearDown]

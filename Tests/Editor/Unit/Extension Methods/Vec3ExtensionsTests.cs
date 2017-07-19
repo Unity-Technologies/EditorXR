@@ -7,6 +7,8 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
 {
     public class Vec3ExtensionsTests
     {
+        float delta = 0.00000001f;
+        
         [Test]
         public void MaxComponent_ReturnsMaxAxisValue()
         {
@@ -22,23 +24,25 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
         public void AveragedComponents()
         {
             var vec3 = new Vector3(4f, 2f, 6f);
-            Assert.AreEqual(vec3.AveragedComponents(), 4f);
+            Assert.That(vec3.AveragedComponents(), Is.EqualTo(4f).Within(delta));
             vec3 = new Vector3(-4f, 0f, 1f);
-            Assert.AreEqual(vec3.AveragedComponents(), -1f);
+            Assert.That(vec3.AveragedComponents(), Is.EqualTo(-1f).Within(delta));
         }
 
         [Test]
         public void Inverse_PositiveValues()
         {
             var vec3 = new Vector3(2f, 4f, 10f);
-            Assert.AreEqual(new Vector3(.5f, .25f, .1f), vec3.Inverse());
+            var expected = new Vector3(.5f, .25f, .1f);
+            Assert.That(vec3.Inverse(), Is.EqualTo(expected).Within(delta));
         }
 
         [Test]
         public void Inverse_NegativeValues()
         {
             var vec3 = new Vector3(-10f, -4f, -2f);
-            Assert.AreEqual(new Vector3(-.1f, -.25f, -.5f), vec3.Inverse());
+            var expected = new Vector3(-.1f, -.25f, -.5f);
+            Assert.That(vec3.Inverse(), Is.EqualTo(expected).Within(delta));
         }
 
     }
