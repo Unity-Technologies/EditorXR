@@ -16,19 +16,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		CanvasGroup m_ScrollVisualsCanvasGroup;
 
 		[SerializeField]
-		Transform m_ScrollVisualsDragTargetArrow;
+		HintIcon m_ScrollVisualsDragSourceArrow;
+
+		[SerializeField]
+		HintIcon m_ScrollVisualsDragTargetArrow;
 
 		[SerializeField]
 		HintLine m_ScrollHintLine;
 
 		[SerializeField]
-		HintIcon[] m_ScrollHintArrows;
-
-		[SerializeField]
 		HapticPulse m_ScrollBarDefineHapticPulse; // Haptic pulse performed when dragging out the spatial scroll bar
-
-		//[SerializeField]
-		//CanvasGroup m_HintArrowsCanvasGroup; // TODO: add back in later
 
 		[Header("Primary Directional Visuals")]
 		[SerializeField]
@@ -36,17 +33,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		HintIcon[] m_SecondaryDirectionalHintArrows;
-
-		//[SerializeField]
-		//VRLineRenderer m_ScrollLineRenderer;
-
-		/*
-		[SerializeField]
-		HintIcon[] m_PrimaryRotationalHintArrows;
-
-		[SerializeField]
-		HintIcon[] m_SecondaryRotationalHintArrows;
-		*/
 
 		bool m_Visible;
 		bool m_PreScrollVisualsVisible;
@@ -57,6 +43,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		GameObject m_ScrollVisualsGameObject;
 		Coroutine m_ScrollVisualsVisibilityCoroutine;
 		Coroutine m_VisibilityCoroutine;
+		Transform m_ScrollVisualsDragTargetArrowTransform;
+		Transform m_ScrollVisualsDragSourceArrowTransform;
 
 		public bool visible
 		{
@@ -172,14 +160,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		bool scrollArrowsVisible
+		private bool scrollArrowsVisible
 		{
 			set
 			{
-				foreach (var arrow in m_ScrollHintArrows)
-				{
-					arrow.visible = value;
-				}
+				m_ScrollVisualsDragSourceArrow.visible = value;
+				m_ScrollVisualsDragTargetArrow.visible = value;
 			}
 		}
 
@@ -240,6 +226,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsGameObject = m_ScrollVisualsTransform.gameObject;
 			m_ScrollVisualsCanvasGroup.alpha = 0f;
 			//m_ScrollVisualsGameObject.SetActive(false);
+
+			m_ScrollVisualsDragSourceArrowTransform = m_ScrollVisualsDragSourceArrow.transform;
+			m_ScrollVisualsDragTargetArrowTransform = m_ScrollVisualsDragTargetArrow.transform;
 		}
 
 		IEnumerator AnimateShow()
@@ -292,15 +281,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			preScrollArrowsVisible = false;
 			secondaryArrowsVisible = false;
 			m_ScrollVisualsTransform.localScale = Vector3.one;
-			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, CameraUtils.GetMainCamera().transform.forward); // Scroll arrows should face/billboard the user.
+			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, Vector3.up);// CameraUtils.GetMainCamera().transform.forward); // Scroll arrows should face/billboard the user.
 			m_ScrollVisualsCanvasGroup.alpha = 1f; // remove
-			m_ScrollVisualsDragTargetArrow.localPosition = Vector3.zero;
+			m_ScrollVisualsDragTargetArrowTransform.localPosition = Vector3.zero;
 
 			const float kTargetDuration = 1f;
 			var currentDuration = 0f;
 			var currentLocalScale = m_ScrollVisualsTransform.localScale;
 			var currentAlpha = m_ScrollVisualsCanvasGroup.alpha;
-			var secondArrowCurrentPosition = m_ScrollVisualsDragTargetArrow.position;
+			var secondArrowCurrentPosition = m_ScrollVisualsDragTargetArrowTransform.position;
 			var normalizedScrollVisualsForward = Vector3.Normalize(m_ScrollVisualsTransform.forward);
 
 			while (currentDuration < kTargetDuration)
@@ -309,13 +298,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 1f, shapedDuration);
 
 				// Only validate movement in the initial direction with which the user began the drag
-				var movingAwayFromSource = Vector3.Dot(normalizedScrollVisualsForward, Vector3.Normalize(scrollVisualsDragThresholdTriggerPosition - secondArrowCurrentPosition)) > 0;
-				if (movingAwayFromSource && (scrollVisualsDragThresholdTriggerPosition - secondArrowCurrentPosition).magnitude >= (m_ScrollVisualsDragTargetArrow.position - secondArrowCurrentPosition).magnitude)
-					m_ScrollVisualsDragTargetArrow.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
+				//var movingAwayFromSource = Vector3.Dot(normalizedScrollVisualsForward, Vector3.Normalize(scrollVisualsDragThresholdTriggerPosition - secondArrowCurrentPosition)) > 0;
+				//if (movingAwayFromSource && (scrollVisualsDragThresholdTriggerPosition - secondArrowCurrentPosition).magnitude >= (m_ScrollVisualsDragTargetArrow.position - secondArrowCurrentPosition).magnitude)
+					m_ScrollVisualsDragTargetArrowTransform.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
 
 				currentDuration += Time.unscaledDeltaTime * 2f;
 
-				var lineRendererPositions = new Vector3[] { m_ScrollVisualsTransform.position, m_ScrollVisualsDragTargetArrow.position };
+				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsDragTargetArrowTransform.position - m_ScrollVisualsTransform.position);
+				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsTransform.position - m_ScrollVisualsDragTargetArrowTransform.position);
+				var lineRendererPositions = new Vector3[] { m_ScrollVisualsTransform.position, m_ScrollVisualsDragTargetArrowTransform.position };
 				m_ScrollHintLine.Positions = lineRendererPositions;
 				m_ScrollHintLine.LineWidth = shapedDuration * this.GetViewerScale();
 
@@ -357,11 +348,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void PulseScrollArrows()
 		{
-			foreach (var arrow in m_ScrollHintArrows)
-			{
-				arrow.PulseColor();
-			}
-
+			m_ScrollVisualsDragSourceArrow.PulseColor();
+			m_ScrollVisualsDragTargetArrow.PulseColor();
 			m_ScrollHintLine.PulseColor();
 		}
 	}
