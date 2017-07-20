@@ -182,6 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
+			UnityBrandColorScheme.saturatedSessionGradient = UnityBrandColorScheme.GetRandomCuratedGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();
 			sceneObjectModule.tryPlaceObject = (obj, targetScale) =>

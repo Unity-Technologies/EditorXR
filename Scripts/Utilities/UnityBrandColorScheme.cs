@@ -42,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		static int s_RandomCuratedDarkGradientPairPosition = -1;
 
 		static GradientPair s_SessionGradient;
+		static GradientPair s_SaturatedSessionGradient;
 
 		static Color s_Red;
 		static Color s_RedLight;
@@ -150,9 +151,23 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				s_SessionGradient = value;
 
 				// In order to more easily differentiate curated gradients, they should not match the session gradient
-				RemoveSessionGradientFromCollection(s_CuratedGradientPairs);
-				RemoveSessionGradientFromCollection(s_CuratedLightGradientPairs);
-				RemoveSessionGradientFromCollection(s_CuratedDarkGradientPairs);
+				RemoveGradientFromCollection(s_SessionGradient, s_CuratedGradientPairs);
+				RemoveGradientFromCollection(s_SessionGradient, s_CuratedLightGradientPairs);
+				RemoveGradientFromCollection(s_SessionGradient, s_CuratedDarkGradientPairs);
+			}
+		}
+
+		public static GradientPair saturatedSessionGradient
+		{
+			get { return s_SaturatedSessionGradient; }
+			set
+			{
+				s_SaturatedSessionGradient = value;
+
+				// In order to more easily differentiate curated gradients, they should not match the session gradient
+				RemoveGradientFromCollection(s_SaturatedSessionGradient, s_CuratedGradientPairs);
+				RemoveGradientFromCollection(s_SaturatedSessionGradient, s_CuratedLightGradientPairs);
+				RemoveGradientFromCollection(s_SaturatedSessionGradient, s_CuratedDarkGradientPairs);
 			}
 		}
 
@@ -431,14 +446,15 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		/// <summary>
-		/// Remove the session gradient from a GradientPair collection, if it is found in the collection
+		/// Remove a gradient from a GradientPair collection, if it is found in the collection
 		/// </summary>
-		/// <param name="gradientPairCollection">Collection from which the SessionGradient will be removed</param>
-		static void RemoveSessionGradientFromCollection(List<GradientPair> gradientPairCollection)
+		/// <param name="gradientPair">Gradient Pair to remove from the target collection</param>
+		/// <param name="gradientPairCollection">Collection from which the Gradient Pair will be removed</param>
+		static void RemoveGradientFromCollection(GradientPair gradientPair, List<GradientPair> gradientPairCollection)
 		{
 			foreach (GradientPair pair in gradientPairCollection)
 			{
-				if (SwatchesSimilar(pair.a, s_SessionGradient.a, 0f) && SwatchesSimilar(pair.b, s_SessionGradient.b, 0f))
+				if (SwatchesSimilar(pair.a, gradientPair.a, 0f) && SwatchesSimilar(pair.b, gradientPair.b, 0f))
 				{
 					gradientPairCollection.Remove(pair);
 					break;
