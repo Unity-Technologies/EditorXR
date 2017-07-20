@@ -43,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (m_ToolType != null)
 				{
 					Debug.LogError("Setting up button type : " + m_ToolType.ToString());
-					gradientPair = UnityBrandColorScheme.sessionGradient; // Select tool uses session gradientPair
+					gradientPair = UnityBrandColorScheme.saturatedSessionGradient;
 					if (isSelectionTool || isMainMenu)
 					{
 						//order = isMainMenu ? menuButtonOrderPosition : activeToolOrderPosition;
@@ -214,7 +214,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//PinnedToolActionButton m_RightPinnedToolActionButton;
 
 		[SerializeField]
-		Transform m_IconContainer;
+		Transform m_IconContainer; // TODO: eliminate the reference to the icon container, use only the primary UI content container for any transformation
+
+		[SerializeField]
+		Transform m_PrimaryUIContentContainer;
 
 		[SerializeField]
 		CanvasGroup m_IconContainerCanvasGroup;
@@ -342,8 +345,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_ActiveTool = value;
 
-				m_GradientButton.normalGradientPair = !m_ActiveTool ? gradientPair : UnityBrandColorScheme.grayscaleSessionGradient;
-				m_GradientButton.highlightGradientPair = !m_ActiveTool ? UnityBrandColorScheme.grayscaleSessionGradient : gradientPair;
+				m_GradientButton.normalGradientPair = m_ActiveTool ? gradientPair : UnityBrandColorScheme.darkGrayscaleSessionGradient;
+				m_GradientButton.highlightGradientPair = m_ActiveTool ? UnityBrandColorScheme.darkGrayscaleSessionGradient : gradientPair;
 
 				//if (activeTool) // TODO REMOVE IF NOT NEEDED
 					//m_GradientButton.invertHighlightScale = value;
@@ -519,6 +522,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		public Vector3 primaryUIContentContainerLocalScale { get { return m_PrimaryUIContentContainer.localScale; } set { m_PrimaryUIContentContainer.localScale = value; } }
+
 		void Awake()
 		{
 			m_OriginalLocalPosition = transform.localPosition;
@@ -563,6 +568,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
 			m_GradientButton.hoverExit += OnActionButtonHoverExit;
 			m_GradientButton.click += OnBackgroundButtonClick;
+			m_GradientButton.highlightStart += OnPrimaryButtonHighlightStart;
+			m_GradientButton.highlightEnd += OnPrimaryButtonHighlightEnd;
 			m_GradientButton.containerContentsAnimationSpeedMultiplier = 2.5f;
 
 			m_FrameRenderer.SetBlendShapeWeight(1, 0f);
@@ -1167,25 +1174,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//Debug.LogError("<color=black>Waiting before SHOWING SECONDARY BUTTON</color>");
 			const float kFrameSecondaryButtonVisibleBlendShapeWeight = 61f;
 			const float kSecondaryButtonVisibleBlendShapeWeight = 46f;
-
-			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
-			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
-			var currentSecondaryCanvasGroupAlpha = m_SecondaryButtonContainerCanvasGroup.alpha;
-			var amount = 0f;
-			while (amount < 0.25f)
+			var delayDuration = 0f;
+			while (delayDuration < 0.25f)
 			{
-				amount += Time.unscaledDeltaTime;
+				delayDuration += Time.unscaledDeltaTime;
 				yield return null;
 			}
 
-			//Debug.LogError("<color=white>SHOWING SECONDARY BUTTON</color>");
 			this.ShowTooltip(this);
+			this.StopCoroutine(ref m_HighlightCoroutine);
 
-			amount = 0f;
-			while (amount < 1f)
+			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
+			var currentSecondaryCanvasGroupAlpha = m_SecondaryButtonContainerCanvasGroup.alpha;
+			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
+			var currentDuration = 0f;
+			while (currentDuration < 1f)
 			{
-				amount += Time.unscaledDeltaTime * 10f;
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
+				currentDuration += Time.unscaledDeltaTime * 10f;
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kFrameSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
@@ -1214,6 +1220,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					yield break;
 				}
 
+				this.StopCoroutine(ref m_HighlightCoroutine);
+
 				amount += Time.unscaledDeltaTime * 8f;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 0f, shapedAmount));
@@ -1223,6 +1231,50 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			m_SecondaryButtonVisibilityCoroutine = null;
+		}
+
+		void OnPrimaryButtonHighlightStart ()
+		{
+			if (!isMainMenu)
+				this.RestartCoroutine(ref m_HighlightCoroutine, PerformPrimaryButtonHighlightStart());
+		}
+
+		void OnPrimaryButtonHighlightEnd ()
+		{
+			if (m_HighlightCoroutine != null)
+				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, PerformPrimaryButtonHighlightEnd());
+		}
+
+		IEnumerator PerformPrimaryButtonHighlightStart()
+		{
+			const float kSecondaryButtonFrameVisibleBlendShapeWeight = 16f;
+			const float kTargetDuration = 1f;
+			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
+			this.ShowTooltip(this);
+			var currentDuration = 0f;
+			while (currentDuration < kTargetDuration)
+			{
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * 25);
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kSecondaryButtonFrameVisibleBlendShapeWeight, shapedAmount));
+				yield return null;
+			}
+		}
+
+		IEnumerator PerformPrimaryButtonHighlightEnd()
+		{
+			const float kSecondaryButtonFrameHiddenBlendShapeWeight = 0f;
+			const float kTargetDuration = 1f;
+			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
+			this.ShowTooltip(this);
+			var currentDuration = 0f;
+			while (currentDuration < kTargetDuration)
+			{
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * 5);
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kSecondaryButtonFrameHiddenBlendShapeWeight, shapedAmount));
+				yield return null;
+			}
+
+			m_HighlightCoroutine = null;
 		}
 	}
 }
