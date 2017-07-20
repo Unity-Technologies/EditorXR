@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	public delegate void RegisterRayVisibilitySettingsDelegate<T>(Transform rayOrigin, object caller, T settings);
+	public delegate void RegisterRayVisibilitySettingsDelegate<in T>(Transform rayOrigin, object caller, T settings);
 	/// <summary>
 	/// Implementors can show & hide the default ray
 	/// </summary>
-	public interface IRegisterRayVisibilitySettings<T>
+	public interface IRegisterRayVisibilitySettings<out T> where T : struct
 	{
 		RegisterRayVisibilitySettingsDelegate<T> registerRayVisibilitySettings { set; }
 	}
@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		/// <param name="rayOrigin">The ray to hide or show</param>
 		/// <param name="caller">The object which has locked the ray</param>
-		public static void UnregisterRayVisibilitySettings<T>(this IRegisterRayVisibilitySettings<T> customRay, Transform rayOrigin, object caller)
+		public static void UnregisterRayVisibilitySettings<T>(this IRegisterRayVisibilitySettings<T> customRay, Transform rayOrigin, object caller) where T : struct 
 		{
 			unregisterRayVisibilitySettings(rayOrigin, caller);
 		}

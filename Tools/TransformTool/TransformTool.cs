@@ -342,6 +342,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					var transformInput = transformTool.m_Input;
 
+					Debug.Log("direct " + Time.frameCount);
 					registerRayVisibilitySettings(directRayOrigin, this, k_HideRaySettings); // This will also disable ray selection
 
 					if (transformInput.select.wasJustPressed)

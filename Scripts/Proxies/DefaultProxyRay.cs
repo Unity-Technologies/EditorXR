@@ -46,12 +46,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// </summary>
 		readonly Dictionary<object, DefaultRayVisibilitySettings> m_VisibilitySettings = new Dictionary<object, DefaultRayVisibilitySettings>();
 
-
-		public void UnsetRayVisibility(object caller)
-		{
-			m_VisibilitySettings.Remove(caller);
-		}
-
 		/// <summary>
 		/// The length of the direct selection pointer
 		/// </summary>
@@ -76,18 +70,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			this.StopCoroutine(ref m_ConeVisibilityCoroutine);
 		}
 
-		public void SetVisibility(object caller, DefaultRayVisibilitySettings newSettings)
+		public void RegisterVisibilitySettings(object caller, DefaultRayVisibilitySettings newSettings)
 		{
-			DefaultRayVisibilitySettings settings;
-			if (!m_VisibilitySettings.TryGetValue(caller, out settings))
-			{
-				settings = new DefaultRayVisibilitySettings();
-				m_VisibilitySettings[caller] = settings;
-			}
+			m_VisibilitySettings[caller] = newSettings;
+		}
 
-			settings.rayVisible = newSettings.rayVisible;
-			settings.coneVisible = newSettings.coneVisible;
-			settings.priority = newSettings.priority;
+		public void UnregisterVisibilitySettings(object caller)
+		{
+			m_VisibilitySettings.Remove(caller);
 		}
 
 		public void SetLength(float length)
@@ -147,10 +137,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					var settings = kvp.Value;
 					if (settings.priority == maxPriority)
 					{
+						Debug.Log(kvp.Key + ", " + settings.rayVisible + ", " + settings.coneVisible + ", " + settings.priority + ", " + Time.frameCount);
 						rayVisible &= settings.rayVisible;
 						coneVisible &= settings.coneVisible;
 					}
 				}
+			}
+			else
+			{
+				Debug.Log("no settings");
 			}
 
 			if (this.rayVisible != rayVisible)
@@ -218,7 +213,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator HideCone()
 		{
-			m_Tester.active = false;
+			//m_Tester.active = false;
 			var currentScale = m_ConeTransform.localScale;
 			var smoothVelocity = Vector3.one;
 			const float kSmoothTime = 0.1875f;
@@ -251,7 +246,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			m_ConeTransform.localScale = m_OriginalConeLocalScale;
 			m_ConeVisibilityCoroutine = null;
-			m_Tester.active = true;
+			//m_Tester.active = true;
 		}
 
 		public Color GetColor()

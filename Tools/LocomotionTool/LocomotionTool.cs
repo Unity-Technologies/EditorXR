@@ -23,6 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		const float k_DistanceThreshold = 0.02f;
 
 		const int k_RayHidePriority = 2;
+		static readonly DefaultRayVisibilitySettings k_HideSettings = new DefaultRayVisibilitySettings { priority = k_RayHidePriority };
 
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
 		const float k_MinScale = 0.1f;
@@ -102,9 +103,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Toggle m_FlyToggle;
 		Toggle m_BlinkToggle;
 		bool m_BlockValueChangedListener;
-
-		readonly DefaultRayVisibilitySettings m_Settings = new DefaultRayVisibilitySettings
-			{ rayVisible = false, coneVisible = true, priority = k_RayHidePriority };
 
 		public ActionMap actionMap { get { return m_BlinkActionMap; } }
 
@@ -335,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_Crawling = true;
 					m_RigStartPosition = cameraRig.position;
 					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
-					registerRayVisibilitySettings(rayOrigin, this, m_Settings);
+					registerRayVisibilitySettings(rayOrigin, this, k_HideSettings);
 				}
 
 				if (m_Crawling)
@@ -356,7 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (m_LocomotionInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
-				registerRayVisibilitySettings(rayOrigin, this, m_Settings);
+				registerRayVisibilitySettings(rayOrigin, this, k_HideSettings);
 
 				m_BlinkVisuals.ShowVisuals();
 
@@ -418,8 +416,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
 								var distance = Vector3.Distance(thisPosition, otherPosition);
 
-								registerRayVisibilitySettings(rayOrigin, this, m_Settings);
-								registerRayVisibilitySettings(otherRayOrigin, this, m_Settings);
+								registerRayVisibilitySettings(rayOrigin, this, k_HideSettings);
+								registerRayVisibilitySettings(otherRayOrigin, this, k_HideSettings);
 
 								var rayToRay = otherPosition - thisPosition;
 								var midPoint = thisPosition + rayToRay * 0.5f;

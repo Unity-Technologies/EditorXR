@@ -420,15 +420,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 					if (dpr)
-						dpr.SetVisibility(caller, settings);
+						dpr.RegisterVisibilitySettings(caller, settings);
 				}
 			}
 
 			internal static void UnregisterVisibilitySettings(Transform rayOrigin, object obj)
 			{
+				if (!rayOrigin) // Prevent MissingReferenceException on closing EVR
+					return;
+
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 				if (dpr)
-					dpr.UnsetRayVisibility(obj);
+					dpr.UnregisterVisibilitySettings(obj);
 			}
 
 			internal void PreProcessRaycastSource(Transform rayOrigin)
