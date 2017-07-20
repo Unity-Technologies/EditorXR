@@ -164,7 +164,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						continue;
 
 					if (!selectionTool.IsDirectActive())
+					{
+						m_HoverGameObjects.Remove(directRayOrigin);
+						this.SetHighlight(directHoveredObject, false, directRayOrigin);
 						continue;
+					}
 
 					// Only overwrite an existing selection if it does not contain the hovered object
 					// In the case of multi-select, only add, do not remove
@@ -237,6 +241,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		bool IsDirectActive()
 		{
 			if (rayOrigin == null)
+				return false;
+
+			if (!this.IsConeActive(rayOrigin))
 				return false;
 
 			if (this.IsInMiniWorld(rayOrigin))

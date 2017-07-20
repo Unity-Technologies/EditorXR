@@ -14,6 +14,7 @@ namespace UnityEditor.Experimental.EditorVR
 	public static class IIsRayActiveMethods
 	{
 		internal static Func<Transform, bool> isRayActive { get; set; }
+		internal static Func<Transform, bool> isConeActive { get; set; }
 
 		/// <summary>
 		/// Returns whether the specified ray is active
@@ -22,6 +23,15 @@ namespace UnityEditor.Experimental.EditorVR
 		public static bool IsRayActive(this IIsRayActive obj, Transform rayOrigin)
 		{
 			return isRayActive(rayOrigin);
+		}
+
+		/// <summary>
+		/// Returns whether the specified cone is active
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin that is being checked</param>
+		public static bool IsConeActive(this IIsRayActive obj, Transform rayOrigin)
+		{
+			return isConeActive(rayOrigin);
 		}
 	}
 }

@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight, ILinkedObject, IRayToNode,
-		IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible,
+		IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible, IIsRayActive,
 		IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>
 	{
 		const float k_LazyFollowTranslate = 8f;
@@ -314,6 +314,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (manipulatorGameObject.activeSelf && (hoveringSelection || hasLeft || hasRight))
 					manipulatorGameObject.SetActive(false);
 
+				//Debug.Log(directSelection.Count);
+
 				foreach (var kvp in directSelection)
 				{
 					var directRayOrigin = kvp.Key;
@@ -335,15 +337,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
+					registerRayVisibilitySettings(directRayOrigin, this, k_HideRaySettings); // This will also disable ray selection
+
+					if (!this.IsConeActive(directRayOrigin))
+						continue;
+
 					var grabbingNode =  this.RequestNodeFromRayOrigin(directRayOrigin);
 					var transformTool = linkedObjects.Cast<TransformTool>().FirstOrDefault(linkedObject => linkedObject.node == grabbingNode);
 					if (transformTool == null)
 						continue;
 
 					var transformInput = transformTool.m_Input;
-
-					Debug.Log("direct " + Time.frameCount);
-					registerRayVisibilitySettings(directRayOrigin, this, k_HideRaySettings); // This will also disable ray selection
 
 					if (transformInput.select.wasJustPressed)
 					{

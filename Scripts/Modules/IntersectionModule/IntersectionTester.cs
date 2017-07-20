@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Ray[] m_Rays;
 		int[] m_Triangles;
 		Vector3[] m_Vertices;
-		Renderer m_Renderer;
+		Collider m_Collider;
 
 		public bool active
 		{
@@ -74,13 +74,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #if !UNITY_EDITOR
 #pragma warning disable 109
 #endif
-		public new Renderer renderer
+		public new Collider collider
 		{
 			get
 			{
-				if (!m_Renderer)
-					m_Renderer = GetComponentInChildren<Renderer>();
-				return m_Renderer;
+				if (!m_Collider)
+					m_Collider = GetComponentInChildren<Collider>();
+				return m_Collider;
 			}
 		}
 

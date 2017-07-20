@@ -137,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					var settings = kvp.Value;
 					if (settings.priority == maxPriority)
 					{
-						Debug.Log(kvp.Key + ", " + settings.rayVisible + ", " + settings.coneVisible + ", " + settings.priority + ", " + Time.frameCount);
+						//Debug.Log(kvp.Key + ", " + settings.rayVisible + ", " + settings.coneVisible + ", " + settings.priority + ", " + Time.frameCount);
 						rayVisible &= settings.rayVisible;
 						coneVisible &= settings.coneVisible;
 					}
@@ -145,7 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 			else
 			{
-				Debug.Log("no settings");
+				//Debug.Log("no settings");
 			}
 
 			if (this.rayVisible != rayVisible)
@@ -157,7 +157,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			if (this.coneVisible != coneVisible)
 			{
-				this.coneVisible = rayVisible;
+				this.coneVisible = coneVisible;
 				this.StopCoroutine(ref m_ConeVisibilityCoroutine);
 				m_ConeVisibilityCoroutine = StartCoroutine(coneVisible ? ShowCone() : HideCone());
 			}
@@ -232,6 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator ShowCone()
 		{
+			//m_Tester.active = true;
 			var currentScale = m_ConeTransform.localScale;
 			var smoothVelocity = Vector3.zero;
 			const float kSmoothTime = 0.3125f;
@@ -246,7 +247,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			m_ConeTransform.localScale = m_OriginalConeLocalScale;
 			m_ConeVisibilityCoroutine = null;
-			//m_Tester.active = true;
 		}
 
 		public Color GetColor()

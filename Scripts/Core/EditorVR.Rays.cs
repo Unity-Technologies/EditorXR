@@ -49,6 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
 				IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
 				IIsRayActiveMethods.isRayActive = IsRayActive;
+				IIsRayActiveMethods.isConeActive = IsConeActive;
 			}
 
 			internal override void OnDestroy()
@@ -408,10 +409,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			internal static bool IsRayActive(Transform rayOrigin)
+			static bool IsRayActive(Transform rayOrigin)
 			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 				return dpr == null || dpr.rayVisible;
+			}
+
+			static bool IsConeActive(Transform rayOrigin)
+			{
+				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+				return dpr == null || dpr.coneVisible;
 			}
 
 			internal static void RegisterVisibilitySettings(Transform rayOrigin, object caller, DefaultRayVisibilitySettings settings)
