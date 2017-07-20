@@ -153,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var maxShaderLineRadius = new Vector3 (0.03f, 0f, 100f);
 			var minShaderLineRadius = new Vector3 (0.005f, 0f, 100f);
 			var currentVector3ShaderLineRadius = m_HintLineMaterial.GetVector(k_ShaderLineRadiusPropertyName);
-			var currentColor = m_ScrollLineRenderer.Colors[0]; // The line stand & end colors are the same; fetch only one of them
+			var currentColor = m_ScrollLineRenderer.colorStart; // The line stand & end colors are the same; fetch only one of them
 			var currentShaderLineRadius = m_HintLineMaterial.GetFloat(k_ShaderLineRadiusPropertyName);
 			while (m_PulseDuration < kTargetDuration)
 			{
