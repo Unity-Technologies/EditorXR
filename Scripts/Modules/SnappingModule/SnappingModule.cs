@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -12,7 +13,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences
+	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, ISetHighlight
 	{
 		public delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null);
 
@@ -29,8 +30,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_MaxRayDot = -0.5f;
 		const float k_RayExtra = 0.02f;
 
-		const float k_WidgetScale = 0.03f;
-
 		const string k_MaterialColorLeftProperty = "_ColorLeft";
 		const string k_MaterialColorRightProperty = "_ColorRight";
 
@@ -46,6 +45,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[SerializeField]
 		Material m_ButtonHighlightMaterial;
 
+		[SerializeField]
+		Material m_HighlightMaterial;
+
 		class SnappingState
 		{
 			public Vector3 currentPosition { get; set; }
@@ -56,17 +58,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public Quaternion startRotation { get; private set; }
 			public Bounds identityBounds { get; private set; }
 
-			public Transform widget { get; set; }
+			public GameObject surfaceObject { get; set; }
+			public GameObject lastSurfaceObject { get; set; }
+			public GameObject[] objects { get; private set; }
+			public Material highlightMaterial { get; set; }
 			public Vector3 snappingPosition { get; set; }
 			public Quaternion snappingRotation { get; set; }
 			public Vector3 snappingNormal { get; set; }
 			public int directionIndex { get; set; }
 
-			public SnappingState(Transform[] transforms, Vector3 position, Quaternion rotation)
+			ISetHighlight m_Highlight;
+
+			public SnappingState(Transform[] transforms, Vector3 position, Quaternion rotation, ISetHighlight highlight)
 			{
 				currentPosition = position;
 				startRotation = rotation;
 				Bounds identityBounds;
+				m_Highlight = highlight;
+
+				objects = transforms.Select(transform => transform.gameObject).ToArray();
 
 				if (transforms.Length == 1)
 				{
@@ -100,8 +110,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			public void OnDestroy()
 			{
-				if (widget)
-					ObjectUtils.Destroy(widget.gameObject);
+				if (highlightMaterial)
+				{
+					foreach (var obj in objects)
+					{
+						m_Highlight.SetHighlight(obj, false, material: highlightMaterial);
+					}
+
+					ObjectUtils.Destroy(highlightMaterial);
+				}
 			}
 		}
 
@@ -394,7 +411,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			if (snappingEnabled)
 			{
-				var camera = CameraUtils.GetMainCamera();
 				var shouldActivateGroundPlane = false;
 				foreach (var statesForRay in m_SnappingStates)
 				{
@@ -404,24 +420,38 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						if (state.groundSnapping)
 							shouldActivateGroundPlane = true;
 
-						var widget = state.widget;
+						var highlightMaterial = state.highlightMaterial;
 						if (state.surfaceSnapping && widgetEnabled)
 						{
-							if (widget == null)
+							if (highlightMaterial == null)
 							{
-								widget = ObjectUtils.Instantiate(m_Widget, transform).transform;
-								state.widget = widget;
+								highlightMaterial = Instantiate(m_HighlightMaterial);
+								state.highlightMaterial = highlightMaterial;
 							}
 
-							widget.gameObject.SetActive(true);
+							var surfaceObject = state.surfaceObject;
+							if (state.lastSurfaceObject != surfaceObject && state.lastSurfaceObject != null)
+								this.SetHighlight(state.lastSurfaceObject, false, material: highlightMaterial);
 
-							var distanceToCamera = Vector3.Distance(camera.transform.position, state.snappingPosition);
-							widget.position = state.snappingPosition;
-							widget.rotation = state.snappingRotation;
-							widget.localScale = Vector3.one * k_WidgetScale * distanceToCamera;
+							state.lastSurfaceObject = surfaceObject;
+
+							foreach (var obj in state.objects)
+							{
+								this.SetHighlight(obj, true, material: highlightMaterial);
+							}
+
+							this.SetHighlight(surfaceObject, true, material: highlightMaterial, force:true);
+							highlightMaterial.SetVector("_FadeCenter", state.snappingPosition);
 						}
-						else if(state.widget != null)
-							widget.gameObject.SetActive(false);
+						else if (highlightMaterial != null)
+						{
+							foreach (var obj in state.objects)
+							{
+								this.SetHighlight(obj, false, material: highlightMaterial);
+							}
+
+							this.SetHighlight(state.lastSurfaceObject, false, material: highlightMaterial);
+						}
 					}
 				}
 
@@ -777,6 +807,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				position = snappedPosition;
 				rotation = !constrained && rotationSnappingEnabled ? snappedRotation : targetRotation;
 
+				state.surfaceObject = go;
 				state.snappingPosition = hitPoint;
 				state.snappingRotation = snappedRotation;
 
@@ -837,7 +868,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			SnappingState state;
 			if (!states.TryGetValue(firstObject, out state))
 			{
-				state = new SnappingState(transforms, position, rotation);
+				state = new SnappingState(transforms, position, rotation, this);
 				states[firstObject] = state;
 			}
 			return state;
