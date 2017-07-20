@@ -12,10 +12,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
 	sealed class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 	{
-		const float k_IconHighlightedLocalZOffset = -0.0015f;
 		const string k_MaterialAlphaProperty = "_Alpha";
 		const string k_MaterialColorTopProperty = "_ColorTop";
 		const string k_MaterialColorBottomProperty = "_ColorBottom";
+
+		[SerializeField]
+		float m_IconHighlightedLocalZOffset = -0.0015f;
 
 		public event Action click;
 		public event Action hoverEnter;
@@ -223,8 +225,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_OriginalContentContainerLocalScale = m_ContentContainer.localScale;
 			m_HighlightContentContainerLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_highlightZScaleMultiplier);
-			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * k_IconHighlightedLocalZOffset;
-			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * k_IconHighlightedLocalZOffset;
+			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
+			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * m_IconHighlightedLocalZOffset;
 
 			m_Icon.color = m_NormalContentColor;
 			m_Text.color = m_NormalContentColor;

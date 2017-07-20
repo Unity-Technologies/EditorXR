@@ -1269,6 +1269,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c14051f25ea615549aeb702ebe3005d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_IconHighlightedLocalZOffset: -0.0015
   m_NormalGradientPair:
     a: {r: 1, g: 0.92156863, b: 0.93333334, a: 1}
     b: {r: 0.7176471, g: 0.10980392, b: 0.10980392, a: 1}
@@ -1737,6 +1738,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c14051f25ea615549aeb702ebe3005d8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_IconHighlightedLocalZOffset: -0.0155
   m_NormalGradientPair:
     a: {r: 0, g: 0, b: 0, a: 0}
     b: {r: 0, g: 0, b: 0, a: 0}
