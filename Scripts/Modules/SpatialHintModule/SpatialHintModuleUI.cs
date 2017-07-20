@@ -280,7 +280,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			scrollArrowsVisible = true;
 			preScrollArrowsVisible = false;
 			secondaryArrowsVisible = false;
-			m_ScrollVisualsTransform.localScale = Vector3.one;
+			m_ScrollVisualsTransform.localScale = Vector3.one * this.GetViewerScale();
 			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, Vector3.up);// CameraUtils.GetMainCamera().transform.forward); // Scroll arrows should face/billboard the user.
 			m_ScrollVisualsCanvasGroup.alpha = 1f; // remove
 			m_ScrollVisualsDragTargetArrowTransform.localPosition = Vector3.zero;
