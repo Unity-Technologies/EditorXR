@@ -234,7 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void UpdateRadialSlots()
 		{
-			var gradientPair = UnityBrandColorScheme.sessionGradient;
+			var gradientPair = UnityBrandColorScheme.saturatedSessionGradient;
 
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
