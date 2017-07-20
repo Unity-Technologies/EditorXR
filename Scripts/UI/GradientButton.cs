@@ -20,6 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public event Action click;
 		public event Action hoverEnter;
 		public event Action hoverExit;
+		public event Action highlightStart;
+		public event Action highlightEnd;
 
 		public Sprite iconSprite
 		{
@@ -67,7 +69,20 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				if (!gameObject.activeInHierarchy)
 					return;
 
-				m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
+				if (m_Highlighted)
+				{
+					m_HighlightCoroutine = StartCoroutine(BeginHighlight());
+					
+					if (highlightStart != null)
+						highlightStart();
+				}
+				else
+				{
+					m_HighlightCoroutine = StartCoroutine(EndHighlight());
+					
+					if (highlightEnd != null)
+						highlightEnd();
+				}
 			}
 		}
 		bool m_Highlighted;
