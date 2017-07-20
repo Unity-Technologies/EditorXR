@@ -5,6 +5,7 @@ using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,7 +13,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, 
-		IUsesViewerBody, IRegisterRayVisibilitySettings
+		IUsesViewerBody, IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>
 	{
 		const float k_PreviewDuration = 0.1f;
 		const float k_MinPreviewScale = 0.01f;
@@ -63,6 +64,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		Coroutine m_VisibilityCoroutine;
 
 		Material m_SphereMaterial;
+
+		readonly DefaultRayVisibilitySettings m_HideConeSettings = new DefaultRayVisibilitySettings { rayVisible = false, coneVisible = true };
 
 		public GameObject icon
 		{
@@ -158,6 +161,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		public float scaleFactor { private get; set; }
+
+		public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { get; set; }
 
 		public override void Setup(AssetData listData)
 		{
@@ -298,7 +303,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.OnDragStarted(handle, eventData);
 
 			var rayOrigin = eventData.rayOrigin;
-			this.RegisterRayVisibilitySettings(rayOrigin, this, false, false);
+			registerRayVisibilitySettings(rayOrigin, this, m_HideConeSettings);
 
 			var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 			var cloneItem = clone.GetComponent<AssetGridItem>();

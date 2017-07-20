@@ -9,17 +9,15 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
+	public struct DefaultRayVisibilitySettings
+	{
+		public int priority;
+		public bool rayVisible;
+		public bool coneVisible;
+	}
+
 	sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
 	{
-		const float k_SetVisibilityDelay = 0.125f;
-
-		class VisibilitySettings
-		{
-			public int priority;
-			public bool rayVisible;
-			public bool coneVisible;
-		}
-
 		[SerializeField]
 		VRLineRenderer m_LineRenderer;
 
@@ -46,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
 		/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
 		/// </summary>
-		readonly Dictionary<object, VisibilitySettings> m_VisibilitySettings = new Dictionary<object, VisibilitySettings>();
+		readonly Dictionary<object, DefaultRayVisibilitySettings> m_VisibilitySettings = new Dictionary<object, DefaultRayVisibilitySettings>();
 
 
 		public void UnsetRayVisibility(object caller)
@@ -78,18 +76,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			this.StopCoroutine(ref m_ConeVisibilityCoroutine);
 		}
 
-		public void SetVisibility(object caller, bool rayVisible, bool coneVisible, int priority = 0)
+		public void SetVisibility(object caller, DefaultRayVisibilitySettings newSettings)
 		{
-			VisibilitySettings settings;
+			DefaultRayVisibilitySettings settings;
 			if (!m_VisibilitySettings.TryGetValue(caller, out settings))
 			{
-				settings = new VisibilitySettings();
+				settings = new DefaultRayVisibilitySettings();
 				m_VisibilitySettings[caller] = settings;
 			}
 
-			settings.rayVisible = rayVisible;
-			settings.coneVisible = coneVisible;
-			settings.priority = priority;
+			settings.rayVisible = newSettings.rayVisible;
+			settings.coneVisible = newSettings.coneVisible;
+			settings.priority = newSettings.priority;
 		}
 
 		public void SetLength(float length)

@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class KeyboardModule : MonoBehaviour, IRegisterRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
+	sealed class KeyboardModule : MonoBehaviour, IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>, IForEachRayOrigin, IConnectInterfaces
 	{
+		static readonly DefaultRayVisibilitySettings k_HideSettings = new DefaultRayVisibilitySettings();
+
 		[SerializeField]
 		KeyboardMallet m_KeyboardMalletPrefab;
 
@@ -22,6 +25,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
 		KeyboardUI m_NumericKeyboard;
 		KeyboardUI m_StandardKeyboard;
+
+		public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { private get; set; }
 
 		public KeyboardUI SpawnNumericKeyboard()
 		{
@@ -98,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					mallet.visible = malletVisible;
 					if (malletVisible)
-						this.RegisterRayVisibilitySettings(rayOrigin, this, false, false);
+						registerRayVisibilitySettings(rayOrigin, this, k_HideSettings);
 					else
 						this.UnregisterRayVisibilitySettings(rayOrigin, this);
 				}

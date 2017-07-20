@@ -20,6 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		class Rays : Nested, IInterfaceConnector
 		{
+			static readonly DefaultRayVisibilitySettings k_HideSettings = new DefaultRayVisibilitySettings();
+
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
 			const float k_DefaultRayLength = 100f;
@@ -39,7 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
 				IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
 
-				IRegisterRayVisibilitySettingsMethods.registerRayVisibilitySettings = RegisterVisibilitySettings;
 				IRegisterRayVisibilitySettingsMethods.unregisterRayVisibilitySettings = UnregisterVisibilitySettings;
 
 				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
@@ -98,6 +99,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					selectionModule.getGroupRoot = GetGroupRoot;
 					selectionModule.overrideSelectObject = OverrideSelectObject;
 				}
+
+				var registerVisibility = obj as IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>;
+				if (registerVisibility != null)
+				{
+					registerVisibility.registerRayVisibilitySettings = RegisterVisibilitySettings;
+				}
 			}
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
@@ -110,11 +117,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var customMenu = deviceData.customMenu;
 				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
-					RegisterVisibilitySettings(rayOrigin, mainMenu, false, false);
+					RegisterVisibilitySettings(rayOrigin, mainMenu, k_HideSettings);
 				}
 				else
 				{
-					RegisterVisibilitySettings(rayOrigin, mainMenu, true, true);
 					UnregisterVisibilitySettings(rayOrigin, mainMenu);
 				}
 			}
@@ -408,13 +414,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return dpr == null || dpr.rayVisible;
 			}
 
-			internal static void RegisterVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
+			internal static void RegisterVisibilitySettings(Transform rayOrigin, object caller, DefaultRayVisibilitySettings settings)
 			{
 				if (rayOrigin)
 				{
 					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 					if (dpr)
-						dpr.SetVisibility(caller, rayVisible, coneVisible, priority);
+						dpr.SetVisibility(caller, settings);
 				}
 			}
 

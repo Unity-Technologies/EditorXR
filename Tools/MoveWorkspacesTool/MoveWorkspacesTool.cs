@@ -1,15 +1,18 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 [ExecuteInEditMode]
-public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IRegisterRayVisibilitySettings, IUsesViewerBody, 
-	IResetWorkspaces, IAllWorkspaces, IUsesViewerScale
+public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesViewerBody,
+	IResetWorkspaces, IAllWorkspaces, IUsesViewerScale, IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>
 {
+	static readonly DefaultRayVisibilitySettings k_HideSettings = new DefaultRayVisibilitySettings();
+
 	enum State
 	{
 		WaitingForInput,
@@ -36,6 +39,8 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 	
 	public Transform rayOrigin { private get; set; }
 	public List<IWorkspace> allWorkspaces { private get; set; }
+
+	public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { get; set; }
 
 	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
@@ -158,7 +163,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 				m_State = State.MoveWorkspaces;
 
-				this.RegisterRayVisibilitySettings(rayOrigin, this, false, false);
+				registerRayVisibilitySettings(rayOrigin, this, k_HideSettings);
 
 				foreach (var ws in allWorkspaces)
 				{

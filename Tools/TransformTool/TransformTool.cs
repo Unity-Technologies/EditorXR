@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -11,9 +12,9 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-		IGrabObjects, IRegisterRayVisibilitySettings, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight,
-		ILinkedObject, IRayToNode, IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler,
-		IIsMainMenuVisible
+		IGrabObjects, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight, ILinkedObject, IRayToNode,
+		IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible,
+		IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -21,6 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		const float k_DirectLazyFollowRotate = 30f;
 
 		const int k_RayHidePriority = 1;
+
+		static readonly DefaultRayVisibilitySettings k_HideRaySettings = new DefaultRayVisibilitySettings { coneVisible = true, priority = k_RayHidePriority };
 
 		class GrabData
 		{
@@ -245,6 +248,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
+		public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { get; set; }
+
 		void Start()
 		{
 			if (!this.IsSharedUpdater(this))
@@ -337,7 +342,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					var transformInput = transformTool.m_Input;
 
-					this.RegisterRayVisibilitySettings(directRayOrigin, this, false, true, k_RayHidePriority); // This will also disable ray selection
+					registerRayVisibilitySettings(directRayOrigin, this, k_HideRaySettings); // This will also disable ray selection
 
 					if (transformInput.select.wasJustPressed)
 					{
@@ -557,7 +562,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					// Prevent lock from getting stuck
 					this.UnregisterRayVisibilitySettings(rayOrigin, this);
-					this.RegisterRayVisibilitySettings(destRayOrigin, this, false, true);
+					registerRayVisibilitySettings(destRayOrigin, this, k_HideRaySettings);
 
 					if (objectsTransferred != null)
 						objectsTransferred(rayOrigin, destRayOrigin);

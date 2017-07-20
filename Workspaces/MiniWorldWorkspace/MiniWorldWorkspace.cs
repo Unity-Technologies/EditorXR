@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -14,7 +14,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
-	sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRegisterRayVisibilitySettings
+	sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>
 	{
 		class MiniWorldTooltip : ITooltip
 		{
@@ -103,6 +103,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			set { m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(value); }
 		}
+
+		public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { get; set; }
 
 		public override void Setup()
 		{

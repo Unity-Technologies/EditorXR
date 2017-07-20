@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -11,8 +12,9 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRegisterRayVisibilitySettings,
-		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences
+	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ICustomActionMap, ILinkedObject,
+		IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
+		IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -101,6 +103,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Toggle m_BlinkToggle;
 		bool m_BlockValueChangedListener;
 
+		readonly DefaultRayVisibilitySettings m_Settings = new DefaultRayVisibilitySettings
+			{ rayVisible = false, coneVisible = true, priority = k_RayHidePriority };
+
 		public ActionMap actionMap { get { return m_BlinkActionMap; } }
 
 		public Transform rayOrigin { get; set; }
@@ -110,6 +115,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
 		public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
+
+		public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { get; set; }
 
 		public GameObject settingsMenuItemInstance
 		{
@@ -189,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void OnDestroy()
 		{
-			this.RegisterRayVisibilitySettings(rayOrigin, this, true, true);
+			this.UnregisterRayVisibilitySettings(rayOrigin, this);
 
 			if (m_ViewerScaleVisuals)
 				ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
@@ -328,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_Crawling = true;
 					m_RigStartPosition = cameraRig.position;
 					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
-					this.RegisterRayVisibilitySettings(rayOrigin, this, false, false, k_RayHidePriority);
+					registerRayVisibilitySettings(rayOrigin, this, m_Settings);
 				}
 
 				if (m_Crawling)
@@ -349,7 +356,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (m_LocomotionInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
-				this.RegisterRayVisibilitySettings(rayOrigin, this, false, false, k_RayHidePriority);
+				registerRayVisibilitySettings(rayOrigin, this, m_Settings);
 
 				m_BlinkVisuals.ShowVisuals();
 
@@ -411,8 +418,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
 								var distance = Vector3.Distance(thisPosition, otherPosition);
 
-								this.RegisterRayVisibilitySettings(rayOrigin, this, false, false, k_RayHidePriority);
-								this.RegisterRayVisibilitySettings(otherRayOrigin, this, false, false, k_RayHidePriority);
+								registerRayVisibilitySettings(rayOrigin, this, m_Settings);
+								registerRayVisibilitySettings(otherRayOrigin, this, m_Settings);
 
 								var rayToRay = otherPosition - thisPosition;
 								var midPoint = thisPosition + rayToRay * 0.5f;

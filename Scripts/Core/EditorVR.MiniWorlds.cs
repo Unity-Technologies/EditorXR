@@ -7,7 +7,6 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -16,6 +15,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale,
 			IUsesSpatialHash
 		{
+			static readonly DefaultRayVisibilitySettings k_HideRayettings = new DefaultRayVisibilitySettings { coneVisible = true };
+
 			internal class MiniWorldRay
 			{
 				readonly List<GrabData> m_GrabData = new List<GrabData>();
@@ -475,13 +476,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 
 					if (isContained && !wasContained)
-						Rays.RegisterVisibilitySettings(rayOrigin, this, false, true);
+						Rays.RegisterVisibilitySettings(rayOrigin, this, k_HideRayettings);
 
 					if (!isContained && wasContained)
-					{
-						Rays.RegisterVisibilitySettings(rayOrigin, this, true, true);
 						Rays.UnregisterVisibilitySettings(rayOrigin, this);
-					}
 
 					m_RayWasContained[rayOrigin] = isContained;
 				});
@@ -589,10 +587,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						miniWorldRay.dragStartedOutside = false;
 
 						if (!miniWorldRay.isContained)
-						{
-							Rays.RegisterVisibilitySettings(rayOrigin, this, true, true);
 							Rays.UnregisterVisibilitySettings(rayOrigin, this);
-						}
 					}
 				}
 			}
