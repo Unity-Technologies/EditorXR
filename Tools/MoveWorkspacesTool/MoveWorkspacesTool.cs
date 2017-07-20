@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [ExecuteInEditMode]
-public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, ISetDefaultRayVisibility, IUsesViewerBody, 
+public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IRegisterRayVisibilitySettings, IUsesViewerBody, 
 	IResetWorkspaces, IAllWorkspaces, IUsesViewerScale
 {
 	enum State
@@ -158,8 +158,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 				m_State = State.MoveWorkspaces;
 
-				this.LockRay(rayOrigin, this);
-				this.SetDefaultRayVisibility(rayOrigin, this, false, false);
+				this.RegisterRayVisibilitySettings(rayOrigin, this, false, false);
 
 				foreach (var ws in allWorkspaces)
 				{
@@ -193,8 +192,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 	{
 		m_State = State.WaitingForInput;
 
-		this.SetDefaultRayVisibility(rayOrigin, this, true, true);
-		this.UnlockRay(rayOrigin, this);
+		this.UnregisterRayVisibilitySettings(rayOrigin, this);
 
 		foreach (var ws in allWorkspaces)
 		{

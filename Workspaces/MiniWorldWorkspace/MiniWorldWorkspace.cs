@@ -14,7 +14,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
-	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ISerializeWorkspace
+	sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRegisterRayVisibilitySettings
 	{
 		class MiniWorldTooltip : ITooltip
 		{
@@ -364,16 +364,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_StartPosition = referenceTransform.position;
 				m_StartScale = referenceTransform.localScale.x;
 			}
-		}
-
-		void DragStarted(BaseHandle handle, HandleEventData handleEventData)
-		{
-			this.LockRay(handleEventData.rayOrigin, this);
-		}
-
-		void DragEnded(BaseHandle handle, HandleEventData handleEventData)
-		{
-			this.UnlockRay(handleEventData.rayOrigin, this);
 		}
 
 		void RecenterOnPlayer()

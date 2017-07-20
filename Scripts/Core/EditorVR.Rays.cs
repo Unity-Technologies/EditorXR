@@ -36,11 +36,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public Rays()
 			{
-				ISetDefaultRayVisibilityMethods.setDefaultRayVisibility = SetDefaultRayVisibility;
 				ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
 				IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
 
-				IUsesRayLockingMethods.unlockRay = UnlockRay;
+				IRegisterRayVisibilitySettingsMethods.registerRayVisibilitySettings = RegisterVisibilitySettings;
+				IRegisterRayVisibilitySettingsMethods.unregisterRayVisibilitySettings = UnregisterVisibilitySettings;
 
 				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
@@ -110,12 +110,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var customMenu = deviceData.customMenu;
 				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
-					SetDefaultRayVisibility(rayOrigin, mainMenu, false, false);
+					RegisterVisibilitySettings(rayOrigin, mainMenu, false, false);
 				}
 				else
 				{
-					SetDefaultRayVisibility(rayOrigin, mainMenu, true, true);
-					UnlockRay(rayOrigin, mainMenu);
+					RegisterVisibilitySettings(rayOrigin, mainMenu, true, true);
+					UnregisterVisibilitySettings(rayOrigin, mainMenu);
 				}
 			}
 
@@ -408,7 +408,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return dpr == null || dpr.rayVisible;
 			}
 
-			internal static void SetDefaultRayVisibility(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
+			internal static void RegisterVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
 			{
 				if (rayOrigin)
 				{
@@ -418,11 +418,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal static void UnlockRay(Transform rayOrigin, object obj)
+			internal static void UnregisterVisibilitySettings(Transform rayOrigin, object obj)
 			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 				if (dpr)
-					dpr.UnlockRay(obj);
+					dpr.UnsetRayVisibility(obj);
 			}
 
 			internal void PreProcessRaycastSource(Transform rayOrigin)

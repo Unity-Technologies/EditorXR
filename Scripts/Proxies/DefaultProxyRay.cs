@@ -13,10 +13,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 	{
 		const float k_SetVisibilityDelay = 0.125f;
 
-		class LockObject
+		class VisibilitySettings
 		{
-			public object lockObject;
 			public int priority;
+			public bool rayVisible;
+			public bool coneVisible;
 		}
 
 		[SerializeField]
@@ -40,85 +41,17 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		IntersectionTester m_Tester;
 		float m_LastPointerLength;
 
-		float m_SetVisibilityTime = Mathf.Infinity;
-		bool m_SetRayVisibile;
-		bool m_SetConeVisibile;
-
 		/// <summary>
 		/// The object that is set when LockRay is called while the ray is unlocked.
 		/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
 		/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
 		/// </summary>
-		readonly List<LockObject> m_Locks = new List<LockObject>();
-		readonly HashSet<object> m_LockCallers = new HashSet<object>();
+		readonly Dictionary<object, VisibilitySettings> m_VisibilitySettings = new Dictionary<object, VisibilitySettings>();
 
-		void LockRay(object caller, int priority = 0)
+
+		public void UnsetRayVisibility(object caller)
 		{
-			if (m_LockCallers.Add(caller))
-			{
-				var maxPriority = 0;
-				var firstIndex = -1;
-				var count = m_Locks.Count;
-				for (var i = 0; i < count; i++)
-				{
-					var lockObject = m_Locks[i];
-					var lockObjectPriority = lockObject.priority;
-					if (lockObjectPriority >= maxPriority)
-						maxPriority = lockObjectPriority;
-
-					if (firstIndex < 0 && lockObjectPriority >= priority)
-						firstIndex = i;
-				}
-
-				var newLock = new LockObject { lockObject = caller, priority = priority };
-				if (priority > maxPriority || firstIndex == -1)
-					m_Locks.Add(newLock);
-				else
-					m_Locks.Insert(firstIndex, newLock);
-			}
-			else
-			{
-				var previousLock = m_Locks.FirstOrDefault(lockObject => lockObject.lockObject == caller);
-				if (previousLock.priority != priority)
-				{
-					m_LockCallers.Remove(caller);
-					m_Locks.Remove(previousLock);
-					LockRay(caller, priority);
-				}
-			}
-		}
-
-		public void UnlockRay(object caller)
-		{
-			if (m_LockCallers.Remove(caller))
-				m_Locks.RemoveAll(o => o.lockObject == caller);
-		}
-
-		bool HasLock(object caller)
-		{
-			if (m_Locks.Count == 0)
-				return true;
-
-			var topLock = m_Locks.Last();
-			while (m_Locks.Count > 0 && topLock.lockObject == null)
-			{
-				m_LockCallers.Remove(topLock.lockObject);
-				m_Locks.Remove(topLock);
-
-				if (m_Locks.Count > 0)
-				{
-					topLock = m_Locks.Last();
-				}
-				else
-				{
-					break;
-				}
-			}
-
-			if (m_Locks.Count == 0)
-				return true;
-
-			return topLock.lockObject == caller;
+			m_VisibilitySettings.Remove(caller);
 		}
 
 		/// <summary>
@@ -147,29 +80,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public void SetVisibility(object caller, bool rayVisible, bool coneVisible, int priority = 0)
 		{
-			LockRay(caller, priority);
-			if (isActiveAndEnabled && HasLock(caller))
+			VisibilitySettings settings;
+			if (!m_VisibilitySettings.TryGetValue(caller, out settings))
 			{
-				Debug.Log("presetvis ray:" + rayVisible + ", cone:" + coneVisible + ", " + this.rayVisible + ", " + this.coneVisible);
-				var time = Time.time;
-				if (this.rayVisible != rayVisible)
-				{
-					if (m_SetVisibilityTime == Mathf.Infinity)
-					{
-						m_SetRayVisibile = rayVisible;
-						m_SetVisibilityTime = time;
-					}
-				}
-
-				if (this.coneVisible != coneVisible)
-				{
-					if (m_SetVisibilityTime == Mathf.Infinity)
-					{
-						m_SetVisibilityTime = time;
-						m_SetConeVisibile = coneVisible;
-					}
-				}
+				settings = new VisibilitySettings();
+				m_VisibilitySettings[caller] = settings;
 			}
+
+			settings.rayVisible = rayVisible;
+			settings.coneVisible = coneVisible;
+			settings.priority = priority;
 		}
 
 		public void SetLength(float length)
@@ -213,25 +133,40 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		void Update()
 		{
-			if (Time.time > m_SetVisibilityTime + k_SetVisibilityDelay)
+			UpdateVisibility();
+		}
+
+		void UpdateVisibility()
+		{
+			var coneVisible = true;
+			var rayVisible = true;
+
+			if (m_VisibilitySettings.Count > 0)
 			{
-				if (rayVisible != m_SetRayVisibile)
+				var maxPriority = m_VisibilitySettings.Select(setting => setting.Value.priority).Max();
+				foreach (var kvp in m_VisibilitySettings)
 				{
-					rayVisible = m_SetRayVisibile;
-					this.StopCoroutine(ref m_RayVisibilityCoroutine);
-					m_RayVisibilityCoroutine = StartCoroutine(rayVisible ? ShowRay() : HideRay());
+					var settings = kvp.Value;
+					if (settings.priority == maxPriority)
+					{
+						rayVisible &= settings.rayVisible;
+						coneVisible &= settings.coneVisible;
+					}
 				}
+			}
 
-				if (coneVisible != m_SetConeVisibile)
-				{
-					coneVisible = m_SetConeVisibile;
-					this.StopCoroutine(ref m_ConeVisibilityCoroutine);
-					m_ConeVisibilityCoroutine = StartCoroutine(coneVisible ? ShowCone() : HideCone());
-				}
+			if (this.rayVisible != rayVisible)
+			{
+				this.rayVisible = rayVisible;
+				this.StopCoroutine(ref m_RayVisibilityCoroutine);
+				m_RayVisibilityCoroutine = StartCoroutine(rayVisible ? ShowRay() : HideRay());
+			}
 
-				Debug.Log("setvis ray:" + rayVisible + ", cone:" + coneVisible);
-
-				m_SetVisibilityTime = Mathf.Infinity;
+			if (this.coneVisible != coneVisible)
+			{
+				this.coneVisible = rayVisible;
+				this.StopCoroutine(ref m_ConeVisibilityCoroutine);
+				m_ConeVisibilityCoroutine = StartCoroutine(coneVisible ? ShowCone() : HideCone());
 			}
 		}
 
