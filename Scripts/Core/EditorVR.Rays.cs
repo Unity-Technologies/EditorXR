@@ -42,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
 
 				IRegisterRayVisibilitySettingsMethods.unregisterRayVisibilitySettings = UnregisterVisibilitySettings;
+				IRegisterRayVisibilitySettingsMethods<DefaultRayVisibilitySettings>.registerRayVisibilitySettings = RegisterVisibilitySettings;
 
 				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
@@ -99,12 +100,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					selectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
 					selectionModule.getGroupRoot = GetGroupRoot;
 					selectionModule.overrideSelectObject = OverrideSelectObject;
-				}
-
-				var registerVisibility = obj as IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>;
-				if (registerVisibility != null)
-				{
-					registerVisibility.registerRayVisibilitySettings = RegisterVisibilitySettings;
 				}
 			}
 

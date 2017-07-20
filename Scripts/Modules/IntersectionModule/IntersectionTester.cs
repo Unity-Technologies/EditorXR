@@ -30,9 +30,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (m_Rays == null || m_Rays.Length != m_RayTransforms.Length)
 				{
 					m_Rays = new Ray[m_RayTransforms.Length];
-					for (int i = 0; i < m_RayTransforms.Length; i++)
+					for (var i = 0; i < m_RayTransforms.Length; i++)
 					{
-						Transform t = m_RayTransforms[i];
+						var t = m_RayTransforms[i];
 						m_Rays[i] = new Ray(transform.InverseTransformPoint(t.position), transform.InverseTransformDirection(t.forward));
 					}
 				}

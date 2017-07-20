@@ -40,8 +40,6 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 	public Transform rayOrigin { private get; set; }
 	public List<IWorkspace> allWorkspaces { private get; set; }
 
-	public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { get; set; }
-
 	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
 		var action = ((Standard)input).action;
@@ -163,7 +161,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 				m_State = State.MoveWorkspaces;
 
-				registerRayVisibilitySettings(rayOrigin, this, k_HideSettings);
+				this.RegisterRayVisibilitySettings(rayOrigin, this, k_HideSettings);
 
 				foreach (var ws in allWorkspaces)
 				{

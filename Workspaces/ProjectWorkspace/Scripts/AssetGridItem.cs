@@ -162,8 +162,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public float scaleFactor { private get; set; }
 
-		public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { get; set; }
-
 		public override void Setup(AssetData listData)
 		{
 			base.Setup(listData);
@@ -303,7 +301,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.OnDragStarted(handle, eventData);
 
 			var rayOrigin = eventData.rayOrigin;
-			registerRayVisibilitySettings(rayOrigin, this, m_HideConeSettings);
+			this.RegisterRayVisibilitySettings(rayOrigin, this, m_HideConeSettings);
 
 			var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 			var cloneItem = clone.GetComponent<AssetGridItem>();

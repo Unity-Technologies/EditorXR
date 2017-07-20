@@ -248,8 +248,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
-		public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { get; set; }
-
 		void Start()
 		{
 			if (!this.IsSharedUpdater(this))
@@ -337,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
-					registerRayVisibilitySettings(directRayOrigin, this, k_HideRaySettings); // This will also disable ray selection
+					this.RegisterRayVisibilitySettings(directRayOrigin, this, k_HideRaySettings); // This will also disable ray selection
 
 					if (!this.IsConeActive(directRayOrigin))
 						continue;
@@ -567,7 +565,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					// Prevent lock from getting stuck
 					this.UnregisterRayVisibilitySettings(rayOrigin, this);
-					registerRayVisibilitySettings(destRayOrigin, this, k_HideRaySettings);
+					this.RegisterRayVisibilitySettings(destRayOrigin, this, k_HideRaySettings);
 
 					if (objectsTransferred != null)
 						objectsTransferred(rayOrigin, destRayOrigin);

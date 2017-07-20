@@ -38,8 +38,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			Freeform,
 		}
 
-		public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { get; set; }
-
 		void Start()
 		{
 			m_ToolMenu = this.InstantiateMenuUI(rayOrigin, m_MenuPrefab);
@@ -85,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 			else
 			{
-				registerRayVisibilitySettings(rayOrigin, this, m_Settings);
+				this.RegisterRayVisibilitySettings(rayOrigin, this, m_Settings);
 			}
 		}
 

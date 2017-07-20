@@ -26,8 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		KeyboardUI m_NumericKeyboard;
 		KeyboardUI m_StandardKeyboard;
 
-		public RegisterRayVisibilitySettingsDelegate<DefaultRayVisibilitySettings> registerRayVisibilitySettings { private get; set; }
-
 		public KeyboardUI SpawnNumericKeyboard()
 		{
 			if (m_StandardKeyboard != null)
@@ -103,7 +101,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					mallet.visible = malletVisible;
 					if (malletVisible)
-						registerRayVisibilitySettings(rayOrigin, this, k_HideSettings);
+						this.RegisterRayVisibilitySettings(rayOrigin, this, k_HideSettings);
 					else
 						this.UnregisterRayVisibilitySettings(rayOrigin, this);
 				}

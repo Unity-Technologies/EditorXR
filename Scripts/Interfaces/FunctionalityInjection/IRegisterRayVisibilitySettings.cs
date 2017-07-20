@@ -8,9 +8,13 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Implementors can show & hide the default ray
 	/// </summary>
-	public interface IRegisterRayVisibilitySettings<out T> where T : struct
+	public interface IRegisterRayVisibilitySettings<T> where T : struct
 	{
-		RegisterRayVisibilitySettingsDelegate<T> registerRayVisibilitySettings { set; }
+	}
+
+	public static class IRegisterRayVisibilitySettingsMethods<T>
+	{
+		public static RegisterRayVisibilitySettingsDelegate<T> registerRayVisibilitySettings;
 	}
 
 	public static class IRegisterRayVisibilitySettingsMethods
@@ -25,10 +29,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="rayVisible">Show or hide</param>
 		/// <param name="coneVisible">An optional parameter to hide or show only the ray and not the cone</param>
 		/// <param name="priority">The priority level of this request</param>
-		//public static void RegisterRayVisibilitySettings<T>(this IRegisterRayVisibilitySettings<T> customRay, Transform rayOrigin, object caller, T settings, int priority = 0)
-		//{
-		//	customRay.registerRayVisibilitySettings(rayOrigin, caller, settings, priority);
-		//}
+		public static void RegisterRayVisibilitySettings<T>(this IRegisterRayVisibilitySettings<T> customRay, Transform rayOrigin, object caller, T settings, int priority = 0) where T : struct
+		{
+			IRegisterRayVisibilitySettingsMethods<T>.registerRayVisibilitySettings(rayOrigin, caller, settings);
+		}
 
 		/// <summary>
 		/// Unregister visibility settings

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -36,7 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		Coroutine m_RayVisibilityCoroutine;
 		Coroutine m_ConeVisibilityCoroutine;
 		Material m_RayMaterial;
-		IntersectionTester m_Tester;
 		float m_LastPointerLength;
 
 		/// <summary>
@@ -107,7 +105,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_RayMaterial = MaterialUtils.GetMaterialClone(m_LineRenderer.GetComponent<MeshRenderer>());
 			m_ConeTransform = m_Cone.transform;
 			m_OriginalConeLocalScale = m_ConeTransform.localScale;
-			m_Tester = GetComponentInChildren<IntersectionTester>();
 
 			rayVisible = true;
 			coneVisible = true;

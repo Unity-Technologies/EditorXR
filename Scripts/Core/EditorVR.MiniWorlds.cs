@@ -230,7 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var renderers = miniWorldRay.GetComponentsInChildren<Renderer>();
 				foreach (var renderer in renderers)
 				{
-					if (!renderer.GetComponent<IntersectionTester>())
+					if (!renderer.GetComponentInParent<IntersectionTester>())
 						ObjectUtils.Destroy(renderer.gameObject);
 					else
 						renderer.enabled = false;
