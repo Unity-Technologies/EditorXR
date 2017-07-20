@@ -163,6 +163,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static GradientPair grayscaleSessionGradient { get; private set; }
 
 		/// <summary>
+		/// A darker low-contrast grayscale Unity brand color gradient, having no chroma
+		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements (Gradient Button insets, etc)
+		/// </summary>
+		public static GradientPair darkGrayscaleSessionGradient { get; private set; }
+
+		/// <summary>
 		/// Static Constructor that sets up the swatch and gradient data
 		/// </summary>
 		static UnityBrandColorScheme()
@@ -243,6 +249,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			// Setup grayscale light/dark contrasting session gradient
 			grayscaleSessionGradient = new GradientPair(MaterialUtils.HexToColor("898A8AFF"), s_Light);
+			darkGrayscaleSessionGradient = new GradientPair(MaterialUtils.HexToColor("636565FF"), MaterialUtils.HexToColor("484949FF"));
 
 			// Setup neutral-luma curated gradient pairs
 			s_CuratedGradientPairs.Add(new GradientPair(cyan, blueDark));
