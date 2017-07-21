@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 	{
 		protected const float k_BaseManipulatorSize = 0.3f;
 		const float k_MinHandleTipDirectionDelta = 0.01f;
-		const float k_LazyFollow = 50f;
+		const float k_LazyFollow = 40f;
 
 		class HandleTip
 		{
@@ -28,13 +28,19 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 		protected List<BaseHandle> m_AllHandles;
 
 		[SerializeField]
-		float m_LinearHandleScaleBump = 1.5f;
+		float m_LinearHandleScaleBump = 1.8f;
 
 		[SerializeField]
-		float m_PlaneHandleScaleBump = 1.1f;
+		float m_PlaneHandleScaleBump = 1.2f;
 
 		[SerializeField]
 		float m_SphereHandleScaleBump = 1.1f;
+
+		[SerializeField]
+		float m_HandleAlpha = 0.4f;
+
+		[SerializeField]
+		float m_HandleHoverAlpha = 0.8f;
 
 		readonly Dictionary<Type, float> m_ScaleBumps = new Dictionary<Type, float>();
 		readonly Dictionary<Transform, HandleTip> m_HandleTips = new Dictionary<Transform, HandleTip>();
@@ -54,27 +60,31 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			m_ScaleBumps[typeof(LinearHandle)] = m_LinearHandleScaleBump;
 			m_ScaleBumps[typeof(PlaneHandle)] = m_PlaneHandleScaleBump;
 			m_ScaleBumps[typeof(SphereHandle)] = m_SphereHandleScaleBump;
+
+			foreach (var handle in m_AllHandles)
+			{
+				MaterialUtils.CloneMaterials(handle.GetComponent<Renderer>());
+
+				handle.hoverStarted += OnHandleHoverStarted;
+				handle.hovering += OnHandleHovering;
+				handle.hoverEnded += OnHandleHoverEnded;
+
+
+				handle.dragStarted += OnHandleDragStarted;
+				handle.dragging += OnHandleDragging;
+				handle.dragEnded += OnHandleDragEnded;
+			}
 		}
 
 		protected virtual void OnEnable()
 		{
 			if (adjustScaleForCamera)
 				Camera.onPreRender += OnCameraPreRender;
-
-			foreach (var h in m_AllHandles)
-			{
-				SetUpHandle(h);
-			}
 		}
 
 		protected virtual void OnDisable()
 		{
 			Camera.onPreRender -= OnCameraPreRender;
-
-			foreach (var h in m_AllHandles)
-			{
-				TakeDownHandle(h);
-			}
 
 			foreach (var kvp in m_HandleTips)
 			{
@@ -82,36 +92,26 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			}
 		}
 
-		protected virtual void SetUpHandle(BaseHandle handle)
+		void OnDestroy()
 		{
-			handle.hoverStarted += OnHandleHoverStarted;
-			handle.hovering += OnHandleHovering;
-			handle.hoverEnded += OnHandleHoverEnded;
-
-
-			handle.dragStarted += OnHandleDragStarted;
-			handle.dragging += OnHandleDragging;
-			handle.dragEnded += OnHandleDragEnded;
+			foreach (var handle in m_AllHandles)
+			{
+				ObjectUtils.Destroy(handle.GetComponent<Renderer>().sharedMaterial);
+			}
 		}
 
-		protected virtual void TakeDownHandle(BaseHandle handle)
-		{
-			handle.hoverStarted -= OnHandleHoverStarted;
-			handle.hovering -= OnHandleHovering;
-			handle.hoverEnded -= OnHandleHoverEnded;
-
-
-			handle.dragStarted -= OnHandleDragStarted;
-			handle.dragging -= OnHandleDragging;
-			handle.dragEnded -= OnHandleDragEnded;
-		}
-
-		void ScaleBump(BaseHandle handle, bool scaleUp)
+		protected virtual void ShowHoverState(BaseHandle handle, bool hovering)
 		{
 			var type = handle.GetType();
 			float scaleBump;
 			if (m_ScaleBumps.TryGetValue(type, out scaleBump))
-				handle.transform.localScale = scaleUp ? handle.transform.localScale * scaleBump : handle.transform.localScale / scaleBump;
+				handle.transform.localScale = hovering ? handle.transform.localScale * scaleBump : handle.transform.localScale / scaleBump;
+
+			var handleRenderer = handle.GetComponent<Renderer>();
+			var material = handleRenderer.sharedMaterial;
+			var color = material.color;
+			color.a = hovering ? m_HandleHoverAlpha : m_HandleAlpha;
+			material.color = color;
 		}
 
 		void OnCameraPreRender(Camera camera)
@@ -140,7 +140,6 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 				handleTipRenderer = m_HandleTip;
 				if (m_HandleTips.Count > 0)
 					handleTipRenderer = ObjectUtils.Instantiate(handleTipRenderer.gameObject, transform).GetComponent<Renderer>();
-				MaterialUtils.CloneMaterials(handleTipRenderer);
 
 				handleTip = new HandleTip { renderer = handleTipRenderer };
 				m_HandleTips[rayOrigin] = handleTip;
@@ -155,12 +154,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			var handleTipGameObject = handleTipRenderer.gameObject;
 			var wasActive = handleTipGameObject.activeSelf;
 			handleTipGameObject.SetActive(active);
+			var handleTipTransform = handleTipRenderer.transform;
 
 			if (active) // Reposition handle tip based on current raycast position when hovering or dragging
 			{
-				handleTipRenderer.sharedMaterial.color = handle.GetComponent<Renderer>().sharedMaterial.color;
+				handleTipRenderer.sharedMaterial = handle.GetComponent<Renderer>().sharedMaterial;
 
-				var handleTipTransform = handleTipRenderer.transform;
 				var handleTransform = handle.transform;
 				var handleTipPosition = handleTipTransform.position;
 				var distanceFromRayOrigin = Vector3.Distance(handleTipPosition, rayOrigin.position);
@@ -215,7 +214,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 				}
 
 				if (handle.hasDragSource && !handleTip.positionOffset.HasValue)
-					handleTip.positionOffset = handle.transform.InverseTransformPoint(handleTransform.position);
+					handleTip.positionOffset = handle.transform.InverseTransformPoint(handleTipTransform.position);
 			}
 			else if(!handle.hasDragSource)
 			{
@@ -225,13 +224,14 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 		protected virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
 		{
-			if (handle.IndexOfHoverSource(eventData.rayOrigin) > 0)
+			var rayOrigin = eventData.rayOrigin;
+			if (handle.IndexOfHoverSource(rayOrigin) > 0)
 				return;
 
 			if (!handle.hasDragSource)
 			{
+				ShowHoverState(handle, true);
 				UpdateHandleTip(handle, eventData, true);
-				ScaleBump(handle, true);
 			}
 		}
 
@@ -240,12 +240,14 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			if (handle.IndexOfHoverSource(eventData.rayOrigin) > 0)
 				return;
 
-			UpdateHandleTip(handle, eventData, !handle.hasDragSource);
+			if (!handle.hasDragSource)
+				UpdateHandleTip(handle, eventData, true);
 		}
 
 		protected virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData)
 		{
-			if (handle.IndexOfHoverSource(eventData.rayOrigin) > 0)
+			var rayOrigin = eventData.rayOrigin;
+			if (handle.IndexOfHoverSource(rayOrigin) > 0)
 				return;
 
 			if (!handle.hasDragSource)
@@ -253,7 +255,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 				UpdateHandleTip(handle, eventData, false);
 
 				if (!handle.hasHoverSource)
-					ScaleBump(handle, false);
+					ShowHoverState(handle, false);
 			}
 		}
 
@@ -266,11 +268,15 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			foreach (var h in m_AllHandles)
 				h.gameObject.SetActive(h == handle);
 
+			foreach (var kvp in m_HandleTips)
+				kvp.Value.renderer.gameObject.SetActive(false);
+
 			if (dragStarted != null)
 				dragStarted();
 
 			dragging = true;
 
+			ShowHoverState(handle, false);
 			UpdateHandleTip(handle, eventData, true);
 		}
 
@@ -299,8 +305,8 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 			dragging = false;
 
-			if (!handle.hasDragSource && !handle.hasHoverSource)
-				ScaleBump(handle, false);
+			if (!handle.hasDragSource && handle.hasHoverSource)
+				ShowHoverState(handle, true);
 		}
 	}
 }
