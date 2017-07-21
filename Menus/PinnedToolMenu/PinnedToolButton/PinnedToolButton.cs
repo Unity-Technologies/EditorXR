@@ -296,7 +296,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_Visible;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
-		public Transform tooltipTarget { get { return m_TooltipTarget; } }
+		public Transform tooltipTarget { get { return m_TooltipTarget; } set { m_TooltipTarget = value; } }
 		public Transform tooltipSource { get { return m_TooltipSource; } }
 		public TextAlignment tooltipAlignment { get; private set; }
 		public Transform rayOrigin { get; set; }
@@ -560,11 +560,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//transform.localPosition = activePosition;
 			}
 
-			var tooltipSourcePosition = new Vector3(node == Node.LeftHand ? -0.01267f : 0.01267f, tooltipSource.localPosition.y, tooltipSource.localPosition.z);
-			var tooltipXOffset = node == Node.LeftHand ? -0.15f : 0.15f;
-			tooltipSource.localPosition = tooltipSourcePosition;
-			tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
-			m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
+			//var tooltipSourcePosition = new Vector3(node == Node.LeftHand ? -0.01267f : 0.01267f, tooltipSource.localPosition.y, tooltipSource.localPosition.z);
+			//var tooltipXOffset = node == Node.LeftHand ? -0.15f : 0.15f;
+			//tooltipSource.localPosition = tooltipSourcePosition;
+			//tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
+			//m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
+
+			var tooltipSourcePosition = new Vector3(0f, tooltipSource.localPosition.y, tooltipSource.localPosition.z);
+			//tooltipSource.localPosition = tooltipSourcePosition;
+			tooltipAlignment = TextAlignment.Center;
+			//m_TooltipTarget.localPosition = new Vector3(0, 0, -0.5f);
 
 			m_GradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
 			m_GradientButton.hoverExit += OnActionButtonHoverExit;
@@ -1163,11 +1168,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var iconLookDirection = m_IconContainer.transform.position + transform.forward * kIconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
 			m_IconContainer.LookAt(iconLookDirection);
 			m_IconContainer.localEulerAngles = new Vector3(0f, 0f, m_IconContainer.localEulerAngles.z);
-			var angle = m_IconContainer.localEulerAngles.z;
-			m_TooltipTarget.localEulerAngles = new Vector3(90f, 90f, angle);
 
-			var yaw = transform.localRotation.eulerAngles.y;
-			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
+			//tooltipSource.localRotation = m_IconContainer.localRotation;
+			//var angle = m_IconContainer.localEulerAngles.z;
+			//m_TooltipTarget.localEulerAngles = new Vector3(0, 0, angle);
+
+			//var yaw = transform.localRotation.eulerAngles.y;
+			//tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Center : TextAlignment.Center;
 		}
 
 		IEnumerator ShowSecondaryButton()

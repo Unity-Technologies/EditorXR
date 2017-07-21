@@ -30,6 +30,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Vector3 m_AlternateLocalScale;
 
+		[SerializeField]
+		Transform m_ButtonTooltipTarget;
+
 		bool m_AllButtonsVisible;
 		List<IPinnedToolButton> m_OrderedButtons;
 		Coroutine m_ShowHideAllButtonsCoroutine;
@@ -240,6 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.closeButton = DeleteHighlightedButton;
 			button.visibileButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
 			button.iconHighlightedLocalZOffset = k_RaySelectIconHighlightedZOffset;
+			button.tooltipTarget = m_ButtonTooltipTarget;
 			button.hovered += OnButtonHover;
 
 			bool allowSecondaryButton = false; // Secondary button is the close button

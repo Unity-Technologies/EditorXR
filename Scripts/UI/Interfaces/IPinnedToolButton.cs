@@ -20,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR
 		bool toolTipVisible { set; }
 		bool implementsSecondaryButton { get; set; }
 		Vector3 primaryUIContentContainerLocalScale { get; set; }
+		Transform tooltipTarget { get; set; }
 		Action destroy { get; }
 		Action<Type> selectTool { get; set; }
 		Func<int> visibileButtonCount { get; set; }
