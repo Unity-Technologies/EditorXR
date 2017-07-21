@@ -15,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
 			readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
 			readonly List<IGrabObjects> m_ObjectGrabbers = new List<IGrabObjects>();
+			readonly List<IUsesDirectSelection> m_DirectSelectionUsers = new List<IUsesDirectSelection>();
 
 			IntersectionModule m_IntersectionModule;
 
@@ -25,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public DirectSelection()
 			{
 				IUsesDirectSelectionMethods.getDirectSelection = () => m_DirectSelections;
+				IUsesDirectSelectionMethods.resetDirectSelectionState = ResetDirectSelectionState;
 
 				ICanGrabObjectMethods.canGrabObject = CanGrabObject;
 
@@ -41,6 +43,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					grabObjects.objectsDropped += OnObjectsDropped;
 					grabObjects.objectsTransferred += OnObjectsTransferred;
 				}
+
+				var usesDirectSelection = obj as IUsesDirectSelection;
+				if (usesDirectSelection != null)
+					m_DirectSelectionUsers.Add(usesDirectSelection);
 			}
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
@@ -239,6 +245,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var grabber in m_ObjectGrabbers)
 				{
 					grabber.TransferHeldObjects(rayOrigin, destRayOrigin, deltaOffset);
+				}
+			}
+
+			void ResetDirectSelectionState()
+			{
+				foreach (var usesDirectSelection in m_DirectSelectionUsers)
+				{
+					usesDirectSelection.OnResetDirectSelectionState();
 				}
 			}
 		}

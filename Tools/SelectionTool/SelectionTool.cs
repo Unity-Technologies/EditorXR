@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject, IMenuIcon
+		ICanGrabObject, IGetManipulatorDragState, IMenuIcon
 	{
 		[SerializeField]
 		Sprite m_Icon;
@@ -36,6 +36,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			if (this.GetManipulatorDragState())
+				return;
+
 			m_SelectionInput = (SelectionInput)input;
 
 			var multiSelect = false;
@@ -156,6 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (m_PressedObject == hoveredObject)
 				{
 					this.SelectObject(m_PressedObject, rayOrigin, multiSelect, true);
+					this.ResetDirectSelectionState();
 
 					if (m_PressedObject != null)
 						this.SetHighlight(m_PressedObject, false, rayOrigin);
@@ -204,6 +208,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 			m_HoverGameObjects.Clear();
 		}
+
+		public void OnResetDirectSelectionState() { }
 	}
 }
 #endif

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -27,6 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		Coroutine m_RayVisibilityCoroutine;
 		Coroutine m_ConeVisibilityCoroutine;
 		Material m_RayMaterial;
+		IntersectionTester m_Tester;
 
 		/// <summary>
 		/// The object that is set when LockRay is called while the ray is unlocked.
@@ -144,6 +146,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_RayMaterial = MaterialUtils.GetMaterialClone(m_LineRenderer.GetComponent<MeshRenderer>());
 			m_ConeTransform = m_Cone.transform;
 			m_OriginalConeLocalScale = m_ConeTransform.localScale;
+			m_Tester = GetComponentInChildren<IntersectionTester>();
 		}
 
 		private void Start()
@@ -202,6 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator HideCone()
 		{
+			m_Tester.active = false;
 			var currentScale = m_ConeTransform.localScale;
 			var smoothVelocity = Vector3.one;
 			const float kSmoothTime = 0.1875f;
@@ -234,6 +238,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			m_ConeTransform.localScale = m_OriginalConeLocalScale;
 			m_ConeVisibilityCoroutine = null;
+			m_Tester.active = true;
 		}
 
 		void OnDestroy()

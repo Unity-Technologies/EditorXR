@@ -459,6 +459,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void SetHideFlags(HideFlags hideFlags)
 		{
+			ObjectUtils.hideFlags = hideFlags;
+
 			foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
 			{
 				manager.gameObject.hideFlags = hideFlags;

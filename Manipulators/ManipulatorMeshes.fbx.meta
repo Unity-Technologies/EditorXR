@@ -11,27 +11,32 @@ ModelImporter:
     100006: RadialHandle
     100008: RadialHandleCollider
     100010: //RootNode
+    100012: FatRadialHandle
     400000: HandleCone
     400002: LinearHandle
     400004: LinearHandleCollider
     400006: RadialHandle
     400008: RadialHandleCollider
     400010: //RootNode
+    400012: FatRadialHandle
     2300000: HandleCone
     2300002: LinearHandle
     2300004: LinearHandleCollider
     2300006: RadialHandle
     2300008: RadialHandleCollider
+    2300010: FatRadialHandle
     3300000: HandleCone
     3300002: LinearHandle
     3300004: LinearHandleCollider
     3300006: RadialHandle
     3300008: RadialHandleCollider
+    3300010: FatRadialHandle
     4300000: HandleCone
     4300002: LinearHandleCollider
     4300004: LinearHandle
     4300006: RadialHandleCollider
     4300008: RadialHandle
+    4300010: FatRadialHandle
     9500000: //RootNode
   materials:
     importMaterials: 0
@@ -43,6 +48,8 @@ ModelImporter:
     resampleCurves: 1
     optimizeGameObjects: 0
     motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -71,7 +78,7 @@ ModelImporter:
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
-    useFileScale: 1
+    useFileScale: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -79,6 +86,7 @@ ModelImporter:
   importAnimation: 1
   copyAvatar: 0
   humanDescription:
+    serializedVersion: 2
     human: []
     skeleton: []
     armTwist: 0.5
@@ -89,7 +97,10 @@ ModelImporter:
     legStretch: 0.05
     feetSpacing: 0
     rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
     hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
   animationType: 2
   humanoidOversampling: 1
