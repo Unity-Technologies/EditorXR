@@ -1164,10 +1164,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_IconContainer.LookAt(iconLookDirection);
 			m_IconContainer.localEulerAngles = new Vector3(0f, 0f, m_IconContainer.localEulerAngles.z);
 			var angle = m_IconContainer.localEulerAngles.z;
-			m_TooltipTarget.localEulerAngles = new Vector3(90f, 0f, angle);
+			m_TooltipTarget.localEulerAngles = new Vector3(90f, 90f, angle);
 
 			var yaw = transform.localRotation.eulerAngles.y;
-			//tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
+			tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Right : TextAlignment.Left;
 		}
 
 		IEnumerator ShowSecondaryButton()
@@ -1251,7 +1251,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kSecondaryButtonFrameVisibleBlendShapeWeight = 16f;
 			const float kTargetDuration = 1f;
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
-			this.ShowTooltip(this);
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
@@ -1266,7 +1265,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kSecondaryButtonFrameHiddenBlendShapeWeight = 0f;
 			const float kTargetDuration = 1f;
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
-			this.ShowTooltip(this);
+			this.hideTooltip(this);
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
