@@ -47,8 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
 				IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
-				IIsRayActiveMethods.isRayActive = IsRayActive;
-				IIsRayActiveMethods.isConeActive = IsConeActive;
+				IGetRayVisibilityMethods.isRayVisible = IsRayActive;
+				IGetRayVisibilityMethods.isConeVisible = IsConeActive;
 			}
 
 			internal override void OnDestroy()

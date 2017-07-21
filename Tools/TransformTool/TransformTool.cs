@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight, ILinkedObject, IRayToNode,
-		IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible, IIsRayActive,
+		IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible, IGetRayVisibility,
 		IRayVisibilitySettings
 	{
 		const float k_LazyFollowTranslate = 8f;
@@ -335,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					this.AddRayVisibilitySettings(directRayOrigin, this, false, true, k_RayHidePriority); // This will also disable ray selection
 
-					if (!this.IsConeActive(directRayOrigin))
+					if (!this.IsConeVisible(directRayOrigin))
 						continue;
 
 					var grabbingNode =  this.RequestNodeFromRayOrigin(directRayOrigin);

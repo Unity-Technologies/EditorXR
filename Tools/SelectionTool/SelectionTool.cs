@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IIsRayActive, IIsMainMenuVisible, IIsInMiniWorld, IRayToNode,
+		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld, IRayToNode,
 		IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility
 	{
 		const float k_MultiselectHueShift = 0.5f;
@@ -243,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (rayOrigin == null)
 				return false;
 
-			if (!this.IsConeActive(rayOrigin))
+			if (!this.IsConeVisible(rayOrigin))
 				return false;
 
 			if (this.IsInMiniWorld(rayOrigin))
@@ -269,7 +269,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (this.IsInMiniWorld(rayOrigin))
 				return false;
 
-			if (!this.IsRayActive(rayOrigin))
+			if (!this.IsRayVisible(rayOrigin))
 				return false;
 
 			return true;
