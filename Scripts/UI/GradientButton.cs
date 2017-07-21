@@ -16,9 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		const string k_MaterialColorTopProperty = "_ColorTop";
 		const string k_MaterialColorBottomProperty = "_ColorBottom";
 
-		[SerializeField]
-		float m_IconHighlightedLocalZOffset = -0.0015f;
-
 		public event Action click;
 		public event Action hoverEnter;
 		public event Action hoverExit;
@@ -185,6 +182,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		[SerializeField]
 		Graphic[] m_HighlightItems;
 
+		[SerializeField]
+		float m_IconHighlightedLocalZOffset = -0.0015f;
+
 		[Header("Animated Reveal Settings")]
 		[Tooltip("Default value is 0.25")]
 		// If AnimatedReveal is enabled, wait this duration before performing the reveal
@@ -214,8 +214,16 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		Coroutine m_IconHighlightCoroutine;
 
 		public bool invertHighlightScale { private get; set; }
-
 		public float containerContentsAnimationSpeedMultiplier { set { m_ContainerContentsAnimationSpeedMultiplier = value; }}
+
+		public float iconHighlightedLocalZOffset
+		{
+			set
+			{
+				m_IconHighlightedLocalZOffset = value;
+				m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
+			}
+		}
 
 		void Awake()
 		{
