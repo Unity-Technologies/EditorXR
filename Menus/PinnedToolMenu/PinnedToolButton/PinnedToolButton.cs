@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		const string k_MaterialColorProperty = "_Color";
 		const string k_MaterialAlphaProperty = "_Alpha";
 		const string k_SelectionToolTipText = "Selection Tool (cannot be closed)";
-		const string k_MainMenuTipText = "Main Menu (cannot be closed)";
+		const string k_MainMenuTipText = "Main Menu";
 		readonly Vector3 k_ToolButtonActivePosition = new Vector3(0f, 0f, -0.035f);
 		readonly Vector3 k_SemiTransparentIconContainerScale = new Vector3(1.375f, 1.375f, 1f);
 
