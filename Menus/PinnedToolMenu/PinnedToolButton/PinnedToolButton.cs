@@ -523,6 +523,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 
 		public Vector3 primaryUIContentContainerLocalScale { get { return m_PrimaryUIContentContainer.localScale; } set { m_PrimaryUIContentContainer.localScale = value; } }
+		public float iconHighlightedLocalZOffset { set { m_GradientButton.iconHighlightedLocalZOffset = value; } }
 
 		void Awake()
 		{

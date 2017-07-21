@@ -253,7 +253,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				allowSpatialScrollBeforeThisTime = Time.realtimeSinceStartup + kAutoHideDuration;
 				allowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
 				this.SetSpatialHintControlObject(rayOrigin);
-				m_PinnedToolsMenuUI.beginningSpatialScrolling = true; // Triggers the display of the directional hint arrows
+				m_PinnedToolsMenuUI.SpatiallyScrolling = true; // Triggers the display of the directional hint arrows
 
 				//Dont show if the user hasnt passed the threshold in the given duration
 			}

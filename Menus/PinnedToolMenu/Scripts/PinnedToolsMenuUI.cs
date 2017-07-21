@@ -17,6 +17,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
 		const int k_InactiveButtonInitialOrderPosition = -1;
+		const float k_RaySelectIconHighlightedZOffset = -0.0075f;
+		const float k_SpatialSelectIconHighlightedZOffset = -0.02f;
 
 		[SerializeField]
 		Transform m_ButtonContainer;
@@ -66,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					//this.Pulse(rayOrigin, 0.5f, 0.065f, false, true);
 					//spatialDragDistance = 0f;
 					ShowOnlyMenuAndActiveToolButtons();
-
+					SpatiallyScrolling = false;
 					this.SetSpatialHintRotationTarget(Vector3.zero);
 				}
 			}
@@ -102,10 +104,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public bool beginningSpatialScrolling
+		public bool SpatiallyScrolling
 		{
 			set
 			{
+				for (int i = 0; i < m_OrderedButtons.Count; ++i)
+				{
+					var button = m_OrderedButtons[i];
+					button.iconHighlightedLocalZOffset = value ? k_SpatialSelectIconHighlightedZOffset : k_RaySelectIconHighlightedZOffset;
+				}
+
 				if (value)
 				{
 					Debug.LogWarning("SETTING Spatial Drag Distance  : " + value);
@@ -231,6 +239,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.selectTool = SelectExistingToolType;
 			button.closeButton = DeleteHighlightedButton;
 			button.visibileButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
+			button.iconHighlightedLocalZOffset = k_RaySelectIconHighlightedZOffset;
 			button.hovered += OnButtonHover;
 
 			bool allowSecondaryButton = false; // Secondary button is the close button

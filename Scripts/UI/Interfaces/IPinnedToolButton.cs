@@ -13,6 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Type toolType { get; set; }
 		int order { get; set; }
 		int maxButtonCount { get; set; }
+		float iconHighlightedLocalZOffset { set; }
 		bool highlighted { get; set; }
 		bool secondaryButtonHighlighted { get; }
 		bool activeTool { get; set; }
