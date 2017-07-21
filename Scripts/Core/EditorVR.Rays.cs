@@ -20,8 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		class Rays : Nested, IInterfaceConnector
 		{
-			static readonly DefaultRayVisibilitySettings k_HideSettings = new DefaultRayVisibilitySettings();
-
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
 			const float k_DefaultRayLength = 100f;
@@ -42,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
 
 				IRegisterRayVisibilitySettingsMethods.unregisterRayVisibilitySettings = UnregisterVisibilitySettings;
-				IRegisterRayVisibilitySettingsMethods<DefaultRayVisibilitySettings>.registerRayVisibilitySettings = RegisterVisibilitySettings;
+				IRegisterRayVisibilitySettingsMethods.registerRayVisibilitySettings = RegisterVisibilitySettings;
 
 				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
@@ -113,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var customMenu = deviceData.customMenu;
 				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
-					RegisterVisibilitySettings(rayOrigin, mainMenu, k_HideSettings);
+					RegisterVisibilitySettings(rayOrigin, mainMenu, false, false);
 				}
 				else
 				{
@@ -416,13 +414,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return dpr == null || dpr.coneVisible;
 			}
 
-			internal static void RegisterVisibilitySettings(Transform rayOrigin, object caller, DefaultRayVisibilitySettings settings)
+			internal static void RegisterVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
 			{
 				if (rayOrigin)
 				{
 					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 					if (dpr)
-						dpr.RegisterVisibilitySettings(caller, settings);
+						dpr.RegisterVisibilitySettings(caller, rayVisible, coneVisible, priority);
 				}
 			}
 

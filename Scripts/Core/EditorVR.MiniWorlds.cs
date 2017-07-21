@@ -15,8 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale,
 			IUsesSpatialHash
 		{
-			static readonly DefaultRayVisibilitySettings k_HideRayettings = new DefaultRayVisibilitySettings { coneVisible = true };
-
 			internal class MiniWorldRay
 			{
 				readonly List<GrabData> m_GrabData = new List<GrabData>();
@@ -476,7 +474,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 
 					if (isContained && !wasContained)
-						Rays.RegisterVisibilitySettings(rayOrigin, this, k_HideRayettings);
+						Rays.RegisterVisibilitySettings(rayOrigin, this, false, true);
 
 					if (!isContained && wasContained)
 						Rays.UnregisterVisibilitySettings(rayOrigin, this);

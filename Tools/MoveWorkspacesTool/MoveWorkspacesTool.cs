@@ -9,10 +9,8 @@ using UnityEngine.InputNew;
 
 [ExecuteInEditMode]
 public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesViewerBody,
-	IResetWorkspaces, IAllWorkspaces, IUsesViewerScale, IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>
+	IResetWorkspaces, IAllWorkspaces, IUsesViewerScale, IRegisterRayVisibilitySettings
 {
-	static readonly DefaultRayVisibilitySettings k_HideSettings = new DefaultRayVisibilitySettings();
-
 	enum State
 	{
 		WaitingForInput,
@@ -161,7 +159,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 				m_State = State.MoveWorkspaces;
 
-				this.RegisterRayVisibilitySettings(rayOrigin, this, k_HideSettings);
+				this.RegisterRayVisibilitySettings(rayOrigin, this, false, false);
 
 				foreach (var ws in allWorkspaces)
 				{

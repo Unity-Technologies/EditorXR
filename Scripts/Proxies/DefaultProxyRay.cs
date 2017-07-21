@@ -8,15 +8,15 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	public struct DefaultRayVisibilitySettings
-	{
-		public int priority;
-		public bool rayVisible;
-		public bool coneVisible;
-	}
-
 	sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
 	{
+		struct DefaultRayVisibilitySettings
+		{
+			public int priority;
+			public bool rayVisible;
+			public bool coneVisible;
+		}
+
 		[SerializeField]
 		VRLineRenderer m_LineRenderer;
 
@@ -62,15 +62,24 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public bool rayVisible { get; private set; }
 		public bool coneVisible { get; private set; }
 
+		[MenuItem("Tools/test")]
+		public static void Test()
+		{
+			var settings = new Dictionary<object, DefaultRayVisibilitySettings>();
+			var obj = new object();
+			for(int i =0; i<1000;i++)
+				settings[obj] = new DefaultRayVisibilitySettings { rayVisible = true, coneVisible = false, priority = 1 };
+		}
+
 		void OnDisable()
 		{
 			this.StopCoroutine(ref m_RayVisibilityCoroutine);
 			this.StopCoroutine(ref m_ConeVisibilityCoroutine);
 		}
 
-		public void RegisterVisibilitySettings(object caller, DefaultRayVisibilitySettings newSettings)
+		public void RegisterVisibilitySettings(object caller, bool rayVisible, bool coneVisible, int priority = 0)
 		{
-			m_VisibilitySettings[caller] = newSettings;
+			m_VisibilitySettings[caller] = new DefaultRayVisibilitySettings { rayVisible = rayVisible, coneVisible = coneVisible, priority = priority };
 		}
 
 		public void UnregisterVisibilitySettings(object caller)

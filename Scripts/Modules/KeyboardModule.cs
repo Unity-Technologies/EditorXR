@@ -9,10 +9,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class KeyboardModule : MonoBehaviour, IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>, IForEachRayOrigin, IConnectInterfaces
+	sealed class KeyboardModule : MonoBehaviour, IRegisterRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
 	{
-		static readonly DefaultRayVisibilitySettings k_HideSettings = new DefaultRayVisibilitySettings();
-
 		[SerializeField]
 		KeyboardMallet m_KeyboardMalletPrefab;
 
@@ -101,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					mallet.visible = malletVisible;
 					if (malletVisible)
-						this.RegisterRayVisibilitySettings(rayOrigin, this, k_HideSettings);
+						this.RegisterRayVisibilitySettings(rayOrigin, this, false, false);
 					else
 						this.UnregisterRayVisibilitySettings(rayOrigin, this);
 				}

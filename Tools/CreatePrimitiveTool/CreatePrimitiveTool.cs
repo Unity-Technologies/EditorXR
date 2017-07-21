@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -9,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
 		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
-		IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>
+		IRegisterRayVisibilitySettings
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
@@ -27,7 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Vector3 m_EndPoint = Vector3.zero;
 
 		PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
-		readonly DefaultRayVisibilitySettings m_Settings = new DefaultRayVisibilitySettings { rayVisible = false, coneVisible = true };
 
 		public Transform rayOrigin { get; set; }
 
@@ -78,13 +76,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 
 			if (m_State == PrimitiveCreationStates.StartPoint && this.IsHoveringOverUI(rayOrigin))
-			{
 				this.UnregisterRayVisibilitySettings(rayOrigin, this);
-			}
 			else
-			{
-				this.RegisterRayVisibilitySettings(rayOrigin, this, m_Settings);
-			}
+				this.RegisterRayVisibilitySettings(rayOrigin, this, false, true);
 		}
 
 		void SetSelectedPrimitive(PrimitiveType type, bool isFreeform)

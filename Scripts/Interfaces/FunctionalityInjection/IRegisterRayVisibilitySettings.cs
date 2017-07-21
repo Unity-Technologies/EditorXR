@@ -4,42 +4,39 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	public delegate void RegisterRayVisibilitySettingsDelegate<in T>(Transform rayOrigin, object caller, T settings);
 	/// <summary>
 	/// Implementors can show & hide the default ray
 	/// </summary>
-	public interface IRegisterRayVisibilitySettings<T> where T : struct
+	public interface IRegisterRayVisibilitySettings
 	{
-	}
-
-	public static class IRegisterRayVisibilitySettingsMethods<T>
-	{
-		public static RegisterRayVisibilitySettingsDelegate<T> registerRayVisibilitySettings;
 	}
 
 	public static class IRegisterRayVisibilitySettingsMethods
 	{
+		public delegate void RegisterRayVisibilitySettingsDelegate(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0);
+
 		internal static Action<Transform, object> unregisterRayVisibilitySettings { get; set; }
+		public static RegisterRayVisibilitySettingsDelegate registerRayVisibilitySettings;
 
 		/// <summary>
 		/// Register visibility settings to try and show/hide the ray/cone
 		/// </summary>
 		/// <param name="rayOrigin">The ray to hide or show</param>
-		/// <param name="caller">The object which has locked the ray</param>
-		/// <param name="rayVisible">Show or hide</param>
-		/// <param name="coneVisible">An optional parameter to hide or show only the ray and not the cone</param>
+		/// <param name="caller">The object which is adding settings</param>
+		/// <param name="rayVisible">Show or hide the ray</param>
+		/// <param name="coneVisible">Show or hide the cone</param>
 		/// <param name="priority">The priority level of this request</param>
-		public static void RegisterRayVisibilitySettings<T>(this IRegisterRayVisibilitySettings<T> customRay, Transform rayOrigin, object caller, T settings, int priority = 0) where T : struct
+		public static void RegisterRayVisibilitySettings(this IRegisterRayVisibilitySettings customRay, Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
 		{
-			IRegisterRayVisibilitySettingsMethods<T>.registerRayVisibilitySettings(rayOrigin, caller, settings);
+			registerRayVisibilitySettings(rayOrigin, caller, rayVisible, coneVisible, priority);
 		}
 
 		/// <summary>
 		/// Unregister visibility settings
 		/// </summary>
-		/// <param name="rayOrigin">The ray to hide or show</param>
-		/// <param name="caller">The object which has locked the ray</param>
-		public static void UnregisterRayVisibilitySettings<T>(this IRegisterRayVisibilitySettings<T> customRay, Transform rayOrigin, object caller) where T : struct 
+		/// <param name="rayOrigin">The ray to remove settings from</param>
+		/// <param name="caller">The object whose settings to remove</param>
+		public static void UnregisterRayVisibilitySettings(this IRegisterRayVisibilitySettings customRay, Transform rayOrigin, object caller)
 		{
 			unregisterRayVisibilitySettings(rayOrigin, caller);
 		}

@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight, ILinkedObject, IRayToNode,
 		IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible, IIsRayActive,
-		IRegisterRayVisibilitySettings<DefaultRayVisibilitySettings>
+		IRegisterRayVisibilitySettings
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -22,8 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		const float k_DirectLazyFollowRotate = 30f;
 
 		const int k_RayHidePriority = 1;
-
-		static readonly DefaultRayVisibilitySettings k_HideRaySettings = new DefaultRayVisibilitySettings { coneVisible = true, priority = k_RayHidePriority };
 
 		class GrabData
 		{
@@ -335,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
-					this.RegisterRayVisibilitySettings(directRayOrigin, this, k_HideRaySettings); // This will also disable ray selection
+					this.RegisterRayVisibilitySettings(directRayOrigin, this, false, true, k_RayHidePriority); // This will also disable ray selection
 
 					if (!this.IsConeActive(directRayOrigin))
 						continue;
@@ -565,7 +563,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					// Prevent lock from getting stuck
 					this.UnregisterRayVisibilitySettings(rayOrigin, this);
-					this.RegisterRayVisibilitySettings(destRayOrigin, this, k_HideRaySettings);
+					this.RegisterRayVisibilitySettings(destRayOrigin, this, false, true, k_RayHidePriority);
 
 					if (objectsTransferred != null)
 						objectsTransferred(rayOrigin, destRayOrigin);
