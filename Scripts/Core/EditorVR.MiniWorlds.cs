@@ -474,10 +474,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 
 					if (isContained && !wasContained)
-						Rays.RegisterVisibilitySettings(rayOrigin, this, false, true);
+						Rays.AddVisibilitySettings(rayOrigin, this, false, true);
 
 					if (!isContained && wasContained)
-						Rays.UnregisterVisibilitySettings(rayOrigin, this);
+						Rays.RemoveVisibilitySettings(rayOrigin, this);
 
 					m_RayWasContained[rayOrigin] = isContained;
 				});
@@ -585,7 +585,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						miniWorldRay.dragStartedOutside = false;
 
 						if (!miniWorldRay.isContained)
-							Rays.UnregisterVisibilitySettings(rayOrigin, this);
+							Rays.RemoveVisibilitySettings(rayOrigin, this);
 					}
 				}
 			}

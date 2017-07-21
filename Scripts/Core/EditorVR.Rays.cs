@@ -39,8 +39,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
 				IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
 
-				IRegisterRayVisibilitySettingsMethods.unregisterRayVisibilitySettings = UnregisterVisibilitySettings;
-				IRegisterRayVisibilitySettingsMethods.registerRayVisibilitySettings = RegisterVisibilitySettings;
+				IRayVisibilitySettingsMethods.removeRayVisibilitySettings = RemoveVisibilitySettings;
+				IRayVisibilitySettingsMethods.addRayVisibilitySettings = AddVisibilitySettings;
 
 				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
@@ -111,11 +111,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var customMenu = deviceData.customMenu;
 				if (mainMenu.visible || (customMenu != null && customMenu.visible))
 				{
-					RegisterVisibilitySettings(rayOrigin, mainMenu, false, false);
+					AddVisibilitySettings(rayOrigin, mainMenu, false, false);
 				}
 				else
 				{
-					UnregisterVisibilitySettings(rayOrigin, mainMenu);
+					RemoveVisibilitySettings(rayOrigin, mainMenu);
 				}
 			}
 
@@ -414,24 +414,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return dpr == null || dpr.coneVisible;
 			}
 
-			internal static void RegisterVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
+			internal static void AddVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
 			{
 				if (rayOrigin)
 				{
 					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 					if (dpr)
-						dpr.RegisterVisibilitySettings(caller, rayVisible, coneVisible, priority);
+						dpr.AddVisibilitySettings(caller, rayVisible, coneVisible, priority);
 				}
 			}
 
-			internal static void UnregisterVisibilitySettings(Transform rayOrigin, object obj)
+			internal static void RemoveVisibilitySettings(Transform rayOrigin, object obj)
 			{
 				if (!rayOrigin) // Prevent MissingReferenceException on closing EVR
 					return;
 
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 				if (dpr)
-					dpr.UnregisterVisibilitySettings(obj);
+					dpr.RemoveVisibilitySettings(obj);
 			}
 
 			internal void PreProcessRaycastSource(Transform rayOrigin)

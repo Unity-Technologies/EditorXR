@@ -62,27 +62,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public bool rayVisible { get; private set; }
 		public bool coneVisible { get; private set; }
 
-		[MenuItem("Tools/test")]
-		public static void Test()
-		{
-			var settings = new Dictionary<object, DefaultRayVisibilitySettings>();
-			var obj = new object();
-			for(int i =0; i<1000;i++)
-				settings[obj] = new DefaultRayVisibilitySettings { rayVisible = true, coneVisible = false, priority = 1 };
-		}
-
 		void OnDisable()
 		{
 			this.StopCoroutine(ref m_RayVisibilityCoroutine);
 			this.StopCoroutine(ref m_ConeVisibilityCoroutine);
 		}
 
-		public void RegisterVisibilitySettings(object caller, bool rayVisible, bool coneVisible, int priority = 0)
+		public void AddVisibilitySettings(object caller, bool rayVisible, bool coneVisible, int priority = 0)
 		{
 			m_VisibilitySettings[caller] = new DefaultRayVisibilitySettings { rayVisible = rayVisible, coneVisible = coneVisible, priority = priority };
 		}
 
-		public void UnregisterVisibilitySettings(object caller)
+		public void RemoveVisibilitySettings(object caller)
 		{
 			m_VisibilitySettings.Remove(caller);
 		}

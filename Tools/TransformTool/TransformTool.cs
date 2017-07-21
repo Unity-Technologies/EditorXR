@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
 		IGrabObjects, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight, ILinkedObject, IRayToNode,
 		IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible, IIsRayActive,
-		IRegisterRayVisibilitySettings
+		IRayVisibilitySettings
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
@@ -333,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
-					this.RegisterRayVisibilitySettings(directRayOrigin, this, false, true, k_RayHidePriority); // This will also disable ray selection
+					this.AddRayVisibilitySettings(directRayOrigin, this, false, true, k_RayHidePriority); // This will also disable ray selection
 
 					if (!this.IsConeActive(directRayOrigin))
 						continue;
@@ -484,7 +484,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var rayOrigin = transformTool.rayOrigin;
 					if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node.Value)))
 					{
-						this.UnregisterRayVisibilitySettings(rayOrigin, this);
+						this.RemoveRayVisibilitySettings(rayOrigin, this);
 					}
 				}
 			}
@@ -562,8 +562,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					grabData.UpdatePositions(this);
 
 					// Prevent lock from getting stuck
-					this.UnregisterRayVisibilitySettings(rayOrigin, this);
-					this.RegisterRayVisibilitySettings(destRayOrigin, this, false, true, k_RayHidePriority);
+					this.RemoveRayVisibilitySettings(rayOrigin, this);
+					this.AddRayVisibilitySettings(destRayOrigin, this, false, true, k_RayHidePriority);
 
 					if (objectsTransferred != null)
 						objectsTransferred(rayOrigin, destRayOrigin);
@@ -587,7 +587,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			m_GrabData.Remove(node);
 
-			this.UnregisterRayVisibilitySettings(grabData.rayOrigin, this);
+			this.RemoveRayVisibilitySettings(grabData.rayOrigin, this);
 
 			this.ClearSnappingState(rayOrigin);
 		}
