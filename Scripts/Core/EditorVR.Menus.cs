@@ -45,6 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
+			readonly List<IWorkspace> m_WorkspaceComponents = new List<IWorkspace>();
 			readonly Collider[] m_WorkspaceOverlaps = new Collider[k_PossibleOverlaps];
 
 			public Menus()
@@ -147,8 +148,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					{
 						foreach (var overlap in m_WorkspaceOverlaps)
 						{
-							if (overlap && overlap.GetComponent<IWorkspace>() != null)
-								hoveringWorkspace = true;
+							if (overlap)
+							{
+								m_WorkspaceComponents.Clear();
+								overlap.GetComponents(m_WorkspaceComponents);
+								if (m_WorkspaceComponents.Count > 0)
+									hoveringWorkspace = true;
+							}
 						}
 					}
 
