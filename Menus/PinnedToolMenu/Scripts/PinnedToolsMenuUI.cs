@@ -263,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_VisibleButtonCount = aboveMinimumButtonCount ? m_OrderedButtons.Count : 1;
 
 			button.implementsSecondaryButton = allowSecondaryButton;
-			button.activeTool = true;
+			button.isActiveTool = true;
 			button.order = insertPosition;
 
 			buttonTransform.rotation = Quaternion.identity;
@@ -358,7 +358,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];
-				button.activeTool = i == k_ActiveToolOrderPosition;
+				button.isActiveTool = i == k_ActiveToolOrderPosition;
 				// Allow settings of regular button order if there are more buttons that just the MainMenu & SelectionTool
 				button.order = aboveMinimumButtonCount || IsMainMenuButton(button) ? i : k_InactiveButtonInitialOrderPosition;
 			}
@@ -372,7 +372,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];
-				button.activeTool = i == k_ActiveToolOrderPosition; // Set the button gradients // TODO Consider handling insid button via k_ActiveToolOrder position comparison
+				button.isActiveTool = i == k_ActiveToolOrderPosition; // Set the button gradients // TODO Consider handling insid button via k_ActiveToolOrder position comparison
 				button.order = i == k_MenuButtonOrderPosition ? k_InactiveButtonInitialOrderPosition : i - 1; // Hide the menu buttons when revealing all tools buttons
 			}
 		}

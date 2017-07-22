@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						//gradientPair = UnityBrandColorScheme.GetRandomCuratedLightGradient();
 					}
 
-					activeTool = activeTool;
+					isActiveTool = isActiveTool;
 					m_GradientButton.visible = true;
 					//m_IconMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
 
@@ -160,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					}
 
 					// Show the grayscale highlight when previewing a tool on this button
-					m_GradientButton.highlightGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
+					m_GradientButton.highlightGradientPair = UnityBrandColorScheme.saturatedSessionGradient; // UnityBrandColorScheme.grayscaleSessionGradient;
 
 					if (!previewIcon)
 						m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
@@ -171,7 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 				else
 				{
-					activeTool = activeTool; // Set active tool back to pre-preview state
+					isActiveTool = isActiveTool; // Set active tool back to pre-preview state
 					icon = icon; // Gradient button will set its icon back to that representing the current tool, if one existed before previewing new tool type in this button
 					m_GradientButton.highlightGradientPair = gradientPair;
 					//customToolTipHighlightColor = gradientPair;
@@ -335,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//public event Action<Transform> hoverExit;
 		public event Action<Transform> selected;
 
-		public bool activeTool
+		public bool isActiveTool
 		{
 			get { return m_ActiveTool; }
 			set

@@ -17,8 +17,8 @@ namespace UnityEditor.Experimental.EditorVR
 		bool revealed { set; }
 		bool moveToAlternatePosition { set; }
 		Transform rayOrigin { get; set; }
-		Type previewToolType { set; }
 		Vector3 alternateMenuItem { get; } // Shared active button offset from the alternate menu
+		IPinnedToolButton previewToolButton { get; }
 
 		event Action<Transform> hoverEnter;
 		event Action<Transform> hoverExit;

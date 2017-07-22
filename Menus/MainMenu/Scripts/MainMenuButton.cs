@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IPointerClickHandler
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
 	{
 		[SerializeField]
 		Button m_Button;
@@ -18,7 +18,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Text m_ButtonTitle;
 
-		Transform m_HoveringRayOrigin;
 		Color m_OriginalColor;
 		IPinnedToolButton m_HighlightedPinnedToolbutton;
 		Transform m_RayOrigin;
@@ -84,8 +83,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
 			m_InteractingRayOrigin = eventData.rayOrigin;
 
-			// Enable preview-mode on a pinned tool button; Display on the opposite proxy device via the HoveringRayOrigin
-			m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(m_HoveringRayOrigin, toolType);
+			if (toolType != null && m_InteractingRayOrigin != null)
+			{
+				// Enable preview-mode on a pinned tool button; Display on the opposite proxy device via the HoveringRayOrigin
+				m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(m_InteractingRayOrigin, toolType);
+				// TODO convert to a function that is returned, that is called if non-null, instead of a direct reference to the button.
+			}
 
 			//m_RayOrigin = eventData.rayOrigin; // TODO: evaluate this need for m_RayOrigin
 			if (hovered != null)
@@ -94,12 +97,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			if (m_HoveringRayOrigin == eventData.rayOrigin)
-			m_HoveringRayOrigin = null;
+			//if (m_InteractingRayOrigin == eventData.rayOrigin)
+				//m_InteractingRayOrigin = null;
 		
 			// Disable preview-mode on pinned tool button
 			if (m_HighlightedPinnedToolbutton != null)
-			m_HighlightedPinnedToolbutton.previewToolType = null;
+				m_HighlightedPinnedToolbutton.previewToolType = null;
 		
 			//m_RayOrigin = TODO: remove 
 		

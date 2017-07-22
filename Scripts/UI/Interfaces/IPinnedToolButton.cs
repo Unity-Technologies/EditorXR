@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR
 		float iconHighlightedLocalZOffset { set; }
 		bool highlighted { get; set; }
 		bool secondaryButtonHighlighted { get; }
-		bool activeTool { get; set; }
+		bool isActiveTool { get; set; }
 		bool toolTipVisible { set; }
 		bool implementsSecondaryButton { get; set; }
 		Vector3 primaryUIContentContainerLocalScale { get; set; }

@@ -48,6 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		Transform m_RayOrigin;
 		Transform m_AlternateMenuOrigin;
+		IPinnedToolButton m_MainMenuButton;
 
 		public Transform menuOrigin { get; set; }
 		List<IPinnedToolButton> buttons { get { return m_PinnedToolsMenuUI.buttons; } }
@@ -55,7 +56,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public int activeToolOrderPosition { get; private set; }
 		public bool revealed { get; set; }
 		public bool moveToAlternatePosition { set { m_PinnedToolsMenuUI.moveToAlternatePosition = value; } }
-		public Type previewToolType { get; set; }
 		public Vector3 alternateMenuItem { get; private set; }
 
 		public Action<Transform, int, bool> HighlightSingleButton { get; set; }
@@ -69,6 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Node? node { get; set; }
 
 		public Action<Transform, Type> selectTool { get; set; }
+		public IPinnedToolButton previewToolButton { get { return m_MainMenuButton; } }
 
 		public Transform rayOrigin
 		{
@@ -192,6 +193,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//button.hoverEnter += onButtonHoverExit;
 			//button.hoverExit += onButtonHoverExit;
 			button.rayOrigin = rayOrigin;
+
+			if (toolType == typeof(IMainMenu))
+				m_MainMenuButton = button;
 
 			m_PinnedToolsMenuUI.AddButton(button, buttonTransform);
 		}

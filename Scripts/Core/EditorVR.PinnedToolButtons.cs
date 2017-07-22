@@ -181,30 +181,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!toolType.GetInterfaces().Contains(typeof(ITool)))
 					return null;
 
-				IPinnedToolButton pinnedToolButton = null;
+				IPinnedToolButton previewPinnedToolButton = null;
 				Rays.ForEachProxyDevice((deviceData) =>
 				{
 					if (deviceData.rayOrigin == rayOrigin) // enable pinned tool preview on the opposite (handed) device
 					{
 						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
-						pinnedToolsMenu.previewToolType = toolType;
-						/*
-						var pinnedToolButtons = deviceData.pinnedToolButtons;
-						foreach (var pair in pinnedToolButtons)
-						{
-							var button = pair.Value;
-							if (button.order == button.activeToolOrderPosition)
-							{
-								pinnedToolButton = button;
-								pinnedToolButton.previewToolType = toolType;
-								break;
-							}
-						}
-						*/
+						previewPinnedToolButton = pinnedToolsMenu.previewToolButton;
+						previewPinnedToolButton.previewToolType = toolType;
 					}
 				});
 
-				return pinnedToolButton;
+				return previewPinnedToolButton;
 			}
 
 			internal void ToolButtonClicked(Transform rayOrigin, Type toolType)
