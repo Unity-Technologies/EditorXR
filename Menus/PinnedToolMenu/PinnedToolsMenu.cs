@@ -215,15 +215,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kAutoHideDuration = 10f;
 			const float kAllowToggleDuration = 0.25f;
 			var pinnedToolInput = (PinnedToolslMenuInput) input;
-			/*
-			if (continuedInputConsumptionStartTime != null)
-			{
-				// Continue consumption of the "show" input for period of time after releasing the button
-				consumeControl(pinnedToolInput.show);
-				if (Time.realtimeSinceStartup > continuedInputConsumptionStartTime.Value)
-					continuedInputConsumptionStartTime = null;
-			}
-			*/
 
 			if (pinnedToolInput.show.wasJustPressed)
 				Debug.LogError("<color=black>SHOW pressed in PinnedToolButton</color>");
@@ -342,14 +333,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		// TODO refact into ISpatialScrolling interface; allow axis locking/selection/isolation
 		float processSpatialScrolling(Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1)
 		{
-			//Debug.LogError("Start position : <color=red>" + startingPosition + "</color> - Current Position : " + currentPosition);
 			var normalizedLoopingPosition = 0f;
 			var directionVector = currentPosition - startingPosition;
 			const float kMaxFineTuneVelocity = 0.0005f;
-			//const float kMinFineTuneVelocity = 0.000001f;
 			if (spatialDirection == null)
 			{
-				Debug.LogWarning("spatial Direction is NULL - setting new one in processSpatialScrolling");
 				var newDirectionVectorThreshold = 0.0175f * this.GetViewerScale(); // Initial magnitude beyond which spatial scrolling will be evaluated
 				var dragMagnitude = Vector3.Magnitude(directionVector);
 				var dragPercentage = dragMagnitude / newDirectionVectorThreshold;
@@ -359,7 +347,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (dragMagnitude > newDirectionVectorThreshold)
 				{
 					spatialDirection = directionVector; // initialize vector defining the spatial scroll direciton
-					Debug.LogError("<color=green>" + spatialDirection.Value.ToString("F4") + "</color>");
 					m_PinnedToolsMenuUI.startingDragOrigin = spatialDirection;
 				}
 			}
@@ -367,8 +354,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				var rawVelocity = (previousWorldPosition - transform.position).sqrMagnitude;
 				var velocity = rawVelocity * Time.unscaledDeltaTime;
-				//Debug.LogError("<color=green>" + velocity + "</color> : Raw Velocity : " + rawVelocity + " : unscaled time : " + Time.unscaledDeltaTime);
-
 				if (velocity < kMaxFineTuneVelocity) // && velocity > kMinFineTuneVelocity)
 				{
 					// OFfset the vector increasingly as velocity slows, in order to lessen the perceived scrolling magnitude

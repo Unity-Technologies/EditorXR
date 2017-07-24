@@ -12,9 +12,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		bool m_HideOnInitialize = true;
 
-		//[SerializeField]
-		//Image m_Icon;
-
 		[SerializeField]
 		VRLineRenderer m_ScrollLineRenderer;
 
@@ -45,39 +42,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public float LineWidth { set { m_ScrollLineRenderer.SetWidth(value, value); } }
 		public Vector3[] Positions { set { m_ScrollLineRenderer.SetPositions(value) ; } }
 
-		/*
-		public bool visible
-		{
-			set
-			{
-				if (value)
-					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
-				else
-					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
-			}
-		}
-
-		public Color visibleColor
-		{
-			set
-			{
-				m_VisibleColor = value;
-				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
-			}
-		}
-		*/
-
 		void Awake()
 		{
-			/*
-			m_IconTransform = m_Icon.transform;
-			m_VisibleLocalScale = m_IconTransform.localScale * 1.25F;
-			m_Icon.color = m_VisibleColor;
-
-			if (m_HideOnInitialize)
-				visible = false;
-			*/
-
 			m_ScrollLineRenderer.SetVertexCount(4);
 			m_ScrollLineRenderer.useWorldSpace = true;
 			m_ScrollLineRenderer.SetWidth(0f, 0f);
@@ -89,56 +55,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			ObjectUtils.Destroy(m_HintLineMaterial);
 		}
 
-		/*
-		IEnumerator AnimateShow()
-		{
-			var currentDuration = 0f;
-			var targetDuration = 0f;
-			var currentLocalScale = m_IconTransform.localScale;
-			if (currentLocalScale == k_HiddenScale)
-			{
-				// Only perform delay if fully hidden; otherwise resume showing
-				targetDuration = Random.Range(0.25f, 0.35f); // Set an initial random wait duration
-				while (currentDuration < targetDuration)
-				{
-					currentDuration += Time.unscaledDeltaTime;
-					yield return null;
-				}
-			}
-
-			currentDuration = 0f;
-			targetDuration = 0.125f; // Set animated reveal duration
-			var currentColor = m_Icon.color;
-			while (currentDuration < targetDuration)
-			{
-				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / targetDuration);
-				m_IconTransform.localScale = Vector3.Lerp(currentLocalScale, m_VisibleLocalScale, shapedDuration);
-				m_Icon.color = Color.Lerp(currentColor, m_VisibleColor, shapedDuration);
-				currentDuration += Time.unscaledDeltaTime;
-				yield return null;
-			}
-
-			m_IconTransform.localScale = m_VisibleLocalScale;
-		}
-
-		IEnumerator AnimateHide()
-		{
-			var currentDuration = 0f;
-			var targetDuration = Random.Range(0.125f, 0.25f); // Set an initial random wait duration
-			var currentLocalScale = m_IconTransform.localScale;
-			var currentColor = m_Icon.color;
-			while (currentDuration < targetDuration)
-			{
-				m_IconTransform.localScale = Vector3.Lerp(currentLocalScale, k_HiddenScale, currentDuration / targetDuration);
-				m_Icon.color = Color.Lerp(currentColor, m_HiddenColor, currentDuration);
-				currentDuration += Time.unscaledDeltaTime;
-				yield return null;
-			}
-
-			m_IconTransform.localScale = k_HiddenScale;
-		}
-		*/
-
 		public void PulseColor()
 		{
 			if (Mathf.Approximately(m_PulseDuration, 0f) || m_PulseDuration > 0.85f)
@@ -147,7 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimatePulseColor()
 		{
-			//Debug.LogError("Pulsing color of hint arrow : " + gameObject.name);
 			const float kTargetDuration = 1f;
 			m_PulseDuration = 0f;
 			var maxShaderLineRadius = new Vector3 (0.03f, 0f, 100f);
