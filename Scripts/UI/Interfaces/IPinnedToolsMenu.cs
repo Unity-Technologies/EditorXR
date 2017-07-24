@@ -32,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR
 		Action<Transform> deleteHighlightedButton { set; }
 		Action<Transform> onButtonHoverEnter { get; set; }
 		Action<Transform> onButtonHoverExit { get; set; }
-		Action<Transform, GradientPair> highlightDevice { get; set; }
 		Action<Transform> mainMenuActivatorSelected { set; }
 
 		// CONVERT INTO METHODS
@@ -41,7 +40,17 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IPinnedToolsMenuMethods
 	{
-		//public static void CreatePinnedToolButton(Type toolType, Sprite buttonIcon, Node node)
+		public static Action<Transform, GradientPair> highlightDevice { get; set; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="rayOrigin"></param>
+		/// <param name="gradientPair"></param>
+		public static void HighlightDevice(this IPinnedToolsMenu obj, Transform rayOrigin, GradientPair gradientPair)
+		{
+			highlightDevice(rayOrigin, gradientPair);
+		}
 	}
 }
 #endif

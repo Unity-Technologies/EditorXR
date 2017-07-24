@@ -124,18 +124,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
 					deviceData.pinnedToolsMenu = pinnedToolsMenu;
 					pinnedToolsMenu.selectTool = pinnedTools.ToolButtonClicked;
-					//pinnedToolsMenu.onButtonHoverEnter = pinnedTools.OnButtonHoverEnter;
-					//pinnedToolsMenu.onButtonHoverExit = pinnedTools.OnButtonHoverExit;
-					pinnedToolsMenu.highlightDevice = pinnedTools.HighlightDevice;
 					pinnedToolsMenu.mainMenuActivatorSelected = pinnedTools.OnMainMenuActivatorSelected;
 					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
-					// Setup permanent menu & selection PinnedToolButtons
-					//deviceData.pinnedToolButtons = new Dictionary<Type, IPinnedToolButton>();
 					pinnedToolsMenu.createPinnedToolButton(typeof(IMainMenu), evr.m_UnityIcon, deviceData.node);
-					//pinnedTools.SetupPinnedToolButtonsForDevice(deviceData, deviceData.rayOrigin, typeof(IMainMenu));
 					pinnedToolsMenu.createPinnedToolButton(typeof(SelectionTool), selectionToolData.icon, deviceData.node);
-					// Initialize PinnedToolButtons & set SelectionTool as the active tool type
-					//pinnedTools.SetupPinnedToolButtonsForDevice(deviceData.rayOrigin, typeof(SelectionTool), deviceData.node);
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();

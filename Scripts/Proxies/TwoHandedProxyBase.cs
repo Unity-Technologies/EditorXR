@@ -16,11 +16,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 	{
 		const int k_RendererQueue = 9000;
 		const float k_TargetHighlightThicknessAmount = 0.02f;
-		const string k_MaterialAlphaProperty = "_Alpha";
 		const string k_MaterialColorTopProperty = "_ColorTop";
 		const string k_MaterialColorBottomProperty = "_ColorBottom";
 		const string k_MaterialThicknessProperty = "_Thickness";
-		const string k_MaterialObjectScaleProperty = "_ObjectScale";
 
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
@@ -272,17 +270,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator ShowHighlight(Material deviceMaterial, GradientPair gradientPair, bool pulseOnThenOff = false)
 		{
-			// IF the highlight is already running, lerp the gradientPair color to the new target colors
-			// If the highlight is not already running, just set the gradientPair colors, then lerp in alpha
-			// perform a quick opacity fade in then out of the opacity on the material passed in
-
-			Debug.LogWarning("ShowHighlight called!!!");
-
-			//deviceMaterial.SetFloat(k_MaterialAlphaProperty, 0);
-			//deviceMaterial.SetColor(k_MaterialColorTopProperty, m_OriginalInsetGradientPair.a);
-			//deviceMaterial.SetColor(k_MaterialColorBottomProperty, m_OriginalInsetGradientPair.b);
-			//m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
-			//deviceMaterial.SetFloat(k_MaterialExpandProperty, 0);
 			var currentThickness = deviceMaterial.GetFloat(k_MaterialThicknessProperty);
 			var currentTopColor = deviceMaterial.GetColor(k_MaterialColorTopProperty);
 			var currentBottomColor = deviceMaterial.GetColor(k_MaterialColorBottomProperty);
@@ -295,14 +282,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				var durationShaped = Mathf.Pow(duration, 3);
 				var topColor = Color.Lerp(currentTopColor, targetTopColor, durationShaped);
 				var bottomColor = Color.Lerp(currentBottomColor, targetBottomColor, durationShaped);
-				//deviceMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentAlpha, 1f, durationShaped));
 				deviceMaterial.SetFloat(k_MaterialThicknessProperty, Mathf.Lerp(currentThickness, k_TargetHighlightThicknessAmount, durationShaped));
 				deviceMaterial.SetColor(k_MaterialColorTopProperty, topColor);
 				deviceMaterial.SetColor(k_MaterialColorBottomProperty, bottomColor);
 				yield return null;
 			}
 
-			//deviceMaterial.SetFloat(k_MaterialAlphaProperty, 1f);
 			deviceMaterial.SetFloat(k_MaterialThicknessProperty, k_TargetHighlightThicknessAmount);
 			deviceMaterial.SetColor(k_MaterialColorTopProperty, targetTopColor);
 			deviceMaterial.SetColor(k_MaterialColorBottomProperty, targetBottomColor);
@@ -322,7 +307,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				yield return null;
 			}
 
-			//deviceMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 			deviceMaterial.SetFloat(k_MaterialThicknessProperty, pulseOnThenOff ? 0f : k_TargetHighlightThicknessAmount);
 
 			m_HighlightCoroutine = null;

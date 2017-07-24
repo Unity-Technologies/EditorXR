@@ -63,7 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Transform> deleteHighlightedButton { get; set; }
 		public Action<Transform> onButtonHoverEnter { get; set; }
 		public Action<Transform> onButtonHoverExit { get; set; }
-		public Action<Transform, GradientPair> highlightDevice { get; set; }
 		public Action<Type, Sprite, Node> createPinnedToolButton { get; set; }
 		public Action<Transform> mainMenuActivatorSelected { get; set; }
 		public Node? node { get; set; }

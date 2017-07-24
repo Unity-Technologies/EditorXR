@@ -14,6 +14,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		class PinnedToolButtons : Nested, IInterfaceConnector
 		{
+			public PinnedToolButtons()
+			{
+				IPinnedToolsMenuMethods.highlightDevice = HighlightDevice;
+			}
+
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
 				var mainMenu = obj as IMainMenu;
