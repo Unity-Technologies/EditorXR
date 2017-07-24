@@ -656,11 +656,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			return abbreviation.ToString();
 		}
 
-		bool IsSelectToolButton (PinnedToolActionButton.ButtonType buttonType)
-		{
-			return buttonType == PinnedToolActionButton.ButtonType.SelectTool;
-		}
-
 		void OnBackgroundHoverEnter ()
 		{
 			//Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
