@@ -13,9 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		[SerializeField]
-		Sprite m_UnityIcon;
-
 		class Tools : Nested, IInterfaceConnector
 		{
 			internal class ToolData
@@ -126,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					pinnedToolsMenu.selectTool = pinnedTools.ToolButtonClicked;
 					pinnedToolsMenu.mainMenuActivatorSelected = pinnedTools.OnMainMenuActivatorSelected;
 					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
-					pinnedToolsMenu.createPinnedToolButton(typeof(IMainMenu), evr.m_UnityIcon, deviceData.node);
+					pinnedToolsMenu.createPinnedToolButton(typeof(IMainMenu), null, deviceData.node);
 					pinnedToolsMenu.createPinnedToolButton(typeof(SelectionTool), selectionToolData.icon, deviceData.node);
 				}
 

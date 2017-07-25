@@ -18,6 +18,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		const int k_MaxButtonCount = 16; //
 
 		[SerializeField]
+		Sprite m_UnityIcon;
+
+		[SerializeField]
 		ActionMap m_MainMenuActionMap;
 
 		[SerializeField]
@@ -185,7 +188,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//button.node = deviceData.node;
 			button.rayOrigin = rayOrigin;
 			button.toolType = toolType; // Assign Tool Type before assigning order
-			button.icon = buttonIcon;
+			button.icon = buttonIcon ? buttonIcon : m_UnityIcon;
 			button.highlightSingleButton = HighlightSingleButton;
 			button.selectHighlightedButton = SelectHighlightedButton;
 			//button.selected += OnMainMenuActivatorSelected;
