@@ -188,7 +188,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//button.node = deviceData.node;
 			button.rayOrigin = rayOrigin;
 			button.toolType = toolType; // Assign Tool Type before assigning order
-			button.icon = buttonIcon ? buttonIcon : m_UnityIcon;
+			button.icon = toolType != typeof(IMainMenu) ? buttonIcon : m_UnityIcon;
 			button.highlightSingleButton = HighlightSingleButton;
 			button.selectHighlightedButton = SelectHighlightedButton;
 			//button.selected += OnMainMenuActivatorSelected;
