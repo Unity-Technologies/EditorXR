@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Dictionary<Type, Sprite> icons { get; set; }
 		public int activeToolOrderPosition { get; private set; }
 		public bool revealed { get; set; }
-		public bool moveToAlternatePosition { set { m_PinnedToolsMenuUI.moveToAlternatePosition = value; } }
+		public bool alternateMenuVisible { set { m_PinnedToolsMenuUI.moveToAlternatePosition = value; } }
 		public Vector3 alternateMenuItem { get; private set; }
 
 		public Action<Transform, int, bool> HighlightSingleButton { get; set; }

@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IPinnedToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode
 	{
-		bool moveToAlternatePosition { set; }
+		bool alternateMenuVisible { set; }
 		Transform rayOrigin { get; set; }
 		IPinnedToolButton previewToolButton { get; }
 		Action<Transform, Type> selectTool { set; }

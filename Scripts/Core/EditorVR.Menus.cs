@@ -182,7 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				// Move the pinned tool buttons to an alternate position if the alternate menu will be shown
 				var pinnedToolsMenu = deviceData.pinnedToolsMenu;
-				pinnedToolsMenu.moveToAlternatePosition = alternateMenu.visible;
+				pinnedToolsMenu.alternateMenuVisible = alternateMenu.visible;
 			}
 
 			internal void UpdateMenuVisibilities()
