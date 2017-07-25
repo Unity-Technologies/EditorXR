@@ -536,6 +536,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator MoveToLocation(Vector3 targetPosition, Vector3 targetScale)
 		{
 			const float kPrimaryButtonUIAlternatePositionScalar = 0.65f;
+			const int kDurationMultiplier = 6;
+			const int kShapeMultiplier = 4;
 			var currentPosition = transform.localPosition;
 			var currentScale = transform.localScale;
 			var currentPrimaryButtonUIContainerLocalScale = m_OrderedButtons[0].primaryUIContentContainerLocalScale;
@@ -543,8 +545,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var duration = 0f;
 			while (duration < 1)
 			{
-				duration += Time.unscaledDeltaTime * 6f;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
+				duration += Time.unscaledDeltaTime * kDurationMultiplier;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), kShapeMultiplier);
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
 				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
 
