@@ -171,6 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 				else
 				{
+					previewToolDescription = null; // Clear the preview tooltip
 					isActiveTool = isActiveTool; // Set active tool back to pre-preview state
 					icon = icon; // Gradient button will set its icon back to that representing the current tool, if one existed before previewing new tool type in this button
 					m_GradientButton.highlightGradientPair = gradientPair;
@@ -184,22 +185,33 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		/*
-		public Transform alternateMenuOrigin
+		public string previewToolDescription
 		{
-			get { return m_AlternateMenuOrigin; }
+			get { return m_previewToolDescription; }
 			set
 			{
-				if (m_AlternateMenuOrigin == value)
-					return;
-
-				m_AlternateMenuOrigin = value;
-				transform.SetParent(m_AlternateMenuOrigin);
-				transform.localPosition = Vector3.zero;
-				transform.localRotation = Quaternion.identity;
+				if (value != null)
+				{
+					m_previewToolDescription = value;
+					this.ShowTooltip(this);
+				}
+				else
+				{
+					m_previewToolDescription = null;
+					toolTipVisible = false;
+				}
 			}
 		}
-*/
+
+		public string tooltipText
+		{
+			get
+			{
+				return tooltip != null ? tooltip.tooltipText : (previewToolType == null ? m_TooltipText : previewToolDescription);
+			}
+
+			set { m_TooltipText = value; }
+		}
 
 		[SerializeField]
 		GradientButton m_GradientButton;
@@ -275,6 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_SecondaryButtonVisibilityCoroutine;
 
 		string m_TooltipText;
+		string m_previewToolDescription;
 		bool m_Revealed;
 		bool m_MoveToAlternatePosition;
 		int m_Order = -1;
@@ -295,7 +308,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_ActiveTool;
 		bool m_Visible;
 
-		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		public Transform tooltipTarget { get { return m_TooltipTarget; } set { m_TooltipTarget = value; } }
 		public Transform tooltipSource { get { return m_TooltipSource; } }
 		public TextAlignment tooltipAlignment { get; private set; }

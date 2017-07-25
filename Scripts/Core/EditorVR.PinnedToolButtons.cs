@@ -180,7 +180,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			internal IPinnedToolButton PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType)
+			internal IPinnedToolButton PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType, string toolDescription)
 			{
 				// Prevents menu buttons of types other than ITool from triggering any pinned tool button preview actions
 				if (!toolType.GetInterfaces().Contains(typeof(ITool)))
@@ -194,6 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
 						previewPinnedToolButton = pinnedToolsMenu.previewToolButton;
 						previewPinnedToolButton.previewToolType = toolType;
+						previewPinnedToolButton.previewToolDescription = toolDescription;
 					}
 				});
 

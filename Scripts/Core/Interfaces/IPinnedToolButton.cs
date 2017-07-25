@@ -21,12 +21,13 @@ namespace UnityEditor.Experimental.EditorVR
 		bool implementsSecondaryButton { get; set; }
 		Vector3 primaryUIContentContainerLocalScale { get; set; }
 		Transform tooltipTarget { get; set; }
+		string previewToolDescription { set; }
 		Action destroy { get; }
-		Action<Type> selectTool { get; set; }
-		Func<int> visibileButtonCount { get; set; }
-		Func<bool> closeButton { get; set; }
-		Action<IPinnedToolButton> showAllButtons { get; set; }
-		Action hoverExit { get; set; }
+		Action<Type> selectTool { set; }
+		Func<int> visibileButtonCount { set; }
+		Func<bool> closeButton { set; }
+		Action<IPinnedToolButton> showAllButtons { set; }
+		Action hoverExit { set; }
 		event Action hovered;
 	}
 

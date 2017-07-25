@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <summary>
 		/// Highlights a pinned tool button when this menu button is highlighted
 		/// </summary>
-		public Func<Transform, Type, IPinnedToolButton> previewToolInPinnedToolButton { private get; set; }
+		public Func<Transform, Type, String, IPinnedToolButton> previewToolInPinnedToolButton { private get; set; }
 
 		public Button button { get { return m_Button; } }
 
@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (toolType != null && m_InteractingRayOrigin != null)
 			{
 				// Enable preview-mode on a pinned tool button; Display on the opposite proxy device via the HoveringRayOrigin
-				m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(m_InteractingRayOrigin, toolType);
+				m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(m_InteractingRayOrigin, toolType, m_ButtonDescription.text);
 				// TODO convert to a function that is returned, that is called if non-null, instead of a direct reference to the button.
 			}
 
