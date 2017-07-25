@@ -527,19 +527,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Awake()
 		{
+			const float kSemiTransparentAlphaValue = 0.5f;
 			m_OriginalLocalPosition = transform.localPosition;
 			m_OriginalLocalScale = transform.localScale;
-
 			m_FrameMaterial = MaterialUtils.GetMaterialClone(m_FrameRenderer);
 			var frameMaterialColor = m_FrameMaterial.color;
 			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
 			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
-			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.5f);
+			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, kSemiTransparentAlphaValue);
 
 			m_IconMaterial = MaterialUtils.GetMaterialClone(m_ButtonIcon);
 			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
 			m_OriginalIconContainerLocalScale = m_IconContainer.localScale;
-			//m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 		}
 
 		void Start()
@@ -571,12 +570,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			tooltipAlignment = TextAlignment.Center;
 			//m_TooltipTarget.localPosition = new Vector3(0, 0, -0.5f);
 
+			const float kIncreasedContainerContentsSpeedMultiplier = 2.5f;
 			m_GradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
 			m_GradientButton.hoverExit += OnActionButtonHoverExit;
 			m_GradientButton.click += OnBackgroundButtonClick;
 			m_GradientButton.highlightStart += OnPrimaryButtonHighlightStart;
 			m_GradientButton.highlightEnd += OnPrimaryButtonHighlightEnd;
-			m_GradientButton.containerContentsAnimationSpeedMultiplier = 2.5f;
+			m_GradientButton.containerContentsAnimationSpeedMultiplier = kIncreasedContainerContentsSpeedMultiplier;
 
 			m_FrameRenderer.SetBlendShapeWeight(1, 0f);
 			m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, 100f);
@@ -841,12 +841,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator AnimateInitialReveal(Vector3 targetPosition, Vector3 targetScale)
 		{
 			m_IconContainerCanvasGroup.alpha = 1f;
+			const int kDurationShapeAmount = 4;
+			const float kTimeScalar = 3f;
+			const float kAdditionalIconContainerScaleSpeed = 2f;
 			var duration = 0f;
 			while (duration < 2)
 			{
-				duration += Time.unscaledDeltaTime * 3f;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
-				m_IconContainer.localScale = Vector3.Lerp(Vector3.zero, k_SemiTransparentIconContainerScale, durationShaped * 2f);
+				duration += Time.unscaledDeltaTime * kTimeScalar;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), kDurationShapeAmount);
+				m_IconContainer.localScale = Vector3.Lerp(Vector3.zero, k_SemiTransparentIconContainerScale, durationShaped * kAdditionalIconContainerScaleSpeed);
 				transform.localPosition = Vector3.Lerp(Vector3.zero, targetPosition, durationShaped);
 				transform.localScale = Vector3.Lerp(Vector3.zero, targetScale, durationShaped);
 				yield return null;
@@ -887,6 +890,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			//primaryButtonCollidersEnabled = false;
 			//secondaryButtonCollidersEnabled = false;
+			const float kTimeScalar = 8f;
 			var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
 			var targetPosition = Vector3.zero;
 			var currentPosition = transform.localPosition;
@@ -907,7 +911,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentScale = transform.localScale;
 			while (transitionAmount < 1)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 8;
+				transitionAmount += Time.unscaledDeltaTime * kTimeScalar;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
 				/*
 				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, shapedAmount));
@@ -941,6 +945,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//primaryButtonCollidersEnabled = false;
 			//secondaryButtonCollidersEnabled = false;
 
+			const float kTimeScalar = 8f;
 			var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
 			var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
 
@@ -961,7 +966,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentPosition = transform.localPosition;
 			while (transitionAmount < 1)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 8;
+				transitionAmount += Time.unscaledDeltaTime * kTimeScalar;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
 				/*
 				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, shapedAmount));
@@ -1011,8 +1016,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			else
 				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
 
-			var rotationSpacing = 360f / maxButtonCount; // dividend should be the count of pinned tool buttons showing at this time
-			var phaseOffset = orderPosition > -1 ? rotationSpacing * 0.5f - (visibileButtonCount() * 0.5f) * rotationSpacing : 0; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
+			const float kTimeScalar = 6f;
+			const float kCenterLocationAmount = 0.5f;
+			const float kCircularRange = 360f;
+			const int kDurationShapeAmount = 3;
+			var rotationSpacing = kCircularRange / maxButtonCount; // dividend should be the count of pinned tool buttons showing at this time
+			var phaseOffset = orderPosition > -1 ? rotationSpacing * kCenterLocationAmount - (visibileButtonCount() * kCenterLocationAmount) * rotationSpacing : 0; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
 			var targetRotation = orderPosition > -1 ? Quaternion.AngleAxis(phaseOffset + rotationSpacing * Mathf.Max(0f, orderPosition), Vector3.down) : Quaternion.identity;
 
 			var duration = 0f;
@@ -1024,8 +1033,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var positionWait = 1f;// (order + 5) * 0.1f;
 			while (duration < 1)
 			{
-				duration += Time.unscaledDeltaTime * 6f * positionWait;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 3);
+				duration += Time.unscaledDeltaTime * kTimeScalar * positionWait;
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), kDurationShapeAmount);
 				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
 				m_IconContainerCanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, targetCanvasAlpha, durationShaped);
 				CorrectIconRotation();
@@ -1101,13 +1110,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateMoveActivatorButton(bool moveToAlternatePosition = true)
 		{
+			const float kSpeedDecreaseScalar = 0.275f;
 			var amount = 0f;
 			var currentPosition = transform.localPosition;
 			var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
 			var currentLocalScale = transform.localScale;
 			var targetLocalScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
 			var speed = moveToAlternatePosition ? 5f : 4.5f; // perform faster is returning to original position
-			speed += (order + 1) * 0.275f;
+			speed += (order + 1) * kSpeedDecreaseScalar;
 			while (amount < 1f)
 			{
 				amount += Time.unscaledDeltaTime * speed;
@@ -1121,14 +1131,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			transform.localScale = targetLocalScale;
 			m_ActivatorMoveCoroutine = null;
 		}
-
-/*
-		IEnumerator DelayedCollderEnable()
-		{
-			yield return new WaitForSeconds(0.5f);
-			//m_RootCollider.enabled = true;
-		}
-*/
 
 		IEnumerator DelayedHoverExitCheck(bool waitBeforeClosingAllButtons = true)
 		{
@@ -1177,8 +1179,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//Debug.LogError("<color=black>Waiting before SHOWING SECONDARY BUTTON</color>");
 			const float kFrameSecondaryButtonVisibleBlendShapeWeight = 61f;
 			const float kSecondaryButtonVisibleBlendShapeWeight = 46f;
+			const float kMaxDelayDuration = 0.25f;
+			const int kDurationMultiplier = 10;
 			var delayDuration = 0f;
-			while (delayDuration < 0.25f)
+			while (delayDuration < kMaxDelayDuration)
 			{
 				delayDuration += Time.unscaledDeltaTime;
 				yield return null;
@@ -1193,7 +1197,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (currentDuration < 1f)
 			{
-				currentDuration += Time.unscaledDeltaTime * 10f;
+				currentDuration += Time.unscaledDeltaTime * kDurationMultiplier;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kFrameSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
@@ -1208,7 +1212,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator HideSecondaryButton()
 		{
 			const float kSecondaryButtonHiddenBlendShapeWeight = 100f;
-
+			const int kDurationMultiplier = 8;
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
 			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
 			var currentSecondaryCanvasGroupAlpha = m_SecondaryButtonContainerCanvasGroup.alpha;
@@ -1225,7 +1229,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				this.StopCoroutine(ref m_HighlightCoroutine);
 
-				amount += Time.unscaledDeltaTime * 8f;
+				amount += Time.unscaledDeltaTime * kDurationMultiplier;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 0f, shapedAmount));
 				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
@@ -1252,11 +1256,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			const float kSecondaryButtonFrameVisibleBlendShapeWeight = 16f;
 			const float kTargetDuration = 1f;
+			const int kDurationMultiplier = 25;
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * 25);
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * kDurationMultiplier);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kSecondaryButtonFrameVisibleBlendShapeWeight, shapedAmount));
 				yield return null;
 			}
@@ -1266,12 +1271,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			const float kSecondaryButtonFrameHiddenBlendShapeWeight = 0f;
 			const float kTargetDuration = 1f;
+			const int kDurationMultiplier = 5;
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
 			this.hideTooltip(this);
 			var currentDuration = 0f;
 			while (currentDuration < kTargetDuration)
 			{
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * 5);
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * kDurationMultiplier);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kSecondaryButtonFrameHiddenBlendShapeWeight, shapedAmount));
 				yield return null;
 			}
