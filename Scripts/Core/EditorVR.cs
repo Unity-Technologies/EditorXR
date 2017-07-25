@@ -99,8 +99,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			EditorPrefs.DeleteKey(k_SerializedPreferences);
 		}
 
-		// code from the previous static contructor moved here to allow for testability
-		void HandleInitialization()
+		// Code from the previous static constructor moved here to allow for testability
+		static void HandleInitialization()
 		{
 			if (!s_IsInitialized)
 			{
