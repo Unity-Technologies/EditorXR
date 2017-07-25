@@ -206,7 +206,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_SpatialScrollStartPosition;
 		Vector3? spatialDirection = null;
 		Vector3 previousWorldPosition;
-		float? allowSpatialScrollBeforeThisTime = null; // use to hide menu if input is consumed externally and no spatialDirection is define within a given duration
 		float allowToolToggleBeforeThisTime;
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
@@ -227,17 +226,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (pinnedToolInput.cancel.wasJustPressed)
 				Debug.LogError("CANCELLING SPATIAL SELECTION!!!!");
 
-			if (allowSpatialScrollBeforeThisTime != null && spatialDirection == null && Time.realtimeSinceStartup > allowSpatialScrollBeforeThisTime.Value)
+			/*
+			if (spatialDirection == null)
 			{
 				// Hide if no direction as been defined after a given duration
 				Debug.LogWarning("Perform an increasing visual presence of visuals as time progresses, and the drag threshold hasn't been met.");
 				m_PinnedToolsMenuUI.allButtonsVisible = false;
-				allowSpatialScrollBeforeThisTime = null;
-
 				this.SetSpatialHintControlObject(null); // Hide Spatial Hint Visuals
 
 				return;
 			}
+			*/
 
 			if (pinnedToolInput.show.wasJustPressed)
 			{
@@ -247,10 +246,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				//m_PinnedToolsMenuUI.allButtonsVisible = true;
 				m_SpatialScrollStartPosition = m_AlternateMenuOrigin.position;
 				Debug.LogError("Start position : <color=green>" + m_SpatialScrollStartPosition + "</color>");
-				allowSpatialScrollBeforeThisTime = Time.realtimeSinceStartup + kAutoHideDuration;
 				allowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
 				this.SetSpatialHintControlObject(rayOrigin);
-				m_PinnedToolsMenuUI.SpatiallyScrolling = true; // Triggers the display of the directional hint arrows
+				m_PinnedToolsMenuUI.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
 
 				//Dont show if the user hasnt passed the threshold in the given duration
 			}
@@ -276,7 +274,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					if (buttonCount <= k_ActiveToolOrderPosition + 1)
 					{
-						allowSpatialScrollBeforeThisTime = null;
 						spatialDirection = null;
 						return;
 					}
@@ -300,12 +297,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 			else if (pinnedToolInput.show.wasJustReleased)
 			{
-				if (allowSpatialScrollBeforeThisTime == null)
-					return;
-
 				const float kAdditionalConsumptionDuration = 0.25f;
 				continuedInputConsumptionStartTime = Time.realtimeSinceStartup + kAdditionalConsumptionDuration;
-				allowSpatialScrollBeforeThisTime = null;
 				if (spatialDirection != null)
 				{
 					Debug.LogWarning("PinnedToolButton was just released");

@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					//this.Pulse(rayOrigin, 0.5f, 0.065f, false, true);
 					//spatialDragDistance = 0f;
 					ShowOnlyMenuAndActiveToolButtons();
-					SpatiallyScrolling = false;
+					spatiallyScrolling = false;
 					this.SetSpatialHintRotationTarget(Vector3.zero);
 				}
 			}
@@ -107,7 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public bool SpatiallyScrolling
+		public bool spatiallyScrolling
 		{
 			set
 			{
