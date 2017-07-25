@@ -60,7 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ViewerScaleVisuals m_ViewerScaleVisuals;
 
 		GameObject m_BlinkVisualsGO;
-		BlinkVisuals m_BlinkVisuals;
+		BlinkVisuals1 m_BlinkVisuals;
 
 		State m_State = State.Inactive;
 
@@ -158,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 
 			m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
-			m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
+			m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals1>();
 			m_BlinkVisuals.enabled = false;
 			m_BlinkVisualsGO.transform.parent = rayOrigin;
 			m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
@@ -334,7 +334,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
 
-				m_BlinkVisuals.ShowVisuals();
+				m_BlinkVisuals.visible = true;
 
 				consumeControl(m_LocomotionInput.blink);
 				return true;
@@ -347,8 +347,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				if (!m_BlinkVisuals.outOfMaxRange)
 				{
-					m_BlinkVisuals.HideVisuals();
-					StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
+					m_BlinkVisuals.visible = false;
+					StartCoroutine(MoveTowardTarget(m_BlinkVisuals.targetPosition));
 				}
 				else
 				{

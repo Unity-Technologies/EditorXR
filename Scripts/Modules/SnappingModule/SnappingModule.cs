@@ -12,10 +12,9 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences
+	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
+		IRaycast
 	{
-		public delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null);
-
 		const float k_GroundPlaneScale = 1000f;
 
 		const float k_GroundSnappingMaxRayLength = 25f;
@@ -236,7 +235,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public bool widgetEnabled { get; set; }
 
-		public RaycastDelegate raycast { private get; set; }
 		public Renderer[] ignoreList { private get; set; }
 
 		public GameObject settingsMenuPrefab { get { return m_SettingsMenuPrefab; } }
@@ -756,7 +754,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastHit hit;
 			GameObject go;
-			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
+			if (this.Raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
 			{
 				if (Vector3.Dot(ray.direction, hit.normal) > maxRayDot)
 					return false;
