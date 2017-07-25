@@ -2,12 +2,11 @@
 using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IRayExitHandler, IRayClickHandler
 	{
 		[SerializeField]
 		Button m_Button;
@@ -21,7 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Color m_OriginalColor;
 		IPinnedToolButton m_HighlightedPinnedToolbutton;
 		Transform m_RayOrigin;
-		Transform m_InteractingRayOrigin;
 
 		/// <summary>
 		/// Highlights a pinned tool button when this menu button is highlighted
@@ -36,10 +34,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Type toolType { get; set; }
 
-		public void OnPointerClick(PointerEventData eventData)
+		public void OnRayClick(RayEventData eventData)
 		{
 			if (clicked != null)
-				clicked(m_InteractingRayOrigin);
+				clicked(eventData.rayOrigin);
 		}
 
 		public bool selected
@@ -67,11 +65,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_OriginalColor = m_Button.targetGraphic.color;
 		}
 
-		void OnDisable()
-		{
-			m_InteractingRayOrigin = null;
-		}
-
 		public void SetData(string name, string description)
 		{
 			m_ButtonTitle.text = name;
@@ -81,12 +74,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public void OnRayEnter(RayEventData eventData)
 		{
 			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
-			m_InteractingRayOrigin = eventData.rayOrigin;
-
-			if (toolType != null && m_InteractingRayOrigin != null)
+			var interactingRayOrigin = eventData.rayOrigin;
+			if (toolType != null && interactingRayOrigin != null)
 			{
 				// Enable preview-mode on a pinned tool button; Display on the opposite proxy device via the HoveringRayOrigin
-				m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(m_InteractingRayOrigin, toolType, m_ButtonDescription.text);
+				m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(interactingRayOrigin, toolType, m_ButtonDescription.text);
 				// TODO convert to a function that is returned, that is called if non-null, instead of a direct reference to the button.
 			}
 
@@ -97,16 +89,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			//if (m_InteractingRayOrigin == eventData.rayOrigin)
-				//m_InteractingRayOrigin = null;
-		
 			// Disable preview-mode on pinned tool button
 			if (m_HighlightedPinnedToolbutton != null)
 				m_HighlightedPinnedToolbutton.previewToolType = null;
-		
-			//m_RayOrigin = TODO: remove 
-		
-			m_InteractingRayOrigin = eventData.rayOrigin;
 		
 			if (hovered != null)
 			hovered(eventData.rayOrigin);
