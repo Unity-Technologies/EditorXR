@@ -137,6 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
 				if (renderer)
 					return renderer.gameObject;
+
 				return null;
 			}
 

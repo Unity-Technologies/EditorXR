@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
-using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
@@ -180,7 +179,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 			var workspaceTransform = allWorkspaces[i].transform;
 			var deltaRotation = rayOrigin.rotation * Quaternion.Inverse(m_RayOriginStartRotation);
 			var deltaPosition = rayOrigin.position - m_RayOriginStartPosition;
-			Quaternion yawRotation = MathUtilsExt.ConstrainYawRotation(deltaRotation);
+			var yawRotation = MathUtilsExt.ConstrainYawRotation(deltaRotation);
 			var localOffset = m_WorkspacePositions[i] - m_RayOriginStartPosition;
 			workspaceTransform.position = m_RayOriginStartPosition + deltaPosition * kMoveMultiplier + yawRotation * localOffset;
 		}

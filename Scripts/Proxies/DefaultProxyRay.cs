@@ -37,11 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		Material m_RayMaterial;
 		float m_LastPointerLength;
 
-		/// <summary>
-		/// The object that is set when LockRay is called while the ray is unlocked.
-		/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
-		/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
-		/// </summary>
 		readonly Dictionary<object, DefaultRayVisibilitySettings> m_VisibilitySettings = new Dictionary<object, DefaultRayVisibilitySettings>();
 
 		/// <summary>
@@ -134,15 +129,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					var settings = kvp.Value;
 					if (settings.priority == maxPriority)
 					{
-						//Debug.Log(kvp.Key + ", " + settings.rayVisible + ", " + settings.coneVisible + ", " + settings.priority + ", " + Time.frameCount);
 						rayVisible &= settings.rayVisible;
 						coneVisible &= settings.coneVisible;
 					}
 				}
-			}
-			else
-			{
-				//Debug.Log("no settings");
 			}
 
 			if (this.rayVisible != rayVisible)
@@ -186,7 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		{
 			m_Tip.transform.localScale = m_TipStartScale;
 
-			float viewerScale = this.GetViewerScale();
+			var viewerScale = this.GetViewerScale();
 			float scaledWidth;
 			var currentWidth = m_LineRenderer.widthStart / viewerScale;
 			var smoothVelocity = 0f;
@@ -210,7 +200,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator HideCone()
 		{
-			//m_Tester.active = false;
 			var currentScale = m_ConeTransform.localScale;
 			var smoothVelocity = Vector3.one;
 			const float kSmoothTime = 0.1875f;
@@ -229,7 +218,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator ShowCone()
 		{
-			//m_Tester.active = true;
 			var currentScale = m_ConeTransform.localScale;
 			var smoothVelocity = Vector3.zero;
 			const float kSmoothTime = 0.3125f;

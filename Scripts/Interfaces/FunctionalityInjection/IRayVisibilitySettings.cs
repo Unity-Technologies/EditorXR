@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Implementors can show & hide the default ray
+	/// Implementors can request changes to visibility on parts of the default ray
 	/// </summary>
 	public interface IRayVisibilitySettings
 	{
@@ -13,7 +13,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IRayVisibilitySettingsMethods
 	{
-		public delegate void AddRayVisibilitySettingsDelegate(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0);
+		public delegate void AddRayVisibilitySettingsDelegate(Transform rayOrigin, object caller, bool rayVisible,
+			bool coneVisible, int priority = 0);
 
 		internal static Action<Transform, object> removeRayVisibilitySettings { get; set; }
 		public static AddRayVisibilitySettingsDelegate addRayVisibilitySettings;
@@ -26,7 +27,8 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="rayVisible">Show or hide the ray</param>
 		/// <param name="coneVisible">Show or hide the cone</param>
 		/// <param name="priority">The priority level of this request</param>
-		public static void AddRayVisibilitySettings(this IRayVisibilitySettings customRay, Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
+		public static void AddRayVisibilitySettings(this IRayVisibilitySettings obj, Transform rayOrigin,
+			object caller, bool rayVisible, bool coneVisible, int priority = 0)
 		{
 			addRayVisibilitySettings(rayOrigin, caller, rayVisible, coneVisible, priority);
 		}
@@ -34,9 +36,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Remove visibility settings
 		/// </summary>
-		/// <param name="rayOrigin">The ray to remove settings from</param>
+		/// <param name="rayOrigin">The ray from which to remove settings</param>
 		/// <param name="caller">The object whose settings to remove</param>
-		public static void RemoveRayVisibilitySettings(this IRayVisibilitySettings customRay, Transform rayOrigin, object caller)
+		public static void RemoveRayVisibilitySettings(this IRayVisibilitySettings obj, Transform rayOrigin,
+			object caller)
 		{
 			removeRayVisibilitySettings(rayOrigin, caller);
 		}

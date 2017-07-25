@@ -11,8 +11,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld, IRayToNode,
-		IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility
+		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
+		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility
 	{
 		const float k_MultiselectHueShift = 0.5f;
 		static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
@@ -29,7 +29,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Color m_NormalRayColor;
 		Color m_MultiselectRayColor;
 		bool m_MultiSelect;
-		Transform m_TooltipTarget;
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -45,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public List<ILinkedObject> linkedObjects { get; set; }
 
 		public string tooltipText { get { return m_MultiSelect ? "Multi-Select Enabled" : ""; } }
-		public Transform tooltipTarget { get { return m_TooltipTarget; } }
+		public Transform tooltipTarget { get; private set; }
 		public Transform tooltipSource { get { return rayOrigin; } }
 		public TextAlignment tooltipAlignment { get { return TextAlignment.Center; } }
 
@@ -58,9 +57,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			hsv.x = Mathf.Repeat(hsv.x + k_MultiselectHueShift, 1f);
 			m_MultiselectRayColor = Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
 
-			m_TooltipTarget = ObjectUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
-			m_TooltipTarget.localPosition = k_TooltipPosition;
-			m_TooltipTarget.localRotation = k_TooltipRotation;
+			tooltipTarget = ObjectUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
+			tooltipTarget.localPosition = k_TooltipPosition;
+			tooltipTarget.localRotation = k_TooltipRotation;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

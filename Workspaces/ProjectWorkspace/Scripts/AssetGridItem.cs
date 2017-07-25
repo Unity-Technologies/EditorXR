@@ -5,7 +5,6 @@ using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -67,12 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public GameObject icon
 		{
-			private get
-			{
-				if (m_Icon)
-					return m_Icon;
-				return m_Cube.gameObject;
-			}
+			private get { return m_Icon ? m_Icon : m_Cube.gameObject; }
 			set
 			{
 				m_Cube.gameObject.SetActive(false);

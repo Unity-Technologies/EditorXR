@@ -104,10 +104,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_MenuFaceContentOriginalLocalScale;
 		Vector3 m_MenuFaceContentHiddenLocalScale;
 
-		Bounds m_LocalBounds;
-
-		bool m_Hovering;
-
 		readonly Dictionary<string, List<GameObject>> m_FaceSubmenus = new Dictionary<string, List<GameObject>>();
 
 		public Transform menuOrigin
@@ -183,10 +179,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 
 		float currentRotation { get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; } }
-
-		public Bounds localBounds { get { return m_LocalBounds; } }
-
-		public bool hovering { get { return m_Hovering; } }
+		public Bounds localBounds { get; private set; }
+		public bool hovering { get; private set; }
 
 		public event Action<Transform> buttonHovered;
 		public event Action<Transform> buttonClicked;
@@ -195,7 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			m_MenuFacesMaterial = MaterialUtils.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
 			m_MenuFacesColor = m_MenuFacesMaterial.color;
-			m_LocalBounds = ObjectUtils.GetBounds(transform);
+			localBounds = ObjectUtils.GetBounds(transform);
 		}
 
 		public void Setup()
@@ -630,12 +624,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			m_Hovering = true;
+			hovering = true;
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			m_Hovering = false;
+			hovering = false;
 		}
 	}
 }

@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		/// <summary>
 		/// Get the color of the default ray
-		/// <param name="rayOrigin">The ray to set the color on</param>
+		/// <param name="rayOrigin">The ray on which to set the color</param>
 		/// </summary>
 		public static Color GetDefaultRayColor(this IGetDefaultRayColor obj, Transform rayOrigin)
 		{

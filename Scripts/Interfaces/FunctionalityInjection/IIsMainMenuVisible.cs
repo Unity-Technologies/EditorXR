@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static Func<Transform, bool> isMainMenuVisible { get; set; }
 
 		/// <summary>
-		/// Returns whether the main menu is visible on the specified ray origin
+		/// Returns whether the main menu is visible on the specified rayOrigin
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin that is being checked</param>
 		public static bool IsMainMenuVisible(this IIsMainMenuVisible obj, Transform rayOrigin)

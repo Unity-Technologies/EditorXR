@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		// from http://wiki.unity3d.com/index.php?title=HexConverter
-		// Note that Color32 and Color implictly convert to each other. You may pass a Color object to this method without first casting it.
+		// Note that Color32 and Color implicitly convert to each other. You may pass a Color object to this method without first casting it.
 		public static string ColorToHex(Color32 color)
 		{
 			var hex = color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2");
@@ -62,10 +62,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static Color HexToColor(string hex)
 		{
 			hex = hex.Replace("0x", "").Replace("#", "");
-			var r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
-			var g = byte.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
-			var b = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
-			var a = hex.Length == 8 ? byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber) : (byte)255;
+			var r = byte.Parse(hex.Substring(0, 2), NumberStyles.HexNumber);
+			var g = byte.Parse(hex.Substring(2, 2), NumberStyles.HexNumber);
+			var b = byte.Parse(hex.Substring(4, 2), NumberStyles.HexNumber);
+			var a = hex.Length == 8 ? byte.Parse(hex.Substring(4, 2), NumberStyles.HexNumber) : (byte)255;
 
 			return new Color32(r, g, b, a);
 		}
@@ -84,10 +84,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			split[3] = split[3].Replace(',', '.');
 			split[4] = split[4].Replace(',', '.');
 			float r, g, b, a;
-			bool success = float.TryParse(split[1], NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out r);
-			success &= float.TryParse(split[2], NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out g);
-			success &= float.TryParse(split[3], NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out b);
-			success &= float.TryParse(split[4], NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out a);
+			var success = float.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out r);
+			success &= float.TryParse(split[2], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out g);
+			success &= float.TryParse(split[3], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out b);
+			success &= float.TryParse(split[4], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out a);
 
 			if (success)
 				return new Color(r, g, b, a);

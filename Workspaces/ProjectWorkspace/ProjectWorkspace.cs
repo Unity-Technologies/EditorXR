@@ -162,10 +162,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var folderListView = m_ProjectUI.folderListView;
 
-			var preferences = new Preferences();
-			preferences.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
-			preferences.expandedFolders = folderListView.expandStates.Where(es => es.Value).Select(es => es.Key).ToList();
-			preferences.selectedFolder = folderListView.selectedFolder;
+			var preferences = new Preferences
+			{
+				scaleFactor = m_ProjectUI.assetGridView.scaleFactor,
+				expandedFolders = folderListView.expandStates.Where(es => es.Value).Select(es => es.Key).ToList(),
+				selectedFolder = folderListView.selectedFolder
+			};
 			return preferences;
 		}
 

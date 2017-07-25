@@ -161,7 +161,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		class DragState
 		{
 			public Transform rayOrigin { get; private set; }
-			public Node? node { get; private set; }
 			bool m_Resizing;
 			Vector3 m_PositionOffset;
 			Quaternion m_RotationOffset;

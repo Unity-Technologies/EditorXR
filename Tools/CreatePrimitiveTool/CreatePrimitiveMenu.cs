@@ -41,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			selectPrimitive(PrimitiveType.Cube, true);
 
-			foreach (GameObject go in m_HighlightObjects)
+			foreach (var go in m_HighlightObjects)
 				go.SetActive(false);
 		}
 
