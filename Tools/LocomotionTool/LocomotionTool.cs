@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -11,8 +12,9 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ISetDefaultRayVisibility, ICustomActionMap,
-		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences
+	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ISetDefaultRayVisibility,
+		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
+		IUsesProxyType
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -136,6 +138,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 		}
+
+		public Type proxyType { get; set; }
 
 		void Start()
 		{
@@ -327,7 +331,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			if (visuals.activeInHierarchy)
 			{
-				m_BlinkVisuals.extraSpeed = m_LocomotionInput.speed.value;
+				m_BlinkVisuals.extraSpeed = proxyType == typeof(ViveProxy) ?
+					m_LocomotionInput.speed.value : m_LocomotionInput.altSpeed.value;
 				return true;
 			}
 			else

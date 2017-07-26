@@ -17,5 +17,6 @@ namespace UnityEngine.InputNew
 		public ButtonInputControl @rotate { get { return (ButtonInputControl)this[7]; } }
 		public AxisInputControl @horizontal { get { return (AxisInputControl)this[8]; } }
 		public AxisInputControl @vertical { get { return (AxisInputControl)this[9]; } }
+		public AxisInputControl @altSpeed { get { return (AxisInputControl)this[10]; } }
 	}
 }
