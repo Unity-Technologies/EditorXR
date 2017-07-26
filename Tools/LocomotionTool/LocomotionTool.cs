@@ -187,6 +187,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (DoTwoHandedScaling(consumeControl))
 				return;
 
+			if (DoRotating(consumeControl))
+				return;
+
 			if (m_Preferences.blinkMode)
 			{
 				if (DoBlink(consumeControl))
@@ -206,6 +209,38 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var reverse = m_LocomotionInput.reverse.isHeld;
 			var moving = m_LocomotionInput.forward.isHeld || reverse;
 			if (moving)
+			{
+				var speed = k_SlowMoveSpeed;
+				var speedControl = m_LocomotionInput.speed;
+				var speedControlValue = speedControl.value;
+				if (!Mathf.Approximately(speedControlValue, 0)) // Consume control to block selection
+				{
+					speed = k_SlowMoveSpeed + speedControlValue * (k_FastMoveSpeed - k_SlowMoveSpeed);
+					consumeControl(speedControl);
+				}
+
+				speed *= this.GetViewerScale();
+				if (reverse)
+					speed *= -1;
+
+				m_Rotating = false;
+				cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
+
+				consumeControl(m_LocomotionInput.forward);
+				return true;
+			}
+
+			return false;
+		}
+
+		bool DoRotating(ConsumeControlDelegate consumeControl)
+		{
+			if (m_BlinkVisuals.gameObject.activeInHierarchy)
+				return false;
+
+			var reverse = m_LocomotionInput.reverse.isHeld;
+			var move = m_LocomotionInput.forward.isHeld || reverse;
+			if (move)
 			{
 				if (m_LocomotionInput.rotate.isHeld)
 				{
@@ -246,28 +281,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					cameraRig.position = m_CameraStartPosition + segmentedRotation * startOffset;
 
 					m_LastRotationDiff = filteredRotation;
+					return true;
 				}
-				else
-				{
-					var speed = k_SlowMoveSpeed;
-					var speedControl = m_LocomotionInput.speed;
-					var speedControlValue = speedControl.value;
-					if (!Mathf.Approximately(speedControlValue, 0)) // Consume control to block selection
-					{
-						speed = k_SlowMoveSpeed + speedControlValue * (k_FastMoveSpeed - k_SlowMoveSpeed);
-						consumeControl(speedControl);
-					}
-
-					speed *= this.GetViewerScale();
-					if (reverse)
-						speed *= -1;
-
-					m_Rotating = false;
-					cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
-				}
-
-				consumeControl(m_LocomotionInput.forward);
-				return true;
 			}
 
 			m_Rotating = false;
@@ -333,6 +348,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				m_BlinkVisuals.extraSpeed = proxyType == typeof(ViveProxy) ?
 					m_LocomotionInput.speed.value : m_LocomotionInput.altSpeed.value;
+
+				consumeControl(m_LocomotionInput.blink);
 				return true;
 			}
 			else
