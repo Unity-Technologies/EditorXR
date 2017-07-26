@@ -12,7 +12,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode, IInstantiateUI, IConnectInterfaces, IControlSpatialHinting, IControlHaptics
+	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode, IInstantiateUI,
+		IConnectInterfaces, IControlSpatialHinting, IControlHaptics, IUsesRayOrigin
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation

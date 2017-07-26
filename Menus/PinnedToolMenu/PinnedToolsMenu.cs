@@ -10,7 +10,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics, IUsesViewerScale, IControlSpatialHinting, ISetDefaultRayVisibility
+	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI,
+		IControlHaptics, IUsesViewerScale, IControlSpatialHinting, ISetDefaultRayVisibility, IUsesRayOrigin
 	{
 		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
@@ -40,18 +41,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		HapticPulse m_HidingPulse; // The pulse performed when ending a spatial selection
 
-		PinnedToolsMenuUI m_PinnedToolsMenuUI;
-
-		//public int menuButtonOrderPosition { get { return k_MenuButtonOrderPosition; } }
-		//public int activeToolOrderPosition { get { return k_ActiveToolOrderPosition; } }
-
 		Transform m_RayOrigin;
 		Transform m_AlternateMenuOrigin;
-		IPinnedToolButton m_MainMenuButton;
+		float allowToolToggleBeforeThisTime;
 		float? continuedInputConsumptionStartTime;
 		Vector3 m_SpatialScrollStartPosition;
-		Vector3 previousWorldPosition;
-		float allowToolToggleBeforeThisTime;
+		IPinnedToolButton m_MainMenuButton;
+		PinnedToolsMenuUI m_PinnedToolsMenuUI;
 		SpatialScrollModule.SpatialScrollData m_SpatialScrollData;
 
 		public Transform menuOrigin { get; set; }
@@ -80,7 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_RayOrigin = value;
-				CreatePinnedToolsUI();
+				//Setup();
 			}
 		}
 
@@ -104,20 +100,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public event Action<Transform> hoverEnter;
 		public event Action<Transform> hoverExit;
 		public event Action<Transform> selected;
-		/*
-		public bool visible { get; set; }
-		public GameObject menuContent { get; private set; }
-		public List<ActionMenuData> menuActions { get; set; }
-		public Transform rayOrigin { get; set; }
-		public event Action<Transform> itemWasSelected;
-		*/
 
-		// Spatial Hint Module implementation
-		
-
-		void Awake()
+		void Start()
 		{
 			createPinnedToolButton = CreatePinnedToolButton;
+			CreatePinnedToolsUI();
 		}
 
 		void OnDestroy()
@@ -131,10 +118,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (m_PinnedToolsMenuUI == null)
 				m_PinnedToolsMenuUI = this.InstantiateUI(m_PinnedToolsMenuPrefab.gameObject).GetComponent<PinnedToolsMenuUI>();
 
-			this.ConnectInterfaces(m_PinnedToolsMenuUI);
+			//this.ConnectInterfaces(m_PinnedToolsMenuUI); REMOVE IConnectInterfaces.  already done in InstantiateUI
 			m_PinnedToolsMenuUI.maxButtonCount = k_MaxButtonCount;
 			m_PinnedToolsMenuUI.mainMenuActivatorSelected = mainMenuActivatorSelected;
-			m_PinnedToolsMenuUI.rayOrigin = rayOrigin;
 			m_PinnedToolsMenuUI.buttonHovered += OnButtonHover;
 			m_PinnedToolsMenuUI.buttonClicked += OnButtonClick;
 
@@ -279,7 +265,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
 				m_SpatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.25f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
 				var normalizedRepeatingPosition = m_SpatialScrollData.normalizedLoopingPosition;
-				//var normalizedRepeatingPosition = processSpatialScrolling(m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.25f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{
 					if (!m_PinnedToolsMenuUI.allButtonsVisible)
@@ -322,61 +307,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
 				this.EndSpatialScroll(this); // Free the spatial scroll data owned by this object
 			}
-
-			// cache current position for delta comparison on next frame for fine tuned scrolling with low velocity
-			previousWorldPosition = transform.position;
 		}
-
-		/*
-		float processSpatialScrolling(Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1)
-		{
-			var normalizedLoopingPosition = 0f;
-			var directionVector = currentPosition - startingPosition;
-			const float kMaxFineTuneVelocity = 0.0005f;
-			if (spatialDirection == null)
-			{
-				var newDirectionVectorThreshold = 0.0175f * this.GetViewerScale(); // Initial magnitude beyond which spatial scrolling will be evaluated
-				var dragMagnitude = Vector3.Magnitude(directionVector);
-				var dragPercentage = dragMagnitude / newDirectionVectorThreshold;
-				var repeatingPulseAmount = Mathf.Sin(Time.realtimeSinceStartup * 20) > 0.5f ? 1f : 0f;
-				m_PinnedToolsMenuUI.spatialDragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set normalized value representing how much of the pre-scroll drag amount has occurred
-				this.Pulse(node, m_ActivationPulse, repeatingPulseAmount, repeatingPulseAmount);
-				if (dragMagnitude > newDirectionVectorThreshold)
-				{
-					spatialDirection = directionVector; // initialize vector defining the spatial scroll direciton
-					m_PinnedToolsMenuUI.startingDragOrigin = spatialDirection;
-				}
-			}
-			else
-			{
-				var rawVelocity = (previousWorldPosition - transform.position).sqrMagnitude;
-				var velocity = rawVelocity * Time.unscaledDeltaTime;
-				if (velocity < kMaxFineTuneVelocity) // && velocity > kMinFineTuneVelocity)
-				{
-					// OFfset the vector increasingly as velocity slows, in order to lessen the perceived scrolling magnitude
-					//spatialDirection -= spatialDirection.Value * ( 100f * (kMaxFineTuneVelocity - velocity)); // TODO: support this offset in either direction/inverse
-					//spatialScrollStartPosition -= spatialScrollStartPosition * ( 0.1f * (kMaxFineTuneVelocity - velocity));
-					//repeatingScrollLengthRange += repeatingScrollLengthRange * (10000f * (kMaxFineTuneVelocity - velocity));
-					//Debug.LogError("<color=red>" + repeatingScrollLengthRange + "</color>");
-				}
-
-				//Debug.LogError(directionVector.magnitude);
-				var projectedAmount = Vector3.Project(directionVector, spatialDirection.Value).magnitude / this.GetViewerScale();
-				normalizedLoopingPosition = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
-
-				//Debug.LogError("<color=green>" + velocity + "</color>");
-				//if (velocity < kMaxFineTuneVelocity && velocity > kMinFineTuneVelocity)
-				//{
-				//Debug.LogError("<color=green>" + projectedAmount + "</color> : Spatial Direction : " + spatialDirection.Value);
-				// OFfset the vector increasingly as velocity slows, in order to lessen the perceived scrolling magnitude
-				//spatialDirection -= spatialDirection.Value * ( 100f * (kMaxFineTuneVelocity - velocity)); // TODO: support this offset in either direction/inverse
-				//spatialScrollStartPosition -= spatialScrollStartPosition * ( 0.1f * (kMaxFineTuneVelocity - velocity));
-				//}
-			}
-
-			return normalizedLoopingPosition;
-		}
-		*/
 
 		void OnButtonClick()
 		{
