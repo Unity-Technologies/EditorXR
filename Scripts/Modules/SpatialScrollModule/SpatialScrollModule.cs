@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
@@ -9,7 +10,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[SerializeField]
 		HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection
 
-		SpatialScrollData m_spatialScrollData; // Class housing the data representing a spatial scroll for a given caller
+		// Collection housing caller object & ScrollData pairs
+		Dictionary<object, SpatialScrollData> m_ScrollData;
 
 		public class SpatialScrollData
 		{
@@ -48,16 +50,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
+		void Awake()
+		{
+			m_ScrollData = new Dictionary<object, SpatialScrollData>();
+		}
+
 		internal SpatialScrollData PerformScroll(object caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1)
 		{
 			// Continue processing of spatial scrolling for a given caller,
 			// Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
-			if (m_spatialScrollData == null || m_spatialScrollData.caller != caller)
-				m_spatialScrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount);
-			else
-				m_spatialScrollData.UpdateExistingScrollData(currentPosition);
+			SpatialScrollData spatialScrollData = null;
+			foreach (var kvp in m_ScrollData)
+			{
+				if (kvp.Key == caller)
+				{
+					spatialScrollData = kvp.Value;
+					spatialScrollData.UpdateExistingScrollData(currentPosition);
+					break;
+				}
+			}
 
-			return processSpatialScrolling(m_spatialScrollData);
+			if (spatialScrollData == null)
+			{
+				spatialScrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount);
+				m_ScrollData.Add(caller, spatialScrollData);
+			}
+
+			return processSpatialScrolling(spatialScrollData);
 		}
 
 		SpatialScrollData processSpatialScrolling(SpatialScrollData scrollData)
@@ -87,8 +106,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal void EndScroll(object caller)
 		{
-			if (m_spatialScrollData != null && m_spatialScrollData.caller == caller)
-				m_spatialScrollData = null;
+			if (m_ScrollData.Count == 0)
+				return;
+
+			foreach (var kvp in m_ScrollData)
+			{
+				if (kvp.Key == caller)
+				{
+					m_ScrollData.Remove(caller);
+					return;
+				}
+			}
 		}
 	}
 }
