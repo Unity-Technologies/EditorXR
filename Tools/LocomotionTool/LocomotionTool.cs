@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ViewerScaleVisuals m_ViewerScaleVisuals;
 
 		GameObject m_BlinkVisualsGO;
-		BlinkVisuals1 m_BlinkVisuals;
+		BlinkVisuals m_BlinkVisuals;
 
 		bool m_AllowScaling = true;
 		bool m_Scaling;
@@ -155,7 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 
 			m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
-			m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals1>();
+			m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
 			m_BlinkVisualsGO.SetActive(false);
 			m_BlinkVisualsGO.transform.parent = rayOrigin;
 			m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
