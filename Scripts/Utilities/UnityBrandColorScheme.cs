@@ -296,18 +296,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedGradientPairs.Add(new GradientPair(blue, magenta));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, purple));
 			s_CuratedGradientPairs.Add(new GradientPair(magenta, darker));
-			// Slightly lighter pairs added to main curated set
-			s_CuratedGradientPairs.Add(new GradientPair(yellowLight, tealDark));
-			s_CuratedGradientPairs.Add(new GradientPair(orangeDark, orangeLight));
-			s_CuratedGradientPairs.Add(new GradientPair(lime, greenLight));
-			s_CuratedGradientPairs.Add(new GradientPair(red, redLight));
-			s_CuratedGradientPairs.Add(new GradientPair(red, orangeLight));
-			s_CuratedGradientPairs.Add(new GradientPair(lime, orange));
-			s_CuratedGradientPairs.Add(new GradientPair(lime, teal));
-			s_CuratedGradientPairs.Add(new GradientPair(magenta, blueLight));
-			s_CuratedGradientPairs.Add(new GradientPair(blue, blueLight));
-			s_CuratedGradientPairs.Add(new GradientPair(blue, lime));
-			s_CuratedGradientPairs.Add(new GradientPair(blue, yellowLight));
 
 			// Setup dark-luma curated gradient pairs
 			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, darkBlue));
