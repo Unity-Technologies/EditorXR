@@ -56,7 +56,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: f2fba8b64c9117743a10be92c68c38a0, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -110,6 +110,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf39114d78dfefc4dadd8131c757bd9b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ProjectileSpeed: 100
-  m_TimeStep: 0.001
-  m_MaxProjectileSteps: 20
+  m_LineWidth: 1
+  m_ProjectileSpeed: 250
+  m_MaxProjectileSpeed: 750
+  m_TimeStep: 0.00075
+  m_MaxProjectileSteps: 200
+  m_InvalidThreshold: -0.95
