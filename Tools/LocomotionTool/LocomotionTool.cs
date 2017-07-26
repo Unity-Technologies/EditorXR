@@ -531,7 +531,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var locomotionTool = (LocomotionTool)linkedObject;
 				locomotionTool.m_Scaling = false;
 
-				if (!locomotionTool.m_Crawling)
+				if (!locomotionTool.m_Crawling && !locomotionTool.m_BlinkVisuals.gameObject.activeInHierarchy)
 				{
 					var rayOrigin = locomotionTool.rayOrigin;
 					this.UnlockRay(rayOrigin, this);

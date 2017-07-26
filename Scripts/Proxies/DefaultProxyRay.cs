@@ -38,7 +38,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		private object m_LockRayObject;
 
 		public bool LockRay(object lockCaller)
-
 		{
 			// Allow the caller to lock the ray
 			// If the reference to the lockCaller is destroyed, and the ray was not properly
