@@ -49,11 +49,6 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 
 	public Vector3? targetPosition { get; private set; }
 
-	public bool tooSteep
-	{
-		get { return Vector3.Dot(transform.forward, Physics.gravity.normalized) < m_InvalidThreshold; }
-	}
-
 	public float extraSpeed { private get; set; }
 
 	void Awake()
@@ -81,9 +76,6 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 	void Update()
 	{
 		targetPosition = null;
-
-		if (tooSteep)
-			gameObject.SetActive(false);
 
 		var viewerScale = this.GetViewerScale();
 		var lastPosition = transform.position;
@@ -141,6 +133,9 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 		{
 			m_ArcLocator.SetActive(false);
 		}
+
+		if (Vector3.Dot(transform.forward, Physics.gravity.normalized) < m_InvalidThreshold)
+			targetPosition = null;
 
 		var lineWidth = m_LineWidth * viewerScale;
 		m_LineRenderer.SetWidth(lineWidth, lineWidth);

@@ -308,7 +308,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		bool DoBlink(ConsumeControlDelegate consumeControl)
 		{
 			var visuals = m_BlinkVisuals.gameObject;
-			if (m_LocomotionInput.blink.wasJustPressed && !m_BlinkVisuals.tooSteep)
+			if (m_LocomotionInput.blink.wasJustPressed)
 			{
 				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
