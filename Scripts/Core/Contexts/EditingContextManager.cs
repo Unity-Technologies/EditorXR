@@ -17,12 +17,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		UnityObject m_DefaultContext;
 
-		const string k_SettingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
-		const string k_UserSettingsPath = "Library/EditingContextManagerSettings.asset";
+		internal const string k_SettingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
+		internal const string k_UserSettingsPath = "Library/EditingContextManagerSettings.asset";
 
 		const string k_LaunchOnExitPlaymode = "EditingContextManager.LaunchOnExitPlaymode";
 
-		static EditingContextManager s_Instance;
+		internal static EditingContextManager s_Instance;
 		static InputManager s_InputManager;
 
 		EditingContextManagerSettings m_Settings;
@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		IEditingContext m_CurrentContext;
 		readonly List<IEditingContext> m_PreviousContexts = new List<IEditingContext>();
 
-		IEditingContext defaultContext
+		internal IEditingContext defaultContext
 		{
 			get
 			{
@@ -51,6 +51,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return context;
 			}
 			set { m_Settings.defaultContextName = value.name; }
+		}
+
+		internal IEditingContext currentContext
+		{
+			get { return m_CurrentContext; }
 		}
 
 		static EditingContextManager()
@@ -74,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		}
 
 		[MenuItem("Window/EditorVR %e", false)]
-		static void ShowEditorVR()
+		internal static void ShowEditorVR()
 		{
 			// Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
 			EditorWindow.GetWindow<VRView>(true, "EditorVR", true);
@@ -186,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
-		void SetEditingContext(IEditingContext context)
+		internal void SetEditingContext(IEditingContext context)
 		{
 			if (context == null)
 				return;
@@ -203,7 +208,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_SelectedContextIndex = m_AvailableContexts.IndexOf(context);
 		}
 
-		void RestorePreviousContext()
+		internal void RestorePreviousContext()
 		{
 			if (m_PreviousContexts.Count > 0)
 				SetEditingContext(m_PreviousContexts.First());
@@ -245,7 +250,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return m_PreviousContexts;
 		}
 
-		static EditingContextManagerSettings LoadProjectSettings()
+		internal static EditingContextManagerSettings LoadProjectSettings()
 		{
 			EditingContextManagerSettings settings = ScriptableObject.CreateInstance<EditingContextManagerSettings>();
 			if (File.Exists(k_SettingsPath))
@@ -254,7 +259,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return settings;
 		}
 
-		static EditingContextManagerSettings LoadUserSettings()
+		internal static EditingContextManagerSettings LoadUserSettings()
 		{
 			EditingContextManagerSettings settings;
 			if (File.Exists(k_UserSettingsPath) 
@@ -282,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			File.WriteAllText(k_SettingsPath, JsonUtility.ToJson(settings, true));
 		}
 
-		static void SaveUserSettings(EditingContextManagerSettings settings)
+		internal static void SaveUserSettings(EditingContextManagerSettings settings)
 		{
 			File.WriteAllText(k_UserSettingsPath, JsonUtility.ToJson(settings, true));
 		}
