@@ -288,11 +288,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					cameraRig.position = m_CameraStartPosition + segmentedRotation * startOffset;
 
 					m_LastRotationDiff = filteredRotation;
+					m_StartCrawling = false;
+					m_Crawling = false;
 					return true;
 				}
-					}
+			}
 
-					m_Rotating = false;
+			if (!m_LocomotionInput.rotate.isHeld)
+				m_WasRotating = false;
+
+			m_Rotating = false;
 			return false;
 		}
 
