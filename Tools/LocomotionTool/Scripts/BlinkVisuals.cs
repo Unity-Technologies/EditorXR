@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR;
+﻿using System.Collections;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -35,6 +36,9 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 	float m_InvalidThreshold = -0.8f;
 
 	[SerializeField]
+	float m_TransitionTime = 0.3f;
+
+	[SerializeField]
 	GameObject m_MotionIndicatorSphere;
 
 	[SerializeField]
@@ -46,10 +50,32 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 	Transform[] m_Spheres;
 	Material m_VisualsMaterial;
 	Vector3 m_SphereScale;
+	bool m_Visible;
+	float m_TransitionAmount;
 
 	public Vector3? targetPosition { get; private set; }
 
 	public float extraSpeed { private get; set; }
+
+	public bool visible
+	{
+		set
+		{
+			if (value == m_Visible)
+				return;
+
+			m_Visible = value;
+
+			if (m_Visible)
+			{
+				gameObject.SetActive(true);
+			}
+			else
+			{
+				StartCoroutine(VisibilityTransition(false));
+			}
+		}
+	}
 
 	void Awake()
 	{
@@ -73,14 +99,55 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 		}
 	}
 
+	void OnEnable()
+	{
+		for (var i = 0; i < m_MaxProjectileSteps; i++)
+		{
+			m_Positions[i] = transform.position;
+		}
+
+		m_LineRenderer.SetPositions(m_Positions);
+
+		StartCoroutine(VisibilityTransition(true));
+	}
+
+	IEnumerator VisibilityTransition(bool visible)
+	{
+		var startValue = m_TransitionAmount;
+		var targetValue = visible ? 1f : 0f;
+		var startTime = Time.time;
+		var timeDiff = Time.time - startTime;
+		while (timeDiff < m_TransitionTime)
+		{
+			m_TransitionAmount = Mathf.Lerp(startValue, targetValue, timeDiff / m_TransitionTime);
+			timeDiff = Time.time - startTime;
+			yield return null;
+		}
+
+		m_TransitionAmount = targetValue;
+
+		if (!visible)
+			gameObject.SetActive(false);
+	}
+
+	void OnDisable()
+	{
+		StopAllCoroutines();
+		m_TransitionAmount = 0;
+	}
+
 	void Update()
 	{
 		targetPosition = null;
+
+		if (Mathf.Approximately(m_TransitionAmount, 0))
+			return;
 
 		var viewerScale = this.GetViewerScale();
 		var lastPosition = transform.position;
 		var timeStep = m_TimeStep * viewerScale;
 		var projectileSpeed = m_ProjectileSpeed + extraSpeed * (m_MaxProjectileSpeed - m_ProjectileSpeed);
+		projectileSpeed *= m_TransitionAmount;
 		var startVelocity = transform.forward * projectileSpeed * timeStep;
 		var gravity = Physics.gravity * timeStep;
 		m_SpherePosition = (m_SpherePosition + Time.deltaTime * m_Spherespeed) % 1;
@@ -141,6 +208,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 		m_LineRenderer.SetWidth(lineWidth, lineWidth);
 
 		var color = targetPosition.HasValue ? m_ValidColor : m_InvalidColor;
+		color.a *= m_TransitionAmount * m_TransitionAmount;
 		m_VisualsMaterial.SetColor("_TintColor", color);
 		m_LineRenderer.SetColors(color, color);
 
