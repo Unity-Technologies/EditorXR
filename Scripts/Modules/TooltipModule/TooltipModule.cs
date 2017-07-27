@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -64,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					var tooltipUI = tooltipData.tooltipUI;
 					if (!tooltipUI)
 					{
-						var tooltipObject = (GameObject)Instantiate(m_TooltipPrefab, m_TooltipCanvas);
+						var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
 						tooltipUI = tooltipObject.GetComponent<TooltipUI>();
 						tooltipData.tooltipUI = tooltipUI;
 						tooltipUI.highlight.material = m_HighlightMaterial;
@@ -177,6 +176,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void OnRayEntered(GameObject gameObject, RayEventData eventData)
 		{
+			if (gameObject == this.gameObject)
+				return;
+
 			var tooltip = gameObject.GetComponent<ITooltip>();
 			if (tooltip != null)
 				ShowTooltip(tooltip);
@@ -184,7 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void OnRayExited(GameObject gameObject, RayEventData eventData)
 		{
-			if (gameObject)
+			if (gameObject && gameObject != this.gameObject)
 			{
 				var tooltip = gameObject.GetComponent<ITooltip>();
 				if (tooltip != null)

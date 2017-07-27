@@ -1,75 +1,57 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections;
-using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
 	sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
 	{
-		[SerializeField]
-		private VRLineRenderer m_LineRenderer;
+		struct DefaultRayVisibilitySettings
+		{
+			public int priority;
+			public bool rayVisible;
+			public bool coneVisible;
+		}
 
 		[SerializeField]
-		private GameObject m_Tip;
+		VRLineRenderer m_LineRenderer;
 
 		[SerializeField]
-		private float m_LineWidth;
+		GameObject m_Tip;
 
 		[SerializeField]
-		private MeshFilter m_Cone;
+		float m_LineWidth;
 
-		private Vector3 m_TipStartScale;
+		[SerializeField]
+		MeshFilter m_Cone;
+
+		Vector3 m_TipStartScale;
 		Transform m_ConeTransform;
 		Vector3 m_OriginalConeLocalScale;
 		Coroutine m_RayVisibilityCoroutine;
 		Coroutine m_ConeVisibilityCoroutine;
 		Material m_RayMaterial;
-		IntersectionTester m_Tester;
+		float m_LastPointerLength;
 
-		/// <summary>
-		/// The object that is set when LockRay is called while the ray is unlocked.
-		/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
-		/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
-		/// </summary>
-		private object m_LockRayObject;
-
-		public bool LockRay(object lockCaller)
-
-		{
-			// Allow the caller to lock the ray
-			// If the reference to the lockCaller is destroyed, and the ray was not properly
-			// unlocked by the original locking caller, then allow locking by another object
-			if (m_LockRayObject == null)
-			{
-				m_LockRayObject = lockCaller;
-				return true;
-			}
-
-			return false;
-		}
-
-		public bool UnlockRay(object unlockCaller)
-		{
-			// Only allow unlocking if the original lock caller is null or there is no locker caller set
-			if (m_LockRayObject == unlockCaller)
-			{
-				m_LockRayObject = null;
-				return true;
-			}
-
-			return false;
-		}
+		readonly Dictionary<object, DefaultRayVisibilitySettings> m_VisibilitySettings = new Dictionary<object, DefaultRayVisibilitySettings>();
 
 		/// <summary>
 		/// The length of the direct selection pointer
 		/// </summary>
 		public float pointerLength
 		{
-			get { return (m_Cone.transform.TransformPoint(m_Cone.sharedMesh.bounds.size.z * Vector3.forward) - m_Cone.transform.position).magnitude; }
+			get
+			{
+				if (!coneVisible || m_ConeVisibilityCoroutine != null)
+					return m_LastPointerLength;
+
+				m_LastPointerLength = (m_Cone.transform.TransformPoint(m_Cone.sharedMesh.bounds.size.z * Vector3.forward) - m_Cone.transform.position).magnitude;
+				return m_LastPointerLength;
+			}
 		}
 
 		public bool rayVisible { get; private set; }
@@ -81,44 +63,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			this.StopCoroutine(ref m_ConeVisibilityCoroutine);
 		}
 
-		public void Hide(bool rayOnly = false)
+		public void AddVisibilitySettings(object caller, bool rayVisible, bool coneVisible, int priority = 0)
 		{
-			if (isActiveAndEnabled && m_LockRayObject == null)
-			{
-				if (rayVisible)
-				{
-					rayVisible = false;
-					this.StopCoroutine(ref m_RayVisibilityCoroutine);
-					m_RayVisibilityCoroutine = StartCoroutine(HideRay());
-				}
-
-				if (!rayOnly && coneVisible)
-				{
-					coneVisible = false;
-					this.StopCoroutine(ref m_ConeVisibilityCoroutine);
-					m_ConeVisibilityCoroutine = StartCoroutine(HideCone());
-				}
-			}
+			m_VisibilitySettings[caller] = new DefaultRayVisibilitySettings { rayVisible = rayVisible, coneVisible = coneVisible, priority = priority };
 		}
 
-		public void Show(bool rayOnly = false)
+		public void RemoveVisibilitySettings(object caller)
 		{
-			if (isActiveAndEnabled && m_LockRayObject == null)
-			{
-				if (!rayVisible)
-				{
-					rayVisible = true;
-					this.StopCoroutine(ref m_RayVisibilityCoroutine);
-					m_RayVisibilityCoroutine = StartCoroutine(ShowRay());
-				}
-
-				if (!rayOnly && !coneVisible)
-				{
-					coneVisible = true;
-					this.StopCoroutine(ref m_ConeVisibilityCoroutine);
-					m_ConeVisibilityCoroutine = StartCoroutine(ShowCone());
-				}
-			}
+			m_VisibilitySettings.Remove(caller);
 		}
 
 		public void SetLength(float length)
@@ -139,24 +91,66 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public void SetColor(Color c)
 		{
+			m_LineRenderer.SetColors(c, c);
 			m_RayMaterial.color = c;
 		}
 
-		private void Awake()
+		void Awake()
 		{
 			m_RayMaterial = MaterialUtils.GetMaterialClone(m_LineRenderer.GetComponent<MeshRenderer>());
 			m_ConeTransform = m_Cone.transform;
 			m_OriginalConeLocalScale = m_ConeTransform.localScale;
-			m_Tester = GetComponentInChildren<IntersectionTester>();
+
+			rayVisible = true;
+			coneVisible = true;
 		}
 
-		private void Start()
+		void Start()
 		{
 			m_TipStartScale = m_Tip.transform.localScale;
 			rayVisible = true;
 		}
 
-		private IEnumerator HideRay()
+		void Update()
+		{
+			UpdateVisibility();
+		}
+
+		void UpdateVisibility()
+		{
+			var coneVisible = true;
+			var rayVisible = true;
+
+			if (m_VisibilitySettings.Count > 0)
+			{
+				var maxPriority = m_VisibilitySettings.Select(setting => setting.Value.priority).Max();
+				foreach (var kvp in m_VisibilitySettings)
+				{
+					var settings = kvp.Value;
+					if (settings.priority == maxPriority)
+					{
+						rayVisible &= settings.rayVisible;
+						coneVisible &= settings.coneVisible;
+					}
+				}
+			}
+
+			if (this.rayVisible != rayVisible)
+			{
+				this.rayVisible = rayVisible;
+				this.StopCoroutine(ref m_RayVisibilityCoroutine);
+				m_RayVisibilityCoroutine = StartCoroutine(rayVisible ? ShowRay() : HideRay());
+			}
+
+			if (this.coneVisible != coneVisible)
+			{
+				this.coneVisible = coneVisible;
+				this.StopCoroutine(ref m_ConeVisibilityCoroutine);
+				m_ConeVisibilityCoroutine = StartCoroutine(coneVisible ? ShowCone() : HideCone());
+			}
+		}
+
+		IEnumerator HideRay()
 		{
 			m_Tip.transform.localScale = Vector3.zero;
 
@@ -178,11 +172,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_RayVisibilityCoroutine = null;
 		}
 
-		private IEnumerator ShowRay()
+		IEnumerator ShowRay()
 		{
 			m_Tip.transform.localScale = m_TipStartScale;
 
-			float viewerScale = this.GetViewerScale();
+			var viewerScale = this.GetViewerScale();
 			float scaledWidth;
 			var currentWidth = m_LineRenderer.widthStart / viewerScale;
 			var smoothVelocity = 0f;
@@ -206,7 +200,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator HideCone()
 		{
-			m_Tester.active = false;
 			var currentScale = m_ConeTransform.localScale;
 			var smoothVelocity = Vector3.one;
 			const float kSmoothTime = 0.1875f;
@@ -239,7 +232,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			m_ConeTransform.localScale = m_OriginalConeLocalScale;
 			m_ConeVisibilityCoroutine = null;
-			m_Tester.active = true;
+		}
+
+		public Color GetColor()
+		{
+			return m_RayMaterial.color;
 		}
 
 		void OnDestroy()

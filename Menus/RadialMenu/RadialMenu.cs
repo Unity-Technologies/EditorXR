@@ -83,6 +83,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Node? node { get; set; }
 
+		public float hideDistance {get { return Mathf.Infinity; } }
+
 		void Start()
 		{
 			m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();

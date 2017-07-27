@@ -12,6 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Action<PrimitiveType, bool> selectPrimitive;
 		public Action close;
 
+		public float hideDistance {get { return Mathf.Infinity; } }
+
 		public bool visible
 		{
 			get { return gameObject.activeSelf; }
@@ -39,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			selectPrimitive(PrimitiveType.Cube, true);
 
-			foreach (GameObject go in m_HighlightObjects)
+			foreach (var go in m_HighlightObjects)
 				go.SetActive(false);
 		}
 

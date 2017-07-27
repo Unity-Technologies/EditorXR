@@ -346,6 +346,7 @@ GameObject:
   - component: {fileID: 4000013417422256}
   - component: {fileID: 33000013622279140}
   - component: {fileID: 23000011901827168}
+  - component: {fileID: 65314964497435104}
   m_Layer: 5
   m_Name: MainMenuFaceModel-NoBlendShapes
   m_TagString: Untagged
@@ -1603,6 +1604,18 @@ MeshCollider:
   m_InflateMesh: 0
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!65 &65314964497435104
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011517943824}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.17, y: 0.2677734, z: 0.001}
+  m_Center: {x: 0, y: 0.1233885, z: 0}
 --- !u!114 &114000010109055550
 MonoBehaviour:
   m_ObjectHideFlags: 1

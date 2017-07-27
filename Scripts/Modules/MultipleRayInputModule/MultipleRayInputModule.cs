@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				this.rayOrigin = rayOrigin;
 				this.node = node;
 				this.actionMapInput = actionMapInput;
-				this.isValid = validationCallback ?? delegate { return true; };
+				isValid = validationCallback;
 			}
 		}
 
@@ -50,6 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		private ActionMap m_UIActionMap;
 
 		public event Action<GameObject, RayEventData> rayEntered;
+		public event Action<GameObject, RayEventData> rayHovering;
 		public event Action<GameObject, RayEventData> rayExited;
 		public event Action<GameObject, RayEventData> dragStarted;
 		public event Action<GameObject, RayEventData> dragEnded;
@@ -135,8 +136,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				eventData.rayOrigin = rayOrigin;
 				eventData.pointerLength = this.GetPointerLength(eventData.rayOrigin);
 
-				if (!source.isValid(source))
+				if (source.isValid != null && !source.isValid(source))
+				{
+					var currentRaycast = eventData.pointerCurrentRaycast;
+					currentRaycast.gameObject = null;
+					eventData.pointerCurrentRaycast = currentRaycast;
+					source.hoveredObject = null;
+					HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
 					continue;
+				}
 
 				HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
 
@@ -232,7 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return clone;
 		}
 
-		void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget)
+		void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget, bool exitOnly = false)
 		{
 			// Cache properties before executing base method, so we can complete additional ray events later
 			var cachedEventData = GetTempEventDataClone(eventData);
@@ -257,16 +265,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			Transform t = null;
 
-			// if we have not changed hover target
-			if (cachedEventData.pointerEnter == newEnterTarget && newEnterTarget)
+			if (!exitOnly)
 			{
-				t = newEnterTarget.transform;
-				while (t != null)
+				// if we have not changed hover target
+				if (cachedEventData.pointerEnter == newEnterTarget && newEnterTarget)
 				{
-					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
-					t = t.parent;
+					t = newEnterTarget.transform;
+					while (t != null)
+					{
+						ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
+						if (rayHovering != null)
+							rayHovering(t.gameObject, cachedEventData);
+
+						t = t.parent;
+					}
+					return;
 				}
-				return;
 			}
 
 			GameObject commonRoot = FindCommonRoot(cachedEventData.pointerEnter, newEnterTarget);
@@ -292,16 +306,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 			}
 
-			// now issue the enter call up to but not including the common root
-			cachedEventData.pointerEnter = newEnterTarget;
-			t = newEnterTarget.transform;
-			while (t != null && t.gameObject != commonRoot)
+			if (!exitOnly)
 			{
-				ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
-				if (rayEntered != null)
-					rayEntered(t.gameObject, cachedEventData);
+				// now issue the enter call up to but not including the common root
+				cachedEventData.pointerEnter = newEnterTarget;
+				t = newEnterTarget.transform;
+				while (t != null && t.gameObject != commonRoot)
+				{
+					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
+					if (rayEntered != null)
+						rayEntered(t.gameObject, cachedEventData);
 
-				t = t.parent;
+					t = t.parent;
+				}
 			}
 		}
 

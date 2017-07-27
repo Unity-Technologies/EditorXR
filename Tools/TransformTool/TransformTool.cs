@@ -11,13 +11,16 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-		IGrabObjects, ISetDefaultRayVisibility, IProcessInput, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight,
-		ILinkedObject, IRayToNode, IControlHaptics
+		IGrabObjects, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight, ILinkedObject, IRayToNode,
+		IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible,
+		IGetRayVisibility, IRayVisibilitySettings
 	{
 		const float k_LazyFollowTranslate = 8f;
 		const float k_LazyFollowRotate = 12f;
 		const float k_DirectLazyFollowTranslate = 20f;
 		const float k_DirectLazyFollowRotate = 30f;
+
+		const int k_RayHidePriority = 1;
 
 		class GrabData
 		{
@@ -26,12 +29,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			Vector3[] m_InitialScales;
 
 			public Transform[] grabbedObjects { get; private set; }
-			public DirectSelectInput input { get; private set; }
+			public TransformInput input { get; private set; }
 			public Transform rayOrigin { get; private set; }
 
 			public bool suspended { private get; set; }
 
-			public GrabData(Transform rayOrigin, DirectSelectInput input, Transform[] grabbedObjects)
+			public GrabData(Transform rayOrigin, TransformInput input, Transform[] grabbedObjects)
 			{
 				this.rayOrigin = rayOrigin;
 				this.input = input;
@@ -140,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				if (m_Actions == null)
 				{
-					m_Actions = new List<IAction>()
+					m_Actions = new List<IAction>
 					{
 						m_PivotModeToggleAction,
 						m_PivotRotationToggleAction,
@@ -155,21 +158,30 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		[SerializeField]
 		Sprite m_OriginCenterIcon;
+
 		[SerializeField]
 		Sprite m_OriginPivotIcon;
+
 		[SerializeField]
 		Sprite m_RotationGlobalIcon;
+
 		[SerializeField]
 		Sprite m_RotationLocalIcon;
+
 		[SerializeField]
 		Sprite m_StandardManipulatorIcon;
+
 		[SerializeField]
 		Sprite m_ScaleManipulatorIcon;
 
 		[SerializeField]
 		GameObject m_StandardManipulatorPrefab;
+
 		[SerializeField]
 		GameObject m_ScaleManipulatorPrefab;
+
+		[SerializeField]
+		ActionMap m_ActionMap;
 
 		[SerializeField]
 		HapticPulse m_DragPulse;
@@ -204,6 +216,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		bool m_Scaling;
 		bool m_CurrentlySnapping;
 
+		TransformInput m_Input;
+
 		readonly TransformAction m_PivotModeToggleAction = new TransformAction();
 		readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
 		readonly TransformAction m_ManipulatorToggleAction = new TransformAction();
@@ -225,6 +239,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
+
+		public Transform rayOrigin { private get; set; }
+		public Node? node { private get; set; }
+
+		public ActionMap actionMap { get { return m_ActionMap; } }
 
 		void Start()
 		{
@@ -253,9 +272,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (!this.IsSharedUpdater(this))
 				return;
 
-			// Reset direct selection state in case of a ray selection
-			m_DirectSelected = false;
-
 			if (Selection.gameObjects.Length == 0)
 				m_CurrentManipulator.gameObject.SetActive(false);
 			else
@@ -264,11 +280,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			m_Input = (TransformInput)input;
+
 			if (!this.IsSharedUpdater(this))
 				return;
 
 			var hasObject = false;
-
 			var manipulatorGameObject = m_CurrentManipulator.gameObject;
 			if (!m_CurrentManipulator.dragging)
 			{
@@ -289,14 +306,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 
 				// Disable manipulator on direct hover or drag
-				if (manipulatorGameObject.activeSelf && (hoveringSelection || hasObject))
+				if (manipulatorGameObject.activeSelf && (hoveringSelection || hasLeft || hasRight))
 					manipulatorGameObject.SetActive(false);
+
+				//Debug.Log(directSelection.Count);
 
 				foreach (var kvp in directSelection)
 				{
 					var directRayOrigin = kvp.Key;
-					var directSelectionData = kvp.Value;
-					var directHoveredObject = directSelectionData.gameObject;
+
+					if (m_GrabData.Count == 0 && this.IsMainMenuVisible(directRayOrigin))
+						continue;
+
+					var directHoveredObject = kvp.Value;
 
 					var selectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
 
@@ -310,14 +332,23 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
-					var directSelectInput = (DirectSelectInput)directSelectionData.input;
-					if (directSelectInput.select.wasJustPressed)
+					this.AddRayVisibilitySettings(directRayOrigin, this, false, true, k_RayHidePriority); // This will also disable ray selection
+
+					if (!this.IsConeVisible(directRayOrigin))
+						continue;
+
+					var grabbingNode =  this.RequestNodeFromRayOrigin(directRayOrigin);
+					var transformTool = linkedObjects.Cast<TransformTool>().FirstOrDefault(linkedObject => linkedObject.node == grabbingNode);
+					if (transformTool == null)
+						continue;
+
+					var transformInput = transformTool.m_Input;
+
+					if (transformInput.select.wasJustPressed)
 					{
 						this.ClearSnappingState(directRayOrigin);
 
-						consumeControl(directSelectInput.select);
-
-						var grabbingNode = directSelectionData.node;
+						consumeControl(transformInput.select);
 
 						// Check if the other hand is already grabbing for two-handed scale
 						foreach (var grabData in m_GrabData)
@@ -341,17 +372,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						if (objectsGrabbed != null && !m_Scaling)
 							objectsGrabbed(directRayOrigin, grabbedObjects);
 
-						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray());
+						m_GrabData[grabbingNode.Value] = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray());
 
-						this.SetDefaultRayVisibility(directRayOrigin, false, true); // This will also unhighlight the object
-						this.LockRay(directRayOrigin, this);
-
-						// Wait a frame since OnSelectionChanged is called at the end of the frame, and will set m_DirectSelected to false
-						EditorApplication.delayCall += () =>
-						{
-							// A direct selection has been made. Hide the manipulator until the selection changes
-							m_DirectSelected = true;
-						};
+						// A direct selection has been made. Hide the manipulator until the selection changes
+						m_DirectSelected = true;
 
 						Undo.IncrementCurrentGroup();
 					}
@@ -452,6 +476,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (hasRight && rightHeld)
 						rightData.UpdatePositions(this);
 				}
+
+				foreach (var linkedObject in linkedObjects)
+				{
+					var transformTool = (TransformTool)linkedObject;
+					var rayOrigin = transformTool.rayOrigin;
+					if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node.Value)))
+					{
+						this.RemoveRayVisibilitySettings(rayOrigin, this);
+					}
+				}
 			}
 
 			// Manipulator is disabled while direct manipulation is happening
@@ -527,8 +561,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					grabData.UpdatePositions(this);
 
 					// Prevent lock from getting stuck
-					this.UnlockRay(rayOrigin, this);
-					this.LockRay(destRayOrigin, this);
+					this.RemoveRayVisibilitySettings(rayOrigin, this);
+					this.AddRayVisibilitySettings(destRayOrigin, this, false, true, k_RayHidePriority);
 
 					if (objectsTransferred != null)
 						objectsTransferred(rayOrigin, destRayOrigin);
@@ -552,8 +586,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			m_GrabData.Remove(node);
 
-			this.UnlockRay(grabData.rayOrigin, this);
-			this.SetDefaultRayVisibility(grabData.rayOrigin, true, true);
+			this.RemoveRayVisibilitySettings(grabData.rayOrigin, this);
 
 			this.ClearSnappingState(rayOrigin);
 		}
@@ -702,6 +735,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var isStandard = m_CurrentManipulator == m_StandardManipulator;
 			m_ManipulatorToggleAction.tooltipText = isStandard ? "Switch to Scale Manipulator" : "Switch to Standard Manipulator";
 			m_ManipulatorToggleAction.icon = isStandard ? m_ScaleManipulatorIcon : m_StandardManipulatorIcon;
+		}
+
+		public bool IsTwoHandedScaling(Transform rayOrigin)
+		{
+			return m_Scaling && m_GrabData.Any(kvp => kvp.Value.rayOrigin == rayOrigin);
 		}
 	}
 }

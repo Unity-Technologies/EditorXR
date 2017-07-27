@@ -74,9 +74,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					var intersectionFound = false;
 					m_Intersections.Clear();
-					if (m_SpatialHash.GetIntersections(m_Intersections, tester.renderer.bounds))
+					if (m_SpatialHash.GetIntersections(m_Intersections, tester.collider.bounds))
 					{
-						var testerBounds = tester.renderer.bounds;
+						var testerBounds = tester.collider.bounds;
 						var testerBoundsCenter = testerBounds.center;
 
 						m_SortedIntersections.Clear();

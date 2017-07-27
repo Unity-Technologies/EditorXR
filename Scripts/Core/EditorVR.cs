@@ -73,7 +73,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
 			public ActionMapInput uiInput;
 			public MainMenuActivator mainMenuActivator;
-			public ActionMapInput directSelectInput;
 			public IMainMenu mainMenu;
 			public ActionMapInput mainMenuInput;
 			public IAlternateMenu alternateMenu;
@@ -82,7 +81,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public IMenu customMenu;
 			public PinnedToolButton previousToolButton;
 			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
-			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
+			public readonly Dictionary<IMenu, float> menuAutoHideTimes = new Dictionary<IMenu, float>();
+			public readonly Dictionary<IMenu, float> menuAutoShowTimes = new Dictionary<IMenu, float>();
 		}
 
 		class Nested
@@ -166,6 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			AddModule<KeyboardModule>();
 
 			var multipleRayInputModule = GetModule<MultipleRayInputModule>();
+
 			var dragAndDropModule = AddModule<DragAndDropModule>();
 			multipleRayInputModule.rayEntered += dragAndDropModule.OnRayEntered;
 			multipleRayInputModule.rayExited += dragAndDropModule.OnRayExited;
@@ -353,9 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			GetModule<DeviceInputModule>().ProcessInput();
 
-			var menus = GetNestedModule<Menus>();
-			menus.UpdateMenuVisibilityNearWorkspaces();
-			menus.UpdateMenuVisibilities();
+			GetNestedModule<Menus>().UpdateMenuVisibilities();
 
 			GetNestedModule<UI>().UpdateManipulatorVisibilites();
 		}

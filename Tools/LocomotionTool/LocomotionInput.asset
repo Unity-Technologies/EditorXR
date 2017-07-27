@@ -42,7 +42,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 22
+      - controlIndex: 3
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -51,7 +51,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 3
+      - controlIndex: 22
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []

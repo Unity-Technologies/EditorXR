@@ -97,6 +97,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Transform rayOrigin { private get; set; }
 
+		public float hideDistance { get { return m_MainMenuUI.menuHeight; } }
+
+		public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
+
+		public bool hovering { get { return m_MainMenuUI.hovering; } }
+
 		void Start()
 		{
 			m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
@@ -107,8 +113,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.visible = m_Visible;
 			m_MainMenuUI.buttonHovered += OnButtonHovered;
 			m_MainMenuUI.buttonClicked += OnButtonClicked;
-			m_MainMenuUI.opening += OnOpening;
-			m_MainMenuUI.closing += OnClosing;
 
 			var types = new HashSet<Type>();
 			types.UnionWith(menuTools);
@@ -273,14 +277,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
 
-		void OnOpening()
+		public void SendVisibilityPulse()
 		{
-			this.Pulse(node, m_ShowPulse);
-		}
-
-		void OnClosing()
-		{
-			this.Pulse(node, m_HidePulse);
+			this.Pulse(node, visible ? m_HidePulse : m_ShowPulse);
 		}
 	}
 }

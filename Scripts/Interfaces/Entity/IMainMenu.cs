@@ -34,6 +34,21 @@ namespace UnityEditor.Experimental.EditorVR
 		/// The ray origin that spawned the menu and will be used for node-specific operations (e.g. selecting a tool)
 		/// </summary>
 		Transform targetRayOrigin { set; }
+
+		/// <summary>
+		/// The local bounds of this menu
+		/// </summary>
+		Bounds localBounds { get; }
+
+		/// <summary>
+		/// Is the UI pointer hovering over the menu?
+		/// </summary>
+		bool hovering { get; }
+
+		/// <summary>
+		/// Send a haptic pulse indicating the menu visibility has changed
+		/// </summary>
+		void SendVisibilityPulse();
 	}
 }
 #endif

@@ -6,17 +6,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class IntersectionTester : MonoBehaviour
 	{
 		[SerializeField]
-		private Transform[] m_RayTransforms;
+		Transform[] m_RayTransforms;
 
 		[SerializeField]
-		private bool m_ShowRays = false;
+		bool m_ShowRays;
+
+		bool m_Active = true;
+		Ray[] m_Rays;
+		int[] m_Triangles;
+		Vector3[] m_Vertices;
+		Collider m_Collider;
 
 		public bool active
 		{
 			get { return m_Active && gameObject.activeInHierarchy; }
 			set { m_Active = value; }
 		}
-		private bool m_Active = true;
 
 		public Ray[] rays
 		{
@@ -25,9 +30,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (m_Rays == null || m_Rays.Length != m_RayTransforms.Length)
 				{
 					m_Rays = new Ray[m_RayTransforms.Length];
-					for (int i = 0; i < m_RayTransforms.Length; i++)
+					for (var i = 0; i < m_RayTransforms.Length; i++)
 					{
-						Transform t = m_RayTransforms[i];
+						var t = m_RayTransforms[i];
 						m_Rays[i] = new Ray(transform.InverseTransformPoint(t.position), transform.InverseTransformDirection(t.forward));
 					}
 				}
@@ -35,7 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				return m_Rays;
 			}
 		}
-		private Ray[] m_Rays;
 
 		public int[] triangles
 		{
@@ -43,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (m_Triangles == null)
 				{
-					var mf = GetComponent<MeshFilter>();
+					var mf = GetComponentInChildren<MeshFilter>();
 					var mesh = mf.sharedMesh;
 					m_Triangles = mesh.triangles;
 				}
@@ -51,7 +55,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				return m_Triangles;
 			}
 		}
-		private int[] m_Triangles;
 
 		public Vector3[] vertices
 		{
@@ -59,7 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (m_Vertices == null)
 				{
-					var mf = GetComponent<MeshFilter>();
+					var mf = GetComponentInChildren<MeshFilter>();
 					var mesh = mf.sharedMesh;
 					m_Vertices = mesh.vertices;
 				}
@@ -67,25 +70,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				return m_Vertices;
 			}
 		}
-		private Vector3[] m_Vertices;
 
 #if !UNITY_EDITOR
 #pragma warning disable 109
 #endif
-		public new Renderer renderer
+		public new Collider collider
 		{
 			get
 			{
-				if (!m_Renderer)
-					m_Renderer = GetComponent<Renderer>();
-				return m_Renderer;
+				if (!m_Collider)
+					m_Collider = GetComponentInChildren<Collider>();
+				return m_Collider;
 			}
 		}
-		private Renderer m_Renderer;
 
-		public Renderer grabbedObject { get; set; }
-
-		private void OnDrawGizmos()
+		void OnDrawGizmos()
 		{
 			if (m_ShowRays)
 			{
