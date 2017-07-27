@@ -194,8 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Interfaces.ConnectInterfaces(intersectionModule);
 			intersectionModule.Setup(spatialHashModule.spatialHash);
 
-			var snappingModule = AddModule<SnappingModule>();
-			snappingModule.raycast = intersectionModule.Raycast;
+			AddModule<SnappingModule>();
 
 			var vacuumables = GetNestedModule<Vacuumables>();
 

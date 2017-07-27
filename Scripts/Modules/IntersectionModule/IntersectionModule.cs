@@ -41,6 +41,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void Awake()
 		{
 			IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
+
+			IRaycastMethods.raycast = Raycast;
 		}
 
 		internal void Setup(SpatialHash<Renderer> hash)
