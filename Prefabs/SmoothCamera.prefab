@@ -21,6 +21,8 @@ GameObject:
   - component: {fileID: 4000011585928244}
   - component: {fileID: 20000011108369806}
   - component: {fileID: 114000013492905940}
+  - component: {fileID: 114013134401492658}
+  - component: {fileID: 114934483688908478}
   m_Layer: 0
   m_Name: SmoothCamera
   m_TagString: Untagged
@@ -92,3 +94,46 @@ MonoBehaviour:
   m_TargetDisplay: 0
   m_FieldOfView: 40
   m_SmoothingMultiplier: 3
+--- !u!114 &114013134401492658
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010893495554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a879e317c20b0d41a9a56f1a97f4cf8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ApplyMethod: 0
+  SampleCount: 1
+  PerPixelNormals: 0
+  Intensity: 1
+  Tint: {r: 0.32854503, g: 0.35101065, b: 0.44700003, a: 1}
+  Radius: 1
+  PowerExponent: 1.25
+  Bias: 0.05
+  CacheAware: 0
+  Downsample: 0
+  FadeEnabled: 1
+  FadeStart: 10
+  FadeLength: 25
+  FadeToIntensity: 0.5
+  FadeToRadius: 6.52
+  FadeToPowerExponent: 1.8
+  BlurEnabled: 1
+  BlurRadius: 2
+  BlurPasses: 1
+  BlurSharpness: 10
+--- !u!114 &114934483688908478
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010893495554}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff26db721962cdf4a8edcdfa9a767d2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  profile: {fileID: 11400000, guid: 91c7149321361a54aa8358fb0325bf1b, type: 2}
