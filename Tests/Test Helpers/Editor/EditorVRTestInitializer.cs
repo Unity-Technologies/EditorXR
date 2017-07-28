@@ -6,21 +6,28 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
 	[SetUpFixture]
 	public class EditorVRTestInitializer
 	{
+		EditingContextManagerSettings projectSettingsBackup;
+		EditingContextManagerSettings userSettingsBackup;
+
 		[OneTimeSetUp]
 		public void SetupBeforeAllTests()
 		{
+			projectSettingsBackup = EditingContextManager.LoadProjectSettings();
+			userSettingsBackup = EditingContextManager.LoadUserSettings();
+
 			EditingContextManager.ShowEditorVR();
 		}
 
 		[OneTimeTearDown]
 		public void CleanupAfterAllTests()
 		{
-			EditorApplication.delayCall += CloseVRView;
-		}
+			EditingContextManager.SaveProjectSettings(projectSettingsBackup);
+			EditingContextManager.SaveUserSettings(userSettingsBackup);
 
-		private void CloseVRView()
-		{
-			EditorWindow.GetWindow<VRView>("EditorVR", false).Close();
+			EditorApplication.delayCall += () =>
+			{
+				EditorWindow.GetWindow<VRView>("EditorVR", false).Close();
+			};
 		}
 	}
 }
