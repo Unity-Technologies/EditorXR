@@ -38,6 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		float m_SmoothingMultiplier = 3;
 
 		const string k_HMDOnlyLayer = "HMDOnly";
+		const string k_ProxyExraLayer = "ProxyExtra";
 
 		RenderTexture m_RenderTexture;
 
@@ -47,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		/// <summary>
 		/// A layer mask that controls what will always render in the HMD and not in the preview
 		/// </summary>
-		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(k_HMDOnlyLayer); } }
+		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(k_HMDOnlyLayer) | LayerMask.GetMask(k_ProxyExraLayer); } }
 
 		void Awake()
 		{
