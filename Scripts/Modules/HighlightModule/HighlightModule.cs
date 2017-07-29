@@ -71,6 +71,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						HighlightObject(go, material);
 				}
 			}
+
+			foreach (var obj in Selection.gameObjects)
+			{
+				if (!obj)
+					continue;
+
+				HighlightObject(obj, m_RayHighlightMaterial);
+			}
 		}
 
 		static void HighlightObject(GameObject go, Material material)

@@ -28,7 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_MaxRayDot = -0.5f;
 		const float k_RayExtra = 0.02f;
 
-		const float k_WidgetScale = 0.03f;
+		const float k_WidgetScale = 0.02f;
 
 		const string k_MaterialColorLeftProperty = "_ColorLeft";
 		const string k_MaterialColorRightProperty = "_ColorRight";
