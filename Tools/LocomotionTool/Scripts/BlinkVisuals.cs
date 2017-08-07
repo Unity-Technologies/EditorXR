@@ -1,10 +1,14 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 {
+	const float k_Epsilon = 0.001f;
+
 	[SerializeField]
 	float m_LineWidth = 1f;
 
@@ -36,7 +40,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 	float m_InvalidThreshold = -0.8f;
 
 	[SerializeField]
-	float m_TransitionTime = 0.3f;
+	float m_TransitionTime = 0.15f;
 
 	[SerializeField]
 	GameObject m_MotionIndicatorSphere;
@@ -52,10 +56,13 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 	Vector3 m_SphereScale;
 	bool m_Visible;
 	float m_TransitionAmount;
+	Coroutine m_VisibilityCoroutine;
 
 	public Vector3? targetPosition { get; private set; }
 
 	public float extraSpeed { private get; set; }
+
+	public List<GameObject> ignoreList { private get; set; }
 
 	public bool visible
 	{
@@ -69,10 +76,11 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 			if (m_Visible)
 			{
 				gameObject.SetActive(true);
+				this.RestartCoroutine(ref m_VisibilityCoroutine, VisibilityTransition(true));
 			}
-			else
+			else if (gameObject.activeInHierarchy)
 			{
-				StartCoroutine(VisibilityTransition(false));
+				this.RestartCoroutine(ref m_VisibilityCoroutine, VisibilityTransition(false));
 			}
 		}
 	}
@@ -107,8 +115,6 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 		}
 
 		m_LineRenderer.SetPositions(m_Positions);
-
-		StartCoroutine(VisibilityTransition(true));
 	}
 
 	IEnumerator VisibilityTransition(bool visible)
@@ -130,25 +136,17 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 			gameObject.SetActive(false);
 	}
 
-	void OnDisable()
-	{
-		StopAllCoroutines();
-		m_TransitionAmount = 0;
-	}
-
 	void Update()
 	{
 		targetPosition = null;
 
-		if (Mathf.Approximately(m_TransitionAmount, 0))
-			return;
-
 		var viewerScale = this.GetViewerScale();
-		var lastPosition = transform.position;
 		var timeStep = m_TimeStep * viewerScale;
 		var projectileSpeed = m_ProjectileSpeed + extraSpeed * (m_MaxProjectileSpeed - m_ProjectileSpeed);
 		projectileSpeed *= m_TransitionAmount;
-		var startVelocity = transform.forward * projectileSpeed * timeStep;
+		var velocity = transform.forward * projectileSpeed * timeStep;
+
+		var lastPosition = transform.position;
 		var gravity = Physics.gravity * timeStep;
 		m_SpherePosition = (m_SpherePosition + Time.deltaTime * m_Spherespeed) % 1;
 		for (var i = 0; i < m_MaxProjectileSteps; i++)
@@ -161,10 +159,13 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 			}
 			else
 			{
-				var nextPosition = lastPosition + startVelocity;
-				startVelocity += gravity;
+				var nextPosition = lastPosition + velocity;
+				velocity += gravity;
 
 				var segment = nextPosition - lastPosition;
+
+				if (segment == Vector3.zero)
+					continue;
 
 				if (i < m_SphereCount)
 				{
@@ -179,11 +180,12 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 					m_Spheres[i].gameObject.SetActive(true);
 				}
 
-				var ray = new Ray(lastPosition, segment);
+				var scaledEpsilon = k_Epsilon * viewerScale;
+				var ray = new Ray(lastPosition - segment.normalized * scaledEpsilon, segment);
 				RaycastHit hit;
 				GameObject go;
 				m_Positions[i] = lastPosition;
-				if (this.Raycast(ray, out hit, out go, segment.magnitude))
+				if (this.Raycast(ray, out hit, out go, segment.magnitude + scaledEpsilon, ignoreList))
 					targetPosition = hit.point;
 
 				lastPosition = nextPosition;

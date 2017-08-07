@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ISetDefaultRayVisibility,
 		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-		IUsesProxyType
+		IUsesProxyType, IGetVRPlayerObjects
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -156,6 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
 			m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
+			m_BlinkVisuals.ignoreList = this.GetVRPlayerObjects();
 			m_BlinkVisualsGO.SetActive(false);
 			m_BlinkVisualsGO.transform.parent = rayOrigin;
 			m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
@@ -322,13 +323,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool DoBlink(ConsumeControlDelegate consumeControl)
 		{
-			var visuals = m_BlinkVisuals.gameObject;
 			if (m_LocomotionInput.blink.wasJustPressed)
 			{
 				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
 
-				visuals.SetActive(true);
+				m_BlinkVisuals.visible = true;
 
 				consumeControl(m_LocomotionInput.blink);
 				return true;
@@ -336,7 +336,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			if (m_LocomotionInput.blink.wasJustReleased)
 			{
-				visuals.SetActive(false);
+				m_BlinkVisuals.visible = false;
 
 				if (m_BlinkVisuals.targetPosition.HasValue)
 					StartCoroutine(MoveTowardTarget(m_BlinkVisuals.targetPosition.Value));
@@ -344,7 +344,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return true;
 			}
 
-			if (visuals.activeInHierarchy)
+			if (m_BlinkVisuals.gameObject.activeInHierarchy)
 			{
 				m_BlinkVisuals.extraSpeed = proxyType == typeof(ViveProxy) ?
 					m_LocomotionInput.speed.value : m_LocomotionInput.altSpeed.value;
