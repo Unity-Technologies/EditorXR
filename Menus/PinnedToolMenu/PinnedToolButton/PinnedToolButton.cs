@@ -442,6 +442,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		/*
 		public bool revealed
 		{
 			get { return m_Revealed; }
@@ -492,6 +493,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			//get { return m_Revealed; }
 		}
+		*/
 
 		public Sprite icon
 		{
@@ -544,8 +546,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_OriginalLocalScale = transform.localScale;
 			m_FrameMaterial = MaterialUtils.GetMaterialClone(m_FrameRenderer);
 			var frameMaterialColor = m_FrameMaterial.color;
-			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
 			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
+			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
 			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, kSemiTransparentAlphaValue);
 
 			m_IconMaterial = MaterialUtils.GetMaterialClone(m_ButtonIcon);
