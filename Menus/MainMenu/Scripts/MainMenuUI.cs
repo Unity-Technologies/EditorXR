@@ -179,8 +179,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; }
 		}
 
-		public event Action<Transform> buttonHovered;
-		public event Action<Transform> buttonClicked;
 		public event Action opening;
 		public event Action closing;
 
@@ -251,8 +249,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var button = ObjectUtils.Instantiate(m_ButtonTemplatePrefab.gameObject);
 			button.name = buttonData.name;
 			var mainMenuButton = button.GetComponent<MainMenuButton>();
-			mainMenuButton.clicked += OnButtonClick;
-			mainMenuButton.hovered += OnButtonHover;
 
 			if (string.IsNullOrEmpty(buttonData.sectionName))
 				buttonData.sectionName = k_UncategorizedFaceName;
@@ -612,18 +608,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			faceTransform.localScale = targetScale;
 			faceTransform.localPosition = targetPosition;
-		}
-
-		void OnButtonHover(Transform rayOrigin)
-		{
-			if (buttonHovered != null)
-				buttonHovered(rayOrigin);
-		}
-
-		void OnButtonClick(Transform rayOrigin)
-		{
-			if (buttonClicked != null)
-				buttonClicked(rayOrigin);
 		}
 	}
 }
