@@ -13,7 +13,6 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	[InitializeOnLoad]
 #if UNITY_EDITORVR
 	[RequiresTag(k_VRPlayerTag)]
 	sealed partial class EditorVR : MonoBehaviour
