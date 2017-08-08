@@ -76,7 +76,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_RayOrigin = value;
-				//Setup();
+				// UI is created after RayOrigin is set here
+				// Ray origin is then set in CreatePinnedToolsUI()
+				CreatePinnedToolsUI();
 			}
 		}
 
@@ -101,10 +103,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public event Action<Transform> hoverExit;
 		public event Action<Transform> selected;
 
-		void Start()
+		void Awake()
 		{
 			createPinnedToolButton = CreatePinnedToolButton;
-			CreatePinnedToolsUI();
 		}
 
 		void OnDestroy()
@@ -115,12 +116,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void CreatePinnedToolsUI()
 		{
 			Debug.LogWarning("Spawing pinned tools menu UI");
-			if (m_PinnedToolsMenuUI == null)
-				m_PinnedToolsMenuUI = this.InstantiateUI(m_PinnedToolsMenuPrefab.gameObject).GetComponent<PinnedToolsMenuUI>();
-
-			//this.ConnectInterfaces(m_PinnedToolsMenuUI); REMOVE IConnectInterfaces.  already done in InstantiateUI
+			m_PinnedToolsMenuUI = m_PinnedToolsMenuUI ?? this.InstantiateUI(m_PinnedToolsMenuPrefab.gameObject).GetComponent<PinnedToolsMenuUI>();
 			m_PinnedToolsMenuUI.maxButtonCount = k_MaxButtonCount;
 			m_PinnedToolsMenuUI.mainMenuActivatorSelected = mainMenuActivatorSelected;
+			m_PinnedToolsMenuUI.rayOrigin = rayOrigin;
 			m_PinnedToolsMenuUI.buttonHovered += OnButtonHover;
 			m_PinnedToolsMenuUI.buttonClicked += OnButtonClick;
 
