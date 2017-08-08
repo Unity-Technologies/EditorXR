@@ -13,6 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public PinnedToolButtons()
 			{
 				IPinnedToolsMenuMethods.highlightDevice = HighlightDevice;
+				IPinnedToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
+				IPinnedToolsMenuMethods.selectTool = OnToolButtonClicked;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)

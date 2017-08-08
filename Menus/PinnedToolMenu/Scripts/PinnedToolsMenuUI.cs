@@ -424,7 +424,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 
 		/// <summary>
-		/// Utilized by PinnedToolsMenu to select an existing button by type, without created a new button
+		/// Utilized by PinnedToolsMenu to select an existing button by type, without creating a new button
 		/// </summary>
 		/// <param name="type">Button ToolType to compare against existing button types</param>
 		public void SelectExistingToolType(Type type)

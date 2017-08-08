@@ -120,8 +120,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					// Setup PinnedToolsMenu
 					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
 					deviceData.pinnedToolsMenu = pinnedToolsMenu;
-					pinnedToolsMenu.selectTool = pinnedTools.OnToolButtonClicked;
-					pinnedToolsMenu.mainMenuActivatorSelected = pinnedTools.OnMainMenuActivatorSelected;
 					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
 					pinnedToolsMenu.createPinnedToolButton(typeof(IMainMenu), null, deviceData.node);
 					pinnedToolsMenu.createPinnedToolButton(typeof(SelectionTool), selectionToolData.icon, deviceData.node);

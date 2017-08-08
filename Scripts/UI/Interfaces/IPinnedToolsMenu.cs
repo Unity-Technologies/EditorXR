@@ -13,9 +13,8 @@ namespace UnityEditor.Experimental.EditorVR
 		bool alternateMenuVisible { set; }
 		Transform rayOrigin { get; set; }
 		IPinnedToolButton previewToolButton { get; }
-		Action<Transform, Type> selectTool { set; }
-		Action<Transform> mainMenuActivatorSelected { set; }
-		Action<Type, Sprite, Node> createPinnedToolButton { get; set; }
+		// This method isn't hooked up in EVR, it should reside in the implementing class
+		Action<Type, Sprite, Node> createPinnedToolButton { get; }
 	}
 
 	public static class IPinnedToolsMenuMethods
@@ -30,6 +29,29 @@ namespace UnityEditor.Experimental.EditorVR
 		public static void HighlightDevice(this IPinnedToolsMenu obj, Transform rayOrigin, GradientPair gradientPair)
 		{
 			highlightDevice(rayOrigin, gradientPair);
+		}
+
+		public static Action<Transform> mainMenuActivatorSelected { get; set; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="rayOrigin"></param>
+		public static void MainMenuActivatorSelected(this IPinnedToolsMenu obj, Transform rayOrigin)
+		{
+			mainMenuActivatorSelected(rayOrigin);
+		}
+
+		public static Action<Transform, Type> selectTool { get; set; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="rayOrigin"></param>
+		/// <param name="type"></param>
+		public static void SelectTool(this IPinnedToolsMenu obj, Transform rayOrigin, Type type)
+		{
+			selectTool(rayOrigin, type);
 		}
 	}
 }

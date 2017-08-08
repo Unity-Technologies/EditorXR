@@ -64,10 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Transform> onButtonHoverEnter { get; set; }
 		public Action<Transform> onButtonHoverExit { get; set; }
 		public Action<Type, Sprite, Node> createPinnedToolButton { get; set; }
-		public Action<Transform> mainMenuActivatorSelected { get; set; }
 		public Node? node { get; set; }
-
-		public Action<Transform, Type> selectTool { get; set; }
 		public IPinnedToolButton previewToolButton { get { return m_MainMenuButton; } }
 
 		public Transform rayOrigin
@@ -118,7 +115,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			Debug.LogWarning("Spawing pinned tools menu UI");
 			m_PinnedToolsMenuUI = m_PinnedToolsMenuUI ?? this.InstantiateUI(m_PinnedToolsMenuPrefab.gameObject).GetComponent<PinnedToolsMenuUI>();
 			m_PinnedToolsMenuUI.maxButtonCount = k_MaxButtonCount;
-			m_PinnedToolsMenuUI.mainMenuActivatorSelected = mainMenuActivatorSelected;
+			m_PinnedToolsMenuUI.mainMenuActivatorSelected = this.MainMenuActivatorSelected;
 			m_PinnedToolsMenuUI.rayOrigin = rayOrigin;
 			m_PinnedToolsMenuUI.buttonHovered += OnButtonHover;
 			m_PinnedToolsMenuUI.buttonClicked += OnButtonClick;
@@ -130,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			pinnedToolsUITransform.localRotation = Quaternion.identity;
 		}
 
-		public void CreatePinnedToolButton(Type toolType, Sprite buttonIcon, Node node)
+		void CreatePinnedToolButton(Type toolType, Sprite buttonIcon, Node node)
 		{
 			Debug.LogError("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
 			//var buttons = deviceData.buttons;
