@@ -8,27 +8,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class PinnedToolButtons : Nested, IInterfaceConnector
+		class PinnedToolButtons : Nested
 		{
 			public PinnedToolButtons()
 			{
 				IPinnedToolsMenuMethods.highlightDevice = HighlightDevice;
 				IPinnedToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
 				IPinnedToolsMenuMethods.selectTool = OnToolButtonClicked;
-			}
 
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
-			{
-				var mainMenu = obj as IMainMenu;
-				if (mainMenu != null)
-				{
-					mainMenu.previewToolInPinnedToolButton = PreviewToolInPinnedToolButton;
-					mainMenu.clearPinnedToolButtonPreview = ClearPinnedToolButtonPreview;
-				}
-			}
-
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
-			{
+				IMainMenuMethods.previewInPinnedToolButton = PreviewToolInPinnedToolButton;
+				IMainMenuMethods.clearPinnedToolButtonPreview = ClearPinnedToolButtonPreview;
 			}
 
 			internal void HighlightDevice(Transform rayOrigin, GradientPair gradientPair)

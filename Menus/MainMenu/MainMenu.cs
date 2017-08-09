@@ -91,8 +91,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public List<ActionMenuData> menuActions { get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
-		public Action<Transform, Type, string> previewToolInPinnedToolButton { private get; set; }
-		public Action clearPinnedToolButtonPreview { private get; set; }
 		public Node? node { get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
@@ -284,10 +282,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// Pass the pointer which is over us, so this information can supply context (e.g. selecting a tool for a different hand)
 			// Enable preview-mode on a pinned tool button; Display on the opposite proxy device by evaluating the entering RayOrigin
 			// Disable any existing previews being displayed in PinnedToolsMenus
-			clearPinnedToolButtonPreview();
+			this.ClearPinnedToolButtonPreview();
 
 			if (buttonType != null && rayOrigin != null)
-				previewToolInPinnedToolButton(rayOrigin, buttonType, buttonDescription);
+				this.PreviewInPinnedToolButton(rayOrigin, buttonType, buttonDescription);
 		}
 
 		void OnOpening()
