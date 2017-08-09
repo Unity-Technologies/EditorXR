@@ -21,7 +21,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
+				{
 					mainMenu.previewToolInPinnedToolButton = PreviewToolInPinnedToolButton;
+					mainMenu.clearPinnedToolButtonPreview = ClearPinnedToolButtonPreview;
+				}
 			}
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
@@ -39,25 +42,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			internal IPinnedToolButton PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType, string toolDescription)
+			internal void PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType, string toolDescription)
 			{
 				// Prevents menu buttons of types other than ITool from triggering any pinned tool button preview actions
 				if (!toolType.GetInterfaces().Contains(typeof(ITool)))
-					return null;
+					return;
 
-				IPinnedToolButton previewPinnedToolButton = null;
 				Rays.ForEachProxyDevice((deviceData) =>
 				{
 					if (deviceData.rayOrigin == rayOrigin) // Enable pinned tool preview on the opposite (handed) device
 					{
-						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
-						previewPinnedToolButton = pinnedToolsMenu.previewToolButton;
+						var previewPinnedToolButton = deviceData.pinnedToolsMenu.previewToolButton;
 						previewPinnedToolButton.previewToolType = toolType;
 						previewPinnedToolButton.previewToolDescription = toolDescription;
+						return;
 					}
 				});
+			}
 
-				return previewPinnedToolButton;
+			internal void ClearPinnedToolButtonPreview()
+			{
+				Rays.ForEachProxyDevice((deviceData) =>
+				{
+					deviceData.pinnedToolsMenu.previewToolButton.previewToolType = null;
+				});
 			}
 
 			internal void OnToolButtonClicked(Transform rayOrigin, Type toolType)

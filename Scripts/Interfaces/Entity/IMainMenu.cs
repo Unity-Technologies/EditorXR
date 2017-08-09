@@ -41,10 +41,13 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Transform: Ray origin to check
 		/// Type: MenuButton's tool type to preview
 		/// String: The tool description to display as a Tooltip
-		/// Returns the a pinned tool button that will display the menu-button-tool preview while the button is highlighted on the main menu
-		/// The returned PinnedToolButton has its preview mode disabled upon a ray exit of the menu button
 		/// </summary>
-		Func<Transform, Type, string, IPinnedToolButton> previewToolInPinnedToolButton { set; }
+		Action<Transform, Type, string> previewToolInPinnedToolButton { set; }
+
+		/// <summary>
+		/// Clears any PinnedToolButton previews that are set
+		/// </summary>
+		Action clearPinnedToolButtonPreview { set; }
 	}
 }
 #endif

@@ -83,7 +83,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		MainMenuUI m_MainMenuUI;
 		float m_LastRotationInput;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
-		IPinnedToolButton m_HighlightedPinnedToolbutton;
 
 		public List<Type> menuTools { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
@@ -92,7 +91,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public List<ActionMenuData> menuActions { get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
-		public Func<Transform, Type, string, IPinnedToolButton> previewToolInPinnedToolButton { private get; set; }
+		public Action<Transform, Type, string> previewToolInPinnedToolButton { private get; set; }
+		public Action clearPinnedToolButtonPreview { private get; set; }
 		public Node? node { get; set; }
 
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
@@ -281,17 +281,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 
-			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
+			// Pass the pointer which is over us, so this information can supply context (e.g. selecting a tool for a different hand)
 			// Enable preview-mode on a pinned tool button; Display on the opposite proxy device by evaluating the entering RayOrigin
-			if (m_HighlightedPinnedToolbutton != null)
-			{
-				// Disable preview-mode on pinned tool button
-				m_HighlightedPinnedToolbutton.previewToolType = null; // Clear any preview tool type
-				m_HighlightedPinnedToolbutton = null;
-			}
+			// Disable any existing previews being displayed in PinnedToolsMenus
+			clearPinnedToolButtonPreview();
 
 			if (buttonType != null && rayOrigin != null)
-				m_HighlightedPinnedToolbutton = previewToolInPinnedToolButton(rayOrigin, buttonType, buttonDescription);
+				previewToolInPinnedToolButton(rayOrigin, buttonType, buttonDescription);
 		}
 
 		void OnOpening()
