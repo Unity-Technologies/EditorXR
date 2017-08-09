@@ -131,6 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_PreScrollArrowsVisible = value;
 				if (m_PreScrollArrowsVisible)
 				{
+					transform.localScale = Vector3.one * this.GetViewerScale();
 					foreach (var arrow in m_PrimaryDirectionalHintArrows)
 					{
 						arrow.visibleColor = k_PrimaryArrowColor;
@@ -280,7 +281,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			scrollArrowsVisible = true;
 			preScrollArrowsVisible = false;
 			secondaryArrowsVisible = false;
-			m_ScrollVisualsTransform.localScale = Vector3.one * this.GetViewerScale();
+			transform.localScale = Vector3.one * this.GetViewerScale();
 			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, Vector3.up);// CameraUtils.GetMainCamera().transform.forward); // Scroll arrows should face/billboard the user.
 			m_ScrollVisualsCanvasGroup.alpha = 1f; // remove
 			m_ScrollVisualsDragTargetArrowTransform.localPosition = Vector3.zero;
@@ -288,6 +289,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kTargetDuration = 1f;
 			var currentDuration = 0f;
 			var currentLocalScale = m_ScrollVisualsTransform.localScale;
+			var targetLocalScale = Vector3.one;
 			var currentAlpha = m_ScrollVisualsCanvasGroup.alpha;
 			var secondArrowCurrentPosition = m_ScrollVisualsDragTargetArrowTransform.position;
 			var normalizedScrollVisualsForward = Vector3.Normalize(m_ScrollVisualsTransform.forward);
@@ -306,6 +308,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsDragTargetArrowTransform.position - m_ScrollVisualsTransform.position);
 				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsTransform.position - m_ScrollVisualsDragTargetArrowTransform.position);
+				m_ScrollVisualsTransform.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, shapedDuration);
 				var lineRendererPositions = new Vector3[] { m_ScrollVisualsTransform.position, m_ScrollVisualsDragTargetArrowTransform.position };
 				m_ScrollHintLine.Positions = lineRendererPositions;
 				m_ScrollHintLine.LineWidth = shapedDuration * this.GetViewerScale();

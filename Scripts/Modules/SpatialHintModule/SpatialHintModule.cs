@@ -84,9 +84,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			set { m_SpatialHintModuleUI.scrollVisualsRotation = value; }
 		}
 
-		/// <summary>
-		/// Description
-		/// </summary>
 		Transform spatialHintContentContainer { get { return m_SpatialHintModuleUI.contentContainer; } }
 
 		void Awake()
