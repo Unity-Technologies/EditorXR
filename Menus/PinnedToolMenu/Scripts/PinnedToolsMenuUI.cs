@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, ISelectTool, IUsesViewerScale, IUsesNode, IInstantiateUI,
+	sealed class PinnedToolsMenuUI : MonoBehaviour, IUsesViewerScale, IUsesNode, IInstantiateUI,
 		IConnectInterfaces, IControlSpatialHinting, IControlHaptics, IUsesRayOrigin
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
@@ -160,6 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public event Action buttonHovered;
 		public event Action buttonClicked;
+		public event Action<Transform, Type> buttonSelected;
 
 		private Vector3 m_StartingDragOrigin;
 		private Vector3 m_DragTarget;
@@ -415,9 +416,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1f, showMenuButton));
 
-			bool existingButton = m_OrderedButtons.Any((x) => x.toolType == pinnedToolButton.toolType);
-			if (!existingButton)
-				this.SelectTool(rayOrigin, pinnedToolButton.toolType);
+			if (buttonSelected != null)
+			{
+				bool existingButton = m_OrderedButtons.Any((x) => x.toolType == pinnedToolButton.toolType);
+				if (!existingButton)
+					buttonSelected(rayOrigin, pinnedToolButton.toolType);
+			}
 
 			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 			//this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
@@ -444,7 +448,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			var button = m_OrderedButtons[aboveMinimumButtonCount ? k_ActiveToolOrderPosition + 1 : k_ActiveToolOrderPosition];
 			SetupButtonOrderThenSelectTool(button);
-			this.SelectTool(rayOrigin, button.toolType);
+
+			if (buttonSelected != null)
+				buttonSelected(rayOrigin, button.toolType);
 		}
 
 		public void HighlightSingleButtonWithoutMenu(int buttonOrderPosition)
@@ -481,7 +487,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					Debug.LogError("<color=orange>Selecting highlighted button : </color>"+ button.toolType);
 					// Force the selection of the button regardless of it previously existing via a call to EVR that triggers a call to SelectExistingType()
-					this.SelectTool(rayOrigin, button.toolType);
+					if (buttonSelected != null)
+						buttonSelected(rayOrigin, button.toolType);
+
 					if (buttonClicked != null)
 						buttonClicked();
 
@@ -513,7 +521,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_OrderedButtons.Remove(button);
 				button.destroy();
 				button = m_OrderedButtons[k_ActiveToolOrderPosition];
-				this.SelectTool(rayOrigin, button.toolType);
+
+				if (buttonSelected != null)
+					buttonSelected(rayOrigin, button.toolType);
 			}
 
 			return button != null;

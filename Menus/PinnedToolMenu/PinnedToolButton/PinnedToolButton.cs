@@ -340,12 +340,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action hoverExit { get; set; }
 
 		public event Action hovered;
-		//public event Action<Transform> hovered;
-		//public event Action<Transform> clicked;
-
-		//public event Action<Transform> hoverEnter;
-		//public event Action<Transform> hoverExit;
-		public event Action<Transform> selected;
 
 		public bool isActiveTool
 		{

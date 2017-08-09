@@ -119,6 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PinnedToolsMenuUI.rayOrigin = rayOrigin;
 			m_PinnedToolsMenuUI.buttonHovered += OnButtonHover;
 			m_PinnedToolsMenuUI.buttonClicked += OnButtonClick;
+			m_PinnedToolsMenuUI.buttonSelected += OnButtonSelected;
 
 			// Alternate menu origin isnt set when awake or start run
 			var pinnedToolsUITransform = m_PinnedToolsMenuUI.transform;
@@ -314,6 +315,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnButtonHover()
 		{
 			this.Pulse(node, m_ButtonHoverPulse);
+		}
+
+		void OnButtonSelected(Transform rayOrigin, Type buttonType)
+		{
+			Debug.LogError("Selecting Tool in PinnedToolsMenu");
+			this.SelectTool(rayOrigin, buttonType);
 		}
 	}
 }

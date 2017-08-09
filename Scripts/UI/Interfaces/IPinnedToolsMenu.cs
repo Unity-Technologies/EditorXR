@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Gives decorated class Pinned Tools Menu functionality
 	/// </summary>
-	public interface IPinnedToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode
+	public interface IPinnedToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode, ISelectTool
 	{
 		bool alternateMenuVisible { set; }
 		Transform rayOrigin { get; set; }
