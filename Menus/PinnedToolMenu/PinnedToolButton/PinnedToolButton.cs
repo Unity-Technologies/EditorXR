@@ -396,7 +396,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				else
 				{
 					//this.Pulse(rayOrigin, 0.005f, 0.2f); // Used for spatial selection highlighting only
-					Debug.LogWarning("Perform Pulse up in PinnedToolsMenu level");
+					this.ShowTooltip(this);
 				}
 
 				if (implementsSecondaryButton && (!isMainMenu || !isSelectionTool))
@@ -579,7 +579,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
 			//m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
 
-			var tooltipSourcePosition = new Vector3(0f, tooltipSource.localPosition.y, tooltipSource.localPosition.z);
+			//var tooltipSourcePosition = new Vector3(0f, tooltipSource.localPosition.y, tooltipSource.localPosition.z);
 			//tooltipSource.localPosition = tooltipSourcePosition;
 			tooltipAlignment = TextAlignment.Center;
 			//m_TooltipTarget.localPosition = new Vector3(0, 0, -0.5f);
@@ -1202,7 +1202,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield return null;
 			}
 
-			this.ShowTooltip(this);
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
 			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
