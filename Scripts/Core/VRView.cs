@@ -148,7 +148,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var currentCamera = Camera.current;
 			Camera.SetupCurrent(m_Camera);
 			VRSettings.enabled = true;
-			InputTracking.Recenter();
 			Camera.SetupCurrent(currentCamera);
 
 			if (viewEnabled != null)
