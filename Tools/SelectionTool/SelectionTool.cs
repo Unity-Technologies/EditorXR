@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -12,7 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
-		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility
+		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
+		IUsesProxyType
 	{
 		const float k_MultiselectHueShift = 0.5f;
 		static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
@@ -42,6 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public event Action<GameObject, Transform> hovered;
 
 		public List<ILinkedObject> linkedObjects { get; set; }
+		public Type proxyType { get; set; }
 
 		public string tooltipText { get { return m_MultiSelect ? "Multi-Select Enabled" : ""; } }
 		public Transform tooltipTarget { get; private set; }
@@ -70,6 +73,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_SelectionInput = (SelectionInput)input;
 
 			var multiSelectControl = m_SelectionInput.multiSelect;
+			if (proxyType == typeof(ViveProxy))
+				multiSelectControl = m_SelectionInput.multiSelectAlt;
+
 			if (multiSelectControl.wasJustPressed)
 			{
 				var realTime = Time.realtimeSinceStartup;
