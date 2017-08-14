@@ -178,12 +178,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							menuHideFlags[menu] |= MenuHideFlags.HasDirectSelection;
 						}
 
+						if (alternateMenuVisible)
+							SetAlternateMenuVisibility(rayOrigin, false);
+
 						foreach (var otherDeviceData in m_ActiveDeviceData)
 						{
 							if (otherDeviceData == deviceData)
 								continue;
 
 							var otherRayOrigin = otherDeviceData.rayOrigin;
+							if (alternateMenuVisible && otherDeviceData.alternateMenu != null)
+								SetAlternateMenuVisibility(otherRayOrigin, true);
+
 							if (directSelection.IsHovering(otherRayOrigin) || directSelection.IsScaling(otherRayOrigin)
 								|| Vector3.Distance(otherRayOrigin.position, rayOriginPosition) < k_TwoHandHideDistance * viewerScale)
 							{
