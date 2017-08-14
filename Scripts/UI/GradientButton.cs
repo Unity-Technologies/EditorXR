@@ -185,6 +185,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		[SerializeField]
 		float m_IconHighlightedLocalZOffset = -0.0015f;
 
+		[SerializeField]
+		float m_BeginHighlightDuration = 0.25f;
+
+		[SerializeField]
+		float m_EndHighlightDuration = 0.167f;
+
 		[Header("Animated Reveal Settings")]
 		[Tooltip("Default value is 0.25")]
 		// If AnimatedReveal is enabled, wait this duration before performing the reveal
@@ -377,19 +383,16 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
-			const float kTargetTransitionAmount = 1f;
 			var transitionAmount = Time.deltaTime;
-			var shapedTransitionAmount = 0f;
 			var currentGradientPair = GetMaterialColors();
 			var targetGradientPair = highlightGradientPair;
 			var currentLocalScale = m_ContentContainer.localScale;
 			var highlightedLocalScale = highlightScale;
-			while (transitionAmount < kTargetTransitionAmount)
+			var highlightDuration = m_BeginHighlightDuration > 0f ? m_BeginHighlightDuration : 0.01f;  // Add sane default if highlight duration is zero
+			while (transitionAmount < highlightDuration)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 4;
-				shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+				var shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime / highlightDuration);
 				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
-
 				currentGradientPair = GradientPair.Lerp(currentGradientPair, targetGradientPair, shapedTransitionAmount);
 				SetMaterialColors(currentGradientPair);
 				yield return null;
@@ -408,21 +411,17 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsEndHighlight());
 
-			const float kTargetTransitionAmount = 1f;
 			var transitionAmount = Time.deltaTime;
-			var shapedTransitionAmount = 0f;
 			var originalGradientPair = GetMaterialColors();
 			var targetGradientPair = normalGradientPair;
 			var currentLocalScale = m_ContentContainer.localScale;
 			var targetScale = originalScale;
-			while (transitionAmount < kTargetTransitionAmount)
+			var highlightDuration = m_EndHighlightDuration > 0f ? m_EndHighlightDuration : 0.01f;  // Add sane default if highlight duration is zero
+			while (transitionAmount < highlightDuration)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 6;
-				shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+				var shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime / highlightDuration);
 				var transitioningGradientPair = GradientPair.Lerp(originalGradientPair, targetGradientPair, shapedTransitionAmount);
-
 				SetMaterialColors(transitioningGradientPair);
-
 				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, targetScale, shapedTransitionAmount);
 				yield return null;
 			}
