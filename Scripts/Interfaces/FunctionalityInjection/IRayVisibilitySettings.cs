@@ -13,11 +13,11 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IRayVisibilitySettingsMethods
 	{
-		public delegate void AddRayVisibilitySettingsDelegate(Transform rayOrigin, object caller, bool rayVisible,
+		internal delegate void AddRayVisibilitySettingsDelegate(Transform rayOrigin, object caller, bool rayVisible,
 			bool coneVisible, int priority = 0);
 
 		internal static Action<Transform, object> removeRayVisibilitySettings { get; set; }
-		public static AddRayVisibilitySettingsDelegate addRayVisibilitySettings;
+		internal static AddRayVisibilitySettingsDelegate addRayVisibilitySettings;
 
 		/// <summary>
 		/// Add visibility settings to try and show/hide the ray/cone
@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="caller">The object which is adding settings</param>
 		/// <param name="rayVisible">Show or hide the ray</param>
 		/// <param name="coneVisible">Show or hide the cone</param>
-		/// <param name="priority">The priority level of this request</param>
+		/// <param name="priority">(Optional) The priority level of this request</param>
 		public static void AddRayVisibilitySettings(this IRayVisibilitySettings obj, Transform rayOrigin,
 			object caller, bool rayVisible, bool coneVisible, int priority = 0)
 		{

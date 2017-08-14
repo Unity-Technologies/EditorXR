@@ -484,8 +484,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								if (worldResetHeld && otherWorldResetHeld)
 								{
 									m_AllowScaling = false;
-
+#if UNITY_EDITORVR
 									cameraRig.position = Vector3.up * VRView.HeadHeight;
+#endif
 									cameraRig.rotation = Quaternion.identity;
 
 									ResetViewerScale();

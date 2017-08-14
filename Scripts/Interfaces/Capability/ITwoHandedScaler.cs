@@ -4,7 +4,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Provides methods and delegates used to directly select and grab scene objects
+	/// Provides a method used to check the status of two-handed scaling
 	/// </summary>
 	public interface ITwoHandedScaler
 	{
