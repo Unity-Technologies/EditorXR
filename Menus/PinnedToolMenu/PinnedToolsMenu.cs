@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		const int k_MaxButtonCount = 16; //
 
 		[SerializeField]
-		Sprite m_UnityIcon;
+		Sprite m_MainMenuIcon;
 
 		[SerializeField]
 		ActionMap m_MainMenuActionMap;
@@ -172,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//button.node = deviceData.node;
 			button.rayOrigin = rayOrigin;
 			button.toolType = toolType; // Assign Tool Type before assigning order
-			button.icon = toolType != typeof(IMainMenu) ? buttonIcon : m_UnityIcon;
+			button.icon = toolType != typeof(IMainMenu) ? buttonIcon : m_MainMenuIcon;
 			button.highlightSingleButton = HighlightSingleButton;
 			button.selectHighlightedButton = SelectHighlightedButton;
 			//button.selected += OnMainMenuActivatorSelected;
@@ -319,7 +319,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnButtonSelected(Transform rayOrigin, Type buttonType)
 		{
-			Debug.LogError("Selecting Tool in PinnedToolsMenu");
+			Debug.LogError("<color=green>Selecting Tool in PinnedToolsMenu</color> : " + buttonType.ToString());
 			this.SelectTool(rayOrigin, buttonType);
 		}
 	}

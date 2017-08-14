@@ -1,11 +1,11 @@
 fileFormatVersion: 2
 guid: 800ff7c94496eac41ab0b6df27863704
-timeCreated: 1500942141
+timeCreated: 1502308659
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - m_UnityIcon: {fileID: 21300000, guid: 05f6f0555fbf99a429004b50ccd6ffa9, type: 3}
+  - m_MainMenuIcon: {fileID: 21300000, guid: 05f6f0555fbf99a429004b50ccd6ffa9, type: 3}
   - m_MainMenuActionMap: {fileID: 11400000, guid: 744d823602c92f94ebd746822bed646d,
       type: 2}
   - m_PinnedToolsMenuPrefab: {fileID: 114000010527895234, guid: 9df94b11e4f4ed848aa8c4055b378c6a,
@@ -18,7 +18,6 @@ MonoImporter:
       type: 2}
   - m_ActivationPulse: {fileID: 11400000, guid: c3a3fe0d1f5495c4db58b5282c37a962,
       type: 2}
-  - m_ScrollingPulse: {fileID: 11400000, guid: e3b61c818f641ce4fb27eb9d16770364, type: 2}
   - m_HidingPulse: {fileID: 11400000, guid: 2e01cf9fae741534eaf75d6f0910be3a, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
