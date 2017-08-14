@@ -388,13 +388,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (!m_Highlighted)
 					this.HideTooltip(this);
 				else
-				{
-					//this.Pulse(rayOrigin, 0.005f, 0.2f); // Used for spatial selection highlighting only
 					this.ShowTooltip(this);
-				}
 
 				if (implementsSecondaryButton && (!isMainMenu || !isSelectionTool))
 				{
+					// This show/hide functionality utilized by spatial scrolling
 					if (m_Highlighted)
 						this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 					else
@@ -582,8 +580,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
 			m_GradientButton.hoverExit += OnActionButtonHoverExit;
 			m_GradientButton.click += OnBackgroundButtonClick;
-			m_GradientButton.highlightStart += OnPrimaryButtonHighlightStart;
-			m_GradientButton.highlightEnd += OnPrimaryButtonHighlightEnd;
 			m_GradientButton.containerContentsAnimationSpeedMultiplier = kIncreasedContainerContentsSpeedMultiplier;
 
 			m_FrameRenderer.SetBlendShapeWeight(1, 0f);
@@ -1185,23 +1181,44 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator ShowSecondaryButton()
 		{
 			//Debug.LogError("<color=black>Waiting before SHOWING SECONDARY BUTTON</color>");
-			const float kFrameSecondaryButtonVisibleBlendShapeWeight = 61f;
-			const float kSecondaryButtonVisibleBlendShapeWeight = 46f;
-			const float kMaxDelayDuration = 0.25f;
-			const int kDurationMultiplier = 10;
-			var delayDuration = 0f;
-			while (delayDuration < kMaxDelayDuration)
+
+			// Don't perform additional animated visuals if already in a fully revealed state
+			if (Mathf.Approximately(m_SecondaryButtonContainerCanvasGroup.alpha, 1f))
 			{
-				delayDuration += Time.unscaledDeltaTime;
+				m_SecondaryButtonVisibilityCoroutine = null;
+				yield break;
+			}
+
+			const float kSecondaryButtonFrameVisibleBlendShapeWeight = 16f; // The extra amount of the frame to show on hover-before the full reveal of the secondary button
+			const float kTargetDuration = 1f;
+			const int kIntroDurationMultiplier = 10;
+			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
+			var currentDuration = 0f;
+			while (currentDuration < kTargetDuration)
+			{
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * kIntroDurationMultiplier);
+				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kSecondaryButtonFrameVisibleBlendShapeWeight, shapedAmount));
 				yield return null;
 			}
+
+			const float kDelayBeforeSecondaryButtonReveal = 0.25f;
+			currentDuration = 0f;
+			while (currentDuration < kDelayBeforeSecondaryButtonReveal)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				yield return null;
+			}
+
+			const float kFrameSecondaryButtonVisibleBlendShapeWeight = 61f;
+			const float kSecondaryButtonVisibleBlendShapeWeight = 46f;
+			const int kDurationMultiplier = 25;
 
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
 			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
 			var currentSecondaryCanvasGroupAlpha = m_SecondaryButtonContainerCanvasGroup.alpha;
-			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
-			var currentDuration = 0f;
+			currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
+			currentDuration = 0f;
 			while (currentDuration < 1f)
 			{
 				currentDuration += Time.unscaledDeltaTime * kDurationMultiplier;
@@ -1218,8 +1235,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator HideSecondaryButton()
 		{
+			const float kMaxDelayDuration = 0.125f;
+			var delayDuration = 0f;
+			while (delayDuration < kMaxDelayDuration)
+			{
+				delayDuration += Time.unscaledDeltaTime;
+				yield return null;
+			}
+
 			const float kSecondaryButtonHiddenBlendShapeWeight = 100f;
-			const int kDurationMultiplier = 8;
+			const int kDurationMultiplier = 12;
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
 			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
 			var currentSecondaryCanvasGroupAlpha = m_SecondaryButtonContainerCanvasGroup.alpha;
@@ -1245,51 +1270,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			m_SecondaryButtonVisibilityCoroutine = null;
-		}
-
-		void OnPrimaryButtonHighlightStart ()
-		{
-			if (!isMainMenu)
-				this.RestartCoroutine(ref m_HighlightCoroutine, PerformPrimaryButtonHighlightStart());
-		}
-
-		void OnPrimaryButtonHighlightEnd ()
-		{
-			if (m_HighlightCoroutine != null)
-				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, PerformPrimaryButtonHighlightEnd());
-		}
-
-		IEnumerator PerformPrimaryButtonHighlightStart()
-		{
-			const float kSecondaryButtonFrameVisibleBlendShapeWeight = 16f;
-			const float kTargetDuration = 1f;
-			const int kDurationMultiplier = 25;
-			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
-			var currentDuration = 0f;
-			while (currentDuration < kTargetDuration)
-			{
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * kDurationMultiplier);
-				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kSecondaryButtonFrameVisibleBlendShapeWeight, shapedAmount));
-				yield return null;
-			}
-		}
-
-		IEnumerator PerformPrimaryButtonHighlightEnd()
-		{
-			const float kSecondaryButtonFrameHiddenBlendShapeWeight = 0f;
-			const float kTargetDuration = 1f;
-			const int kDurationMultiplier = 5;
-			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
-			this.hideTooltip(this);
-			var currentDuration = 0f;
-			while (currentDuration < kTargetDuration)
-			{
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * kDurationMultiplier);
-				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kSecondaryButtonFrameHiddenBlendShapeWeight, shapedAmount));
-				yield return null;
-			}
-
-			m_HighlightCoroutine = null;
 		}
 	}
 }

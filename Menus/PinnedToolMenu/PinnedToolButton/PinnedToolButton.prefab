@@ -866,7 +866,7 @@ MonoBehaviour:
   m_HighlightItemColor: {r: 1, g: 1, b: 1, a: 1}
   m_HighlightItems:
   - {fileID: 114000012344975988}
-  m_IconHighlightedLocalZOffset: -0.0015
+  m_IconHighlightedLocalZOffset: -0.005
   m_BeginHighlightDuration: 0.25
   m_EndHighlightDuration: 0.3
   m_DelayBeforeReveal: 0
@@ -1356,7 +1356,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000014093660532}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.15106471}
+  m_LocalPosition: {x: 0, y: 0, z: -0.1517516}
   m_LocalScale: {x: 0.42501074, y: 0.49999997, z: 0.42501074}
   m_Children: []
   m_Father: {fileID: 4000012648346800}
