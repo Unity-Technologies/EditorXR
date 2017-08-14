@@ -850,7 +850,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_NormalGradientPair:
-    a: {r: 1, g: 0.92156863, b: 0.93333334, a: 1}
+    a: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
     b: {r: 0.7176471, g: 0.10980392, b: 0.10980392, a: 1}
   m_HighlightGradientPair:
     a: {r: 0.95686275, g: 0.2627451, b: 0.21176471, a: 1}
@@ -862,11 +862,13 @@ MonoBehaviour:
   m_Text: {fileID: 114000010635728284}
   m_Icon: {fileID: 114000012344975988}
   m_AlternateIconSprite: {fileID: 0}
-  m_NormalContentColor: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
+  m_NormalContentColor: {r: 1, g: 1, b: 1, a: 1}
   m_HighlightItemColor: {r: 1, g: 1, b: 1, a: 1}
   m_HighlightItems:
   - {fileID: 114000012344975988}
   m_IconHighlightedLocalZOffset: -0.0015
+  m_BeginHighlightDuration: 0.25
+  m_EndHighlightDuration: 0.3
   m_DelayBeforeReveal: 0
   m_highlightZScaleMultiplier: 25
 --- !u!114 &114000010635728284
@@ -1056,6 +1058,8 @@ MonoBehaviour:
   - {fileID: 114000011650556854}
   - {fileID: 114000013859744370}
   m_IconHighlightedLocalZOffset: -0.0155
+  m_BeginHighlightDuration: 0.25
+  m_EndHighlightDuration: 0.167
   m_DelayBeforeReveal: 0
   m_highlightZScaleMultiplier: 10
 --- !u!137 &137000010072420284
@@ -1352,7 +1356,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000014093660532}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.15000011}
+  m_LocalPosition: {x: 0, y: 0, z: -0.15106471}
   m_LocalScale: {x: 0.42501074, y: 0.49999997, z: 0.42501074}
   m_Children: []
   m_Father: {fileID: 4000012648346800}
