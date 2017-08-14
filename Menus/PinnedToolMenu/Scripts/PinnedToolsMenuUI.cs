@@ -407,10 +407,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				mainMenuActivatorSelected(rayOrigin);
 				return;
 			}
-			else if (!aboveMinimumButtonCount)
-			{
+
+			if (!aboveMinimumButtonCount)
 				showMenuButton = true;
-			}
 
 			Reinsert(pinnedToolButton, k_ActiveToolOrderPosition);
 
