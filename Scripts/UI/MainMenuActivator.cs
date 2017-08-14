@@ -10,7 +10,8 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, IUsesMenuOrigins, IControlHaptics, IUsesHandedRayOrigin
+	sealed class MainMenuActivator : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler,
+		IUsesMenuOrigins, IControlHaptics, IUsesHandedRayOrigin, ITooltip, ITooltipPlacement
 	{
 		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
 		static readonly float k_AlternateLocationOffset = 0.06f;
@@ -65,6 +66,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		Color m_DisabledColor;
 
+		[SerializeField]
+		Transform m_TooltipSource;
+
+		[SerializeField]
+		Transform m_TooltipTarget;
+
 		Vector3 m_OriginalActivatorIconLocalScale;
 		Vector3 m_OriginalActivatorIconLocalPosition;
 		Vector3 m_HighlightedActivatorIconLocalScale;
@@ -99,6 +106,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_Disabled = value;
 			}
 		}
+
+		public string tooltipText
+		{
+			get { return m_Disabled ? "Main Menu Hidden" : null; }
+		}
+
+		public Transform tooltipTarget { get { return m_TooltipTarget; } }
+		public Transform tooltipSource { get { return m_TooltipSource; } }
+		public TextAlignment tooltipAlignment { get { return TextAlignment.Center; } }
 
 		void Awake()
 		{
