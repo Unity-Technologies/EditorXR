@@ -2,6 +2,7 @@
 using UnityEditor;
 using NUnit.Framework;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.TestTools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 
@@ -12,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
     {
 		GameObject go, parent, other;
 		GameObject currentObject;
-		GameObject boundsA, boundsB;
+		List<GameObject> toCleanupAfterEach = new List<GameObject>();
 
 		float delta = 0.00000001f;
 
@@ -24,6 +25,8 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 			parent.transform.position += new Vector3(2, 4, 8);
 			other = new GameObject("other");
 			other.transform.position += new Vector3(-5, 1, 2);
+
+			toCleanupAfterEach.AddRange(new GameObject[] { go, parent, other });
 		}
 
 		[Test]
@@ -141,11 +144,14 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 		[Test]
 		public void GetBounds_Array()
 		{
-			boundsA = new GameObject();
+			var boundsA = new GameObject();
 			boundsA.transform.position += new Vector3(-5, -2, 8);
-			boundsB = new GameObject();
+			var boundsB = new GameObject();
 			boundsB.transform.position += new Vector3(2, 6, 4);
 			var transforms = new Transform[] { boundsA.transform, boundsB.transform };
+
+			// if you want to work with more than one object in a test, add them to cleanup list manually
+			toCleanupAfterEach.AddRange(new GameObject[] { boundsA, boundsB });
 
 			var bounds = ObjectUtils.GetBounds(transforms);
 			Bounds expected = new Bounds(new Vector3(-1.5f, 2f, 6f), new Vector3(7f, 8f, 4f));
@@ -156,21 +162,13 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 		[TearDown]
 		public void CleanupAfterEach()
 		{
-			ObjectUtils.Destroy(go);
-			ObjectUtils.Destroy(parent);
-			ObjectUtils.Destroy(other);
-
 			if (currentObject != null)
-			{
-				ObjectUtils.Destroy(currentObject);
-			}
-		}
+				toCleanupAfterEach.Add(currentObject);
 
-		[OneTimeTearDown]
-		public void CleanupAfterAll()
-		{
-			ObjectUtils.Destroy(boundsA);
-			ObjectUtils.Destroy(boundsB);
+			foreach (var o in toCleanupAfterEach)
+			{
+				ObjectUtils.Destroy(o);
+			}
 		}
 
 		// this doesn't actually do it recursively yet
