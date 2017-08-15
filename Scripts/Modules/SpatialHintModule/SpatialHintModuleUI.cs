@@ -178,10 +178,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_ScrollVisualsRotation ; }
 			set
 			{
-				// Set null In order to hide the scroll visuals
-				if (value == Vector3.zero)
-					Debug.LogError("<color=red>??????????????????????!!!!!!!!!!!!!!!!!!!!!!!</color>");
-
 				if (m_ScrollVisualsRotation == value)
 					return;
 

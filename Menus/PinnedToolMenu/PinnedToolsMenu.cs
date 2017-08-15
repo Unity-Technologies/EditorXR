@@ -240,7 +240,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					//selectHighlightedButton(rayOrigin);
 					//OnActionButtonHoverExit(false);
 
-					//KEEP deleteHighlightedButton(rayOrigin); // convert to method in IPinnedToolsMenu interface
 					if (m_PinnedToolsMenuUI.DeleteHighlightedButton())
 					{
 						buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount

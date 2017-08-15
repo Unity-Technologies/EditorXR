@@ -59,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal void OnToolButtonClicked(Transform rayOrigin, Type toolType)
 			{
-				Debug.LogError("Selecting Tool in EditorVR.PinnedToolButtons");
+				Debug.LogError("<color=green> OnToolButtonClicked : Selecting Tool in EditorVR.PinnedToolButtons : </color>" + toolType.ToString());
 
 				if (toolType == typeof(IMainMenu))
 					OnMainMenuActivatorSelected(rayOrigin);
