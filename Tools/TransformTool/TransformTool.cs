@@ -20,8 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		const float k_DirectLazyFollowTranslate = 20f;
 		const float k_DirectLazyFollowRotate = 30f;
 
-		const int k_RayHidePriority = 1;
-
 		class GrabData
 		{
 			Vector3[] m_PositionOffsets;
@@ -332,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!this.CanGrabObject(directHoveredObject, directRayOrigin))
 						continue;
 
-					this.AddRayVisibilitySettings(directRayOrigin, this, false, true, k_RayHidePriority); // This will also disable ray selection
+					this.AddRayVisibilitySettings(directRayOrigin, this, false, true); // This will also disable ray selection
 
 					if (!this.IsConeVisible(directRayOrigin))
 						continue;
@@ -562,7 +560,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					// Prevent lock from getting stuck
 					this.RemoveRayVisibilitySettings(rayOrigin, this);
-					this.AddRayVisibilitySettings(destRayOrigin, this, false, true, k_RayHidePriority);
+					this.AddRayVisibilitySettings(destRayOrigin, this, false, true);
 
 					if (objectsTransferred != null)
 						objectsTransferred(rayOrigin, destRayOrigin);

@@ -20,8 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		const float k_RotationThreshold = 0.75f;
 		const float k_DistanceThreshold = 0.02f;
 
-		const int k_RayHidePriority = 2;
-
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
 		const float k_MinScale = 0.1f;
 		const float k_MaxScale = 1000f;
@@ -328,7 +326,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_Crawling = true;
 					m_RigStartPosition = cameraRig.position;
 					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
-					this.AddRayVisibilitySettings(rayOrigin, this, false, false, k_RayHidePriority);
+					this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 				}
 
 				if (m_Crawling)
@@ -349,7 +347,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (m_LocomotionInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
 			{
 				m_State = State.Aiming;
-				this.AddRayVisibilitySettings(rayOrigin, this, false, false, k_RayHidePriority);
+				this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 
 				m_BlinkVisuals.ShowVisuals();
 
@@ -411,8 +409,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
 								var distance = Vector3.Distance(thisPosition, otherPosition);
 
-								this.AddRayVisibilitySettings(rayOrigin, this, false, false, k_RayHidePriority);
-								this.AddRayVisibilitySettings(otherRayOrigin, this, false, false, k_RayHidePriority);
+								this.AddRayVisibilitySettings(rayOrigin, this, false, false);
+								this.AddRayVisibilitySettings(otherRayOrigin, this, false, false);
 
 								var rayToRay = otherPosition - thisPosition;
 								var midPoint = thisPosition + rayToRay * 0.5f;
