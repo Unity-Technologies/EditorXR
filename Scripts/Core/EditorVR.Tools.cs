@@ -121,8 +121,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
 					deviceData.pinnedToolsMenu = pinnedToolsMenu;
 					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
-					pinnedToolsMenu.createPinnedToolButton(typeof(IMainMenu), null, deviceData.node);
-					pinnedToolsMenu.createPinnedToolButton(typeof(SelectionTool), selectionToolData.icon, deviceData.node);
+					pinnedToolsMenu.SetButtonForType(typeof(IMainMenu), null);
+					pinnedToolsMenu.SetButtonForType(typeof(SelectionTool), selectionToolData.icon);
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -182,12 +182,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return result;
 			}
 
-			internal static bool SelectTool(Transform rayOrigin, Type toolType)
+			internal static bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true)
 			{
-				//Debug.LogError("SelectionTool TYPE : <color=black>" + toolType.ToString() + "</color>");
-				//if (toolType == typeof(SelectionTool))
-					//Debug.LogError("<color=green>!!!!! SelectionTool detected</color>");
-
 				var result = false;
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
 				Rays.ForEachProxyDevice(deviceData =>
@@ -197,23 +193,33 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						Debug.LogError("<color=yellow>deviceDate.CurrentTool : </color>" + deviceData.currentTool.ToString() + " : setting type to : " + toolType);
 						var spawnTool = true;
 						var pinnedToolButtonAdded = false;
-						var setSelectAsCurrentTool = toolType == typeof(SelectionTool);//deviceData.currentTool is ILocomotor;
+						var currentTool = deviceData.currentTool;
+						var currentToolType = currentTool.GetType();
+						var currentToolIsSelect = currentToolType == typeof(SelectionTool);
+						var setSelectAsCurrentTool = toolType == typeof(SelectionTool) && !currentToolIsSelect;//deviceData.currentTool is ILocomotor;
 						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
-
 						// If this tool was on the current device already, remove it, if it is selected while already being the current tool
-						var despawn = deviceData.currentTool.GetType() == toolType || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
-						var defaultTool = IsDefaultTool(toolType); // TODO initially set spawnTool to this default/permatool value
-						if (deviceData.currentTool != null && despawn)
+						var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentTool;// || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
+						if (currentTool != null && despawn)
 						{
 							Debug.LogError("Despawing tool !!!! : <color=red>toolType == typeof(SelectionTool) : </color>" + (toolType == typeof(SelectionTool)).ToString());
-							DespawnTool(deviceData, deviceData.currentTool);
-							pinnedToolsMenu.createPinnedToolButton(toolType, null, deviceData.node);
+							DespawnTool(deviceData, currentTool);
 
-							// Don't spawn a new tool, since we are only removing the old tool
+							if (!currentToolIsSelect && !setSelectAsCurrentTool)
+							{
+								// Delete a button of the first type parameter; then select a button the second type param (the new current tool)
+								pinnedToolsMenu.deletePinnedToolButton(toolType, currentToolType);
+								// Don't spawn a new tool, since we are only removing the old tool
+							}
+							else if (!currentToolIsSelect && setSelectAsCurrentTool)
+							{
+								pinnedToolsMenu.SetButtonForType(typeof(SelectionTool), null);
+							}
+
 							spawnTool = false;
 						}
 
-						if (spawnTool && !defaultTool)
+						if (spawnTool && !IsDefaultTool(toolType))
 						{
 							Debug.LogError("<color=yellow>SPAWN TOOL : </color>" + toolType);
 							// Spawn tool and collect all devices that this tool will need
@@ -242,11 +248,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 								AddToolToStack(dd, newTool);
 
-								if (!setSelectAsCurrentTool)
-								{
-									pinnedToolButtonAdded = true;
-									pinnedToolsMenu.createPinnedToolButton(toolType, newTool.icon, deviceData.node);
-								}
+								//if (!setSelectAsCurrentTool)
+									pinnedToolsMenu.SetButtonForType(toolType, newTool.icon);
 							}
 						}
 
