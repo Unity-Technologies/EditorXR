@@ -36,8 +36,6 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Stop all haptic feedback on a specific device, or all devices
 		/// </summary>
 		/// <param name="node">Device RayOrigin/Transform on which to stop all pulses. A NULL value will stop pulses on all devices</param>
-		/// <param name="durationMultiplier">(Optional) Multiplier value applied to the hapticPulse duration</param>
-		/// <param name="intensityMultiplier">(Optional) Multiplier value applied to the hapticPulse intensity</param>
 		public static void StopPulses(this IControlHaptics obj, Node? node)
 		{
 			stopPulses(node);

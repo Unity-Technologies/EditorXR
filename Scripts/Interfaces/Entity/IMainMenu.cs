@@ -42,10 +42,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		/// <summary>
 		/// Highlights a pinned tool button when a menu button is highlighted
-		/// Transform: Ray origin to check
-		/// Type: MenuButton's tool type to preview
-		/// String: The tool description to display as a Tooltip
-		/// </summary>
+		/// <param name="rayOrigin">Transform: Ray origin to check</param>
+		/// <param name="toolType">Type: MenuButton's tool type to preview</param>
+		/// <param name="toolDescription">String: The tool description to display as a Tooltip</param>
 		public static void PreviewInPinnedToolButton (this IMainMenu obj, Transform rayOrigin, Type toolType, string toolDescription)
 		{
 			previewInPinnedToolButton(rayOrigin, toolType, toolDescription);

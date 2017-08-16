@@ -282,11 +282,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			semiTransparent = false;
 			semiTransparent = true;
 
+			const float kSpeedScalar = 8f;
 			var revealAmount = 0f;
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 			while (revealAmount < 1)
 			{
-				revealAmount += Time.unscaledDeltaTime * 8;
+				revealAmount += Time.unscaledDeltaTime * kSpeedScalar;
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(revealAmount);
 
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)

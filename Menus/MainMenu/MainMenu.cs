@@ -92,10 +92,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
 		public Node? node { get; set; }
-
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
-
-		public Transform rayOrigin { private get; set; } // TODO: still needed for previewToolInPinnedToolButton - consider changing to NODE
+		public Transform rayOrigin { private get; set; }
 
 		void Start()
 		{
@@ -169,7 +167,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						sectionName = customMenuAttribute.sectionName,
 						description = customMenuAttribute.description
-						
 					};
 				}
 

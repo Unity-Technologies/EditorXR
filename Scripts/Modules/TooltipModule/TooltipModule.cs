@@ -125,9 +125,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var customToolTipColor = tooltip as ISetCustomTooltipColor;
 			if (customToolTipColor != null)
 			{
+				var customToolTipHighlightColor = customToolTipColor.customToolTipHighlightColor;
 				tooltipUI.highlight.material= m_CustomHighlightMaterial;
-				m_CustomHighlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipColor.customToolTipHighlightColor.a);
-				m_CustomHighlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipColor.customToolTipHighlightColor.b);
+				m_CustomHighlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipHighlightColor.a);
+				m_CustomHighlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipHighlightColor.b);
 			}
 
 			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));

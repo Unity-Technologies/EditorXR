@@ -74,7 +74,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
 				var lockModule = evr.GetModule<LockModule>();
 				var defaultTools = evr.m_DefaultTools;
-				var pinnedTools = evr.GetNestedModule<PinnedToolButtons>();
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -138,7 +137,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
 			static ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device = null)
 			{
-				Debug.LogWarning("SPAWN TOOL CALLED! : " + toolType);
 				usedDevices = new HashSet<InputDevice>();
 				if (!typeof(ITool).IsAssignableFrom(toolType))
 					return null;
@@ -190,29 +188,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					if (deviceData.rayOrigin == rayOrigin)
 					{
-						Debug.LogError("<color=yellow>deviceDate.CurrentTool : </color>" + deviceData.currentTool.ToString() + " : setting type to : " + toolType);
 						var spawnTool = true;
-						var pinnedToolButtonAdded = false;
 						var currentTool = deviceData.currentTool;
 						var currentToolType = currentTool.GetType();
 						var currentToolIsSelect = currentToolType == typeof(SelectionTool);
-						var setSelectAsCurrentTool = toolType == typeof(SelectionTool) && !currentToolIsSelect;//deviceData.currentTool is ILocomotor;
+						var setSelectAsCurrentTool = toolType == typeof(SelectionTool) && !currentToolIsSelect;
 						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
 						// If this tool was on the current device already, remove it, if it is selected while already being the current tool
 						var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentTool;// || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
 						if (currentTool != null && despawn)
 						{
-							Debug.LogError("Despawing tool !!!! : <color=red>toolType == typeof(SelectionTool) : </color>" + (toolType == typeof(SelectionTool)).ToString());
 							DespawnTool(deviceData, currentTool);
 
 							if (!currentToolIsSelect && !setSelectAsCurrentTool)
 							{
-								// Delete a button of the first type parameter; then select a button the second type param (the new current tool)
-								pinnedToolsMenu.deletePinnedToolButton(toolType, currentToolType);
+								// Delete a button of the first type parameter
+								// Then select a button the second type param (the new current tool)
 								// Don't spawn a new tool, since we are only removing the old tool
+								pinnedToolsMenu.deletePinnedToolButton(toolType, currentToolType);
 							}
 							else if (!currentToolIsSelect && setSelectAsCurrentTool)
 							{
+								// Set the selection tool as the active tool, if select is to be the new current tool
 								pinnedToolsMenu.SetButtonForType(typeof(SelectionTool), null);
 							}
 
@@ -221,12 +218,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						if (spawnTool && !IsDefaultTool(toolType))
 						{
-							Debug.LogError("<color=yellow>SPAWN TOOL : </color>" + toolType);
 							// Spawn tool and collect all devices that this tool will need
 							HashSet<InputDevice> usedDevices;
 							var device = deviceData.inputDevice;
 							var newTool = SpawnTool(toolType, out usedDevices, device);
-
 							var evrDeviceData = evr.m_DeviceData;
 
 							// Exclusive mode tools always take over all tool stacks
@@ -238,31 +233,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								}
 							}
 
-							foreach (var dd in evrDeviceData)
+							foreach (var data in evrDeviceData)
 							{
-								if (!usedDevices.Contains(dd.inputDevice))
+								if (!usedDevices.Contains(data.inputDevice))
 									continue;
 
 								if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
 									DespawnTool(deviceData, deviceData.currentTool);
 
-								AddToolToStack(dd, newTool);
-
-								//if (!setSelectAsCurrentTool)
-									pinnedToolsMenu.SetButtonForType(toolType, newTool.icon);
+								AddToolToStack(data, newTool);
+								
+								pinnedToolsMenu.SetButtonForType(toolType, newTool.icon);
 							}
 						}
-
-						// TODO remove after refactor
-						//pinnedToolsMenu.SetupPinnedToolButtonsForDevice(rayOrigin, toolType, deviceData.node);
-
+						
 						deviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
-					}
-					else
-					{
-						// TODO: Remove the below line after additional design review approval
-						//deviceData.menuHideFlags[deviceData.mainMenu] |= Menus.MenuHideFlags.Hidden;
 					}
 				});
 
