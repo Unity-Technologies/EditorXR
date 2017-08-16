@@ -34,7 +34,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	const int k_InitialListSize = 1024; // Pre-allocate lists to avoid GC
 
 	List<Vector3> m_Points = new List<Vector3>(k_InitialListSize);
-	List<Vector3> m_Forwards = new List<Vector3>(k_InitialListSize);
+	List<Vector3> m_UpVectors = new List<Vector3>(k_InitialListSize);
 	List<float> m_Widths = new List<float>(k_InitialListSize);
 	float m_Length;
 
@@ -44,7 +44,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	Matrix4x4 m_WorldToLocalMesh;
 
 	ColorPickerUI m_ColorPicker;
-	BrushSizeUI m_BrushSizeUi;
+	BrushSizeUI m_BrushSizeUI;
 
 	Transform m_AnnotationHolder;
 
@@ -78,8 +78,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		if (m_ColorPicker)
 			ObjectUtils.Destroy(m_ColorPicker.gameObject);
-		if (m_BrushSizeUi)
-			ObjectUtils.Destroy(m_BrushSizeUi.gameObject);
+		if (m_BrushSizeUI)
+			ObjectUtils.Destroy(m_BrushSizeUI.gameObject);
 		if (m_ColorPickerActivator)
 			ObjectUtils.Destroy(m_ColorPickerActivator);
 
@@ -93,7 +93,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		this.LockRay(rayOrigin, this);
 
 		m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
-		CheckBrushSizeUi();
+		CheckBrushSizeUI();
 
 		if (m_ColorPickerActivator == null)
 		{
@@ -123,12 +123,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		}
 	}
 
-	void CheckBrushSizeUi()
+	void CheckBrushSizeUI()
 	{
-		if (m_BrushSizeUi == null)
+		if (m_BrushSizeUI == null)
 		{
 			var brushSizeUi = this.InstantiateUI(m_BrushSizePrefab);
-			m_BrushSizeUi = brushSizeUi.GetComponent<BrushSizeUI>();
+			m_BrushSizeUI = brushSizeUi.GetComponent<BrushSizeUI>();
 
 			var trans = brushSizeUi.transform;
 			var scale = brushSizeUi.transform.localScale;
@@ -137,12 +137,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			trans.localRotation = Quaternion.Euler(-90, 0, 0);
 			trans.localScale = scale;
 
-			m_BrushSizeUi.onValueChanged = (val) => 
+			m_BrushSizeUI.onValueChanged = (val) => 
 			{
 				m_BrushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, val);
 				m_AnnotationPointer.Resize(m_BrushSize);
 			};
-			onBrushSizeChanged = m_BrushSizeUi.ChangeSliderValue;
+			onBrushSizeChanged = m_BrushSizeUI.ChangeSliderValue;
 		}
 	}
 
@@ -174,7 +174,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		color.a = .75f;
 		m_AnnotationPointer.SetColor(color);
 
-		m_BrushSizeUi.OnBrushColorChanged(color);
+		m_BrushSizeUI.OnBrushColorChanged(color);
 	}
 
 	void HandleBrushSize(float value)
@@ -191,7 +191,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				m_BrushSize = Mathf.Clamp(m_BrushSize, MinBrushSize, MaxBrushSize);
 			}
 
-			if (m_BrushSizeUi && onBrushSizeChanged != null)
+			if (m_BrushSizeUI && onBrushSizeChanged != null)
 			{
 				var ratio = Mathf.InverseLerp(MinBrushSize, MaxBrushSize, m_BrushSize);
 				onBrushSizeChanged(ratio);
@@ -206,7 +206,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		SetupHolder();
 
 		m_Points.Clear();
-		m_Forwards.Clear();
+		m_UpVectors.Clear();
 		m_Widths.Clear();
 		m_Length = 0;
 
@@ -277,9 +277,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	
 	void UpdateAnnotation()
 	{
-		var rayForward = rayOrigin.forward;
+		var upVector = rayOrigin.up;
 		var viewerScale = this.GetViewerScale();
-		var worldPoint = rayOrigin.position + rayForward * TipDistance * viewerScale;
+		var worldPoint = rayOrigin.position + rayOrigin.forward * TipDistance * viewerScale;
 		var localPoint = m_WorldToLocalMesh.MultiplyPoint3x4(worldPoint);
 
 		if (m_Points.Count > 0)
@@ -294,16 +294,16 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		}
 
 		var brushSize = m_BrushSize * viewerScale;
-		InterpolatePointsIfNeeded(localPoint, rayForward, brushSize);
+		InterpolatePointsIfNeeded(localPoint, upVector, brushSize);
 		
 		m_Points.Add(localPoint);
-		m_Forwards.Add(rayForward);
+		m_UpVectors.Add(upVector);
 		m_Widths.Add(brushSize);
 
 		PointsToMesh();
 	}
 
-	void InterpolatePointsIfNeeded(Vector3 localPoint, Vector3 rayForward, float brushSize)
+	void InterpolatePointsIfNeeded(Vector3 localPoint, Vector3 upVector, float brushSize)
 	{
 		if (m_Points.Count > 1)
 		{
@@ -315,8 +315,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				var halfPoint = (lastPoint + localPoint) / 2f;
 				m_Points.Add(halfPoint);
 
-				var halfForward = (m_Forwards.Last() + rayForward) / 2f;
-				m_Forwards.Add(halfForward);
+				var halfUp = (m_UpVectors.Last() + upVector) / 2f;
+				m_UpVectors.Add(halfUp);
 
 				var halfRadius = (m_Widths.Last() + brushSize) / 2f;
 				m_Widths.Add(halfRadius);
@@ -356,21 +356,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		var distance = 0f;
 		var lastPoint = m_Points[0];
-		var direction = (m_Points[1] - m_Points[0]).normalized;
-		var forward = -m_Forwards[0];
-		Vector3.OrthoNormalize(ref direction, ref forward);
-		var lastBinormal = Vector3.Cross(forward, direction).normalized;
 		for (var i = 1; i < m_Points.Count; i++)
 		{
 			var point = m_Points[i];
 			var segment = point - lastPoint;
-			direction = segment.normalized;
-
-			forward = -m_Forwards[i];
-			Vector3.OrthoNormalize(ref direction, ref forward);
-			var binormal = Vector3.Cross(forward, direction).normalized;
-			binormal = Vector3.Lerp(lastBinormal, binormal, 0.1f).normalized;
-			lastBinormal = binormal;
 
 			var width = m_Widths[i];
 
@@ -378,11 +367,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			var endDistance = m_Length - distance;
 			width *= Math.Min(Mathf.Sqrt(endDistance / width), 1);
 
-			var left = point - binormal * width;
-			var right = point + binormal * width;
+			var upVector = m_UpVectors[i];
+			var top = point - upVector * width;
+			var bottom = point + upVector * width;
 
-			newVertices.Add(left);
-			newVertices.Add(right);
+			newVertices.Add(top);
+			newVertices.Add(bottom);
 
 			distance += segment.magnitude;
 			lastPoint = point;
