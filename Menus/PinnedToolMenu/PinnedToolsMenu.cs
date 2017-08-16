@@ -13,7 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI,
 		IControlHaptics, IUsesViewerScale, IControlSpatialHinting, ISetDefaultRayVisibility, IUsesRayOrigin
 	{
-		const int k_MenuButtonOrderPosition = 0; // A shared menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
 		const int k_MaxButtonCount = 16; //
 
@@ -52,17 +51,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Transform menuOrigin { get; set; }
 		List<IPinnedToolButton> buttons { get { return m_PinnedToolsMenuUI.buttons; } }
-		public Dictionary<Type, Sprite> icons { get; set; }
-		public int activeToolOrderPosition { get; private set; }
-		public bool revealed { get; set; }
 		public bool alternateMenuVisible { set { m_PinnedToolsMenuUI.moveToAlternatePosition = value; } }
-		public Vector3 alternateMenuItem { get; private set; }
 
 		public Action<Transform, int, bool> HighlightSingleButton { get; set; }
 		public Action<Transform> SelectHighlightedButton { get; set; }
-		public Action<Transform> deleteHighlightedButton { get; set; }
-		public Action<Transform> onButtonHoverEnter { get; set; }
-		public Action<Transform> onButtonHoverExit { get; set; }
 		public Action<Type, Sprite> SetButtonForType { get; set; }
 		public Action<Type, Type> deletePinnedToolButton { get; set; }
 		public Node? node { get; set; }
@@ -97,10 +89,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public event Action<Transform> hoverEnter;
-		public event Action<Transform> hoverExit;
-		public event Action<Transform> selected;
-
 		void Awake()
 		{
 			SetButtonForType = CreatePinnedToolButton;
@@ -133,7 +121,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void CreatePinnedToolButton(Type toolType, Sprite buttonIcon)
 		{
 			Debug.LogError("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
-			//var buttons = deviceData.buttons;
 
 			// Select an existing ToolButton if the type is already present in a button
 			if (buttons.Any( (x) => x.toolType == toolType))
@@ -149,15 +136,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 			}
 
-			// Before adding new button, offset each button to a position greater than the zeroth/active tool position
-			//foreach (var pair in buttons)
-			//{
-		//		if (pair.Value.order != pair.Value.menuButtonOrderPosition) // don't move the main menu button
-		//			pair.Value.order++;
-		//	}
-
-			//var button = SpawnPinnedToolButton(deviceData.inputDevice);
-			//var buttonTransform = this.InstantiateUI(m_PinnedToolButtonTemplate.gameObject, m_PinnedToolsMenuUI.buttonContainer, false).transform;
 			var buttonTransform = ObjectUtils.Instantiate(m_PinnedToolButtonTemplate.gameObject, m_PinnedToolsMenuUI.buttonContainer, false).transform;
 			var button = buttonTransform.GetComponent<PinnedToolButton>();
 			this.ConnectInterfaces(button);
@@ -191,27 +169,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void DeletePinnedToolButton(Type toolTypeToDelete, Type toolTypeToSelectAfterDelete)
 		{
-			//CreatePinnedToolButton(toolType, null, node);
-
 			if (m_PinnedToolsMenuUI.DeleteButtonOfType(toolTypeToDelete))
-			{
 				m_PinnedToolsMenuUI.SelectNextExistingToolButton();
-				//buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
-				//if (buttonCount <= k_ActiveToolOrderPosition + 1)
-				//return;
-
-				//allowSpatialScrollBeforeThisTime = null;
-				//spatialDirection = null; 
-			}
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
+			var buttonCount = buttons.Count;
 			if (buttonCount <= k_ActiveToolOrderPosition + 1)
 				return;
 
-			const float kAutoHideDuration = 10f;
 			const float kAllowToggleDuration = 0.25f;
 			var pinnedToolInput = (PinnedToolslMenuInput) input;
 
@@ -224,24 +191,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (pinnedToolInput.cancel.wasJustPressed)
 				Debug.LogError("CANCELLING SPATIAL SELECTION!!!!");
 
-			/*
-			if (spatialDirection == null)
-			{
-				// Hide if no direction as been defined after a given duration
-				Debug.LogWarning("Perform an increasing visual presence of visuals as time progresses, and the drag threshold hasn't been met.");
-				m_PinnedToolsMenuUI.allButtonsVisible = false;
-				this.SetSpatialHintControlObject(null); // Hide Spatial Hint Visuals
-
-				return;
-			}
-			*/
-
 			if (pinnedToolInput.show.wasJustPressed)
 			{
 				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
-				//consumeControl(pinnedToolInput.show);
-				//m_PinnedToolsMenuUI.allButtonsVisible = true;
 				m_SpatialScrollStartPosition = m_AlternateMenuOrigin.position;
 				Debug.LogError("Start position : <color=green>" + m_SpatialScrollStartPosition + "</color>");
 				allowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
