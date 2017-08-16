@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -10,27 +11,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		const string k_ShaderLineRadiusPropertyName = "_lineRadius";
 
 		[SerializeField]
-		bool m_HideOnInitialize = true;
-
-		[SerializeField]
 		VRLineRenderer m_ScrollLineRenderer;
 
 		[SerializeField]
-		float m_LineWidth = 1f;
-
-		[SerializeField]
 		Color m_VisibleColor = Color.white;
-
-		[SerializeField]
-		Color m_HiddenColor = Color.clear;
 
 		[SerializeField]
 		Color m_PulseColor = Color.white;
 
 		[SerializeField]
 		MeshRenderer m_MeshRenderer;
-
-		readonly Vector3 k_HiddenScale = Vector3.zero;
 
 		Transform m_IconTransform;
 		Vector3 m_VisibleLocalScale;
@@ -69,7 +59,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var minShaderLineRadius = new Vector3 (0.005f, 0f, 100f);
 			var currentVector3ShaderLineRadius = m_HintLineMaterial.GetVector(k_ShaderLineRadiusPropertyName);
 			var currentColor = m_ScrollLineRenderer.colorStart; // The line stand & end colors are the same; fetch only one of them
-			var currentShaderLineRadius = m_HintLineMaterial.GetFloat(k_ShaderLineRadiusPropertyName);
 			while (m_PulseDuration < kTargetDuration)
 			{
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(m_PulseDuration / kTargetDuration);
@@ -95,3 +84,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif
