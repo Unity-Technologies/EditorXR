@@ -24,6 +24,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			Vector3[] m_PositionOffsets;
 			Quaternion[] m_RotationOffsets;
 			Vector3[] m_InitialScales;
+			Vector3 m_StartMidPoint;
+			Quaternion m_UpRotationOffset;
+			Quaternion m_ForwardRotationOffset;
+			float m_StartDistance;
 
 			public Transform[] grabbedObjects { get; private set; }
 			public DirectSelectInput input { get; private set; }
@@ -48,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_PositionOffsets = new Vector3[length];
 				m_RotationOffsets = new Quaternion[length];
 				m_InitialScales = new Vector3[length];
-				for (int i = 0; i < length; i++)
+				for (var i = 0; i < length; i++)
 				{
 					var grabbedObject = grabbedObjects[i];
 					MathUtilsExt.GetTransformOffset(rayOrigin, grabbedObject, out m_PositionOffsets[i], out m_RotationOffsets[i]);
@@ -63,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				Undo.RecordObjects(grabbedObjects, "Move");
 
-				for (int i = 0; i < grabbedObjects.Length; i++)
+				for (var i = 0; i < grabbedObjects.Length; i++)
 				{
 					var grabbedObject = grabbedObjects[i];
 					var position = grabbedObject.position;
@@ -85,35 +89,67 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			public void ScaleObjects(float scaleFactor)
+			public void ScaleObjects(Transform otherRayOrigin)
 			{
 				if (suspended)
 					return;
 
 				Undo.RecordObjects(grabbedObjects, "Move");
 
-				for (int i = 0; i < grabbedObjects.Length; i++)
+				var thisPosition = rayOrigin.position;
+				var otherPosition = otherRayOrigin.position;
+				var distance = Vector3.Distance(thisPosition, otherPosition);
+				var scaleFactor = distance / m_StartDistance;
+				if (scaleFactor > 0 && scaleFactor < Mathf.Infinity)
 				{
-					var grabbedObject = grabbedObjects[i];
-					grabbedObject.position = rayOrigin.position + m_PositionOffsets[i] * scaleFactor;
-					grabbedObject.localScale = m_InitialScales[i] * scaleFactor;
+					var rayToRay = otherPosition - thisPosition;
+					var midPoint = rayOrigin.position + rayToRay * 0.5f;
+					var midRotation = Quaternion.Lerp(rayOrigin.rotation, otherRayOrigin.rotation, 0.5f);
+					var upVector = midRotation * Vector3.up;
+					var forward = midRotation * Vector3.forward;
+					var isUp = true;//Mathf.Abs(Vector3.Dot(rayToRay, upVector)) > 0.5f;
+
+					var grabRotation = Quaternion.LookRotation(rayToRay, isUp ? forward : upVector);
+					var rotationOffset = grabRotation * (isUp ? m_ForwardRotationOffset : m_UpRotationOffset);
+
+					for (var i = 0; i < grabbedObjects.Length; i++)
+					{
+						var grabbedObject = grabbedObjects[i];
+
+						grabbedObject.position = midPoint + rotationOffset * m_PositionOffsets[i] * scaleFactor;
+						grabbedObject.rotation = rotationOffset * m_RotationOffsets[i];
+						grabbedObject.localScale = m_InitialScales[i] * scaleFactor;
+					}
 				}
 			}
 
 			public void TransferTo(Transform destRayOrigin, Vector3 deltaOffset)
 			{
 				rayOrigin = destRayOrigin;
-				for (int i = 0; i < m_PositionOffsets.Length; i++)
+				for (var i = 0; i < m_PositionOffsets.Length; i++)
 				{
 					m_PositionOffsets[i] += deltaOffset;
 				}
 			}
 
-			public void StartScaling()
+			public void StartScaling(GrabData otherGrab)
 			{
-				for (int i = 0; i < grabbedObjects.Length; i++)
+				var thisPosition = rayOrigin.position;
+				var otherRayOrigin = otherGrab.rayOrigin;
+				var otherPosition = otherRayOrigin.position;
+				var rayToRay = otherPosition - thisPosition;
+				m_StartMidPoint = rayOrigin.position + rayToRay * 0.5f;
+				m_StartDistance = Vector3.Distance(thisPosition, otherPosition);
+
+				var midRotation = Quaternion.Lerp(rayOrigin.rotation, otherRayOrigin.rotation, 0.5f);
+				m_UpRotationOffset = Quaternion.Inverse(Quaternion.LookRotation(rayToRay, midRotation * Vector3.up));
+				m_ForwardRotationOffset = Quaternion.Inverse(Quaternion.LookRotation(rayToRay, midRotation * Vector3.forward));
+
+				for (var i = 0; i < grabbedObjects.Length; i++)
 				{
-					m_PositionOffsets[i] = grabbedObjects[i].position - rayOrigin.position;
+					var grabbedObject = grabbedObjects[i];
+					m_PositionOffsets[i] = grabbedObject.position - m_StartMidPoint;
+					m_RotationOffsets[i] = grabbedObject.rotation;
 				}
 			}
 		}
@@ -198,9 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		readonly Dictionary<Node, GrabData> m_GrabData = new Dictionary<Node, GrabData>();
 		bool m_DirectSelected;
-		float m_ScaleStartDistance;
 		Node m_ScaleFirstNode;
-		float m_ScaleFactor;
 		bool m_Scaling;
 		bool m_CurrentlySnapping;
 
@@ -319,29 +353,29 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 						var grabbingNode = directSelectionData.node;
 
-						// Check if the other hand is already grabbing for two-handed scale
-						foreach (var grabData in m_GrabData)
-						{
-							var otherNode = grabData.Key;
-							var otherData = grabData.Value;
-
-							if (otherNode != grabbingNode && otherData.grabbedObjects.Contains(directHoveredObject.transform))
-							{
-								m_ScaleStartDistance = (directRayOrigin.position - otherData.rayOrigin.position).magnitude;
-								m_ScaleFirstNode = otherNode;
-								otherData.StartScaling();
-								m_Scaling = true;
-								break;
-							}
-						}
-
 						var grabbedObjects = new HashSet<Transform> { directHoveredObject.transform };
 						grabbedObjects.UnionWith(Selection.transforms);
 
 						if (objectsGrabbed != null && !m_Scaling)
 							objectsGrabbed(directRayOrigin, grabbedObjects);
 
-						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray());
+						var grabData = new GrabData(directRayOrigin, directSelectInput, grabbedObjects.ToArray());
+						m_GrabData[grabbingNode] = grabData;
+
+						// Check if the other hand is already grabbing for two-handed scale
+						foreach (var grab in m_GrabData)
+						{
+							var otherNode = grab.Key;
+							var otherData = grab.Value;
+
+							if (otherNode != grabbingNode && otherData.grabbedObjects.Contains(directHoveredObject.transform))
+							{
+								m_ScaleFirstNode = otherNode;
+								otherData.StartScaling(grabData);
+								m_Scaling = true;
+								break;
+							}
+						}
 
 						this.SetDefaultRayVisibility(directRayOrigin, false, true); // This will also unhighlight the object
 						this.LockRay(directRayOrigin, this);
@@ -408,19 +442,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					var rightRayOrigin = rightData.rayOrigin;
 					var leftRayOrigin = leftData.rayOrigin;
-					m_ScaleFactor = (leftRayOrigin.position - rightRayOrigin.position).magnitude / m_ScaleStartDistance;
-					if (m_ScaleFactor > 0 && m_ScaleFactor < Mathf.Infinity)
+					if (m_ScaleFirstNode == Node.LeftHand)
 					{
-						if (m_ScaleFirstNode == Node.LeftHand)
-						{
-							leftData.ScaleObjects(m_ScaleFactor);
-							this.ClearSnappingState(leftRayOrigin);
-						}
-						else
-						{
-							rightData.ScaleObjects(m_ScaleFactor);
-							this.ClearSnappingState(rightRayOrigin);
-						}
+						leftData.ScaleObjects(rightRayOrigin);
+						this.ClearSnappingState(leftRayOrigin);
+					}
+					else
+					{
+						rightData.ScaleObjects(leftRayOrigin);
+						this.ClearSnappingState(rightRayOrigin);
 					}
 				}
 				else
