@@ -177,6 +177,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			bool m_MiniWorldIgnoreListDirty = true;
 
+			// Local method use only -- created here to reduce garbage collection
+			readonly List<Renderer> m_IgnoreList = new List<Renderer>();
+
 			public Dictionary<Transform, MiniWorldRay> rays { get { return m_Rays; } }
 			public List<IMiniWorld> worlds { get { return m_Worlds; } }
 
@@ -225,8 +228,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			void UpdateMiniWorldIgnoreList()
 			{
-				var renderers = new List<Renderer>(evr.GetComponentsInChildren<Renderer>(true));
-				var ignoreList = new List<Renderer>(renderers.Count);
+				var renderers = evr.GetComponentsInChildren<Renderer>(true);
+				m_IgnoreList.Clear();
 
 				foreach (var r in renderers)
 				{
@@ -236,12 +239,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.ShowInMiniWorldTag))
 						continue;
 
-					ignoreList.Add(r);
+					m_IgnoreList.Add(r);
 				}
 
 				foreach (var miniWorld in m_Worlds)
 				{
-					miniWorld.ignoreList = ignoreList;
+					miniWorld.ignoreList = m_IgnoreList;
 				}
 			}
 

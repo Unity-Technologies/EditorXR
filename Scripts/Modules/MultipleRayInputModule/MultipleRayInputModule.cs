@@ -106,8 +106,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_EventCamera.nearClipPlane = camera.nearClipPlane;
 			m_EventCamera.farClipPlane = camera.farClipPlane;
 
+			// The sources dictionary can change during iteration, so cache it before iterating
 			m_RaycastSourcesCopy.Clear();
-			m_RaycastSourcesCopy.AddRange(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
+			foreach (var kvp in m_RaycastSources)
+			{
+				m_RaycastSourcesCopy.Add(kvp.Value);
+			}
 
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSourcesCopy)
