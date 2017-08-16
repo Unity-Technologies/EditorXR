@@ -14,7 +14,13 @@ namespace UnityEditor.Experimental.EditorVR
 		Transform rayOrigin { get; set; }
 		IPinnedToolButton previewToolButton { get; }
 		// This method isn't hooked up in EVR, it should reside in the implementing class
-		Action<Type, Sprite, Node> createPinnedToolButton { get; }
+		Action<Type, Sprite> SetButtonForType { get; }
+
+		/// <summary>
+		/// Delete the tool button with corresponding type of the first parameter.
+		/// Then, select the tool button with corresponds to the type of the second parameter.
+		/// </summary>
+		Action<Type, Type> deletePinnedToolButton { get; }
 	}
 
 	public static class IPinnedToolsMenuMethods
