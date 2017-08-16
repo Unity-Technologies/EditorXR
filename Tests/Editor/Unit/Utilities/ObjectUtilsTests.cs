@@ -12,7 +12,6 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
     public class ObjectUtilsTests
     {
 		GameObject go, parent, other;
-		GameObject currentObject;
 		List<GameObject> toCleanupAfterEach = new List<GameObject>();
 
 		float delta = 0.00000001f;
@@ -26,39 +25,43 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 			other = new GameObject("other");
 			other.transform.position += new Vector3(-5, 1, 2);
 
-			toCleanupAfterEach.AddRange(new GameObject[] { go, parent, other });
+			toCleanupAfterEach.AddRange(new[] { go, parent, other });
 		}
 
 		[Test]
 		public void Instantiate_OneArg_ClonesActiveAtOrigin()
 		{
-			currentObject = ObjectUtils.Instantiate(go);
-			Assert.IsTrue(currentObject.activeSelf);
-			Assert.AreEqual(new Vector3(0, 0, 0), currentObject.transform.position);
+			var clone = ObjectUtils.Instantiate(go);
+			Assert.IsTrue(clone.activeSelf);
+			Assert.AreEqual(new Vector3(0, 0, 0), clone.transform.position);
+			toCleanupAfterEach.Add(clone);
 		}
 
 		[Test]
 		public void Instantiate_InactiveClone()
 		{
-			currentObject = ObjectUtils.Instantiate(go, null, true, true, false);
-			Assert.IsFalse(currentObject.activeSelf);
+			var clone = ObjectUtils.Instantiate(go, null, true, true, false);
+			Assert.IsFalse(clone.activeSelf);
+			toCleanupAfterEach.Add(clone);
 		}
 
 		[Test]
 		public void Instantiate_WithParent_WorldPositionStays()
 		{
-			currentObject = ObjectUtils.Instantiate(go, parent.transform);
-			Assert.AreEqual(parent.transform, currentObject.transform.parent);
-			Assert.AreNotEqual(parent.transform.position, currentObject.transform.position);
+			var clone = ObjectUtils.Instantiate(go, parent.transform);
+			Assert.AreEqual(parent.transform, clone.transform.parent);
+			Assert.AreNotEqual(parent.transform.position, clone.transform.position);
+			toCleanupAfterEach.Add(clone);
 		}
 
 		[Test]
 		public void Instantiate_WithParent_WorldPositionMoves()
 		{
-			currentObject = ObjectUtils.Instantiate(go, parent.transform, false);
-			Assert.AreEqual(parent.transform, currentObject.transform.parent);
-			Assert.AreEqual(parent.transform.position, currentObject.transform.position);
-			Assert.AreEqual(parent.transform.rotation, currentObject.transform.rotation);
+			var clone = ObjectUtils.Instantiate(go, parent.transform, false);
+			Assert.AreEqual(parent.transform, clone.transform.parent);
+			Assert.AreEqual(parent.transform.position, clone.transform.position);
+			Assert.AreEqual(parent.transform.rotation, clone.transform.rotation);
+			toCleanupAfterEach.Add(clone);
 		}
 
 		[TestCase(true)]
@@ -66,8 +69,9 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 		public void Instantiate_SetRunInEditMode(bool expected)
 		{
 			Assert.IsFalse(Application.isPlaying);
-			currentObject = ObjectUtils.Instantiate(go, null, true, expected);
-			AssertRunInEditModeSet(currentObject, expected);
+			var clone = ObjectUtils.Instantiate(go, null, true, expected);
+			AssertRunInEditModeSet(clone, expected);
+			toCleanupAfterEach.Add(clone);
 		}
 
 		[UnityTest]
@@ -75,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 		{
 			Assert.IsFalse(Application.isPlaying);
 			ObjectUtils.Destroy(other);
-			yield return null;              // skip frame to allow destruction to run
+			yield return null; // skip frame to allow destruction to run
 			Assert.IsTrue(other == null);
 		}
 
@@ -87,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 		public void CreateGameObjectWithComponent_OneArg_TypeAsGeneric()
 		{
 			var renderer = ObjectUtils.CreateGameObjectWithComponent<MeshRenderer>();
-			currentObject = renderer.gameObject;
+			toCleanupAfterEach.Add(renderer.gameObject);
 			// the object name assigned is based on the component's type name
 			var foundObject = GameObject.Find(typeof(MeshRenderer).Name);
 			Assert.IsInstanceOf<MeshRenderer>(renderer);
@@ -98,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 		public void CreateGameObjectWithComponent_SetsParent_WorldPositionStays()
 		{
 			var comp = ObjectUtils.CreateGameObjectWithComponent<MeshRenderer>(parent.transform);
-			currentObject = comp.gameObject;
+			toCleanupAfterEach.Add(comp.gameObject);
 			Assert.AreEqual(parent.transform, comp.transform.parent);
 			Assert.AreNotEqual(parent.transform.position, comp.transform.position);
 		}
@@ -107,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 		public void CreateGameObjectWithComponent_SetsParent_WorldPositionMoves()
 		{
 			var comp = ObjectUtils.CreateGameObjectWithComponent<MeshRenderer>(parent.transform, false);
-			currentObject = comp.gameObject;
+			toCleanupAfterEach.Add(comp.gameObject);
 			Assert.AreEqual(parent.transform, comp.transform.parent);
 			Assert.AreEqual(parent.transform.position, comp.transform.position);
 		}
@@ -162,9 +166,6 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 		[TearDown]
 		public void CleanupAfterEach()
 		{
-			if (currentObject != null)
-				toCleanupAfterEach.Add(currentObject);
-
 			foreach (var o in toCleanupAfterEach)
 			{
 				ObjectUtils.Destroy(o);
