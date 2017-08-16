@@ -137,6 +137,18 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			}
 		}
 
+		public bool invertHighlightScale { private get; set; }
+		public float containerContentsAnimationSpeedMultiplier { set { m_ContainerContentsAnimationSpeedMultiplier = value; }}
+
+		public float iconHighlightedLocalZOffset
+		{
+			set
+			{
+				m_IconHighlightedLocalZOffset = value;
+				m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
+			}
+		}
+
 		public GradientPair normalGradientPair { get { return m_NormalGradientPair; } set { m_NormalGradientPair = value; } }
 		[SerializeField]
 		GradientPair m_NormalGradientPair;
@@ -218,18 +230,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		// The visibility & highlight coroutines
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
-
-		public bool invertHighlightScale { private get; set; }
-		public float containerContentsAnimationSpeedMultiplier { set { m_ContainerContentsAnimationSpeedMultiplier = value; }}
-
-		public float iconHighlightedLocalZOffset
-		{
-			set
-			{
-				m_IconHighlightedLocalZOffset = value;
-				m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
-			}
-		}
 
 		void Awake()
 		{
@@ -581,7 +581,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		/// Set this button's gradient colors
 		/// </summary>
 		/// <param name="gradientPair">The gradient pair to set on this button's material</param>
-		public void SetMaterialColors(GradientPair gradientPair)
+		void SetMaterialColors(GradientPair gradientPair)
 		{
 			m_ButtonMaterial.SetColor(k_MaterialColorTopProperty, gradientPair.a);
 			m_ButtonMaterial.SetColor(k_MaterialColorBottomProperty, gradientPair.b);
