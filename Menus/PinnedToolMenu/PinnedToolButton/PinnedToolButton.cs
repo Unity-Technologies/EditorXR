@@ -333,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		//public Action<Transform> deleteHighlightedButton { get; set; }
 		public Action<Transform> selectHighlightedButton { get; set; }
 		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
-		public Func<int> visibileButtonCount { get; set; }
+		public Func<Type, int> visibileButtonCount { get; set; }
 		public bool implementsSecondaryButton { get; set; }
 		public Action destroy { get { return DestroyButton; } }
 		public Action<IPinnedToolButton> showAllButtons { get; set; }
@@ -1025,7 +1025,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kCircularRange = 360f;
 			const int kDurationShapeAmount = 3;
 			var rotationSpacing = kCircularRange / maxButtonCount; // dividend should be the count of pinned tool buttons showing at this time
-			var phaseOffset = orderPosition > -1 ? rotationSpacing * kCenterLocationAmount - (visibileButtonCount() * kCenterLocationAmount) * rotationSpacing : 0; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
+			var phaseOffset = orderPosition > -1 ? rotationSpacing * kCenterLocationAmount - (visibileButtonCount(m_ToolType) * kCenterLocationAmount) * rotationSpacing : 0; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
 			var targetRotation = orderPosition > -1 ? Quaternion.AngleAxis(phaseOffset + rotationSpacing * Mathf.Max(0f, orderPosition), Vector3.down) : Quaternion.identity;
 
 			var duration = 0f;
