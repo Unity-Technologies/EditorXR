@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Tools;
@@ -47,6 +46,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Quaternion m_HintContentContainerInitialRotation;
 		Quaternion m_HintContentContainerCurrentRotation;
 		Vector3 m_HintContentWorldPosition;
+		Vector3 m_StartingDragOrigin;
+		Vector3 m_DragTarget;
+		IUsesNode m_UsesNodeImplementation;
 
 		public int maxButtonCount { get; set; }
 		public Transform buttonContainer { get { return m_ButtonContainer; } }
@@ -69,8 +71,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 				else
 				{
-					//this.Pulse(rayOrigin, 0.5f, 0.065f, false, true);
-					//spatialDragDistance = 0f;
 					ShowOnlyMenuAndActiveToolButtons();
 					spatiallyScrolling = false;
 					this.SetSpatialHintRotationTarget(Vector3.zero);
@@ -96,12 +96,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			get
 			{
-				const int selectionToolButtonHideCount = 2;
+				const int kSelectionToolButtonHideCount = 2;
 				var count = m_OrderedButtons.Count;
-				var aboveMinCount = count > selectionToolButtonHideCount; // Has at least one tool been added beyond the default MainMenu & SelectionTool
+				var aboveMinCount = count > kSelectionToolButtonHideCount; // Has at least one tool been added beyond the default MainMenu & SelectionTool
 
 				// Prevent the display of the SelectionTool button, if only the MainMenu and SelectionTool buttons reside in the buttons collection
-				if (count == selectionToolButtonHideCount)
+				if (count == kSelectionToolButtonHideCount)
 					aboveMinCount = buttons.All( x => x.toolType != typeof(SelectionTool) );
 
 				return aboveMinCount;
@@ -121,12 +121,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (value)
 				{
 					Debug.LogWarning("SETTING Spatial Drag Distance  : " + value);
-					m_SpatialDragDistance = 0f;
 					var currentRotation = transform.rotation.eulerAngles;
-					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f); // Quaternion.AngleAxis(transform.forward.y, Vector3.up);
+					m_SpatialDragDistance = 0f;
+					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f);
 					m_HintContentWorldPosition = transform.position;
 					this.SetSpatialHintPosition(m_HintContentWorldPosition);
-					//spatialHintContentContainer.position = m_HintContentWorldPosition;
 				}
 			}
 		}
@@ -136,7 +135,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_SpatialDragDistance = value;
-				//m_SpatialScrollOrientation = transform.rotation;
 			}
 		}
 
@@ -145,26 +143,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				Debug.LogWarning("SETTING STARTING DRAG DEFINITON POSITION : " + value.Value.ToString("F4"));
+				//Debug.LogError(value.Value.ToString("F4"));
 				m_StartingDragOrigin = transform.position;
-
-				//var orig = spatialHintContentContainer.rotation;
-				//this.SetSpatialHintLookAT(value.Value);
-				//spatialHintContentContainer.LookAt(value.Value);
-				Debug.LogError(value.Value.ToString("F4"));
-				//m_SpatialScrollOrientation = Quaternion.Euler(value.Value); // Quaternion.FromToRotation(m_HintContentContainer.forward, value.Value); // Quaternion.Euler(value.Value); Quaternion.RotateTowards(m_HintContentContainerInitialRotation, Quaternion.Euler(value.Value), 180f);
-				//this.SetSpatialHintRotation(orig);
-				//spatialHintContentContainer.rotation = orig;
 				this.SetSpatialHintLookATRotation(value.Value);
 			}
 		}
 
+		public Node? node { set { m_UsesNodeImplementation.node = value; } }
+
 		public event Action buttonHovered;
 		public event Action buttonClicked;
 		public event Action<Transform, Type> buttonSelected;
-
-		private Vector3 m_StartingDragOrigin;
-		private Vector3 m_DragTarget;
-		private IUsesNode m_UsesNodeImplementation;
 
 		void Awake()
 		{
@@ -302,35 +291,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ShowHideAllButtonsCoroutine = null;
 		}
 
-		IPinnedToolButton PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType)
-		{
-			// Prevents menu buttons of types other than ITool from triggering any pinned tool button preview actions
-			if (!toolType.GetInterfaces().Contains(typeof(ITool)))
-				return null;
-
-			IPinnedToolButton pinnedToolButton = null;
-			/*
-			Rays.ForEachProxyDevice((deviceData) =>
-			{
-				if (deviceData.rayOrigin == rayOrigin) // enable pinned tool preview on the opposite (handed) device
-				{
-					var pinnedToolButtons = deviceData.pinnedToolButtons;
-					foreach (var pair in pinnedToolButtons)
-					{
-						var button = pair.Value;
-						if (button.order == button.activeToolOrderPosition)
-						{
-							pinnedToolButton = button;
-							pinnedToolButton.previewToolType = toolType;
-							break;
-						}
-					}
-				}
-			});
-			*/
-			return pinnedToolButton;
-		}
-
 		void Reinsert(IPinnedToolButton button, int newOrderPosition, bool updateButtonOrder = false)
 		{
 			var removed = m_OrderedButtons.Remove(button);
@@ -451,9 +411,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			var button = m_OrderedButtons[aboveMinimumButtonCount ? k_ActiveToolOrderPosition + 1 : k_ActiveToolOrderPosition];
 			SetupButtonOrderThenSelectTool(button);
-
-			//if (buttonSelected != null)
-				//buttonSelected(rayOrigin, button.toolType);
 		}
 
 		public void HighlightSingleButtonWithoutMenu(int buttonOrderPosition)
@@ -630,9 +587,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator DelayedHoverExitCheck()
 		{
-			m_RayHovered = false;
-
 			var duration = Time.unscaledDeltaTime;
+			m_RayHovered = false;
 			while (duration < 0.25f)
 			{
 				duration += Time.unscaledDeltaTime;
@@ -651,11 +607,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (buttonHovered != null)
 				buttonHovered();
-		}
-
-		public Node? node
-		{
-			set { m_UsesNodeImplementation.node = value; }
 		}
 	}
 }
