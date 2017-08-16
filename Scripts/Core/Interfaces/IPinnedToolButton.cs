@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR
 		string previewToolDescription { set; }
 		Action destroy { get; }
 		Action<Type> selectTool { set; }
-		Func<int> visibileButtonCount { set; }
+		Func<Type, int> visibileButtonCount { set; }
 		Func<bool> closeButton { set; }
 		Action<IPinnedToolButton> showAllButtons { set; }
 		Action hoverExit { set; }

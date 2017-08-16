@@ -408,7 +408,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (selectAfterSettingButtonOrder && buttonSelected != null)
 			{
 				bool existingButton = m_OrderedButtons.Any((x) => x.toolType == pinnedToolButton.toolType);
-				if (!existingButton)
+				if (existingButton)
 					buttonSelected(rayOrigin, pinnedToolButton.toolType); // Select the tool in the PinnedToolsMenu
 			}
 		}
@@ -538,6 +538,30 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			return button != null;
 		}
 
+		/// <summary>
+		/// Delete a button of a given type, then select the next active tool button
+		/// </summary>
+		/// <returns>Bool denoting that a button of the given type was deleted</returns>
+		public bool DeleteButtonOfType(Type type)
+		{
+			Debug.LogError("<color=blue>Delete button of type : </color>" + type);
+
+			bool buttonDeleted = false;
+			for (int i = 0; i < m_OrderedButtons.Count; ++i)
+			{
+				var button = m_OrderedButtons[i];
+				if (button.toolType == type && !IsMainMenuButton(button) && !IsSelectionToolButton(button))
+				{
+					buttonDeleted = true;
+					m_OrderedButtons.Remove(button);
+					button.destroy();
+					break;
+				}
+			}
+
+			return buttonDeleted;
+		}
+
 		bool IsMainMenuButton(IPinnedToolButton button)
 		{
 			return button.toolType == typeof(IMainMenu);
@@ -548,9 +572,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			return button.toolType == typeof(SelectionTool);
 		}
 
-		int VisibleButtonCount()
+		int VisibleButtonCount(Type buttonType)
 		{
-			return m_VisibleButtonCount;
+			// If button type is main menu, and only the selection tool and main menu buttons are available
+			// return a value of ZERO so the main menu button is centered
+			return m_VisibleButtonCount - (aboveMinimumButtonCount ? 0 : 1);
 		}
 
 		IEnumerator MoveToLocation(Vector3 targetPosition, Vector3 targetScale)
