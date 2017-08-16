@@ -294,10 +294,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Type m_previewToolType;
 		Type m_ToolType;
 		GradientPair m_GradientPair;
-		//Transform m_AlternateMenuOrigin;
 		Material m_FrameMaterial;
 		Material m_InsetMaterial;
-		//Vector3 m_InactivePosition; // Inactive button offset from the main menu activator
 		Vector3 m_OriginalLocalPosition;
 		Vector3 m_OriginalLocalScale;
 		Material m_IconMaterial;
@@ -322,15 +320,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public int activeButtonCount { get; set; }
 		public int maxButtonCount { get; set; }
 		public Transform menuOrigin { get; set; }
-		//public Action<Transform, bool> revealAllToolButtons { get; set; }
-		//public Action revealAllToolButtons { get; set; }
-		//public Action hideAllToolButtons { get; set; }
 
 		public Action<Transform, Transform> OpenMenu { get; set; }
 		public Action<Type> selectTool { get; set; }
 		public Func<bool> closeButton { get; set; }
 		public Action<Transform, int, bool> highlightSingleButton { get; set; }
-		//public Action<Transform> deleteHighlightedButton { get; set; }
 		public Action<Transform> selectHighlightedButton { get; set; }
 		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
 		public Func<Type, int> visibileButtonCount { get; set; }
