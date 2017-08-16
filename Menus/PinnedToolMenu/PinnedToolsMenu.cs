@@ -63,7 +63,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Transform> deleteHighlightedButton { get; set; }
 		public Action<Transform> onButtonHoverEnter { get; set; }
 		public Action<Transform> onButtonHoverExit { get; set; }
-		public Action<Type, Sprite, Node> createPinnedToolButton { get; set; }
+		public Action<Type, Sprite> SetButtonForType { get; set; }
+		public Action<Type, Type> deletePinnedToolButton { get; set; }
 		public Node? node { get; set; }
 		public IPinnedToolButton previewToolButton { get { return m_MainMenuButton; } }
 
@@ -102,7 +103,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Awake()
 		{
-			createPinnedToolButton = CreatePinnedToolButton;
+			SetButtonForType = CreatePinnedToolButton;
+			deletePinnedToolButton = DeletePinnedToolButton;
 		}
 
 		void OnDestroy()
@@ -128,21 +130,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			pinnedToolsUITransform.localRotation = Quaternion.identity;
 		}
 
-		void CreatePinnedToolButton(Type toolType, Sprite buttonIcon, Node node)
+		void CreatePinnedToolButton(Type toolType, Sprite buttonIcon)
 		{
 			Debug.LogError("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
 			//var buttons = deviceData.buttons;
-			if (buttons.Count >= k_MaxButtonCount) // Return if tooltype already occupies a pinned tool button
-			{
-				// TODO: kick out the oldest tool, and allow the new tool to become the active tool
-				Debug.LogWarning("New pinned tool button cannot be added.  The maximum number of pinned tool buttons are currently being displayed");
-				return;
-			}
 
 			// Select an existing ToolButton if the type is already present in a button
 			if (buttons.Any( (x) => x.toolType == toolType))
 			{
 				m_PinnedToolsMenuUI.SelectExistingToolType(toolType);
+				return;
+			}
+
+			if (buttons.Count >= k_MaxButtonCount) // Return if tooltype already occupies a pinned tool button
+			{
+				// TODO: kick out the oldest tool, and allow the new tool to become the active tool
+				Debug.LogWarning("New pinned tool button cannot be added.  The maximum number of pinned tool buttons are currently being displayed");
 				return;
 			}
 
@@ -184,6 +187,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_MainMenuButton = button;
 
 			m_PinnedToolsMenuUI.AddButton(button, buttonTransform);
+		}
+
+		void DeletePinnedToolButton(Type toolTypeToDelete, Type toolTypeToSelectAfterDelete)
+		{
+			//CreatePinnedToolButton(toolType, null, node);
+
+			if (m_PinnedToolsMenuUI.DeleteButtonOfType(toolTypeToDelete))
+			{
+				m_PinnedToolsMenuUI.SelectNextExistingToolButton();
+				//buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
+				//if (buttonCount <= k_ActiveToolOrderPosition + 1)
+				//return;
+
+				//allowSpatialScrollBeforeThisTime = null;
+				//spatialDirection = null; 
+			}
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -319,7 +338,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnButtonSelected(Transform rayOrigin, Type buttonType)
 		{
 			Debug.LogError("<color=green>Selecting Tool in PinnedToolsMenu</color> : " + buttonType.ToString());
-			this.SelectTool(rayOrigin, buttonType);
+			//Debug.Log("<color=yellow>" + System.Environment.StackTrace + "</color>");
+			this.SelectTool(rayOrigin, buttonType, false);
 		}
 	}
 }
