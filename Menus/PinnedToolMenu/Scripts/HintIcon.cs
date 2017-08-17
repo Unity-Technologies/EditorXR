@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using System.Security.Cryptography.X509Certificates;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -131,7 +131,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimatePulseColor()
 		{
-			//Debug.LogError("Pulsing color of hint arrow : " + gameObject.name);
 			const float kTargetDuration = 1f;
 			m_PulseDuration = 0f;
 			var currentColor = m_Icon.color;
@@ -156,3 +155,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 	}
 }
+#endif
