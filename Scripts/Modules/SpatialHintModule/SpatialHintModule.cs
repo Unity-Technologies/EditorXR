@@ -31,20 +31,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				switch (m_State)
 				{
 					case SpatialHintStateFlags.Hidden:
-						Debug.LogError("<color=orange>SpatialHintState : </color>Hidden");
 						m_SpatialHintModuleUI.preScrollArrowsVisible = false;
 						m_SpatialHintModuleUI.secondaryArrowsVisible = false;
 						controllingRayOrigin = null;
 						break;
 					case SpatialHintStateFlags.PreDragReveal:
-						Debug.LogError("<color=orange>SpatialHintState : </color>Pre drag reveal state");
 						m_SpatialHintModuleUI.preScrollArrowsVisible = true;
 						m_SpatialHintModuleUI.secondaryArrowsVisible = true;
 						break;
 					case SpatialHintStateFlags.Scrolling:
 						m_SpatialHintModuleUI.preScrollArrowsVisible = false;
 						m_SpatialHintModuleUI.scrollVisualsVisible = true;
-						Debug.LogError("<color=orange>SpatialHintState : </color>Scrolling");
 						break;
 				}
 			}
@@ -52,11 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		private Transform controllingRayOrigin
 		{
-			get
-			{
-				return m_ControllingRayOrigin;
-			}
-
+			get { return m_ControllingRayOrigin; }
 			set
 			{
 				if (value == m_ControllingRayOrigin)
@@ -75,9 +68,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		/// <summary>
-		/// Description
-		/// </summary>
 		Vector3 spatialHintScrollVisualsRotation
 		{
 			get { return m_SpatialHintModuleUI.scrollVisualsRotation; }
@@ -92,9 +82,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			this.ConnectInterfaces(m_SpatialHintModuleUI);
 		}
 
-		/// <summary>
-		/// Visually pulse the spatial-scroll arrows; the arrows shown when performing a spatiatil scroll
-		/// </summary>
 		internal void PulseScrollArrows()
 		{
 			m_SpatialHintModuleUI.PulseScrollArrows();

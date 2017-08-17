@@ -29,7 +29,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		float m_PulseDuration;
 		Material m_HintLineMaterial;
 
+		/// <summary>
+		/// Set the width of the line visuals
+		/// </summary>
 		public float LineWidth { set { m_ScrollLineRenderer.SetWidth(value, value); } }
+
+		/// <summary>
+		/// set the start & end positions for the line visuals
+		/// </summary>
 		public Vector3[] Positions { set { m_ScrollLineRenderer.SetPositions(value) ; } }
 
 		void Awake()
@@ -45,6 +52,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			ObjectUtils.Destroy(m_HintLineMaterial);
 		}
 
+		/// <summary>
+		/// Perform an animated visual pusling of color
+		/// </summary>
 		public void PulseColor()
 		{
 			if (Mathf.Approximately(m_PulseDuration, 0f) || m_PulseDuration > 0.85f)

@@ -42,6 +42,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_ScrollArrowPulseCoroutine;
 		float m_PulseDuration;
 
+		/// <summary>
+		/// Bool denoting the visibility state of this icon
+		/// </summary>
 		public bool visible
 		{
 			set
@@ -53,6 +56,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		/// <summary>
+		/// The color to be displayed by this icon when it is visible
+		/// </summary>
 		public Color visibleColor
 		{
 			set
@@ -123,6 +129,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_IconTransform.localScale = k_HiddenScale;
 		}
 
+		/// <summary>
+		/// Perform a colored visual pulse
+		/// </summary>
 		public void PulseColor()
 		{
 			if (Mathf.Approximately(m_PulseDuration, 0f) || m_PulseDuration > 0.85f)

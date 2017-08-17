@@ -42,7 +42,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Transform m_ScrollVisualsTransform;
 		Coroutine m_ScrollVisualsVisibilityCoroutine;
 		Transform m_ScrollVisualsDragTargetArrowTransform;
+		Node? m_ControllingNode;
 
+		/// <summary>
+		/// Bool denoting the visibility of the Spatial Hint UI elements
+		/// </summary>
 		public bool visible
 		{
 			get { return m_Visible; }
@@ -80,6 +84,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		/// <summary>
+		/// Bool denoting the visibility of the Spatial Scroll visual elements
+		/// </summary>
 		public bool scrollVisualsVisible
 		{
 			set
@@ -92,6 +99,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		/// <summary>
+		/// Bool denoting the visibility of the UI elements shown before a spatial scroll has been initiated
+		/// </summary>
 		public bool preScrollArrowsVisible
 		{
 			get { return m_PreScrollArrowsVisible; }
@@ -116,6 +126,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		/// <summary>
+		/// Bool denoting the visibility of the secondary arrow visuals
+		/// </summary>
 		public bool secondaryArrowsVisible
 		{
 			get { return m_SecondaryArrowsVisible; }
@@ -154,19 +167,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		Node? m_ControllingNode;
+		/// <summary>
+		/// The node currently controlling the spatial hint visuals
+		/// </summary>
 		public Node? controllingNode
 		{
-			get
-			{
-				return m_ControllingNode;
-			}
-
+			get { return m_ControllingNode; }
 			set
 			{
-				//if (m_ControllingNode == value.Value)
-					//return;
-
 				m_ControllingNode = value;
 
 				if (m_ControllingNode != null)
@@ -182,8 +190,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		/// <summary>
+		/// The position, whose magnitude from the scroll origin is used to trigger a spatial scroll
+		/// </summary>
 		public Vector3 scrollVisualsDragThresholdTriggerPosition { get; set; }
 
+		/// <summary>
+		/// The content container housing the spatial scroll visuals
+		/// </summary>
 		public Transform contentContainer { get { return transform; } }
 
 		void Awake()
@@ -270,6 +284,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//m_ScrollVisualsGameObject.SetActive(false);
 		}
 
+		/// <summary>
+		/// Pulse the scroll arrows
+		/// </summary>
 		public void PulseScrollArrows()
 		{
 			m_ScrollVisualsDragSourceArrow.PulseColor();
