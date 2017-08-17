@@ -11,8 +11,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				IControlSpatialHintingMethods.setSpatialHintState = provider.SetState;
 				IControlSpatialHintingMethods.setSpatialHintPosition = provider.SetPosition;
-				IControlSpatialHintingMethods.setSpatialHintRotation = provider.SetRotation;
-				IControlSpatialHintingMethods.setSpatialHintRotationTarget = provider.SetRotationTarget;
+				IControlSpatialHintingMethods.setSpatialHintContainerRotation = provider.SetContainerRotation;
+				IControlSpatialHintingMethods.setSpatialHintShowHideRotationTarget = provider.SetShowHideRotationTarget;
 				IControlSpatialHintingMethods.setSpatialHintLookAtRotation = provider.LookAt;
 				IControlSpatialHintingMethods.setSpatialHintDragThresholdTriggerPosition = provider.SetDragThresholdTriggerPosition;
 				IControlSpatialHintingMethods.pulseSpatialHintScrollArrows = provider.PulseScrollArrows;

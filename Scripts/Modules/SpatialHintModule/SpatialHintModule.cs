@@ -110,12 +110,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			spatialHintContentContainer.position = newPosition;
 		}
 
-		internal void SetRotation(Quaternion newRotation)
+		internal void SetContainerRotation(Quaternion newRotation)
 		{
 			m_SpatialHintModuleUI.transform.rotation = newRotation;
 		}
 
-		internal void SetRotationTarget(Vector3 target)
+		internal void SetShowHideRotationTarget(Vector3 target)
 		{
 			spatialHintScrollVisualsRotation = target;
 		}

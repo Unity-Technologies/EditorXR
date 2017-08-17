@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					ShowOnlyMenuAndActiveToolButtons();
 					spatiallyScrolling = false;
-					this.SetSpatialHintRotationTarget(Vector3.zero);
+					this.SetSpatialHintShowHideRotationTarget(Vector3.zero);
 				}
 			}
 		}
@@ -142,7 +142,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				Debug.LogWarning("SETTING STARTING DRAG DEFINITON POSITION : " + value.Value.ToString("F4"));
 				//Debug.LogError(value.Value.ToString("F4"));
-				this.SetSpatialHintLookATRotation(value.Value);
+				this.SetSpatialHintLookAtRotation(value.Value);
 			}
 		}
 
@@ -174,7 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				// Update the dragTarget with the current device position, to allow for visuals to better match the expected rotation/position
 				m_DragTarget = transform.position;
 				this.SetSpatialHintDragThresholdTriggerPosition(transform.position);
-				this.SetSpatialHintRotation(newHintContainerRotation);
+				this.SetSpatialHintContainerRotation(newHintContainerRotation);
 
 				// Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold
 				m_SpatialDragDistance += Time.unscaledDeltaTime * 8; // Continue to increase the amount
@@ -196,8 +196,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				//spatialHintScrollVisualsRotation = m_DragTarget;
 				this.SetSpatialHintDragThresholdTriggerPosition(transform.position);
-				this.SetSpatialHintRotation(newHintContainerRotation);
-				this.SetSpatialHintRotationTarget(m_DragTarget);
+				this.SetSpatialHintContainerRotation(newHintContainerRotation);
+				this.SetSpatialHintShowHideRotationTarget(m_DragTarget);
 			}
 
 			//spatialHintScrollVisualsDragThresholdTriggerPosition = transform.position;

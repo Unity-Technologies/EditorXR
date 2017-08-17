@@ -17,8 +17,9 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static SetSpatialHintStateDelegate setSpatialHintState { get; set; }
 
 		/// <summary>
-		/// 
+		/// Set the spatial hint state
 		/// </summary>
+		/// <param name="state">SpatialHintState to set</param>
 		public static void SetSpatialHintState(this IControlSpatialHinting obj, SpatialHintModule.SpatialHintStateFlags state)
 		{
 			setSpatialHintState(state);
@@ -28,42 +29,46 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static SetSpatialHintPositionDelegate setSpatialHintPosition { get; set; }
 
 		/// <summary>
-		/// 
+		/// Set the position of the spatial hint visuals
 		/// </summary>
+		/// <param name="position">The position at which the spatial hint visuals should be displayed</param>
 		public static void SetSpatialHintPosition(this IControlSpatialHinting obj, Vector3 position)
 		{
 			setSpatialHintPosition(position);
 		}
 
 		internal delegate void SetSpatialHintRotationDelegate(Quaternion rotation);
-		internal static SetSpatialHintRotationDelegate setSpatialHintRotation { get; set; }
+		internal static SetSpatialHintRotationDelegate setSpatialHintContainerRotation { get; set; }
 
 		/// <summary>
-		/// 
+		/// Set the rotation of the spatial hint visuals container game object
 		/// </summary>
-		public static void SetSpatialHintRotation(this IControlSpatialHinting obj, Quaternion rotation)
+		/// <param name="rotation">The rotation to set on the spatial visuals</param>
+		public static void SetSpatialHintContainerRotation(this IControlSpatialHinting obj, Quaternion rotation)
 		{
-			setSpatialHintRotation(rotation);
+			setSpatialHintContainerRotation(rotation);
 		}
 
 		internal delegate void SetSpatialHintRotationTargetDelegate(Vector3 target);
-		internal static SetSpatialHintRotationTargetDelegate setSpatialHintRotationTarget { get; set; }
+		internal static SetSpatialHintRotationTargetDelegate setSpatialHintShowHideRotationTarget { get; set; }
 
 		/// <summary>
-		/// 
+		/// Sets the target for the spatial hint visuals to look at while performing an animated show or hide
 		/// </summary>
-		public static void SetSpatialHintRotationTarget(this IControlSpatialHinting obj, Vector3 target)
+		/// <param name="target">The position to target</param>
+		public static void SetSpatialHintShowHideRotationTarget(this IControlSpatialHinting obj, Vector3 target)
 		{
-			setSpatialHintRotationTarget(target);
+			setSpatialHintShowHideRotationTarget(target);
 		}
 
 		internal delegate void SetSpatialHintLookATRotationDelegate(Vector3 position);
 		internal static SetSpatialHintLookATRotationDelegate setSpatialHintLookAtRotation { get; set; }
 
 		/// <summary>
-		/// 
+		/// Set the LookAt target
 		/// </summary>
-		public static void SetSpatialHintLookATRotation(this IControlSpatialHinting obj, Vector3 position)
+		/// <param name="position">The position the visuals should look at</param>
+		public static void SetSpatialHintLookAtRotation(this IControlSpatialHinting obj, Vector3 position)
 		{
 			setSpatialHintLookAtRotation(position);
 		}
@@ -83,8 +88,9 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static SetSpatialHintDragThresholdTriggerPositionDelegate setSpatialHintDragThresholdTriggerPosition { get; set; }
 
 		/// <summary>
-		/// 
+		/// Set the magnitude at which the user will trigger spatial scrolling
 		/// </summary>
+		/// <param name="position">The position, whose magnitude from the origin will be used to detect an initiation of spatial scrolling</param>
 		public static void SetSpatialHintDragThresholdTriggerPosition(this IControlSpatialHinting obj, Vector3 position)
 		{
 			setSpatialHintDragThresholdTriggerPosition(position);
@@ -95,7 +101,9 @@ namespace UnityEditor.Experimental.EditorVR
 
 		/// <summary>
 		/// Set reference to the object, RayOrigin, controlling the Spatial Hint visuals
+		/// Each control-object has it's spatial scrolling processed independently
 		/// </summary>
+		/// <param name="controlObject">Control-object whose spatial scrolling will be processed independently</param>
 		public static void SetSpatialHintControlObject(this IControlSpatialHinting obj, Transform controlObject)
 		{
 			setSpatialHintControlObject(controlObject);

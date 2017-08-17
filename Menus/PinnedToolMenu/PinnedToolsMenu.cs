@@ -43,7 +43,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Transform m_RayOrigin;
 		Transform m_AlternateMenuOrigin;
 		float allowToolToggleBeforeThisTime;
-		float? continuedInputConsumptionStartTime;
 		Vector3 m_SpatialScrollStartPosition;
 		IPinnedToolButton m_MainMenuButton;
 		PinnedToolsMenuUI m_PinnedToolsMenuUI;
@@ -254,7 +253,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			else if (pinnedToolInput.show.wasJustReleased)
 			{
 				const float kAdditionalConsumptionDuration = 0.25f;
-				continuedInputConsumptionStartTime = Time.realtimeSinceStartup + kAdditionalConsumptionDuration;
 				if (m_SpatialScrollData.passedMinDragActivationThreshold)
 				{
 					Debug.LogWarning("PinnedToolButton was just released");
