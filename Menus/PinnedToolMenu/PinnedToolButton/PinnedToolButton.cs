@@ -41,29 +41,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				if (m_ToolType != null)
 				{
-					Debug.LogError("Setting up button type : " + m_ToolType.ToString());
 					gradientPair = UnityBrandColorScheme.saturatedSessionGradient;
+
 					if (isSelectionTool || isMainMenu)
 					{
-						//order = isMainMenu ? menuButtonOrderPosition : activeToolOrderPosition;
 						tooltipText = isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText;
 						secondaryButtonCollidersEnabled = false;
 					}
 					else
 					{
 						tooltipText = toolType.Name;
-
-						// Tools other than select fetch a random gradientPair; also used by the device when revealed
-						//gradientPair = UnityBrandColorScheme.GetRandomCuratedLightGradient();
 					}
 
 					isActiveTool = isActiveTool;
 					m_GradientButton.visible = true;
-					//m_IconMaterial.SetColor(k_MaterialColorProperty, s_SemiTransparentFrameColor);
-
-					//var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
-					//var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
-					//this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateInitialReveal(targetPosition, targetScale));
 				}
 				else
 				{
@@ -78,45 +69,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_Order; }
 			set
 			{
-				//if (m_Order == value)
-					//return;
-
 				m_Order = value; // Position of this button in relation to other pinned tool buttons
 
-				//Debug.LogError(m_ToolType.ToString() + " : <color=red>SETTING BUTTON ORDER TO : </color>" + m_Order + " - current button count : " + visibileButtonCount);
-
 				highlighted = false;
-				//m_InactivePosition = s_ActivePosition * ++value; // Additional offset for the button when it is visible and inactive
-				//activeTool = activeTool;
-				//const float kSmoothingMax = 50f;
-				//const int kSmoothingIncreaseFactor = 10;
-				//var smoothingFactor = Mathf.Clamp(kSmoothingMax- m_Order * kSmoothingIncreaseFactor, 0f, kSmoothingMax);
-				//m_SmoothMotion.SetPositionSmoothing(smoothingFactor);
-				//m_SmoothMotion.SetRotationSmoothing(smoothingFactor);
-				//this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition());
-				//m_LeftPinnedToolActionButton.visible = false;
-				//m_RightPinnedToolActionButton.visible = false;
 
-				// We move in counter-clockwise direction
-				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
-				//const float kMaxPinnedToolButtonCount = 16; // TODO: add max count support in selectTool/setupPinnedToolButtonsForDevice
-				//const float kRotationSpacing = 360f / kMaxPinnedToolButtonCount; // dividend should be the count of pinned tool buttons showing at this time
-				//var phaseOffset = kRotationSpacing * 0.5f - (activeButtonCount * 0.5f) * kRotationSpacing;
-				//var newTargetRotation = Quaternion.AngleAxis(phaseOffset + kRotationSpacing * m_Order, Vector3.down);
-
-				//var mainMenuAndActiveButtonCount = 2;
-				//var aboluteMenuButtonCount = isMainMenu ? mainMenuAndActiveButtonCount : activeButtonCount; // madates a fixed position for the MainMenu button, next to the ActiveToolButton
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order));
 
 				if(m_Order == -1)
 					this.HideTooltip(this);
-
-				/*
-				if (aboluteMenuButtonCount > mainMenuAndActiveButtonCount)
-					this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
-				else
-					m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
-				*/
 			}
 		}
 
@@ -163,10 +123,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					if (!previewIcon)
 						m_GradientButton.SetContent(GetTypeAbbreviation(m_previewToolType));
-
-					//tooltipText = "Assign " + m_previewToolType.Name;
-					//customToolTipHighlightColor = UnityBrandColorScheme.grayscaleSessionGradient;
-					//this.ShowTooltip(this);
 				}
 				else
 				{
@@ -174,13 +130,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					isActiveTool = isActiveTool; // Set active tool back to pre-preview state
 					icon = icon; // Gradient button will set its icon back to that representing the current tool, if one existed before previewing new tool type in this button
 					m_GradientButton.highlightGradientPair = gradientPair;
-					//customToolTipHighlightColor = gradientPair;
-					//this.HideTooltip(this);
-					//tooltipText = (isSelectionTool || isMainMenu) ? (isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText) : toolType.Name;
 				}
 
 				m_GradientButton.highlighted = m_previewToolType != null;
-				//this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(m_Order != k_ActiveToolOrderPosition));
 			}
 		}
 
@@ -216,15 +168,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		GradientButton m_GradientButton;
 
 		[SerializeField]
-		SmoothMotion m_SmoothMotion;
-
-		//[SerializeField]
-		//PinnedToolActionButton m_LeftPinnedToolActionButton;
-
-		//[SerializeField]
-		//PinnedToolActionButton m_RightPinnedToolActionButton;
-
-		[SerializeField]
 		Transform m_IconContainer; // TODO: eliminate the reference to the icon container, use only the primary UI content container for any transformation
 
 		[SerializeField]
@@ -232,9 +175,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		CanvasGroup m_IconContainerCanvasGroup;
-
-		//[SerializeField]
-		//Collider m_RootCollider;
 
 		[SerializeField]
 		SkinnedMeshRenderer m_FrameRenderer;
@@ -258,7 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		SkinnedMeshRenderer m_SecondaryInsetMaskMeshRenderer;
 
 		[SerializeField]
-		Collider[] m_SecondaryButtonColliders; // disable for the main menu button & solitary active tool button
+		Collider[] m_SecondaryButtonColliders; // disable for the main menu button & solitary primary tool button
 
 		[SerializeField]
 		Transform m_TooltipTarget;
@@ -268,12 +208,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		[SerializeField]
 		Vector3 m_AlternateLocalPosition;
-
-		[SerializeField]
-		Transform m_Inset;
-
-		[SerializeField]
-		Transform m_InsetMask;
 
 		[SerializeField]
 		Image m_ButtonIcon;
@@ -338,16 +272,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_ActiveTool; }
 			set
 			{
-				//if (m_ActiveTool == value)
-					//return;
-
 				m_ActiveTool = value;
 
 				m_GradientButton.normalGradientPair = m_ActiveTool ? gradientPair : UnityBrandColorScheme.darkGrayscaleSessionGradient;
 				m_GradientButton.highlightGradientPair = m_ActiveTool ? UnityBrandColorScheme.darkGrayscaleSessionGradient : gradientPair;
-
-				//if (activeTool) // TODO REMOVE IF NOT NEEDED
-					//m_GradientButton.invertHighlightScale = value;
 
 				m_GradientButton.highlighted = true;
 				m_GradientButton.highlighted = false;
@@ -413,59 +341,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 		}
-
-		/*
-		public bool revealed
-		{
-			get { return m_Revealed; }
-			set
-			{
-				if (m_Revealed == value || !gameObject.activeSelf || activeButtonCount <= k_ActiveToolOrderPosition + 1)
-					return;
-
-				m_Revealed = value;
-
-				if (isMainMenu)
-				{
-					m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor * (value ? 0f : 1f));
-					m_GradientButton.visible = !value;
-					primaryButtonCollidersEnabled = !m_Revealed;
-					return;
-				}
-				else
-				{
-					primaryButtonCollidersEnabled = m_Revealed;
-				}
-
-				//Debug.LogError(Time.frameCount + " : <color=blue>Highlighting : </color>" + toolType);
-
-				var newOrderPosition = order;
-				var buttonCount = 2; // MainMenu + ActiveTool button count
-				var targetRotation = Quaternion.identity;
-				if (m_Revealed)
-				{
-					buttonCount = activeButtonCount - 1; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
-					this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
-					newOrderPosition -= 1;
-					order = order;
-					secondaryButtonCollidersEnabled = true;
-				}
-				else
-				{
-					// Set all buttons back to the center
-					// Tools with orders greater than that of the active tool should hide themseleves when the pinned tools arent being hovered
-					newOrderPosition = isMainMenu ? 0 : k_ActiveToolOrderPosition;
-					secondaryButtonCollidersEnabled = false;
-					this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
-				}
-
-				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(newOrderPosition));
-				//this.RestartCoroutine(ref m_HighlightCoroutine, AnimateSemiTransparent(!value && order < 1));
-			}
-
-			//get { return m_Revealed; }
-		}
-		*/
 
 		public Sprite icon
 		{
@@ -607,9 +482,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.StopCoroutine(ref m_ActivatorMoveCoroutine);
 			this.StopCoroutine(ref m_HoverCheckCoroutine);
 			this.StopCoroutine(ref m_SecondaryButtonVisibilityCoroutine);
-			
-			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
-			//this.Pulse(rayOrigin, 0.5f, 0.2f, true, true);
 		}
 
 		void DestroyButton()
@@ -619,7 +491,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			//this.Pulse(rayOrigin, 0.005f, 0.2f);
 			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 		}
 
@@ -641,14 +512,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnBackgroundHoverEnter ()
 		{
-			//Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
-			//if (m_PositionCoroutine != null || m_SecondaryGradientButton.highlighted)
-				//return;
-
 			s_Hovered = true;
-
-			//this.Pulse(rayOrigin, 0.005f, 0.175f);
-			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 
 			if (isMainMenu)
 			{
@@ -663,65 +527,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (hovered != null) // Raised in order to trigger the haptic in the PinnedToolsMenu
 				hovered();
 
-			//if (!m_LeftPinnedToolActionButton.revealed && !m_RightPinnedToolActionButton.revealed)
-			//{
-				//Debug.LogWarning("<color=green>Background button was hovered, now triggereing the foreground action button visuals</color>");
-				//m_RootCollider.enabled = false;
-				m_GradientButton.highlighted = true;
-				//m_GradientButton.visible = false;
-
-				//Debug.LogWarning("Handle for disabled buttons not being shown, ie the promotote(green) button on the first/selected tool");
-
-			//revealAllToolButtons(rayOrigin, true);
 			showAllButtons(this);
-			//HoverButton();
-			//m_ButtonCollider.enabled = false;
-			
-			//}
 		}
-
-		/*
-		void HoverButton()
-		{
-			if (order < 2 && (isSelectionTool || isMainMenu)) // The main menu and the active tool occupy orders 0 and 1; don't show any action buttons for buttons in either position
-			{
-				//m_RightPinnedToolActionButton.visible = false;
-				//m_LeftPinnedToolActionButton.visible = false;
-				//m_RootCollider.enabled = true;
-				//StartCoroutine(DelayedCollderEnable());
-			}
-			else if (isSelectionTool)
-			{
-
-				if (activeTool)
-				{
-					m_RightPinnedToolActionButton.visible = false;
-					m_LeftPinnedToolActionButton.visible = false;
-					StartCoroutine(DelayedCollderEnable());
-				}
-				else
-
-				{
-					//m_RightPinnedToolActionButton.visible = IsSelectToolButton(m_RightPinnedToolActionButton.buttonType) ? true : false;
-					//m_LeftPinnedToolActionButton.visible = IsSelectToolButton(m_LeftPinnedToolActionButton.buttonType) ? true : false;
-				}
-			} else
-			{
-				// Hide the select action button if this tool button is already the selected tool, else show the close button for inactive tools
-				//m_RightPinnedToolActionButton.visible = IsSelectToolButton(m_RightPinnedToolActionButton.buttonType) ? !activeTool : true;
-				//m_LeftPinnedToolActionButton.visible = IsSelectToolButton(m_LeftPinnedToolActionButton.buttonType) ? !activeTool : true;
-			}
-
-			revealAllToolButtons(rayOrigin, true);
-		}
-	*/
 
 		void OnActionButtonHoverExit()
 		{
 			ActionButtonHoverExit();
 		}
 
-		void ActionButtonHoverExit(bool waitBeforeClosingAllButtons = true)
+		void ActionButtonHoverExit()
 		{
 			if (m_PositionCoroutine != null)
 				return;
@@ -732,62 +546,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 			}
 
-			//this.RestartCoroutine(ref m_HoverCheckCoroutine, DelayedHoverExitCheck(waitBeforeClosingAllButtons));
-
 			if (!m_SecondaryGradientButton.highlighted)
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
 			hoverExit();
 		}
 
-		/*
-		void ActionButtonClicked(PinnedToolActionButton button)
-		{
-			Debug.LogError("Action Button selectTool!");
-			if (order > menuButtonOrderPosition)
-			{
-				// TODO: SELECT ACTION BUTTONS should be able to be interacted with due to their being hidden, so no need to handle for that case
-				// Buttons in the activeToolOrderPosition cannot be selected when selectTool
-				if (button.buttonType == PinnedToolActionButton.ButtonType.SelectTool && order > activeToolOrderPosition)
-				{
-					selectTool(rayOrigin, m_ToolType); // ButtonClicked will set button order to 0
-					activeTool = activeTool;
-					//SetButtonGradients(this.ButtonClicked(rayOrigin, m_ToolType));
-				}
-				else // Handle action buttons assigned Close-Tool functionality
-				{
-					//if (!isSelectionTool)
-						this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
-					//else
-						//Debug.LogError("<color=red>CANNOT DELETE THE SELECT TOOL!!!!!</color>");
-
-					deletePinnedToolButton(rayOrigin, this);
-				}
-
-				OnActionButtonHoverExit(false);
-				//m_LeftPinnedToolActionButton.revealed = false;
-				//m_RightPinnedToolActionButton.revealed = false;
-			}
-		}
-		*/
-
 		void OnBackgroundButtonClick()
 		{
-			Debug.LogWarning("<color=orange>OnBackgroundButtonClick : </color>" + name + " : " + toolType);
-			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
-
-			// Hide both action buttons if the user is no longer hovering over the button
-			//if (!m_LeftPinnedToolActionButton.revealed && !m_RightPinnedToolActionButton.revealed)
-			//{
-			//}
-
-			selectTool(toolType); // Perform clik for a ToolButton that doesn't utilize ToolActionButtons
+			selectTool(toolType);
 
 			if (!isMainMenu)
-			{
-				ActionButtonHoverExit(false);
-				//revealAllToolButtons(rayOrigin, true);
-			}
+				ActionButtonHoverExit();
 
 			m_GradientButton.UpdateMaterialColors();
 		}
@@ -796,11 +566,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
 			closeButton();
-			//this.Pulse(rayOrigin, 0.5f, 0.1f, true, true);
-			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
-			//deleteHighlightedButton(rayOrigin);
-			//deletePinnedToolButton(rayOrigin, this);
-			ActionButtonHoverExit(false);
+			ActionButtonHoverExit();
 		}
 
 		IEnumerator AnimateInitialReveal(Vector3 targetPosition, Vector3 targetScale)
@@ -835,13 +601,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.StopCoroutine(ref m_SecondaryButtonVisibilityCoroutine);
 
 			this.HideTooltip(this);
+			const int kDurationScalar = 3;
 			var duration = 0f;
 			var currentScale = transform.localScale;
 			var targetScale = Vector3.zero;
 			while (duration < 1)
 			{
-				duration += Time.unscaledDeltaTime * 3f;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration), 4);
+				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(duration += Time.unscaledDeltaTime * kDurationScalar), 4);
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
 				yield return null;
 			}
@@ -853,49 +619,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateHide()
 		{
-			//primaryButtonCollidersEnabled = false;
-			//secondaryButtonCollidersEnabled = false;
 			const float kTimeScalar = 8f;
 			var targetPosition = Vector3.zero;
 			var currentPosition = transform.localPosition;
-
-			var currentFrameColor = m_FrameMaterial.color;
-			var targetFrameColor = Color.clear;
-			var targetIconColor = Color.clear;
-			//var currentInsetScale = m_Inset.localScale;
-			//var targetInsetScale = makeSemiTransparent ? new Vector3(1f, 0f, 1f) : Vector3.one;
-			//var currentInsetMaskScale = m_InsetMask.localScale;
-			//var targetInsetMaskScale = makeSemiTransparent ? Vector3.one * 1.45f : Vector3.one;
 			var currentIconScale = m_IconContainer.localScale;
 			var targetIconContainerScale = Vector3.zero;
 			var transitionAmount = 0f;
 			var currentScale = transform.localScale;
 			while (transitionAmount < 1)
 			{
-				transitionAmount += Time.unscaledDeltaTime * kTimeScalar;
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-				/*
-				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, shapedAmount));
-				//m_Inset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, shapedAmount);
-				//m_InsetMask.localScale = Vector3.Lerp(currentInsetMaskScale, targetInsetMaskScale, Mathf.Pow(shapedAmount, 3));
-				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, shapedAmount));
-				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, shapedAmount * 2));
-				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
-				*/
-				//CorrectIconRotation();
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime * kTimeScalar);
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
 				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
 				transform.localScale = Vector3.Lerp(currentScale, Vector3.zero, shapedAmount);
 				yield return null;
 			}
 
-			/*
-			m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
-			m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
-			//m_Inset.localScale = targetInsetScale;
-			//m_InsetMask.localScale = targetInsetMaskScale;
-			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
-			*/
 			m_IconContainer.localScale = targetIconContainerScale;
 			transform.localPosition = targetPosition;
 			m_VisibilityCoroutine = null;
@@ -903,20 +642,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateShow()
 		{
-			//primaryButtonCollidersEnabled = false;
-			//secondaryButtonCollidersEnabled = false;
-
 			const float kTimeScalar = 8f;
 			var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
 			var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
-
-			var currentFrameColor = m_FrameMaterial.color;
-			var targetFrameColor = Color.clear;
-			var targetIconColor = Color.clear;
-			//var currentInsetScale = m_Inset.localScale;
-			//var targetInsetScale = makeSemiTransparent ? new Vector3(1f, 0f, 1f) : Vector3.one;
-			//var currentInsetMaskScale = m_InsetMask.localScale;
-			//var targetInsetMaskScale = makeSemiTransparent ? Vector3.one * 1.45f : Vector3.one;
 			var currentIconScale = m_IconContainer.localScale;
 			var targetIconContainerScale = m_OriginalIconContainerLocalScale;
 			var transitionAmount = 0f;
@@ -924,48 +652,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var currentPosition = transform.localPosition;
 			while (transitionAmount < 1)
 			{
-				transitionAmount += Time.unscaledDeltaTime * kTimeScalar;
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-				/*
-				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, shapedAmount));
-				//m_Inset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, shapedAmount);
-				//m_InsetMask.localScale = Vector3.Lerp(currentInsetMaskScale, targetInsetMaskScale, Mathf.Pow(shapedAmount, 3));
-				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, shapedAmount));
-				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, shapedAmount * 2));
-				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
-				transform.localPosition = Vector3.Lerp(Vector3.zero, targetPosition, durationShaped);
-				*/
-				//CorrectIconRotation();
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime * kTimeScalar);
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
 				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedAmount);
 				yield return null;
 			}
 
-			/*
-			m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
-			m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
-			//m_Inset.localScale = targetInsetScale;
-			//m_InsetMask.localScale = targetInsetMaskScale;
-			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
-			*/
 			transform.localPosition = targetPosition;
 			transform.localScale = targetScale;
 			m_IconContainer.localScale = targetIconContainerScale;
 			m_VisibilityCoroutine = null;
 		}
 
-		//IEnumerator AnimatePosition(int orderPosition, int buttonCount)
 		IEnumerator AnimatePosition(int orderPosition)
 		{
-			//Debug.LogError(m_ToolType + " - Animate Button position : " + orderPosition + " - BUTTON COUNT: " + visibileButtonCount);
 			primaryButtonCollidersEnabled = false;
 			secondaryButtonCollidersEnabled = false;
-			//if (!activeTool) // hide a button if it is not the active tool button and the buttons are no longer revealed
-				//gameObject.SetActive(true);
-
-			//if (order != activeToolOrderPosition)
-				//m_RootCollider.enabled = false;
 
 			this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
@@ -983,12 +686,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var targetRotation = orderPosition > -1 ? Quaternion.AngleAxis(phaseOffset + rotationSpacing * Mathf.Max(0f, orderPosition), Vector3.down) : Quaternion.identity;
 
 			var duration = 0f;
-			//var currentPosition = transform.localPosition;
-			//var targetPosition = activeTool ? activePosition : m_InactivePosition;
 			var currentCanvasAlpha = m_IconContainerCanvasGroup.alpha;
 			var targetCanvasAlpha = orderPosition > -1 ? 1f : 0f;
 			var currentRotation = transform.localRotation;
-			var positionWait = 1f;// (order + 5) * 0.1f;
+			var positionWait = 1f;
 			while (duration < 1)
 			{
 				duration += Time.unscaledDeltaTime * kTimeScalar * positionWait;
@@ -996,14 +697,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				transform.localRotation = Quaternion.Lerp(currentRotation, targetRotation, durationShaped);
 				m_IconContainerCanvasGroup.alpha = Mathf.Lerp(currentCanvasAlpha, targetCanvasAlpha, durationShaped);
 				CorrectIconRotation();
-				//transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, durationShaped);
 				yield return null;
 			}
 
-			//if (!m_Revealed && orderPosition == 0 && buttonCount == 1 && !activeTool) // hide a button if it is not the active tool button and the buttons are no longer revealed
-				//gameObject.SetActive(false);
-
-			//transform.localPosition = targetPosition;
 			transform.localRotation = targetRotation;
 			CorrectIconRotation();
 			primaryButtonCollidersEnabled = orderPosition > -1 ? true : false;
@@ -1013,58 +709,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (implementsSecondaryButton && orderPosition > -1 && m_GradientButton.highlighted)
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
 		}
-
-		/*
-		IEnumerator AnimateSemiTransparentX(bool makeSemiTransparent)
-		{
-			//if (!makeSemiTransparent)
-				//yield return new WaitForSeconds(1f); // Pause before making opaque
-
-			if (makeSemiTransparent && activeTool)
-				yield break;
-
-			//Debug.LogWarning("<color=blue>AnimateSemiTransparent : </color>" + makeSemiTransparent);
-			//const float kFasterMotionMultiplier = 2f;
-			var transitionAmount = 0f;
-			//var positionWait = (order + 1) * 0.25f; // pad the order index for a faster start to the transition
-			//var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
-			//var transparentFrameColor = new Color (s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0f);
-			var currentFrameColor = m_FrameMaterial.color;
-			var targetFrameColor = makeSemiTransparent ? s_SemiTransparentFrameColor : s_FrameOpaqueColor;
-			var currentInsetAlpha = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
-			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
-			var currentIconColor = m_IconMaterial.GetColor(k_MaterialColorProperty);
-			var targetIconColor = makeSemiTransparent ? s_SemiTransparentFrameColor : Color.white;
-			var currentInsetScale = m_Inset.localScale;
-			var targetInsetScale = makeSemiTransparent ? new Vector3(1f, 0f, 1f) : Vector3.one;
-			var currentInsetMaskScale = m_InsetMask.localScale;
-			var targetInsetMaskScale = makeSemiTransparent ? Vector3.one * 1.45f : Vector3.one;
-			var currentIconScale = m_IconContainer.localScale;
-			var targetIconContainerScale = makeSemiTransparent ? k_SemiTransparentIconContainerScale : Vector3.one;
-			var speedMultiplier = makeSemiTransparent ? 4f : 6.5f; // Slower transparent fade; faster opaque fade
-			while (transitionAmount < 1)
-			{
-				transitionAmount += Time.unscaledDeltaTime * speedMultiplier;
-				var shapedAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(transitionAmount), 3);
-				m_FrameMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentFrameColor, targetFrameColor, shapedAmount));
-				m_Inset.localScale = Vector3.Lerp(currentInsetScale, targetInsetScale, shapedAmount);
-				m_InsetMask.localScale = Vector3.Lerp(currentInsetMaskScale, targetInsetMaskScale, Mathf.Pow(shapedAmount, 3));
-				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, shapedAmount));
-				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, shapedAmount * 2));
-				//var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
-				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
-				CorrectIconRotation();
-				yield return null;
-			}
-
-			m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
-			m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
-			m_Inset.localScale = targetInsetScale;
-			m_InsetMask.localScale = targetInsetMaskScale;
-			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
-			m_IconContainer.localScale = targetIconContainerScale;
-		}
-		*/
 
 		IEnumerator AnimateMoveActivatorButton(bool moveToAlternatePosition = true)
 		{
@@ -1078,8 +722,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			speed += (order + 1) * kSpeedDecreaseScalar;
 			while (amount < 1f)
 			{
-				amount += Time.unscaledDeltaTime * speed;
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount += Time.unscaledDeltaTime * speed);
 				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
 				transform.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, shapedAmount);
 				yield return null;
@@ -1123,19 +766,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var iconLookDirection = m_IconContainer.transform.position + transform.forward * kIconLookForwardOffset; // set a position offset above the icon, regardless of the icon's rotation
 			m_IconContainer.LookAt(iconLookDirection);
 			m_IconContainer.localEulerAngles = new Vector3(0f, 0f, m_IconContainer.localEulerAngles.z);
-
-			//tooltipSource.localRotation = m_IconContainer.localRotation;
-			//var angle = m_IconContainer.localEulerAngles.z;
-			//m_TooltipTarget.localEulerAngles = new Vector3(0, 0, angle);
-
-			//var yaw = transform.localRotation.eulerAngles.y;
-			//tooltipAlignment = yaw > 90 && yaw <= 270 ? TextAlignment.Center : TextAlignment.Center;
 		}
 
 		IEnumerator ShowSecondaryButton()
 		{
-			//Debug.LogError("<color=black>Waiting before SHOWING SECONDARY BUTTON</color>");
-
 			// Don't perform additional animated visuals if already in a fully revealed state
 			if (Mathf.Approximately(m_SecondaryButtonContainerCanvasGroup.alpha, 1f))
 			{
@@ -1156,7 +790,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			const float kDelayBeforeSecondaryButtonReveal = 0.25f;
-			currentDuration = 0f;
+			currentDuration = 0f; // Reset current duration
 			while (currentDuration < kDelayBeforeSecondaryButtonReveal)
 			{
 				currentDuration += Time.unscaledDeltaTime;
@@ -1175,8 +809,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			currentDuration = 0f;
 			while (currentDuration < 1f)
 			{
-				currentDuration += Time.unscaledDeltaTime * kDurationMultiplier;
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration);
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * kDurationMultiplier);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kFrameSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
@@ -1215,8 +848,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				this.StopCoroutine(ref m_HighlightCoroutine);
 
-				amount += Time.unscaledDeltaTime * kDurationMultiplier;
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount);
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount += Time.unscaledDeltaTime * kDurationMultiplier);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 0f, shapedAmount));
 				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
 				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
