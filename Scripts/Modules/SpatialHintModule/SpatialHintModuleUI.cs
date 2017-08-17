@@ -40,7 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_SecondaryArrowsVisible;
 		Vector3 m_ScrollVisualsRotation;
 		Transform m_ScrollVisualsTransform;
-		GameObject m_ScrollVisualsGameObject;
 		Coroutine m_ScrollVisualsVisibilityCoroutine;
 		Coroutine m_VisibilityCoroutine;
 		Transform m_ScrollVisualsDragTargetArrowTransform;
@@ -220,7 +219,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void Awake()
 		{
 			m_ScrollVisualsTransform = m_ScrollVisualsCanvasGroup.transform;
-			m_ScrollVisualsGameObject = m_ScrollVisualsTransform.gameObject;
 			m_ScrollVisualsCanvasGroup.alpha = 0f;
 			//m_ScrollVisualsGameObject.SetActive(false);
 
@@ -288,7 +286,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var targetLocalScale = Vector3.one;
 			var currentAlpha = m_ScrollVisualsCanvasGroup.alpha;
 			var secondArrowCurrentPosition = m_ScrollVisualsDragTargetArrowTransform.position;
-			var normalizedScrollVisualsForward = Vector3.Normalize(m_ScrollVisualsTransform.forward);
 
 			while (currentDuration < kTargetDuration)
 			{
