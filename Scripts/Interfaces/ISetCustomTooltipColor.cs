@@ -1,6 +1,6 @@
-﻿using UnityEditor.Experimental.EditorVR.Helpers;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Helpers;
 
-#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
