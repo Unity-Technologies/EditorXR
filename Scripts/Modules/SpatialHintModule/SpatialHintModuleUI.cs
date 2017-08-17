@@ -41,9 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_ScrollVisualsRotation;
 		Transform m_ScrollVisualsTransform;
 		Coroutine m_ScrollVisualsVisibilityCoroutine;
-		Coroutine m_VisibilityCoroutine;
 		Transform m_ScrollVisualsDragTargetArrowTransform;
-		Transform m_ScrollVisualsDragSourceArrowTransform;
 
 		public bool visible
 		{
@@ -81,34 +79,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 		}
-
-		/*
-		/// <summary>
-		/// Enables/disables the visual elements that should be shown when beginning to initiate a spatial selection action
-		/// This is only enabled before the enabling of the main select visuals
-		/// </summary>
-		public bool preScrollVisualsVisible
-		{
-			get { return m_PreScrollVisualsVisible; }
-			set
-			{
-				m_PreScrollVisualsVisible = value;
-
-				this.RestartCoroutine(ref m_VisibilityCoroutine, m_PreScrollVisualsVisible ? AnimateShow() : AnimateHide());
-
-				var semiTransparentWhite = new Color(1f, 1f, 1f, 0.5f);
-				foreach (var arrow in m_PrimaryDirectionalHintArrows)
-				{
-					arrow.visibleColor = semiTransparentWhite;
-				}
-
-				foreach (var arrow in m_SecondaryDirectionalHintArrows)
-				{
-					arrow.visible = m_PreScrollVisualsVisible;
-				}
-			}
-		}
-		*/
 
 		public bool scrollVisualsVisible
 		{
@@ -222,49 +192,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ScrollVisualsCanvasGroup.alpha = 0f;
 			//m_ScrollVisualsGameObject.SetActive(false);
 
-			m_ScrollVisualsDragSourceArrowTransform = m_ScrollVisualsDragSourceArrow.transform;
 			m_ScrollVisualsDragTargetArrowTransform = m_ScrollVisualsDragTargetArrow.transform;
-		}
-
-		IEnumerator AnimateShow()
-		{
-			//m_SpatialHintUI.enablePreviewVisuals = true;
-
-			transform.localScale = Vector3.zero;
-			var currentScale = transform.localScale;
-			var timeElapsed = currentScale.x; // Proportionally lessen the duration according to the current state of the visuals 
-			var targetScale = Vector3.one * this.GetViewerScale();
-			while (timeElapsed < 1f)
-			{
-				timeElapsed += Time.unscaledDeltaTime * 3f;
-				var durationShaped = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(timeElapsed), 6);
-				transform.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
-				yield return null;
-			}
-
-			transform.localScale = targetScale;
-			m_VisibilityCoroutine = null;
-		}
-
-		IEnumerator AnimateHide()
-		{
-			//m_SpatialHintUI.enableVisuals = false;
-
-			yield break;
-
-			var currentScale = transform.localScale;
-			var timeElapsed = 1 - currentScale.x;
-			var targetScale = Vector3.zero;
-			while (timeElapsed < 1f)
-			{
-				timeElapsed += Time.unscaledDeltaTime * 4f;
-				var durationShaped = MathUtilsExt.SmoothInOutLerpFloat(timeElapsed);
-				transform.localScale = Vector3.Lerp(currentScale, targetScale, durationShaped);
-				yield return null;
-			}
-
-			transform.localScale = targetScale;
-			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator ShowScrollVisuals()
