@@ -15,7 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
 	{
 		static Color s_FrameOpaqueColor;
-		static Color s_SemiTransparentFrameColor;
 		static bool s_Hovered;
 
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
@@ -304,7 +303,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Sprite m_PreviewIcon;
 		bool m_Highlighted;
 		bool m_ActiveTool;
-		bool m_Visible;
 
 		public Transform tooltipTarget { get { return m_TooltipTarget; } set { m_TooltipTarget = value; } }
 		public Transform tooltipSource { get { return m_TooltipSource; } }
@@ -353,18 +351,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_GradientButton.highlighted = true;
 				m_GradientButton.highlighted = false;
-			}
-		}
-
-		public bool visible
-		{
-			//get { return m_Highlighted; }
-			set
-			{
-				if (m_Visible == value)
-					return;
-
-				gameObject.SetActive(value);
 			}
 		}
 
@@ -534,7 +520,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var frameMaterialColor = m_FrameMaterial.color;
 			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
 			m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
-			s_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, kSemiTransparentAlphaValue);
 
 			m_IconMaterial = MaterialUtils.GetMaterialClone(m_ButtonIcon);
 			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
@@ -753,24 +738,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
 			hoverExit();
-
-			return;
-			Debug.LogWarning("<color=orange>OnActionButtonHoverExit : </color>" + name + " : " + toolType);
-			// in this case display the hover state for the gradient button, then enable visibility for each of the action buttons
-
-			// Hide both action buttons if the user is no longer hovering over the button
-			//if (!m_LeftPinnedToolActionButton.revealed && !m_RightPinnedToolActionButton.revealed)
-			//{
-				//Debug.LogWarning("<color=green>!!!</color>");
-				//m_ButtonCollider.enabled = true;
-				//m_LeftPinnedToolActionButton.visible = false;
-				//m_RightPinnedToolActionButton.visible = false;
-				//m_GradientButton.visible = true;
-				m_GradientButton.highlighted = false;
-				//revealAllToolButtons(rayOrigin, false);
-			//}
-
-			m_GradientButton.UpdateMaterialColors();
 		}
 
 		/*
@@ -889,15 +856,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			//primaryButtonCollidersEnabled = false;
 			//secondaryButtonCollidersEnabled = false;
 			const float kTimeScalar = 8f;
-			var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
 			var targetPosition = Vector3.zero;
 			var currentPosition = transform.localPosition;
 
 			var currentFrameColor = m_FrameMaterial.color;
 			var targetFrameColor = Color.clear;
-			var currentInsetAlpha = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
-			var targetInsetAlpha = 0f;
-			var currentIconColor = m_IconMaterial.GetColor(k_MaterialColorProperty);
 			var targetIconColor = Color.clear;
 			//var currentInsetScale = m_Inset.localScale;
 			//var targetInsetScale = makeSemiTransparent ? new Vector3(1f, 0f, 1f) : Vector3.one;
@@ -949,9 +912,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			var currentFrameColor = m_FrameMaterial.color;
 			var targetFrameColor = Color.clear;
-			var currentInsetAlpha = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
-			var targetInsetAlpha = 0f;
-			var currentIconColor = m_IconMaterial.GetColor(k_MaterialColorProperty);
 			var targetIconColor = Color.clear;
 			//var currentInsetScale = m_Inset.localScale;
 			//var targetInsetScale = makeSemiTransparent ? new Vector3(1f, 0f, 1f) : Vector3.one;
