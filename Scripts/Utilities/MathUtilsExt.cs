@@ -166,7 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		/// <summary>
-		/// Get the position and rotatoin difference between two objects for the purpose of maintaining that offset
+		/// Get the position and rotation difference between two objects for the purpose of maintaining that offset
 		/// </summary>
 		/// <param name="from">The object whose position will be changing (parent)</param>
 		/// <param name="to">The object whose position will be updated (child)</param>
@@ -175,8 +175,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static void GetTransformOffset(Transform from, Transform to, out Vector3 positionOffset, out Quaternion rotationOffset)
 		{
 			var inverseRotation = Quaternion.Inverse(from.rotation);
-			positionOffset = inverseRotation * (to.transform.position - from.position);
-			rotationOffset = inverseRotation * to.transform.rotation;
+			positionOffset = inverseRotation * (to.position - from.position);
+			rotationOffset = inverseRotation * to.rotation;
 		}
 
 		/// <summary>
