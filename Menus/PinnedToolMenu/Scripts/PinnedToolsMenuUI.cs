@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, IUsesViewerScale, IUsesNode, IInstantiateUI,
+	sealed class PinnedToolsMenuUI : MonoBehaviour, IUsesViewerScale, IInstantiateUI,
 		IConnectInterfaces, IControlSpatialHinting, IControlHaptics, IUsesRayOrigin
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
@@ -46,9 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Quaternion m_HintContentContainerInitialRotation;
 		Quaternion m_HintContentContainerCurrentRotation;
 		Vector3 m_HintContentWorldPosition;
-		Vector3 m_StartingDragOrigin;
 		Vector3 m_DragTarget;
-		IUsesNode m_UsesNodeImplementation;
 
 		public int maxButtonCount { get; set; }
 		public Transform buttonContainer { get { return m_ButtonContainer; } }
@@ -144,12 +142,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				Debug.LogWarning("SETTING STARTING DRAG DEFINITON POSITION : " + value.Value.ToString("F4"));
 				//Debug.LogError(value.Value.ToString("F4"));
-				m_StartingDragOrigin = transform.position;
 				this.SetSpatialHintLookATRotation(value.Value);
 			}
 		}
-
-		public Node? node { set { m_UsesNodeImplementation.node = value; } }
 
 		public event Action buttonHovered;
 		public event Action buttonClicked;
