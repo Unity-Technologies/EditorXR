@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Returns whether the given ray origin is involved in two-handed scaling
 		/// </summary>
 		/// <param name="rayOrigin">The ray origin to check</param>
-		/// <returns></returns>
+		/// <returns>Whether the given ray origin is involved in two-handed scaling</returns>
 		bool IsTwoHandedScaling(Transform rayOrigin);
 	}
 }
