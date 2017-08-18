@@ -8,7 +8,6 @@ using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -16,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		static Color s_FrameOpaqueColor;
 
-		const float k_AlternateLocalScaleMultiplier = 0.85f; //0.64376f meets outer bounds of the radial menu
+		const float k_AlternateLocalScaleMultiplier = 0.85f; // Meets outer bounds of the radial menu
 		const string k_MaterialColorProperty = "_Color";
 		const string k_SelectionToolTipText = "Selection Tool (cannot be closed)";
 		const string k_MainMenuTipText = "Main Menu";
@@ -96,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public Type previewToolType
 		{
-			get { return m_PreviewToolType; }
+			private get { return m_PreviewToolType; }
 			set
 			{
 				m_PreviewToolType = value;
@@ -157,7 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return tooltip != null ? tooltip.tooltipText : (previewToolType == null ? m_TooltipText : previewToolDescription);
 			}
 
-			set { m_TooltipText = value; }
+			private set { m_TooltipText = value; }
 		}
 
 		[SerializeField]
@@ -255,12 +254,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
 		public Func<Type, int> visibleButtonCount { get; set; }
 		public Action destroy { get { return DestroyButton; } }
-		public Action<IPinnedToolButton> showAllButtons { get; set; }
+		public Action<IPinnedToolButton> showAllButtons { private get; set; }
 		public Action hoverExit { get; set; }
 
 		public bool isActiveTool
 		{
-			get { return m_ActiveTool; }
+			private get { return m_ActiveTool; }
 			set
 			{
 				m_ActiveTool = value;
@@ -335,7 +334,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Sprite icon
 		{
-			get { return m_Icon; }
+			private get { return m_Icon; }
 			set
 			{
 				m_PreviewIcon = null; // clear any cached preview icons
@@ -433,11 +432,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void DestroyButton()
 		{
 			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
-		}
-
-		public void OnPointerEnter(PointerEventData eventData)
-		{
-			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 		}
 
 		static string GetTypeAbbreviation(Type type)

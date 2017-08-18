@@ -55,6 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Type, Type> deletePinnedToolButton { get; set; }
 		public Node? node { get; set; }
 		public IPinnedToolButton previewToolButton { get { return m_MainMenuButton; } }
+		public Transform alternateMenuOrigin { get { return m_AlternateMenuOrigin; } set { m_AlternateMenuOrigin = value; } }
 
 		public Transform rayOrigin
 		{
@@ -71,18 +72,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public ActionMap actionMap
 		{
 			get { return m_MainMenuActionMap; }
-		}
-
-		public Transform alternateMenuOrigin
-		{
-			get { return m_AlternateMenuOrigin; }
-			set
-			{
-				if (m_AlternateMenuOrigin == value)
-					return;
-
-				m_AlternateMenuOrigin = value;
-			}
 		}
 
 		void Awake()

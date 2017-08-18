@@ -164,7 +164,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 			else if (m_AllButtonsVisible && m_SpatialDragDistance > 2)
 			{
-				//spatialHintScrollVisualsRotation = m_DragTarget;
 				this.SetSpatialHintDragThresholdTriggerPosition(transform.position);
 				this.SetSpatialHintContainerRotation(newHintContainerRotation);
 				this.SetSpatialHintShowHideRotationTarget(m_DragTarget);
