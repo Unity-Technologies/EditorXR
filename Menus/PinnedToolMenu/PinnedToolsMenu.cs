@@ -119,8 +119,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void CreatePinnedToolButton(Type toolType, Sprite buttonIcon)
 		{
-			Debug.LogError("<color=green>SPAWNING pinned tool button for type of : </color>" + toolType);
-
 			// Select an existing ToolButton if the type is already present in a button
 			if (buttons.Any( (x) => x.toolType == toolType))
 			{
@@ -183,9 +181,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (pinnedToolInput.show.wasJustPressed)
 				Debug.LogError("<color=black>SHOW pressed in PinnedToolButton</color>");
-
-			if (pinnedToolInput.select.wasJustPressed)
-				Debug.LogError("<color=black>SELECT pressed in PinnedToolButton</color>");
 
 			if (pinnedToolInput.cancel.wasJustPressed)
 				Debug.LogError("CANCELLING SPATIAL SELECTION!!!!");
