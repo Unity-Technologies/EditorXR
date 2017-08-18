@@ -41,9 +41,9 @@ namespace UnityEditor.Experimental.EditorVR
 		Bounds localBounds { get; }
 
 		/// <summary>
-		/// Is the UI pointer hovering over the menu?
+		/// Does this menu have focus?
 		/// </summary>
-		bool hovering { get; }
+		bool focus { get; }
 
 		/// <summary>
 		/// Send a haptic pulse indicating the menu visibility has changed

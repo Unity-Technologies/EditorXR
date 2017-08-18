@@ -227,7 +227,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					var mainMenu = deviceData.mainMenu;
 					var mainMenuHideFlags = deviceData.menuHideFlags[mainMenu];
-					if (mainMenuHideFlags != 0 && !mainMenu.hovering)
+					if (mainMenuHideFlags != 0 && !mainMenu.focus)
 					{
 						if ((mainMenuHideFlags & MenuHideFlags.Hidden) != 0)
 						{

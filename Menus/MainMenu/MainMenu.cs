@@ -101,7 +101,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
 
-		public bool hovering { get { return m_MainMenuUI.hovering; } }
+		public bool focus { get { return m_MainMenuUI.hovering; } }
 
 		void Start()
 		{
