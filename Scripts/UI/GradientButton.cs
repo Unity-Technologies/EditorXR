@@ -6,6 +6,7 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
@@ -186,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		[SerializeField]
 		Color m_NormalContentColor;
 
-		// The color that elements in the HighlighItems collection should inherit during the highlighted state
+		// The color that elements in the HighlightItems collection should inherit during the highlighted state
 		[SerializeField]
 		Color m_HighlightItemColor = UnityBrandColorScheme.light;
 
@@ -211,7 +212,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		float m_DelayBeforeReveal = 0.25f;
 
 		[SerializeField]
-		float m_highlightZScaleMultiplier = 2f;
+		[FormerlySerializedAs("m_highlightZScaleMultiplier")]
+		float m_HighlightZScaleMultiplier = 2f;
 
 		Material m_ButtonMaterial;
 		Vector3 m_OriginalIconLocalPosition;
@@ -238,7 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			m_OriginalLocalScale = transform.localScale;
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_OriginalContentContainerLocalScale = m_ContentContainer.localScale;
-			m_HighlightContentContainerLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_highlightZScaleMultiplier);
+			m_HighlightContentContainerLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_HighlightZScaleMultiplier);
 			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
 			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * m_IconHighlightedLocalZOffset;
 

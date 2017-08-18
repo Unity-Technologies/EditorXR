@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					var tooltipUI = tooltipData.tooltipUI;
 					if (!tooltipUI)
 					{
-						var tooltipObject = (GameObject)Instantiate(m_TooltipPrefab, m_TooltipCanvas);
+						var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
 						tooltipUI = tooltipObject.GetComponent<TooltipUI>();
 						tooltipData.tooltipUI = tooltipUI;
 						tooltipUI.highlight.material = m_HighlightMaterial;

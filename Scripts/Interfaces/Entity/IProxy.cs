@@ -79,6 +79,7 @@ namespace UnityEditor.Experimental.EditorVR
 			get; set;
 		}
 
+		/// <summary>
 		/// Origins for grabbed list fields
 		/// Key = ray origin
 		/// Value = field grab transform

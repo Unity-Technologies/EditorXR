@@ -22,9 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		MeshRenderer m_MeshRenderer;
 
-		Transform m_IconTransform;
-		Vector3 m_VisibleLocalScale;
-		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ScrollArrowPulseCoroutine;
 		float m_PulseDuration;
 		Material m_HintLineMaterial;
@@ -53,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 
 		/// <summary>
-		/// Perform an animated visual pusling of color
+		/// Perform an animated visual pulsing of color
 		/// </summary>
 		public void PulseColor()
 		{

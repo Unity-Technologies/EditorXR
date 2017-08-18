@@ -178,7 +178,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.maxButtonCount = maxButtonCount;
 			button.selectTool =  SelectExistingToolTypeFromButton;
 			button.closeButton = DeleteHighlightedButton;
-			button.visibileButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
+			button.visibleButtonCount = VisibleButtonCount; // allow buttons to fetch local buttonCount
 			button.iconHighlightedLocalZOffset = k_RaySelectIconHighlightedZOffset;
 			button.tooltipTarget = m_ButtonTooltipTarget;
 			button.hovered += OnButtonHover;

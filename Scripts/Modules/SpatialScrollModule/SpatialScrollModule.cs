@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public int scrollableItemCount { get; set; }
 			public int maxItemCount { get; set; }
 
-			// Values populated by scoll processing
+			// Values populated by scroll processing
 			public Vector3? spatialDirection { get; set; }
 			public Vector3 startingDragOrigin { get; set; }
 			public Vector3 previousWorldPosition { get; set; }
@@ -76,13 +76,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_ScrollData.Add(caller, spatialScrollData);
 			}
 
-			return processSpatialScrolling(spatialScrollData);
+			return ProcessSpatialScrolling(spatialScrollData);
 		}
 
-		SpatialScrollData processSpatialScrolling(SpatialScrollData scrollData)
+		SpatialScrollData ProcessSpatialScrolling(SpatialScrollData scrollData)
 		{
 			var directionVector = scrollData.currentPosition - scrollData.startingPosition;
-			const float kMaxFineTuneVelocity = 0.0005f;
 			if (scrollData.spatialDirection == null)
 			{
 				var newDirectionVectorThreshold = 0.0175f; // Initial magnitude beyond which spatial scrolling will be evaluated
@@ -93,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				scrollData.dragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set normalized value representing how much of the pre-scroll drag amount has occurred
 				this.Pulse(scrollData.node, m_ActivationPulse, repeatingPulseAmount, repeatingPulseAmount);
 				if (dragMagnitude > newDirectionVectorThreshold)
-					scrollData.spatialDirection = directionVector; // Initialize vector defining the spatial scroll direciton
+					scrollData.spatialDirection = directionVector; // Initialize vector defining the spatial scroll direction
 			}
 			else
 			{

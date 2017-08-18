@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 	/// <summary>
-	/// Class defining the Unity brancd color swatches & gradients
+	/// Class defining the Unity brand color swatches & gradients
 	/// </summary>
 	public static class UnityBrandColorScheme
 	{
@@ -194,7 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <summary>
 		/// Setup Unity branded swatches and gradients
 		/// </summary>
-		private static void SetupUnityBrandColors()
+		static void SetupUnityBrandColors()
 		{
 			s_Red = MaterialUtils.HexToColor("F44336");
 			s_RedLight = MaterialUtils.HexToColor("FFEBEE");
@@ -396,7 +396,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			s_RandomCuratedGradientPairPosition = randomPosition;
 
-			return s_CuratedGradientPairs[s_RandomCuratedGradientPairPosition];;
+			return s_CuratedGradientPairs[s_RandomCuratedGradientPairPosition];
 		}
 
 		/// <summary>
@@ -413,7 +413,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			s_RandomCuratedLightGradientPairPosition = randomPosition;
 
-			return s_CuratedLightGradientPairs[s_RandomCuratedLightGradientPairPosition];;
+			return s_CuratedLightGradientPairs[s_RandomCuratedLightGradientPairPosition];
 		}
 
 		/// <summary>
@@ -430,7 +430,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			s_RandomCuratedDarkGradientPairPosition = randomPosition;
 
-			return s_CuratedDarkGradientPairs[s_RandomCuratedDarkGradientPairPosition];;
+			return s_CuratedDarkGradientPairs[s_RandomCuratedDarkGradientPairPosition];
 		}
 
 		/// <summary>

@@ -94,7 +94,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_FrameRevealCoroutine;
 		int m_Direction;
-		GradientPair m_GradientPair;
 
 		Transform[] m_MenuFaceContentTransforms;
 		Vector3[] m_MenuFaceContentOriginalLocalPositions;

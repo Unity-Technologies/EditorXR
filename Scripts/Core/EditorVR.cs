@@ -340,11 +340,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				nested.OnDestroy();
 			}
 		}
-		
-		void LateUpdate()
-		{
-			OVRHaptics.Process();
-		}
 
 		void Update()
 		{

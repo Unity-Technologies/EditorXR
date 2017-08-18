@@ -236,7 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			ObjectUtils.Destroy(m_InsetMaterial);
 			ObjectUtils.Destroy(m_IconMaterial);
@@ -448,7 +448,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (m_InsetRevealCoroutine != null)
 			{
-				// In case semiTransparency is triggered immedlately upon showing the radial menu
+				// In case semiTransparency is triggered immediately upon showing the radial menu
 				this.StopCoroutine(ref m_InsetRevealCoroutine);
 				m_CanvasGroup.alpha = 1f;
 				PostReveal();

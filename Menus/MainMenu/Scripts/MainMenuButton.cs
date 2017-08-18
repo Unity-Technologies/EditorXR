@@ -18,7 +18,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Text m_ButtonTitle;
 
 		Color m_OriginalColor;
-		Transform m_RayOrigin;
 
 		public Button button { get { return m_Button; } }
 

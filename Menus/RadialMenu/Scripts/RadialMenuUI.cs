@@ -153,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		Vector2 m_ButtonInputDirection;
 
-		private bool semiTransparent
+		bool semiTransparent
 		{
 			set
 			{
@@ -165,11 +165,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
 					// Only set the semiTransparent value on menu slots representing actions
-					m_RadialMenuSlots[i].semiTransparent = m_Actions.Count > i ? m_SemiTransparent : false;
+					m_RadialMenuSlots[i].semiTransparent = m_Actions.Count > i && m_SemiTransparent;
 				}
 			}
 		}
-		private bool m_SemiTransparent;
+		bool m_SemiTransparent;
 
 		public event Action buttonHovered;
 		public event Action buttonClicked; 

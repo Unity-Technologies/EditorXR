@@ -45,6 +45,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="rayOrigin">Transform: Ray origin to check</param>
 		/// <param name="toolType">Type: MenuButton's tool type to preview</param>
 		/// <param name="toolDescription">String: The tool description to display as a Tooltip</param>
+		/// </summary>
 		public static void PreviewInPinnedToolButton (this IMainMenu obj, Transform rayOrigin, Type toolType, string toolDescription)
 		{
 			previewInPinnedToolButton(rayOrigin, toolType, toolDescription);

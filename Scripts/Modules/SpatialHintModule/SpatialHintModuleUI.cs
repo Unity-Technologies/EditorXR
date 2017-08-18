@@ -35,7 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		HintIcon[] m_SecondaryDirectionalHintArrows;
 
 		bool m_Visible;
-		bool m_PreScrollVisualsVisible;
 		bool m_PreScrollArrowsVisible;
 		bool m_SecondaryArrowsVisible;
 		Vector3 m_ScrollVisualsRotation;
@@ -52,7 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_Visible; }
 			set
 			{
-				Debug.LogError("<color=orange>Setting Hint Module visibility to : </color>" + value);
 				m_Visible = value;
 
 				if (m_Visible)
@@ -92,10 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				if (value)
-				{
-					Debug.LogError("scrollVisualsRotation was set to a Vec3 non-zero value' beginning showing of scroll visuals : " + m_ScrollVisualsRotation);
 					this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, ShowScrollVisuals());
-				}
 			}
 		}
 
@@ -143,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		private bool scrollArrowsVisible
+		bool scrollArrowsVisible
 		{
 			set
 			{
@@ -155,17 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <summary>
 		/// If non-null, enable and set the world rotation of the scroll visuals
 		/// </summary>
-		public Vector3 scrollVisualsRotation
-		{
-			get { return m_ScrollVisualsRotation ; }
-			set
-			{
-				if (m_ScrollVisualsRotation == value)
-					return;
-
-				m_ScrollVisualsRotation = value;
-			}
-		}
+		public Vector3 scrollVisualsRotation { get { return m_ScrollVisualsRotation ; } set { m_ScrollVisualsRotation = value; } }
 
 		/// <summary>
 		/// The node currently controlling the spatial hint visuals
@@ -177,11 +162,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				m_ControllingNode = value;
 
-				if (m_ControllingNode != null)
-				{
-					Debug.LogError("Setting Spatial Hinting Control node to : " + m_ControllingNode);
-				}
-				else
+				if (m_ControllingNode == null)
 				{
 					scrollVisualsRotation = Vector3.zero;
 					this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, HideScrollVisuals());
@@ -204,21 +185,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			m_ScrollVisualsTransform = m_ScrollVisualsCanvasGroup.transform;
 			m_ScrollVisualsCanvasGroup.alpha = 0f;
-			//m_ScrollVisualsGameObject.SetActive(false);
 
 			m_ScrollVisualsDragTargetArrowTransform = m_ScrollVisualsDragTargetArrow.transform;
 		}
 
 		IEnumerator ShowScrollVisuals()
 		{
-			Debug.LogError("<color=green>SHOWING SPATIAL SCROLL VISUALS</color> : viewscale is " + this.GetViewerScale());
 			// Display two arrows denoting the positive and negative directions allow for spatial scrolling, as defined by the drag vector
-			//m_ScrollVisualsGameObject.SetActive(true);
 			scrollArrowsVisible = true;
 			preScrollArrowsVisible = false;
 			secondaryArrowsVisible = false;
 			transform.localScale = Vector3.one * this.GetViewerScale();
-			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, Vector3.up);// CameraUtils.GetMainCamera().transform.forward); // Scroll arrows should face/billboard the user.
+			m_ScrollVisualsTransform.LookAt(m_ScrollVisualsRotation, Vector3.up); // Scroll arrows should face/billboard the user.
 			m_ScrollVisualsCanvasGroup.alpha = 1f; // remove
 			m_ScrollVisualsDragTargetArrowTransform.localPosition = Vector3.zero;
 
@@ -235,16 +213,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 1f, shapedDuration);
 
 				// Only validate movement in the initial direction with which the user began the drag
-				//var movingAwayFromSource = Vector3.Dot(normalizedScrollVisualsForward, Vector3.Normalize(scrollVisualsDragThresholdTriggerPosition - secondArrowCurrentPosition)) > 0;
-				//if (movingAwayFromSource && (scrollVisualsDragThresholdTriggerPosition - secondArrowCurrentPosition).magnitude >= (m_ScrollVisualsDragTargetArrow.position - secondArrowCurrentPosition).magnitude)
-					m_ScrollVisualsDragTargetArrowTransform.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
+				m_ScrollVisualsDragTargetArrowTransform.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
 
 				currentDuration += Time.unscaledDeltaTime * 2f;
 
 				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsDragTargetArrowTransform.position - m_ScrollVisualsTransform.position);
 				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsTransform.position - m_ScrollVisualsDragTargetArrowTransform.position);
 				m_ScrollVisualsTransform.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, shapedDuration);
-				var lineRendererPositions = new Vector3[] { m_ScrollVisualsTransform.position, m_ScrollVisualsDragTargetArrowTransform.position };
+				var lineRendererPositions = new[] { m_ScrollVisualsTransform.position, m_ScrollVisualsDragTargetArrowTransform.position };
 				m_ScrollHintLine.Positions = lineRendererPositions;
 				m_ScrollHintLine.LineWidth = shapedDuration * this.GetViewerScale();
 
@@ -258,8 +234,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator HideScrollVisuals()
 		{
-			Debug.LogError("<color=red>HIDING SPATIAL SCROLL VISUALS</color>");
-			// Hide the scroll visuals
 			scrollArrowsVisible = false;
 
 			const float kTargetDuration = 1f;
@@ -280,8 +254,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_ScrollVisualsCanvasGroup.alpha = 0;
 			m_ScrollVisualsTransform.localScale = hiddenLocalScale;
-			//m_ScrollVisualsTransform.localRotation = Quaternion.identity;
-			//m_ScrollVisualsGameObject.SetActive(false);
 		}
 
 		/// <summary>

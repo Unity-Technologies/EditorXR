@@ -77,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static PulseSpatialHintScrollArrowsDelegate pulseSpatialHintScrollArrows { get; set; }
 
 		/// <summary>
-		/// Visually pulse the spatial-scroll arrows; the arrows shown when performing a spatiatil scroll
+		/// Visually pulse the spatial-scroll arrows; the arrows shown when performing a spatial scroll
 		/// </summary>
 		public static void PulseSpatialHintScrollArrows(this IControlSpatialHinting obj)
 		{

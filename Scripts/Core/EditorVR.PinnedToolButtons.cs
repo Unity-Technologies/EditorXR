@@ -44,7 +44,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var previewPinnedToolButton = deviceData.pinnedToolsMenu.previewToolButton;
 						previewPinnedToolButton.previewToolType = toolType;
 						previewPinnedToolButton.previewToolDescription = toolDescription;
-						return;
 					}
 				});
 			}

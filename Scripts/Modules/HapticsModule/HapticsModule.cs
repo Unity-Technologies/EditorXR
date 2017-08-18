@@ -70,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var fadeOut = hapticPulse.fadeOut;
 			if (duration > MaxDuration)
 			{
-				duration = Mathf.Clamp(duration, 0f, MaxDuration); // Clamp at maxiumum 800ms for sample buffer
+				duration = Mathf.Clamp(duration, 0f, MaxDuration); // Clamp at maximum 800ms for sample buffer
 
 				if (!m_SampleLengthWarningShown)
 					Debug.LogWarning("Pulse durations greater than 0.8f are not currently supported");

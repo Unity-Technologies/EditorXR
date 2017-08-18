@@ -35,14 +35,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		HapticPulse m_ButtonHoverPulse;
 
 		[SerializeField]
-		HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection, but not passing the trigger threshold
-
-		[SerializeField]
 		HapticPulse m_HidingPulse; // The pulse performed when ending a spatial selection
 
 		Transform m_RayOrigin;
 		Transform m_AlternateMenuOrigin;
-		float allowToolToggleBeforeThisTime;
+		float m_AllowToolToggleBeforeThisTime;
 		Vector3 m_SpatialScrollStartPosition;
 		IPinnedToolButton m_MainMenuButton;
 		PinnedToolsMenuUI m_PinnedToolsMenuUI;
@@ -101,7 +98,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void CreatePinnedToolsUI()
 		{
-			Debug.LogWarning("Spawing pinned tools menu UI");
 			m_PinnedToolsMenuUI = m_PinnedToolsMenuUI ?? this.InstantiateUI(m_PinnedToolsMenuPrefab.gameObject).GetComponent<PinnedToolsMenuUI>();
 			m_PinnedToolsMenuUI.maxButtonCount = k_MaxButtonCount;
 			m_PinnedToolsMenuUI.mainMenuActivatorSelected = this.MainMenuActivatorSelected;
@@ -110,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PinnedToolsMenuUI.buttonClicked += OnButtonClick;
 			m_PinnedToolsMenuUI.buttonSelected += OnButtonSelected;
 
-			// Alternate menu origin isnt set when awake or start run
+			// Alternate menu origin isn't set when awake or start run
 			var pinnedToolsUITransform = m_PinnedToolsMenuUI.transform;
 			pinnedToolsUITransform.SetParent(m_AlternateMenuOrigin);
 			pinnedToolsUITransform.localPosition = Vector3.zero;
@@ -126,36 +122,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 			}
 
-			if (buttons.Count >= k_MaxButtonCount) // Return if tooltype already occupies a pinned tool button
-			{
-				// TODO: kick out the oldest tool, and allow the new tool to become the active tool
-				Debug.LogWarning("New pinned tool button cannot be added.  The maximum number of pinned tool buttons are currently being displayed");
+			if (buttons.Count >= k_MaxButtonCount) // Return if tool type already occupies a pinned tool button
 				return;
-			}
 
 			var buttonTransform = ObjectUtils.Instantiate(m_PinnedToolButtonTemplate.gameObject, m_PinnedToolsMenuUI.buttonContainer, false).transform;
 			var button = buttonTransform.GetComponent<PinnedToolButton>();
 			this.ConnectInterfaces(button);
 
-			// Initialize button in alternate position if the alternate menu is hidden
-			/*
-			IPinnedToolButton mainMenu = null;
-			if (toolType == typeof(IMainMenu))
-				mainMenu = button;
-			else
-				buttons.TryGetValue(typeof(IMainMenu), out mainMenu);
-			*/
-
-			//button.moveToAlternatePosition = mainMenu != null && mainMenu.moveToAlternatePosition;
-			//button.node = deviceData.node;
 			button.rayOrigin = rayOrigin;
 			button.toolType = toolType; // Assign Tool Type before assigning order
 			button.icon = toolType != typeof(IMainMenu) ? buttonIcon : m_MainMenuIcon;
 			button.highlightSingleButton = HighlightSingleButton;
 			button.selectHighlightedButton = SelectHighlightedButton;
-			//button.selected += OnMainMenuActivatorSelected;
-			//button.hoverEnter += onButtonHoverExit;
-			//button.hoverExit += onButtonHoverExit;
 			button.rayOrigin = rayOrigin;
 
 			if (toolType == typeof(IMainMenu))
@@ -180,41 +158,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var pinnedToolInput = (PinnedToolslMenuInput) input;
 
 			if (pinnedToolInput.show.wasJustPressed)
-				Debug.LogError("<color=black>SHOW pressed in PinnedToolButton</color>");
-
-			if (pinnedToolInput.cancel.wasJustPressed)
-				Debug.LogError("CANCELLING SPATIAL SELECTION!!!!");
-
-			if (pinnedToolInput.show.wasJustPressed)
 			{
 				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
 				m_SpatialScrollStartPosition = m_AlternateMenuOrigin.position;
-				Debug.LogError("Start position : <color=green>" + m_SpatialScrollStartPosition + "</color>");
-				allowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
+				m_AllowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
 				this.SetSpatialHintControlObject(rayOrigin);
 				m_PinnedToolsMenuUI.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
-
-				//Dont show if the user hasnt passed the threshold in the given duration
 			}
 			else if (pinnedToolInput.show.isHeld && !pinnedToolInput.select.isHeld && !pinnedToolInput.select.wasJustPressed)
 			{
 				// Don't scroll if the trigger is held, allowing the user to setting on a single button to select with release
 				if (pinnedToolInput.select.wasJustReleased)
 				{
-					Debug.LogError("<color=red>DELETING PinnedToolButton</color>");
-					//selectHighlightedButton(rayOrigin);
-					//OnActionButtonHoverExit(false);
-
 					if (m_PinnedToolsMenuUI.DeleteHighlightedButton())
-					{
 						buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
-						//if (buttonCount <= k_ActiveToolOrderPosition + 1)
-							//return;
-
-						//allowSpatialScrollBeforeThisTime = null;
-						//spatialDirection = null; 
-					}
 
 					if (buttonCount <= k_ActiveToolOrderPosition + 1)
 					{
@@ -235,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Scrolling);
 						m_PinnedToolsMenuUI.allButtonsVisible = true;
 					}
-					else if (m_SpatialScrollData.spatialDirection != null)// && m_PinnedToolsMenuUI.startingDragOrigin != m_SpatialScrollData.spatialDirection)
+					else if (m_SpatialScrollData.spatialDirection != null)
 					{
 						m_PinnedToolsMenuUI.startingDragOrigin = m_SpatialScrollData.spatialDirection;
 					}
@@ -247,16 +205,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 			else if (pinnedToolInput.show.wasJustReleased)
 			{
-				const float kAdditionalConsumptionDuration = 0.25f;
 				if (m_SpatialScrollData.passedMinDragActivationThreshold)
 				{
-					Debug.LogWarning("PinnedToolButton was just released");
 					m_PinnedToolsMenuUI.SelectHighlightedButton();
-					//m_PinnedToolsMenuUI.spatialDragDistance = 0f; // Triggers the display of the directional hint arrows
 					consumeControl(pinnedToolInput.select);
 					this.Pulse(node, m_HidingPulse);
 				}
-				else if (Time.realtimeSinceStartup < allowToolToggleBeforeThisTime)
+				else if (Time.realtimeSinceStartup < m_AllowToolToggleBeforeThisTime)
 				{
 					// Allow for single press+release to cycle through tools
 					m_PinnedToolsMenuUI.SelectNextExistingToolButton();
@@ -283,8 +238,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnButtonSelected(Transform rayOrigin, Type buttonType)
 		{
-			Debug.LogError("<color=green>Selecting Tool in PinnedToolsMenu</color> : " + buttonType.ToString());
-			//Debug.Log("<color=yellow>" + System.Environment.StackTrace + "</color>");
 			this.SelectTool(rayOrigin, buttonType, false);
 		}
 	}

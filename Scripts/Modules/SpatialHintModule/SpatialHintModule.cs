@@ -47,9 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		private Transform controllingRayOrigin
+		Transform controllingRayOrigin
 		{
-			get { return m_ControllingRayOrigin; }
 			set
 			{
 				if (value == m_ControllingRayOrigin)
@@ -62,17 +61,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 				else
 				{
-					state = SpatialHintModule.SpatialHintStateFlags.PreDragReveal;
+					state = SpatialHintStateFlags.PreDragReveal;
 					m_SpatialHintModuleUI.controllingNode = this.RequestNodeFromRayOrigin(m_ControllingRayOrigin);
 				}
 			}
 		}
 
-		Vector3 spatialHintScrollVisualsRotation
-		{
-			get { return m_SpatialHintModuleUI.scrollVisualsRotation; }
-			set { m_SpatialHintModuleUI.scrollVisualsRotation = value; }
-		}
+		Vector3 spatialHintScrollVisualsRotation { set { m_SpatialHintModuleUI.scrollVisualsRotation = value; } }
 
 		Transform spatialHintContentContainer { get { return m_SpatialHintModuleUI.contentContainer; } }
 

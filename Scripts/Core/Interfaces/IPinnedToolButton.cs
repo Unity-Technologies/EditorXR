@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR
 		float iconHighlightedLocalZOffset { set; }
 
 		/// <summary>
-		/// Bool denothing button highlight state
+		/// Bool denoting button highlight state
 		/// </summary>
 		bool highlighted { get; set; }
 
@@ -100,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Returns the visible button count for a given PinnedToolsMenu
 		/// used by buttons to position themselves
 		/// </summary>
-		Func<Type, int> visibileButtonCount { set; }
+		Func<Type, int> visibleButtonCount { set; }
 
 		/// <summary>
 		/// Closes this button

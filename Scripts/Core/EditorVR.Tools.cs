@@ -121,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					deviceData.pinnedToolsMenu = pinnedToolsMenu;
 					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
 					pinnedToolsMenu.SetButtonForType(typeof(IMainMenu), null);
-					pinnedToolsMenu.SetButtonForType(typeof(SelectionTool), selectionToolData.icon);
+					pinnedToolsMenu.SetButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -314,7 +314,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var td in deviceData.toolData)
 				{
 					var mb = td.tool as MonoBehaviour;
-					mb.enabled = value;
+					if (mb)
+						mb.enabled = value;
 				}
 			}
 

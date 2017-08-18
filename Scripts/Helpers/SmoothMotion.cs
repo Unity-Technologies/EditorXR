@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		/// <summary>
 		/// If true, smooth the rotation of this transform, according to the TightenRotation amount
 		/// </summary>
-		public bool smoothRotation { private get { return m_SmoothRotation; } set { m_SmoothRotation = value; } }
+		public bool smoothRotation { set { m_SmoothRotation = value; } }
 		[Header("Rotation")]
 		[SerializeField]
 		bool m_SmoothRotation;
@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 		/// <summary>
 		/// If true, smooth the position of this transform, according to the TightenPosition amount
 		/// </summary>
-		public bool smoothPosition { private get { return m_SmoothPosition; } set { m_SmoothPosition = value; } }
+		public bool smoothPosition { set { m_SmoothPosition = value; } }
 		[Header("Position")]
 		[SerializeField]
 		bool m_SmoothPosition;
