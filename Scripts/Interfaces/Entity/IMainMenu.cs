@@ -36,11 +36,6 @@ namespace UnityEditor.Experimental.EditorVR
 		Transform targetRayOrigin { set; }
 
 		/// <summary>
-		/// The local bounds of this menu
-		/// </summary>
-		Bounds localBounds { get; }
-
-		/// <summary>
 		/// Does this menu have focus?
 		/// </summary>
 		bool focus { get; }

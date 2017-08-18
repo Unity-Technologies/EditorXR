@@ -83,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Node? node { get; set; }
 
-		public float hideDistance {get { return Mathf.Infinity; } }
+		public Bounds localBounds { get { return default(Bounds); } }
 
 		void Start()
 		{

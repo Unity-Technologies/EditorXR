@@ -97,8 +97,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Transform rayOrigin { private get; set; }
 
-		public float hideDistance { get { return m_MainMenuUI.menuHeight; } }
-
 		public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
 
 		public bool focus { get { return m_MainMenuUI.hovering; } }

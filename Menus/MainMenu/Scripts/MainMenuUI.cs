@@ -40,9 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 
 		[SerializeField]
-		float m_MenuHeight = 0.2f;
-
-		[SerializeField]
 		MainMenuButton m_ButtonTemplatePrefab;
 
 		[SerializeField]
@@ -165,8 +162,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 		}
-
-		public float menuHeight { get { return m_MenuHeight; } }
 
 		int currentFaceIndex
 		{

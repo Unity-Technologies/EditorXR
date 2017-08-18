@@ -1,5 +1,6 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -12,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Action<PrimitiveType, bool> selectPrimitive;
 		public Action close;
 
-		public float hideDistance {get { return Mathf.Infinity; } }
+		public Bounds localBounds { get; private set; }
 
 		public bool visible
 		{
@@ -23,6 +24,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public GameObject menuContent
 		{
 			get { return gameObject; }
+		}
+
+		void Awake()
+		{
+			localBounds = ObjectUtils.GetBounds(transform);
 		}
 
 		public void SelectPrimitive(int type)

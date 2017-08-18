@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
 			readonly List<IWorkspace> m_WorkspaceComponents = new List<IWorkspace>();
 			readonly Collider[] m_WorkspaceOverlaps = new Collider[k_PossibleOverlaps];
+			static readonly List<IMenu> k_Menus = new List<IMenu>();
 
 			public Menus()
 			{
@@ -169,7 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var rayOrigin = deviceData.rayOrigin;
 					var rayOriginPosition = rayOrigin.position;
 					var heldObjects = directSelection.GetHeldObjects(rayOrigin);
-					var hasDirectSelection = directSelection != null && heldObjects != null && heldObjects.Count > 0;
+					var hasDirectSelection = heldObjects != null && heldObjects.Count > 0;
 					if (hasDirectSelection)
 					{
 						foreach (var menu in menus)
@@ -227,7 +228,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					var mainMenu = deviceData.mainMenu;
 					var mainMenuHideFlags = deviceData.menuHideFlags[mainMenu];
-					if (mainMenuHideFlags != 0 && !mainMenu.focus)
+					//Hide the main menu if any hideflags are set; if the menu is focused, only hide if Hidden is set (e.g. not temporary)
+					if (mainMenuHideFlags != 0 && ((mainMenuHideFlags & MenuHideFlags.Hidden) != 0 || !mainMenu.focus))
 					{
 						if ((mainMenuHideFlags & MenuHideFlags.Hidden) != 0)
 						{
@@ -273,7 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!go)
 					go = source.hoveredObject;
 
-				if (go == null)
+				if (!go)
 					return true;
 
 				if (go == evr.gameObject)
@@ -288,20 +290,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						return false;
 
 					var scaledPointerDistance = eventData.pointerCurrentRaycast.distance / Viewer.GetViewerScale();
-					var menus = deviceData.menuHideFlags.Keys.ToList();
-					var hideDistance = deviceData.mainMenu.hideDistance;
-					if (scaledPointerDistance < hideDistance + k_MenuHideMargin)
+					var menuHideFlags = deviceData.menuHideFlags;
+					var mainMenu = deviceData.mainMenu;
+					IMenu openMenu = mainMenu;
+					if (deviceData.customMenu != null && menuHideFlags[mainMenu] != 0)
+						openMenu = deviceData.customMenu;
+
+					if (scaledPointerDistance < openMenu.localBounds.size.y + k_MenuHideMargin)
 					{
-						foreach (var menu in menus)
+						k_Menus.Clear();
+						k_Menus.AddRange(menuHideFlags.Keys);
+						foreach (var menu in k_Menus)
 						{
 							// Only set if hidden--value is reset every frame
-							deviceData.menuHideFlags[menu] |= MenuHideFlags.OverUI;
+							menuHideFlags[menu] |= MenuHideFlags.OverUI;
 						}
 
 						return true;
 					}
 
-					return (deviceData.menuHideFlags[deviceData.mainMenu] & MenuHideFlags.Hidden) != 0;
+					return (menuHideFlags[openMenu] & MenuHideFlags.Hidden) != 0;
 				}
 
 				return true;

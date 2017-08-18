@@ -24,9 +24,9 @@ namespace UnityEditor.Experimental.EditorVR
 		GameObject menuContent { get; }
 
 		/// <summary>
-		/// If the rayOrigin this menu is attached to is hovering UI, hide it if the raycast distance is less than this
+		/// The local bounds of this menu
 		/// </summary>
-		float hideDistance { get; }
+		Bounds localBounds { get; }
 	}
 }
 #endif
