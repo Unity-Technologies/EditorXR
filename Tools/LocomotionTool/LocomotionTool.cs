@@ -85,6 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_OriginalNearClipPlane;
 		float m_OriginalFarClipPlane;
 
+		ToggleGroup m_ToggleGroup;
 		Toggle m_FlyToggle;
 		Toggle m_BlinkToggle;
 		bool m_BlockValueChangedListener;
@@ -103,7 +104,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			set
 			{
+				m_ToggleGroup = value.GetComponentInChildren<ToggleGroup>();
 				var defaultToggleGroup = value.GetComponentInChildren<DefaultToggleGroup>();
+				Debug.Log(m_ToggleGroup.GetInstanceID());
 				foreach (var toggle in value.GetComponentsInChildren<Toggle>())
 				{
 					if (toggle == defaultToggleGroup.defaultToggle)
@@ -122,10 +125,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								if (locomotionTool != this)
 								{
 									locomotionTool.m_BlockValueChangedListener = true;
-									//linkedObject.m_ToggleGroup.NotifyToggleOn(isOn ? m_FlyToggle : m_BlinkToggle);
+									locomotionTool.m_ToggleGroup.NotifyToggleOn(
+										isOn ? locomotionTool.m_FlyToggle : locomotionTool.m_BlinkToggle);
 									// HACK: Toggle Group claims these toggles are not a part of the group
-									locomotionTool.m_FlyToggle.isOn = isOn;
-									locomotionTool.m_BlinkToggle.isOn = !isOn;
+									//locomotionTool.m_FlyToggle.isOn = isOn;
+									//locomotionTool.m_BlinkToggle.isOn = !isOn;
 									locomotionTool.m_BlockValueChangedListener = false;
 								}
 							}
@@ -346,17 +350,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			if (m_BlinkVisuals.gameObject.activeInHierarchy)
 			{
-				m_BlinkVisuals.extraSpeed = proxyType == typeof(ViveProxy) ?
-					m_LocomotionInput.speed.value : m_LocomotionInput.altSpeed.value;
+				m_BlinkVisuals.extraSpeed = m_LocomotionInput.speed.value;
 
 				consumeControl(m_LocomotionInput.blink);
 				return true;
 			}
-			else
-			{
-				this.UnlockRay(rayOrigin, this);
-				this.SetDefaultRayVisibility(rayOrigin, true);
-			}
+
+			this.UnlockRay(rayOrigin, this);
+			this.SetDefaultRayVisibility(rayOrigin, true);
 
 			return m_BlinkMoving;
 		}

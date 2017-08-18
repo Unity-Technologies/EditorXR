@@ -203,8 +203,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			AddModule<HapticsModule>();
 
-			AddModule<GizmoModule>();
-
 			viewer.AddPlayerModel();
 
 			GetNestedModule<Rays>().CreateAllProxies();

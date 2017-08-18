@@ -167,19 +167,6 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 				if (segment == Vector3.zero)
 					continue;
 
-				if (i < m_SphereCount)
-				{
-					var sphere = m_Spheres[i];
-					if (i == 0)
-						sphere.localScale = m_SphereScale * m_SpherePosition;
-
-					if (i == m_SphereCount - 1)
-						sphere.localScale = m_SphereScale * (1 - m_SpherePosition);
-
-					m_Spheres[i].position = lastPosition + segment * m_SpherePosition;
-					m_Spheres[i].gameObject.SetActive(true);
-				}
-
 				var scaledEpsilon = k_Epsilon * viewerScale;
 				var ray = new Ray(lastPosition - segment.normalized * scaledEpsilon, segment);
 				RaycastHit hit;
@@ -187,6 +174,26 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 				m_Positions[i] = lastPosition;
 				if (this.Raycast(ray, out hit, out go, segment.magnitude + scaledEpsilon, ignoreList))
 					targetPosition = hit.point;
+
+				if (i < m_SphereCount)
+				{
+					var sphere = m_Spheres[i];
+					if (targetPosition.HasValue)
+					{
+						sphere.gameObject.SetActive(false);
+					}
+					else
+					{
+						if (i == 0)
+							sphere.localScale = m_SphereScale * m_SpherePosition;
+
+						if (i == m_SphereCount - 1)
+							sphere.localScale = m_SphereScale * (1 - m_SpherePosition);
+
+						m_Spheres[i].position = lastPosition + segment * m_SpherePosition;
+						m_Spheres[i].gameObject.SetActive(true);
+					}
+				}
 
 				lastPosition = nextPosition;
 			}
