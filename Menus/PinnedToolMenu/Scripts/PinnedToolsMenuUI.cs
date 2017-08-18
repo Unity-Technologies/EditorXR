@@ -44,7 +44,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_RayHovered;
 		float m_SpatialDragDistance;
 		Quaternion m_HintContentContainerInitialRotation;
-		Quaternion m_HintContentContainerCurrentRotation;
 		Vector3 m_HintContentWorldPosition;
 		Vector3 m_DragTarget;
 
@@ -60,7 +59,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_AllButtonsVisible = value;
-				Debug.LogError("AllButtonsVisible set to : " + value);
 
 				if (m_AllButtonsVisible)
 				{
@@ -90,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		private bool aboveMinimumButtonCount
+		bool aboveMinimumButtonCount
 		{
 			get
 			{
@@ -118,7 +116,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				if (value)
 				{
-					Debug.LogWarning("SETTING Spatial Drag Distance  : " + value);
 					var currentRotation = transform.rotation.eulerAngles;
 					m_SpatialDragDistance = 0f;
 					m_HintContentContainerInitialRotation = Quaternion.Euler(0f, currentRotation.y, 0f);
@@ -128,23 +125,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public float spatialDragDistance
-		{
-			set
-			{
-				m_SpatialDragDistance = value;
-			}
-		}
+		public float spatialDragDistance { set { m_SpatialDragDistance = value; } }
 
-		public Vector3? startingDragOrigin
-		{
-			set
-			{
-				Debug.LogWarning("SETTING STARTING DRAG DEFINITON POSITION : " + value.Value.ToString("F4"));
-				//Debug.LogError(value.Value.ToString("F4"));
-				this.SetSpatialHintLookAtRotation(value.Value);
-			}
-		}
+		public Vector3? startingDragOrigin { set { if (value != null) this.SetSpatialHintLookAtRotation(value.Value); } }
 
 		public event Action buttonHovered;
 		public event Action buttonClicked;
@@ -166,7 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				if (Mathf.Approximately(m_SpatialDragDistance, 1f))
 				{
-					m_DragTarget = transform.position; // Cache the initial drag target position, before performing any extra shapting to the target Vec3
+					m_DragTarget = transform.position; // Cache the initial drag target position, before performing any extra shaping to the target Vec3
 					this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Scrolling);
 				}
 
@@ -178,19 +161,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				// Perform a smooth lerp of the hint contents after dragging beyond the distance trigger threshold
 				m_SpatialDragDistance += Time.unscaledDeltaTime * 8; // Continue to increase the amount
-				/////var extentedDragDurationSmoothed = 1 - MathUtilsExt.SmoothInOutLerpFloat(m_SpatialDragDistance - 1f);
-				/////m_SpatialHintUI.scrollVisualsRotation = Vector3.Lerp(m_InitialDragTarget, transform.position, extentedDragDurationSmoothed);
-
-				// Add additional smoothed rotation to the scroll visuals to better align them with the user's continued device movemet after crossing the threshold
-				// The m_InitialDragTarget is the actualy vector being scrolled against, however adding a slight continuation of the user's device input position
-				// allows for the scroll visuals to appear to be more closely aligned to the user's expected rotation.
-
-				//Debug.LogError("INSIDE rotation update loop");
-				/*
-					var shapedDragAmount = Mathf.Pow(MathUtilsExt.SmoothInOutLerpFloat(m_SmoothedSpatialDragDistance), 6);
-					m_HintContentContainerCurrentRotation = Quaternion.Lerp(m_HintContentContainerInitialRotation, m_SpatialScrollOrientation, shapedDragAmount);
-					newHintContainerRotation = m_HintContentContainerCurrentRotation;
-				*/
 			}
 			else if (m_AllButtonsVisible && m_SpatialDragDistance > 2)
 			{
@@ -199,25 +169,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.SetSpatialHintContainerRotation(newHintContainerRotation);
 				this.SetSpatialHintShowHideRotationTarget(m_DragTarget);
 			}
-
-			//spatialHintScrollVisualsDragThresholdTriggerPosition = transform.position;
-			
-			//m_SpatialHintUI.scrollVisualsRotation = Quaternion.Euler(endingDragDefinitionPosition - startingDragDefinitionPosition);
-			/*
-			else if (Mathf.Approximately(m_SmoothedSpatialDragDistance, 1f))
-				newHintContainerRotation = m_HintContentContainerCurrentRotation;
-			else
-				m_HintContentWorldPosition = Vector3.Lerp(m_HintContentWorldPosition, transform.position, Time.unscaledDeltaTime * 6);
-			*/
-
-			//Debug.LogError("Hint Container" + m_HintContentContainerInitialRotation);
-			//Debug.LogError("UI" + transform.rotation);
-
-			//spatialHintContentContainer.rotation = newHintContainerRotation;
-			
-			//m_SpatialHintContentContainer.position = m_HintContentWorldPosition;
-
-			//Debug.LogError(gameObject.GetInstanceID() + " : <color=green>World position of UI : " + transform.position + " - starting drag definition position : " + m_StartingDragOrigin + "</color>");
 		}
 
 		public void AddButton(IPinnedToolButton button, Transform buttonTransform)
@@ -233,12 +184,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.hovered += OnButtonHover;
 
 			bool allowSecondaryButton = false; // Secondary button is the close button
-			var insertPosition = k_InactiveButtonInitialOrderPosition;
-			if (IsMainMenuButton(button))
-			{
-				insertPosition = k_MenuButtonOrderPosition;
-			}
-			else
+			var insertPosition = k_MenuButtonOrderPosition;
+			if (!IsMainMenuButton(button))
 			{
 				insertPosition = k_ActiveToolOrderPosition;
 				allowSecondaryButton = !IsSelectionToolButton(button);
@@ -255,8 +202,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			buttonTransform.rotation = Quaternion.identity;
 			buttonTransform.localPosition = Vector3.zero;
 			buttonTransform.localScale = Vector3.zero;
-
-			Debug.LogWarning("Setting up button : " + button.toolType + " - ORDER : " + button.order);
 
 			if (aboveMinimumButtonCount)
 				this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1.25f, false));
@@ -290,10 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			var removed = m_OrderedButtons.Remove(button);
 			if (!removed)
-			{
-				Debug.LogError("Could not remove button");
 				return;
-			}
 
 			m_OrderedButtons.Insert(newOrderPosition, button);
 
@@ -303,7 +245,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void SetupButtonOrder()
 		{
-			Debug.LogError("SetupButtonOrder");
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];
@@ -315,20 +256,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void ShowAllExceptMenuButton()
 		{
-			Debug.LogError("ShowAllExceptMenuButton");
 			// The MainMenu button will be hidden, subtract 1 from the m_VisibleButtonCount
 			m_VisibleButtonCount = Mathf.Max(0, m_OrderedButtons.Count - 1);
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];
-				button.isActiveTool = i == k_ActiveToolOrderPosition; // Set the button gradients // TODO Consider handling insid button via k_ActiveToolOrder position comparison
+				button.isActiveTool = i == k_ActiveToolOrderPosition;
 				button.order = i == k_MenuButtonOrderPosition ? k_InactiveButtonInitialOrderPosition : i - 1; // Hide the menu buttons when revealing all tools buttons
 			}
 		}
 
 		void ShowOnlyMenuAndActiveToolButtons()
 		{
-			Debug.LogError("Showing only the MainMenu and ACTIVE tool buttons");
 			if (!aboveMinimumButtonCount) // If only the Selection and MainMenu buttons exist, don't proceed
 				return;
 
@@ -346,7 +285,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void SetupButtonOrderThenSelectTool(IPinnedToolButton pinnedToolButton, bool selectAfterSettingButtonOrder = true)
 		{
-			Debug.LogError("<color=white> SetupButtonOrderThenSelectTool - Selecting  of type : </color>" + pinnedToolButton.toolType);
 			var mainMenu = IsMainMenuButton(pinnedToolButton);
 			if (mainMenu)
 			{
@@ -374,7 +312,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <param name="type">Button ToolType to compare against existing button types</param>
 		public void SelectExistingToolType(Type type)
 		{
-			Debug.LogError("Selecting Existing ToolType : " + type.ToString());
 			foreach (var button in m_OrderedButtons)
 			{
 				if (button.toolType == type)
@@ -391,12 +328,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <param name="type">Button ToolType to compare against existing button types</param>
 		void SelectExistingToolTypeFromButton(Type type)
 		{
-			Debug.LogError("Selecting Existing ToolType : " + type.ToString());
 			foreach (var button in m_OrderedButtons)
 			{
 				if (button.toolType == type)
 				{
-					SetupButtonOrderThenSelectTool(button, true);
+					SetupButtonOrderThenSelectTool(button);
 					return;
 				}
 			}
@@ -410,7 +346,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void HighlightSingleButtonWithoutMenu(int buttonOrderPosition)
 		{
-			//Debug.LogError("Highlighting SINGLE BUTTON at position : "+ buttonOrderPosition);
 			for (int i = 1; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];
@@ -420,7 +355,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						// Process haptic pulse if button was not already highlighted
 						this.PulseSpatialHintScrollArrows();
-						buttonHovered();
+
+						if (buttonHovered != null)
+							buttonHovered();
 					}
 
 					button.highlighted = true;
@@ -443,7 +380,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var isHighlighted = button.highlighted;
 				if (isHighlighted)
 				{
-					Debug.LogError("<color=orange>Selecting highlighted button : </color>"+ button.toolType);
 					// Force the selection of the button regardless of it previously existing via a call to EVR that triggers a call to SelectExistingType()
 					if (buttonSelected != null)
 						buttonSelected(rayOrigin, button.toolType);
@@ -469,10 +405,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				button = m_OrderedButtons[i];
 				if ((button.highlighted || button.secondaryButtonHighlighted) && !IsSelectionToolButton(button))
-				{
-					Debug.LogError("<color=blue>DeleteHighlightedButton : </color>" + button.toolType);
 					break;
-				}
 
 				button = null;
 			}
@@ -496,8 +429,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <returns>Bool denoting that a button of the given type was deleted</returns>
 		public bool DeleteButtonOfType(Type type)
 		{
-			Debug.LogError("<color=blue>Delete button of type : </color>" + type);
-
 			bool buttonDeleted = false;
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
@@ -514,12 +445,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			return buttonDeleted;
 		}
 
-		bool IsMainMenuButton(IPinnedToolButton button)
+		static bool IsMainMenuButton(IPinnedToolButton button)
 		{
 			return button.toolType == typeof(IMainMenu);
 		}
 
-		bool IsSelectionToolButton(IPinnedToolButton button)
+		static bool IsSelectionToolButton(IPinnedToolButton button)
 		{
 			return button.toolType == typeof(SelectionTool);
 		}
@@ -562,17 +493,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void ShowAllButtons(IPinnedToolButton button)
 		{
-			Debug.LogError("<color=blue>ShowAllButtons : </color>" + button.toolType);
 			m_RayHovered = true;
 			if (!allButtonsVisible && aboveMinimumButtonCount && !IsMainMenuButton(button) && m_ButtonHoverExitDelayCoroutine == null)
 				allButtonsVisible = true;
-		}
-
-		void HideAllButtons(IPinnedToolButton button)
-		{
-			Debug.LogError("<color=blue>HideAllButtons : </color>" + button.toolType);
-			if (allButtonsVisible && !IsMainMenuButton(button))
-				allButtonsVisible = false;
 		}
 
 		void ButtonHoverExitPerformed()
