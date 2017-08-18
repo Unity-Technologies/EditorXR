@@ -38,12 +38,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			s_BakedMesh = new Mesh();
 
+			m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
 			if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
 			{
 				var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
 				selectionColor.a = 1;
-
-				m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
 				m_RayHighlightMaterial.color = selectionColor.gamma;
 			}
 		}
