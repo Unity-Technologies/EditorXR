@@ -502,7 +502,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				}
 
-				return default(Color);
+				var highlightModule = evr.GetModule<HighlightModule>();
+				return highlightModule.highlightColor;
 			}
 		}
 	}
