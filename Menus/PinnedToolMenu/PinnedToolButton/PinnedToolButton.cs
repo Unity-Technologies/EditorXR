@@ -403,32 +403,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void Start()
 		{
-			//m_GradientButton.onClick += ButtonClicked; // TODO remove after action button refactor
-
-			Debug.LogWarning("Hide (L+R) pinned tool action buttons if button is the main menu button Hide select action button if button is in the first position (next to menu button)");
-
-			//transform.parent = alternateMenuOrigin;
-
 			if (m_ToolType == null)
-			{
-				//transform.localPosition = m_InactivePosition;
 				m_GradientButton.gameObject.SetActive(false);
-			}
-			else
-			{
-				//transform.localPosition = activePosition;
-			}
 
-			//var tooltipSourcePosition = new Vector3(node == Node.LeftHand ? -0.01267f : 0.01267f, tooltipSource.localPosition.y, tooltipSource.localPosition.z);
-			//var tooltipXOffset = node == Node.LeftHand ? -0.15f : 0.15f;
-			//tooltipSource.localPosition = tooltipSourcePosition;
-			//tooltipAlignment = node == Node.LeftHand ? TextAlignment.Right : TextAlignment.Left;
-			//m_TooltipTarget.localPosition = new Vector3(tooltipXOffset, tooltipSourcePosition.y, tooltipSourcePosition.z);
-
-			//var tooltipSourcePosition = new Vector3(0f, tooltipSource.localPosition.y, tooltipSource.localPosition.z);
-			//tooltipSource.localPosition = tooltipSourcePosition;
 			tooltipAlignment = TextAlignment.Center;
-			//m_TooltipTarget.localPosition = new Vector3(0, 0, -0.5f);
 
 			const float kIncreasedContainerContentsSpeedMultiplier = 2.5f;
 			m_GradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
@@ -444,30 +422,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_SecondaryGradientButton.hoverExit += OnActionButtonHoverExit;
 			m_SecondaryGradientButton.click += OnSecondaryButtonClicked;
 			m_SecondaryButtonContainerCanvasGroup.alpha = 0f;
-			//m_LeftPinnedToolActionButton.clicked = ActionButtonClicked;
-			//m_LeftPinnedToolActionButton.hoverEnter = HoverButton;
-			//m_LeftPinnedToolActionButton.hoverExit = OnActionButtonHoverExit;
-			//m_RightPinnedToolActionButton.clicked = ActionButtonClicked;
-			//m_RightPinnedToolActionButton.hoverEnter = HoverButton;
-			//m_RightPinnedToolActionButton.hoverExit = OnActionButtonHoverExit;
-
-			// Assign the select action button to the side closest to the opposite hand, that allows the arrow to also point in the direction the
-			//var leftHand = node == Node.LeftHand;
-			//m_RightPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.SelectTool : PinnedToolActionButton.ButtonType.Close;
-			//m_LeftPinnedToolActionButton.buttonType = leftHand ? PinnedToolActionButton.ButtonType.Close : PinnedToolActionButton.ButtonType.SelectTool;
-
-			//m_RightPinnedToolActionButton.rotateIcon = leftHand ? false : true;
-			//m_LeftPinnedToolActionButton.rotateIcon = leftHand ? false : true;
-
-			//m_LeftPinnedToolActionButton.visible = false;
-			//m_RightPinnedToolActionButton.visible = false;
-
-			//m_LeftPinnedToolActionButton.mainButtonCollider = m_RootCollider;
-			//m_RightPinnedToolActionButton.mainButtonCollider = m_RootCollider;
-
-			//m_ButtonCollider.enabled = true;
-			//m_GradientButton.click += OnClick;
-			//m_GradientButton.gameObject.SetActive(false);
 		}
 
 		void OnDestroy()
@@ -494,9 +448,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			Debug.LogError("Perform Pulse up in PinnedToolsMenu level");
 		}
 
-		// Create periodic table-style names for types
 		string GetTypeAbbreviation(Type type)
 		{
+			// Create periodic table-style names for types
 			var abbreviation = new StringBuilder();
 			foreach (var ch in type.Name.ToCharArray())
 			{
@@ -519,10 +473,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_GradientButton.highlighted = true;
 				return;
 			}
-			else if (implementsSecondaryButton)
-			{
+
+			if (implementsSecondaryButton)
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
-			}
 
 			if (hovered != null) // Raised in order to trigger the haptic in the PinnedToolsMenu
 				hovered();
@@ -682,7 +635,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kCircularRange = 360f;
 			const int kDurationShapeAmount = 3;
 			var rotationSpacing = kCircularRange / maxButtonCount; // dividend should be the count of pinned tool buttons showing at this time
-			var phaseOffset = orderPosition > -1 ? rotationSpacing * kCenterLocationAmount - (visibileButtonCount(m_ToolType) * kCenterLocationAmount) * rotationSpacing : 0; // Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
+			// Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
+			var phaseOffset = orderPosition > -1 ? rotationSpacing * kCenterLocationAmount - (visibileButtonCount(m_ToolType) * kCenterLocationAmount) * rotationSpacing : 0;
 			var targetRotation = orderPosition > -1 ? Quaternion.AngleAxis(phaseOffset + rotationSpacing * Mathf.Max(0f, orderPosition), Vector3.down) : Quaternion.identity;
 
 			var duration = 0f;
@@ -718,7 +672,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
 			var currentLocalScale = transform.localScale;
 			var targetLocalScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_alternateLocalScaleMultiplier;
-			var speed = moveToAlternatePosition ? 5f : 4.5f; // perform faster is returning to original position
+			var speed = moveToAlternatePosition ? 5f : 4.5f; // Perform faster is returning to original position
 			speed += (order + 1) * kSpeedDecreaseScalar;
 			while (amount < 1f)
 			{
