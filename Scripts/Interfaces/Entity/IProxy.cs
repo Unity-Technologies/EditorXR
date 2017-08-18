@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -88,13 +87,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			get; set;
 		}
-
-		/// <summary>
-		/// Display the highlight visuals for proxy device
-		/// Node = device node on which to display the highlight
-		/// GradientPair = gradientPair used in the highlight visuals
-		/// </summary>
-		void HighlightDevice (Node node, GradientPair gradientPair, bool pulseOnThenOff = false);
 	}
 }
 #endif

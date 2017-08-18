@@ -1,7 +1,6 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -12,23 +11,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			public PinnedToolButtons()
 			{
-				IPinnedToolsMenuMethods.highlightDevice = HighlightDevice;
 				IPinnedToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
 				IPinnedToolsMenuMethods.selectTool = OnToolButtonClicked;
 
 				IMainMenuMethods.previewInPinnedToolButton = PreviewToolInPinnedToolButton;
 				IMainMenuMethods.clearPinnedToolButtonPreview = ClearPinnedToolButtonPreview;
-			}
-
-			internal void HighlightDevice(Transform rayOrigin, GradientPair gradientPair)
-			{
-				Rays.ForEachProxyDevice(deviceData =>
-				{
-					if (deviceData.rayOrigin == rayOrigin)
-					{
-						deviceData.proxy.HighlightDevice(deviceData.node, gradientPair);
-					}
-				});
 			}
 
 			internal void PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType, string toolDescription)

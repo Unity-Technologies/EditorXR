@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 using System;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -37,18 +36,6 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IPinnedToolsMenuMethods
 	{
-		public static Action<Transform, GradientPair> highlightDevice { get; set; }
-
-		/// <summary>
-		/// Visually highlights an input device
-		/// </summary>
-		/// <param name="rayOrigin">This menu's RayOrigin</param>
-		/// <param name="gradientPair">The gradient pair used in the highlight visuals</param>
-		public static void HighlightDevice(this IPinnedToolsMenu obj, Transform rayOrigin, GradientPair gradientPair)
-		{
-			highlightDevice(rayOrigin, gradientPair);
-		}
-
 		public static Action<Transform> mainMenuActivatorSelected { get; set; }
 
 		/// <summary>
