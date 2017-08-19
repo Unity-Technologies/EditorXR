@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -100,10 +100,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 
-					var menuHideFlags = deviceData.menuHideFlags;
+					var menuHideData = deviceData.menuHideData;
 					var mainMenu = Menus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
 					deviceData.mainMenu = mainMenu;
-					menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
+					menuHideData[mainMenu] = new Menus.MenuHideData();
 
 					var mainMenuActivator = Menus.SpawnMainMenuActivator(inputDevice);
 					deviceData.mainMenuActivator = mainMenuActivator;
@@ -117,17 +117,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					var alternateMenu = Menus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 					deviceData.alternateMenu = alternateMenu;
-					menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
+					menuHideData[alternateMenu] = new Menus.MenuHideData();
 					alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
-
-					var autoHideTimes = deviceData.menuAutoHideTimes;
-					var autoShowTimes = deviceData.menuAutoShowTimes;
-					foreach (var kvp in menuHideFlags)
-					{
-						var menu = kvp.Key;
-						autoHideTimes[menu] = 0;
-						autoShowTimes[menu] = 0;
-					}
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -242,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 					else
 					{
-						deviceData.menuHideFlags[deviceData.mainMenu] |= Menus.MenuHideFlags.Hidden;
+						deviceData.menuHideData[deviceData.mainMenu].hideFlags |= Menus.MenuHideFlags.Hidden;
 					}
 				});
 
@@ -287,7 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								var customMenu = otherDeviceData.customMenu;
 								if (customMenu != null)
 								{
-									otherDeviceData.menuHideFlags.Remove(customMenu);
+									otherDeviceData.menuHideData.Remove(customMenu);
 									otherDeviceData.customMenu = null;
 								}
 							}

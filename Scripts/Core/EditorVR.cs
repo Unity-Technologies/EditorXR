@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -79,9 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public ITool currentTool;
 			public IMenu customMenu;
 			public PinnedToolButton previousToolButton;
-			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
-			public readonly Dictionary<IMenu, float> menuAutoHideTimes = new Dictionary<IMenu, float>();
-			public readonly Dictionary<IMenu, float> menuAutoShowTimes = new Dictionary<IMenu, float>();
+			public readonly Dictionary<IMenu, Menus.MenuHideData> menuHideData = new Dictionary<IMenu, Menus.MenuHideData>();
 		}
 
 		class Nested
