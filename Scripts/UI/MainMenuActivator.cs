@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IUsesMenuOrigins, IControlHaptics, IUsesHandedRayOrigin, ITooltip, ITooltipPlacement
 	{
 		readonly Vector3 m_OriginalActivatorLocalPosition = new Vector3(0f, 0f, -0.075f);
-		static readonly float k_AlternateLocationOffset = 0.06f;
+		const float k_AlternateLocationOffset = 0.06f;
 
 		public Transform alternateMenuOrigin
 		{
@@ -80,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_ActivatorMoveCoroutine;
 		Vector3 m_AlternateActivatorLocalPosition;
 
-		bool m_Disabled;
+		bool m_Interactable;
 		Material m_IconMaterial;
 		Color m_EnabledColor;
 
@@ -90,26 +90,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public event Action<Transform, Transform> selected;
 
-		public bool disabled
+		public bool interactable
 		{
-			get { return m_Disabled; }
+			get { return m_Interactable; }
 			set
 			{
-				if (value != m_Disabled)
+				if (value != m_Interactable)
 				{
-					m_Icon.sharedMaterial.color = value ? m_DisabledColor : m_EnabledColor;
+					m_Icon.sharedMaterial.color = value ? m_EnabledColor : m_DisabledColor;
 
-					if (value)
+					if (!value)
 						SetHighlight(false);
 				}
 
-				m_Disabled = value;
+				m_Interactable = value;
 			}
 		}
 
 		public string tooltipText
 		{
-			get { return m_Disabled ? "Main Menu Hidden" : null; }
+			get { return m_Interactable ? null : "Main Menu Hidden"; }
 		}
 
 		public Transform tooltipTarget { get { return m_TooltipTarget; } }
@@ -124,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnPointerEnter(PointerEventData eventData)
 		{
-			if (eventData.used || m_Disabled)
+			if (eventData.used || !m_Interactable)
 				return;
 
 			SetHighlight(true);
@@ -144,7 +144,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (m_HighlightCoroutine != null)
 				StopCoroutine(m_HighlightCoroutine);
 
-			m_HighlightCoroutine = null;
 			m_HighlightCoroutine = StartCoroutine(Highlight(highlighted));
 		}
 
@@ -161,8 +160,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var iconTransform = m_Icon.transform;
 			var currentScale = iconTransform.localScale;
 			var currentPosition = iconTransform.localPosition;
-			var targetScale = transitionIn == true ? m_HighlightedActivatorIconLocalScale : m_OriginalActivatorIconLocalScale;
-			var targetLocalPosition = transitionIn == true ? m_HighlightedActivatorIconLocalPosition : m_OriginalActivatorIconLocalPosition;
+			var targetScale = transitionIn ? m_HighlightedActivatorIconLocalScale : m_OriginalActivatorIconLocalScale;
+			var targetLocalPosition = transitionIn ? m_HighlightedActivatorIconLocalPosition : m_OriginalActivatorIconLocalPosition;
 			var speed = (currentScale.x + 0.5f / targetScale.x) * 4; // perform faster is returning to original position
 
 			while (amount < 1f)

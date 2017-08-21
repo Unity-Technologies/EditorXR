@@ -254,7 +254,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						mainMenu.visible = true;
 					}
 
-					deviceData.mainMenuActivator.disabled = (mainMenuHideFlags & MenuHideFlags.Temporary) != 0;
+					deviceData.mainMenuActivator.interactable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0;
 
 					var customMenu = deviceData.customMenu;
 					if (customMenu != null)
@@ -356,7 +356,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal static void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
 			{
-				if (evr.m_DeviceData.Any(deviceData => deviceData.rayOrigin == rayOrigin && deviceData.mainMenuActivator.disabled))
+				if (evr.m_DeviceData.Any(deviceData => deviceData.rayOrigin == rayOrigin && !deviceData.mainMenuActivator.interactable))
 					return;
 
 				foreach (var deviceData in evr.m_DeviceData)
