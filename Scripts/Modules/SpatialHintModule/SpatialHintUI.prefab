@@ -1588,7 +1588,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1981198264515682}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
@@ -1731,11 +1731,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 432cb07647e3e974aaf3aa9c640af385, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_HideOnInitialize: 1
   m_ScrollLineRenderer: {fileID: 114922285208366486}
-  m_LineWidth: 1
   m_VisibleColor: {r: 0, g: 0, b: 0, a: 0.42745098}
-  m_HiddenColor: {r: 1, g: 1, b: 1, a: 1}
   m_PulseColor: {r: 1, g: 1, b: 1, a: 1}
   m_MeshRenderer: {fileID: 23475728828767504}
 --- !u!114 &114403956001920920
@@ -2280,7 +2277,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1404278696444272}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 

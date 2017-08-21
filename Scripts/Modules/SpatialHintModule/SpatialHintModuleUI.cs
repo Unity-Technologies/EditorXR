@@ -181,6 +181,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public Transform contentContainer { get { return transform; } }
 
+		/// <summary>
+		/// If TRUE, expand scroll hint arrows from center of initial scroll trigger.
+		/// If FALSE, draw scroll hint line visuals along the line the user is defining
+		/// </summary>
+		public bool centeredScrolling { get; set; }
+
 		void Awake()
 		{
 			m_ScrollVisualsTransform = m_ScrollVisualsCanvasGroup.transform;
@@ -206,6 +212,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var targetLocalScale = Vector3.one;
 			var currentAlpha = m_ScrollVisualsCanvasGroup.alpha;
 			var secondArrowCurrentPosition = m_ScrollVisualsDragTargetArrowTransform.position;
+			Vector3 scrollVisualsDragTargetArrowTransformOrigin;
+			Vector3 scrollVisualsDragTargetArrowTransformDestination;
 
 			while (currentDuration < kTargetDuration)
 			{
@@ -220,7 +228,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsDragTargetArrowTransform.position - m_ScrollVisualsTransform.position);
 				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsTransform.position - m_ScrollVisualsDragTargetArrowTransform.position);
 				m_ScrollVisualsTransform.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, shapedDuration);
-				var lineRendererPositions = new[] { m_ScrollVisualsTransform.position, m_ScrollVisualsDragTargetArrowTransform.position };
+
+				scrollVisualsDragTargetArrowTransformOrigin = m_ScrollVisualsTransform.position;
+				scrollVisualsDragTargetArrowTransformDestination = m_ScrollVisualsDragTargetArrowTransform.position;
+				if (centeredScrolling)
+				{
+					Vector3 offset = (scrollVisualsDragTargetArrowTransformOrigin - scrollVisualsDragTargetArrowTransformDestination) * -1;
+					var distance = (scrollVisualsDragTargetArrowTransformOrigin - scrollVisualsDragTargetArrowTransformDestination).magnitude;
+					// Increase the initial line position separation for scrolls of a smaller magnitude
+					// This mandates a sully visible scroll line, regardless of scroll start/end magnitude
+					var distanceShaped = Mathf.Clamp(2 - distance * 0.175f, 0.75f, 2f);
+					offset *= distanceShaped;
+					scrollVisualsDragTargetArrowTransformOrigin -= offset;
+					scrollVisualsDragTargetArrowTransformDestination += offset;
+				}
+
+				var lineRendererPositions = new[] { scrollVisualsDragTargetArrowTransformOrigin, scrollVisualsDragTargetArrowTransformDestination };
 				m_ScrollHintLine.Positions = lineRendererPositions;
 				m_ScrollHintLine.LineWidth = shapedDuration * this.GetViewerScale();
 

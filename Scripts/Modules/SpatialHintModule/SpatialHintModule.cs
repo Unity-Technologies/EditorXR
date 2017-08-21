@@ -14,6 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			Hidden = 1 << 0,
 			PreDragReveal = 1 << 1,
 			Scrolling = 1 << 2,
+			CenteredScrolling = 2 << 3,
 		}
 
 		[SerializeField]
@@ -31,15 +32,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				switch (m_State)
 				{
 					case SpatialHintStateFlags.Hidden:
+						m_SpatialHintModuleUI.centeredScrolling = false;
 						m_SpatialHintModuleUI.preScrollArrowsVisible = false;
 						m_SpatialHintModuleUI.secondaryArrowsVisible = false;
 						controllingRayOrigin = null;
 						break;
 					case SpatialHintStateFlags.PreDragReveal:
+						m_SpatialHintModuleUI.centeredScrolling = false;
 						m_SpatialHintModuleUI.preScrollArrowsVisible = true;
 						m_SpatialHintModuleUI.secondaryArrowsVisible = true;
 						break;
 					case SpatialHintStateFlags.Scrolling:
+						m_SpatialHintModuleUI.centeredScrolling = false;
+						m_SpatialHintModuleUI.preScrollArrowsVisible = false;
+						m_SpatialHintModuleUI.scrollVisualsVisible = true;
+						break;
+					case SpatialHintStateFlags.CenteredScrolling:
+						m_SpatialHintModuleUI.centeredScrolling = true;
 						m_SpatialHintModuleUI.preScrollArrowsVisible = false;
 						m_SpatialHintModuleUI.scrollVisualsVisible = true;
 						break;

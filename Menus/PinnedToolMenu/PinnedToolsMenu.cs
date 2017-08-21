@@ -179,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (!m_PinnedToolsMenuUI.allButtonsVisible)
 					{
 						m_PinnedToolsMenuUI.spatialDragDistance = m_SpatialScrollData.dragDistance;
-						this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Scrolling);
+						this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
 						m_PinnedToolsMenuUI.allButtonsVisible = true;
 					}
 					else if (m_SpatialScrollData.spatialDirection != null)

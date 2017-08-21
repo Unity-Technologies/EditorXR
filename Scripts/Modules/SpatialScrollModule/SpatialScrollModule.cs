@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public class SpatialScrollData
 		{
-			public SpatialScrollData(object caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1)
+			public SpatialScrollData(object caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
 			{
 				this.caller = caller;
 				this.node = node;
@@ -24,6 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				this.repeatingScrollLengthRange = repeatingScrollLengthRange;
 				this.scrollableItemCount = scrollableItemCount;
 				this.maxItemCount = maxItemCount;
+				this.centerVisuals = centerVisuals;
 				spatialDirection = null;
 			}
 
@@ -35,6 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public float repeatingScrollLengthRange { get; set; }
 			public int scrollableItemCount { get; set; }
 			public int maxItemCount { get; set; }
+			public bool centerVisuals { get; set; }
 
 			// Values populated by scroll processing
 			public Vector3? spatialDirection { get; set; }
@@ -55,7 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_ScrollData = new Dictionary<object, SpatialScrollData>();
 		}
 
-		internal SpatialScrollData PerformScroll(object caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1)
+		internal SpatialScrollData PerformScroll(object caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
 		{
 			// Continue processing of spatial scrolling for a given caller,
 			// Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
@@ -72,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (spatialScrollData == null)
 			{
-				spatialScrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount);
+				spatialScrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
 				m_ScrollData.Add(caller, spatialScrollData);
 			}
 
@@ -81,7 +83,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		SpatialScrollData ProcessSpatialScrolling(SpatialScrollData scrollData)
 		{
-			var directionVector = scrollData.currentPosition - scrollData.startingPosition;
+			var currentPosition = scrollData.currentPosition;
+			var directionVector = currentPosition - scrollData.startingPosition;
 			if (scrollData.spatialDirection == null)
 			{
 				var newDirectionVectorThreshold = 0.0175f; // Initial magnitude beyond which spatial scrolling will be evaluated
