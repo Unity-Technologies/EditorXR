@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 		public static Color PrefToColor(string pref)
 		{
-			string[] split = pref.Split(';');
+			var split = pref.Split(';');
 			if (split.Length != 5)
 			{
 				Debug.LogError("Parsing PrefColor failed");
@@ -103,6 +103,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			var b = Random.value;
 
 			return new Color(r, g, b);
+		}
+
+		public static Color HueShift(Color color, float shift)
+		{
+			Vector3 hsv;
+			Color.RGBToHSV(color, out hsv.x, out hsv.y, out hsv.z);
+			hsv.x = Mathf.Repeat(hsv.x + shift, 1f);
+			return Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
 		}
 
 		public static void SetObjectColor(GameObject obj, Color col)

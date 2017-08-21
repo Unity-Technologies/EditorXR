@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,10 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			m_NormalRayColor = this.GetDefaultRayColor(rayOrigin);
 			m_MultiselectRayColor = m_NormalRayColor;
-			Vector3 hsv;
-			Color.RGBToHSV(m_MultiselectRayColor, out hsv.x, out hsv.y, out hsv.z);
-			hsv.x = Mathf.Repeat(hsv.x + k_MultiselectHueShift, 1f);
-			m_MultiselectRayColor = Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
+			m_MultiselectRayColor = MaterialUtils.HueShift(m_MultiselectRayColor, k_MultiselectHueShift);
 
 			tooltipTarget = ObjectUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
 			tooltipTarget.localPosition = k_TooltipPosition;
