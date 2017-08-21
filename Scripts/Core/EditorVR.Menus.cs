@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal class MenuHideData
 			{
-				public MenuHideFlags hideFlags = Menus.MenuHideFlags.Hidden;
+				public MenuHideFlags hideFlags = MenuHideFlags.Hidden;
 				public float autoHideTime;
 				public float autoShowTime;
 			}
@@ -426,7 +426,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 								var customMenu = go.GetComponent<IMenu>();
 								deviceData.customMenu = customMenu;
-								deviceData.menuHideData[customMenu].hideFlags = 0;
+								deviceData.menuHideData[customMenu] = new MenuHideData { hideFlags = 0 };
 							}
 						}
 					}
