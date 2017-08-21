@@ -43,7 +43,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		Bounds m_ContentBounds;
 		BoxCollider m_OuterCollider;
-		BoxCollider m_FrameCollider;
 
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ResetSizeCoroutine;
@@ -83,11 +82,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			get
 			{
-				const float kOuterBoundsCenterOffset = 0.09275f; //Amount to extend the bounds to include frame
-				return new Bounds(contentBounds.center + Vector3.down * kOuterBoundsCenterOffset * 0.5f,
+				const float outerBoundsCenterOffset = 0.09275f; //Amount to extend the bounds to include frame
+				return new Bounds(contentBounds.center + Vector3.down * outerBoundsCenterOffset * 0.5f,
 					new Vector3(
 						contentBounds.size.x,
-						contentBounds.size.y + kOuterBoundsCenterOffset,
+						contentBounds.size.y + outerBoundsCenterOffset,
 						contentBounds.size.z
 						));
 			}
@@ -161,10 +160,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
-			m_OuterCollider = gameObject.AddComponent<BoxCollider>();
+			m_OuterCollider = m_WorkspaceUI.gameObject.AddComponent<BoxCollider>();
 			m_OuterCollider.isTrigger = true;
-			m_FrameCollider = gameObject.AddComponent<BoxCollider>();
-			m_FrameCollider.isTrigger = true;
 
 			var startingBounds = m_CustomStartingBounds ?? DefaultBounds;
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
@@ -292,10 +289,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public virtual void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);
-
-			var frameBounds = m_WorkspaceUI.adjustedBounds;
-			m_FrameCollider.size = frameBounds.size;
-			m_FrameCollider.center = frameBounds.center;
 		}
 
 		protected void OnButtonClicked(Transform rayOrigin)

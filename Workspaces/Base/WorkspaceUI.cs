@@ -134,6 +134,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		WorkspaceButton m_ResizeButton;
 
+		[SerializeField]
+		BoxCollider m_FrameCollider;
+
 		Bounds m_Bounds;
 		float? m_TopPanelDividerOffset;
 
@@ -402,6 +405,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_TopHighlightContainer.localScale = new Vector3(faceWidth + kHighlightMargin, 1f, faceDepth + kHighlightMargin);
 				m_TopFaceContainer.localScale = new Vector3(faceWidth, 1f, faceDepth);
 
+				var frameBounds = adjustedBounds;
+				m_FrameCollider.size = frameBounds.size;
+				m_FrameCollider.center = frameBounds.center;
+
 				AdjustHandlesAndIcons();
 			}
 		}
@@ -633,6 +640,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.forward * kFrontPanelZStartOffset, new Vector3(0, kFrontPanelYOffset, kFrontPanelZEndOffset), paddedLerp);
 
 			m_FrontZOffset = (k_FrontFrameZOffset + m_FrontFrameHandleSize) * Mathf.Clamp01(paddedLerp * kAdditionalFrontPanelLerpPadding);
+			var frameBounds = adjustedBounds;
+			m_FrameCollider.size = frameBounds.size;
+			m_FrameCollider.center = frameBounds.center;
 
 			AdjustHandlesAndIcons();
 

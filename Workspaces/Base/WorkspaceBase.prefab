@@ -222,6 +222,7 @@ GameObject:
   - component: {fileID: 114000011346188294}
   - component: {fileID: 114000014286123538}
   - component: {fileID: 114000013983468268}
+  - component: {fileID: 65736115287711426}
   m_Layer: 5
   m_Name: WorkspaceBase
   m_TagString: Untagged
@@ -1872,6 +1873,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1.0000001, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!65 &65736115287711426
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011022840156}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &114000010013501312
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2746,6 +2759,7 @@ MonoBehaviour:
   m_DynamicFaceAdjustment: 1
   m_CloseButton: {fileID: 114000013712785888}
   m_ResizeButton: {fileID: 114000012661725366}
+  m_FrameCollider: {fileID: 65736115287711426}
 --- !u!137 &137000012547310740
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1
