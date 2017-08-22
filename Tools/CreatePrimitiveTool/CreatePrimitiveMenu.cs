@@ -15,12 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Bounds localBounds { get; private set; }
 
-		public bool visible
-		{
-			get { return gameObject.activeSelf; }
-			set { gameObject.SetActive(value); }
-		}
-
 		public GameObject menuContent
 		{
 			get { return gameObject; }
@@ -29,6 +23,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void Awake()
 		{
 			localBounds = ObjectUtils.GetBounds(transform);
+		}
+
+		public void SetVisible(bool visible, bool temporary = false)
+		{
+			gameObject.SetActive(visible);
+		}
+
+		public bool GetVisible()
+		{
+			return gameObject.activeSelf;
 		}
 
 		public void SelectPrimitive(int type)

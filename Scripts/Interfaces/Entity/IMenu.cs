@@ -9,9 +9,14 @@ namespace UnityEditor.Experimental.EditorVR
 	public interface IMenu
 	{
 		/// <summary>
-		/// Controls whether the menu is visible or not
+		/// Set whether the menu is visible or not
 		/// </summary>
-		bool visible { get; set; }
+		void SetVisible(bool visible, bool temporary = false);
+
+		/// <summary>
+		/// Get whether the menu is visible or not
+		/// </summary>
+		bool GetVisible();
 
 		/// <summary>
 		/// GameObject that this component is attached to

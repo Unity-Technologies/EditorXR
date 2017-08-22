@@ -47,21 +47,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		Transform m_MenuOrigin;
 
-		public bool visible
-		{
-			get { return m_Visible; }
-			set
-			{
-				if (m_Visible != value)
-				{
-					m_Visible = value;
-					if (m_MainMenuUI)
-						m_MainMenuUI.visible = value;
-				}
-			}
-		}
-		bool m_Visible;
-
 		[SerializeField]
 		HapticPulse m_FaceRotationPulse;
 
@@ -80,6 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		HapticPulse m_ButtonHoverPulse;
 
+		bool m_Visible;
 		MainMenuUI m_MainMenuUI;
 		float m_LastRotationInput;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
@@ -123,6 +109,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			UpdateToolButtons();
 		}
 
+		public void SetVisible(bool visible, bool temporary = false)
+		{
+			if (m_Visible != visible)
+			{
+				m_Visible = visible;
+				if (m_MainMenuUI)
+				{
+					m_MainMenuUI.visible = visible;
+					if (!temporary)
+						SendVisibilityPulse();
+				}
+			}
+		}
+
+		public bool GetVisible()
+		{
+			return m_Visible;
+		}
+
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var mainMenuInput = (MainMenuInput)input;
@@ -139,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.Pulse(node, m_FaceRotationPulse);
 			}
 
-			if (visible)
+			if (m_Visible)
 				consumeControl(mainMenuInput.flickFace);
 
 			m_LastRotationInput = rotationInput;
@@ -181,7 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (buttonData == null)
 						buttonData = new MainMenuUI.ButtonData(type.Name);
 
-					CreateFaceButton(buttonData, tooltip, () =>
+					m_ToolButtons[type] = CreateFaceButton(buttonData, tooltip, () =>
 					{
 						if (targetRayOrigin)
 						{
@@ -244,17 +249,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback)
+		MainMenuButton CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback)
 		{
 			var mainMenuButton = m_MainMenuUI.CreateFaceButton(buttonData);
 			mainMenuButton.button.onClick.RemoveAllListeners();
 			mainMenuButton.button.onClick.AddListener(() =>
 			{
-				if (visible)
+				if (m_Visible)
 					buttonClickCallback();
 			});
 
 			mainMenuButton.tooltip = tooltip;
+			return mainMenuButton;
 		}
 
 		void UpdateToolButtons()
@@ -275,9 +281,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
 
-		public void SendVisibilityPulse()
+		void SendVisibilityPulse()
 		{
-			this.Pulse(node, visible ? m_HidePulse : m_ShowPulse);
+			this.Pulse(node, m_Visible ? m_HidePulse : m_ShowPulse);
 		}
 	}
 }

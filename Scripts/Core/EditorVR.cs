@@ -372,12 +372,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var mainMenu = deviceData.mainMenu;
 				var menuInput = mainMenu as IProcessInput;
-				if (menuInput != null && mainMenu.visible)
+				if (menuInput != null && mainMenu.GetVisible())
 					menuInput.ProcessInput(deviceData.mainMenuInput, consumeControl);
 
 				var altMenu = deviceData.alternateMenu;
 				var altMenuInput = altMenu as IProcessInput;
-				if (altMenuInput != null && altMenu.visible)
+				if (altMenuInput != null && altMenu.GetVisible())
 					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
 
 				foreach (var toolData in deviceData.toolData)

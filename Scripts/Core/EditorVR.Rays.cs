@@ -109,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var mainMenu = deviceData.mainMenu;
 				var customMenu = deviceData.customMenu;
-				if (mainMenu.visible || (customMenu != null && customMenu.visible))
+				if (mainMenu.GetVisible() || (customMenu != null && customMenu.GetVisible()))
 				{
 					AddVisibilitySettings(rayOrigin, mainMenu, false, false);
 				}

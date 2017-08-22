@@ -39,11 +39,6 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Does this menu have focus?
 		/// </summary>
 		bool focus { get; }
-
-		/// <summary>
-		/// Send a haptic pulse indicating the menu visibility has changed
-		/// </summary>
-		void SendVisibilityPulse();
 	}
 }
 #endif

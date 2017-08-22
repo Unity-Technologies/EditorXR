@@ -330,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var mainMenuInput = deviceData.mainMenuInput;
 					if (mainMenu != null && mainMenuInput != null)
 					{
-						mainMenuInput.active = mainMenu.visible;
+						mainMenuInput.active = mainMenu.GetVisible();
 
 						if (!maps.Contains(mainMenuInput))
 							maps.Add(mainMenuInput);
@@ -340,7 +340,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var alternateMenuInput = deviceData.alternateMenuInput;
 					if (alternateMenu != null && alternateMenuInput != null)
 					{
-						alternateMenuInput.active = alternateMenu.visible;
+						alternateMenuInput.active = alternateMenu.GetVisible();
 
 						if (!maps.Contains(alternateMenuInput))
 							maps.Add(alternateMenuInput);

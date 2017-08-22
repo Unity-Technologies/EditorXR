@@ -7,7 +7,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap, IControlHaptics, IUsesNode, IConnectInterfaces
+	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
+		IControlHaptics, IUsesNode, IConnectInterfaces
 	{
 		const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
 
@@ -58,19 +59,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		Transform m_AlternateMenuOrigin;
 
-		public bool visible
-		{
-			get { return m_Visible; }
-			set
-			{
-				if (m_Visible != value)
-				{
-					m_Visible = value;
-					if (m_RadialMenuUI)
-						m_RadialMenuUI.visible = value;
-				}
-			}
-		}
 		bool m_Visible;
 
 		public event Action<Transform> itemWasSelected;
@@ -97,10 +85,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_RadialMenuUI.buttonClicked += OnButtonClicked;
 		}
 
+		public void SetVisible(bool visible, bool temporary = false)
+		{
+			if (m_Visible != visible)
+			{
+				m_Visible = visible;
+				if (m_RadialMenuUI)
+					m_RadialMenuUI.visible = visible;
+			}
+		}
+
+		public bool GetVisible()
+		{
+			return m_Visible;
+		}
+
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var radialMenuInput = (RadialMenuInput)input;
-			if (radialMenuInput == null || !visible)
+			if (radialMenuInput == null || !m_Visible)
 				return;
 			
 			var inputDirection = radialMenuInput.navigate.vector2;

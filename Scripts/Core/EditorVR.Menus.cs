@@ -39,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal class MenuHideData
 			{
 				public MenuHideFlags hideFlags = MenuHideFlags.Hidden;
+				public MenuHideFlags lastHideFlags = MenuHideFlags.Hidden;
 				public float autoHideTime;
 				public float autoShowTime;
 			}
@@ -101,12 +102,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			static void UpdateAlternateMenuForDevice(DeviceData deviceData)
 			{
 				var alternateMenu = deviceData.alternateMenu;
-				alternateMenu.visible = deviceData.menuHideData[alternateMenu].hideFlags == 0 && !(deviceData.currentTool is IExclusiveMode);
+				alternateMenu.SetVisible(deviceData.menuHideData[alternateMenu].hideFlags == 0
+					&& !(deviceData.currentTool is IExclusiveMode));
 
 				// Move the activator button to an alternate position if the alternate menu will be shown
 				var mainMenuActivator = deviceData.mainMenuActivator;
 				if (mainMenuActivator != null)
-					mainMenuActivator.activatorButtonMoveAway = alternateMenu.visible;
+					mainMenuActivator.activatorButtonMoveAway = alternateMenu.GetVisible();
 			}
 
 			internal void UpdateMenuVisibilities()
@@ -182,7 +184,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							kvp.Value.autoHideTime = Time.time;
 
 						if (hideFlags != 0)
+						{
+							var menuHideData = kvp.Value;
+							menuHideData.lastHideFlags = menuHideData.hideFlags;
 							kvp.Value.autoShowTime = Time.time;
+						}
 					}
 				}
 
@@ -193,6 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var mainMenuHideData = deviceData.menuHideData[mainMenu];
 					var mainMenuHideFlags = mainMenuHideData.hideFlags;
 					var mainMenuHidden = (mainMenuHideFlags & MenuHideFlags.Hidden) != 0;
+					
 
 					// Hide the main menu if any hideflags are set; if the menu is focused, only hide if Hidden is set (e.g. not temporary)
 					if (mainMenuHideFlags != 0 && (mainMenuHidden || !mainMenu.focus))
@@ -200,17 +207,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						// Hidden state takes effect immediately; Temporary states take effect after a delay
 						if (mainMenuHidden)
 						{
-							mainMenu.visible = false;
+							mainMenu.SetVisible(false);
 						}
 						else if (Time.time > mainMenuHideData.autoHideTime + k_MainMenuAutoHideDelay)
 						{
-							mainMenu.visible = false;
+							mainMenu.SetVisible(false, true);
 						}
 					}
 					// Showing the menu always waits--set autoShowTime to 0 to show instantly
 					else if (Time.time > mainMenuHideData.autoShowTime + k_MainMenuAutoShowDelay)
 					{
-						mainMenu.visible = true;
+						var wasTemporary = (mainMenuHideData.lastHideFlags & MenuHideFlags.Temporary) != 0;
+						mainMenu.SetVisible(true, wasTemporary);
 					}
 
 					// Disable the main menu activator if any temporary states are set
@@ -219,13 +227,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					// Show/hide custom menu, if it exists
 					var customMenu = deviceData.customMenu;
 					if (customMenu != null)
-						customMenu.visible = deviceData.menuHideData[customMenu].hideFlags == 0;
+						customMenu.SetVisible(deviceData.menuHideData[customMenu].hideFlags == 0);
 
 					UpdateAlternateMenuForDevice(deviceData);
 					Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
 				}
 
-				// Reset Temporary states
+				// Reset Temporary states and set lastHideFlags
 				foreach (var deviceData in m_ActiveDeviceData)
 				{
 					foreach (var kvp in deviceData.menuHideData)
@@ -401,7 +409,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							// Toggle main menu hidden flag
 							mainMenuHideData.hideFlags ^= MenuHideFlags.Hidden;
 							mainMenu.targetRayOrigin = targetRayOrigin;
-							mainMenu.SendVisibilityPulse();
 						}
 						else
 						{
@@ -464,7 +471,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var mainMenu = (IMainMenu)ObjectUtils.AddComponent(type, evr.gameObject);
 				input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(mainMenu, device);
 				evr.m_Interfaces.ConnectInterfaces(mainMenu, device);
-				mainMenu.visible = visible;
+				mainMenu.SetVisible(visible);
 
 				return mainMenu;
 			}
@@ -479,7 +486,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var alternateMenu = (IAlternateMenu)ObjectUtils.AddComponent(type, evr.gameObject);
 				input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(alternateMenu, device);
 				evr.m_Interfaces.ConnectInterfaces(alternateMenu, device);
-				alternateMenu.visible = false;
+				alternateMenu.SetVisible(false);
 
 				return alternateMenu;
 			}
