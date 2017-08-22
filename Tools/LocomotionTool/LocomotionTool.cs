@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -391,6 +391,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								continue;
 
 							var otherLocomotionInput = locomotionTool.m_LocomotionInput;
+							if (otherLocomotionInput == null) // This can occur if crawl is pressed when EVR is opened
+								continue;
+
 							var otherCrawl = otherLocomotionInput.crawl;
 							if (otherCrawl.isHeld)
 							{

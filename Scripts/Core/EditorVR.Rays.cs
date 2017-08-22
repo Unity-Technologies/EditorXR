@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -204,6 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOrigin, source =>
 									{
+										// Do not invalidate UI raycasts in the middle of a drag operation
 										if (!source.draggedObject)
 										{
 											var sourceRayOrigin = source.rayOrigin;
@@ -211,10 +212,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 												return false;
 
 											var hoveredObject = source.hoveredObject;
+											// The manipulator needs rays to go through scene objects in order to work
 											var isManipulator = hoveredObject && hoveredObject.GetComponentInParent<IManipulator>() != null;
 											float sceneObjectDistance;
 											var raycastObject = intersectionModule.GetFirstGameObject(sourceRayOrigin, out sceneObjectDistance);
 											var uiDistance = source.eventData.pointerCurrentRaycast.distance;
+											// If the distance to a scene object is less than the distance to the hovered UI, invalidate the UI raycast
 											if (!isManipulator && raycastObject && sceneObjectDistance < uiDistance)
 												return false;
 										}
