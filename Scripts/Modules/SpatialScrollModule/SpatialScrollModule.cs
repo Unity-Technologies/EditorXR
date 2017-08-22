@@ -28,22 +28,68 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				spatialDirection = null;
 			}
 
-			// Data assigned by calling object requesting spatial scroll processing
+			// Below is Data assigned by calling object requesting spatial scroll processing
+
+			/// <summary>
+			/// The object/caller initiating this particular spatial scroll action
+			/// </summary>
 			public object caller { get; set; }
+
+			/// <summary>
+			/// The node on which this spatial scroll is being processed
+			/// </summary>
 			public Node? node { get; set; }
+
+			/// <summary>
+			/// The origin/starting position of the scroll
+			/// </summary>
 			public Vector3 startingPosition { get; set; }
+
+			/// <summary>
+			/// The current scroll position
+			/// </summary>
 			public Vector3 currentPosition { get; set; }
+
+			/// <summary>
+			/// The magnitude at which a scroll will repeat/reset to its original scroll starting value
+			/// </summary>
 			public float repeatingScrollLengthRange { get; set; }
+
+			/// <summary>
+			/// Number of items being scrolled through
+			/// </summary>
 			public int scrollableItemCount { get; set; }
+
+			/// <summary>
+			/// Maximum number of items (to be scrolled through) that will be allowed
+			/// </summary>
 			public int maxItemCount { get; set; }
+
+			/// <summary>
+			/// If true, expand scroll visuals out from the center of the trigger/origin/start position
+			/// </summary>
 			public bool centerVisuals { get; set; }
 
-			// Values populated by scroll processing
+			// The Values below are populated by scroll processing
+
+			/// <summary>
+			/// The vector defining the spatial scroll direction
+			/// </summary>
 			public Vector3? spatialDirection { get; set; }
-			public Vector3 startingDragOrigin { get; set; }
-			public Vector3 previousWorldPosition { get; set; }
+
+			/// <summary>
+			/// 0-1 offset/magnitude of current scroll position, relative to the trigger/origin/start point, and the repeatingScrollLengthRange
+			/// </summary>
 			public float normalizedLoopingPosition { get; set; }
+
+			/// <summary>
+			/// Value representing how much of the pre-scroll drag amount has occurred
+			/// </summary>
 			public float dragDistance { get; set; }
+
+			/// <summary>
+			/// Bool denoting that the scroll trigger magnitude has been exceeded
+			/// </summary>
 			public bool passedMinDragActivationThreshold { get { return spatialDirection != null; } }
 
 			public void UpdateExistingScrollData(Vector3 newPosition)
@@ -92,14 +138,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var dragMagnitude = Vector3.Magnitude(directionVector);
 				var dragPercentage = dragMagnitude / newDirectionVectorThreshold;
 				var repeatingPulseAmount = Mathf.Sin(Time.realtimeSinceStartup * 20) > 0.5f ? 1f : 0f; // Perform an on/off repeating pulse while waiting for the drag threshold to be crossed
-				scrollData.dragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set normalized value representing how much of the pre-scroll drag amount has occurred
+				scrollData.dragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set value representing how much of the pre-scroll drag amount has occurred
 				this.Pulse(scrollData.node, m_ActivationPulse, repeatingPulseAmount, repeatingPulseAmount);
 				if (dragMagnitude > newDirectionVectorThreshold)
 					scrollData.spatialDirection = directionVector; // Initialize vector defining the spatial scroll direction
 			}
 			else
 			{
-				var projectedAmount = Vector3.Project(directionVector, scrollData.spatialDirection.Value).magnitude / this.GetViewerScale();
+				var scrollingAfterTriggerOirigin = Vector3.Dot(directionVector, scrollData.spatialDirection.Value) >= 0; // Detect that the user is scrolling forward from the trigger origin point
+				var projectionVector = scrollingAfterTriggerOirigin ? scrollData.spatialDirection.Value : scrollData.spatialDirection.Value + scrollData.spatialDirection.Value;
+				var projectedAmount = Vector3.Project(directionVector, projectionVector).magnitude / this.GetViewerScale();
+				// Mandate that scrolling maintain the initial direction, regardless of the user scrolling before/after the trigger origin point; prevent direction flipping
+				projectedAmount = scrollingAfterTriggerOirigin ? projectedAmount : 1 - projectedAmount;
 				scrollData.normalizedLoopingPosition = (Mathf.Abs(projectedAmount * (scrollData.maxItemCount / scrollData.scrollableItemCount)) % scrollData.repeatingScrollLengthRange) * (1 / scrollData.repeatingScrollLengthRange);
 			}
 
