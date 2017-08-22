@@ -23,6 +23,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// The input which is associated with the rayOrigin
 		/// </summary>
 		public ActionMapInput input { get; set; }
+
+		/// <summary>
+		/// The point in world space where the tester intersects with the object
+		/// </summary>
+		public Vector3 contactPoint { get; set; }
 	}
 }
 #endif

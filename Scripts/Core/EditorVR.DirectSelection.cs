@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -98,14 +98,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					var rayOrigin = deviceData.rayOrigin;
 					var input = deviceData.directSelectInput;
-					var obj = GetDirectSelectionForRayOrigin(rayOrigin);
+					Vector3 contactPoint;
+					var obj = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
 					if (obj && !obj.CompareTag(k_VRPlayerTag))
 					{
 						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = obj,
 							node = deviceData.node,
-							input = input
+							input = input,
+							contactPoint = contactPoint
 						};
 					}
 				});
@@ -115,27 +117,29 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var rayOrigin = ray.Key;
 					var miniWorldRay = ray.Value;
 					var input = miniWorldRay.directSelectInput;
-					var go = GetDirectSelectionForRayOrigin(rayOrigin);
+					Vector3 contactPoint;
+					var go = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
 					if (go != null)
 					{
 						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = go,
 							node = ray.Value.node,
-							input = input
+							input = input,
+							contactPoint = contactPoint
 						};
 					}
 				}
 			}
 
-			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
+			GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, out Vector3 contactPoint)
 			{
 				if (m_IntersectionModule == null)
 					m_IntersectionModule = evr.GetModule<IntersectionModule>();
 
 				var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 
-				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester, out contactPoint);
 				if (renderer)
 					return renderer.gameObject;
 				return null;

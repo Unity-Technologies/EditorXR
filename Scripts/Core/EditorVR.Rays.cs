@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -336,7 +336,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				// If a raycast did not find an object use the spatial hash as a final test
 				var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-				var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
+				Vector3 collisionPoint;
+				var renderer = intersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
 				if (renderer && !renderer.CompareTag(k_VRPlayerTag))
 					return renderer.gameObject;
 
@@ -350,7 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						if (!tester.active)
 							continue;
 
-						renderer = intersectionModule.GetIntersectedObjectForTester(tester);
+						renderer = intersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
 						if (renderer)
 							return renderer.gameObject;
 					}
