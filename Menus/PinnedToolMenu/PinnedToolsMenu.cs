@@ -94,6 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_PinnedToolsMenuUI.buttonHovered += OnButtonHover;
 			m_PinnedToolsMenuUI.buttonClicked += OnButtonClick;
 			m_PinnedToolsMenuUI.buttonSelected += OnButtonSelected;
+			m_PinnedToolsMenuUI.closeMenu += CloseMenu;
 
 			// Alternate menu origin isn't set when awake or start run
 			var pinnedToolsUITransform = m_PinnedToolsMenuUI.transform;
@@ -200,7 +201,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				{
 					m_PinnedToolsMenuUI.SelectHighlightedButton();
 					consumeControl(pinnedToolInput.select);
-					this.Pulse(node, m_HidingPulse);
 				}
 				else if (Time.realtimeSinceStartup < m_AllowToolToggleBeforeThisTime)
 				{
@@ -209,10 +209,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					OnButtonClick();
 				}
 
-				this.SetDefaultRayVisibility(rayOrigin, true);
-				this.UnlockRay(rayOrigin, this);
-				this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
-				this.EndSpatialScroll(this); // Free the spatial scroll data owned by this object
+				CloseMenu();
 			}
 		}
 
@@ -230,6 +227,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void OnButtonSelected(Transform rayOrigin, Type buttonType)
 		{
 			this.SelectTool(rayOrigin, buttonType, false);
+		}
+
+		void CloseMenu()
+		{
+			this.Pulse(node, m_HidingPulse);
+			this.SetDefaultRayVisibility(rayOrigin, true);
+			this.UnlockRay(rayOrigin, this);
+			this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
+			this.EndSpatialScroll(this); // Free the spatial scroll data owned by this object
 		}
 	}
 }

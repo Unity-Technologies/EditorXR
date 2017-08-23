@@ -132,6 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public event Action buttonHovered;
 		public event Action buttonClicked;
 		public event Action<Transform, Type> buttonSelected;
+		public event Action closeMenu;
 
 		void Awake()
 		{
@@ -418,6 +419,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (buttonSelected != null)
 					buttonSelected(rayOrigin, button.toolType); // Select the new active tool button
 			}
+
+			if (!aboveMinimumButtonCount && closeMenu != null)
+				closeMenu(); // Close the menu if below the minimum button count (only MainMenu & SelectionTool are active)
 
 			return button != null;
 		}
