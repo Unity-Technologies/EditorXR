@@ -190,10 +190,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				allowSecondaryButton = !IsSelectionToolButton(button);
 			}
 
+			var initializingButtons = m_OrderedButtons.Count == 1;
 			m_OrderedButtons.Insert(insertPosition, button);
 			// If only the MainMenu & SelectionTool buttons exist, set visible button count to 1
-			m_VisibleButtonCount = aboveMinimumButtonCount ? m_OrderedButtons.Count : 1;
-
+			m_VisibleButtonCount = aboveMinimumButtonCount || initializingButtons ? m_OrderedButtons.Count : 1;
 			button.implementsSecondaryButton = allowSecondaryButton;
 			button.isActiveTool = true;
 			button.order = insertPosition;
@@ -202,7 +202,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			buttonTransform.localPosition = Vector3.zero;
 			buttonTransform.localScale = Vector3.zero;
 
-			if (aboveMinimumButtonCount)
+			if (aboveMinimumButtonCount) // aboveMinimumCount will change throughout function, don't cache for re-use
 				this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1.25f, false));
 			else
 				SetupButtonOrder(); // Setup the MainMenu and active tool buttons only
