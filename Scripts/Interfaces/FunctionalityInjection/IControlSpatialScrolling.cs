@@ -9,11 +9,15 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IControlSpatialScrolling
 	{
+		/// <summary>
+		/// The data defining a spatial scroll operation
+		/// </summary>
+		SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 	}
 
 	public static class IControlSpatialScrollingMethods
 	{
-		internal delegate SpatialScrollModule.SpatialScrollData PerformSpatialScrollDelegate (object caller, Node? node, Vector3 startingPosition,
+		internal delegate SpatialScrollModule.SpatialScrollData PerformSpatialScrollDelegate (IControlSpatialScrolling caller, Node? node, Vector3 startingPosition,
 			Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
 		internal static PerformSpatialScrollDelegate performSpatialScroll { private get; set; }
 
@@ -29,20 +33,20 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="maxItemCount">The maximum number of items that can be scrolled through for this action</param>
 		/// <param name="centerVisuals">If true, expand the scroll line visuals outward in both directions from the scroll start position</param>
 		/// <returns>The spatial scroll data for a single scroll action, but an individual caller object</returns>
-		public static SpatialScrollModule.SpatialScrollData PerformSpatialScroll(this IControlSpatialHinting obj, object caller, Node? node,
+		public static SpatialScrollModule.SpatialScrollData PerformSpatialScroll(this IControlSpatialScrolling obj, IControlSpatialScrolling caller, Node? node,
 			Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
 		{
 			return performSpatialScroll(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
 		}
 
-		internal delegate void EndSpatialScrollDelegate (object caller);
+		internal delegate void EndSpatialScrollDelegate (IControlSpatialScrolling caller);
 		internal static EndSpatialScrollDelegate endSpatialScroll { private get; set; }
 
 		/// <summary>
 		/// End a spatial scrolling action for a given caller
 		/// </summary>
 		/// <param name="caller">The caller whose spatial scroll action will be ended</param>
-		public static void EndSpatialScroll(this IControlSpatialHinting obj, object caller)
+		public static void EndSpatialScroll(this IControlSpatialScrolling obj, IControlSpatialScrolling caller)
 		{
 			endSpatialScroll(caller);
 		}

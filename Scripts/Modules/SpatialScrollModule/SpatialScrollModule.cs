@@ -11,11 +11,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection
 
 		// Collection housing caller object & ScrollData pairs
-		Dictionary<object, SpatialScrollData> m_ScrollData;
+		Dictionary<IControlSpatialScrolling, SpatialScrollData> m_ScrollData;
 
 		public class SpatialScrollData
 		{
-			public SpatialScrollData(object caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+			public SpatialScrollData(IControlSpatialScrolling caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
 			{
 				this.caller = caller;
 				this.node = node;
@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			/// <summary>
 			/// The object/caller initiating this particular spatial scroll action
 			/// </summary>
-			public object caller { get; set; }
+			public IControlSpatialScrolling caller { get; set; }
 
 			/// <summary>
 			/// The node on which this spatial scroll is being processed
@@ -100,10 +100,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			m_ScrollData = new Dictionary<object, SpatialScrollData>();
+			m_ScrollData = new Dictionary<IControlSpatialScrolling, SpatialScrollData>();
 		}
 
-		internal SpatialScrollData PerformScroll(object caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
+		internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
 		{
 			// Continue processing of spatial scrolling for a given caller,
 			// Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
@@ -156,7 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return scrollData;
 		}
 
-		internal void EndScroll(object caller)
+		internal void EndScroll(IControlSpatialScrolling caller)
 		{
 			if (m_ScrollData.Count == 0)
 				return;
@@ -165,6 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (kvp.Key == caller)
 				{
+					caller.spatialScrollData = null; // clear reference to the previously used scrollData
 					m_ScrollData.Remove(caller);
 					return;
 				}

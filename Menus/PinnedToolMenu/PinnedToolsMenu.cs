@@ -11,7 +11,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI,
-		IControlHaptics, IUsesViewerScale, IControlSpatialHinting, ISetDefaultRayVisibility, IUsesRayOrigin
+		IControlHaptics, IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, ISetDefaultRayVisibility, IUsesRayOrigin
 	{
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
 		const int k_MaxButtonCount = 16; //
@@ -43,7 +43,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Vector3 m_SpatialScrollStartPosition;
 		IPinnedToolButton m_MainMenuButton;
 		PinnedToolsMenuUI m_PinnedToolsMenuUI;
-		SpatialScrollModule.SpatialScrollData m_SpatialScrollData;
 
 		public Transform menuOrigin { get; set; }
 		List<IPinnedToolButton> buttons { get { return m_PinnedToolsMenuUI.buttons; } }
@@ -56,6 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Node? node { get; set; }
 		public IPinnedToolButton previewToolButton { get { return m_MainMenuButton; } }
 		public Transform alternateMenuOrigin { get { return m_AlternateMenuOrigin; } set { m_AlternateMenuOrigin = value; } }
+		public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 
 		public Transform rayOrigin
 		{
@@ -165,26 +165,28 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					if (buttonCount <= k_ActiveToolOrderPosition + 1)
 					{
-						this.EndSpatialScroll(this);
+						if (spatialScrollData != null)
+							this.EndSpatialScroll(this);
+
 						return;
 					}
 				}
 
 				// normalized input should loop after reaching the 0.15f length
 				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-				m_SpatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.25f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
-				var normalizedRepeatingPosition = m_SpatialScrollData.normalizedLoopingPosition;
+				spatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.5f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
+				var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{
 					if (!m_PinnedToolsMenuUI.allButtonsVisible)
 					{
-						m_PinnedToolsMenuUI.spatialDragDistance = m_SpatialScrollData.dragDistance;
+						m_PinnedToolsMenuUI.spatialDragDistance = spatialScrollData.dragDistance;
 						this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
 						m_PinnedToolsMenuUI.allButtonsVisible = true;
 					}
-					else if (m_SpatialScrollData.spatialDirection != null)
+					else if (spatialScrollData.spatialDirection != null)
 					{
-						m_PinnedToolsMenuUI.startingDragOrigin = m_SpatialScrollData.spatialDirection;
+						m_PinnedToolsMenuUI.startingDragOrigin = spatialScrollData.spatialDirection;
 					}
 
 					m_PinnedToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
@@ -194,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 			else if (pinnedToolInput.show.wasJustReleased)
 			{
-				if (m_SpatialScrollData.passedMinDragActivationThreshold)
+				if (spatialScrollData.passedMinDragActivationThreshold)
 				{
 					m_PinnedToolsMenuUI.SelectHighlightedButton();
 					consumeControl(pinnedToolInput.select);
