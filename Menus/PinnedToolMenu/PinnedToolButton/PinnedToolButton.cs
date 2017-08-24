@@ -452,6 +452,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnBackgroundHoverEnter ()
 		{
+			if (hovered != null) // Raised in order to trigger the haptic in the PinnedToolsMenu
+				hovered();
+
 			if (isMainMenu)
 			{
 				m_GradientButton.highlighted = true;
@@ -460,9 +463,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (implementsSecondaryButton)
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, ShowSecondaryButton());
-
-			if (hovered != null) // Raised in order to trigger the haptic in the PinnedToolsMenu
-				hovered();
 
 			showAllButtons(this);
 		}

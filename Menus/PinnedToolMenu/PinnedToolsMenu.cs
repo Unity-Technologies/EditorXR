@@ -175,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				// normalized input should loop after reaching the 0.15f length
 				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-				spatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.5f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
+				spatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.325f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
 				var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{
