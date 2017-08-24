@@ -457,6 +457,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kFasterMotionMultiplier = 2f;
 			var transitionAmount = Time.deltaTime;
 			var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
+			var currentScale = transform.localScale;
+			var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
+			var targetScale = makeSemiTransparent ? semiTransparentTargetScale : Vector3.one;
 			var currentFrameColor = m_FrameMaterial.color;
 			var transparentFrameColor = new Color (s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0f);
 			var targetFrameColor = m_CanvasGroup.interactable ? (makeSemiTransparent ? m_SemiTransparentFrameColor : s_FrameOpaqueColor) : transparentFrameColor;
@@ -476,12 +479,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, Mathf.Lerp(currentInsetAlpha, targetInsetAlpha, transitionAmount));
 				m_IconMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(currentIconColor, targetIconColor, transitionAmount));
 				var shapedTransitionAmount = Mathf.Pow(transitionAmount, makeSemiTransparent ? 2 : 1) * kFasterMotionMultiplier;
+				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedTransitionAmount);
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
 				transitionAmount += Time.deltaTime * positionWait * 3f;
 				CorrectIconRotation();
 				yield return null;
 			}
 
+			transform.localScale = targetScale;
 			m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
 			m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
 			m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
