@@ -1,5 +1,6 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -15,24 +16,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Bounds localBounds { get; private set; }
 
-		public GameObject menuContent
+		public MenuHideFlags menuHideFlags
 		{
-			get { return gameObject; }
+			get { return gameObject.activeSelf ? MenuHideFlags.Hidden : 0; }
+			set { gameObject.SetActive(value == 0); }
 		}
+
+		public GameObject menuContent { get { return gameObject; } }
 
 		void Awake()
 		{
 			localBounds = ObjectUtils.GetBounds(transform);
-		}
-
-		public void SetVisible(bool visible, bool temporary = false)
-		{
-			gameObject.SetActive(visible);
-		}
-
-		public bool GetVisible()
-		{
-			return gameObject.activeSelf;
 		}
 
 		public void SelectPrimitive(int type)

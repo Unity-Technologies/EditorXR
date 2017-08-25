@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
+using System;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -9,14 +11,9 @@ namespace UnityEditor.Experimental.EditorVR
 	public interface IMenu
 	{
 		/// <summary>
-		/// Set whether the menu is visible or not
+		/// Visibility state of this menu
 		/// </summary>
-		void SetVisible(bool visible, bool temporary = false);
-
-		/// <summary>
-		/// Get whether the menu is visible or not
-		/// </summary>
-		bool GetVisible();
+		MenuHideFlags menuHideFlags { get; set; }
 
 		/// <summary>
 		/// GameObject that this component is attached to

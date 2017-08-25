@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -233,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 					else
 					{
-						deviceData.menuHideData[deviceData.mainMenu].hideFlags |= Menus.MenuHideFlags.Hidden;
+						deviceData.menuHideData[deviceData.mainMenu].hideFlags |= MenuHideFlags.Hidden;
 					}
 				});
 
@@ -330,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var mainMenuInput = deviceData.mainMenuInput;
 					if (mainMenu != null && mainMenuInput != null)
 					{
-						mainMenuInput.active = mainMenu.GetVisible();
+						mainMenuInput.active = mainMenu.menuHideFlags == 0;
 
 						if (!maps.Contains(mainMenuInput))
 							maps.Add(mainMenuInput);
@@ -340,7 +340,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var alternateMenuInput = deviceData.alternateMenuInput;
 					if (alternateMenu != null && alternateMenuInput != null)
 					{
-						alternateMenuInput.active = alternateMenu.GetVisible();
+						alternateMenuInput.active = alternateMenu.menuHideFlags == 0;
 
 						if (!maps.Contains(alternateMenuInput))
 							maps.Add(alternateMenuInput);

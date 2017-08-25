@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -83,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		readonly string k_UncategorizedFaceName = "Uncategorized";
 		readonly Color k_MenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
-		VisibilityState m_VisibilityState = VisibilityState.Visible;
+		VisibilityState m_VisibilityState = VisibilityState.Hidden;
 		RotationState m_RotationState;
 		MainMenuFace[] m_MenuFaces;
 		Material m_MenuFacesMaterial;

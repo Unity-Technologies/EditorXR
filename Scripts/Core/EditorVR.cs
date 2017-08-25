@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -372,12 +372,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var mainMenu = deviceData.mainMenu;
 				var menuInput = mainMenu as IProcessInput;
-				if (menuInput != null && mainMenu.GetVisible())
+				if (menuInput != null && mainMenu.menuHideFlags == 0)
 					menuInput.ProcessInput(deviceData.mainMenuInput, consumeControl);
 
 				var altMenu = deviceData.alternateMenu;
 				var altMenuInput = altMenu as IProcessInput;
-				if (altMenuInput != null && altMenu.GetVisible())
+				if (altMenuInput != null && altMenu.menuHideFlags == 0)
 					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
 
 				foreach (var toolData in deviceData.toolData)

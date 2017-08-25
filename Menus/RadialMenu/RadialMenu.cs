@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -29,37 +29,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		HapticPulse m_ButtonClickedPulse;
 
 		RadialMenuUI m_RadialMenuUI;
-
-		public List<ActionMenuData> menuActions
-		{
-			get { return m_MenuActions; }
-			set
-			{
-				m_MenuActions = value;
-
-				if (m_RadialMenuUI)
-					m_RadialMenuUI.actions = value;
-			}
-		}
 		List<ActionMenuData> m_MenuActions;
-
-		public Transform alternateMenuOrigin
-		{
-			get
-			{
-				return m_AlternateMenuOrigin;
-			}
-			set
-			{
-				m_AlternateMenuOrigin = value;
-
-				if (m_RadialMenuUI != null)
-					m_RadialMenuUI.alternateMenuOrigin = value;
-			}
-		}
 		Transform m_AlternateMenuOrigin;
-
-		bool m_Visible;
+		MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 
 		public event Action<Transform> itemWasSelected;
 
@@ -73,6 +45,44 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public Bounds localBounds { get { return default(Bounds); } }
 
+		public List<ActionMenuData> menuActions
+		{
+			get { return m_MenuActions; }
+			set
+			{
+				m_MenuActions = value;
+
+				if (m_RadialMenuUI)
+					m_RadialMenuUI.actions = value;
+			}
+		}
+
+		public Transform alternateMenuOrigin
+		{
+			get { return m_AlternateMenuOrigin; }
+			set
+			{
+				m_AlternateMenuOrigin = value;
+
+				if (m_RadialMenuUI != null)
+					m_RadialMenuUI.alternateMenuOrigin = value;
+			}
+		}
+
+		public MenuHideFlags menuHideFlags
+		{
+			get { return m_MenuHideFlags; }
+			set
+			{
+				if (m_MenuHideFlags != value)
+				{
+					m_MenuHideFlags = value;
+					if (m_RadialMenuUI)
+						m_RadialMenuUI.visible = value == 0;
+				}
+			}
+		}
+
 		void Start()
 		{
 			m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
@@ -80,30 +90,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_RadialMenuUI.actions = menuActions;
 			this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
 			m_RadialMenuUI.Setup();
-			m_RadialMenuUI.visible = m_Visible;
 			m_RadialMenuUI.buttonHovered += OnButtonHovered;
 			m_RadialMenuUI.buttonClicked += OnButtonClicked;
-		}
-
-		public void SetVisible(bool visible, bool temporary = false)
-		{
-			if (m_Visible != visible)
-			{
-				m_Visible = visible;
-				if (m_RadialMenuUI)
-					m_RadialMenuUI.visible = visible;
-			}
-		}
-
-		public bool GetVisible()
-		{
-			return m_Visible;
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var radialMenuInput = (RadialMenuInput)input;
-			if (radialMenuInput == null || !m_Visible)
+			if (radialMenuInput == null || m_MenuHideFlags != 0)
 				return;
 			
 			var inputDirection = radialMenuInput.navigate.vector2;
