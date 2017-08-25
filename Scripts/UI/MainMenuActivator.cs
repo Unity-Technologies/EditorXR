@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -47,9 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_ActivatorButtonMoveAway = value;
 
-				this.StopCoroutine(ref m_ActivatorMoveCoroutine);
-
-				m_ActivatorMoveCoroutine = StartCoroutine(AnimateMoveActivatorButton(m_ActivatorButtonMoveAway));
+				this.RestartCoroutine(ref m_ActivatorMoveCoroutine, AnimateMoveActivatorButton(m_ActivatorButtonMoveAway));
 			}
 		}
 		bool m_ActivatorButtonMoveAway;
@@ -141,10 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void SetHighlight(bool highlighted)
 		{
-			if (m_HighlightCoroutine != null)
-				StopCoroutine(m_HighlightCoroutine);
-
-			m_HighlightCoroutine = StartCoroutine(Highlight(highlighted));
+			this.RestartCoroutine(ref m_HighlightCoroutine, Highlight(highlighted));
 		}
 
 		public void OnPointerClick(PointerEventData eventData)

@@ -248,7 +248,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// This will modify the event data (new target will be set)
 			base.HandlePointerExitAndEnter(eventData, newEnterTarget);
 
-			if (newEnterTarget == null || cachedEventData.pointerEnter == null)
+			var pointerEnter = cachedEventData.pointerEnter;
+			if (newEnterTarget == null || pointerEnter == null)
 			{
 				for (var i = 0; i < cachedEventData.hovered.Count; ++i)
 				{
@@ -263,46 +264,44 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					return;
 			}
 
-			Transform t = null;
-
 			if (!exitOnly)
 			{
 				// if we have not changed hover target
-				if (cachedEventData.pointerEnter == newEnterTarget && newEnterTarget)
+				if (newEnterTarget && pointerEnter == newEnterTarget)
 				{
-					t = newEnterTarget.transform;
-					while (t != null)
+					var transform = newEnterTarget.transform;
+					while (transform != null)
 					{
-						ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
+						ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
 						if (rayHovering != null)
-							rayHovering(t.gameObject, cachedEventData);
+							rayHovering(transform.gameObject, cachedEventData);
 
-						t = t.parent;
+						transform = transform.parent;
 					}
 					return;
 				}
 			}
 
-			GameObject commonRoot = FindCommonRoot(cachedEventData.pointerEnter, newEnterTarget);
+			GameObject commonRoot = FindCommonRoot(pointerEnter, newEnterTarget);
 
 			// and we already an entered object from last time
-			if (cachedEventData.pointerEnter != null)
+			if (pointerEnter != null)
 			{
 				// send exit handler call to all elements in the chain
 				// until we reach the new target, or null!
-				t = cachedEventData.pointerEnter.transform;
+				var transform = pointerEnter.transform;
 
-				while (t != null)
+				while (transform != null)
 				{
 					// if we reach the common root break out!
-					if (commonRoot != null && commonRoot.transform == t)
+					if (commonRoot != null && commonRoot.transform == transform)
 						break;
 
-					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
+					ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
 					if (rayExited != null)
-						rayExited(t.gameObject, cachedEventData);
+						rayExited(transform.gameObject, cachedEventData);
 
-					t = t.parent;
+					transform = transform.parent;
 				}
 			}
 
@@ -310,19 +309,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				// now issue the enter call up to but not including the common root
 				cachedEventData.pointerEnter = newEnterTarget;
-				t = newEnterTarget.transform;
-				while (t != null && t.gameObject != commonRoot)
+				var transform = newEnterTarget.transform;
+				while (transform != null && transform.gameObject != commonRoot)
 				{
-					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
+					ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
 					if (rayEntered != null)
-						rayEntered(t.gameObject, cachedEventData);
+						rayEntered(transform.gameObject, cachedEventData);
 
-					t = t.parent;
+					transform = transform.parent;
 				}
 			}
 		}
 
-		private void OnSelectPressed(RaycastSource source)
+		void OnSelectPressed(RaycastSource source)
 		{
 			Deselect();
 

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -74,9 +74,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					var intersectionFound = false;
 					m_Intersections.Clear();
-					if (m_SpatialHash.GetIntersections(m_Intersections, tester.collider.bounds))
+					var testerCollider = tester.collider;
+					if (m_SpatialHash.GetIntersections(m_Intersections, testerCollider.bounds))
 					{
-						var testerBounds = tester.collider.bounds;
+						var testerBounds = testerCollider.bounds;
 						var testerBoundsCenter = testerBounds.center;
 
 						m_SortedIntersections.Clear();

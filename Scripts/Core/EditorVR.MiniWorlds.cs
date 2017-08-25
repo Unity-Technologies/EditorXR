@@ -193,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					var rayOriginPosition = rayOrigin.position;
 					var pointerPosition = rayOriginPosition + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin);
-					if (miniWorld.Contains(rayOrigin.position) || miniWorld.Contains(pointerPosition))
+					if (miniWorld.Contains(rayOriginPosition) || miniWorld.Contains(pointerPosition))
 						return true;
 				}
 				return false;

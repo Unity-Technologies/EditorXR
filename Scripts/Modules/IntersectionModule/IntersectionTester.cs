@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -80,6 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (!m_Collider)
 					m_Collider = GetComponentInChildren<Collider>();
+
 				return m_Collider;
 			}
 		}
