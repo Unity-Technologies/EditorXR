@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -14,7 +13,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	[MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
-	sealed class MiniWorldWorkspace : Workspace, IUsesRayLocking, ISerializeWorkspace
+	sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace
 	{
 		class MiniWorldTooltip : ITooltip
 		{
@@ -63,13 +62,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		class Preferences
 		{
 			[SerializeField]
-			public Vector3 m_MiniWorldRefeferenceScale;
+			Vector3 m_MiniWorldRefeferenceScale;
 
 			[SerializeField]
-			public Vector3 m_MiniWorldReferencePosition;
+			Vector3 m_MiniWorldReferencePosition;
 
 			[SerializeField]
-			public float m_ZoomSliderValue;
+			float m_ZoomSliderValue;
 
 			public Vector3 miniWorldRefeferenceScale { get { return m_MiniWorldRefeferenceScale; } set { m_MiniWorldRefeferenceScale = value; } }
 			public Vector3 miniWorldReferencePosition { get { return m_MiniWorldReferencePosition; } set { m_MiniWorldReferencePosition = value; } }
@@ -106,9 +105,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public override void Setup()
 		{
+			const float yBounds = 0.5f;
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(MinBounds.x, MinBounds.y, 0.25f);
-			m_CustomStartingBounds = new Vector3(MinBounds.x, MinBounds.y, 0.5f);
+			minBounds = new Vector3(MinBounds.x, yBounds, 0.25f);
+			m_CustomStartingBounds = new Vector3(MinBounds.x, yBounds, 0.5f);
 
 			base.Setup();
 
@@ -228,14 +228,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.ProcessInput(input, consumeControl);
 			var workspaceInput = (WorkspaceInput)input;
 
-			var leftControl = workspaceInput.moveResizeLeft;
+			var leftControl = workspaceInput.miniWorldPanZoomLeft;
 			if (leftControl.wasJustPressed && miniWorld.Contains(leftRayOrigin.position))
 			{
 				OnPanZoomDragStarted(leftRayOrigin);
 				consumeControl(leftControl);
 			}
 
-			var rightControl = workspaceInput.moveResizeRight;
+			var rightControl = workspaceInput.miniWorldPanZoomRight;
 			if (rightControl.wasJustPressed && miniWorld.Contains(rightRayOrigin.position))
 			{
 				OnPanZoomDragStarted(rightRayOrigin);
@@ -363,16 +363,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_StartPosition = referenceTransform.position;
 				m_StartScale = referenceTransform.localScale.x;
 			}
-		}
-
-		void DragStarted(BaseHandle handle, HandleEventData handleEventData)
-		{
-			this.LockRay(handleEventData.rayOrigin, this);
-		}
-
-		void DragEnded(BaseHandle handle, HandleEventData handleEventData)
-		{
-			this.UnlockRay(handleEventData.rayOrigin, this);
 		}
 
 		void RecenterOnPlayer()

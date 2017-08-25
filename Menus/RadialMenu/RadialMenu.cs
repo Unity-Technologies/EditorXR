@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -7,7 +7,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap, IControlHaptics, IUsesNode, IConnectInterfaces
+	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
+		IControlHaptics, IUsesNode, IConnectInterfaces
 	{
 		const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
 
@@ -28,6 +29,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		HapticPulse m_ButtonClickedPulse;
 
 		RadialMenuUI m_RadialMenuUI;
+		List<ActionMenuData> m_MenuActions;
+		Transform m_AlternateMenuOrigin;
+		MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
+
+		public event Action<Transform> itemWasSelected;
+
+		public Transform rayOrigin { private get; set; }
+
+		public Transform menuOrigin { get; set; }
+
+		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
+
+		public Node? node { get; set; }
+
+		public Bounds localBounds { get { return default(Bounds); } }
 
 		public List<ActionMenuData> menuActions
 		{
@@ -40,14 +56,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_RadialMenuUI.actions = value;
 			}
 		}
-		List<ActionMenuData> m_MenuActions;
 
 		public Transform alternateMenuOrigin
 		{
-			get
-			{
-				return m_AlternateMenuOrigin;
-			}
+			get { return m_AlternateMenuOrigin; }
 			set
 			{
 				m_AlternateMenuOrigin = value;
@@ -56,32 +68,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_RadialMenuUI.alternateMenuOrigin = value;
 			}
 		}
-		Transform m_AlternateMenuOrigin;
 
-		public bool visible
+		public MenuHideFlags menuHideFlags
 		{
-			get { return m_Visible; }
+			get { return m_MenuHideFlags; }
 			set
 			{
-				if (m_Visible != value)
+				if (m_MenuHideFlags != value)
 				{
-					m_Visible = value;
+					m_MenuHideFlags = value;
 					if (m_RadialMenuUI)
-						m_RadialMenuUI.visible = value;
+						m_RadialMenuUI.visible = value == 0;
 				}
 			}
 		}
-		bool m_Visible;
-
-		public event Action<Transform> itemWasSelected;
-
-		public Transform rayOrigin { private get; set; }
-
-		public Transform menuOrigin { get; set; }
-
-		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
-
-		public Node? node { get; set; }
 
 		void Start()
 		{
@@ -90,7 +90,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_RadialMenuUI.actions = menuActions;
 			this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
 			m_RadialMenuUI.Setup();
-			m_RadialMenuUI.visible = m_Visible;
 			m_RadialMenuUI.buttonHovered += OnButtonHovered;
 			m_RadialMenuUI.buttonClicked += OnButtonClicked;
 		}
@@ -98,7 +97,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			var radialMenuInput = (RadialMenuInput)input;
-			if (radialMenuInput == null || !visible)
+			if (radialMenuInput == null || m_MenuHideFlags != 0)
 				return;
 			
 			var inputDirection = radialMenuInput.navigate.vector2;
