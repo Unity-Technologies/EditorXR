@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public float LineWidth { set { m_ScrollLineRenderer.SetWidth(value, value); } }
 
 		/// <summary>
-		/// set the start & end positions for the line visuals
+		/// Set the start & end positions for the line visuals
 		/// </summary>
 		public Vector3[] Positions { set { m_ScrollLineRenderer.SetPositions(value) ; } }
 

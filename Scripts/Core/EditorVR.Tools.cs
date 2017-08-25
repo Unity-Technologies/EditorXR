@@ -120,8 +120,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
 					deviceData.pinnedToolsMenu = pinnedToolsMenu;
 					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
-					pinnedToolsMenu.SetButtonForType(typeof(IMainMenu), null);
-					pinnedToolsMenu.SetButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
+					pinnedToolsMenu.setButtonForType(typeof(IMainMenu), null);
+					pinnedToolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -210,7 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							else if (!currentToolIsSelect && setSelectAsCurrentTool)
 							{
 								// Set the selection tool as the active tool, if select is to be the new current tool
-								pinnedToolsMenu.SetButtonForType(typeof(SelectionTool), null);
+								pinnedToolsMenu.setButtonForType(typeof(SelectionTool), null);
 							}
 
 							spawnTool = false;
@@ -243,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 								AddToolToStack(data, newTool);
 								
-								pinnedToolsMenu.SetButtonForType(toolType, newTool.icon);
+								pinnedToolsMenu.setButtonForType(toolType, newTool.icon);
 							}
 						}
 						

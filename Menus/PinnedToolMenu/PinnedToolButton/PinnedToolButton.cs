@@ -7,11 +7,12 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
+	sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
 	{
 		static Color s_FrameOpaqueColor;
 
@@ -20,6 +21,109 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		const string k_SelectionToolTipText = "Selection Tool (cannot be closed)";
 		const string k_MainMenuTipText = "Main Menu";
 		readonly Vector3 k_ToolButtonActivePosition = new Vector3(0f, 0f, -0.035f);
+
+		[SerializeField]
+		GradientButton m_GradientButton;
+
+		[SerializeField]
+		Transform m_IconContainer;
+
+		[SerializeField]
+		Transform m_PrimaryUIContentContainer;
+
+		[SerializeField]
+		CanvasGroup m_IconContainerCanvasGroup;
+
+		[SerializeField]
+		SkinnedMeshRenderer m_FrameRenderer;
+
+		[SerializeField]
+		SkinnedMeshRenderer m_InsetMeshRenderer;
+
+		[SerializeField]
+		Collider[] m_PrimaryButtonColliders;
+
+		[SerializeField]
+		[FormerlySerializedAs("m_CloseButton")]
+		GradientButton m_CloseButton;
+
+		[SerializeField]
+		[FormerlySerializedAs("m_CloseButtonContainerCanvasGroup")]
+		CanvasGroup m_CloseButtonContainerCanvasGroup;
+
+		[SerializeField]
+		[FormerlySerializedAs("m_CloseInsetMeshRenderer")]
+		SkinnedMeshRenderer m_CloseInsetMeshRenderer;
+
+		[SerializeField]
+		[FormerlySerializedAs("m_CloseInsetMaskMeshRenderer")]
+		SkinnedMeshRenderer m_CloseInsetMaskMeshRenderer;
+
+		[SerializeField]
+		[FormerlySerializedAs("m_CloseButtonColliders")]
+		Collider[] m_CloseButtonColliders; // disable for the main menu button & solitary primary tool button
+
+		[SerializeField]
+		Transform m_TooltipTarget;
+
+		[SerializeField]
+		Transform m_TooltipSource;
+
+		[SerializeField]
+		Vector3 m_AlternateLocalPosition;
+
+		[SerializeField]
+		Image m_ButtonIcon;
+
+		Coroutine m_PositionCoroutine;
+		Coroutine m_VisibilityCoroutine;
+		Coroutine m_HighlightCoroutine;
+		Coroutine m_ActivatorMoveCoroutine;
+		Coroutine m_HoverCheckCoroutine;
+		Coroutine m_SecondaryButtonVisibilityCoroutine;
+
+		string m_TooltipText;
+		string m_PreviewToolDescription;
+		bool m_MoveToAlternatePosition;
+		int m_Order = -1;
+		Type m_PreviewToolType;
+		Type m_ToolType;
+		GradientPair m_GradientPair;
+		Material m_FrameMaterial;
+		Material m_InsetMaterial;
+		Vector3 m_OriginalLocalPosition;
+		Vector3 m_OriginalLocalScale;
+		Material m_IconMaterial;
+		Vector3 m_OriginalIconContainerLocalScale;
+		Sprite m_Icon;
+		Sprite m_PreviewIcon;
+		bool m_Highlighted;
+		bool m_ActiveTool;
+
+		public Transform tooltipTarget { get { return m_TooltipTarget; } set { m_TooltipTarget = value; } }
+		public Transform tooltipSource { get { return m_TooltipSource; } }
+		public TextAlignment tooltipAlignment { get; private set; }
+		public Transform rayOrigin { get; set; }
+		public Node node { get; set; }
+		public ITooltip tooltip { private get; set; } // Overrides text
+		public GradientPair customToolTipHighlightColor { get; set; }
+		public bool isSelectionTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
+		public bool isMainMenu { get { return m_ToolType != null && m_ToolType == typeof(IMainMenu); } }
+		public int activeButtonCount { get; set; }
+		public int maxButtonCount { get; set; }
+		public Transform menuOrigin { get; set; }
+		public bool implementsSecondaryButton { get; set; }
+
+		public Action<Transform, Transform> openMenu { get; set; }
+		public Action<Type> selectTool { get; set; }
+		public Func<bool> closeButton { get; set; }
+		public Action<Transform, int, bool> highlightSingleButton { get; set; }
+		public Action<Transform> selectHighlightedButton { get; set; }
+		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
+		public Func<Type, int> visibleButtonCount { get; set; }
+		public Action destroy { get { return DestroyButton; } }
+		public Action<IPinnedToolButton> showAllButtons { private get; set; }
+		public Action hoverExit { get; set; }
 
 		public Type toolType
 		{
@@ -70,7 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				this.RestartCoroutine(ref m_PositionCoroutine, AnimatePosition(m_Order));
 
-				if(m_Order == -1)
+				if (m_Order == -1)
 					this.HideTooltip(this);
 			}
 		}
@@ -159,104 +263,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			private set { m_TooltipText = value; }
 		}
 
-		[SerializeField]
-		GradientButton m_GradientButton;
-
-		[SerializeField]
-		Transform m_IconContainer;
-
-		[SerializeField]
-		Transform m_PrimaryUIContentContainer;
-
-		[SerializeField]
-		CanvasGroup m_IconContainerCanvasGroup;
-
-		[SerializeField]
-		SkinnedMeshRenderer m_FrameRenderer;
-
-		[SerializeField]
-		SkinnedMeshRenderer m_InsetMeshRenderer;
-
-		[SerializeField]
-		Collider[] m_PrimaryButtonColliders;
-
-		[SerializeField]
-		GradientButton m_SecondaryGradientButton;
-
-		[SerializeField]
-		CanvasGroup m_SecondaryButtonContainerCanvasGroup;
-
-		[SerializeField]
-		SkinnedMeshRenderer m_SecondaryInsetMeshRenderer;
-
-		[SerializeField]
-		SkinnedMeshRenderer m_SecondaryInsetMaskMeshRenderer;
-
-		[SerializeField]
-		Collider[] m_SecondaryButtonColliders; // disable for the main menu button & solitary primary tool button
-
-		[SerializeField]
-		Transform m_TooltipTarget;
-
-		[SerializeField]
-		Transform m_TooltipSource;
-
-		[SerializeField]
-		Vector3 m_AlternateLocalPosition;
-
-		[SerializeField]
-		Image m_ButtonIcon;
-
-		Coroutine m_PositionCoroutine;
-		Coroutine m_VisibilityCoroutine;
-		Coroutine m_HighlightCoroutine;
-		Coroutine m_ActivatorMoveCoroutine;
-		Coroutine m_HoverCheckCoroutine;
-		Coroutine m_SecondaryButtonVisibilityCoroutine;
-
-		string m_TooltipText;
-		string m_PreviewToolDescription;
-		bool m_MoveToAlternatePosition;
-		int m_Order = -1;
-		Type m_PreviewToolType;
-		Type m_ToolType;
-		GradientPair m_GradientPair;
-		Material m_FrameMaterial;
-		Material m_InsetMaterial;
-		Vector3 m_OriginalLocalPosition;
-		Vector3 m_OriginalLocalScale;
-		Material m_IconMaterial;
-		Vector3 m_OriginalIconContainerLocalScale;
-		Sprite m_Icon;
-		Sprite m_PreviewIcon;
-		bool m_Highlighted;
-		bool m_ActiveTool;
-
-		public Transform tooltipTarget { get { return m_TooltipTarget; } set { m_TooltipTarget = value; } }
-		public Transform tooltipSource { get { return m_TooltipSource; } }
-		public TextAlignment tooltipAlignment { get; private set; }
-		public Transform rayOrigin { get; set; }
-		public Node node { get; set; }
-		public ITooltip tooltip { private get; set; } // Overrides text
-		public GradientPair customToolTipHighlightColor { get; set; }
-		public bool isSelectionTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
-		public bool isMainMenu { get { return m_ToolType != null && m_ToolType == typeof(IMainMenu); } }
-		public int activeButtonCount { get; set; }
-		public int maxButtonCount { get; set; }
-		public Transform menuOrigin { get; set; }
-		public bool implementsSecondaryButton { get; set; }
-
-		public Action<Transform, Transform> OpenMenu { get; set; }
-		public Action<Type> selectTool { get; set; }
-		public Func<bool> closeButton { get; set; }
-		public Action<Transform, int, bool> highlightSingleButton { get; set; }
-		public Action<Transform> selectHighlightedButton { get; set; }
-		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
-		public Func<Type, int> visibleButtonCount { get; set; }
-		public Action destroy { get { return DestroyButton; } }
-		public Action<IPinnedToolButton> showAllButtons { private get; set; }
-		public Action hoverExit { get; set; }
-
 		public bool isActiveTool
 		{
 			private get { return m_ActiveTool; }
@@ -299,7 +305,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public bool secondaryButtonHighlighted { get { return m_SecondaryGradientButton.highlighted; } }
+		public bool secondaryButtonHighlighted { get { return m_CloseButton.highlighted; } }
 
 		public bool toolTipVisible
 		{
@@ -325,7 +331,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			set
 			{
-				foreach (var collider in m_SecondaryButtonColliders)
+				foreach (var collider in m_CloseButtonColliders)
 				{
 					collider.enabled = value;
 				}
@@ -406,13 +412,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_GradientButton.containerContentsAnimationSpeedMultiplier = kIncreasedContainerContentsSpeedMultiplier;
 
 			m_FrameRenderer.SetBlendShapeWeight(1, 0f);
-			m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, 100f);
-			m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, 100f);
+			m_CloseInsetMeshRenderer.SetBlendShapeWeight(0, 100f);
+			m_CloseInsetMaskMeshRenderer.SetBlendShapeWeight(0, 100f);
 
-			m_SecondaryGradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
-			m_SecondaryGradientButton.hoverExit += OnActionButtonHoverExit;
-			m_SecondaryGradientButton.click += OnSecondaryButtonClicked;
-			m_SecondaryButtonContainerCanvasGroup.alpha = 0f;
+			m_CloseButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
+			m_CloseButton.hoverExit += OnActionButtonHoverExit;
+			m_CloseButton.click += OnSecondaryButtonClicked;
+			m_CloseButtonContainerCanvasGroup.alpha = 0f;
 		}
 
 		void OnDestroy()
@@ -483,7 +489,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 			}
 
-			if (!m_SecondaryGradientButton.highlighted)
+			if (!m_CloseButton.highlighted)
 				this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
 			hoverExit();
@@ -659,7 +665,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator ShowSecondaryButton()
 		{
 			// Don't perform additional animated visuals if already in a fully revealed state
-			if (Mathf.Approximately(m_SecondaryButtonContainerCanvasGroup.alpha, 1f))
+			if (Mathf.Approximately(m_CloseButtonContainerCanvasGroup.alpha, 1f))
 			{
 				m_SecondaryButtonVisibilityCoroutine = null;
 				yield break;
@@ -691,17 +697,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			this.StopCoroutine(ref m_HighlightCoroutine);
 
-			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
-			var currentSecondaryCanvasGroupAlpha = m_SecondaryButtonContainerCanvasGroup.alpha;
+			var currentSecondaryButtonVisibilityAmount = m_CloseInsetMeshRenderer.GetBlendShapeWeight(0);
+			var currentSecondaryCanvasGroupAlpha = m_CloseButtonContainerCanvasGroup.alpha;
 			currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
 			currentDuration = 0f;
 			while (currentDuration < 1f)
 			{
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentDuration += Time.unscaledDeltaTime * kDurationMultiplier);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, kFrameSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
-				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
-				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
-				m_SecondaryButtonContainerCanvasGroup.alpha = Mathf.Lerp(currentSecondaryCanvasGroupAlpha, 1f, shapedAmount);
+				m_CloseInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
+				m_CloseInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonVisibleBlendShapeWeight, shapedAmount));
+				m_CloseButtonContainerCanvasGroup.alpha = Mathf.Lerp(currentSecondaryCanvasGroupAlpha, 1f, shapedAmount);
 				yield return null;
 			}
 
@@ -721,14 +727,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kSecondaryButtonHiddenBlendShapeWeight = 100f;
 			const int kDurationMultiplier = 12;
 			var currentVisibilityAmount = m_FrameRenderer.GetBlendShapeWeight(1);
-			var currentSecondaryButtonVisibilityAmount = m_SecondaryInsetMeshRenderer.GetBlendShapeWeight(0);
-			var currentSecondaryCanvasGroupAlpha = m_SecondaryButtonContainerCanvasGroup.alpha;
+			var currentSecondaryButtonVisibilityAmount = m_CloseInsetMeshRenderer.GetBlendShapeWeight(0);
+			var currentSecondaryCanvasGroupAlpha = m_CloseButtonContainerCanvasGroup.alpha;
 			var amount = 0f;
 			while (amount < 1f)
 			{
 				yield return null;
 
-				if (m_SecondaryGradientButton.highlighted)
+				if (m_CloseButton.highlighted)
 				{
 					m_SecondaryButtonVisibilityCoroutine = null;
 					yield break;
@@ -738,9 +744,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount += Time.unscaledDeltaTime * kDurationMultiplier);
 				m_FrameRenderer.SetBlendShapeWeight(1, Mathf.Lerp(currentVisibilityAmount, 0f, shapedAmount));
-				m_SecondaryInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
-				m_SecondaryInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
-				m_SecondaryButtonContainerCanvasGroup.alpha = Mathf.Lerp(currentSecondaryCanvasGroupAlpha, 0f, shapedAmount);
+				m_CloseInsetMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
+				m_CloseInsetMaskMeshRenderer.SetBlendShapeWeight(0, Mathf.Lerp(currentSecondaryButtonVisibilityAmount, kSecondaryButtonHiddenBlendShapeWeight, shapedAmount));
+				m_CloseButtonContainerCanvasGroup.alpha = Mathf.Lerp(currentSecondaryCanvasGroupAlpha, 0f, shapedAmount);
 			}
 
 			m_SecondaryButtonVisibilityCoroutine = null;

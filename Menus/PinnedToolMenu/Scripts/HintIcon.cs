@@ -81,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IEnumerator AnimateShow()
 		{
 			var currentDuration = 0f;
-			var targetDuration = 0f;
+			float targetDuration;
 			var currentLocalScale = m_IconTransform.localScale;
 			if (currentLocalScale == k_HiddenScale)
 			{

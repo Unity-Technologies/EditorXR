@@ -2,11 +2,12 @@
 using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IRayExitHandler, IRayClickHandler
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
 	{
 		[SerializeField]
 		Button m_Button;
@@ -26,12 +27,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public ITooltip tooltip { private get; set; }
 
 		public Type toolType { get; set; }
-
-		public void OnRayClick(RayEventData eventData)
-		{
-			if (clicked != null)
-				clicked(eventData.rayOrigin);
-		}
 
 		public bool selected
 		{
@@ -74,6 +69,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (hovered != null)
 				hovered(eventData.rayOrigin, null, null);
+		}
+
+		public void OnPointerClick(PointerEventData eventData)
+		{
+			if (clicked != null)
+				clicked(null); // Pass null to perform the selection haptic pulse on both nodes
 		}
 	}
 }

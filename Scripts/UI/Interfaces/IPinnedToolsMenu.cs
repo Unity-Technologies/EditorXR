@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Function that assigns & sets up a tool button for a given tool type
 		/// This method isn't hooked up in EVR, it should reside in the implementing class
 		/// </summary>
-		Action<Type, Sprite> SetButtonForType { get; }
+		Action<Type, Sprite> setButtonForType { get; }
 
 		/// <summary>
 		/// Delete the tool button with corresponding type of the first parameter.

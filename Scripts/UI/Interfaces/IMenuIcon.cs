@@ -4,12 +4,12 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Declares a class as a menu UI element that can be represented via an icon/sprite
+	/// Provides an icon/sprite to display on a menu item which represents this class
 	/// </summary>
 	public interface IMenuIcon
 	{
 		/// <summary>
-		/// The icon representing this Action that can be displayed in menus
+		/// The icon representing this class that can be displayed in menus
 		/// </summary>
 		Sprite icon { get; }
 	}

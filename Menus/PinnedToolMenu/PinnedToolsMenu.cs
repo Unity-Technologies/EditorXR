@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IControlHaptics, IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, ISetDefaultRayVisibility, IUsesRayOrigin
 	{
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
-		const int k_MaxButtonCount = 16; //
+		const int k_MaxButtonCount = 16;
 
 		[SerializeField]
 		Sprite m_MainMenuIcon;
@@ -38,24 +38,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		HapticPulse m_HidingPulse; // The pulse performed when ending a spatial selection
 
 		Transform m_RayOrigin;
-		Transform m_AlternateMenuOrigin;
 		float m_AllowToolToggleBeforeThisTime;
 		Vector3 m_SpatialScrollStartPosition;
-		IPinnedToolButton m_MainMenuButton;
 		PinnedToolsMenuUI m_PinnedToolsMenuUI;
 
 		public Transform menuOrigin { get; set; }
 		List<IPinnedToolButton> buttons { get { return m_PinnedToolsMenuUI.buttons; } }
 		public bool alternateMenuVisible { set { m_PinnedToolsMenuUI.moveToAlternatePosition = value; } }
 
-		public Action<Transform, int, bool> HighlightSingleButton { get; set; }
-		public Action<Transform> SelectHighlightedButton { get; set; }
-		public Action<Type, Sprite> SetButtonForType { get; set; }
+		public Action<Transform, int, bool> highlightSingleButton { get; set; }
+		public Action<Transform> selectHighlightedButton { get; set; }
+		public Action<Type, Sprite> setButtonForType { get; set; }
 		public Action<Type, Type> deletePinnedToolButton { get; set; }
 		public Node? node { get; set; }
-		public IPinnedToolButton previewToolButton { get { return m_MainMenuButton; } }
-		public Transform alternateMenuOrigin { get { return m_AlternateMenuOrigin; } set { m_AlternateMenuOrigin = value; } }
+		public IPinnedToolButton previewToolButton { get; private set; }
+		public Transform alternateMenuOrigin { get; set; }
 		public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
+		public ActionMap actionMap { get { return m_MainMenuActionMap; } }
 
 		public Transform rayOrigin
 		{
@@ -69,14 +68,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public ActionMap actionMap
-		{
-			get { return m_MainMenuActionMap; }
-		}
-
 		void Awake()
 		{
-			SetButtonForType = CreatePinnedToolButton;
+			setButtonForType = CreatePinnedToolButton;
 			deletePinnedToolButton = DeletePinnedToolButton;
 		}
 
@@ -98,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			// Alternate menu origin isn't set when awake or start run
 			var pinnedToolsUITransform = m_PinnedToolsMenuUI.transform;
-			pinnedToolsUITransform.SetParent(m_AlternateMenuOrigin);
+			pinnedToolsUITransform.SetParent(alternateMenuOrigin);
 			pinnedToolsUITransform.localPosition = Vector3.zero;
 			pinnedToolsUITransform.localRotation = Quaternion.identity;
 		}
@@ -106,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void CreatePinnedToolButton(Type toolType, Sprite buttonIcon)
 		{
 			// Select an existing ToolButton if the type is already present in a button
-			if (buttons.Any( (x) => x.toolType == toolType))
+			if (buttons.Any( x => x.toolType == toolType))
 			{
 				m_PinnedToolsMenuUI.SelectExistingToolType(toolType);
 				return;
@@ -122,12 +116,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			button.rayOrigin = rayOrigin;
 			button.toolType = toolType; // Assign Tool Type before assigning order
 			button.icon = toolType != typeof(IMainMenu) ? buttonIcon : m_MainMenuIcon;
-			button.highlightSingleButton = HighlightSingleButton;
-			button.selectHighlightedButton = SelectHighlightedButton;
+			button.highlightSingleButton = highlightSingleButton;
+			button.selectHighlightedButton = selectHighlightedButton;
 			button.rayOrigin = rayOrigin;
 
 			if (toolType == typeof(IMainMenu))
-				m_MainMenuButton = button;
+				previewToolButton = button;
 
 			m_PinnedToolsMenuUI.AddButton(button, buttonTransform);
 		}
@@ -151,7 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				this.SetDefaultRayVisibility(rayOrigin, false);
 				this.LockRay(rayOrigin, this);
-				m_SpatialScrollStartPosition = m_AlternateMenuOrigin.position;
+				m_SpatialScrollStartPosition = alternateMenuOrigin.position;
 				m_AllowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
 				this.SetSpatialHintControlObject(rayOrigin);
 				m_PinnedToolsMenuUI.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
@@ -175,7 +169,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				// normalized input should loop after reaching the 0.15f length
 				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-				spatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, m_AlternateMenuOrigin.position, 0.325f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
+				spatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
 				var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{

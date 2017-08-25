@@ -870,7 +870,7 @@ MonoBehaviour:
   m_BeginHighlightDuration: 0.25
   m_EndHighlightDuration: 0.3
   m_DelayBeforeReveal: 0
-  m_highlightZScaleMultiplier: 25
+  m_HighlightZScaleMultiplier: 25
 --- !u!114 &114000010635728284
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -916,7 +916,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_GradientButton: {fileID: 114000014181189902}
-  m_SmoothMotion: {fileID: 0}
   m_IconContainer: {fileID: 4000011872301252}
   m_PrimaryUIContentContainer: {fileID: 4181584002966386}
   m_IconContainerCanvasGroup: {fileID: 225000010727404378}
@@ -927,19 +926,14 @@ MonoBehaviour:
   - {fileID: 65000012136550866}
   - {fileID: 65000010544999880}
   - {fileID: 65000012534630730}
-  m_SecondaryGradientButton: {fileID: 114000010373680160}
-  m_SecondaryButtonContainerCanvasGroup: {fileID: 225000012815828682}
-  m_SecondaryInsetMeshRenderer: {fileID: 137000012837336366}
-  m_SecondaryInsetMaskMeshRenderer: {fileID: 137000010072420284}
-  m_SecondaryButtonColliders:
-  - {fileID: 65000012409633396}
-  - {fileID: 65000010321053192}
-  - {fileID: 65000011573248474}
+  m_CloseButton: {fileID: 114000010373680160}
+  m_CloseButtonContainerCanvasGroup: {fileID: 225000012815828682}
+  m_CloseInsetMeshRenderer: {fileID: 137000012837336366}
+  m_CloseInsetMaskMeshRenderer: {fileID: 137000010072420284}
+  m_CloseButtonColliders: []
   m_TooltipTarget: {fileID: 4000010683372396}
   m_TooltipSource: {fileID: 4000013378434912}
   m_AlternateLocalPosition: {x: 0, y: 0, z: 0}
-  m_Inset: {fileID: 0}
-  m_InsetMask: {fileID: 0}
   m_ButtonIcon: {fileID: 114000011650556854}
 --- !u!114 &114000011650556854
 MonoBehaviour:
@@ -1061,7 +1055,7 @@ MonoBehaviour:
   m_BeginHighlightDuration: 0.25
   m_EndHighlightDuration: 0.167
   m_DelayBeforeReveal: 0
-  m_highlightZScaleMultiplier: 10
+  m_HighlightZScaleMultiplier: 10
 --- !u!137 &137000010072420284
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

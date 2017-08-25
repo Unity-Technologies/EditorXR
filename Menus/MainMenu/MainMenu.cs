@@ -175,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (buttonData == null)
 						buttonData = new MainMenuUI.ButtonData(type.Name);
 
-					CreateFaceButton(buttonData, tooltip, () =>
+					var mainMenuButton = CreateFaceButton(buttonData, tooltip, () =>
 					{
 						if (targetRayOrigin)
 						{
@@ -183,6 +183,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 							UpdateToolButtons();
 						}
 					}, selectedType);
+
+					// Assign pinned tool button preview properties
+					mainMenuButton.toolType = selectedType;
 				}
 
 				if (isWorkspace)
@@ -238,25 +241,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback, Type selectedType = null)
+		MainMenuButton CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback, Type selectedType = null)
 		{
 			var mainMenuButton = m_MainMenuUI.CreateFaceButton(buttonData);
-			mainMenuButton.button.onClick.RemoveAllListeners();
-			mainMenuButton.button.onClick.AddListener(() =>
+			var button = mainMenuButton.button;
+			button.onClick.RemoveAllListeners();
+			button.onClick.AddListener(() =>
 			{
 				if (visible)
 					buttonClickCallback();
 			});
 
+			mainMenuButton.hovered += OnButtonHovered;
+			mainMenuButton.clicked += OnButtonClicked;
 			mainMenuButton.tooltip = tooltip;
 
-			if (selectedType != null)
-			{
-				// Assign pinned tool button preview properties
-				mainMenuButton.toolType = selectedType;
-				mainMenuButton.hovered += OnButtonHovered;
-				mainMenuButton.clicked += OnButtonClicked;
-			}
+			return mainMenuButton;
 		}
 
 		void UpdateToolButtons()

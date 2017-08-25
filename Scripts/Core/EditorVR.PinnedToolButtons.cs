@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IMainMenuMethods.clearPinnedToolButtonPreview = ClearPinnedToolButtonPreview;
 			}
 
-			internal void PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType, string toolDescription)
+			private static void PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType, string toolDescription)
 			{
 				// Prevents menu buttons of types other than ITool from triggering any pinned tool button preview actions
 				if (!toolType.GetInterfaces().Contains(typeof(ITool)))
@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			internal void ClearPinnedToolButtonPreview()
+			private static void ClearPinnedToolButtonPreview()
 			{
 				Rays.ForEachProxyDevice((deviceData) =>
 				{
@@ -43,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			internal void OnToolButtonClicked(Transform rayOrigin, Type toolType)
+			private static void OnToolButtonClicked(Transform rayOrigin, Type toolType)
 			{
 				if (toolType == typeof(IMainMenu))
 					OnMainMenuActivatorSelected(rayOrigin);
@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					Tools.SelectTool(rayOrigin, toolType);
 			}
 
-			internal void OnMainMenuActivatorSelected(Transform rayOrigin)
+			private static void OnMainMenuActivatorSelected(Transform rayOrigin)
 			{
 				var targetToolRayOrigin = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin != rayOrigin).rayOrigin;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin == rayOrigin);
