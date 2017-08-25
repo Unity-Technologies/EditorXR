@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public override void Awake()
 		{
-			if (VRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0)
+			if (UnityEngine.XR.XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0)
 			{
 				m_LeftHandProxyPrefab = m_LeftHandTouchProxyPrefab;
 				m_RightHandProxyPrefab = m_RightHandTouchProxyPrefab;

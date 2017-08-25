@@ -147,8 +147,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			// VRSettings.enabled latches the reference pose for the current camera
 			var currentCamera = Camera.current;
 			Camera.SetupCurrent(m_Camera);
-			VRSettings.enabled = true;
-			InputTracking.Recenter();
+			UnityEngine.XR.XRSettings.enabled = true;
+			UnityEngine.XR.InputTracking.Recenter();
 			Camera.SetupCurrent(currentCamera);
 
 			if (viewEnabled != null)
@@ -160,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (viewDisabled != null)
 				viewDisabled();
 
-			VRSettings.enabled = false;
+			UnityEngine.XR.XRSettings.enabled = false;
 
 			EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
 			EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
@@ -177,8 +177,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		void UpdateCameraTransform()
 		{
 			var cameraTransform = m_Camera.transform;
-			cameraTransform.localPosition = InputTracking.GetLocalPosition(VRNode.Head);
-			cameraTransform.localRotation = InputTracking.GetLocalRotation(VRNode.Head);
+			cameraTransform.localPosition = UnityEngine.XR.InputTracking.GetLocalPosition(UnityEngine.XR.XRNode.Head);
+			cameraTransform.localRotation = UnityEngine.XR.InputTracking.GetLocalRotation(UnityEngine.XR.XRNode.Head);
 		}
 
 		public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)
@@ -224,7 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			// Always render camera into a RT
 			CreateCameraTargetTexture(ref m_TargetTexture, cameraRect, false);
 			m_Camera.targetTexture = m_ShowDeviceView ? m_TargetTexture : null;
-			VRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
+			UnityEngine.XR.XRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
 		}
 
 		void OnGUI()
@@ -286,7 +286,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (!m_Camera.gameObject.activeInHierarchy)
 				return;
 
-			if (!VRDevice.isPresent)
+			if (!UnityEngine.XR.XRDevice.isPresent)
 				return;
 
 			UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
@@ -308,7 +308,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			// Force the window to repaint every tick, since we need live updating
 			// This also allows scripts with [ExecuteInEditMode] to run
-			EditorApplication.SetSceneRepaintDirty();
+			EditorApplication.QueuePlayerLoopUpdate();
 
 			// Our camera is disabled, so it doesn't get automatically updated to HMD values until it renders
 			UpdateCameraTransform();
@@ -334,7 +334,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		static bool GetIsUserPresent()
 		{
 #if ENABLE_OVR_INPUT
-			if (VRSettings.loadedDeviceName == "Oculus")
+			if (UnityEngine.XR.XRSettings.loadedDeviceName == "Oculus")
 				return OVRPlugin.userPresent;
 #endif
 #if ENABLE_STEAMVR_INPUT
