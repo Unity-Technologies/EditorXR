@@ -177,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				alternateMenu.visible = deviceData.menuHideFlags[alternateMenu] == 0 && !(deviceData.currentTool is IExclusiveMode);
 
 				// Move the pinned tool buttons to an alternate position if the alternate menu will be shown
-				var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+				var pinnedToolsMenu = deviceData.ToolMenu;
 				pinnedToolsMenu.alternateMenuVisible = alternateMenu.visible;
 			}
 

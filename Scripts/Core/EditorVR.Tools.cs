@@ -118,7 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					// Setup PinnedToolsMenu
 					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
-					deviceData.pinnedToolsMenu = pinnedToolsMenu;
+					deviceData.ToolMenu = pinnedToolsMenu;
 					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
 					pinnedToolsMenu.setButtonForType(typeof(IMainMenu), null);
 					pinnedToolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
@@ -193,21 +193,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var currentToolType = currentTool.GetType();
 						var currentToolIsSelect = currentToolType == typeof(SelectionTool);
 						var setSelectAsCurrentTool = toolType == typeof(SelectionTool) && !currentToolIsSelect;
-						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+						var pinnedToolsMenu = deviceData.ToolMenu;
 						// If this tool was on the current device already, remove it, if it is selected while already being the current tool
 						var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentTool;// || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
 						if (currentTool != null && despawn)
 						{
 							DespawnTool(deviceData, currentTool);
 
-							if (!currentToolIsSelect && !setSelectAsCurrentTool)
+							if (!setSelectAsCurrentTool)
 							{
 								// Delete a button of the first type parameter
 								// Then select a button the second type param (the new current tool)
 								// Don't spawn a new tool, since we are only removing the old tool
 								pinnedToolsMenu.deletePinnedToolButton(toolType, currentToolType);
 							}
-							else if (!currentToolIsSelect && setSelectAsCurrentTool)
+							else if (setSelectAsCurrentTool)
 							{
 								// Set the selection tool as the active tool, if select is to be the new current tool
 								pinnedToolsMenu.setButtonForType(typeof(SelectionTool), null);
@@ -362,7 +362,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							maps.Add(alternateMenuInput);
 					}
 
-					var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+					var pinnedToolsMenu = deviceData.ToolMenu;
 					var pinnedToolsMenuInput = deviceData.pinnedToolsMenuInput;
 					if (pinnedToolsMenu != null && pinnedToolsMenuInput != null)
 					{

@@ -78,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public ActionMapInput alternateMenuInput;
 			public ITool currentTool;
 			public IMenu customMenu;
-			public IPinnedToolsMenu pinnedToolsMenu;
+			public IPinnedToolsMenu ToolMenu;
 			public ActionMapInput pinnedToolsMenuInput;
 			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
 			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
@@ -385,7 +385,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (altMenuInput != null && altMenu.visible)
 					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
 
-				var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+				var pinnedToolsMenu = deviceData.ToolMenu;
 				var pinnedToolsMenuInput = pinnedToolsMenu as IProcessInput;
 				if (pinnedToolsMenuInput != null)
 					pinnedToolsMenuInput.ProcessInput(deviceData.pinnedToolsMenuInput, consumeControl);

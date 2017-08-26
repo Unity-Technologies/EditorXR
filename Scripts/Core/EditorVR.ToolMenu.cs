@@ -7,20 +7,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class PinnedToolButtons : Nested
+		class ToolMenu : Nested
 		{
-			public PinnedToolButtons()
+			public ToolMenu()
 			{
 				IPinnedToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
 				IPinnedToolsMenuMethods.selectTool = OnToolButtonClicked;
 
-				IMainMenuMethods.previewInPinnedToolButton = PreviewToolInPinnedToolButton;
-				IMainMenuMethods.clearPinnedToolButtonPreview = ClearPinnedToolButtonPreview;
+				IPreviewInToolMenuButtonMethods.previewInToolMenuButton = PreviewToolInToolMenuButton;
+				IPreviewInToolMenuButtonMethods.clearToolMenuButtonPreview = ClearToolMenuButtonPreview;
 			}
 
-			private static void PreviewToolInPinnedToolButton (Transform rayOrigin, Type toolType, string toolDescription)
+			static void PreviewToolInToolMenuButton (Transform rayOrigin, Type toolType, string toolDescription)
 			{
-				// Prevents menu buttons of types other than ITool from triggering any pinned tool button preview actions
+				// Prevents menu buttons of types other than ITool from triggering any ToolMenuButton preview actions
 				if (!toolType.GetInterfaces().Contains(typeof(ITool)))
 					return;
 
@@ -28,22 +28,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					if (deviceData.rayOrigin == rayOrigin) // Enable pinned tool preview on the opposite (handed) device
 					{
-						var previewPinnedToolButton = deviceData.pinnedToolsMenu.previewToolButton;
-						previewPinnedToolButton.previewToolType = toolType;
-						previewPinnedToolButton.previewToolDescription = toolDescription;
+						var previewToolMenuButton = deviceData.ToolMenu.previewToolButton;
+						previewToolMenuButton.previewToolType = toolType;
+						previewToolMenuButton.previewToolDescription = toolDescription;
 					}
 				});
 			}
 
-			private static void ClearPinnedToolButtonPreview()
+			static void ClearToolMenuButtonPreview()
 			{
 				Rays.ForEachProxyDevice((deviceData) =>
 				{
-					deviceData.pinnedToolsMenu.previewToolButton.previewToolType = null;
+					deviceData.ToolMenu.previewToolButton.previewToolType = null;
 				});
 			}
 
-			private static void OnToolButtonClicked(Transform rayOrigin, Type toolType)
+			static void OnToolButtonClicked(Transform rayOrigin, Type toolType)
 			{
 				if (toolType == typeof(IMainMenu))
 					OnMainMenuActivatorSelected(rayOrigin);
@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					Tools.SelectTool(rayOrigin, toolType);
 			}
 
-			private static void OnMainMenuActivatorSelected(Transform rayOrigin)
+			static void OnMainMenuActivatorSelected(Transform rayOrigin)
 			{
 				var targetToolRayOrigin = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin != rayOrigin).rayOrigin;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin == rayOrigin);

@@ -279,10 +279,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// Pass the pointer which is over us, so this information can supply context (e.g. selecting a tool for a different hand)
 			// Enable preview-mode on a pinned tool button; Display on the opposite proxy device by evaluating the entering RayOrigin
 			// Disable any existing previews being displayed in PinnedToolsMenus
-			this.ClearPinnedToolButtonPreview();
+			this.ClearToolMenuButtonPreview();
 
 			if (buttonType != null && rayOrigin != null)
-				this.PreviewInPinnedToolButton(rayOrigin, buttonType, buttonDescription);
+				this.PreviewInToolMenuButton(rayOrigin, buttonType, buttonDescription);
 		}
 
 		void OnOpening()

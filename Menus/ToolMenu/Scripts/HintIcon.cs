@@ -45,16 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <summary>
 		/// Bool denoting the visibility state of this icon
 		/// </summary>
-		public bool visible
-		{
-			set
-			{
-				if (value)
-					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
-				else
-					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
-			}
-		}
+		public bool visible { set { this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(value)); } }
 
 		/// <summary>
 		/// The color to be displayed by this icon when it is visible
@@ -64,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_VisibleColor = value;
-				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
+				visible = true;
 			}
 		}
 
@@ -78,12 +69,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				visible = false;
 		}
 
-		IEnumerator AnimateShow()
+		IEnumerator AnimateVisibility(bool show = true)
 		{
 			var currentDuration = 0f;
 			float targetDuration;
 			var currentLocalScale = m_IconTransform.localScale;
-			if (currentLocalScale == k_HiddenScale)
+			var targetLocalScale = show ? m_VisibleLocalScale : k_HiddenScale;
+			// Only perform this wait if showing/revealing, not hiding
+			if (show && currentLocalScale == k_HiddenScale)
 			{
 				// Only perform delay if fully hidden; otherwise resume showing
 				targetDuration = Random.Range(0.125f, 0.175f); // Set an initial random wait duration
@@ -95,38 +88,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			currentDuration = 0f;
-			targetDuration = m_ShowDuration; // Set animated reveal duration
+			targetDuration = show ? m_ShowDuration : m_HideDuration + (m_SlightlyRandomizeHideDuration ? 0f : Random.Range(0.125f, 0.2f)); // Set an initial random wait duration
+			const int kAdditionalDurationShaping = 4;
+			const int kAdditionalHideSpeedScalar = 3;
 			var currentColor = m_Icon.color;
+			var targetColor = show ? m_VisibleColor : m_HiddenColor;
 			while (currentDuration < targetDuration)
 			{
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / targetDuration);
-				shapedDuration = Mathf.Pow(shapedDuration, 4);
-				m_IconTransform.localScale = Vector3.Lerp(currentLocalScale, m_VisibleLocalScale, shapedDuration);
-				m_Icon.color = Color.Lerp(currentColor, m_VisibleColor, shapedDuration);
+				shapedDuration = Mathf.Pow(shapedDuration, kAdditionalDurationShaping);
+				var colorLerpAmount = show ? shapedDuration : currentDuration * kAdditionalHideSpeedScalar;
+				m_IconTransform.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, shapedDuration);
+				m_Icon.color = Color.Lerp(currentColor, targetColor, colorLerpAmount);
 				currentDuration += Time.unscaledDeltaTime;
 				yield return null;
 			}
 
-			m_IconTransform.localScale = m_VisibleLocalScale;
-		}
-
-		IEnumerator AnimateHide()
-		{
-			var currentDuration = 0f;
-			var targetDuration = m_HideDuration + (m_SlightlyRandomizeHideDuration ? 0f : Random.Range(0.125f, 0.2f)); // Set an initial random wait duration
-			var currentLocalScale = m_IconTransform.localScale;
-			var currentColor = m_Icon.color;
-			while (currentDuration < targetDuration)
-			{
-				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / targetDuration);
-				shapedDuration = Mathf.Pow(shapedDuration, 4);
-				m_IconTransform.localScale = Vector3.Lerp(currentLocalScale, k_HiddenScale, shapedDuration);
-				m_Icon.color = Color.Lerp(currentColor, m_HiddenColor, currentDuration * 3);
-				currentDuration += Time.unscaledDeltaTime;
-				yield return null;
-			}
-
-			m_IconTransform.localScale = k_HiddenScale;
+			m_IconTransform.localScale = targetLocalScale;
 		}
 
 		/// <summary>

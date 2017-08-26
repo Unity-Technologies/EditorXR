@@ -379,6 +379,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		bool visible { set { this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(value)); } }
+
 		public Vector3 primaryUIContentContainerLocalScale { get { return m_PrimaryUIContentContainer.localScale; } set { m_PrimaryUIContentContainer.localScale = value; } }
 		public float iconHighlightedLocalZOffset { set { m_GradientButton.iconHighlightedLocalZOffset = value; } }
 
@@ -537,51 +539,28 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			ObjectUtils.Destroy(gameObject, 0.1f);
 		}
 
-		IEnumerator AnimateHide()
+		IEnumerator AnimateVisibility(bool show = true)
 		{
-			const float kTimeScalar = 8f;
-			var targetPosition = Vector3.zero;
+			const float kSpeedScalar = 8f;
+			var targetPosition = show ? (moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition) : Vector3.zero;
+			var targetScale = show ? (moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_AlternateLocalScaleMultiplier) : Vector3.zero;
 			var currentPosition = transform.localPosition;
 			var currentIconScale = m_IconContainer.localScale;
-			var targetIconContainerScale = Vector3.zero;
+			var targetIconContainerScale = show ? m_OriginalIconContainerLocalScale : Vector3.zero;
 			var transitionAmount = 0f;
 			var currentScale = transform.localScale;
 			while (transitionAmount < 1)
 			{
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime * kTimeScalar);
-				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
-				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
-				transform.localScale = Vector3.Lerp(currentScale, Vector3.zero, shapedAmount);
-				yield return null;
-			}
-
-			m_IconContainer.localScale = targetIconContainerScale;
-			transform.localPosition = targetPosition;
-			m_VisibilityCoroutine = null;
-		}
-
-		IEnumerator AnimateShow()
-		{
-			const float kTimeScalar = 8f;
-			var targetScale = moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_AlternateLocalScaleMultiplier;
-			var targetPosition = moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition;
-			var currentIconScale = m_IconContainer.localScale;
-			var targetIconContainerScale = m_OriginalIconContainerLocalScale;
-			var transitionAmount = 0f;
-			var currentScale = transform.localScale;
-			var currentPosition = transform.localPosition;
-			while (transitionAmount < 1)
-			{
-				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime * kTimeScalar);
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime * kSpeedScalar);
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
 				transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
 				transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedAmount);
 				yield return null;
 			}
 
-			transform.localPosition = targetPosition;
-			transform.localScale = targetScale;
 			m_IconContainer.localScale = targetIconContainerScale;
+			transform.localScale = targetScale;
+			transform.localPosition = targetPosition;
 			m_VisibilityCoroutine = null;
 		}
 
@@ -592,10 +571,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 
-			if (orderPosition == -1)
-				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
-			else
-				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
+			visible = orderPosition != -1;
 
 			const float kTimeScalar = 6f;
 			const float kCenterLocationAmount = 0.5f;
