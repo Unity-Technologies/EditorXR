@@ -28,10 +28,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_IgnoreList.Add(manager.gameObject);
 			}
 
+#if UNITY_EDITORVR
 			foreach (var manager in Resources.FindObjectsOfTypeAll<EditingContextManager>())
 			{
 				m_IgnoreList.Add(manager.gameObject);
 			}
+#endif
 		}
 
 		void OnEnable()

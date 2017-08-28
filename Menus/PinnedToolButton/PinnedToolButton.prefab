@@ -71,7 +71,7 @@ GameObject:
   - component: {fileID: 33000013208543088}
   - component: {fileID: 23000013566874788}
   - component: {fileID: 114000010373680160}
-  - component: {fileID: 135000012241492716}
+  - component: {fileID: 65353114627912982}
   m_Layer: 5
   m_Name: Base
   m_TagString: Untagged
@@ -325,6 +325,18 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011266792292}
   m_Mesh: {fileID: 4300050, guid: 4f7e1c38dff4db9449be30d253d1bd8f, type: 3}
+--- !u!65 &65353114627912982
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011266792292}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.08, y: 0.0028786354, z: 0.08}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &114000010373680160
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -445,18 +457,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 2
---- !u!135 &135000012241492716
-SphereCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011266792292}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.03
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!222 &222000011018194712
 CanvasRenderer:
   m_ObjectHideFlags: 1
