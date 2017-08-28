@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, IRayToNode
+	public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, IRayToNode, IRayVisibilitySettings
 	{
 		[Flags]
 		public enum SpatialHintStateFlags
@@ -35,6 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						m_SpatialHintModuleUI.centeredScrolling = false;
 						m_SpatialHintModuleUI.preScrollArrowsVisible = false;
 						m_SpatialHintModuleUI.secondaryArrowsVisible = false;
+						this.RemoveRayVisibilitySettings(m_ControllingRayOrigin, this);
 						controllingRayOrigin = null;
 						break;
 					case SpatialHintStateFlags.PreDragReveal:
@@ -67,6 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (m_ControllingRayOrigin == null)
 				{
 					m_SpatialHintModuleUI.controllingNode = null;
+
 				}
 				else
 				{
@@ -129,6 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		internal void SetSpatialHintControlObject(Transform controlObject)
 		{
 			controllingRayOrigin = controlObject;
+			this.AddRayVisibilitySettings(m_ControllingRayOrigin, this, false, false);
 		}
 	}
 }

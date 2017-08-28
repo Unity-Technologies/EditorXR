@@ -75,7 +75,8 @@ GameObject:
   - component: {fileID: 4000010544386176}
   - component: {fileID: 33000014220048304}
   - component: {fileID: 23000012074004932}
-  m_Layer: 0
+  - component: {fileID: 65890992969317448}
+  m_Layer: 5
   m_Name: BorderOutline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -207,6 +208,18 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000012912631164}
   m_Mesh: {fileID: 4300040, guid: 4f7e1c38dff4db9449be30d253d1bd8f, type: 3}
+--- !u!65 &65890992969317448
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000012912631164}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.15000007, y: 0.25273103, z: 0.001}
+  m_Center: {x: 0, y: 0.0002848129, z: 0.073}
 --- !u!114 &114000010693038044
 MonoBehaviour:
   m_ObjectHideFlags: 1

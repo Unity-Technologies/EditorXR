@@ -11,7 +11,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	sealed class PinnedToolsMenu : MonoBehaviour, IPinnedToolsMenu, IConnectInterfaces, IInstantiateUI,
-		IControlHaptics, IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, ISetDefaultRayVisibility, IUsesRayOrigin
+		IControlHaptics, IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin
 	{
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
 		const int k_MaxButtonCount = 16;
@@ -76,7 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnDestroy()
 		{
-			this.SetDefaultRayVisibility(rayOrigin, true);
+			this.RemoveRayVisibilitySettings(rayOrigin, this);
 		}
 
 		void CreatePinnedToolsUI()
@@ -143,8 +143,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (pinnedToolInput.show.wasJustPressed)
 			{
-				this.SetDefaultRayVisibility(rayOrigin, false);
-				this.LockRay(rayOrigin, this);
 				m_SpatialScrollStartPosition = alternateMenuOrigin.position;
 				m_AllowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
 				this.SetSpatialHintControlObject(rayOrigin);
@@ -226,9 +224,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void CloseMenu()
 		{
 			this.Pulse(node, m_HidingPulse);
-			this.SetDefaultRayVisibility(rayOrigin, true);
-			this.UnlockRay(rayOrigin, this);
-			this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
 			this.EndSpatialScroll(this); // Free the spatial scroll data owned by this object
 		}
 	}

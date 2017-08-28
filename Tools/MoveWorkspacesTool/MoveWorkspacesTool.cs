@@ -7,8 +7,8 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [ExecuteInEditMode]
-public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, ISetDefaultRayVisibility, IUsesViewerBody, 
-	IResetWorkspaces, IAllWorkspaces, IUsesViewerScale
+public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesViewerBody,
+	IResetWorkspaces, IAllWorkspaces, IUsesViewerScale, IRayVisibilitySettings
 {
 	enum State
 	{
@@ -158,8 +158,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
 				m_State = State.MoveWorkspaces;
 
-				this.SetDefaultRayVisibility(rayOrigin, false);
-				this.LockRay(rayOrigin, this);
+				this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 
 				foreach (var ws in allWorkspaces)
 				{
@@ -180,7 +179,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 			var workspaceTransform = allWorkspaces[i].transform;
 			var deltaRotation = rayOrigin.rotation * Quaternion.Inverse(m_RayOriginStartRotation);
 			var deltaPosition = rayOrigin.position - m_RayOriginStartPosition;
-			Quaternion yawRotation = MathUtilsExt.ConstrainYawRotation(deltaRotation);
+			var yawRotation = MathUtilsExt.ConstrainYawRotation(deltaRotation);
 			var localOffset = m_WorkspacePositions[i] - m_RayOriginStartPosition;
 			workspaceTransform.position = m_RayOriginStartPosition + deltaPosition * kMoveMultiplier + yawRotation * localOffset;
 		}
@@ -193,8 +192,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 	{
 		m_State = State.WaitingForInput;
 
-		this.UnlockRay(rayOrigin, this);
-		this.SetDefaultRayVisibility(rayOrigin, true);
+		this.RemoveRayVisibilitySettings(rayOrigin, this);
 
 		foreach (var ws in allWorkspaces)
 		{

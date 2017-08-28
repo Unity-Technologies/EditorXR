@@ -12,7 +12,6 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	[InitializeOnLoad]
 #if UNITY_EDITORVR
 	[RequiresTag(k_VRPlayerTag)]
 	sealed partial class EditorVR : MonoBehaviour
@@ -71,7 +70,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public Transform rayOrigin;
 			public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
 			public ActionMapInput uiInput;
-			public ActionMapInput directSelectInput;
 			public IMainMenu mainMenu;
 			public ActionMapInput mainMenuInput;
 			public IAlternateMenu alternateMenu;
@@ -80,8 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public IMenu customMenu;
 			public IPinnedToolsMenu ToolMenu;
 			public ActionMapInput pinnedToolsMenuInput;
-			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
-			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
+			public readonly Dictionary<IMenu, Menus.MenuHideData> menuHideData = new Dictionary<IMenu, Menus.MenuHideData>();
 		}
 
 		class Nested
@@ -165,6 +162,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			AddModule<KeyboardModule>();
 
 			var multipleRayInputModule = GetModule<MultipleRayInputModule>();
+
 			var dragAndDropModule = AddModule<DragAndDropModule>();
 			multipleRayInputModule.rayEntered += dragAndDropModule.OnRayEntered;
 			multipleRayInputModule.rayExited += dragAndDropModule.OnRayExited;
@@ -174,6 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var tooltipModule = AddModule<TooltipModule>();
 			m_Interfaces.ConnectInterfaces(tooltipModule);
 			multipleRayInputModule.rayEntered += tooltipModule.OnRayEntered;
+			multipleRayInputModule.rayHovering += tooltipModule.OnRayHovering;
 			multipleRayInputModule.rayExited += tooltipModule.OnRayExited;
 
 			AddModule<ActionsModule>();
@@ -355,9 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			GetModule<DeviceInputModule>().ProcessInput();
 
-			var menus = GetNestedModule<Menus>();
-			menus.UpdateMenuVisibilityNearWorkspaces();
-			menus.UpdateMenuVisibilities();
+			GetNestedModule<Menus>().UpdateMenuVisibilities();
 
 			GetNestedModule<UI>().UpdateManipulatorVisibilites();
 		}
@@ -377,12 +374,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var mainMenu = deviceData.mainMenu;
 				var menuInput = mainMenu as IProcessInput;
-				if (menuInput != null && mainMenu.visible)
+				if (menuInput != null && mainMenu.menuHideFlags == 0)
 					menuInput.ProcessInput(deviceData.mainMenuInput, consumeControl);
 
 				var altMenu = deviceData.alternateMenu;
 				var altMenuInput = altMenu as IProcessInput;
-				if (altMenuInput != null && altMenu.visible)
+				if (altMenuInput != null && altMenu.menuHideFlags == 0)
 					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
 
 				var pinnedToolsMenu = deviceData.ToolMenu;

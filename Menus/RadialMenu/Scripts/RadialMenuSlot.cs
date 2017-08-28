@@ -500,20 +500,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			this.RestartCoroutine(ref m_RayExitDelayCoroutine, RayExitDelay());
-		}
-
-		IEnumerator RayExitDelay()
-		{
-			// Wait before setting highlighted to false if the user is moving the ray between slots
-			// This delay prevents highlight flickering when navigating the menu via ray vs analog input
-			var duration = Time.deltaTime;
-			while (duration < 0.2f)
-			{
-				duration += Time.deltaTime;
-				yield return null;
-			}
-
 			highlighted = false;
 		}
 	}

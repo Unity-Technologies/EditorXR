@@ -1,16 +1,16 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IConnectInterfaces
+	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IConnectInterfaces, IRayEnterHandler, IRayExitHandler
 	{
 		public class ButtonData
 		{
@@ -83,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		readonly string k_UncategorizedFaceName = "Uncategorized";
 		readonly Color k_MenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
-		VisibilityState m_VisibilityState = VisibilityState.Visible;
+		VisibilityState m_VisibilityState = VisibilityState.Hidden;
 		RotationState m_RotationState;
 		MainMenuFace[] m_MenuFaces;
 		Material m_MenuFacesMaterial;
@@ -173,18 +173,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		float currentRotation
-		{
-			get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; }
-		}
+		float currentRotation { get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; } }
+		public Bounds localBounds { get; private set; }
+		public bool hovering { get; private set; }
 
-		public event Action opening;
-		public event Action closing;
 
 		void Awake()
 		{
 			m_MenuFacesMaterial = MaterialUtils.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
 			m_MenuFacesColor = m_MenuFacesMaterial.color;
+			localBounds = ObjectUtils.GetBounds(transform);
 		}
 
 		public void Setup()
@@ -215,6 +213,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			transform.localScale = Vector3.zero;
 			m_AlternateMenu.localScale = Vector3.zero;
+			gameObject.SetActive(false);
 		}
 
 		void Update()
@@ -432,9 +431,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			m_VisibilityState = VisibilityState.TransitioningIn;
 
-			if (opening != null)
-				opening();
-
 			foreach (var face in m_MenuFaces)
 			{
 				face.Show();
@@ -475,9 +471,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield break;
 
 			m_VisibilityState = VisibilityState.TransitioningOut;
-
-			if (closing != null)
-				closing();
 
 			foreach (var face in m_MenuFaces)
 			{
@@ -607,6 +600,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			faceTransform.localScale = targetScale;
 			faceTransform.localPosition = targetPosition;
+		}
+
+		public void OnRayEnter(RayEventData eventData)
+		{
+			hovering = true;
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			hovering = false;
 		}
 	}
 }

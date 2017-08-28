@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using UnityEngine;
+using UnityEditor.Experimental.EditorVR.Menus;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -61,12 +62,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var mainMenu = deviceData.mainMenu;
 					if (mainMenu != null)
 					{
-						var menuHideFlags = deviceData.menuHideFlags;
-						menuHideFlags[mainMenu] ^= Menus.MenuHideFlags.Hidden;
+						var menuHideFlags = deviceData.menuHideData;
+						menuHideFlags[mainMenu].hideFlags ^= MenuHideFlags.Hidden;
 
 						var customMenu = deviceData.customMenu;
 						if (customMenu != null)
-							menuHideFlags[customMenu] &= ~Menus.MenuHideFlags.Hidden;
+							menuHideFlags[customMenu].hideFlags &= ~MenuHideFlags.Hidden;
 
 						mainMenu.targetRayOrigin = targetToolRayOrigin;
 					}

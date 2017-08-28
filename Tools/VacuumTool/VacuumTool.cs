@@ -32,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var realTime = Time.realtimeSinceStartup;
 				if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
 				{
+					var hit = false;
 					foreach (var vacuumable in vacuumables)
 					{
 						var vacuumableTransform = vacuumable.transform;
@@ -40,6 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						ray.direction = vacuumableTransform.InverseTransformDirection(ray.direction);
 						if (vacuumable.vacuumBounds.IntersectRay(ray))
 						{
+							hit = true;
 							Coroutine coroutine;
 							if (m_VacuumingCoroutines.TryGetValue(vacuumableTransform, out coroutine))
 								StopCoroutine(coroutine);
@@ -48,7 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						}
 					}
 
-					consumeControl(vacuumInput.vacuum);
+					if (hit)
+						consumeControl(vacuumInput.vacuum);
 				}
 
 				m_LastClickTime = realTime;
