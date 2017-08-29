@@ -141,6 +141,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kAllowToggleDuration = 0.25f;
 			var pinnedToolInput = (PinnedToolslMenuInput) input;
 
+			if (spatialScrollData != null && pinnedToolInput.cancel.wasJustPressed)
+			{
+				consumeControl(pinnedToolInput.cancel);
+				consumeControl(pinnedToolInput.show);
+				consumeControl(pinnedToolInput.select);
+				OnButtonClick();
+				CloseMenu(); // Also ends spatial scroll
+				m_PinnedToolsMenuUI.allButtonsVisible = false;
+			}
+
 			if (spatialScrollData == null && (pinnedToolInput.show.wasJustPressed || pinnedToolInput.show.isHeld) && pinnedToolInput.select.wasJustPressed)
 			{
 				m_SpatialScrollStartPosition = alternateMenuOrigin.position;
