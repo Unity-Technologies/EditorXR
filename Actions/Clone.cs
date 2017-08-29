@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -10,13 +9,12 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 	{
 		public override void ExecuteAction()
 		{
+			Unsupported.DuplicateGameObjectsUsingPasteboard();
 			var selection = Selection.transforms;
-			var clones = new GameObject[selection.Length];
-			var index = 0;
 			var bounds = ObjectUtils.GetBounds(selection);
 			foreach (var s in selection)
 			{
-				var clone = ObjectUtils.Instantiate(s.gameObject);
+				var clone = s.gameObject;
 				clone.hideFlags = HideFlags.None;
 				var cloneTransform = clone.transform;
 				var cameraTransform = CameraUtils.GetMainCamera().transform;
@@ -24,9 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude / this.GetViewerScale())
 					+ cloneTransform.position - bounds.center;
 				this.AddToSpatialHash(clone);
-				clones[index++] = clone;
 			}
-			Selection.objects = clones;
 		}
 	}
 }

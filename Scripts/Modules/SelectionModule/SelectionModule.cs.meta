@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: e1e415e42cfe5964e87b18be7792412f
+timeCreated: 1497400707
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_HoverPulse: {fileID: 11400000, guid: 964923da60ab9c54cbd2d8d87f614673, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

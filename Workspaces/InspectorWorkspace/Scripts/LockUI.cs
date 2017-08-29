@@ -16,9 +16,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		Sprite m_UnlockIcon;
 
+		[SerializeField]
+		WorkspaceButton m_Button;
+
 		public byte stencilRef { get; set; }
 
-		public event Action lockButtonPressed;
+		public event Action<Transform> hovered;
+		public event Action<Transform> clicked;
 
 		public void Setup()
 		{
@@ -27,12 +31,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				sm.SetInt("_StencilRef", stencilRef);
 			}
+
+			m_Button.clicked += OnClicked;
+			m_Button.hovered += OnHovered;
 		}
 
-		public void OnLockButtonPressed()
+		void OnClicked(Transform rayOrigin)
 		{
-			if (lockButtonPressed != null)
-				lockButtonPressed();
+			if (clicked != null)
+				clicked(rayOrigin);
+		}
+
+		void OnHovered(Transform rayOrigin)
+		{
+			if (hovered != null)
+				hovered(rayOrigin);
 		}
 
 		public void UpdateIcon(bool locked)

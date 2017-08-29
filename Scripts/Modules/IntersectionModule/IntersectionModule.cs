@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -38,6 +38,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public float distance;
 		}
 
+		void Awake()
+		{
+			IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
+		}
+
 		internal void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
@@ -69,9 +74,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					var intersectionFound = false;
 					m_Intersections.Clear();
-					if (m_SpatialHash.GetIntersections(m_Intersections, tester.renderer.bounds))
+					var testerCollider = tester.collider;
+					if (m_SpatialHash.GetIntersections(m_Intersections, testerCollider.bounds))
 					{
-						var testerBounds = tester.renderer.bounds;
+						var testerBounds = testerCollider.bounds;
 						var testerBoundsCenter = testerBounds.center;
 
 						m_SortedIntersections.Clear();
@@ -216,6 +222,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						continue;
 
 					var transform = renderer.transform;
+
+					IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
 
 					RaycastHit tmp;
 					if (IntersectionUtils.TestRay(m_CollisionTester, transform, ray, out tmp, maxDistance))

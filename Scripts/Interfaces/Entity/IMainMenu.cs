@@ -23,12 +23,22 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// The types which provide a settings menu
 		/// </summary>
-		Dictionary<Type, ISettingsMenuProvider> settingsMenuProviders { set; }
+		Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { set; }
+
+		/// <summary>
+		/// The types which provide a settings menu item
+		/// </summary>
+		Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { set; }
 
 		/// <summary>
 		/// The ray origin that spawned the menu and will be used for node-specific operations (e.g. selecting a tool)
 		/// </summary>
 		Transform targetRayOrigin { set; }
+
+		/// <summary>
+		/// Does this menu have focus?
+		/// </summary>
+		bool focus { get; }
 	}
 }
 #endif

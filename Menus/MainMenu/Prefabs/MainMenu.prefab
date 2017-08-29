@@ -543,6 +543,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e42a33a060806cc4d9f35476fbc32b84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_MenuHeight: 0.277
   m_ButtonTemplatePrefab: {fileID: 114000012845136458, guid: 489a926cc8991484cbc6c611717af0d2,
     type: 2}
   m_MenuFaceContainers:

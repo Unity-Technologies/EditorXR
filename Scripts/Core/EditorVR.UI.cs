@@ -1,5 +1,6 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -33,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			Camera m_EventCamera;
 
-			readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
+			readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
 			readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
 
 			public UI()
@@ -41,13 +42,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IInstantiateUIMethods.instantiateUI = InstantiateUI;
 				IRequestStencilRefMethods.requestStencilRef = RequestStencilRef;
 				ISetManipulatorsVisibleMethods.setManipulatorsVisible = SetManipulatorsVisible;
+				IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var manipulatorVisiblity = obj as IManipulatorVisibility;
-				if (manipulatorVisiblity != null)
-					m_ManipulatorVisibilities.Add(manipulatorVisiblity);
+				var manipulatorController = obj as IManipulatorController;
+				if (manipulatorController != null)
+					m_ManipulatorControllers.Add(manipulatorController);
 
 				var usesStencilRef = obj as IUsesStencilRef;
 				if (usesStencilRef != null)
@@ -71,11 +73,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var manipulatorVisiblity = obj as IManipulatorVisibility;
-				if (manipulatorVisiblity != null)
-					m_ManipulatorVisibilities.Remove(manipulatorVisiblity);
+				var manipulatorController = obj as IManipulatorController;
+				if (manipulatorController != null)
+					m_ManipulatorControllers.Remove(manipulatorController);
 			}
 
 			internal void Initialize()
@@ -126,11 +128,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_ManipulatorsHiddenRequests.Add(setter);
 			}
 
+			bool GetManipulatorDragState()
+			{
+				return m_ManipulatorControllers.Any(controller => controller.manipulatorDragging);
+			}
+
 			internal void UpdateManipulatorVisibilites()
 			{
 				var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
-				foreach (var mv in m_ManipulatorVisibilities)
-					mv.manipulatorVisible = manipulatorsVisible;
+				foreach (var controller in m_ManipulatorControllers)
+				{
+					controller.manipulatorVisible = manipulatorsVisible;
+				}
 			}
 
 			byte RequestStencilRef()

@@ -1,24 +1,25 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
 	{
+		const string k_SelectionOutlinePrefsKey = "Scene/Selected Outline";
+
 		[SerializeField]
 		Material m_DefaultHighlightMaterial;
 
 		[SerializeField]
-		Material m_LeftHighlightMaterial;
-
-		[SerializeField]
-		Material m_RightHighlightMaterial;
+		Material m_RayHighlightMaterial;
 
 		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
+
+		static Mesh s_BakedMesh;
 
 		public event Func<GameObject, Material, bool> customHighlight
 		{
@@ -27,14 +28,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 		readonly List<Func<GameObject, Material, bool>> m_CustomHighlightFuncs = new List<Func<GameObject, Material, bool>>();
 
-		public Color leftColor
+		public Color highlightColor
 		{
-			get { return m_LeftHighlightMaterial.color; }
+			get { return m_RayHighlightMaterial.GetVector("_Color"); }
+			set { m_RayHighlightMaterial.color = value; }
 		}
 
-		public Color rightColor
+		void Awake()
 		{
-			get { return m_RightHighlightMaterial.color; }
+			s_BakedMesh = new Mesh();
+
+			m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
+			if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
+			{
+				var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
+				selectionColor.a = 1;
+				m_RayHighlightMaterial.color = selectionColor;
+			}
 		}
 
 		void LateUpdate()
@@ -64,13 +74,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		static void HighlightObject(GameObject go, Material material)
 		{
-			foreach (var m in go.GetComponentsInChildren<MeshFilter>())
+			foreach (var meshFilter in go.GetComponentsInChildren<MeshFilter>())
 			{
-				if (m.sharedMesh == null)
+				var mesh = meshFilter.sharedMesh;
+				if (meshFilter.sharedMesh == null)
 					continue;
 
-				for (var i = 0; i < m.sharedMesh.subMeshCount; i++)
-					Graphics.DrawMesh(m.sharedMesh, m.transform.localToWorldMatrix, material, m.gameObject.layer, null, i);
+				var localToWorldMatrix = meshFilter.transform.localToWorldMatrix;
+				var layer = meshFilter.gameObject.layer;
+				for (var i = 0; i < meshFilter.sharedMesh.subMeshCount; i++)
+				{
+					Graphics.DrawMesh(mesh, localToWorldMatrix, material, layer, null, i);
+				}
+			}
+
+			foreach (var skinnedMeshRenderer in go.GetComponentsInChildren<SkinnedMeshRenderer>())
+			{
+				if (skinnedMeshRenderer.sharedMesh == null)
+					continue;
+
+				skinnedMeshRenderer.BakeMesh(s_BakedMesh);
+
+				var localToWorldMatrix = skinnedMeshRenderer.transform.localToWorldMatrix;
+				var layer = skinnedMeshRenderer.gameObject.layer;
+				for (var i = 0; i < s_BakedMesh.subMeshCount; i++)
+				{
+					Graphics.DrawMesh(s_BakedMesh, localToWorldMatrix, material, layer, null, i);
+				}
 			}
 		}
 
@@ -96,32 +126,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (material == null)
 			{
-				if (rayOrigin)
-				{
-					var node = Node.LeftHand;
-					foreach (var kvp in m_NodeMap)
-					{
-						if (kvp.Value.Contains(rayOrigin))
-						{
-							node = kvp.Key;
-							break;
-						}
-					}
-
-					material = node == Node.LeftHand ? m_LeftHighlightMaterial : m_RightHighlightMaterial;
-				}
-				else
-				{
-					material = m_DefaultHighlightMaterial;
-				}
+				material = rayOrigin ? m_RayHighlightMaterial : m_DefaultHighlightMaterial;
 			}
 
 			if (active) // Highlight
 			{
-				// Do not highlight if the selection contains this object or any of its parents
-				if (!force && Selection.transforms.Any(selection => go.transform == selection || go.transform.IsChildOf(selection)))
-					return;
-
 				HashSet<GameObject> gameObjects;
 				if (!m_Highlights.TryGetValue(material, out gameObjects))
 				{

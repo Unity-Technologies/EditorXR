@@ -78,16 +78,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var locomotion = obj as ILocomotor;
-				if (locomotion != null)
-					locomotion.cameraRig = VRView.cameraRig;
-
 				var usesCameraRig = obj as IUsesCameraRig;
 				if (usesCameraRig != null)
 					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 			}
 
@@ -157,6 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (evr.m_PreviewCameraPrefab)
 				{
 					var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
+					go.transform.SetParent(CameraUtils.GetCameraRig(), false);
 
 					customPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
 					if (customPreviewCamera != null)

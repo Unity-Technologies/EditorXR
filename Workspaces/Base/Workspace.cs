@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -8,12 +9,13 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces, IUsesViewerScale
+	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces,
+		IUsesViewerScale, IControlHaptics, IRayToNode
 	{
 		const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 
 		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
-		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0.4f, 0.1f);
+		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0f, 0.1f);
 
 		public const float FaceMargin = 0.025f;
 		public const float HighlightMargin = 0.002f;
@@ -27,7 +29,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		ActionMap m_ActionMap;
 
+		[SerializeField]
+		HapticPulse m_ButtonClickPulse;
+
+		[SerializeField]
+		HapticPulse m_ButtonHoverPulse;
+
+		[SerializeField]
+		HapticPulse m_ResizePulse;
+
+		[SerializeField]
+		HapticPulse m_MovePulse;
+
 		Bounds m_ContentBounds;
+		BoxCollider m_OuterCollider;
 
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ResetSizeCoroutine;
@@ -45,12 +60,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				if (!value.Equals(contentBounds))
 				{
-					Vector3 size = value.size;
+					m_ContentBounds = value;
+					var size = value.size;
 					size.x = Mathf.Clamp(Mathf.Max(size.x, minBounds.x), 0, k_MaxFrameSize);
 					size.y = Mathf.Max(size.y, minBounds.y);
 					size.z = Mathf.Clamp(Mathf.Max(size.z, minBounds.z), 0, k_MaxFrameSize);
+					m_ContentBounds.size = size;
 
-					m_ContentBounds.size = size; //Only set size, ignore center.
+					// Offset by half height
+					var center = m_ContentBounds.center;
+					center.y = size.y * 0.5f;
+					m_ContentBounds.center = center;
+
 					UpdateBounds();
 					OnBoundsChanged();
 				}
@@ -61,11 +82,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			get
 			{
-				const float kOuterBoundsCenterOffset = 0.225f; //Amount to lower the center of the outerBounds for better interaction with menus
-				return new Bounds(contentBounds.center + Vector3.down * kOuterBoundsCenterOffset,
+				const float outerBoundsCenterOffset = 0.09275f; //Amount to extend the bounds to include frame
+				return new Bounds(contentBounds.center + Vector3.down * outerBoundsCenterOffset * 0.5f,
 					new Vector3(
 						contentBounds.size.x,
-						contentBounds.size.y,
+						contentBounds.size.y + outerBoundsCenterOffset,
 						contentBounds.size.z
 						));
 			}
@@ -118,16 +139,33 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			this.ConnectInterfaces(m_WorkspaceUI);
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
+			m_WorkspaceUI.buttonHovered += OnButtonHovered;
+			m_WorkspaceUI.hoveringFrame += OnHoveringFrame;
+			m_WorkspaceUI.moving += OnMoving;
+			m_WorkspaceUI.resizing += OnResizing;
 
 			m_WorkspaceUI.leftRayOrigin = leftRayOrigin;
 			m_WorkspaceUI.rightRayOrigin = rightRayOrigin;
 
-			m_WorkspaceUI.resize += bounds => { contentBounds = bounds; };
+			m_WorkspaceUI.resize += bounds =>
+			{
+				var size = contentBounds.size;
+				var boundsSize = bounds.size;
+				size.x = boundsSize.x;
+				size.z = boundsSize.z;
+				var content = contentBounds;
+				content.size = size;
+				contentBounds = content;
+			};
 
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
+			m_OuterCollider = m_WorkspaceUI.gameObject.AddComponent<BoxCollider>();
+			m_OuterCollider.isTrigger = true;
+
+			var startingBounds = m_CustomStartingBounds ?? DefaultBounds;
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * DefaultBounds.y * 0.5f, m_CustomStartingBounds ?? DefaultBounds); // If custom bounds have been set, use them as the initial bounds
+			m_ContentBounds = new Bounds(Vector3.up * startingBounds.y * 0.5f, startingBounds); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
 
 			this.StopCoroutine(ref m_VisibilityCoroutine);
@@ -141,16 +179,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		protected virtual void OnCloseClicked()
+		protected virtual void OnCloseClicked(Transform rayOrigin)
 		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 			Close();
 		}
 
-		protected virtual void OnResetClicked()
+		protected virtual void OnResetClicked(Transform rayOrigin)
 		{
-			this.StopCoroutine(ref m_ResetSizeCoroutine);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 
+			this.StopCoroutine(ref m_ResetSizeCoroutine);
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
+		}
+
+		protected void OnButtonHovered(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 		}
 
 		public void SetUIHighlightsVisible(bool value)
@@ -161,6 +206,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		void UpdateBounds()
 		{
 			m_WorkspaceUI.bounds = contentBounds;
+
+			var outerBounds = this.outerBounds;
+			m_OuterCollider.size = outerBounds.size;
+			m_OuterCollider.center = outerBounds.center;
 		}
 
 		protected virtual void OnDestroy()
@@ -240,6 +289,26 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public virtual void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
 			m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);
+		}
+
+		protected void OnButtonClicked(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+		}
+
+		void OnMoving(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_MovePulse);
+		}
+
+		void OnResizing(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
+		}
+
+		void OnHoveringFrame(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
 		}
 	}
 }

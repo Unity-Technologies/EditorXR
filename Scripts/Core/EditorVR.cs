@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -12,7 +13,6 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	[InitializeOnLoad]
 #if UNITY_EDITORVR
 	[RequiresTag(k_VRPlayerTag)]
 	sealed partial class EditorVR : MonoBehaviour
@@ -33,6 +33,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		readonly List<DeviceData> m_DeviceData = new List<DeviceData>();
 
 		bool m_HasDeserialized;
+
+		static bool s_IsInitialized;
+
+		static EditorVR s_Instance;
 
 		static HideFlags defaultHideFlags
 		{
@@ -68,7 +72,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
 			public ActionMapInput uiInput;
 			public MainMenuActivator mainMenuActivator;
-			public ActionMapInput directSelectInput;
 			public IMainMenu mainMenu;
 			public ActionMapInput mainMenuInput;
 			public IAlternateMenu alternateMenu;
@@ -76,8 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public ITool currentTool;
 			public IMenu customMenu;
 			public PinnedToolButton previousToolButton;
-			public readonly Dictionary<IMenu, Menus.MenuHideFlags> menuHideFlags = new Dictionary<IMenu, Menus.MenuHideFlags>();
-			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
+			public readonly Dictionary<IMenu, Menus.MenuHideData> menuHideData = new Dictionary<IMenu, Menus.MenuHideData>();
 		}
 
 		class Nested
@@ -94,12 +96,44 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			EditorPrefs.DeleteKey(k_SerializedPreferences);
 		}
 
+		// Code from the previous static constructor moved here to allow for testability
+		static void HandleInitialization()
+		{
+			if (!s_IsInitialized)
+			{
+				s_IsInitialized = true;
+
+				if (!PlayerSettings.virtualRealitySupported)
+					Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
+
+#if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
+				Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
+#endif
+
+				// Add EVR tags and layers if they don't exist
+				var tags = TagManager.GetRequiredTags();
+				var layers = TagManager.GetRequiredLayers();
+
+				foreach (var tag in tags)
+				{
+					TagManager.AddTag(tag);
+				}
+
+				foreach (var layer in layers)
+				{
+					TagManager.AddLayer(layer);
+				}
+			}
+		}
+
 		void Awake()
 		{
-			Nested.evr = this; // Set this once for the convenience of all nested classes 
+			s_Instance = this; // Used only by PreferencesGUI
+			Nested.evr = this; // Set this once for the convenience of all nested classes
 			m_DefaultTools = defaultTools;
-
+			SetHideFlags(defaultHideFlags);
 			ClearDeveloperConsoleIfNecessary();
+			HandleInitialization();
 
 			m_Interfaces = (Interfaces)AddNestedModule(typeof(Interfaces));
 			AddModule<SerializedPreferencesModule>(); // Added here in case any nested modules have preference serialization
@@ -129,6 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			AddModule<KeyboardModule>();
 
 			var multipleRayInputModule = GetModule<MultipleRayInputModule>();
+
 			var dragAndDropModule = AddModule<DragAndDropModule>();
 			multipleRayInputModule.rayEntered += dragAndDropModule.OnRayEntered;
 			multipleRayInputModule.rayExited += dragAndDropModule.OnRayExited;
@@ -138,6 +173,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var tooltipModule = AddModule<TooltipModule>();
 			m_Interfaces.ConnectInterfaces(tooltipModule);
 			multipleRayInputModule.rayEntered += tooltipModule.OnRayEntered;
+			multipleRayInputModule.rayHovering += tooltipModule.OnRayHovering;
 			multipleRayInputModule.rayExited += tooltipModule.OnRayExited;
 
 			AddModule<ActionsModule>();
@@ -188,7 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					obj.transform.parent = null;
 					obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
 					obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
-					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale);
+					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale.Inverse());
 
 					spatialHashModule.AddObject(obj.gameObject);
 					return true;
@@ -196,6 +232,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				return false;
 			};
+
+			AddModule<HapticsModule>();
 
 			viewer.AddPlayerModel();
 
@@ -293,6 +331,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		void OnDestroy()
 		{
+			s_Instance = null;
 			foreach (var nested in m_NestedModules.Values)
 			{
 				nested.OnDestroy();
@@ -313,9 +352,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			GetModule<DeviceInputModule>().ProcessInput();
 
-			var menus = GetNestedModule<Menus>();
-			menus.UpdateMenuVisibilityNearWorkspaces();
-			menus.UpdateMenuVisibilities();
+			GetNestedModule<Menus>().UpdateMenuVisibilities();
 
 			GetNestedModule<UI>().UpdateManipulatorVisibilites();
 		}
@@ -335,12 +372,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var mainMenu = deviceData.mainMenu;
 				var menuInput = mainMenu as IProcessInput;
-				if (menuInput != null && mainMenu.visible)
+				if (menuInput != null && mainMenu.menuHideFlags == 0)
 					menuInput.ProcessInput(deviceData.mainMenuInput, consumeControl);
 
 				var altMenu = deviceData.alternateMenu;
 				var altMenuInput = altMenu as IProcessInput;
-				if (altMenuInput != null && altMenu.visible)
+				if (altMenuInput != null && altMenu.menuHideFlags == 0)
 					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
 
 				foreach (var toolData in deviceData.toolData)
@@ -435,30 +472,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
-		static EditorVR()
+		void SetHideFlags(HideFlags hideFlags)
 		{
-			ObjectUtils.hideFlags = defaultHideFlags;
+			ObjectUtils.hideFlags = hideFlags;
 
-			if (!PlayerSettings.virtualRealitySupported)
-				Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
-
-#if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
-			Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
-#endif
-
-			// Add EVR tags and layers if they don't exist
-			var tags = TagManager.GetRequiredTags();
-			var layers = TagManager.GetRequiredLayers();
-
-			foreach (var tag in tags)
+			foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
 			{
-				TagManager.AddTag(tag);
+				manager.gameObject.hideFlags = hideFlags;
 			}
 
-			foreach (var layer in layers)
+			foreach (var manager in Resources.FindObjectsOfTypeAll<EditingContextManager>())
 			{
-				TagManager.AddLayer(layer);
+				manager.gameObject.hideFlags = hideFlags;
 			}
+
+			foreach (var child in GetComponentsInChildren<Transform>(true))
+			{
+				child.gameObject.hideFlags = hideFlags;
+			}
+
+			EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
 		}
 
 		[PreferenceItem("EditorVR")]
@@ -471,7 +504,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				string title = "Show EditorVR GameObjects";
 				string tooltip = "Normally, EditorVR GameObjects are hidden in the Hierarchy. Would you like to show them?";
+
+				EditorGUI.BeginChangeCheck();
 				showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
+				if (EditorGUI.EndChangeCheck() && s_Instance)
+					s_Instance.SetHideFlags(defaultHideFlags);
 			}
 
 			// Preserve Layout

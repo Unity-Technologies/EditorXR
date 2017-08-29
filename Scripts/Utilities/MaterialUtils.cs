@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -51,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		// from http://wiki.unity3d.com/index.php?title=HexConverter
-		// Note that Color32 and Color implictly convert to each other. You may pass a Color object to this method without first casting it.
+		// Note that Color32 and Color implicitly convert to each other. You may pass a Color object to this method without first casting it.
 		public static string ColorToHex(Color32 color)
 		{
 			var hex = color.r.ToString("X2") + color.g.ToString("X2") + color.b.ToString("X2");
@@ -61,12 +62,38 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static Color HexToColor(string hex)
 		{
 			hex = hex.Replace("0x", "").Replace("#", "");
-			var r = byte.Parse(hex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
-			var g = byte.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
-			var b = byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
-			var a = hex.Length == 8 ? byte.Parse(hex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber) : (byte)255;
+			var r = byte.Parse(hex.Substring(0, 2), NumberStyles.HexNumber);
+			var g = byte.Parse(hex.Substring(2, 2), NumberStyles.HexNumber);
+			var b = byte.Parse(hex.Substring(4, 2), NumberStyles.HexNumber);
+			var a = hex.Length == 8 ? byte.Parse(hex.Substring(4, 2), NumberStyles.HexNumber) : (byte)255;
 
 			return new Color32(r, g, b, a);
+		}
+
+		public static Color PrefToColor(string pref)
+		{
+			var split = pref.Split(';');
+			if (split.Length != 5)
+			{
+				Debug.LogError("Parsing PrefColor failed");
+				return default(Color);
+			}
+
+			split[1] = split[1].Replace(',', '.');
+			split[2] = split[2].Replace(',', '.');
+			split[3] = split[3].Replace(',', '.');
+			split[4] = split[4].Replace(',', '.');
+			float r, g, b, a;
+			var success = float.TryParse(split[1], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out r);
+			success &= float.TryParse(split[2], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out g);
+			success &= float.TryParse(split[3], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out b);
+			success &= float.TryParse(split[4], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat, out a);
+
+			if (success)
+				return new Color(r, g, b, a);
+
+			Debug.LogError("Parsing PrefColor failed");
+			return default(Color);
 		}
 
 		public static Color RandomColor()
@@ -76,6 +103,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			var b = Random.value;
 
 			return new Color(r, g, b);
+		}
+
+		public static Color HueShift(Color color, float shift)
+		{
+			Vector3 hsv;
+			Color.RGBToHSV(color, out hsv.x, out hsv.y, out hsv.z);
+			hsv.x = Mathf.Repeat(hsv.x + shift, 1f);
+			return Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
 		}
 
 		public static void SetObjectColor(GameObject obj, Color col)

@@ -1,22 +1,28 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI
+	sealed class MainMenuUI : MonoBehaviour, IInstantiateUI, IConnectInterfaces, IRayEnterHandler, IRayExitHandler
 	{
 		public class ButtonData
 		{
-			public string name { get; set; }
+			public string name { get; private set; }
 			public string sectionName { get; set; }
 			public string description { get; set; }
+
+			public ButtonData(string name)
+			{
+				this.name = name.Replace("Tool", string.Empty).Replace("Module", string.Empty)
+					.Replace("Workspace", string.Empty);
+			}
 		}
 
 		enum RotationState
@@ -77,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		readonly string k_UncategorizedFaceName = "Uncategorized";
 		readonly Color k_MenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
-		VisibilityState m_VisibilityState = VisibilityState.Visible;
+		VisibilityState m_VisibilityState = VisibilityState.Hidden;
 		RotationState m_RotationState;
 		MainMenuFace[] m_MenuFaces;
 		Material m_MenuFacesMaterial;
@@ -88,7 +94,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_FrameRevealCoroutine;
 		int m_Direction;
-		GradientPair m_GradientPair;
 
 		Transform[] m_MenuFaceContentTransforms;
 		Vector3[] m_MenuFaceContentOriginalLocalPositions;
@@ -128,6 +133,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public int faceCount { get { return m_MenuFaces.Length; } }
 
+		public Node? node { get; set; }
+
 		public bool visible
 		{
 			get { return m_VisibilityState == VisibilityState.Visible || m_VisibilityState == VisibilityState.TransitioningIn; }
@@ -166,15 +173,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		float currentRotation
-		{
-			get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; }
-		}
+		float currentRotation { get { return m_MenuFaceRotationOrigin.localRotation.eulerAngles.y; } }
+		public Bounds localBounds { get; private set; }
+		public bool hovering { get; private set; }
+
+		public event Action<Transform> buttonHovered;
+		public event Action<Transform> buttonClicked;
 
 		void Awake()
 		{
 			m_MenuFacesMaterial = MaterialUtils.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
 			m_MenuFacesColor = m_MenuFacesMaterial.color;
+			localBounds = ObjectUtils.GetBounds(transform);
 		}
 
 		public void Setup()
@@ -233,17 +243,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				ObjectUtils.Destroy(face.gameObject);
 		}
 
-		public void CreateFaceButton(ButtonData buttonData, Action<MainMenuButton> buttonCreationCallback)
+		public MainMenuButton CreateFaceButton(ButtonData buttonData)
 		{
 			var button = ObjectUtils.Instantiate(m_ButtonTemplatePrefab.gameObject);
 			button.name = buttonData.name;
 			var mainMenuButton = button.GetComponent<MainMenuButton>();
-			buttonCreationCallback(mainMenuButton);
+			mainMenuButton.clicked += OnButtonClick;
+			mainMenuButton.hovered += OnButtonHover;
 
 			if (string.IsNullOrEmpty(buttonData.sectionName))
 				buttonData.sectionName = k_UncategorizedFaceName;
 
 			mainMenuButton.SetData(buttonData.name, buttonData.description);
+			this.ConnectInterfaces(mainMenuButton);
 
 			var found = m_FaceButtons.Any(x => x.Key == buttonData.sectionName);
 			if (found)
@@ -255,6 +267,29 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				m_FaceButtons.Add(buttonData.sectionName, new List<Transform> { button.transform });
 			}
+
+			return mainMenuButton;
+		}
+
+		public GameObject CreateCustomButton(GameObject prefab, ButtonData buttonData)
+		{
+			var button = ObjectUtils.Instantiate(prefab);
+			button.name = buttonData.name;
+
+			if (string.IsNullOrEmpty(buttonData.sectionName))
+				buttonData.sectionName = k_UncategorizedFaceName;
+
+			if (m_FaceButtons.Any(x => x.Key == buttonData.sectionName))
+			{
+				var kvp = m_FaceButtons.First(x => x.Key == buttonData.sectionName);
+				kvp.Value.Add(button.transform);
+			}
+			else
+			{
+				m_FaceButtons.Add(buttonData.sectionName, new List<Transform> { button.transform });
+			}
+
+			return button;
 		}
 
 		public void SetupMenuFaces()
@@ -568,6 +603,28 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			faceTransform.localScale = targetScale;
 			faceTransform.localPosition = targetPosition;
+		}
+
+		void OnButtonHover(Transform rayOrigin)
+		{
+			if (buttonHovered != null)
+				buttonHovered(rayOrigin);
+		}
+
+		void OnButtonClick(Transform rayOrigin)
+		{
+			if (buttonClicked != null)
+				buttonClicked(rayOrigin);
+		}
+
+		public void OnRayEnter(RayEventData eventData)
+		{
+			hovering = true;
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			hovering = false;
 		}
 	}
 }
