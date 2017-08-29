@@ -249,10 +249,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						deviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
 					}
-					else
-					{
-						deviceData.menuHideData[deviceData.mainMenu].hideFlags |= MenuHideFlags.Hidden;
-					}
 				});
 
 				return result;

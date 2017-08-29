@@ -141,17 +141,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kAllowToggleDuration = 0.25f;
 			var pinnedToolInput = (PinnedToolslMenuInput) input;
 
-			if (pinnedToolInput.show.wasJustPressed)
+			if (spatialScrollData == null && (pinnedToolInput.show.wasJustPressed || pinnedToolInput.show.isHeld) && pinnedToolInput.select.wasJustPressed)
 			{
 				m_SpatialScrollStartPosition = alternateMenuOrigin.position;
 				m_AllowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
 				this.SetSpatialHintControlObject(rayOrigin);
 				m_PinnedToolsMenuUI.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
+				consumeControl(pinnedToolInput.show);
+				consumeControl(pinnedToolInput.select);
+				// Assign initial SpatialScrollData; begin scroll
+				spatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_PinnedToolsMenuUI.buttons.Count, m_PinnedToolsMenuUI.maxButtonCount);
 			}
-			else if (pinnedToolInput.show.isHeld && !pinnedToolInput.select.isHeld && !pinnedToolInput.select.wasJustPressed)
+			else if (spatialScrollData != null && pinnedToolInput.show.isHeld)
 			{
-				// Don't scroll if the trigger is held, allowing the user to setting on a single button to select with release
-				if (pinnedToolInput.select.wasJustReleased)
+				consumeControl(pinnedToolInput.show);
+				consumeControl(pinnedToolInput.select);
+				// Attempt to close a button, if a scroll has passed the trigger threshold
+				if (spatialScrollData != null && pinnedToolInput.select.wasJustPressed)
 				{
 					if (m_PinnedToolsMenuUI.DeleteHighlightedButton())
 						buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
@@ -183,16 +189,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					}
 
 					m_PinnedToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
-					consumeControl(pinnedToolInput.show);
-					consumeControl(pinnedToolInput.select);
 				}
 			}
 			else if (pinnedToolInput.show.wasJustReleased)
 			{
-				if (spatialScrollData.passedMinDragActivationThreshold)
+				consumeControl(pinnedToolInput.show);
+				consumeControl(pinnedToolInput.select);
+
+				if (spatialScrollData != null && spatialScrollData.passedMinDragActivationThreshold)
 				{
 					m_PinnedToolsMenuUI.SelectHighlightedButton();
-					consumeControl(pinnedToolInput.select);
 				}
 				else if (Time.realtimeSinceStartup < m_AllowToolToggleBeforeThisTime)
 				{
