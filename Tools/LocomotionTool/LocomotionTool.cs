@@ -486,7 +486,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								{
 									m_AllowScaling = false;
 #if UNITY_EDITORVR
-									cameraRig.position = Vector3.up * VRView.HeadHeight;
+									cameraRig.position = VRView.headCenteredOrigin;
 #endif
 									cameraRig.rotation = Quaternion.identity;
 

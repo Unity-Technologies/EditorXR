@@ -94,6 +94,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
+		public static Vector3 headCenteredOrigin
+		{
+			get
+			{
+				return VRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary ? Vector3.up * HeadHeight : Vector3.zero;
+			}
+		}
+
 		public static event Action viewEnabled;
 		public static event Action viewDisabled;
 		public static event Action<EditorWindow> beforeOnGUI;
@@ -131,16 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Camera.transform.parent = m_CameraRig;
 			m_Camera.nearClipPlane = 0.01f;
 			m_Camera.farClipPlane = 1000f;
-
-			Vector3 position = m_CameraRig.position;
-
-            // For stationary tracking, we want to simulate being at a head height.  Roomscale manages height automatically
-            if (VRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary)
-            {
-                position.y = HeadHeight;
-            }
-
-			m_CameraRig.position = position;
+			m_CameraRig.position = headCenteredOrigin;
 			m_CameraRig.rotation = Quaternion.identity;
 
 			m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
