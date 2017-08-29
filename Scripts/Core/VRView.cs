@@ -132,9 +132,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Camera.nearClipPlane = 0.01f;
 			m_Camera.farClipPlane = 1000f;
 
-			// Generally, we want to be at a standing height, so default to that
 			Vector3 position = m_CameraRig.position;
-			position.y = HeadHeight;
+
+            // For stationary tracking, we want to simulate being at a head height.  Roomscale manages height automatically
+            if (VRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary)
+            {
+                position.y = HeadHeight;
+            }
+
 			m_CameraRig.position = position;
 			m_CameraRig.rotation = Quaternion.identity;
 
