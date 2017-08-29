@@ -62,7 +62,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		protected override void Setup()
+	    public override Vector3 size
+	    {
+	        set
+	        {
+	            base.size = value; 
+	            m_LastHiddenItemOffset = Mathf.Infinity;
+	        }
+	    }
+
+	    protected override void Setup()
 		{
 			base.Setup();
 
