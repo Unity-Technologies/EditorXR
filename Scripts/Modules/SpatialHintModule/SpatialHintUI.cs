@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class SpatialHintModuleUI : MonoBehaviour, IUsesViewerScale, IControlHaptics, IRayToNode
+	public class SpatialHintUI : MonoBehaviour, IUsesViewerScale, IControlHaptics, IRayToNode
 	{
 		readonly Color k_PrimaryArrowColor = Color.white;
 
@@ -36,7 +36,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		bool m_Visible;
 		bool m_PreScrollArrowsVisible;
-		bool m_SecondaryArrowsVisible;
 		Vector3 m_ScrollVisualsRotation;
 		Transform m_ScrollVisualsTransform;
 		Coroutine m_ScrollVisualsVisibilityCoroutine;
@@ -99,7 +98,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public bool preScrollArrowsVisible
 		{
-			get { return m_PreScrollArrowsVisible; }
 			set
 			{
 				m_PreScrollArrowsVisible = value;
@@ -126,11 +124,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public bool secondaryArrowsVisible
 		{
-			get { return m_SecondaryArrowsVisible; }
 			set
 			{
-				m_SecondaryArrowsVisible = value;
-
 				foreach (var arrow in m_SecondaryDirectionalHintArrows)
 				{
 					arrow.visible = value;
@@ -150,14 +145,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <summary>
 		/// If non-null, enable and set the world rotation of the scroll visuals
 		/// </summary>
-		public Vector3 scrollVisualsRotation { get { return m_ScrollVisualsRotation ; } set { m_ScrollVisualsRotation = value; } }
+		public Vector3 scrollVisualsRotation { set { m_ScrollVisualsRotation = value; } }
 
 		/// <summary>
 		/// The node currently controlling the spatial hint visuals
 		/// </summary>
 		public Node? controllingNode
 		{
-			get { return m_ControllingNode; }
+			private get { return m_ControllingNode; }
 			set
 			{
 				m_ControllingNode = value;
@@ -212,9 +207,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var targetLocalScale = Vector3.one;
 			var currentAlpha = m_ScrollVisualsCanvasGroup.alpha;
 			var secondArrowCurrentPosition = m_ScrollVisualsDragTargetArrowTransform.position;
-			Vector3 scrollVisualsDragTargetArrowTransformOrigin;
-			Vector3 scrollVisualsDragTargetArrowTransformDestination;
-
 			while (currentDuration < kTargetDuration)
 			{
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / kTargetDuration);
@@ -229,8 +221,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsTransform.position - m_ScrollVisualsDragTargetArrowTransform.position);
 				m_ScrollVisualsTransform.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, shapedDuration);
 
-				scrollVisualsDragTargetArrowTransformOrigin = m_ScrollVisualsTransform.position;
-				scrollVisualsDragTargetArrowTransformDestination = m_ScrollVisualsDragTargetArrowTransform.position;
+				var scrollVisualsDragTargetArrowTransformOrigin = m_ScrollVisualsTransform.position;
+				var scrollVisualsDragTargetArrowTransformDestination = m_ScrollVisualsDragTargetArrowTransform.position;
 				if (centeredScrolling)
 				{
 					Vector3 offset = (scrollVisualsDragTargetArrowTransformOrigin - scrollVisualsDragTargetArrowTransformDestination) * -1;
@@ -269,7 +261,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / kTargetDuration);
 				m_ScrollVisualsTransform.localScale = Vector3.Lerp(currentLocalScale, hiddenLocalScale, shapedDuration);
 				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 0f, shapedDuration);
-				//m_Icon.color = Color.Lerp(currentColor, m_HiddenColor, currentDuration);
 				currentDuration += Time.unscaledDeltaTime * 3.5f;
 				m_ScrollHintLine.LineWidth = (1 - shapedDuration) * this.GetViewerScale();
 				yield return null;
