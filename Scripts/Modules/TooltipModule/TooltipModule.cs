@@ -33,6 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			public float startTime;
 			public TooltipUI tooltipUI;
+			public Material customHighlightMaterial;
 		}
 
 		readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
@@ -40,7 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Transform m_TooltipCanvas;
 		Vector3 m_TooltipScale;
 		Color m_OriginalBackgroundColor;
-		Material m_CustomHighlightMaterial;
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<ITooltip> m_TooltipsToHide = new List<ITooltip>();
@@ -51,7 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_TooltipCanvas.SetParent(transform);
 			m_TooltipScale = m_TooltipPrefab.transform.localScale;
 			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
-			m_CustomHighlightMaterial = Instantiate(m_HighlightMaterial);
 			m_TooltipBackgroundMaterial = Instantiate(m_TooltipBackgroundMaterial);
 			m_OriginalBackgroundColor = m_TooltipBackgroundMaterial.color;
 			var sessionGradient = UnityBrandColorScheme.sessionGradient;
@@ -133,14 +132,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var viewerScale = this.GetViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
-			var customToolTipColor = tooltip as ISetCustomTooltipColor;
-			if (customToolTipColor != null)
-			{
-				var customToolTipHighlightColor = customToolTipColor.customToolTipHighlightColor;
-				tooltipUI.highlight.material= m_CustomHighlightMaterial;
-				m_CustomHighlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipHighlightColor.a);
-				m_CustomHighlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipHighlightColor.b);
-			}
+			var highlightMaterial = m_Tooltips[tooltip].customHighlightMaterial ?? m_HighlightMaterial;
+			tooltipUI.highlight.material= highlightMaterial;
 
 			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
 
@@ -249,9 +242,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (m_Tooltips.ContainsKey(tooltip))
 				return;
 
+			Material highlightMaterial = null;
+			var customToolTipColor = tooltip as ISetCustomTooltipColor;
+			if (customToolTipColor != null)
+			{
+				highlightMaterial = Instantiate(m_HighlightMaterial);
+				var customToolTipHighlightColor = customToolTipColor.customToolTipHighlightColor;
+				highlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipHighlightColor.a);
+				highlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipHighlightColor.b);
+			}
+
 			m_Tooltips[tooltip] = new TooltipData
 			{
-				startTime = Time.realtimeSinceStartup
+				startTime = Time.realtimeSinceStartup,
+				customHighlightMaterial = highlightMaterial
 			};
 		}
 
