@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR
 		internal static Action<Vector3> setSpatialHintLookAtRotation { get; set; }
 		internal static Action pulseSpatialHintScrollArrows { get; set; }
 		internal static Action<Vector3> setSpatialHintDragThresholdTriggerPosition { get; set; }
-		internal static Action<Transform> setSpatialHintControlObject { get; set; }
+		internal static Action<Node?> setSpatialHintControlNode { get; set; }
 
 		/// <summary>
 		/// Set the spatial hint state
@@ -89,10 +89,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Set reference to the object, RayOrigin, controlling the Spatial Hint visuals
 		/// Each control-object has it's spatial scrolling processed independently
 		/// </summary>
-		/// <param name="controlObject">Control-object whose spatial scrolling will be processed independently</param>
-		public static void SetSpatialHintControlObject(this IControlSpatialHinting obj, Transform controlObject)
+		/// <param name="controlNode">Node on which spatial scrolling will be processed independently</param>
+		public static void SetSpatialHintControlNode(this IControlSpatialHinting obj, Node? controlNode)
 		{
-			setSpatialHintControlObject(controlObject);
+			setSpatialHintControlNode(controlNode);
 		}
 	}
 }

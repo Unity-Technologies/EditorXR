@@ -152,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// </summary>
 		public Node? controllingNode
 		{
-			private get { return m_ControllingNode; }
+			get { return m_ControllingNode; }
 			set
 			{
 				m_ControllingNode = value;

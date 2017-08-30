@@ -155,7 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				m_SpatialScrollStartPosition = alternateMenuOrigin.position;
 				m_AllowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
-				this.SetSpatialHintControlObject(rayOrigin);
+				this.SetSpatialHintControlNode(node);
 				m_PinnedToolsMenuUI.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
 				consumeControl(pinnedToolInput.show);
 				consumeControl(pinnedToolInput.select);
