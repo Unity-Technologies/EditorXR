@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
@@ -64,8 +65,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public Transform rayOrigin { private get; set; }
 	public List<Transform> otherRayOrigins { private get; set; }
 
-	public Transform menuOrigin { set; private get; }
-	public Transform alternateMenuOrigin { set; private get; }
+	public Transform menuOrigin { private get; set; }
+	public Transform alternateMenuOrigin { private get; set; }
 
 	public Func<Transform, Transform> customMenuOrigin { private get; set; }
 	public Func<Transform, Transform> customAlternateMenuOrigin { private get; set; }
@@ -120,10 +121,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			activator.showColorPicker = ShowColorPicker;
 			activator.hideColorPicker = HideColorPicker;
 
-#if UNITY_EDITOR
-			activator.undoButtonClick += UnityEditor.Undo.PerformUndo;
-			activator.redoButtonClick += UnityEditor.Undo.PerformRedo;
-#endif
+			activator.undoButtonClick += Undo.PerformUndo;
+			activator.redoButtonClick += Undo.PerformRedo;
 		}
 	}
 

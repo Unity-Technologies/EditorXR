@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,9 +22,20 @@ public class BrushSizeUI : MonoBehaviour
 
 	void Awake()
 	{
-		// HACK: Can't modify UI object without pushing an Undo state for it.
-		// Without this,  we will undo changes to the handle scale while undoing annotations
-		Undo.undoRedoPerformed += () => m_Slider.value = m_Slider.value;
+		// We record property modifications on creation and modification of these UI elements, which will look odd when undone
+		Undo.postprocessModifications += PostProcessModifications;
+	}
+
+	UndoPropertyModification[] PostProcessModifications(UndoPropertyModification[] modifications)
+	{
+		var modificationList = new List<UndoPropertyModification>(modifications);
+		foreach (var modification in modifications)
+		{
+			if (modification.currentValue.target == m_SliderHandle)
+				modificationList.Remove(modification);
+		}
+
+		return modificationList.ToArray();
 	}
 
 	void Start()
@@ -33,15 +45,10 @@ public class BrushSizeUI : MonoBehaviour
 
 	public void OnSliderValueChanged(float value)
 	{
-		//ScalelHandle(value);
+		m_SliderHandle.localScale = Vector3.one * Mathf.Lerp(k_MinSize, k_MaxSize, value);
 
 		if (onValueChanged != null)
 			onValueChanged(value);
-	}
-
-	void ScalelHandle(float value)
-	{
-		m_SliderHandle.localScale = Vector3.one * Mathf.Lerp(k_MinSize, k_MaxSize, value);
 	}
 
 	public void ChangeSliderValue(float newValue)
