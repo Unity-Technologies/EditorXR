@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		// Collection housing objects whose scroll data is being processed
 		List<IControlSpatialScrolling> m_ScrollCallers;
 
-		public class SpatialScrollData
+		public class SpatialScrollData : INodeToRay
 		{
 			public SpatialScrollData(IControlSpatialScrolling caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
 			{
@@ -26,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				this.maxItemCount = maxItemCount;
 				this.centerVisuals = centerVisuals;
 				spatialDirection = null;
+				rayOrigin = this.RequestRayOriginFromNode(node);
 			}
 
 			// Below is Data assigned by calling object requesting spatial scroll processing
@@ -39,6 +40,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			/// The node on which this spatial scroll is being processed
 			/// </summary>
 			public Node? node { get; set; }
+
+			/// <summary>
+			/// The ray origin on which this spatial scroll is being processed
+			/// </summary>
+			public Transform rayOrigin { get; set; }
 
 			/// <summary>
 			/// The origin/starting position of the scroll
@@ -120,9 +126,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (spatialScrollData == null)
 			{
-				//TODO: Add ray visibility settings
 				spatialScrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
 				m_ScrollCallers.Add(caller);
+				this.AddRayVisibilitySettings(spatialScrollData.rayOrigin, caller, false, false, 1);
 			}
 
 			return ProcessSpatialScrolling(spatialScrollData);
@@ -166,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				if (scroller == caller)
 				{
-					this.RemoveRayVisibilitySettings(this.RequestRayOriginFromNode(caller.spatialScrollData.node), this);
+					this.RemoveRayVisibilitySettings(caller.spatialScrollData.rayOrigin, caller);
 					this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
 					caller.spatialScrollData = null; // clear reference to the previously used scrollData
 					m_ScrollCallers.Remove(caller);
