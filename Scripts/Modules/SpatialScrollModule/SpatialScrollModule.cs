@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	public sealed class SpatialScrollModule : MonoBehaviour, IUsesViewerScale, IControlHaptics, IControlSpatialHinting
+	public sealed class SpatialScrollModule : MonoBehaviour, IUsesViewerScale, IControlHaptics, IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
 	{
 		[SerializeField]
 		HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection
@@ -162,14 +162,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (m_ScrollCallers.Count == 0)
 				return;
 
-			this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
-			//TODO: Remove ray visibility settings
-			//this.RemoveRayVisibilitySettings(caller)
-
 			foreach (var scroller in m_ScrollCallers)
 			{
 				if (scroller == caller)
 				{
+					this.RemoveRayVisibilitySettings(this.RequestRayOriginFromNode(caller.spatialScrollData.node), this);
+					this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
 					caller.spatialScrollData = null; // clear reference to the previously used scrollData
 					m_ScrollCallers.Remove(caller);
 					return;
