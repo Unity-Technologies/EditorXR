@@ -1,4 +1,6 @@
+#if UNITY_EDITOR
 using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +19,13 @@ public class BrushSizeUI : MonoBehaviour
 
 	public Action<float> onValueChanged { private get; set; }
 
+	void Awake()
+	{
+		// HACK: Can't modify UI object without pushing an Undo state for it.
+		// Without this,  we will undo changes to the handle scale while undoing annotations
+		Undo.undoRedoPerformed += () => m_Slider.value = m_Slider.value;
+	}
+
 	void Start()
 	{
 		m_SliderHandleImage = m_SliderHandle.GetComponent<Image>();
@@ -24,10 +33,15 @@ public class BrushSizeUI : MonoBehaviour
 
 	public void OnSliderValueChanged(float value)
 	{
-		m_SliderHandle.localScale = Vector3.one * Mathf.Lerp(k_MinSize, k_MaxSize, value);
+		//ScalelHandle(value);
 
 		if (onValueChanged != null)
 			onValueChanged(value);
+	}
+
+	void ScalelHandle(float value)
+	{
+		m_SliderHandle.localScale = Vector3.one * Mathf.Lerp(k_MinSize, k_MaxSize, value);
 	}
 
 	public void ChangeSliderValue(float newValue)
@@ -40,3 +54,4 @@ public class BrushSizeUI : MonoBehaviour
 		m_SliderHandleImage.color = newColor;
 	}
 }
+#endif

@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -24,3 +25,4 @@ public class ColorPickerSquareUI : Selectable, IDragHandler, IBeginDragHandler, 
 		m_AllowDragEvents = false;
 	}
 }
+#endif

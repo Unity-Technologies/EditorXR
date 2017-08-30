@@ -1,7 +1,10 @@
+#if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -9,8 +12,9 @@ using UnityEngine.InputNew;
 using UnityEngine.VR;
 
 [MainMenuItem("Annotation", "Create", "Draw in 3D")]
-public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, ISetDefaultRayVisibility, IUsesRayOrigins,
-	IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash
+public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
+	IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
+	IIsHoveringOverUI
 {
 	public const float TipDistance = 0.05f;
 	public const float MinBrushSize = 0.0025f;
@@ -49,6 +53,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	Transform m_AnnotationHolder;
 
 	AnnotationPointer m_AnnotationPointer;
+	Vector3 m_OriginalAnnotationPointerLocalScale;
+	Coroutine m_AnnotationPointerVisibilityCoroutine;
+	bool m_WasOverUI;
 
 	GameObject m_ColorPickerActivator;
 
@@ -71,10 +78,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	void OnDestroy()
 	{
 		if (rayOrigin)
-		{
-			this.UnlockRay(rayOrigin, this);
-			this.SetDefaultRayVisibility(rayOrigin, true);
-		}
+			this.RemoveRayVisibilitySettings(rayOrigin, this);
 
 		if (m_ColorPicker)
 			ObjectUtils.Destroy(m_ColorPicker.gameObject);
@@ -89,10 +93,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void Start()
 	{
-		this.SetDefaultRayVisibility(rayOrigin, false);
-		this.LockRay(rayOrigin, this);
+		this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 
 		m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
+		m_OriginalAnnotationPointerLocalScale = m_AnnotationPointer.transform.localScale;
 		CheckBrushSizeUI();
 
 		if (m_ColorPickerActivator == null)
@@ -151,8 +155,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (!m_ColorPicker.enabled)
 			m_ColorPicker.Show();
 
-		this.UnlockRay(rayOrigin, this);
-		this.SetDefaultRayVisibility(rayOrigin, true);
 		m_AnnotationPointer.gameObject.SetActive(false);
 	}
 
@@ -161,8 +163,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (m_ColorPicker && m_ColorPicker.enabled)
 		{
 			m_ColorPicker.Hide();
-			this.SetDefaultRayVisibility(rayOrigin, false);
-			this.LockRay(rayOrigin, this);
 			m_AnnotationPointer.gameObject.SetActive(true);
 		}
 	}
@@ -526,5 +526,39 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			FinalizeMesh();
 			consumeControl(annotationInput.draw);
 		}
+
+		var isOverUI = this.IsHoveringOverUI(rayOrigin);
+		if (isOverUI != m_WasOverUI)
+		{
+			this.RestartCoroutine(ref m_AnnotationPointerVisibilityCoroutine, SetAnnotationPointerVisibility(m_WasOverUI));
+			if (m_WasOverUI)
+				this.AddRayVisibilitySettings(rayOrigin, this, false, false);
+			else
+				this.RemoveRayVisibilitySettings(rayOrigin, this);
+
+			m_WasOverUI = isOverUI;
+		}
+	}
+
+	IEnumerator SetAnnotationPointerVisibility(bool visible)
+	{
+		if (!m_AnnotationPointer)
+			yield break;
+
+		const float transitionTime = 0.1875f;
+		var annotationPointerTransform = m_AnnotationPointer.transform;
+		var startTime = Time.time;
+		var timeDiff = 0f;
+		var currentScale = annotationPointerTransform.localScale;
+		var targetScale = visible ? m_OriginalAnnotationPointerLocalScale : Vector3.zero;
+		while (timeDiff < transitionTime)
+		{
+			annotationPointerTransform.localScale = Vector3.Lerp(currentScale, targetScale, timeDiff / transitionTime);
+			timeDiff = Time.time - startTime;
+			yield return null;
+		}
+
+		annotationPointerTransform.localScale = targetScale;
 	}
 }
+#endif

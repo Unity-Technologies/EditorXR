@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -103,3 +104,4 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 		m_Icon.localScale = targetScale;
 	}
 }
+#endif

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AnnotationPointer : MonoBehaviour
@@ -138,3 +139,4 @@ public class AnnotationPointer : MonoBehaviour
 		m_ConeMaterialInstance.SetColor("_EmissionColor", color);
 	}
 }
+#endif
