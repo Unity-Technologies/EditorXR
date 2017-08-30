@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
@@ -19,7 +20,9 @@ namespace UnityEditor.Experimental.EditorVR
 	{
 		internal delegate SpatialScrollModule.SpatialScrollData PerformSpatialScrollDelegate (IControlSpatialScrolling caller, Node? node, Vector3 startingPosition,
 			Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
+
 		internal static PerformSpatialScrollDelegate performSpatialScroll { private get; set; }
+		internal static Action<IControlSpatialScrolling> endSpatialScroll { private get; set; }
 
 		/// <summary>
 		/// Perform a spatial scroll action
@@ -38,9 +41,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			return performSpatialScroll(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
 		}
-
-		internal delegate void EndSpatialScrollDelegate (IControlSpatialScrolling caller);
-		internal static EndSpatialScrollDelegate endSpatialScroll { private get; set; }
 
 		/// <summary>
 		/// End a spatial scrolling action for a given caller
