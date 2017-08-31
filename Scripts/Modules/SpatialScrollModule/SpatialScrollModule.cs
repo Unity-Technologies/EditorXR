@@ -133,7 +133,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				newDirectionVectorThreshold *= this.GetViewerScale();
 				var dragMagnitude = Vector3.Magnitude(directionVector);
 				var dragPercentage = dragMagnitude / newDirectionVectorThreshold;
-				var repeatingPulseAmount = Mathf.Sin(Time.realtimeSinceStartup * 20) > 0.5f ? 1f : 0f; // Perform an on/off repeating pulse while waiting for the drag threshold to be crossed
+				const int kPulseSpeedMultiplier = 20;
+				const float kPulseThreshold = 0.5f;
+				const float kPulseOnAmount = 1f;
+				const float kPulseOffAmount = 0f;
+				var repeatingPulseAmount = Mathf.Sin(Time.realtimeSinceStartup * kPulseSpeedMultiplier) > kPulseThreshold ? kPulseOnAmount : kPulseOffAmount; // Perform an on/off repeating pulse while waiting for the drag threshold to be crossed
 				scrollData.dragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set value representing how much of the pre-scroll drag amount has occurred
 				this.Pulse(node, m_ActivationPulse, repeatingPulseAmount, repeatingPulseAmount);
 				if (dragMagnitude > newDirectionVectorThreshold)
