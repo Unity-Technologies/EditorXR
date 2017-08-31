@@ -160,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				consumeControl(toolslMenuInput.show);
 				consumeControl(toolslMenuInput.select);
 				// Assign initial SpatialScrollData; begin scroll
-				spatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUi.buttons.Count, m_ToolsMenuUi.maxButtonCount);
+				spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUi.buttons.Count, m_ToolsMenuUi.maxButtonCount);
 			}
 			else if (spatialScrollData != null && toolslMenuInput.show.isHeld)
 			{
@@ -175,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (buttonCount <= k_ActiveToolOrderPosition + 1)
 					{
 						if (spatialScrollData != null)
-							this.EndSpatialScroll(this);
+							this.EndSpatialScroll();
 
 						return;
 					}
@@ -183,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				// normalized input should loop after reaching the 0.15f length
 				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-				spatialScrollData = this.PerformSpatialScroll(this, node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUi.buttons.Count, m_ToolsMenuUi.maxButtonCount);
+				spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUi.buttons.Count, m_ToolsMenuUi.maxButtonCount);
 				var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{
@@ -240,7 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void CloseMenu()
 		{
 			this.Pulse(node, m_HidingPulse);
-			this.EndSpatialScroll(this); // Free the spatial scroll data owned by this object
+			this.EndSpatialScroll(); // Free the spatial scroll data owned by this object
 		}
 	}
 }

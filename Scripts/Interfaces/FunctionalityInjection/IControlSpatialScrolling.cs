@@ -27,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Perform a spatial scroll action
 		/// </summary>
-		/// <param name="caller">The object requesting the performance of a spatial scroll action</param>
+		/// "obj" : The object requesting the performance of a spatial scroll action
 		/// <param name="node">The node on which to display & perform the spatial scroll</param>
 		/// <param name="startingPosition">The initial position of the spatial scroll</param>
 		/// <param name="currentPosition">The current/updated position of the spatial scroll</param>
@@ -36,19 +36,19 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="maxItemCount">The maximum number of items that can be scrolled through for this action</param>
 		/// <param name="centerVisuals">If true, expand the scroll line visuals outward in both directions from the scroll start position</param>
 		/// <returns>The spatial scroll data for a single scroll action, but an individual caller object</returns>
-		public static SpatialScrollModule.SpatialScrollData PerformSpatialScroll(this IControlSpatialScrolling obj, IControlSpatialScrolling caller, Node? node,
+		public static SpatialScrollModule.SpatialScrollData PerformSpatialScroll(this IControlSpatialScrolling obj, Node? node,
 			Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
 		{
-			return performSpatialScroll(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
+			return performSpatialScroll(obj, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
 		}
 
 		/// <summary>
 		/// End a spatial scrolling action for a given caller
 		/// </summary>
-		/// <param name="caller">The caller whose spatial scroll action will be ended</param>
-		public static void EndSpatialScroll(this IControlSpatialScrolling obj, IControlSpatialScrolling caller)
+		/// "obj" : The caller whose spatial scroll action will be ended
+		public static void EndSpatialScroll(this IControlSpatialScrolling obj)
 		{
-			endSpatialScroll(caller);
+			endSpatialScroll(obj);
 		}
 	}
 }
