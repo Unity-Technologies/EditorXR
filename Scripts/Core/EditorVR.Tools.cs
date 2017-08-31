@@ -187,9 +187,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var spawnTool = true;
 
 						// If this tool was on the current device already, then simply remove it
-						if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
+						var currentTool = deviceData.currentTool;
+						if (currentTool != null && currentTool.GetType() == toolType)
 						{
-							DespawnTool(deviceData, deviceData.currentTool);
+							DespawnTool(deviceData, currentTool);
 
 							// Don't spawn a new tool, since we are only removing the old tool
 							spawnTool = false;
@@ -197,15 +198,40 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 						if (spawnTool)
 						{
+							var evrDeviceData = evr.m_DeviceData;
+
 							// Spawn tool and collect all devices that this tool will need
 							HashSet<InputDevice> usedDevices;
 							var device = deviceData.inputDevice;
-							var newTool = SpawnTool(toolType, out usedDevices, device);
+							var toolData = SpawnTool(toolType, out usedDevices, device);
+							var multiTool = toolData.tool as IMultiDeviceTool;
+							if (multiTool != null)
+							{
+								multiTool.primary = true;
+								Rays.ForEachProxyDevice(otherDeviceData =>
+								{
+									if (otherDeviceData != deviceData)
+									{
+										HashSet<InputDevice> otherUsedDevices;
+										var otherToolData = SpawnTool(toolType, out otherUsedDevices, otherDeviceData.inputDevice);
 
-							var evrDeviceData = evr.m_DeviceData;
+										foreach (var dd in evrDeviceData)
+										{
+											if (!otherUsedDevices.Contains(dd.inputDevice))
+												continue;
+
+											var otherCurrentTool = otherDeviceData.currentTool;
+											if (otherCurrentTool != null) // Remove the current tool on all devices this tool will be spawned on
+												DespawnTool(otherDeviceData, otherCurrentTool);
+
+											AddToolToStack(dd, otherToolData);
+										}
+									}
+								});
+							}
 
 							// Exclusive mode tools always take over all tool stacks
-							if (newTool is IExclusiveMode)
+							if (toolData.tool is IExclusiveMode)
 							{
 								foreach (var dev in evrDeviceData)
 								{
@@ -218,10 +244,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								if (!usedDevices.Contains(dd.inputDevice))
 									continue;
 
-								if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
-									DespawnTool(deviceData, deviceData.currentTool);
+								if (currentTool != null) // Remove the current tool on all devices this tool will be spawned on
+									DespawnTool(deviceData, currentTool);
 
-								AddToolToStack(dd, newTool);
+								AddToolToStack(dd, toolData);
 							}
 						}
 

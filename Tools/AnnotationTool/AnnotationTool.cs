@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -15,7 +16,7 @@ using UnityEngine.VR;
 [MainMenuItem("Annotation", "Create", "Draw in 3D")]
 public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
 	IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
-	IIsHoveringOverUI
+	IIsHoveringOverUI, IMultiDeviceTool, IUsesProxyType
 {
 	public const float TipDistance = 0.05f;
 	public const float MinBrushSize = 0.0025f;
@@ -57,11 +58,14 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	Vector3 m_OriginalAnnotationPointerLocalScale;
 	Coroutine m_AnnotationPointerVisibilityCoroutine;
 	bool m_WasOverUI;
+	bool m_WasDoingUndoRedo;
 
 	GameObject m_ColorPickerActivator;
 
 	float m_BrushSize = MinBrushSize;
 
+	public bool primary { private get; set; }
+	public Type proxyType { private get; set; }
 	public Transform rayOrigin { private get; set; }
 	public List<Transform> otherRayOrigins { private get; set; }
 
@@ -83,8 +87,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		if (m_ColorPicker)
 			ObjectUtils.Destroy(m_ColorPicker.gameObject);
+
 		if (m_BrushSizeUI)
 			ObjectUtils.Destroy(m_BrushSizeUI.gameObject);
+
 		if (m_ColorPickerActivator)
 			ObjectUtils.Destroy(m_ColorPickerActivator);
 
@@ -96,33 +102,36 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 
-		m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
-		m_OriginalAnnotationPointerLocalScale = m_AnnotationPointer.transform.localScale;
-		CheckBrushSizeUI();
-
-		if (m_ColorPickerActivator == null)
+		if (primary)
 		{
-			m_ColorPickerActivator = this.InstantiateUI(m_ColorPickerActivatorPrefab);
-			var otherAltMenu = customAlternateMenuOrigin(otherRayOrigins[0]);
+			m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
+			m_OriginalAnnotationPointerLocalScale = m_AnnotationPointer.transform.localScale;
+			CheckBrushSizeUI();
 
-			m_ColorPickerActivator.transform.SetParent(otherAltMenu.GetComponentInChildren<MainMenuActivator>().transform);
-			m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
-			m_ColorPickerActivator.transform.localPosition = Vector3.right * 0.05f;
-			m_ColorPickerActivator.transform.localScale = Vector3.one;
+			if (m_ColorPickerActivator == null)
+			{
+				m_ColorPickerActivator = this.InstantiateUI(m_ColorPickerActivatorPrefab);
+				var otherAltMenu = customAlternateMenuOrigin(otherRayOrigins[0]);
 
-			var activator = m_ColorPickerActivator.GetComponentInChildren<ColorPickerActivator>();
+				m_ColorPickerActivator.transform.SetParent(otherAltMenu.GetComponentInChildren<MainMenuActivator>().transform);
+				m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
+				m_ColorPickerActivator.transform.localPosition = Vector3.right * 0.05f;
+				m_ColorPickerActivator.transform.localScale = Vector3.one;
 
-			m_ColorPicker = activator.GetComponentInChildren<ColorPickerUI>(true);
-			m_ColorPicker.onHideCalled = HideColorPicker;
-			m_ColorPicker.toolRayOrigin = rayOrigin;
-			m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
+				var activator = m_ColorPickerActivator.GetComponentInChildren<ColorPickerActivator>();
 
-			activator.rayOrigin = otherRayOrigins.First();
-			activator.showColorPicker = ShowColorPicker;
-			activator.hideColorPicker = HideColorPicker;
+				m_ColorPicker = activator.GetComponentInChildren<ColorPickerUI>(true);
+				m_ColorPicker.onHideCalled = HideColorPicker;
+				m_ColorPicker.toolRayOrigin = rayOrigin;
+				m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
 
-			activator.undoButtonClick += Undo.PerformUndo;
-			activator.redoButtonClick += Undo.PerformRedo;
+				activator.rayOrigin = otherRayOrigins.First();
+				activator.showColorPicker = ShowColorPicker;
+				activator.hideColorPicker = HideColorPicker;
+
+				activator.undoButtonClick += Undo.PerformUndo;
+				activator.redoButtonClick += Undo.PerformRedo;
+			}
 		}
 	}
 
@@ -501,30 +510,66 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		var annotationInput = (AnnotationInput)input;
 
-		if (!Mathf.Approximately(annotationInput.changeBrushSize.value, 0))
-		{
-			HandleBrushSize(annotationInput.changeBrushSize.value);
-			consumeControl(annotationInput.changeBrushSize);
-			consumeControl(annotationInput.vertical);
-		}
-
-		if (annotationInput.draw.wasJustPressed)
-		{
-			SetupAnnotation();
-			consumeControl(annotationInput.draw);
-		}
-
 		var isHeld = annotationInput.draw.isHeld;
-		if (isHeld)
+		if (primary)
 		{
-			UpdateAnnotation();
-			consumeControl(annotationInput.draw);
-		}
+			if (!Mathf.Approximately(annotationInput.changeBrushSize.value, 0))
+			{
+				HandleBrushSize(annotationInput.changeBrushSize.value);
+				consumeControl(annotationInput.changeBrushSize);
+				consumeControl(annotationInput.vertical);
+			}
 
-		if (annotationInput.draw.wasJustReleased)
+			if (annotationInput.draw.wasJustPressed)
+			{
+				SetupAnnotation();
+				consumeControl(annotationInput.draw);
+			}
+
+			if (isHeld)
+			{
+				UpdateAnnotation();
+				consumeControl(annotationInput.draw);
+			}
+
+			if (annotationInput.draw.wasJustReleased)
+			{
+				FinalizeMesh();
+				consumeControl(annotationInput.draw);
+			}
+		}
+		else
 		{
-			FinalizeMesh();
-			consumeControl(annotationInput.draw);
+			// Secondary hand uses brush size input to do undo/redo
+			var value = annotationInput.changeBrushSize.value;
+			if (proxyType == typeof(ViveProxy))
+			{
+				if (annotationInput.stickButton.wasJustPressed)
+				{
+					if (value > 0)
+						Undo.PerformRedo();
+					else
+						Undo.PerformUndo();
+				}
+			}
+			else
+			{
+				var doUndoRedo = Math.Abs(value) > 0.5f;
+				if (doUndoRedo != m_WasDoingUndoRedo)
+				{
+					m_WasDoingUndoRedo = doUndoRedo;
+					if (doUndoRedo)
+					{
+						if (value > 0)
+							Undo.PerformRedo();
+						else
+							Undo.PerformUndo();
+					}
+				}
+
+				consumeControl(annotationInput.changeBrushSize);
+				consumeControl(annotationInput.vertical);
+			}
 		}
 
 		if (isHeld)
@@ -533,13 +578,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		var isOverUI = this.IsHoveringOverUI(rayOrigin);
 		if (isOverUI != m_WasOverUI)
 		{
-			this.RestartCoroutine(ref m_AnnotationPointerVisibilityCoroutine, SetAnnotationPointerVisibility(m_WasOverUI));
-			if (m_WasOverUI)
-				this.AddRayVisibilitySettings(rayOrigin, this, false, false);
-			else
-				this.RemoveRayVisibilitySettings(rayOrigin, this);
-
 			m_WasOverUI = isOverUI;
+			this.RestartCoroutine(ref m_AnnotationPointerVisibilityCoroutine, SetAnnotationPointerVisibility(!isOverUI));
+			if (isOverUI)
+				this.RemoveRayVisibilitySettings(rayOrigin, this);
+			else
+				this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 		}
 	}
 
