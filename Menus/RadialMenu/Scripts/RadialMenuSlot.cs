@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_Highlighted = value;
 				if (m_Highlighted)
 				{
-					// Only start the highlight coroutine if the highlight coroutine isnt already playing. Otherwise allow it to gracefully finish.
+					// Only start the highlight coroutine if the highlight coroutine isn't already playing. Otherwise allow it to gracefully finish.
 					if (m_HighlightCoroutine == null)
 						m_HighlightCoroutine = StartCoroutine(Highlight());
 
@@ -117,7 +117,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				m_SemiTransparent = value;
 
-				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateSemiTransparent(value));
+				this.RestartCoroutine(ref m_SemiTransparentCoroutine, AnimateSemiTransparent(value));
 				PostReveal();
 			}
 
@@ -188,10 +188,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Color m_SemiTransparentFrameColor;
 
 		Coroutine m_VisibilityCoroutine;
+		Coroutine m_SemiTransparentCoroutine;
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 		Coroutine m_InsetRevealCoroutine;
-		Coroutine m_RayExitDelayCoroutine;
 
 		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 		string m_TooltipText;
@@ -451,7 +451,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (m_InsetRevealCoroutine != null)
 			{
-				// In case semiTransparency is triggered immedlately upon showing the radial menu
+				// In case semiTransparency is triggered immediately upon showing the radial menu
 				this.StopCoroutine(ref m_InsetRevealCoroutine);
 				m_CanvasGroup.alpha = 1f;
 				PostReveal();
@@ -486,6 +486,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconScale, shapedTransitionAmount);
 				transitionAmount += Time.deltaTime * positionWait * 3f;
 				CorrectIconRotation();
+				yield return null;
+			}
+
+			// Wait until show is done because semi-transparent and show sometimes happen simultaneously
+			while (m_VisibilityCoroutine != null)
+			{
 				yield return null;
 			}
 

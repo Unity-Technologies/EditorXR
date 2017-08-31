@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -50,10 +51,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_MenuActions; }
 			set
 			{
-				m_MenuActions = value;
+				if (Selection.gameObjects.Length > 0)
+				{
+					// Show only default actions
+					m_MenuActions = value
+						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
+						.OrderBy(a => a.priority)
+						.ToList();
+				}
+				else
+				{
+					m_MenuActions = value
+						.Where(a => a.action is Actions.Undo || a.action is Actions.Redo)
+						.OrderBy(a => a.priority)
+						.ToList();
+				}
 
 				if (m_RadialMenuUI)
-					m_RadialMenuUI.actions = value;
+					m_RadialMenuUI.actions = m_MenuActions;
 			}
 		}
 

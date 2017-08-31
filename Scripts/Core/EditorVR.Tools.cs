@@ -117,7 +117,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					var alternateMenu = Menus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 					deviceData.alternateMenu = alternateMenu;
-					menuHideData[alternateMenu] = new Menus.MenuHideData();
+					menuHideData[alternateMenu] = new Menus.MenuHideData { hideFlags = 0 }; // Start visible
 					alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
 				}
 

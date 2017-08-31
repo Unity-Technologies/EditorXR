@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				gameObject.SetActive(true);
 				if (value && actions.Count > 0)
 					m_VisibilityCoroutine = StartCoroutine(AnimateShow());
-				else if (!value && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
+				else if (!value && m_RadialMenuSlots != null) // Only perform hiding if slots have been initialized
 					m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 				else if (!value)
 					gameObject.SetActive(false);
@@ -73,10 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			{
 				if (value != null)
 				{
-					m_Actions = value
-						.Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
-						.OrderBy(a => a.priority)
-						.ToList();
+					m_Actions = value;
 
 					if (visible && actions.Count > 0)
 					{
@@ -199,7 +196,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			for (int i = 0; i < k_SlotCount; ++i)
 			{
-				var menuSlot = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
+				var menuSlotGO = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false);
+				menuSlotGO.name = "Radial Menu Slot " + i;
+				var menuSlot = menuSlotGO.GetComponent<RadialMenuSlot>();
 				this.ConnectInterfaces(menuSlot);
 				menuSlot.orderIndex = i;
 				m_RadialMenuSlots.Add(menuSlot);
@@ -279,9 +278,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_RadialMenuSlots[i].visible = false;
 			}
 
-			semiTransparent = false;
-			semiTransparent = true;
-
 			var revealAmount = 0f;
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 			while (revealAmount < 1)
@@ -300,25 +296,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield return null;
 			}
 
-			revealAmount = 0;
-			while (revealAmount < 1)
-			{
-				revealAmount += Time.deltaTime;
-				yield return null;
-			}
-
 			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateHide()
 		{
-			var revealAmount = 0f;
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 
-			for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
+			for (var i = 0; i < m_RadialMenuSlots.Count; ++i)
 				m_RadialMenuSlots[i].visible = false;
 
-			revealAmount = 1;
+			var revealAmount = 1f;
 			while (revealAmount > 0)
 			{
 				revealAmount -= Time.deltaTime * 8;
@@ -329,7 +317,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				yield return null;
 			}
 
-			semiTransparent = false;
 			gameObject.SetActive(false);
 			m_VisibilityCoroutine = null;
 		}
