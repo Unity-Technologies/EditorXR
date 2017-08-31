@@ -25,7 +25,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		List<RadialMenuSlot> m_RadialMenuSlots;
 		Coroutine m_VisibilityCoroutine;
 		RadialMenuSlot m_HighlightedButton;
-		float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
+		float m_PhaseOffset; // Starting rotation for slots
+		bool m_SemiTransparent;
+		Transform m_AlternateMenuOrigin;
+		bool m_Visible;
+		List<ActionMenuData> m_Actions;
+		bool m_PressedDown;
+		Vector2 m_ButtonInputDirection;
 
 		public Transform alternateMenuOrigin
 		{
@@ -41,7 +47,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				transform.localRotation = Quaternion.identity;
 			}
 		}
-		Transform m_AlternateMenuOrigin;
 
 		public bool visible
 		{
@@ -64,7 +69,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					gameObject.SetActive(false);
 			}
 		}
-		bool m_Visible;
 
 		public List<ActionMenuData> actions
 		{
@@ -85,7 +89,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					visible = false;
 			}
 		}
-		List<ActionMenuData> m_Actions;
 
 		public bool pressedDown
 		{
@@ -113,7 +116,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 			}
 		}
-		bool m_PressedDown;
 
 		public Vector2 buttonInputDirection
 		{
@@ -126,6 +128,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				}
 				else if (value.magnitude > 0)
 				{
+					if (node == Node.LeftHand)
+						value.y *= -1;
+
 					var angle = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg;
 					angle -= m_PhaseOffset;
 
@@ -148,9 +153,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_ButtonInputDirection = value;
 			}
 		}
-		Vector2 m_ButtonInputDirection;
 
-		private bool semiTransparent
+		bool semiTransparent
 		{
 			set
 			{
@@ -162,14 +166,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
 					// Only set the semiTransparent value on menu slots representing actions
-					m_RadialMenuSlots[i].semiTransparent = m_Actions.Count > i ? m_SemiTransparent : false;
+					m_RadialMenuSlots[i].semiTransparent = m_Actions.Count > i && m_SemiTransparent;
 				}
 			}
 		}
-		private bool m_SemiTransparent;
+
+		public Node? node { private get; set; }
 
 		public event Action buttonHovered;
-		public event Action buttonClicked; 
+		public event Action buttonClicked;
 
 		void Update()
 		{
@@ -193,11 +198,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			m_RadialMenuSlots = new List<RadialMenuSlot>();
 			Material slotBorderMaterial = null;
+			gameObject.name = node + " Radial Menu";
 
 			for (int i = 0; i < k_SlotCount; ++i)
 			{
 				var menuSlotGO = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false);
-				menuSlotGO.name = "Radial Menu Slot " + i;
+				menuSlotGO.name = node + " Radial Menu Slot " + i;
 				var menuSlot = menuSlotGO.GetComponent<RadialMenuSlot>();
 				this.ConnectInterfaces(menuSlot);
 				menuSlot.orderIndex = i;
@@ -222,8 +228,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var slot = m_RadialMenuSlots[i];
 				// We move in counter-clockwise direction
 				// Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
-				m_PhaseOffset = 270 - (m_Actions.Count * 0.5f) * kRotationSpacing;
-				slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + kRotationSpacing * i, Vector3.down);
+				m_PhaseOffset = node == Node.LeftHand ? kRotationSpacing : -180f;
+				slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + kRotationSpacing * i, node == Node.LeftHand ? Vector3.up : Vector3.down);
 				slot.visible = false;
 			}
 

@@ -103,6 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
 			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_RadialMenuUI.actions = menuActions;
+			m_RadialMenuUI.node = node;
 			this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
 			m_RadialMenuUI.Setup();
 			m_RadialMenuUI.buttonHovered += OnButtonHovered;

@@ -145,8 +145,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
 				}
-				else if (gameObject.activeSelf)
+				else
+				{
+					m_SemiTransparent = false;
+					if (gameObject.activeSelf)
 						this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
+				}
 			}
 		}
 		bool m_Visible;
