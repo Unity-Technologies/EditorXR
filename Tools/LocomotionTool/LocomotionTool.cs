@@ -285,6 +285,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					m_LastRotationDiff = filteredRotation;
 					m_BlinkVisuals.visible = false;
+
+					m_StartCrawling = false;
+					m_Crawling = false;
 					return true;
 				}
 			}
