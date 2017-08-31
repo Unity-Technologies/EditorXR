@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IRaycastMethods
 	{
-		public delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null);
+		public delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<Renderer> ignoreList = null);
 
 		public static RaycastDelegate raycast { get; set; }
 
@@ -23,9 +23,9 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="hit">Hit information</param>
 		/// <param name="go">The gameobject which was hit, if any</param>
 		/// <param name="maxDistance">The maximum distance of the raycast</param>
-		/// <param name="ignoreList">(optional) A list of GameObjects to ignore</param>
+		/// <param name="ignoreList">(optional) A list of Renderers to ignore</param>
 		/// <returns></returns>
-		public static bool Raycast(this IRaycast obj, Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
+		public static bool Raycast(this IRaycast obj, Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<Renderer> ignoreList = null)
 		{
 			return raycast(ray, out hit, out go, maxDistance, ignoreList);
 		}

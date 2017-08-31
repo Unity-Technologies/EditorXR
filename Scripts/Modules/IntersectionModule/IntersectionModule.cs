@@ -206,7 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
 		}
 
-		internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
+		internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<Renderer> ignoreList = null)
 		{
 			obj = null;
 			hit = new RaycastHit();
@@ -218,8 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				for (int i = 0; i < m_Intersections.Count; i++)
 				{
 					var renderer = m_Intersections[i];
-					var gameObject = renderer.gameObject;
-					if (ignoreList != null && ignoreList.Contains(gameObject))
+					if (ignoreList != null && ignoreList.Contains(renderer))
 						continue;
 
 					var transform = renderer.transform;
@@ -238,7 +237,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 							hit.distance = dist;
 							hit.point = point;
 							hit.normal = transform.TransformDirection(tmp.normal);
-							obj = gameObject;
+							obj = renderer.gameObject;
 						}
 					}
 				}

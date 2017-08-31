@@ -62,7 +62,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 
 	public float extraSpeed { private get; set; }
 
-	public List<GameObject> ignoreList { private get; set; }
+	public List<Renderer> ignoreList { private get; set; }
 
 	public bool visible
 	{

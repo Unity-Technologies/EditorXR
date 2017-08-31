@@ -43,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
 				selectionColor.a = 1;
-				m_RayHighlightMaterial.color = selectionColor;
+				m_RayHighlightMaterial.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
 			}
 		}
 

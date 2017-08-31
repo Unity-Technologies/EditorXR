@@ -14,12 +14,12 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IGetVRPlayerObjectsMethods
 	{
-		internal static Func<List<GameObject>> getVRPlayerObjects { get; set; }
+		internal static Func<List<Renderer>> getVRPlayerObjects { get; set; }
 
 		/// <summary>
 		/// Returns objects that are used to represent the VR player
 		/// </summary>
-		public static List<GameObject> GetVRPlayerObjects(this IGetVRPlayerObjects obj)
+		public static List<Renderer> GetVRPlayerObjects(this IGetVRPlayerObjects obj)
 		{
 			return getVRPlayerObjects();
 		}

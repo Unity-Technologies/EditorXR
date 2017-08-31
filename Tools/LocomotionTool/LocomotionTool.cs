@@ -127,8 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								if (locomotionTool != this)
 								{
 									locomotionTool.m_BlockValueChangedListener = true;
-									//locomotionTool.m_ToggleGroup.NotifyToggleOn(
-									//	isOn ? locomotionTool.m_FlyToggle : locomotionTool.m_BlinkToggle);
+									//linkedObject.m_ToggleGroup.NotifyToggleOn(isOn ? m_FlyToggle : m_BlinkToggle);
 									// HACK: Toggle Group claims these toggles are not a part of the group
 									locomotionTool.m_FlyToggle.isOn = isOn;
 									locomotionTool.m_BlinkToggle.isOn = !isOn;
