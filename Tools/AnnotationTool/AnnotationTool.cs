@@ -416,8 +416,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		this.AddToSpatialHash(go);
 
-		UnityEditor.Undo.IncrementCurrentGroup();
-		UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Create Annotation");
+		Undo.IncrementCurrentGroup();
+		Undo.RegisterCreatedObjectUndo(go, "Create Annotation");
 	}
 
 	void CenterMesh()
@@ -514,7 +514,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			consumeControl(annotationInput.draw);
 		}
 
-		if (annotationInput.draw.isHeld)
+		var isHeld = annotationInput.draw.isHeld;
+		if (isHeld)
 		{
 			UpdateAnnotation();
 			consumeControl(annotationInput.draw);
@@ -525,6 +526,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			FinalizeMesh();
 			consumeControl(annotationInput.draw);
 		}
+
+		if (isHeld)
+			return;
 
 		var isOverUI = this.IsHoveringOverUI(rayOrigin);
 		if (isOverUI != m_WasOverUI)
