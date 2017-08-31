@@ -9,6 +9,10 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IPinnedToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode, ISelectTool
 	{
+		/// <summary>
+		/// Bool denoting that the alternate menu (radial menu, etc) is currently visible
+		/// Allows the ToolsMenu to adapt visibility state changes that occur  in the AlternateMenu
+		/// </summary>
 		bool alternateMenuVisible { set; }
 
 		/// <summary>
@@ -37,6 +41,7 @@ namespace UnityEditor.Experimental.EditorVR
 	public static class IPinnedToolsMenuMethods
 	{
 		public static Action<Transform> mainMenuActivatorSelected { get; set; }
+		public static Action<Transform, Type> selectTool { get; set; }
 
 		/// <summary>
 		/// Called when selecting the main menu activator
@@ -46,8 +51,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			mainMenuActivatorSelected(rayOrigin);
 		}
-
-		public static Action<Transform, Type> selectTool { get; set; }
 
 		/// <summary>
 		/// Selects a tool, based on type, from a pinned tool button
