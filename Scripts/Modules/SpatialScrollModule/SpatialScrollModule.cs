@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection
 
 		// Collection housing objects whose scroll data is being processed
-		List<IControlSpatialScrolling> m_ScrollCallers;
+		readonly List<IControlSpatialScrolling> m_ScrollCallers = new List<IControlSpatialScrolling>();
 
 		public class SpatialScrollData : INodeToRay
 		{
@@ -104,40 +104,29 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		void Awake()
-		{
-			m_ScrollCallers = new List<IControlSpatialScrolling>();
-		}
-
 		internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
 		{
 			// Continue processing of spatial scrolling for a given caller,
 			// Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
-			SpatialScrollData spatialScrollData = null;
+			SpatialScrollData scrollData = null;
 			foreach (var scroller in m_ScrollCallers)
 			{
 				if (scroller == caller)
 				{
-					spatialScrollData = scroller.spatialScrollData;
-					spatialScrollData.UpdateExistingScrollData(currentPosition);
+					scrollData = scroller.spatialScrollData;
+					scrollData.UpdateExistingScrollData(currentPosition);
 					break;
 				}
 			}
 
-			if (spatialScrollData == null)
+			if (scrollData == null)
 			{
-				spatialScrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
+				scrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
 				m_ScrollCallers.Add(caller);
-				this.AddRayVisibilitySettings(spatialScrollData.rayOrigin, caller, false, false, 1);
+				this.AddRayVisibilitySettings(scrollData.rayOrigin, caller, false, false, 1);
 			}
 
-			return ProcessSpatialScrolling(spatialScrollData);
-		}
-
-		SpatialScrollData ProcessSpatialScrolling(SpatialScrollData scrollData)
-		{
-			var currentPosition = scrollData.currentPosition;
-			var directionVector = currentPosition - scrollData.startingPosition;
+			var directionVector = currentPosition - startingPosition;
 			if (scrollData.spatialDirection == null)
 			{
 				var newDirectionVectorThreshold = 0.0175f; // Initial magnitude beyond which spatial scrolling will be evaluated
@@ -146,18 +135,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var dragPercentage = dragMagnitude / newDirectionVectorThreshold;
 				var repeatingPulseAmount = Mathf.Sin(Time.realtimeSinceStartup * 20) > 0.5f ? 1f : 0f; // Perform an on/off repeating pulse while waiting for the drag threshold to be crossed
 				scrollData.dragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set value representing how much of the pre-scroll drag amount has occurred
-				this.Pulse(scrollData.node, m_ActivationPulse, repeatingPulseAmount, repeatingPulseAmount);
+				this.Pulse(node, m_ActivationPulse, repeatingPulseAmount, repeatingPulseAmount);
 				if (dragMagnitude > newDirectionVectorThreshold)
 					scrollData.spatialDirection = directionVector; // Initialize vector defining the spatial scroll direction
 			}
 			else
 			{
-				var scrollingAfterTriggerOirigin = Vector3.Dot(directionVector, scrollData.spatialDirection.Value) >= 0; // Detect that the user is scrolling forward from the trigger origin point
-				var projectionVector = scrollingAfterTriggerOirigin ? scrollData.spatialDirection.Value : scrollData.spatialDirection.Value + scrollData.spatialDirection.Value;
+				var spatialDirection = scrollData.spatialDirection.Value;
+				var scrollingAfterTriggerOirigin = Vector3.Dot(directionVector, spatialDirection) >= 0; // Detect that the user is scrolling forward from the trigger origin point
+				var projectionVector = scrollingAfterTriggerOirigin ? spatialDirection : spatialDirection + spatialDirection;
 				var projectedAmount = Vector3.Project(directionVector, projectionVector).magnitude / this.GetViewerScale();
 				// Mandate that scrolling maintain the initial direction, regardless of the user scrolling before/after the trigger origin point; prevent direction flipping
 				projectedAmount = scrollingAfterTriggerOirigin ? projectedAmount : 1 - projectedAmount;
-				scrollData.normalizedLoopingPosition = (Mathf.Abs(projectedAmount * (scrollData.maxItemCount / scrollData.scrollableItemCount)) % scrollData.repeatingScrollLengthRange) * (1 / scrollData.repeatingScrollLengthRange);
+				scrollData.normalizedLoopingPosition = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
 			}
 
 			return scrollData;
