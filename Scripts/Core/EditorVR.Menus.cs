@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
-			readonly List<WorkspaceUI> m_WorkspaceComponents = new List<WorkspaceUI>();
+			readonly List<IWorkspace> m_WorkspaceComponents = new List<IWorkspace>();
 			readonly Collider[] m_WorkspaceOverlaps = new Collider[k_PossibleOverlaps];
 
 			public Menus()

@@ -123,6 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					{
 						hash.RemoveFromSpatialHash(grabData.transform.gameObject);
 						grabData.SetScale(scaleFactor);
+						grabData.Update(originalRayOrigin);
 					}
 				}
 
@@ -156,6 +157,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (hasPreview)
 						placer.PlaceSceneObjects(transforms, targetPositionOffsets, targetRotations, targetScales);
 
+					m_GrabData.Clear();
 					hasPreview = false;
 				}
 
