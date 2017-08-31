@@ -407,11 +407,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			tooltipAlignment = TextAlignment.Center;
 
-			const float kIncreasedContainerContentsSpeedMultiplier = 2.5f;
 			m_GradientButton.hoverEnter += OnBackgroundHoverEnter; // Display the foreground button actions
 			m_GradientButton.hoverExit += OnActionButtonHoverExit;
 			m_GradientButton.click += OnBackgroundButtonClick;
-			m_GradientButton.containerContentsAnimationSpeedMultiplier = kIncreasedContainerContentsSpeedMultiplier;
 
 			m_FrameRenderer.SetBlendShapeWeight(1, 0f);
 			m_CloseInsetMeshRenderer.SetBlendShapeWeight(0, 100f);

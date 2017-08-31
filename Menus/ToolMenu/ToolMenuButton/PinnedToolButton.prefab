@@ -871,6 +871,7 @@ MonoBehaviour:
   m_EndHighlightDuration: 0.3
   m_DelayBeforeReveal: 0
   m_HighlightZScaleMultiplier: 25
+  m_ContainerContentsAnimationSpeedMultiplier: 1
 --- !u!114 &114000010635728284
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1056,6 +1057,7 @@ MonoBehaviour:
   m_EndHighlightDuration: 0.167
   m_DelayBeforeReveal: 0
   m_HighlightZScaleMultiplier: 10
+  m_ContainerContentsAnimationSpeedMultiplier: 2.5
 --- !u!137 &137000010072420284
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

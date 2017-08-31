@@ -20,8 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		public event Action click;
 		public event Action hoverEnter;
 		public event Action hoverExit;
-		public event Action highlightStart;
-		public event Action highlightEnd;
 
 		public Sprite iconSprite
 		{
@@ -70,19 +68,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 					return;
 
 				if (m_Highlighted)
-				{
-					m_HighlightCoroutine = StartCoroutine(BeginHighlight());
-					
-					if (highlightStart != null)
-						highlightStart();
-				}
+					this.RestartCoroutine(ref m_HighlightCoroutine, BeginHighlight());
 				else
-				{
-					m_HighlightCoroutine = StartCoroutine(EndHighlight());
-					
-					if (highlightEnd != null)
-						highlightEnd();
-				}
+					this.RestartCoroutine(ref m_HighlightCoroutine, EndHighlight());
 			}
 		}
 		bool m_Highlighted;
@@ -119,26 +107,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		}
 		bool m_Visible;
 
-		Vector3 originalScale
-		{
-			get { return invertHighlightScale ? m_HighlightContentContainerLocalScale : m_OriginalContentContainerLocalScale; }
-		}
-
-		Vector3 highlightScale
-		{
-			get { return invertHighlightScale ? m_OriginalContentContainerLocalScale : m_HighlightContentContainerLocalScale; }
-		}
-
-		public Sprite icon
-		{
-			set
-			{
-				m_Icon.sprite = value;
-				m_OriginalIconSprite = value;
-			}
-		}
-
-		public bool invertHighlightScale { private get; set; }
 		public float containerContentsAnimationSpeedMultiplier { set { m_ContainerContentsAnimationSpeedMultiplier = value; }}
 
 		public float iconHighlightedLocalZOffset
@@ -212,8 +180,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		float m_DelayBeforeReveal = 0.25f;
 
 		[SerializeField]
-		[FormerlySerializedAs("m_highlightZScaleMultiplier")]
 		float m_HighlightZScaleMultiplier = 2f;
+
+		[SerializeField]
+		float m_ContainerContentsAnimationSpeedMultiplier = 1f;
 
 		Material m_ButtonMaterial;
 		Vector3 m_OriginalIconLocalPosition;
@@ -223,11 +193,11 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		Vector3 m_IconPressedLocalPosition;
 		Sprite m_OriginalIconSprite;
 		Vector3 m_OriginalLocalScale;
-		float m_ContainerContentsAnimationSpeedMultiplier = 1f;
 
 		// The initial button reveal coroutines, before highlighting occurs
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ContentVisibilityCoroutine;
+		Coroutine m_HighlighCoroutine;
 
 		// The visibility & highlight coroutines
 		Coroutine m_HighlightCoroutine;
@@ -277,7 +247,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		{
 			m_CanvasGroup.interactable = false;
 			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
-			m_ContentContainer.localScale = originalScale;
+			m_ContentContainer.localScale = m_OriginalContentContainerLocalScale;
 			SetMaterialColors(normalGradientPair);
 
 			this.StopCoroutine(ref m_ContentVisibilityCoroutine);
@@ -389,9 +359,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var currentGradientPair = GetMaterialColors();
 			var targetGradientPair = highlightGradientPair;
 			var currentLocalScale = m_ContentContainer.localScale;
-			var highlightedLocalScale = highlightScale;
-			var highlightDuration = m_BeginHighlightDuration > 0f ? m_BeginHighlightDuration : 0.01f;  // Add sane default if highlight duration is zero
-			while (transitionAmount < highlightDuration)
+			var highlightedLocalScale = m_HighlightContentContainerLocalScale;
+			var highlightDuration = m_BeginHighlightDuration;
+			while (transitionAmount < highlightDuration) // Skip while look if user has set the m_BeginHighlightDuration to a value at or below zero
 			{
 				var shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime / highlightDuration);
 				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
@@ -417,7 +387,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			var originalGradientPair = GetMaterialColors();
 			var targetGradientPair = normalGradientPair;
 			var currentLocalScale = m_ContentContainer.localScale;
-			var targetScale = originalScale;
+			var targetScale = m_OriginalContentContainerLocalScale;
 			var highlightDuration = m_EndHighlightDuration > 0f ? m_EndHighlightDuration : 0.01f;  // Add sane default if highlight duration is zero
 			while (transitionAmount < highlightDuration)
 			{

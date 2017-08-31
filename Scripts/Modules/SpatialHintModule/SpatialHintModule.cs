@@ -8,13 +8,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, INodeToRay, IRayVisibilitySettings
 	{
-		[Flags]
 		public enum SpatialHintStateFlags
 		{
-			Hidden = 1 << 0,
-			PreDragReveal = 1 << 1,
-			Scrolling = 1 << 2,
-			CenteredScrolling = 2 << 3,
+			Hidden,
+			PreDragReveal,
+			Scrolling,
+			CenteredScrolling,
 		}
 
 		[SerializeField]
