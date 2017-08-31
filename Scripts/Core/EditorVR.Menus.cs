@@ -85,9 +85,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var alternateMenu = deviceData.alternateMenu;
 				alternateMenu.menuHideFlags = deviceData.currentTool is IExclusiveMode ? 0 : deviceData.menuHideData[alternateMenu].hideFlags;
 
-				// Move the pinned tool buttons to an alternate position if the alternate menu will be shown
-				var pinnedToolsMenu = deviceData.ToolMenu;
-				pinnedToolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
+				// Move the Tools Menu buttons to an alternate position if the alternate menu will be shown
+				var toolsMenu = deviceData.ToolsMenu;
+				toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
 			}
 
 			internal void UpdateMenuVisibilities()
@@ -411,14 +411,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return alternateMenu;
 			}
 
-			internal static IPinnedToolsMenu SpawnPinnedToolsMenu(Type type, InputDevice device, out ActionMapInput input)
+			internal static IToolsMenu SpawnToolsMenu(Type type, InputDevice device, out ActionMapInput input)
 			{
 				input = null;
 
-				if (!typeof(IPinnedToolsMenu).IsAssignableFrom(type))
+				if (!typeof(IToolsMenu).IsAssignableFrom(type))
 					return null;
 
-				var menu = (IPinnedToolsMenu)ObjectUtils.AddComponent(type, evr.gameObject);
+				var menu = (IToolsMenu)ObjectUtils.AddComponent(type, evr.gameObject);
 				input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(menu, device);
 				evr.m_Interfaces.ConnectInterfaces(menu, device);
 

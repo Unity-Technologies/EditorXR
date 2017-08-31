@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Gives decorated class the ability to preview tools in a ToolButton
 	/// </summary>
-	public interface IPreviewInToolMenuButton
+	public interface IPreviewInToolsMenuButton
 	{
 	}
 
@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="toolType">Type: MenuButton's tool type to preview</param>
 		/// <param name="toolDescription">String: The tool description to display as a Tooltip</param>
 		/// </summary>
-		public static void PreviewInToolMenuButton (this IMainMenu obj, Transform rayOrigin, Type toolType, string toolDescription)
+		public static void PreviewInToolMenuButton (this IPreviewInToolsMenuButton obj, Transform rayOrigin, Type toolType, string toolDescription)
 		{
 			previewInToolMenuButton(rayOrigin, toolType, toolDescription);
 		}
@@ -31,7 +31,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Clears any ToolMenuButton previews that are set
 		/// </summary>
-		public static void ClearToolMenuButtonPreview (this IMainMenu obj)
+		public static void ClearToolMenuButtonPreview (this IPreviewInToolsMenuButton obj)
 		{
 			clearToolMenuButtonPreview();
 		}

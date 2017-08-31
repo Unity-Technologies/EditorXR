@@ -8,12 +8,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class ToolMenu : Nested
+		class ToolsMenu : Nested
 		{
-			public ToolMenu()
+			public ToolsMenu()
 			{
-				IPinnedToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
-				IPinnedToolsMenuMethods.selectTool = OnToolButtonClicked;
+				IToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
+				IToolsMenuMethods.selectTool = OnToolButtonClicked;
 
 				IPreviewInToolMenuButtonMethods.previewInToolMenuButton = PreviewToolInToolMenuButton;
 				IPreviewInToolMenuButtonMethods.clearToolMenuButtonPreview = ClearToolMenuButtonPreview;
@@ -27,9 +27,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				Rays.ForEachProxyDevice((deviceData) =>
 				{
-					if (deviceData.rayOrigin == rayOrigin) // Enable pinned tool preview on the opposite (handed) device
+					if (deviceData.rayOrigin == rayOrigin) // Enable Tools Menu preview on the opposite (handed) device
 					{
-						var previewToolMenuButton = deviceData.ToolMenu.previewToolButton;
+						var previewToolMenuButton = deviceData.ToolsMenu.PreviewToolsMenuButton;
 						previewToolMenuButton.previewToolType = toolType;
 						previewToolMenuButton.previewToolDescription = toolDescription;
 					}
@@ -40,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				Rays.ForEachProxyDevice((deviceData) =>
 				{
-					deviceData.ToolMenu.previewToolButton.previewToolType = null;
+					deviceData.ToolsMenu.PreviewToolsMenuButton.previewToolType = null;
 				});
 			}
 

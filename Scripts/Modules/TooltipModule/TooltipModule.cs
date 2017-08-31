@@ -132,7 +132,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var viewerScale = this.GetViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
-			var highlightMaterial = m_Tooltips[tooltip].customHighlightMaterial ?? m_HighlightMaterial;
+			TooltipData toolTipData;
+			m_Tooltips.TryGetValue(tooltip, out toolTipData);
+			var highlightMaterial = toolTipData != null ? toolTipData.customHighlightMaterial : m_HighlightMaterial;
 			tooltipUI.highlight.material= highlightMaterial;
 
 			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));

@@ -5,9 +5,9 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Provides an interface for handling Pinned Tool Button functionality
+	/// Provides an interface for handling Tools Menu Button functionality
 	/// </summary>
-	public interface IPinnedToolButton
+	public interface IToolsMenuButton
 	{
 		/// <summary>
 		/// The type to preview in the button temporarily
@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
 		int order { get; set; }
 
 		/// <summary>
-		/// The maximum number of buttons that can be displayed by a given PinnedToolsMenu
+		/// The maximum number of buttons that can be displayed by a given ToolsMenu
 		/// </summary>
 		int maxButtonCount { set; }
 
@@ -87,9 +87,9 @@ namespace UnityEditor.Experimental.EditorVR
 		Action<Type> selectTool { set; }
 
 		/// <summary>
-		/// Shows all tool buttons for a given PinnedToolsMenu
+		/// Shows all tool buttons for a given ToolsMenu
 		/// </summary>
-		Action<IPinnedToolButton> showAllButtons { set; }
+		Action<IToolsMenuButton> showAllButtons { set; }
 
 		/// <summary>
 		/// Performed when a hover exit is detected on this button
@@ -97,7 +97,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Action hoverExit { set; }
 
 		/// <summary>
-		/// Returns the visible button count for a given PinnedToolsMenu
+		/// Returns the visible button count for a given ToolsMenu
 		/// used by buttons to position themselves
 		/// </summary>
 		Func<Type, int> visibleButtonCount { set; }

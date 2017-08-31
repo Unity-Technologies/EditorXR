@@ -190,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						}
 					});
 
-					// Assign pinned tool button preview properties
+					// Assign Tools Menu button preview properties
 					mainMenuButton.toolType = selectedType;
 				}
 
@@ -283,8 +283,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 
 			// Pass the pointer which is over us, so this information can supply context (e.g. selecting a tool for a different hand)
-			// Enable preview-mode on a pinned tool button; Display on the opposite proxy device by evaluating the entering RayOrigin
-			// Disable any existing previews being displayed in PinnedToolsMenus
+			// Enable preview-mode on a Tools Menu button; Display on the opposite proxy device by evaluating the entering RayOrigin
+			// Disable any existing previews being displayed in ToolsMenus
 			this.ClearToolMenuButtonPreview();
 
 			if (buttonType != null && rayOrigin != null)

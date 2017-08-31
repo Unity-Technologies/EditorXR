@@ -115,12 +115,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					menuHideData[alternateMenu] = new Menus.MenuHideData();
 					alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
 
-					// Setup PinnedToolsMenu
-					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
-					deviceData.ToolMenu = pinnedToolsMenu;
-					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
-					pinnedToolsMenu.setButtonForType(typeof(IMainMenu), null);
-					pinnedToolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
+					// Setup ToolsMenu
+					var toolsMenu = Menus.SpawnToolsMenu(typeof(Experimental.EditorVR.Menus.ToolsMenu), inputDevice, out deviceData.toolsMenuInput);
+					deviceData.ToolsMenu = toolsMenu;
+					toolsMenu.rayOrigin = deviceData.rayOrigin;
+					toolsMenu.setButtonForType(typeof(IMainMenu), null);
+					toolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -192,7 +192,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var currentToolType = currentTool.GetType();
 						var currentToolIsSelect = currentToolType == typeof(SelectionTool);
 						var setSelectAsCurrentTool = toolType == typeof(SelectionTool) && !currentToolIsSelect;
-						var pinnedToolsMenu = deviceData.ToolMenu;
+						var toolsMenu = deviceData.ToolsMenu;
 						// If this tool was on the current device already, remove it, if it is selected while already being the current tool
 						var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentTool;// || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
 						if (currentTool != null && despawn)
@@ -204,12 +204,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								// Delete a button of the first type parameter
 								// Then select a button the second type param (the new current tool)
 								// Don't spawn a new tool, since we are only removing the old tool
-								pinnedToolsMenu.deletePinnedToolButton(toolType, currentToolType);
+								toolsMenu.deleteToolsMenuButton(toolType, currentToolType);
 							}
 							else if (setSelectAsCurrentTool)
 							{
 								// Set the selection tool as the active tool, if select is to be the new current tool
-								pinnedToolsMenu.setButtonForType(typeof(SelectionTool), null);
+								toolsMenu.setButtonForType(typeof(SelectionTool), null);
 							}
 
 							spawnTool = false;
@@ -242,7 +242,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 								AddToolToStack(data, newTool);
 								
-								pinnedToolsMenu.setButtonForType(toolType, newTool.icon);
+								toolsMenu.setButtonForType(toolType, newTool.icon);
 							}
 						}
 						
@@ -361,13 +361,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							maps.Add(alternateMenuInput);
 					}
 
-					var pinnedToolsMenu = deviceData.ToolMenu;
-					var pinnedToolsMenuInput = deviceData.pinnedToolsMenuInput;
-					if (pinnedToolsMenu != null && pinnedToolsMenuInput != null)
+					var toolsMenu = deviceData.ToolsMenu;
+					var toolsMenuInput = deviceData.toolsMenuInput;
+					if (toolsMenu != null && toolsMenuInput != null)
 					{
-						// PinnedToolsMenu visibility is handled internally, not via hide flags
-						if (!maps.Contains(pinnedToolsMenuInput))
-							maps.Add(pinnedToolsMenuInput);
+						// Tools Menu visibility is handled internally, not via hide flags
+						if (!maps.Contains(toolsMenuInput))
+							maps.Add(toolsMenuInput);
 					}
 
 					maps.Add(deviceData.uiInput);

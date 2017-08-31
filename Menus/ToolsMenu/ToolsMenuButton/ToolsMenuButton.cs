@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolButton : MonoBehaviour, IPinnedToolButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
+	sealed class ToolsMenuButton : MonoBehaviour, IToolsMenuButton,  ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
 	{
 		static Color s_FrameOpaqueColor;
 
@@ -122,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Vector3 toolButtonActivePosition { get { return k_ToolButtonActivePosition; } } // Shared active button offset from the alternate menu
 		public Func<Type, int> visibleButtonCount { get; set; }
 		public Action destroy { get { return DestroyButton; } }
-		public Action<IPinnedToolButton> showAllButtons { private get; set; }
+		public Action<IToolsMenuButton> showAllButtons { private get; set; }
 		public Action hoverExit { get; set; }
 
 		public Type toolType
@@ -168,7 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			get { return m_Order; }
 			set
 			{
-				m_Order = value; // Position of this button in relation to other pinned tool buttons
+				m_Order = value; // Position of this button in relation to other tool buttons
 
 				highlighted = false;
 
@@ -458,7 +458,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnBackgroundHoverEnter ()
 		{
-			if (hovered != null) // Raised in order to trigger the haptic in the PinnedToolsMenu
+			if (hovered != null) // Raised in order to trigger the haptic in the Tools Menu
 				hovered();
 
 			if (isMainMenu)
@@ -575,7 +575,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			const float kCenterLocationAmount = 0.5f;
 			const float kCircularRange = 360f;
 			const int kDurationShapeAmount = 3;
-			var rotationSpacing = kCircularRange / maxButtonCount; // dividend should be the count of pinned tool buttons showing at this time
+			var rotationSpacing = kCircularRange / maxButtonCount; // dividend should be the count of tool buttons showing at this time
 			// Center the MainMenu & Active tool buttons at the bottom of the RadialMenu
 			var phaseOffset = orderPosition > -1 ? rotationSpacing * kCenterLocationAmount - (visibleButtonCount(m_ToolType) * kCenterLocationAmount) * rotationSpacing : 0;
 			var targetRotation = orderPosition > -1 ? Quaternion.AngleAxis(phaseOffset + rotationSpacing * Mathf.Max(0f, orderPosition), Vector3.down) : Quaternion.identity;

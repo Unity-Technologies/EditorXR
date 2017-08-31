@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class PinnedToolsMenuUI : MonoBehaviour, IUsesViewerScale, IInstantiateUI,
+	sealed class ToolsMenuUI : MonoBehaviour, IUsesViewerScale, IInstantiateUI,
 		IConnectInterfaces, IControlSpatialHinting, IUsesRayOrigin
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Transform m_ButtonTooltipTarget;
 
 		bool m_AllButtonsVisible;
-		List<IPinnedToolButton> m_OrderedButtons;
+		List<IToolsMenuButton> m_OrderedButtons;
 		Coroutine m_ShowHideAllButtonsCoroutine;
 		Coroutine m_MoveCoroutine;
 		Coroutine m_ButtonHoverExitDelayCoroutine;
@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform buttonContainer { get { return m_ButtonContainer; } }
 		public Transform rayOrigin { get; set; }
 		public Action<Transform> mainMenuActivatorSelected { get; set; }
-		public List<IPinnedToolButton> buttons { get { return m_OrderedButtons; } }
+		public List<IToolsMenuButton> buttons { get { return m_OrderedButtons; } }
 
 		public bool allButtonsVisible
 		{
@@ -137,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		void Awake()
 		{
 			m_OriginalLocalScale = transform.localScale;
-			m_OrderedButtons = new List<IPinnedToolButton>();
+			m_OrderedButtons = new List<IToolsMenuButton>();
 		}
 
 		void Update()
@@ -171,7 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public void AddButton(IPinnedToolButton button, Transform buttonTransform)
+		public void AddButton(IToolsMenuButton button, Transform buttonTransform)
 		{
 			button.showAllButtons = ShowAllButtons;
 			button.hoverExit = ButtonHoverExitPerformed;
@@ -231,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_ShowHideAllButtonsCoroutine = null;
 		}
 
-		void Reinsert(IPinnedToolButton button, int newOrderPosition, bool updateButtonOrder = false)
+		void Reinsert(IToolsMenuButton button, int newOrderPosition, bool updateButtonOrder = false)
 		{
 			var removed = m_OrderedButtons.Remove(button);
 			if (!removed)
@@ -283,9 +283,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void SetupButtonOrderThenSelectTool(IPinnedToolButton pinnedToolButton, bool selectAfterSettingButtonOrder = true)
+		void SetupButtonOrderThenSelectTool(IToolsMenuButton toolsMenuButton, bool selectAfterSettingButtonOrder = true)
 		{
-			var mainMenu = IsMainMenuButton(pinnedToolButton);
+			var mainMenu = IsMainMenuButton(toolsMenuButton);
 			if (mainMenu)
 			{
 				mainMenuActivatorSelected(rayOrigin);
@@ -294,20 +294,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			var showMenuButton = !aboveMinimumButtonCount;
 
-			Reinsert(pinnedToolButton, k_ActiveToolOrderPosition);
+			Reinsert(toolsMenuButton, k_ActiveToolOrderPosition);
 
 			this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1f, showMenuButton));
 
 			if (selectAfterSettingButtonOrder && buttonSelected != null)
 			{
-				bool existingButton = m_OrderedButtons.Any((x) => x.toolType == pinnedToolButton.toolType);
+				bool existingButton = m_OrderedButtons.Any((x) => x.toolType == toolsMenuButton.toolType);
 				if (existingButton)
-					buttonSelected(rayOrigin, pinnedToolButton.toolType); // Select the tool in the PinnedToolsMenu
+					buttonSelected(rayOrigin, toolsMenuButton.toolType); // Select the tool in the Tools Menu
 			}
 		}
 
 		/// <summary>
-		/// Utilized by PinnedToolsMenu to select an existing button by type, without creating a new button
+		/// Utilized by Tools Menu to select an existing button by type, without creating a new button
 		/// </summary>
 		/// <param name="type">Button ToolType to compare against existing button types</param>
 		public void SelectExistingToolType(Type type)
@@ -323,7 +323,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 
 		/// <summary>
-		/// Utilized by PinnedToolsMenuButtons to select an existing button by type, without creating a new button
+		/// Utilized by ToolsMenuButtons to select an existing button by type, without creating a new button
 		/// </summary>
 		/// <param name="type">Button ToolType to compare against existing button types</param>
 		void SelectExistingToolTypeFromButton(Type type)
@@ -400,7 +400,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// <returns>Bool denoting that a highlighted button other than the selection tool button was deleted</returns>
 		public bool DeleteHighlightedButton()
 		{
-			IPinnedToolButton button = null;
+			IToolsMenuButton button = null;
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				button = m_OrderedButtons[i];
@@ -448,12 +448,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			return buttonDeleted;
 		}
 
-		static bool IsMainMenuButton(IPinnedToolButton button)
+		static bool IsMainMenuButton(IToolsMenuButton button)
 		{
 			return button.toolType == typeof(IMainMenu);
 		}
 
-		static bool IsSelectionToolButton(IPinnedToolButton button)
+		static bool IsSelectionToolButton(IToolsMenuButton button)
 		{
 			return button.toolType == typeof(SelectionTool);
 		}
@@ -494,7 +494,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MoveCoroutine = null;
 		}
 
-		void ShowAllButtons(IPinnedToolButton button)
+		void ShowAllButtons(IToolsMenuButton button)
 		{
 			m_RayHovered = true;
 			if (!allButtonsVisible && aboveMinimumButtonCount && !IsMainMenuButton(button) && m_ButtonHoverExitDelayCoroutine == null)

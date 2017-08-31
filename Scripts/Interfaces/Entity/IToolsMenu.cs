@@ -5,9 +5,9 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Gives decorated class Pinned Tools Menu functionality
+	/// Gives decorated class Tools Menu functionality
 	/// </summary>
-	public interface IPinnedToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode, ISelectTool
+	public interface IToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode, ISelectTool
 	{
 		/// <summary>
 		/// Bool denoting that the alternate menu (radial menu, etc) is currently visible
@@ -21,9 +21,9 @@ namespace UnityEditor.Experimental.EditorVR
 		Transform rayOrigin { get; set; }
 
 		/// <summary>
-		/// The PinnedToolButton that the menu uses to display tool previews
+		/// The ToolsMenuButton that the menu uses to display tool previews
 		/// </summary>
-		IPinnedToolButton previewToolButton { get; }
+		IToolsMenuButton PreviewToolsMenuButton { get; }
 
 		/// <summary>
 		/// Function that assigns & sets up a tool button for a given tool type
@@ -35,10 +35,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Delete the tool button with corresponding type of the first parameter.
 		/// Then, select the tool button with corresponds to the type of the second parameter.
 		/// </summary>
-		Action<Type, Type> deletePinnedToolButton { get; }
+		Action<Type, Type> deleteToolsMenuButton { get; }
 	}
 
-	public static class IPinnedToolsMenuMethods
+	public static class IToolsMenuMethods
 	{
 		public static Action<Transform> mainMenuActivatorSelected { get; set; }
 		public static Action<Transform, Type> selectTool { get; set; }
@@ -47,17 +47,17 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Called when selecting the main menu activator
 		/// </summary>
 		/// <param name="rayOrigin">This menu's RayOrigin</param>
-		public static void MainMenuActivatorSelected(this IPinnedToolsMenu obj, Transform rayOrigin)
+		public static void MainMenuActivatorSelected(this IToolsMenu obj, Transform rayOrigin)
 		{
 			mainMenuActivatorSelected(rayOrigin);
 		}
 
 		/// <summary>
-		/// Selects a tool, based on type, from a pinned tool button
+		/// Selects a tool, based on type, from a Tools Menu Button
 		/// </summary>
 		/// <param name="rayOrigin">This menu's RayOrigin</param>
 		/// <param name="type">The type of the tool that is to be selected</param>
-		public static void SelectTool(this IPinnedToolsMenu obj, Transform rayOrigin, Type type)
+		public static void SelectTool(this IToolsMenu obj, Transform rayOrigin, Type type)
 		{
 			selectTool(rayOrigin, type);
 		}
