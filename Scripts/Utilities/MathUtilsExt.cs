@@ -212,6 +212,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>The 0-1 smoothed lerp value</returns>
 		public static float SmoothInOutLerpFloat(float lerpAmount)
 		{
+			// https://www.wolframalpha.com/input/?i=t%5E3+*+(t+*+(6+*+t+-+15)+%2B+10)
+			// t^3 * (t * (6 * t - 15) + 10)
 			return Mathf.Pow(lerpAmount, 3) * (lerpAmount * (6f * lerpAmount - 15f) + 10f);
 		}
 	}
