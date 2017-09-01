@@ -19,25 +19,25 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 	Color m_InvalidColor;
 
 	[SerializeField]
-	float m_ProjectileSpeed = 250f;
+	float m_BlinkDistance = 15f;
 
 	[SerializeField]
-	float m_MaxProjectileSpeed = 500f;
+	float m_MaxBlinkDistance = 50f;
 
 	[SerializeField]
-	float m_TimeStep = 0.0075f;
+	float m_TimeStep = 0.75f;
 
 	[SerializeField]
-	int m_MaxProjectileSteps = 200;
+	int m_MaxProjectileSteps = 150;
 
 	[SerializeField]
 	int m_SphereCount = 25;
 
 	[SerializeField]
-	float m_Spherespeed = 1f;
+	float m_Spherespeed = 2f;
 
 	[SerializeField]
-	float m_InvalidThreshold = -0.8f;
+	float m_InvalidThreshold = -0.95f;
 
 	[SerializeField]
 	float m_TransitionTime = 0.15f;
@@ -139,15 +139,17 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 	void Update()
 	{
 		targetPosition = null;
-
 		var viewerScale = this.GetViewerScale();
-		var timeStep = m_TimeStep * viewerScale;
-		var projectileSpeed = m_ProjectileSpeed + extraSpeed * (m_MaxProjectileSpeed - m_ProjectileSpeed);
-		projectileSpeed *= m_TransitionAmount;
-		var velocity = transform.forward * projectileSpeed * timeStep;
+		var blinkDistance = m_BlinkDistance + extraSpeed * extraSpeed * (m_MaxBlinkDistance - m_BlinkDistance);
+		blinkDistance *= viewerScale;
+		var gravity = Physics.gravity;
+		var timeStep = m_TimeStep * viewerScale / Mathf.Sqrt(blinkDistance * gravity.magnitude);
+		blinkDistance *= m_TransitionAmount;
+		var speed = Mathf.Sqrt(blinkDistance * gravity.magnitude);
+		var velocity = transform.forward * speed * timeStep;
+		gravity *= timeStep * timeStep;
 
 		var lastPosition = transform.position;
-		var gravity = Physics.gravity * timeStep;
 		m_SpherePosition = (m_SpherePosition + Time.deltaTime * m_Spherespeed) % 1;
 		for (var i = 0; i < m_MaxProjectileSteps; i++)
 		{
