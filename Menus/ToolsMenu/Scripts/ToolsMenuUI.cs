@@ -49,7 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public int maxButtonCount { get; set; }
 		public Transform buttonContainer { get { return m_ButtonContainer; } }
-		public Transform rayOrigin { get; set; }
+		public Transform rayOrigin { private get; set; }
 		public Action<Transform> mainMenuActivatorSelected { get; set; }
 		public List<IToolsMenuButton> buttons { get { return m_OrderedButtons; } }
 

@@ -37,7 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		HapticPulse m_HidingPulse; // The pulse performed when ending a spatial selection
 
-		Transform m_RayOrigin;
 		float m_AllowToolToggleBeforeThisTime;
 		Vector3 m_SpatialScrollStartPosition;
 		ToolsMenuUI m_ToolsMenuUi;
@@ -55,18 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform alternateMenuOrigin { get; set; }
 		public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 		public ActionMap actionMap { get { return m_MainMenuActionMap; } }
-
-		public Transform rayOrigin
-		{
-			get { return m_RayOrigin; }
-			set
-			{
-				m_RayOrigin = value;
-				// UI is created after RayOrigin is set here
-				// Ray origin is then set in CreateToolsMenuUI()
-				CreateToolsMenuUI();
-			}
-		}
+		public Transform rayOrigin { get; set; }
 
 		void Awake()
 		{
@@ -81,10 +69,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void CreateToolsMenuUI()
 		{
-			m_ToolsMenuUi = m_ToolsMenuUi ?? this.InstantiateUI(m_ToolsMenuPrefab.gameObject).GetComponent<ToolsMenuUI>();
+			m_ToolsMenuUi = this.InstantiateUI(m_ToolsMenuPrefab.gameObject, rayOrigin, true, rayOrigin).GetComponent<ToolsMenuUI>();
 			m_ToolsMenuUi.maxButtonCount = k_MaxButtonCount;
 			m_ToolsMenuUi.mainMenuActivatorSelected = this.MainMenuActivatorSelected;
-			m_ToolsMenuUi.rayOrigin = rayOrigin;
 			m_ToolsMenuUi.buttonHovered += OnButtonHover;
 			m_ToolsMenuUi.buttonClicked += OnButtonClick;
 			m_ToolsMenuUi.buttonSelected += OnButtonSelected;
@@ -99,6 +86,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void CreateToolsMenuButton(Type toolType, Sprite buttonIcon)
 		{
+			// Verify first that the ToolsMenuUI exists
+			// This is called in EditorVR.Tools before the UI can be created herein in Awake
+			// The SelectionTool & MainMenu buttons are created immediately after instantiating the ToolsMenu
+			if (m_ToolsMenuUi == null)
+				CreateToolsMenuUI();
+
 			// Select an existing ToolButton if the type is already present in a button
 			if (buttons.Any( x => x.toolType == toolType))
 			{
@@ -139,7 +132,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return;
 
 			const float kAllowToggleDuration = 0.25f;
-			var toolslMenuInput = (ToolslMenuInput) input;
+
+			var toolslMenuInput = (ToolsMenuInput) input;
 
 			if (spatialScrollData != null && toolslMenuInput.cancel.wasJustPressed)
 			{
