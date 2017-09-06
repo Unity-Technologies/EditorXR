@@ -134,6 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		WorkspaceButton m_ResizeButton;
 
+		BoxCollider m_FrameCollider;
 		Bounds m_Bounds;
 		float? m_TopPanelDividerOffset;
 
@@ -161,7 +162,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		class DragState
 		{
 			public Transform rayOrigin { get; private set; }
-			public Node? node { get; private set; }
 			bool m_Resizing;
 			Vector3 m_PositionOffset;
 			Quaternion m_RotationOffset;
@@ -403,7 +403,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				m_TopHighlightContainer.localScale = new Vector3(faceWidth + kHighlightMargin, 1f, faceDepth + kHighlightMargin);
 				m_TopFaceContainer.localScale = new Vector3(faceWidth, 1f, faceDepth);
 
+				var frameBounds = adjustedBounds;
+				m_FrameCollider.size = frameBounds.size;
+				m_FrameCollider.center = frameBounds.center;
+
 				AdjustHandlesAndIcons();
+			}
+		}
+
+		public Bounds adjustedBounds
+		{
+			get
+			{
+				var adjustedBounds = bounds;
+				adjustedBounds.size += Vector3.forward * m_FrontZOffset;
+				adjustedBounds.center += Vector3.back * m_FrontZOffset * 0.5f;
+				return adjustedBounds;
 			}
 		}
 
@@ -429,6 +444,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_CloseButton.hovered += OnButtonHovered;
 			m_ResizeButton.clicked += OnResetSizeClicked;
 			m_ResizeButton.hovered += OnButtonHovered;
+
+			m_FrameCollider = transform.parent.gameObject.AddComponent<BoxCollider>();
 		}
 
 		IEnumerator Start()
@@ -623,6 +640,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_FrontPanel.localPosition = Vector3.Lerp(Vector3.forward * kFrontPanelZStartOffset, new Vector3(0, kFrontPanelYOffset, kFrontPanelZEndOffset), paddedLerp);
 
 			m_FrontZOffset = (k_FrontFrameZOffset + m_FrontFrameHandleSize) * Mathf.Clamp01(paddedLerp * kAdditionalFrontPanelLerpPadding);
+			var frameBounds = adjustedBounds;
+			m_FrameCollider.size = frameBounds.size;
+			m_FrameCollider.center = frameBounds.center;
 
 			AdjustHandlesAndIcons();
 
@@ -668,9 +688,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				return;
 			}
 
-			var adjustedBounds = bounds;
-			adjustedBounds.size += Vector3.forward * m_FrontZOffset;
-			adjustedBounds.center += Vector3.back * m_FrontZOffset * 0.5f;
 			Transform dragRayOrigin = null;
 			Image dragResizeIcon = null;
 			var resizing = false;
@@ -746,18 +763,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				iconTransform.localPosition = iconPosition;
 			}
 
+			var adjustedBounds = this.adjustedBounds;
 			if (!dragRayOrigin)
 			{
-				var leftPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
-				if (moveResizeLeft.wasJustPressed && adjustedBounds.Contains(leftPosition))
+				var leftPosition = transform.InverseTransformPoint(leftRayOrigin.position);
+				var leftPointerPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
+				if (moveResizeLeft.wasJustPressed && (adjustedBounds.Contains(leftPosition) || adjustedBounds.Contains(leftPointerPosition)))
 				{
 					dragRayOrigin = leftRayOrigin;
 					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
 					consumeControl(moveResizeLeft);
 				}
 
-				var rightPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
-				if (moveResizeRight.wasJustPressed && adjustedBounds.Contains(rightPosition))
+				var rightPosition = transform.InverseTransformPoint(rightRayOrigin.position);
+				var rightPointerPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
+				if (moveResizeRight.wasJustPressed && (adjustedBounds.Contains(rightPosition) || adjustedBounds.Contains(rightPointerPosition)))
 				{
 					dragRayOrigin = rightRayOrigin;
 					m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);

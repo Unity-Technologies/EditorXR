@@ -16,10 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[SerializeField]
 		ActionMap m_StandardToolActionMap;
 
-		public ActionMap directSelectActionMap { get { return m_DirectSelectActionMap; } }
-		[SerializeField]
-		ActionMap m_DirectSelectActionMap;
-
 		PlayerHandle m_PlayerHandle;
 
 		readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();

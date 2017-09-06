@@ -69,7 +69,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal static void SpawnDefaultTools(IProxy proxy)
 			{
-				Func<Transform, bool> isRayActive = Rays.IsRayActive;
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
 				var lockModule = evr.GetModule<LockModule>();
 				var defaultTools = evr.m_DefaultTools;
@@ -90,10 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var tool = toolData.tool;
 						var selectionTool = tool as SelectionTool;
 						if (selectionTool)
-						{
 							selectionTool.hovered += lockModule.OnHovered;
-							selectionTool.isRayActive = isRayActive;
-						}
 
 						var vacuumTool = tool as VacuumTool;
 						if (vacuumTool)
@@ -104,15 +100,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 
+					var menuHideData = deviceData.menuHideData;
 					var mainMenu = Menus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
 					deviceData.mainMenu = mainMenu;
-					deviceData.menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
+					menuHideData[mainMenu] = new Menus.MenuHideData();
 
 					var mainMenuActivator = Menus.SpawnMainMenuActivator(inputDevice);
 					deviceData.mainMenuActivator = mainMenuActivator;
 					mainMenuActivator.selected += Menus.OnMainMenuActivatorSelected;
-					mainMenuActivator.hoverStarted += Menus.OnMainMenuActivatorHoverStarted;
-					mainMenuActivator.hoverEnded += Menus.OnMainMenuActivatorHoverEnded;
 
 					var pinnedToolButton = Menus.SpawnPinnedToolButton(inputDevice);
 					deviceData.previousToolButton = pinnedToolButton;
@@ -122,7 +117,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					var alternateMenu = Menus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 					deviceData.alternateMenu = alternateMenu;
-					deviceData.menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
+					menuHideData[alternateMenu] = new Menus.MenuHideData();
 					alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
 				}
 
@@ -238,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 					else
 					{
-						deviceData.menuHideFlags[deviceData.mainMenu] |= Menus.MenuHideFlags.Hidden;
+						deviceData.menuHideData[deviceData.mainMenu].hideFlags |= MenuHideFlags.Hidden;
 					}
 				});
 
@@ -283,7 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								var customMenu = otherDeviceData.customMenu;
 								if (customMenu != null)
 								{
-									otherDeviceData.menuHideFlags.Remove(customMenu);
+									otherDeviceData.menuHideData.Remove(customMenu);
 									otherDeviceData.customMenu = null;
 								}
 							}
@@ -335,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var mainMenuInput = deviceData.mainMenuInput;
 					if (mainMenu != null && mainMenuInput != null)
 					{
-						mainMenuInput.active = mainMenu.visible;
+						mainMenuInput.active = mainMenu.menuHideFlags == 0;
 
 						if (!maps.Contains(mainMenuInput))
 							maps.Add(mainMenuInput);
@@ -345,13 +340,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var alternateMenuInput = deviceData.alternateMenuInput;
 					if (alternateMenu != null && alternateMenuInput != null)
 					{
-						alternateMenuInput.active = alternateMenu.visible;
+						alternateMenuInput.active = alternateMenu.menuHideFlags == 0;
 
 						if (!maps.Contains(alternateMenuInput))
 							maps.Add(alternateMenuInput);
 					}
 
-					maps.Add(deviceData.directSelectInput);
 					maps.Add(deviceData.uiInput);
 				}
 

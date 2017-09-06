@@ -23,6 +23,7 @@ MonoImporter:
       type: 2}
   - m_DragPulse: {fileID: 11400000, guid: a187e6c970cfc58498747aee6dca2919, type: 2}
   - m_RotatePulse: {fileID: 11400000, guid: 2e2c8d33e61b196448657254e78ba15c, type: 2}
+  - m_ActionMap: {fileID: 11400000, guid: dc1ccafeffffc62419a3265a080a94a3, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

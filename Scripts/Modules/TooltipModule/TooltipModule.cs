@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -38,6 +37,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Transform m_TooltipCanvas;
 		Vector3 m_TooltipScale;
 
+		// Local method use only -- created here to reduce garbage collection
+		readonly List<ITooltip> m_TooltipsToHide = new List<ITooltip>();
+
 		void Start()
 		{
 			m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
@@ -51,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Update()
 		{
+			m_TooltipsToHide.Clear();
 			foreach (var kvp in m_Tooltips)
 			{
 				var tooltip = kvp.Key;
@@ -64,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					var tooltipUI = tooltipData.tooltipUI;
 					if (!tooltipUI)
 					{
-						var tooltipObject = (GameObject)Instantiate(m_TooltipPrefab, m_TooltipCanvas);
+						var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
 						tooltipUI = tooltipObject.GetComponent<TooltipUI>();
 						tooltipData.tooltipUI = tooltipUI;
 						tooltipUI.highlight.material = m_HighlightMaterial;
@@ -85,6 +88,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					var lerp = Mathf.Clamp01((hoverTime - k_Delay) / k_TransitionDuration);
 					UpdateVisuals(tooltip, tooltipUI, target, lerp);
 				}
+
+				if (!IsValidTooltip(tooltip))
+					m_TooltipsToHide.Add(tooltip);
+			}
+
+			foreach (var tooltip in m_TooltipsToHide)
+			{
+				HideTooltip(tooltip);
 			}
 		}
 
@@ -177,6 +188,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void OnRayEntered(GameObject gameObject, RayEventData eventData)
 		{
+			if (gameObject == this.gameObject)
+				return;
+
+			var tooltip = gameObject.GetComponent<ITooltip>();
+			if (tooltip != null)
+				ShowTooltip(tooltip);
+		}
+
+		public void OnRayHovering(GameObject gameObject, RayEventData eventData)
+		{
+			if (gameObject == this.gameObject)
+				return;
+
 			var tooltip = gameObject.GetComponent<ITooltip>();
 			if (tooltip != null)
 				ShowTooltip(tooltip);
@@ -184,7 +208,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void OnRayExited(GameObject gameObject, RayEventData eventData)
 		{
-			if (gameObject)
+			if (gameObject && gameObject != this.gameObject)
 			{
 				var tooltip = gameObject.GetComponent<ITooltip>();
 				if (tooltip != null)
@@ -194,7 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void ShowTooltip(ITooltip tooltip)
 		{
-			if (string.IsNullOrEmpty(tooltip.tooltipText))
+			if (!IsValidTooltip(tooltip))
 				return;
 
 			if (m_Tooltips.ContainsKey(tooltip))
@@ -204,6 +228,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				startTime = Time.realtimeSinceStartup
 			};
+		}
+
+		static bool IsValidTooltip(ITooltip tooltip)
+		{
+			return !string.IsNullOrEmpty(tooltip.tooltipText);
 		}
 
 		public void HideTooltip(ITooltip tooltip)
