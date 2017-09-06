@@ -66,6 +66,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			Undo.postprocessModifications += OnPostprocessModifications;
 			Undo.undoRedoPerformed += OnUndoRedo;
+
+			// Propagate initial bounds
+			OnBoundsChanged();
 		}
 
 		void OnUndoRedo()
