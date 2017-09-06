@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(0.6f, MinBounds.y, 0.4f);
+			minBounds = new Vector3(0.727f, MinBounds.y, 0.4f);
 			m_CustomStartingBounds = minBounds;
 
 			base.Setup();
