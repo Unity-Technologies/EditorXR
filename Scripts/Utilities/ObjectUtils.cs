@@ -239,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			{
 				UnityObject.Destroy(o, t);
 			}
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 			else
 			{
 				if (Mathf.Approximately(t, 0f))
@@ -278,9 +278,26 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>Best guess System.Type</returns>
 		public static Type TypeNameToType(string name)
 		{
-			return AppDomain.CurrentDomain.GetAssemblies()
-				.SelectMany(x => x.GetTypes())
-				.FirstOrDefault(x => x.Name.Equals(name) && typeof(UnityObject).IsAssignableFrom(x));
+			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+			foreach (var assembly in assemblies)
+			{
+				try
+				{
+					foreach (var type in assembly.GetTypes())
+					{
+						if (type.Name.Equals(name) && typeof(UnityObject).IsAssignableFrom(type))
+						{
+							return type;
+						}
+					}
+				}
+				catch (ReflectionTypeLoadException) 
+				{
+					// Skip any assemblies that don't load properly
+				}
+			}
+
+			return typeof(UnityObject);
 		}
 
 		public static IEnumerator GetAssetPreview(UnityObject obj, Action<Texture> callback)

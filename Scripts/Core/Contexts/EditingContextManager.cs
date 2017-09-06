@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,9 +109,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
-		private void OnPlaymodeStateChanged()
+		static void OnPlayModeStateChanged(PlayModeStateChange stateChange)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (stateChange == PlayModeStateChange.ExitingEditMode)
 			{
 				EditorPrefs.SetBool(k_LaunchOnExitPlaymode, true);
 				var view = VRView.activeView;
@@ -137,12 +137,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (m_AvailableContexts.Count > 1)
 				VRView.afterOnGUI += OnVRViewGUI;
 
-			EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
+			// Force the window to repaint every tick, since we need live updating
+			// This also allows scripts with [ExecuteInEditMode] to run
+			EditorApplication.update += EditorApplication.QueuePlayerLoopUpdate;
+
+			EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 		}
 
 		void OnDisable()
 		{
-			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+			EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+
+			EditorApplication.update -= EditorApplication.QueuePlayerLoopUpdate;
 
 			VRView.afterOnGUI -= OnVRViewGUI;
 

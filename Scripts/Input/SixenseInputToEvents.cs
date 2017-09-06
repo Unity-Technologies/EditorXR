@@ -182,7 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
 		void CalibrateControllers()
 		{
-#if UNITY_EDITORVR
+#if UNITY_2017_2_OR_NEWER
 
 			// Assume controllers are on the side of the HMD and facing forward (aligned with base)
 			var span = (SixenseInput.Controllers[1].Position * k_HydraUnits - SixenseInput.Controllers[0].Position * k_HydraUnits).magnitude;

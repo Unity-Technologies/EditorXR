@@ -14,7 +14,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	[InitializeOnLoad]
-#if UNITY_EDITORVR
+#if UNITY_2017_2_OR_NEWER
 	[RequiresTag(k_VRPlayerTag)]
 	sealed partial class EditorVR : MonoBehaviour
 	{
@@ -299,7 +299,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				if (result)
 				{
-					var logEntries = asm.GetType("UnityEditorInternal.LogEntries");
+					var logEntries = asm.GetType("UnityEditor.LogEntries");
 					var clearMethod = logEntries.GetMethod("Clear", BindingFlags.Static | BindingFlags.Public);
 					clearMethod.Invoke(null, null);
 				}

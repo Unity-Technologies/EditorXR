@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			var camera = Camera.main;
 
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 			if (!Application.isPlaying && VRView.viewerCamera)
 			{
 				camera = VRView.viewerCamera;
@@ -50,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			var rig = Camera.main ? Camera.main.transform.parent : null;
 
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 			if (!Application.isPlaying)
 			{
 				if (VRView.cameraRig)

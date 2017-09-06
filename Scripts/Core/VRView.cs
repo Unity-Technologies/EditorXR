@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -305,10 +305,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				Close();
 				return;
 			}
-
-			// Force the window to repaint every tick, since we need live updating
-			// This also allows scripts with [ExecuteInEditMode] to run
-			EditorApplication.QueuePlayerLoopUpdate();
 
 			// Our camera is disabled, so it doesn't get automatically updated to HMD values until it renders
 			UpdateCameraTransform();
