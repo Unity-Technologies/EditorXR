@@ -23,7 +23,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.Setup();
 
 			preventResize = true;
-			dynamicFaceAdjustment = false;
 
 			m_CaptureWindow = this.InstantiateUI(m_CaptureWindowPrefab).transform;
 			m_CaptureWindow.SetParent(m_WorkspaceUI.topFaceContainer, false);
