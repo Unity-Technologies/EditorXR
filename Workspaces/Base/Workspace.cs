@@ -132,8 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public virtual void Setup()
 		{
-			var baseObject = this.InstantiateUI(m_BasePrefab);
-			baseObject.transform.SetParent(transform, false);
+			var baseObject = this.InstantiateUI(m_BasePrefab, transform, false);
 
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
 			this.ConnectInterfaces(m_WorkspaceUI);
@@ -160,7 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
-			m_OuterCollider = m_WorkspaceUI.gameObject.AddComponent<BoxCollider>();
+			m_OuterCollider = gameObject.AddComponent<BoxCollider>();
 			m_OuterCollider.isTrigger = true;
 
 			var startingBounds = m_CustomStartingBounds ?? DefaultBounds;

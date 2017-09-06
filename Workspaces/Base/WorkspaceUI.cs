@@ -134,9 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		WorkspaceButton m_ResizeButton;
 
-		[SerializeField]
 		BoxCollider m_FrameCollider;
-
 		Bounds m_Bounds;
 		float? m_TopPanelDividerOffset;
 
@@ -446,6 +444,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_CloseButton.hovered += OnButtonHovered;
 			m_ResizeButton.clicked += OnResetSizeClicked;
 			m_ResizeButton.hovered += OnButtonHovered;
+
+			m_FrameCollider = transform.parent.gameObject.AddComponent<BoxCollider>();
 		}
 
 		IEnumerator Start()
