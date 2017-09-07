@@ -334,7 +334,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return OVRPlugin.userPresent;
 #endif
 #if ENABLE_STEAMVR_INPUT
-			if (VRSettings.loadedDeviceName == "OpenVR")
+			if (UnityEngine.XR.XRSettings.loadedDeviceName == "OpenVR")
 				return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
 #endif
 			return true;

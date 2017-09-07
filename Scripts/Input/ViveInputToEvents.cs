@@ -65,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
 				return;
 
 			// Oculus Touch on OpenVR should have fixed left/right hand device indices
-			if (VRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0
+			if (UnityEngine.XR.XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0
 				&& leftSteamDeviceIndex > rightSteamDeviceIndex)
 			{
 				var swap = rightSteamDeviceIndex;
