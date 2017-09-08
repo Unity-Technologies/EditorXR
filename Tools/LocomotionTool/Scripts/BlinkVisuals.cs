@@ -117,6 +117,11 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 		m_LineRenderer.SetPositions(m_Positions);
 	}
 
+	void OnDisable()
+	{
+		targetPosition = null;
+	}
+
 	IEnumerator VisibilityTransition(bool visible)
 	{
 		var startValue = m_TransitionAmount;
@@ -143,6 +148,9 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 		var blinkDistance = m_BlinkDistance + extraSpeed * extraSpeed * (m_MaxBlinkDistance - m_BlinkDistance);
 		blinkDistance *= viewerScale;
 		var gravity = Physics.gravity;
+		if (gravity == Vector3.zero)
+			gravity = Vector3.down; // Assume (0,-1,0) if gravity is zero
+
 		var timeStep = m_TimeStep * viewerScale / Mathf.Sqrt(blinkDistance * gravity.magnitude);
 		blinkDistance *= m_TransitionAmount;
 		var speed = Mathf.Sqrt(blinkDistance * gravity.magnitude);
@@ -212,7 +220,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 			m_ArcLocator.SetActive(false);
 		}
 
-		if (Vector3.Dot(transform.forward, Physics.gravity.normalized) < m_InvalidThreshold)
+		if (!m_Visible || Vector3.Dot(transform.forward, gravity.normalized) < m_InvalidThreshold)
 			targetPosition = null;
 
 		var lineWidth = m_LineWidth * viewerScale;
