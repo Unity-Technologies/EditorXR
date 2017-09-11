@@ -12,10 +12,9 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences
+	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
+		IRaycast
 	{
-		public delegate bool RaycastDelegate(Ray ray, out RaycastHit hit, out GameObject go, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null);
-
 		const float k_GroundPlaneScale = 1000f;
 
 		const float k_GroundSnappingMaxRayLength = 25f;
@@ -236,8 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public bool widgetEnabled { get; set; }
 
-		public RaycastDelegate raycast { private get; set; }
-		public Renderer[] ignoreList { private get; set; }
+		public List<Renderer> ignoreList { private get; set; }
 
 		public GameObject settingsMenuPrefab { get { return m_SettingsMenuPrefab; } }
 
@@ -367,7 +365,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public Transform rayOrigin { get { return null; } }
 
 		// Local method use only -- created here to reduce garbage collection
-		readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
+		readonly List<Renderer> m_CombinedIgnoreList = new List<Renderer>();
 		Transform[] m_SingleTransformArray = new Transform[1];
 
 		void Awake()
@@ -742,13 +740,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				var renderers = transforms[i].GetComponentsInChildren<Renderer>();
 				for (var j = 0; j < renderers.Length; j++)
 				{
-					m_CombinedIgnoreList.Add(renderers[j].gameObject);
+					m_CombinedIgnoreList.Add(renderers[j]);
 				}
 			}
 
-			for (var i = 0; i < ignoreList.Length; i++)
+			for (var i = 0; i < ignoreList.Count; i++)
 			{
-				m_CombinedIgnoreList.Add(ignoreList[i].gameObject);
+				m_CombinedIgnoreList.Add(ignoreList[i]);
 			}
 		}
 
@@ -756,7 +754,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastHit hit;
 			GameObject go;
-			if (raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
+			if (this.Raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
 			{
 				if (Vector3.Dot(ray.direction, hit.normal) > maxRayDot)
 					return false;
