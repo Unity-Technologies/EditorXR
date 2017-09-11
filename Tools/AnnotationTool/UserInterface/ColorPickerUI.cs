@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
 using System;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine.EventSystems;
 
 public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
@@ -55,18 +56,12 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 
 	public void Show()
 	{
-		if (m_FadeCoroutine != null)
-			StopCoroutine(m_FadeCoroutine);
-
-		m_FadeCoroutine = StartCoroutine(FadeCanvas(false));
+		this.RestartCoroutine(ref m_FadeCoroutine, FadeCanvas(false));
 	}
 
 	public void Hide()
 	{
-		if (m_FadeCoroutine != null)
-			StopCoroutine(m_FadeCoroutine);
-		
-		m_FadeCoroutine = StartCoroutine(FadeCanvas(true));
+		this.RestartCoroutine(ref m_FadeCoroutine, FadeCanvas(true));
 	}
 
 	public void OnSliderChanged(float val)
@@ -86,10 +81,7 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 		var target = 1 - start;
 
 		if (current == target)
-		{
-			m_FadeCoroutine = null;
 			yield break;
-		}
 
 		var ratio = fadeOut ? 1 - current : current;
 		while (ratio < 1)
@@ -104,7 +96,6 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 		canvasGroup.alpha = target;
 		canvasGroup.interactable = !fadeOut;
 		canvasGroup.blocksRaycasts = !fadeOut;
-		m_FadeCoroutine = null;
 	}
 
 	void OnDrag()
@@ -116,7 +107,7 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 
 			var localRayPos = worldToLocal.MultiplyPoint3x4(toolRayOrigin.position);
 			var localRayForward = worldToLocal.MultiplyVector(toolRayOrigin.forward).normalized;
-			
+
 			var height = localRayPos.z;
 			var angle = Vector3.Angle(new Vector3(0, 0, height), localRayForward);
 			var sine = Mathf.Sin((90 - angle) * Mathf.Deg2Rad);
@@ -124,7 +115,7 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 			var distance = Mathf.Abs(height / sine);
 			var point = localRayPos + localRayForward * distance;
 			point = point.normalized * Mathf.Min(point.magnitude, rect.width / 2f);
-			
+
 			m_PickerTargetPosition = point;
 			GenerateBrightnessBar();
 			PositionToColor();

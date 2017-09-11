@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -63,31 +64,25 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 
 	public void OnPointerEnter(PointerEventData eventData)
 	{
-		if (m_HighlightCoroutine != null)
-			StopCoroutine(m_HighlightCoroutine);
-
 		showColorPicker(rayOrigin);
-		m_HighlightCoroutine = StartCoroutine(Highlight());
+		this.RestartCoroutine(ref m_HighlightCoroutine, Highlight(true));
 
 		m_Undo.SetActive(false);
 		m_Redo.SetActive(false);
-		
+
 		eventData.Use();
 	}
 
 	public void OnPointerExit(PointerEventData eventData)
 	{
-		if (m_HighlightCoroutine != null)
-			StopCoroutine(m_HighlightCoroutine);
-
 		hideColorPicker();
-		m_HighlightCoroutine = StartCoroutine(Highlight(false));
+		this.RestartCoroutine(ref m_HighlightCoroutine, Highlight(false));
 
 		m_Undo.SetActive(true);
 		m_Redo.SetActive(true);
 	}
 
-	IEnumerator Highlight(bool transitionIn = true)
+	IEnumerator Highlight(bool transitionIn)
 	{
 		var amount = 0f;
 		var currentScale = m_Icon.localScale;

@@ -90,7 +90,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					customMenuOrigins.customMenuOrigin = GetCustomMainMenuOrigin;
 					customMenuOrigins.customAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
 				}
-
 			}
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
@@ -120,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					mainMenuActivator.activatorButtonMoveAway = alternateMenu.menuHideFlags == 0;
 			}
 
-			Transform GetCustomMainMenuOrigin(Transform rayOrigin)
+			static Transform GetCustomMainMenuOrigin(Transform rayOrigin)
 			{
 				Transform mainMenuOrigin = null;
 
@@ -135,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return mainMenuOrigin;
 			}
 
-			Transform GetCustomAlternateMenuOrigin(Transform rayOrigin)
+			static Transform GetCustomAlternateMenuOrigin(Transform rayOrigin)
 			{
 				Transform alternateMenuOrigin = null;
 

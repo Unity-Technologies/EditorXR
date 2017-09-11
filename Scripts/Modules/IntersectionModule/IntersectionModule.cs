@@ -181,6 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			Renderer obj = null;
 			if (tester)
 				m_IntersectedObjects.TryGetValue(tester, out obj);
+
 			return obj;
 		}
 
