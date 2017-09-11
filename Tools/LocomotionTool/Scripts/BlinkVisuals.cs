@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -244,3 +245,4 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 		}
 	}
 }
+#endif

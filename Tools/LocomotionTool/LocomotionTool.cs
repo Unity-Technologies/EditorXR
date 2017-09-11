@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -552,7 +551,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			var offset = cameraRig.position - CameraUtils.GetMainCamera().transform.position;
 			offset.y = 0;
+#if UNITY_EDITORVR
 			offset += VRView.HeadHeight * Vector3.up * this.GetViewerScale();
+#endif
 			targetPosition += offset;
 			const float kTargetDuration = 0.05f;
 			var currentPosition = cameraRig.position;
