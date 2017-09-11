@@ -68,7 +68,7 @@ namespace ListView
 
 		protected abstract float listHeight { get; }
 
-		public Vector3 size
+		public virtual Vector3 size
 		{
 			set
 			{
