@@ -72,9 +72,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public Transform menuOrigin { private get; set; }
 	public Transform alternateMenuOrigin { private get; set; }
 
-	public Func<Transform, Transform> customMenuOrigin { private get; set; }
-	public Func<Transform, Transform> customAlternateMenuOrigin { private get; set; }
-
 	public ActionMap actionMap
 	{
 		get { return m_ActionMap; }
@@ -111,7 +108,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			if (m_ColorPickerActivator == null)
 			{
 				m_ColorPickerActivator = this.InstantiateUI(m_ColorPickerActivatorPrefab);
-				var otherAltMenu = customAlternateMenuOrigin(otherRayOrigins[0]);
+				var otherAltMenu = this.GetCustomAlternateMenuOrigin(otherRayOrigins[0]);
 
 				m_ColorPickerActivator.transform.SetParent(otherAltMenu.GetComponentInChildren<MainMenuActivator>().transform);
 				m_ColorPickerActivator.transform.localRotation = Quaternion.identity;

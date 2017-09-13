@@ -49,6 +49,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				IInstantiateMenuUIMethods.instantiateMenuUI = InstantiateMenuUI;
 				IIsMainMenuVisibleMethods.isMainMenuVisible = IsMainMenuVisible;
+				IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
+				IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
@@ -83,13 +85,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
 					}
 				}
-
-				var customMenuOrigins = obj as IUsesCustomMenuOrigins;
-				if (customMenuOrigins != null)
-				{
-					customMenuOrigins.customMenuOrigin = GetCustomMainMenuOrigin;
-					customMenuOrigins.customAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
-				}
 			}
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
@@ -119,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					mainMenuActivator.activatorButtonMoveAway = alternateMenu.menuHideFlags == 0;
 			}
 
-			static Transform GetCustomMainMenuOrigin(Transform rayOrigin)
+			static Transform GetCustomMenuOrigin(Transform rayOrigin)
 			{
 				Transform mainMenuOrigin = null;
 
