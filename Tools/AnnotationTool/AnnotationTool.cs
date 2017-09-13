@@ -22,6 +22,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public const float MinBrushSize = 0.0025f;
 	public const float MaxBrushSize = 0.05f;
 	const float k_MinDistance = 0.003f;
+	const int k_InitialListSize = 1024; // Pre-allocate lists to avoid GC
 
 	[SerializeField]
 	ActionMap m_ActionMap;
@@ -36,8 +37,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	GameObject m_ColorPickerActivatorPrefab;
 
 	Action<float> onBrushSizeChanged { set; get; }
-
-	const int k_InitialListSize = 1024; // Pre-allocate lists to avoid GC
 
 	List<Vector3> m_Points = new List<Vector3>(k_InitialListSize);
 	List<Vector3> m_UpVectors = new List<Vector3>(k_InitialListSize);
@@ -108,7 +107,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			if (m_ColorPickerActivator == null)
 			{
 				m_ColorPickerActivator = this.InstantiateUI(m_ColorPickerActivatorPrefab);
-				var otherAltMenu = this.GetCustomAlternateMenuOrigin(otherRayOrigins[0]);
+				var otherRayOrigin = otherRayOrigins.First();
+				var otherAltMenu = this.GetCustomAlternateMenuOrigin(otherRayOrigin);
 
 				m_ColorPickerActivator.transform.SetParent(otherAltMenu.GetComponentInChildren<MainMenuActivator>().transform);
 				m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
@@ -122,7 +122,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				m_ColorPicker.toolRayOrigin = rayOrigin;
 				m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
 
-				activator.rayOrigin = otherRayOrigins.First();
+				activator.rayOrigin = otherRayOrigin;
 				activator.showColorPicker = ShowColorPicker;
 				activator.hideColorPicker = HideColorPicker;
 
@@ -176,7 +176,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		m_ColorToUse = color;
 
-		color.a = .75f;
+		const float annotationPointerAlpha = 0.75f;
+		color.a = annotationPointerAlpha;
 		m_AnnotationPointer.SetColor(color);
 
 		m_BrushSizeUI.OnBrushColorChanged(color);
