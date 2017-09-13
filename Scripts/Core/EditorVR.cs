@@ -237,6 +237,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			AddModule<WebModule>();
 
+			AddModule<BlocksModule>();
+
 			viewer.AddPlayerModel();
 
 			GetNestedModule<Rays>().CreateAllProxies();
