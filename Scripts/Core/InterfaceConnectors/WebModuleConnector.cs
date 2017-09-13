@@ -10,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public void LateBindInterfaceMethods(WebModule provider)
 			{
 				IWebMethods.download = provider.Download;
+				IWebMethods.downloadToDisk = provider.Download;
 			}
 		}
 	}
