@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 	/// Base class for providing draggable handles in 3D (requires PhysicsRaycaster)
 	/// </summary>
 	class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler,
-		IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IPointerClickHandler, IDropReceiver, IDroppable
+		IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IGetRayVisibility, IPointerClickHandler, IDropReceiver, IDroppable
 	{
 		protected const int k_DefaultCapacity = 2; // i.e. 2 controllers
 
@@ -106,6 +106,9 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 				return;
 
 			var rayOrigin = eventData.rayOrigin;
+			if (!this.IsConeVisible(rayOrigin))
+				return;
+
 			m_DragSources.Add(rayOrigin);
 			startDragPositions[rayOrigin] = eventData.pointerCurrentRaycast.worldPosition;
 
@@ -141,7 +144,11 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			if (!UIUtils.IsValidEvent(eventData, selectionFlags))
 				return;
 
-			m_HoverSources.Add(eventData.rayOrigin);
+			var rayOrigin = eventData.rayOrigin;
+			if (!this.IsConeVisible(rayOrigin))
+				return;
+
+			m_HoverSources.Add(rayOrigin);
 			OnHandleHoverStarted(GetHandleEventData(eventData));
 		}
 
