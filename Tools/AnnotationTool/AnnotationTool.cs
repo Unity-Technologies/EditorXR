@@ -5,19 +5,35 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.UI;
 using UnityEngine.VR;
 
 [MainMenuItem("Annotation", "Create", "Draw in 3D")]
 public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
 	IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
-	IIsHoveringOverUI, IMultiDeviceTool, IUsesProxyType
+	IIsHoveringOverUI, IMultiDeviceTool, IUsesProxyType, ISettingsMenuItemProvider, ISerializePreferences
 {
+	[Serializable]
+	class Preferences
+	{
+		[SerializeField]
+		bool m_MeshGroupingMode;
+
+		[SerializeField]
+		Color m_AnnotationColor = Color.white;
+
+		public bool meshGroupingMode { get { return m_MeshGroupingMode; } set { m_MeshGroupingMode = value; } }
+		public Color annotationColor { get { return m_AnnotationColor; } set { m_AnnotationColor = value; } }
+	}
+
 	public const float TipDistance = 0.05f;
 	public const float MinBrushSize = 0.0025f;
 	public const float MaxBrushSize = 0.05f;
@@ -36,15 +52,20 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	[SerializeField]
 	GameObject m_ColorPickerActivatorPrefab;
 
+	[SerializeField]
+	GameObject m_SettingsMenuItemPrefab;
+
 	Action<float> onBrushSizeChanged { set; get; }
 
-	List<Vector3> m_Points = new List<Vector3>(k_InitialListSize);
-	List<Vector3> m_UpVectors = new List<Vector3>(k_InitialListSize);
-	List<float> m_Widths = new List<float>(k_InitialListSize);
+	Preferences m_Preferences;
+
+	readonly List<Vector3> m_Points = new List<Vector3>(k_InitialListSize);
+	readonly List<Vector3> m_UpVectors = new List<Vector3>(k_InitialListSize);
+	readonly List<float> m_Widths = new List<float>(k_InitialListSize);
+	readonly List<GameObject> m_Groups = new List<GameObject>();
 	float m_Length;
 
 	MeshFilter m_CurrentMeshFilter;
-	Color m_ColorToUse = Color.white;
 	Mesh m_CurrentMesh;
 	Matrix4x4 m_WorldToLocalMesh;
 
@@ -65,19 +86,39 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	public bool primary { private get; set; }
 	public Type proxyType { private get; set; }
-	public Transform rayOrigin { private get; set; }
+	public Transform rayOrigin { get; set; }
 	public List<Transform> otherRayOrigins { private get; set; }
 
 	public Transform menuOrigin { private get; set; }
 	public Transform alternateMenuOrigin { private get; set; }
 
-	public ActionMap actionMap
+	public ActionMap actionMap { get { return m_ActionMap; } }
+
+	public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
+	public GameObject settingsMenuItemInstance
 	{
-		get { return m_ActionMap; }
+		set
+		{
+			var defaultToggleGroup = value.GetComponentInChildren<DefaultToggleGroup>();
+			foreach (var toggle in value.GetComponentsInChildren<Toggle>())
+			{
+				if (toggle == defaultToggleGroup.defaultToggle)
+				{
+					toggle.onValueChanged.AddListener(isOn =>
+					{
+						// m_Preferences on all instances refer
+						m_Preferences.meshGroupingMode = !isOn;
+					});
+				}
+			}
+		}
 	}
 
 	void OnDestroy()
 	{
+		if (m_Preferences.meshGroupingMode)
+			CombineGroups();
+
 		if (rayOrigin)
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
 
@@ -96,6 +137,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void Start()
 	{
+		if (m_Preferences == null)
+			m_Preferences = new Preferences();
+
 		this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 
 		if (primary)
@@ -174,7 +218,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void OnColorPickerValueChanged(Color color)
 	{
-		m_ColorToUse = color;
+		m_Preferences.annotationColor = color;
 
 		const float annotationPointerAlpha = 0.75f;
 		color.a = annotationPointerAlpha;
@@ -226,7 +270,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		var mRenderer = go.AddComponent<MeshRenderer>();
 
 		var matToUse = Instantiate(m_AnnotationMaterial);
-		matToUse.SetColor("_EmissionColor", m_ColorToUse);
+		matToUse.SetColor("_EmissionColor", m_Preferences.annotationColor);
 		mRenderer.sharedMaterial = matToUse;
 
 		m_WorldToLocalMesh = goTrans.worldToLocalMatrix;
@@ -240,47 +284,42 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		var mainHolder = GameObject.Find("Annotations") ?? new GameObject("Annotations");
 		var mainHolderTrans = mainHolder.transform;
 
-		var newSession = GetNewSessionHolder(mainHolderTrans);
+		var newSession = GetNewSessionHolder();
 		if (!newSession)
+		{
 			newSession = new GameObject("Group " + mainHolderTrans.childCount);
+			m_Groups.Add(newSession);
+		}
 
 		m_AnnotationHolder = newSession.transform;
 		m_AnnotationHolder.SetParent(mainHolder.transform);
 	}
 
-	GameObject GetNewSessionHolder(Transform mainHolderTrans)
+	GameObject GetNewSessionHolder()
 	{
-		const float kGroupingDistance = .3f;
-		GameObject newSession = null;
-
-		for (var i = 0; i < mainHolderTrans.childCount; i++)
+		const float groupingDistance = .3f;
+		for (var i = 0; i < m_Groups.Count; i++)
 		{
-			var child = mainHolderTrans.GetChild(i);
+			var child = m_Groups[i];
 			child.name = "Group " + i;
 
-			if (newSession == null)
+			var renderers = child.GetComponentsInChildren<MeshRenderer>();
+			if (renderers.Length > 0)
 			{
-				var renderers = child.GetComponentsInChildren<MeshRenderer>();
-				if (renderers.Length > 0)
+				var bound = renderers[0].bounds;
+				for (var r = 1; r < renderers.Length; r++)
 				{
-					var bound = renderers[0].bounds;
-					for (var r = 1; r < renderers.Length; r++)
-						bound.Encapsulate(renderers[r].bounds);
-
-					if (bound.Contains(rayOrigin.position))
-						newSession = child.gameObject;
-					else if (bound.SqrDistance(rayOrigin.position) < kGroupingDistance)
-						newSession = child.gameObject;
-
-					if (newSession)
-						break;
+					bound.Encapsulate(renderers[r].bounds);
 				}
+
+				if (bound.Contains(rayOrigin.position) || bound.SqrDistance(rayOrigin.position) < groupingDistance)
+					return child.gameObject;
 			}
 		}
 
-		return newSession;
+		return null;
 	}
-	
+
 	void UpdateAnnotation()
 	{
 		var upVector = rayOrigin.up;
@@ -604,6 +643,60 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		}
 
 		annotationPointerTransform.localScale = targetScale;
+	}
+
+	void CombineGroups()
+	{
+		foreach (var group in m_Groups)
+		{
+			group.name = group.name.Replace("Group", "Annotation");
+			var meshFilters = group.GetComponentsInChildren<MeshFilter>();
+			var renderers = group.GetComponentsInChildren<MeshRenderer>();
+
+			if (meshFilters.Length == 0)
+			{
+				ObjectUtils.Destroy(group);
+				continue;
+			}
+
+			var length = meshFilters.Length;
+			var combines = new CombineInstance[length];
+			var materials = new Material[length];
+			for (var i = 0; i < length; i++)
+			{
+				var combine = combines[i];
+				var meshFilter = meshFilters[i];
+				combine.mesh = meshFilter.sharedMesh;
+				combine.transform = meshFilter.transform.localToWorldMatrix;
+				materials[i] = renderers[i].sharedMaterial;
+			}
+
+			var mesh = new Mesh();
+			mesh.CombineMeshes(combines, false, true);
+			group.AddComponent<MeshFilter>().sharedMesh = mesh;
+
+			group.AddComponent<MeshRenderer>().sharedMaterials = materials;
+
+			foreach (var meshFilter in meshFilters)
+			{
+				ObjectUtils.Destroy(meshFilter.gameObject);
+			}
+		}
+	}
+
+	public object OnSerializePreferences()
+	{
+		if (primary)
+			return m_Preferences;
+
+		return null;
+	}
+
+	public void OnDeserializePreferences(object obj)
+	{
+			var preferences = obj as Preferences;
+			if (preferences != null)
+				m_Preferences = preferences;
 	}
 }
 #endif

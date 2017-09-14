@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		ProxyExtras m_ProxyExtras;
 
-		class Rays : Nested, IInterfaceConnector
+		class Rays : Nested, IInterfaceConnector, IForEachRayOrigin
 		{
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IRayVisibilitySettingsMethods.removeRayVisibilitySettings = RemoveVisibilitySettings;
 				IRayVisibilitySettingsMethods.addRayVisibilitySettings = AddVisibilitySettings;
 
-				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
+				IForEachRayOriginMethods.forEachRayOrigin = IterateRayOrigins;
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
 				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (rayOrigins != null)
 					{
 						List<Transform> otherRayOrigins = new List<Transform>();
-						ForEachRayOrigin(ro =>
+						this.ForEachRayOrigin(ro =>
 						{
 							if (ro != rayOrigin)
 								otherRayOrigins.Add(ro);
@@ -276,7 +276,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var intersectionModule = evr.GetModule<IntersectionModule>();
 				var distance = k_DefaultRayLength * Viewer.GetViewerScale();
-				ForEachRayOrigin(rayOrigin => { intersectionModule.UpdateRaycast(rayOrigin, distance); });
+				IterateRayOrigins(rayOrigin => { intersectionModule.UpdateRaycast(rayOrigin, distance); });
 			}
 
 			internal void UpdateDefaultProxyRays()
@@ -329,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			static void ForEachRayOrigin(ForEachRayOriginCallback callback)
+			static void IterateRayOrigins(ForEachRayOriginCallback callback)
 			{
 				ForEachProxyDevice(deviceData => callback(deviceData.rayOrigin));
 			}

@@ -36,6 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			const float k_TwoHandHideDistance = 0.25f;
 			const int k_PossibleOverlaps = 16;
 
+			readonly Dictionary<Transform, IMainMenu> m_MainMenus = new Dictionary<Transform, IMainMenu>();
 			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
 			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
 			List<Type> m_MainMenuTools;
@@ -57,11 +58,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var settingsMenuProvider = obj as ISettingsMenuProvider;
 				if (settingsMenuProvider != null)
+				{
 					m_SettingsMenuProviders[new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin)] = settingsMenuProvider;
+					foreach (var kvp in m_MainMenus)
+					{
+						if (rayOrigin == null || kvp.Key == rayOrigin)
+							settingsMenuProvider.settingsMenuInstance = kvp.Value.GetSettingsMenuInstance(obj.GetType());
+					}
+				}
 
 				var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
 				if (settingsMenuItemProvider != null)
+				{
 					m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin)] = settingsMenuItemProvider;
+					IMainMenu menu;
+					if (m_MainMenus.TryGetValue(rayOrigin, out menu))
+						settingsMenuItemProvider.settingsMenuItemInstance = menu.GetSettingsMenuItemInstance(obj.GetType());
+				}
 
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
@@ -70,6 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
 					mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
 					mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
+					m_MainMenus[rayOrigin] = mainMenu;
 				}
 
 				var menuOrigins = obj as IUsesMenuOrigins;
@@ -96,6 +110,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
 				if (settingsMenuItemProvider != null)
 					m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin));
+
+				var mainMenu = obj as IMainMenu;
+				if (mainMenu != null)
+					m_MainMenus.Remove(rayOrigin);
 			}
 
 			public void LateBindInterfaceMethods(Tools provider)

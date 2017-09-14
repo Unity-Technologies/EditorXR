@@ -39,6 +39,20 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Does this menu have focus?
 		/// </summary>
 		bool focus { get; }
+
+		/// <summary>
+		/// Get this menu's settings menu for a given type
+		/// </summary>
+		/// <param name="providerType">The type for which we want to get a settings menu</param>
+		/// <returns></returns>
+		GameObject GetSettingsMenuInstance(Type providerType);
+
+		/// <summary>
+		/// Get this menu's settings menu item for a given type
+		/// </summary>
+		/// <param name="providerType">The type for which we want to get a settings menu item</param>
+		/// <returns></returns>
+		GameObject GetSettingsMenuItemInstance(Type providerType);
 	}
 }
 #endif
