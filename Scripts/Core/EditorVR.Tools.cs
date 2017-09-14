@@ -289,7 +289,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						{
 							if (otherDeviceData != deviceData)
 							{
-								// Pop this tool of any other stack that references it (for single instance tools)
+								// Pop this tool of any other stack that references it (for single instance, multi-device tools)
 								var otherTool = otherDeviceData.currentTool;
 								if (otherTool == tool)
 								{
@@ -302,7 +302,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 										SetToolsEnabled(otherDeviceData, true);
 								}
 
-								// Pop this tool of any other stack that references it (for MultiDeviceTools)
+								// Pop this tool of any other stack that references it (for IMultiDeviceTools)
 								if (tool is IMultiDeviceTool)
 								{
 									if (otherTool.GetType() == toolType)
@@ -312,8 +312,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 										if (otherToolData != null)
 										{
 											otherDeviceData.currentTool = otherToolData.tool;
-											evr.m_Interfaces.DisconnectInterfaces(otherTool, deviceData.rayOrigin);
-											ObjectUtils.Destroy(tool as MonoBehaviour);
+											evr.m_Interfaces.DisconnectInterfaces(otherTool, otherDeviceData.rayOrigin);
+											ObjectUtils.Destroy(otherTool as MonoBehaviour);
 										}
 									}
 								}

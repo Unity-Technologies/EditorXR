@@ -77,7 +77,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_BorderOutlineMaterial = MaterialUtils.GetMaterialClone(m_BorderOutline);
 			m_BorderOutlineTransform = m_BorderOutline.transform;
 			m_BorderOutlineOriginalLocalScale = m_BorderOutlineTransform.localScale;
-			m_FaceTitle.text = "Not Set";
 			m_TitleIconMaterial = MaterialUtils.GetMaterialClone(m_TitleIcon);
 
 			m_OriginalLocalScale = transform.localScale;
@@ -101,8 +100,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		IEnumerator AnimateVisibility(bool show)
 		{
-			if (m_VisibilityCoroutine != null)
-				yield break;
+			if (show)
+				m_BorderOutlineTransform.localScale = m_BorderOutlineOriginalLocalScale;
 
 			m_CanvasGroup.interactable = false;
 			
@@ -125,8 +124,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_CanvasGroup.interactable = true;
 			else
 				m_TitleIcon.SetBlendShapeWeight(0, 0);
-
-			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateReveal(float delay = 0f)

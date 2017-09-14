@@ -107,11 +107,27 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var settingsMenuProvider = obj as ISettingsMenuProvider;
 				if (settingsMenuProvider != null)
+				{
+					foreach (var kvp in m_MainMenus)
+					{
+						if (rayOrigin == null || kvp.Key == rayOrigin)
+							kvp.Value.RemoveSettingsMenu(settingsMenuProvider);
+					}
+
 					m_SettingsMenuProviders.Remove(new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin));
+				}
 
 				var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
 				if (settingsMenuItemProvider != null)
+				{
+					foreach (var kvp in m_MainMenus)
+					{
+						if (rayOrigin == null || kvp.Key == rayOrigin)
+							kvp.Value.RemoveSettingsMenuItem(settingsMenuItemProvider);
+					}
+
 					m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin));
+				}
 
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)

@@ -107,6 +107,13 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		set
 		{
+			if (value == null)
+			{
+				m_TransformToggle = null;
+				m_MeshToggle = null;
+				return;
+			}
+
 			var defaultToggleGroup = value.GetComponentInChildren<DefaultToggleGroup>();
 			foreach (var toggle in value.GetComponentsInChildren<Toggle>())
 			{
@@ -122,15 +129,15 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 						m_Preferences.meshGroupingMode = !isOn;
 						foreach (var linkedObject in linkedObjects)
 						{
-							var locomotionTool = (AnnotationTool)linkedObject;
-							if (locomotionTool != this)
+							var annotationTool = (AnnotationTool)linkedObject;
+							if (annotationTool != this)
 							{
-								locomotionTool.m_BlockValueChangedListener = true;
+								annotationTool.m_BlockValueChangedListener = true;
 								//linkedObject.m_ToggleGroup.NotifyToggleOn(isOn ? m_FlyToggle : m_BlinkToggle);
 								// HACK: Toggle Group claims these toggles are not a part of the group
-								locomotionTool.m_TransformToggle.isOn = isOn;
-								locomotionTool.m_MeshToggle.isOn = !isOn;
-								locomotionTool.m_BlockValueChangedListener = false;
+								annotationTool.m_TransformToggle.isOn = isOn;
+								annotationTool.m_MeshToggle.isOn = !isOn;
+								annotationTool.m_BlockValueChangedListener = false;
 							}
 						}
 					});

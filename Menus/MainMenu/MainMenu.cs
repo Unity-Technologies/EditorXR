@@ -43,6 +43,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		float m_LastRotationInput;
 		MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
+		readonly Dictionary<ISettingsMenuProvider, GameObject> m_SettingsMenus = new Dictionary<ISettingsMenuProvider, GameObject>();
+		readonly Dictionary<ISettingsMenuItemProvider, GameObject> m_SettingsMenuItems = new Dictionary<ISettingsMenuItemProvider, GameObject>();
 
 		public List<Type> menuTools { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
@@ -302,23 +304,43 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			CreateFaceButton(buttonData, tooltip, () =>
 			{
-				provider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(k_SettingsMenuSectionName, provider.settingsMenuPrefab);
+				var instance = m_MainMenuUI.AddSubmenu(k_SettingsMenuSectionName, provider.settingsMenuPrefab);
+				m_SettingsMenus[provider] = instance;
+				provider.settingsMenuInstance = instance;
 			});
 		}
 
 		public void RemoveSettingsMenu(ISettingsMenuProvider provider)
 		{
+			GameObject instance;
+			if (m_SettingsMenus.TryGetValue(provider, out instance))
+			{
+				if (instance)
+					ObjectUtils.Destroy(instance);
 
+				m_SettingsMenus.Remove(provider);
+			}
+			provider.settingsMenuInstance = null;
 		}
 
 		public void AddSettingsMenuItem(ISettingsMenuItemProvider provider)
 		{
-			provider.settingsMenuItemInstance = m_MainMenuUI.CreateCustomButton(provider.settingsMenuItemPrefab, k_SettingsMenuSectionName);
+			var instance = m_MainMenuUI.CreateCustomButton(provider.settingsMenuItemPrefab, k_SettingsMenuSectionName);
+			m_SettingsMenuItems[provider] = instance;
+			provider.settingsMenuItemInstance = instance;
 		}
 
 		public void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider)
 		{
+			GameObject instance;
+			if (m_SettingsMenuItems.TryGetValue(provider, out instance))
+			{
+				if (instance)
+					ObjectUtils.Destroy(instance);
 
+				m_SettingsMenuItems.Remove(provider);
+			}
+			provider.settingsMenuItemInstance = null;
 		}
 	}
 }

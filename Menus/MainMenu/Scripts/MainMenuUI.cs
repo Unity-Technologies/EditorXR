@@ -2,9 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -92,6 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				// Loop around both ways
 				if (value < 0)
 					value += k_FaceCount;
+
 				m_TargetFaceIndex = value % k_FaceCount;
 			}
 		}
@@ -352,10 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				kvp.Value.visible = true;
 			}
 
-			if (m_FrameRevealCoroutine != null)
-				StopCoroutine(m_FrameRevealCoroutine);
-
-			m_FrameRevealCoroutine = StartCoroutine(AnimateFrameReveal(m_VisibilityState));
+			this.RestartCoroutine(ref m_FrameRevealCoroutine, AnimateFrameReveal(m_VisibilityState));
 
 			const float faceDelay = 0.1f;
 			var count = 0;
@@ -379,15 +375,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 
 			m_VisibilityState = VisibilityState.Visible;
-
-			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateHide()
 		{
-			if (m_VisibilityCoroutine != null)
-				yield break;
-
 			m_VisibilityState = VisibilityState.TransitioningOut;
 
 			foreach (var kvp in m_Faces)
@@ -395,10 +386,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				kvp.Value.visible = false;
 			}
 
-			if (m_FrameRevealCoroutine != null)
-				StopCoroutine(m_FrameRevealCoroutine);
-
-			m_FrameRevealCoroutine = StartCoroutine(AnimateFrameReveal(m_VisibilityState));
+			this.RestartCoroutine(ref m_FrameRevealCoroutine, AnimateFrameReveal(m_VisibilityState));
 
 			const float kTargetScale = 0f;
 			const float kSmoothTime = 0.06875f;
@@ -421,8 +409,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var snapRotation = GetRotationForFaceIndex(GetClosestFaceIndexForRotation(currentRotation));
 			m_MenuFaceRotationOrigin.localRotation = Quaternion.Euler(new Vector3(0, snapRotation, 0)); // set intended target rotation
 			m_RotationState = RotationState.AtRest;
-
-			m_VisibilityCoroutine = null;
 		}
 
 		IEnumerator AnimateFrameRotationShapeChange(RotationState rotationState)
@@ -473,8 +459,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (m_VisibilityState == VisibilityState.Hidden)
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, 0);
-
-			m_FrameRevealCoroutine = null;
 		}
 
 		void OnButtonHover(Transform rayOrigin)
