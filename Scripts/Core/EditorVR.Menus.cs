@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					foreach (var kvp in m_MainMenus)
 					{
 						if (rayOrigin == null || kvp.Key == rayOrigin)
-							settingsMenuProvider.settingsMenuInstance = kvp.Value.GetSettingsMenuInstance(obj.GetType());
+							kvp.Value.AddSettingsMenu(settingsMenuProvider);
 					}
 				}
 
@@ -71,9 +71,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (settingsMenuItemProvider != null)
 				{
 					m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin)] = settingsMenuItemProvider;
-					IMainMenu menu;
-					if (m_MainMenus.TryGetValue(rayOrigin, out menu))
-						settingsMenuItemProvider.settingsMenuItemInstance = menu.GetSettingsMenuItemInstance(obj.GetType());
+					foreach (var kvp in m_MainMenus)
+					{
+						if (rayOrigin == null || kvp.Key == rayOrigin)
+							kvp.Value.AddSettingsMenuItem(settingsMenuItemProvider);
+					}
 				}
 
 				var mainMenu = obj as IMainMenu;

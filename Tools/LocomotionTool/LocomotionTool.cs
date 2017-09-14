@@ -593,20 +593,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void OnDeserializePreferences(object obj)
 		{
-			//if (this.IsSharedUpdater(this))
-			//{
-			//	var preferences = obj as Preferences;
-			//	if (preferences != null)
-			//		m_Preferences = preferences;
+			if (this.IsSharedUpdater(this))
+			{
+				var preferences = obj as Preferences;
+				if (preferences != null)
+					m_Preferences = preferences;
 
-			//	// Share one preferences object across all instances
-			//	foreach (var linkedObject in linkedObjects)
-			//	{
-			//		((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
-			//		m_BlinkToggle.isOn = m_Preferences.blinkMode;
-			//		m_FlyToggle.isOn = !m_Preferences.blinkMode;
-			//	}
-			//}
+				// Share one preferences object across all instances
+				foreach (var linkedObject in linkedObjects)
+				{
+					((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
+					//Setting toggles on this tool's menu will set them on other tool menus
+					m_BlinkToggle.isOn = m_Preferences.blinkMode;
+					m_FlyToggle.isOn = !m_Preferences.blinkMode;
+				}
+			}
 		}
 	}
 }

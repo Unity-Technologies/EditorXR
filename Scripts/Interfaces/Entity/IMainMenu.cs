@@ -41,18 +41,28 @@ namespace UnityEditor.Experimental.EditorVR
 		bool focus { get; }
 
 		/// <summary>
-		/// Get this menu's settings menu for a given type
+		/// Add a settings menu to this menu
 		/// </summary>
-		/// <param name="providerType">The type for which we want to get a settings menu</param>
-		/// <returns></returns>
-		GameObject GetSettingsMenuInstance(Type providerType);
+		/// <param name="provider">The object providing the settings menu</param>
+		void AddSettingsMenu(ISettingsMenuProvider provider);
 
 		/// <summary>
-		/// Get this menu's settings menu item for a given type
+		/// Remove a settings menu from this menu
 		/// </summary>
-		/// <param name="providerType">The type for which we want to get a settings menu item</param>
-		/// <returns></returns>
-		GameObject GetSettingsMenuItemInstance(Type providerType);
+		/// <param name="provider">The object which provided the settings menu</param>
+		void RemoveSettingsMenu(ISettingsMenuProvider provider);
+
+		/// <summary>
+		/// Add a settings menu to this menu item
+		/// </summary>
+		/// <param name="provider">The object providing the settings menu item</param>
+		void AddSettingsMenuItem(ISettingsMenuItemProvider provider);
+
+		/// <summary>
+		/// Remove a settings menu from this menu item
+		/// </summary>
+		/// <param name="provider">The object which provided the settings menu item</param>
+		void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider);
 	}
 }
 #endif

@@ -19,7 +19,7 @@ using UnityEngine.VR;
 [MainMenuItem("Annotation", "Create", "Draw in 3D")]
 public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
 	IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
-	IIsHoveringOverUI, IMultiDeviceTool, IUsesProxyType, ISettingsMenuItemProvider, ISerializePreferences
+	IIsHoveringOverUI, IMultiDeviceTool, IUsesProxyType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject
 {
 	[Serializable]
 	class Preferences
@@ -30,8 +30,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		[SerializeField]
 		Color m_AnnotationColor = Color.white;
 
+		[SerializeField]
+		float m_BrushSize = MinBrushSize;
+
 		public bool meshGroupingMode { get { return m_MeshGroupingMode; } set { m_MeshGroupingMode = value; } }
 		public Color annotationColor { get { return m_AnnotationColor; } set { m_AnnotationColor = value; } }
+		public float brushSize { get { return m_BrushSize; } set { m_BrushSize = value; } }
 	}
 
 	public const float TipDistance = 0.05f;
@@ -82,7 +86,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	GameObject m_ColorPickerActivator;
 
-	float m_BrushSize = MinBrushSize;
+	Toggle m_TransformToggle;
+	Toggle m_MeshToggle;
+	bool m_BlockValueChangedListener;
 
 	public bool primary { private get; set; }
 	public Type proxyType { private get; set; }
@@ -94,6 +100,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	public ActionMap actionMap { get { return m_ActionMap; } }
 
+	public List<ILinkedObject> linkedObjects { private get; set; }
+
 	public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 	public GameObject settingsMenuItemInstance
 	{
@@ -104,11 +112,32 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			{
 				if (toggle == defaultToggleGroup.defaultToggle)
 				{
+					m_TransformToggle = toggle;
 					toggle.onValueChanged.AddListener(isOn =>
 					{
+						if (m_BlockValueChangedListener)
+							return;
+
 						// m_Preferences on all instances refer
 						m_Preferences.meshGroupingMode = !isOn;
+						foreach (var linkedObject in linkedObjects)
+						{
+							var locomotionTool = (AnnotationTool)linkedObject;
+							if (locomotionTool != this)
+							{
+								locomotionTool.m_BlockValueChangedListener = true;
+								//linkedObject.m_ToggleGroup.NotifyToggleOn(isOn ? m_FlyToggle : m_BlinkToggle);
+								// HACK: Toggle Group claims these toggles are not a part of the group
+								locomotionTool.m_TransformToggle.isOn = isOn;
+								locomotionTool.m_MeshToggle.isOn = !isOn;
+								locomotionTool.m_BlockValueChangedListener = false;
+							}
+						}
 					});
+				}
+				else
+				{
+					m_MeshToggle = toggle;
 				}
 			}
 		}
@@ -190,10 +219,11 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			trans.localRotation = Quaternion.Euler(-90, 0, 0);
 			trans.localScale = scale;
 
-			m_BrushSizeUI.onValueChanged = (val) => 
+			m_BrushSizeUI.onValueChanged = (val) =>
 			{
-				m_BrushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, val);
-				m_AnnotationPointer.Resize(m_BrushSize);
+				var brushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, val);
+				m_Preferences.brushSize = brushSize;
+				m_AnnotationPointer.Resize(brushSize);
 			};
 			onBrushSizeChanged = m_BrushSizeUI.ChangeSliderValue;
 		}
@@ -231,23 +261,25 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		if (m_AnnotationPointer != null)
 		{
+			var brushSize = m_Preferences.brushSize;
 			if (VRSettings.loadedDeviceName == "OpenVR") // For vive controllers, use 1:1 touchpad setting.
 			{
-				m_BrushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, (value + 1) / 2f);
+				brushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, (value + 1) / 2f);
 			}
 			else // For touch and hydra, let the thumbstick gradually modify the width.
 			{
-				m_BrushSize += value * Time.unscaledDeltaTime * .1f;
-				m_BrushSize = Mathf.Clamp(m_BrushSize, MinBrushSize, MaxBrushSize);
+				brushSize += value * Time.unscaledDeltaTime * .1f;
+				brushSize = Mathf.Clamp(brushSize, MinBrushSize, MaxBrushSize);
 			}
 
 			if (m_BrushSizeUI && onBrushSizeChanged != null)
 			{
-				var ratio = Mathf.InverseLerp(MinBrushSize, MaxBrushSize, m_BrushSize);
+				var ratio = Mathf.InverseLerp(MinBrushSize, MaxBrushSize, brushSize);
 				onBrushSizeChanged(ratio);
 			}
 
-			m_AnnotationPointer.Resize(m_BrushSize);
+			m_AnnotationPointer.Resize(brushSize);
+			m_Preferences.brushSize = brushSize;
 		}
 	}
 
@@ -338,7 +370,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			m_Length += distance;
 		}
 
-		var brushSize = m_BrushSize * viewerScale;
+		var brushSize = m_Preferences.brushSize * viewerScale;
 		InterpolatePointsIfNeeded(localPoint, upVector, brushSize);
 		
 		m_Points.Add(localPoint);
@@ -686,17 +718,37 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	public object OnSerializePreferences()
 	{
-		if (primary)
+		if (this.IsSharedUpdater(this))
+		{
+			// Share one preferences object across all instances
+			foreach (var linkedObject in linkedObjects)
+			{
+				((AnnotationTool)linkedObject).m_Preferences = m_Preferences;
+			}
+
 			return m_Preferences;
+		}
 
 		return null;
 	}
 
 	public void OnDeserializePreferences(object obj)
 	{
+		if (this.IsSharedUpdater(this))
+		{
 			var preferences = obj as Preferences;
 			if (preferences != null)
 				m_Preferences = preferences;
+
+			// Share one preferences object across all instances
+			foreach (var linkedObject in linkedObjects)
+			{
+				((AnnotationTool)linkedObject).m_Preferences = m_Preferences;
+				//Setting toggles on this tool's menu will set them on other tool menus
+				m_MeshToggle.isOn = m_Preferences.meshGroupingMode;
+				m_TransformToggle.isOn = !m_Preferences.meshGroupingMode;
+			}
+		}
 	}
 }
 #endif
