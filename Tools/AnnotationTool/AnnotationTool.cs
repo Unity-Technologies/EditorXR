@@ -107,6 +107,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		set
 		{
+			Debug.Log("set instance " + value + ", " + rayOrigin);
 			if (value == null)
 			{
 				m_TransformToggle = null;
@@ -173,8 +174,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void Start()
 	{
-		if (m_Preferences == null)
-			m_Preferences = new Preferences();
+		SetupPreferences();
 
 		this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 
@@ -210,6 +210,29 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 				activator.redoButtonClick += Undo.PerformRedo;
 			}
 		}
+	}
+
+	void SetupPreferences()
+	{
+		if (this.IsSharedUpdater(this))
+		{
+			// Share one preferences object across all instances
+			foreach (var linkedObject in linkedObjects)
+			{
+				((AnnotationTool)linkedObject).m_Preferences = m_Preferences;
+			}
+
+			if (m_Preferences != null)
+			{
+				Debug.Log(m_Preferences.meshGroupingMode);
+				//Setting toggles on this tool's menu will set them on other tool menus
+				m_MeshToggle.isOn = m_Preferences.meshGroupingMode;
+				m_TransformToggle.isOn = !m_Preferences.meshGroupingMode;
+			}
+		}
+
+		if (m_Preferences == null)
+			m_Preferences = new Preferences();
 	}
 
 	void CheckBrushSizeUI()
@@ -741,21 +764,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	public void OnDeserializePreferences(object obj)
 	{
-		if (this.IsSharedUpdater(this))
-		{
-			var preferences = obj as Preferences;
-			if (preferences != null)
-				m_Preferences = preferences;
+		Debug.Log("Deserialize" + obj);
+		if (m_Preferences == null)
+			m_Preferences = (Preferences)obj;
 
-			// Share one preferences object across all instances
-			foreach (var linkedObject in linkedObjects)
-			{
-				((AnnotationTool)linkedObject).m_Preferences = m_Preferences;
-				//Setting toggles on this tool's menu will set them on other tool menus
-				m_MeshToggle.isOn = m_Preferences.meshGroupingMode;
-				m_TransformToggle.isOn = !m_Preferences.meshGroupingMode;
-			}
-		}
+		if (m_Preferences != null)
+			Debug.Log(m_Preferences.meshGroupingMode);
 	}
 }
 #endif
