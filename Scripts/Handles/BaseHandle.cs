@@ -106,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 				return;
 
 			var rayOrigin = eventData.rayOrigin;
-			if (!this.IsConeVisible(rayOrigin))
+			if (!this.IsConeVisible(rayOrigin) || !this.IsRayVisible(rayOrigin))
 				return;
 
 			m_DragSources.Add(rayOrigin);
@@ -145,7 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 				return;
 
 			var rayOrigin = eventData.rayOrigin;
-			if (!this.IsConeVisible(rayOrigin))
+			if (!this.IsConeVisible(rayOrigin) || !this.IsRayVisible(rayOrigin))
 				return;
 
 			m_HoverSources.Add(rayOrigin);
