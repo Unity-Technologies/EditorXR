@@ -76,6 +76,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	ColorPickerUI m_ColorPicker;
 	BrushSizeUI m_BrushSizeUI;
 
+	Transform m_AnnotationRoot;
 	Transform m_AnnotationHolder;
 
 	AnnotationPointer m_AnnotationPointer;
@@ -107,7 +108,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		set
 		{
-			Debug.Log("set instance " + value + ", " + rayOrigin);
 			if (value == null)
 			{
 				m_TransformToggle = null;
@@ -156,6 +156,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (m_Preferences.meshGroupingMode)
 			CombineGroups();
 
+		CleanUpNames();
+
 		if (rayOrigin)
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
 
@@ -170,6 +172,22 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		if (m_AnnotationPointer)
 			ObjectUtils.Destroy(m_AnnotationPointer.gameObject);
+	}
+
+	void CleanUpNames()
+	{
+		if (m_AnnotationRoot == null)
+			return;
+
+		var groupCount = 0;
+		var annotationCount = 0;
+		foreach (Transform child in m_AnnotationRoot)
+		{
+			if (child.childCount > 0)
+				child.name = "Group " + groupCount++;
+			else
+				child.name = "Annotation " + annotationCount++;
+		}
 	}
 
 	void Start()
@@ -224,7 +242,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 			if (m_Preferences != null)
 			{
-				Debug.Log(m_Preferences.meshGroupingMode);
 				//Setting toggles on this tool's menu will set them on other tool menus
 				m_MeshToggle.isOn = m_Preferences.meshGroupingMode;
 				m_TransformToggle.isOn = !m_Preferences.meshGroupingMode;
@@ -344,17 +361,18 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	void SetupHolder()
 	{
 		var mainHolder = GameObject.Find("Annotations") ?? new GameObject("Annotations");
-		var mainHolderTrans = mainHolder.transform;
+		m_AnnotationRoot = mainHolder.transform;
 
 		var newSession = GetNewSessionHolder();
 		if (!newSession)
 		{
-			newSession = new GameObject("Group " + mainHolderTrans.childCount);
+			newSession = new GameObject("Group " + m_AnnotationRoot.childCount);
+			newSession.transform.position = GetPointerPosition();
 			m_Groups.Add(newSession);
 		}
 
 		m_AnnotationHolder = newSession.transform;
-		m_AnnotationHolder.SetParent(mainHolder.transform);
+		m_AnnotationHolder.SetParent(m_AnnotationRoot);
 	}
 
 	GameObject GetNewSessionHolder()
@@ -386,7 +404,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		var upVector = rayOrigin.up;
 		var viewerScale = this.GetViewerScale();
-		var worldPoint = rayOrigin.position + rayOrigin.forward * TipDistance * viewerScale;
+		var worldPoint = GetPointerPosition();
 		var localPoint = m_WorldToLocalMesh.MultiplyPoint3x4(worldPoint);
 
 		if (m_Points.Count > 0)
@@ -516,7 +534,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		m_CurrentMesh.RecalculateBounds();
 		m_CurrentMesh.RecalculateNormals();
 
-		m_CurrentMesh.UploadMeshData(true);
+		m_CurrentMesh.UploadMeshData(false);
 
 		CenterHolder();
 
@@ -711,7 +729,6 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	{
 		foreach (var group in m_Groups)
 		{
-			group.name = group.name.Replace("Group", "Annotation");
 			var meshFilters = group.GetComponentsInChildren<MeshFilter>();
 			var renderers = group.GetComponentsInChildren<MeshRenderer>();
 
@@ -722,28 +739,46 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			}
 
 			var length = meshFilters.Length;
-			var combines = new CombineInstance[length];
-			var materials = new Material[length];
+			var combines = new List<CombineInstance>(length);
+			var materials = new List<Material>(length);
 			for (var i = 0; i < length; i++)
 			{
-				var combine = combines[i];
 				var meshFilter = meshFilters[i];
-				combine.mesh = meshFilter.sharedMesh;
-				combine.transform = meshFilter.transform.localToWorldMatrix;
-				materials[i] = renderers[i].sharedMaterial;
+				var sharedMesh = meshFilter.sharedMesh;
+				if (sharedMesh && sharedMesh.vertexCount > 0)
+				{
+					var combine = new CombineInstance
+					{
+						mesh = sharedMesh,
+						transform = group.transform.worldToLocalMatrix * meshFilter.transform.localToWorldMatrix
+					};
+
+					sharedMesh.UploadMeshData(false);
+					combines.Add(combine);
+					materials.Add(renderers[i].sharedMaterial);
+				}
 			}
 
 			var mesh = new Mesh();
-			mesh.CombineMeshes(combines, false, true);
+			mesh.CombineMeshes(combines.ToArray(), false, true);
 			group.AddComponent<MeshFilter>().sharedMesh = mesh;
 
-			group.AddComponent<MeshRenderer>().sharedMaterials = materials;
+			group.AddComponent<MeshRenderer>().sharedMaterials = materials.ToArray();
+
+			this.AddToSpatialHash(group);
 
 			foreach (var meshFilter in meshFilters)
 			{
-				ObjectUtils.Destroy(meshFilter.gameObject);
+				var go = meshFilter.gameObject;
+				this.RemoveFromSpatialHash(go);
+				ObjectUtils.Destroy(go);
 			}
 		}
+	}
+
+	Vector3 GetPointerPosition()
+	{
+		return rayOrigin.position + rayOrigin.forward * TipDistance * this.GetViewerScale();
 	}
 
 	public object OnSerializePreferences()
@@ -764,12 +799,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	public void OnDeserializePreferences(object obj)
 	{
-		Debug.Log("Deserialize" + obj);
 		if (m_Preferences == null)
 			m_Preferences = (Preferences)obj;
-
-		if (m_Preferences != null)
-			Debug.Log(m_Preferences.meshGroupingMode);
 	}
 }
 #endif

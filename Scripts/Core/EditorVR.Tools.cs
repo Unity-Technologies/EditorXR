@@ -54,6 +54,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
+				var linkedObject = obj as ILinkedObject;
+				if (linkedObject != null)
+				{
+					var type = obj.GetType();
+					List<ILinkedObject> linkedObjectList;
+					if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
+						return;
+
+					linkedObjectList.Remove(linkedObject);
+					linkedObject.linkedObjects = null;
+
+					if (linkedObjectList.Count == 0)
+						m_LinkedObjects.Remove(type);
+				}
 			}
 
 			bool IsSharedUpdater(ILinkedObject linkedObject)

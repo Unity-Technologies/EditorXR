@@ -160,10 +160,18 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 		var rect = m_ColorPicker.rectTransform.rect;
 
 		var dir = m_PickerTargetPosition;
-		var x = (dir.x + rect.width / 2f) / rect.width;
-		var y = (dir.y + rect.height / 2f) / rect.height;
-		var textureX = (int)(x * m_ColorPickerTexture.width);
-		var textureY = (int)(y * m_ColorPickerTexture.height);
+		dir.z = 0;
+
+		// We want to avoid the edge of the image, which has feathered pixels
+		var maxMagnitude = rect.width * 0.495f;
+		if (dir.magnitude > maxMagnitude)
+			dir = Vector3.ClampMagnitude(dir, maxMagnitude);
+
+		dir.x = (dir.x + rect.width * 0.5f) / rect.width;
+		dir.y = (dir.y + rect.height * 0.5f) / rect.height;
+
+		var textureX = (int)(dir.x * m_ColorPickerTexture.width);
+		var textureY = (int)(dir.y * m_ColorPickerTexture.height);
 		var col = m_ColorPickerTexture.GetPixel(textureX, textureY);
 
 		return col;
