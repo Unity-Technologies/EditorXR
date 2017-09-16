@@ -419,7 +419,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		var brushSize = m_Preferences.brushSize * viewerScale;
 		InterpolatePointsIfNeeded(localPoint, upVector, brushSize);
-		
+
 		m_Points.Add(localPoint);
 		m_UpVectors.Add(upVector);
 		m_Widths.Add(brushSize);

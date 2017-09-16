@@ -78,7 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_FrameRevealCoroutine;
 		int m_Direction;
-		
 
 		public int targetFaceIndex
 		{
@@ -229,7 +228,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				return null;
 
 			face.AddButton(button.transform);
-			
 			return mainMenuButton;
 		}
 

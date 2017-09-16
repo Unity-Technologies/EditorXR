@@ -610,10 +610,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				foreach (var linkedObject in linkedObjects)
 				{
 					((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
-					//Setting toggles on this tool's menu will set them on other tool menus
-					m_BlinkToggle.isOn = m_Preferences.blinkMode;
-					m_FlyToggle.isOn = !m_Preferences.blinkMode;
 				}
+
+				//Setting toggles on this tool's menu will set them on other tool menus
+				m_BlinkToggle.isOn = m_Preferences.blinkMode;
+				m_FlyToggle.isOn = !m_Preferences.blinkMode;
 			}
 		}
 	}
