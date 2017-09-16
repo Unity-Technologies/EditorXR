@@ -24,6 +24,7 @@ public class BrushSizeUI : MonoBehaviour
 	{
 		// We record property modifications on creation and modification of these UI elements, which will look odd when undone
 		Undo.postprocessModifications += PostProcessModifications;
+		m_SliderHandleImage = m_SliderHandle.GetComponent<Image>();
 	}
 
 	UndoPropertyModification[] PostProcessModifications(UndoPropertyModification[] modifications)
@@ -36,11 +37,6 @@ public class BrushSizeUI : MonoBehaviour
 		}
 
 		return modificationList.ToArray();
-	}
-
-	void Start()
-	{
-		m_SliderHandleImage = m_SliderHandle.GetComponent<Image>();
 	}
 
 	public void OnSliderValueChanged(float value)

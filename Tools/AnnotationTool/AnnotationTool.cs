@@ -198,35 +198,32 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		if (primary)
 		{
-			m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
-			m_OriginalAnnotationPointerLocalScale = m_AnnotationPointer.transform.localScale;
-			CheckBrushSizeUI();
+			SetupBrushUI();
+			HandleBrushSize(m_Preferences.brushSize);
 
-			if (m_ColorPickerActivator == null)
-			{
-				m_ColorPickerActivator = this.InstantiateUI(m_ColorPickerActivatorPrefab);
-				var otherRayOrigin = otherRayOrigins.First();
-				var otherAltMenu = this.GetCustomAlternateMenuOrigin(otherRayOrigin);
+			m_ColorPickerActivator = this.InstantiateUI(m_ColorPickerActivatorPrefab);
+			var otherRayOrigin = otherRayOrigins.First();
+			var otherAltMenu = this.GetCustomAlternateMenuOrigin(otherRayOrigin);
 
-				m_ColorPickerActivator.transform.SetParent(otherAltMenu.GetComponentInChildren<MainMenuActivator>().transform);
-				m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
-				m_ColorPickerActivator.transform.localPosition = Vector3.right * 0.05f;
-				m_ColorPickerActivator.transform.localScale = Vector3.one;
+			m_ColorPickerActivator.transform.SetParent(otherAltMenu.GetComponentInChildren<MainMenuActivator>().transform);
+			m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
+			m_ColorPickerActivator.transform.localPosition = Vector3.right * 0.05f;
+			m_ColorPickerActivator.transform.localScale = Vector3.one;
 
-				var activator = m_ColorPickerActivator.GetComponentInChildren<ColorPickerActivator>();
+			var activator = m_ColorPickerActivator.GetComponentInChildren<ColorPickerActivator>();
 
-				m_ColorPicker = activator.GetComponentInChildren<ColorPickerUI>(true);
-				m_ColorPicker.onHideCalled = HideColorPicker;
-				m_ColorPicker.toolRayOrigin = rayOrigin;
-				m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
+			m_ColorPicker = activator.GetComponentInChildren<ColorPickerUI>(true);
+			m_ColorPicker.onHideCalled = HideColorPicker;
+			m_ColorPicker.toolRayOrigin = rayOrigin;
+			m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
+			OnColorPickerValueChanged(m_Preferences.annotationColor);
 
-				activator.rayOrigin = otherRayOrigin;
-				activator.showColorPicker = ShowColorPicker;
-				activator.hideColorPicker = HideColorPicker;
+			activator.rayOrigin = otherRayOrigin;
+			activator.showColorPicker = ShowColorPicker;
+			activator.hideColorPicker = HideColorPicker;
 
-				activator.undoButtonClick += Undo.PerformUndo;
-				activator.redoButtonClick += Undo.PerformRedo;
-			}
+			activator.undoButtonClick += Undo.PerformUndo;
+			activator.redoButtonClick += Undo.PerformRedo;
 		}
 	}
 
@@ -252,28 +249,30 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			m_Preferences = new Preferences();
 	}
 
-	void CheckBrushSizeUI()
+	void SetupBrushUI()
 	{
-		if (m_BrushSizeUI == null)
+		m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
+		m_OriginalAnnotationPointerLocalScale = m_AnnotationPointer.transform.localScale;
+		var brushSize = m_Preferences.brushSize;
+		m_AnnotationPointer.Resize(brushSize);
+
+		var brushSizeUi = this.InstantiateUI(m_BrushSizePrefab);
+		m_BrushSizeUI = brushSizeUi.GetComponent<BrushSizeUI>();
+
+		var trans = brushSizeUi.transform;
+		var scale = brushSizeUi.transform.localScale;
+		trans.SetParent(alternateMenuOrigin, false);
+		trans.localPosition = Vector3.zero;
+		trans.localRotation = Quaternion.Euler(-90, 0, 0);
+		trans.localScale = scale;
+
+		m_BrushSizeUI.onValueChanged = value =>
 		{
-			var brushSizeUi = this.InstantiateUI(m_BrushSizePrefab);
-			m_BrushSizeUI = brushSizeUi.GetComponent<BrushSizeUI>();
-
-			var trans = brushSizeUi.transform;
-			var scale = brushSizeUi.transform.localScale;
-			trans.SetParent(alternateMenuOrigin, false);
-			trans.localPosition = Vector3.zero;
-			trans.localRotation = Quaternion.Euler(-90, 0, 0);
-			trans.localScale = scale;
-
-			m_BrushSizeUI.onValueChanged = (val) =>
-			{
-				var brushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, val);
-				m_Preferences.brushSize = brushSize;
-				m_AnnotationPointer.Resize(brushSize);
-			};
-			onBrushSizeChanged = m_BrushSizeUI.ChangeSliderValue;
-		}
+			var sliderValue = Mathf.Lerp(MinBrushSize, MaxBrushSize, value);
+			m_Preferences.brushSize = sliderValue;
+			m_AnnotationPointer.Resize(sliderValue);
+		};
+		onBrushSizeChanged = m_BrushSizeUI.ChangeSliderValue;
 	}
 
 	void ShowColorPicker(Transform otherRayOrigin)
