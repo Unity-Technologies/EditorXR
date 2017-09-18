@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 		public delegate void RemoveFeedbackRequestDelegate(FeedbackRequest request);
 
 		public static AddFeedbackRequestDelegate addFeedbackRequest { private get; set; }
-		public static RemoveFeedbackRequestDelegate removeFeedbackRequest { private get; set; }
+		public static Action<FeedbackRequest> removeFeedbackRequest { private get; set; }
 		public static Action<object> clearFeedbackRequests { private get; set; }
 
 		public static void AddFeedbackRequest<TFeedbackRequest>(this IRequestFeedback obj, TFeedbackRequest request, object caller, int priority = 0) where TFeedbackRequest : FeedbackRequest

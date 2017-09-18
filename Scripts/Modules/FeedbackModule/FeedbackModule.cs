@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public class FeedbackModule : MonoBehaviour, IInterfaceConnector
 	{
-		readonly List<IFeedbackReciever>  m_FeedbackReceivers = new List<IFeedbackReciever>();
+		readonly Dictionary<Type, List<IFeedbackReciever>> m_FeedbackReceivers = new Dictionary<Type, List<IFeedbackReciever>>();
 
 		void Awake()
 		{
@@ -27,44 +28,75 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			var feedbackReceiver = obj as IFeedbackReciever;
 			if (feedbackReceiver != null)
-				m_FeedbackReceivers.Add(feedbackReceiver);
+			{
+				var requestType = obj.GetType().GetInterfaces()
+					.Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IFeedbackReciever<>))
+					.SelectMany(i => i.GetGenericArguments())
+					.First();
+				if (requestType != null)
+				{
+					List<IFeedbackReciever> recievers;
+					if (!m_FeedbackReceivers.TryGetValue(requestType, out recievers))
+					{
+						recievers = new List<IFeedbackReciever>();
+						m_FeedbackReceivers[requestType] = recievers;
+					}
+
+					recievers.Add(feedbackReceiver);
+				}
+			}
 		}
 
 		public void DisconnectInterface(object obj, Transform rayOrigin = null)
 		{
 			var feedbackReceiver = obj as IFeedbackReciever;
 			if (feedbackReceiver != null)
-				m_FeedbackReceivers.Remove(feedbackReceiver);
-		}
-
-		public void AddFeedbackRequest<TFeedbackRequest>(TFeedbackRequest request, object caller, int priority = 0) where TFeedbackRequest : FeedbackRequest
-		{
-			Debug.Log("asdf");
-			foreach (var obj in m_FeedbackReceivers)
 			{
-				Debug.Log(obj.GetType() + ", " + typeof(TFeedbackRequest) + ", " + typeof(IFeedbackReciever<TFeedbackRequest>).IsAssignableFrom(obj.GetType()));
-				var reciever = obj as IFeedbackReciever<TFeedbackRequest>;
-				Debug.Log(reciever);
-				if (reciever == null)
-					continue;
+				var requestType = obj.GetType().GetInterfaces()
+					.Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IFeedbackReciever<>))
+					.SelectMany(i => i.GetGenericArguments())
+					.First();
+				if (requestType != null)
+				{
+					List<IFeedbackReciever> recievers;
+					if (m_FeedbackReceivers.TryGetValue(requestType, out recievers))
+					{
+						recievers.Remove(feedbackReceiver);
 
-				Debug.Log(obj);
-
-				request.caller = caller;
-				request.priority = priority;
-				reciever.AddFeedbackRequest(request);
+						if (recievers.Count == 0)
+							m_FeedbackReceivers.Remove(requestType);
+					}
+				}
 			}
 		}
 
-		public void RemoveFeedbackRequest<TFeedbackRequest>(TFeedbackRequest request) where TFeedbackRequest : FeedbackRequest
+		void AddFeedbackRequest(FeedbackRequest request, object caller, int priority = 0)
 		{
-			foreach (var obj in m_FeedbackReceivers)
+			var requestType = request.GetType();
+			List<IFeedbackReciever> recievers;
+			if (m_FeedbackReceivers.TryGetValue(requestType, out recievers))
 			{
-				var reciever = obj as IFeedbackReciever<TFeedbackRequest>;
-				if (reciever == null)
-					continue;
+				foreach (var obj in recievers)
+				{
+					request.caller = caller;
+					request.priority = priority;
+					var receiver = (IFeedbackReciever<FeedbackRequest>)obj;
+					receiver.AddFeedbackRequest(request);
+				}
+			}
+		}
 
-				reciever.RemoveFeedbackRequest(request);
+		public void RemoveFeedbackRequest(FeedbackRequest request)
+		{
+			var requestType = request.GetType();
+			List<IFeedbackReciever> recievers;
+			if (m_FeedbackReceivers.TryGetValue(requestType, out recievers))
+			{
+				foreach (var obj in recievers)
+				{
+					var receiver = (IFeedbackReciever<FeedbackRequest>)obj;
+					receiver.RemoveFeedbackRequest(request);
+				}
 			}
 		}
 
@@ -72,7 +104,10 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			foreach (var obj in m_FeedbackReceivers)
 			{
-				obj.ClearFeedbackRequests(caller);
+				foreach (var reciever in obj.Value)
+				{
+					reciever.ClearFeedbackRequests(caller);
+				}
 			}
 		}
 	}
