@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
@@ -11,7 +9,6 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Called when an object is hovering over the receiver
 		/// </summary>
-		/// <param name="target">The GameObject with which the pointer is intersecting</param>
 		/// <param name="dropObject">The object we are dropping</param>
 		/// <returns>Whether the drop can be accepted</returns>
 		bool CanDrop(object dropObject);

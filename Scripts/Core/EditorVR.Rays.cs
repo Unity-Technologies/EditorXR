@@ -150,9 +150,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void CreateAllProxies()
 			{
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
+				var interfaceModule = evr.GetNestedModule<Interfaces>();
 				foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
 				{
 					var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig, false);
+					interfaceModule.ConnectInterfaces(proxy);
 					proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
 					proxy.activeChanged += () => OnProxyActiveChanged(proxy);
 					proxy.hidden = true;

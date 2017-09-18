@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -13,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
 		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-		IUsesProxyType, IGetVRPlayerObjects
+		IUsesProxyType, IGetVRPlayerObjects, IRequestFeedback, IUsesNode
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -145,6 +147,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Type proxyType { get; set; }
 
+		public Node? node { private get; set; }
+
 		void Start()
 		{
 			if (this.IsSharedUpdater(this) && m_Preferences == null)
@@ -187,7 +191,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			var firstFrame = m_LocomotionInput == null;
 			m_LocomotionInput = (LocomotionInput)input;
+
+			if (firstFrame && m_LocomotionInput != null)
+			{
+				Debug.Log("asdf");
+				this.AddFeedbackRequest(new ProxyFeedbackRequest
+				{
+					node = node.Value,
+					control = VRInputDevice.VRControl.Trigger2,
+					tooltip = new TooltipModule.Tooltip { tooltipText = "text" }
+				}, this);
+			}
 
 			if (DoTwoHandedScaling(consumeControl))
 				return;

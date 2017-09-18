@@ -9,7 +9,14 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy
+	public class ProxyFeedbackRequest : FeedbackRequest
+	{
+		public VRInputDevice.VRControl control;
+		public Node node;
+		public ITooltip tooltip;
+	}
+
+	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReciever<ProxyFeedbackRequest>, ISetTooltipVisibility
 	{
 		const int k_RendererQueue = 9000;
 
@@ -160,6 +167,25 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
 				m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 			}
+		}
+
+		public void AddFeedbackRequest(ProxyFeedbackRequest request)
+		{
+			Debug.Log(request);
+			if (request.tooltip != null)
+			{
+				this.ShowTooltip(request.tooltip);
+			}
+		}
+
+		public void RemoveFeedbackRequest(ProxyFeedbackRequest request)
+		{
+			Debug.Log(request);
+		}
+
+		public void ClearFeedbackRequests(object caller)
+		{
+			Debug.Log(caller);
 		}
 	}
 }
