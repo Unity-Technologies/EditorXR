@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
 		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-		IUsesProxyType, IGetVRPlayerObjects
+		IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -307,6 +307,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_StartCrawling = true;
 					m_ActualRayOriginStartPosition = m_RayOriginStartPosition;
 					m_CrawlStartTime = Time.time;
+					this.SetUIBlockedForRayOrigin(rayOrigin, true);
 				}
 
 				var localRayPosition = cameraRig.position - rayOrigin.position;
@@ -327,6 +328,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return true;
 			}
 
+			this.SetUIBlockedForRayOrigin(rayOrigin, false);
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
 
 			m_StartCrawling = false;

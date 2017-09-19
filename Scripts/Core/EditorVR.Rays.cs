@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal Dictionary<Transform, DefaultProxyRay> defaultRays { get { return m_DefaultRays; } }
 			readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
+			static readonly List<Transform> m_BlockedUIRayOrigins = new List<Transform>();
 			readonly List<IProxy> m_Proxies = new List<IProxy>();
 
 			StandardManipulator m_StandardManipulator;
@@ -49,6 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
 				IGetRayVisibilityMethods.isRayVisible = IsRayActive;
 				IGetRayVisibilityMethods.isConeVisible = IsConeActive;
+				IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
 			}
 
 			internal override void OnDestroy()
@@ -204,6 +206,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
 									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOrigin, source =>
 									{
+										// Proceed only for raycast sources that haven't been blocked via IBlockUIInteraction
+										if (m_BlockedUIRayOrigins.Contains(rayOrigin))
+											return false;
+
 										// Do not invalidate UI raycasts in the middle of a drag operation
 										if (!source.draggedObject)
 										{
@@ -507,6 +513,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var highlightModule = evr.GetModule<HighlightModule>();
 				return highlightModule.highlightColor;
+			}
+
+			static void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
+			{
+				var rayOriginCurrentlyBlocked = m_BlockedUIRayOrigins.Contains(rayOrigin);
+				if (blocked && !rayOriginCurrentlyBlocked)
+					m_BlockedUIRayOrigins.Add(rayOrigin);
+				else if (!blocked && rayOriginCurrentlyBlocked)
+					m_BlockedUIRayOrigins.Remove(rayOrigin);
 			}
 		}
 	}

@@ -106,9 +106,6 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 				return;
 
 			var rayOrigin = eventData.rayOrigin;
-			if (!this.IsConeVisible(rayOrigin) || !this.IsRayVisible(rayOrigin))
-				return;
-
 			m_DragSources.Add(rayOrigin);
 			startDragPositions[rayOrigin] = eventData.pointerCurrentRaycast.worldPosition;
 
@@ -144,11 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 			if (!UIUtils.IsValidEvent(eventData, selectionFlags))
 				return;
 
-			var rayOrigin = eventData.rayOrigin;
-			if (!this.IsConeVisible(rayOrigin) || !this.IsRayVisible(rayOrigin))
-				return;
-
-			m_HoverSources.Add(rayOrigin);
+			m_HoverSources.Add(eventData.rayOrigin);
 			OnHandleHoverStarted(GetHandleEventData(eventData));
 		}
 
