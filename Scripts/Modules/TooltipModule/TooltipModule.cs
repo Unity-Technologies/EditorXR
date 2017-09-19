@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -30,6 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			public float startTime;
 			public TooltipUI tooltipUI;
+			public bool persistent;
+			public float duration;
 		}
 
 		readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
@@ -58,7 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				var tooltip = kvp.Key;
 				var tooltipData = kvp.Value;
-				var hoverTime = Time.realtimeSinceStartup - tooltipData.startTime;
+				var hoverTime = Time.time - tooltipData.startTime;
 				if (hoverTime > k_Delay)
 				{
 					var placement = tooltip as ITooltipPlacement;
@@ -91,11 +93,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				if (!IsValidTooltip(tooltip))
 					m_TooltipsToHide.Add(tooltip);
+
+				if (tooltipData.persistent)
+				{
+					var duration = tooltipData.duration;
+					if (duration > 0 && hoverTime + k_Delay > duration)
+						m_TooltipsToHide.Add(tooltip);
+				}
 			}
 
 			foreach (var tooltip in m_TooltipsToHide)
 			{
-				HideTooltip(tooltip);
+				HideTooltip(tooltip, true);
 			}
 		}
 
@@ -216,7 +225,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public void ShowTooltip(ITooltip tooltip)
+		public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f)
 		{
 			if (!IsValidTooltip(tooltip))
 				return;
@@ -226,7 +235,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			m_Tooltips[tooltip] = new TooltipData
 			{
-				startTime = Time.realtimeSinceStartup
+				startTime = Time.time,
+				persistent = persistent,
+				duration = duration
 			};
 		}
 
@@ -235,11 +246,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return !string.IsNullOrEmpty(tooltip.tooltipText);
 		}
 
-		public void HideTooltip(ITooltip tooltip)
+		public void HideTooltip(ITooltip tooltip, bool persistent = false)
 		{
 			TooltipData tooltipData;
 			if (m_Tooltips.TryGetValue(tooltip, out tooltipData))
 			{
+				if (!persistent && tooltipData.persistent)
+					return;
+
 				m_Tooltips.Remove(tooltip);
 
 				if (tooltipData.tooltipUI)

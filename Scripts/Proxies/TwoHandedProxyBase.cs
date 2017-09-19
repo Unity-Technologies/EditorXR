@@ -1,10 +1,9 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Input;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -23,6 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReciever, ISetTooltipVisibility, ISetHighlight
 	{
 		const int k_RendererQueue = 9000;
+		const float k_FeedbackDuration = 5f;
 
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
@@ -105,9 +105,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				rightButtons[button.control] = button;
 			}
 			m_Buttons[Node.RightHand] = rightButtons;
-
-			//m_LeftButtons = leftProxyHelper.buttons;
-			//m_RightButtons = rightProxyHelper.buttons;
 
 			m_RayOrigins = new Dictionary<Node, Transform>
 			{
@@ -199,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					if (buttons.TryGetValue(proxyRequest.control, out button))
 					{
 						if (button.renderer)
-							this.SetHighlight(button.renderer.gameObject, true);
+							this.SetHighlight(button.renderer.gameObject, true, duration: k_FeedbackDuration);
 
 						if (button.transform)
 						{
@@ -208,7 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 							if (!string.IsNullOrEmpty(tooltipText) && tooltip)
 							{
 								tooltip.tooltipText = tooltipText;
-								this.ShowTooltip(tooltip);
+								this.ShowTooltip(tooltip, true, k_FeedbackDuration);
 							}
 						}
 					}
@@ -244,7 +241,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 						if (tooltip)
 						{
 							tooltip.tooltipText = string.Empty;
-							this.HideTooltip(tooltip);
+							this.HideTooltip(tooltip, true);
 						}
 					}
 				}

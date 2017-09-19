@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -9,7 +9,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
 	{
+		class HighlightData
+		{
+			public float startTime;
+			public float duration;
+		}
+
 		const string k_SelectionOutlinePrefsKey = "Scene/Selected Outline";
+
+		static readonly Dictionary<SkinnedMeshRenderer, Mesh> m_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
 
 		[SerializeField]
 		Material m_DefaultHighlightMaterial;
@@ -17,9 +25,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[SerializeField]
 		Material m_RayHighlightMaterial;
 
-		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
+		readonly Dictionary<Material, Dictionary<GameObject, HighlightData>> m_Highlights = new Dictionary<Material, Dictionary<GameObject, HighlightData>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
-		static readonly Dictionary<SkinnedMeshRenderer, Mesh> m_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
+
+		// Local method use only -- created here to reduce garbage collection
+		readonly List<KeyValuePair<Material, GameObject>> m_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
 
 		public event Func<GameObject, Material, bool> customHighlight
 		{
@@ -47,14 +57,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void LateUpdate()
 		{
+			m_HighlightsToRemove.Clear();
 			foreach (var highlight in m_Highlights)
 			{
 				var material = highlight.Key;
 				var highlights = highlight.Value;
-				foreach (var go in highlights)
+				foreach (var kvp in highlights)
 				{
+					var go = kvp.Key;
 					if (go == null)
 						continue;
+
+					var highlightData = kvp.Value;
+					if (highlightData.duration > 0)
+					{
+						var visibleTime = Time.time - highlightData.startTime;
+						if (visibleTime > highlightData.duration)
+							m_HighlightsToRemove.Add(new KeyValuePair<Material, GameObject>(material, go));
+					}
 
 					var shouldHighlight = true;
 					for (int i = 0; i < m_CustomHighlightFuncs.Count; i++)
@@ -67,6 +87,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					if (shouldHighlight)
 						HighlightObject(go, material);
 				}
+			}
+
+			foreach (var kvp in m_HighlightsToRemove)
+			{
+				var highlights = m_Highlights[kvp.Key];
+				if (highlights.Remove(kvp.Value) && highlights.Count == 0)
+					m_Highlights.Remove(kvp.Key);
 			}
 		}
 
@@ -121,7 +148,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			set.Add(rayOrigin);
 		}
 
-		public void SetHighlight(GameObject go, bool active, Transform rayOrigin = null, Material material = null, bool force = false)
+		public void SetHighlight(GameObject go, bool active, Transform rayOrigin = null, Material material = null, bool force = false, float duration = 0f)
 		{
 			if (go == null)
 				return;
@@ -136,13 +163,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			if (active) // Highlight
 			{
-				HashSet<GameObject> gameObjects;
-				if (!m_Highlights.TryGetValue(material, out gameObjects))
+				Dictionary<GameObject, HighlightData> highlights;
+				if (!m_Highlights.TryGetValue(material, out highlights))
 				{
-					gameObjects = new HashSet<GameObject>();
-					m_Highlights[material] = gameObjects;
+					highlights = new Dictionary<GameObject, HighlightData>();
+					m_Highlights[material] = highlights;
 				}
-				gameObjects.Add(go);
+
+				highlights[go] = new HighlightData { startTime = Time.time, duration = duration };
 			}
 			else // Unhighlight
 			{
@@ -156,11 +184,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 				else
 				{
-					HashSet<GameObject> gameObjects;
-					if (m_Highlights.TryGetValue(material, out gameObjects))
-					{
-						gameObjects.Remove(go);
-					}
+					Dictionary<GameObject, HighlightData> highlights;
+					if (m_Highlights.TryGetValue(material, out highlights))
+						highlights.Remove(go);
 				}
 
 				var skinnedMeshRenderer = go.GetComponent<SkinnedMeshRenderer>();
