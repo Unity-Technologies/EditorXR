@@ -8,14 +8,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class TooltipModule : MonoBehaviour, IUsesViewerScale
 	{
-		public class Tooltip : ITooltip, ITooltipPlacement
-		{
-			public string tooltipText { get; set; }
-			public Transform tooltipTarget { get; set; }
-			public Transform tooltipSource { get; set; }
-			public TextAlignment tooltipAlignment { get; set; }
-		}
-
 		const float k_Delay = 0; // In case we want to bring back a delay
 		const float k_TransitionDuration = 0.1f;
 		const float k_UVScale = 100f;

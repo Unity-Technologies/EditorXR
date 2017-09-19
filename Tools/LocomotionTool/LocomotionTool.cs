@@ -179,11 +179,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var viewerScaleObject = ObjectUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
 			m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
 			viewerScaleObject.SetActive(false);
+
+			this.AddFeedbackRequest(new ProxyFeedbackRequest
+			{
+				node = node.Value,
+				control = VRInputDevice.VRControl.Trigger2,
+				tooltipText = "Crawl"
+			});
 		}
 
 		void OnDestroy()
 		{
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
+			this.ClearFeedbackRequests();
 
 			if (m_ViewerScaleVisuals)
 				ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
@@ -191,19 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var firstFrame = m_LocomotionInput == null;
 			m_LocomotionInput = (LocomotionInput)input;
-
-			if (firstFrame && m_LocomotionInput != null)
-			{
-				Debug.Log("asdf");
-				this.AddFeedbackRequest(new ProxyFeedbackRequest
-				{
-					node = node.Value,
-					control = VRInputDevice.VRControl.Trigger2,
-					tooltip = new TooltipModule.Tooltip { tooltipText = "text" }
-				}, this);
-			}
 
 			if (DoTwoHandedScaling(consumeControl))
 				return;

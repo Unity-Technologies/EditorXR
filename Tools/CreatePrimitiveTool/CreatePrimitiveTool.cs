@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -8,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
 		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
-		IRayVisibilitySettings
+		IRayVisibilitySettings, IRequestFeedback, IUsesNode
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
@@ -28,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
 		public Transform rayOrigin { get; set; }
+		public Node? node { get; set; }
 
 		enum PrimitiveCreationStates
 		{
@@ -43,6 +45,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.ConnectInterfaces(createPrimitiveMenu, rayOrigin);
 			createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
 			createPrimitiveMenu.close = Close;
+
+			this.AddFeedbackRequest(new ProxyFeedbackRequest
+			{
+				node = node.Value,
+				control = VRInputDevice.VRControl.Trigger1,
+				tooltipText = "Draw"
+			});
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -162,6 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return;
 
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
+			this.ClearFeedbackRequests();
 		}
 	}
 }

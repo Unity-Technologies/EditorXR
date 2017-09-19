@@ -8,26 +8,25 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IRequestFeedbackMethods
 	{
-		public delegate void AddFeedbackRequestDelegate(FeedbackRequest request, object caller, int priority = 0);
-		public delegate void RemoveFeedbackRequestDelegate(FeedbackRequest request);
-
-		public static AddFeedbackRequestDelegate addFeedbackRequest { private get; set; }
+		public static Action<FeedbackRequest> addFeedbackRequest { private get; set; }
 		public static Action<FeedbackRequest> removeFeedbackRequest { private get; set; }
-		public static Action<object> clearFeedbackRequests { private get; set; }
+		public static Action<IRequestFeedback> clearFeedbackRequests { private get; set; }
 
-		public static void AddFeedbackRequest<TFeedbackRequest>(this IRequestFeedback obj, TFeedbackRequest request, object caller, int priority = 0) where TFeedbackRequest : FeedbackRequest
+		public static void AddFeedbackRequest<TFeedbackRequest>(this IRequestFeedback obj, TFeedbackRequest request) where TFeedbackRequest : FeedbackRequest
 		{
-			addFeedbackRequest(request, caller, priority);
+			request.caller = obj;
+			addFeedbackRequest(request);
 		}
 
 		public static void RemoveFeedbackRequest<TFeedbackRequest>(this IRequestFeedback obj, TFeedbackRequest request) where TFeedbackRequest : FeedbackRequest
 		{
+			request.caller = obj;
 			removeFeedbackRequest(request);
 		}
 
-		public static void ClearFeedbackRequests(this IRequestFeedback obj, Type feedbackType, object caller)
+		public static void ClearFeedbackRequests(this IRequestFeedback obj)
 		{
-			clearFeedbackRequests(caller);
+			clearFeedbackRequests(obj);
 		}
 	}
 }

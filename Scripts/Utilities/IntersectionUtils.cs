@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
@@ -185,7 +186,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			var mf = obj.GetComponent<MeshFilter>();
 			if (mf)
+			{
 				collisionTester.sharedMesh = mf.sharedMesh;
+				collisionTester.transform.localScale = Vector3.one;
+			}
 
 			if (!mf)
 			{
@@ -194,6 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				{
 					smr.BakeMesh(BakedMesh);
 					collisionTester.sharedMesh = BakedMesh;
+					collisionTester.transform.localScale = obj.transform.lossyScale.Inverse();
 				}
 			}
 		}

@@ -11,10 +11,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 	sealed class ProxyHelper : MonoBehaviour
 	{
 		[Serializable]
-		class ButtonObject
+		public class ButtonObject
 		{
-			public VRInputDevice.VRControl control;
-			public Renderer renderer;
+			[SerializeField]
+			VRInputDevice.VRControl m_Control;
+
+			[SerializeField]
+			Transform m_Transform;
+
+			[SerializeField]
+			Renderer m_Renderer;
+
+			public VRInputDevice.VRControl control { get { return m_Control; } }
+			public Transform transform { get { return m_Transform; } }
+			public Renderer renderer { get { return m_Renderer; } }
 		}
 
 		/// <summary>
@@ -85,6 +95,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		[SerializeField]
 		ButtonObject[] m_Buttons;
+
+		public ButtonObject[] buttons { get { return m_Buttons; } }
 	}
 }
 #endif

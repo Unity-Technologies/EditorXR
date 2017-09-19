@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -18,8 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
 		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
-
-		static Mesh s_BakedMesh;
+		static readonly Dictionary<SkinnedMeshRenderer, Mesh> m_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
 
 		public event Func<GameObject, Material, bool> customHighlight
 		{
@@ -36,8 +36,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			s_BakedMesh = new Mesh();
-
 			m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
 			if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
 			{
@@ -93,13 +91,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (skinnedMeshRenderer.sharedMesh == null)
 					continue;
 
-				skinnedMeshRenderer.BakeMesh(s_BakedMesh);
-
-				var localToWorldMatrix = skinnedMeshRenderer.transform.localToWorldMatrix;
-				var layer = skinnedMeshRenderer.gameObject.layer;
-				for (var i = 0; i < s_BakedMesh.subMeshCount; i++)
+				Mesh bakedMesh;
+				if (!m_BakedMeshes.TryGetValue(skinnedMeshRenderer, out bakedMesh))
 				{
-					Graphics.DrawMesh(s_BakedMesh, localToWorldMatrix, material, layer, null, i);
+					bakedMesh = new Mesh();
+					m_BakedMeshes[skinnedMeshRenderer] = bakedMesh;
+				}
+
+				skinnedMeshRenderer.BakeMesh(bakedMesh);
+
+				var localToWorldMatrix = skinnedMeshRenderer.transform.localToWorldMatrix * Matrix4x4.Scale(skinnedMeshRenderer.transform.lossyScale.Inverse());
+				var layer = skinnedMeshRenderer.gameObject.layer;
+				for (var i = 0; i < bakedMesh.subMeshCount; i++)
+				{
+					Graphics.DrawMesh(bakedMesh, localToWorldMatrix, material, layer, null, i);
 				}
 			}
 		}
@@ -157,6 +162,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						gameObjects.Remove(go);
 					}
 				}
+
+				var skinnedMeshRenderer = go.GetComponent<SkinnedMeshRenderer>();
+				if (skinnedMeshRenderer)
+					m_BakedMeshes.Remove(skinnedMeshRenderer);
 			}
 		}
 	}

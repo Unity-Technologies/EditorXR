@@ -6,18 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IFeedbackReciever
 	{
-		void ClearFeedbackRequests(object caller);
-	}
-
-	/// <inheritdoc />
-	/// <summary>
-	/// Implementors can receive Feedback Requests that extend IFeedbackRequest
-	/// </summary>
-	/// <typeparam name="TFeedbackRequest"></typeparam>
-	public interface IFeedbackReciever<in TFeedbackRequest> : IFeedbackReciever where TFeedbackRequest : FeedbackRequest
-	{
-		void AddFeedbackRequest(TFeedbackRequest request);
-		void RemoveFeedbackRequest(TFeedbackRequest request);
+		void AddFeedbackRequest(FeedbackRequest request);
+		void RemoveFeedbackRequest(FeedbackRequest request);
+		void ClearFeedbackRequests(IRequestFeedback caller);
 	}
 }
 #endif
