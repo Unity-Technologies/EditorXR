@@ -189,6 +189,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			m_LocomotionInput = (LocomotionInput)input;
 
+			this.SetUIBlockedForRayOrigin(rayOrigin, true);
+
 			if (DoTwoHandedScaling(consumeControl))
 				return;
 
@@ -206,7 +208,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					return;
 			}
 
-			DoCrawl(consumeControl);
+			if (DoCrawl(consumeControl))
+				return;
+
+			this.SetUIBlockedForRayOrigin(rayOrigin, false);
 		}
 
 		bool DoFlying(ConsumeControlDelegate consumeControl)
@@ -307,7 +312,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_StartCrawling = true;
 					m_ActualRayOriginStartPosition = m_RayOriginStartPosition;
 					m_CrawlStartTime = Time.time;
-					this.SetUIBlockedForRayOrigin(rayOrigin, true);
 				}
 
 				var localRayPosition = cameraRig.position - rayOrigin.position;
@@ -328,7 +332,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return true;
 			}
 
-			this.SetUIBlockedForRayOrigin(rayOrigin, false);
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
 
 			m_StartCrawling = false;
@@ -542,7 +545,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				locomotionTool.m_Scaling = false;
 			}
-
 
 			m_ViewerScaleVisuals.gameObject.SetActive(false);
 		}
