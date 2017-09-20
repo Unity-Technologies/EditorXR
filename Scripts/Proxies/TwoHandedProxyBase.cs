@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReciever, ISetTooltipVisibility, ISetHighlight
 	{
 		const int k_RendererQueue = 9000;
-		const float k_FeedbackDuration = 3f;
+		const float k_FeedbackDuration = 5f;
 
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
@@ -199,20 +199,30 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					}
 				}
 
-				ExecuteFeedback(proxyRequest);
-
 				m_FeedbackRequests.Add(proxyRequest);
 			}
+
+			ExecuteFeedback();
 		}
 
-		void ExecuteFeedback(ProxyFeedbackRequest request)
+		void ExecuteFeedback()
 		{
-			Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject> buttons;
-			if (m_Buttons.TryGetValue(request.node, out buttons))
+			foreach (var proxyNode in m_Buttons)
 			{
-				ProxyHelper.ButtonObject button;
-				if (buttons.TryGetValue(request.control, out button))
+				foreach (var kvp in proxyNode.Value)
 				{
+					ProxyFeedbackRequest request = null;
+					foreach (var req in m_FeedbackRequests)
+					{
+						if (req.node == proxyNode.Key && req.control == kvp.Key
+							&& (request == null || req.priority > request.priority))
+							request = req;
+					}
+
+					if (request == null)
+						continue;
+
+					var button = kvp.Value;
 					if (button.renderer)
 						this.SetHighlight(button.renderer.gameObject, true, duration: k_FeedbackDuration);
 
@@ -234,9 +244,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		{
 			var proxyRequest = request as ProxyFeedbackRequest;
 			if (proxyRequest != null)
-			{
 				RemoveFeedbackRequest(proxyRequest);
-			}
 		}
 
 		void RemoveFeedbackRequest(ProxyFeedbackRequest request)
@@ -263,14 +271,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 			m_FeedbackRequests.Remove(request);
 
-			foreach (var existingRequest in new List<ProxyFeedbackRequest>(m_FeedbackRequests))
-			{
-				if (existingRequest.node == request.node && existingRequest.control == request.control)
-				{
-					ExecuteFeedback(existingRequest);
-					break;
-				}
-			}
+			ExecuteFeedback();
 		}
 
 		public void ClearFeedbackRequests(IRequestFeedback caller)

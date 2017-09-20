@@ -230,8 +230,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (!IsValidTooltip(tooltip))
 				return;
 
-			if (m_Tooltips.ContainsKey(tooltip))
+			TooltipData data;
+			if (m_Tooltips.TryGetValue(tooltip, out data))
+			{
+				data.startTime = Time.time;
+				data.persistent |= persistent;
+				data.duration = duration;
 				return;
+			}
 
 			m_Tooltips[tooltip] = new TooltipData
 			{
