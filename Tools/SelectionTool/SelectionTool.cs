@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
 		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
-		IUsesProxyType
+		IUsesProxyType, IRequestFeedback
 	{
 		const float k_MultiselectHueShift = 0.5f;
 		static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
@@ -31,6 +31,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Color m_NormalRayColor;
 		Color m_MultiselectRayColor;
 		bool m_MultiSelect;
+
+		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+		readonly List<ProxyFeedbackRequest> m_SelectFeedback = new List<ProxyFeedbackRequest>();
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -60,6 +63,24 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			tooltipTarget = ObjectUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
 			tooltipTarget.localPosition = k_TooltipPosition;
 			tooltipTarget.localRotation = k_TooltipRotation;
+
+			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+
+			foreach (var control in m_Controls)
+			{
+				if (control.Key != "Select")
+					continue;
+
+				foreach (var id in control.Value)
+				{
+					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = "Select"
+					});
+				}
+			}
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

@@ -29,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		class TooltipData
 		{
 			public float startTime;
+			public float lastModifiedTime;
 			public TooltipUI tooltipUI;
 			public bool persistent;
 			public float duration;
@@ -97,7 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (tooltipData.persistent)
 				{
 					var duration = tooltipData.duration;
-					if (duration > 0 && hoverTime + k_Delay > duration)
+					if (duration > 0 && Time.time - tooltipData.lastModifiedTime + k_Delay > duration)
 						m_TooltipsToHide.Add(tooltip);
 				}
 			}
@@ -233,7 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			TooltipData data;
 			if (m_Tooltips.TryGetValue(tooltip, out data))
 			{
-				data.startTime = Time.time;
+				data.lastModifiedTime = Time.time;
 				data.persistent |= persistent;
 				data.duration = duration;
 				return;
@@ -242,6 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_Tooltips[tooltip] = new TooltipData
 			{
 				startTime = Time.time,
+				lastModifiedTime = Time.time,
 				persistent = persistent,
 				duration = duration
 			};

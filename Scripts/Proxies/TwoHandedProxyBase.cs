@@ -188,24 +188,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var proxyRequest = request as ProxyFeedbackRequest;
 			if (proxyRequest != null)
 			{
-				foreach (var existingRequest in new List<ProxyFeedbackRequest>(m_FeedbackRequests))
-				{
-					if (existingRequest.node == proxyRequest.node && existingRequest.control == proxyRequest.control)
-					{
-						if (existingRequest.priority <= proxyRequest.priority)
-							RemoveFeedbackRequest(existingRequest);
-						else
-							return;
-					}
-				}
-
 				m_FeedbackRequests.Add(proxyRequest);
+				ExecuteFeedback(proxyRequest);
 			}
-
-			ExecuteFeedback();
 		}
 
-		void ExecuteFeedback()
+		void ExecuteFeedback(ProxyFeedbackRequest changedRequest)
 		{
 			foreach (var proxyNode in m_Buttons)
 			{
@@ -214,8 +202,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					ProxyFeedbackRequest request = null;
 					foreach (var req in m_FeedbackRequests)
 					{
-						if (req.node == proxyNode.Key && req.control == kvp.Key
-							&& (request == null || req.priority > request.priority))
+						var matchChanged = req.node == changedRequest.node && req.control == changedRequest.control;
+						var matchButton = req.node == proxyNode.Key && req.control == kvp.Key;
+						var sameCaller = req.caller == changedRequest.caller;
+						var priority = request == null || req.priority >= request.priority;
+						if (matchButton && priority && (matchChanged || sameCaller))
 							request = req;
 					}
 
@@ -271,7 +262,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 			m_FeedbackRequests.Remove(request);
 
-			ExecuteFeedback();
+			ExecuteFeedback(request);
 		}
 
 		public void ClearFeedbackRequests(IRequestFeedback caller)

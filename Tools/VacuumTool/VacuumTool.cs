@@ -1,19 +1,23 @@
 ﻿#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale
+	sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale, IRequestFeedback, IUsesNode
 	{
 		[SerializeField]
 		ActionMap m_ActionMap;
 
 		float m_LastClickTime;
 		readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
+
+		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+		readonly List<ProxyFeedbackRequest> m_Feedback = new List<ProxyFeedbackRequest>();
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
@@ -23,38 +27,72 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Vector3 defaultOffset { private get; set; }
 		public Quaternion defaultTilt { private get; set; }
+		public Node? node { private get; set; }
+
+		void Start()
+		{
+			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
-			var vacuumInput = (VacuumInput)input;
-			if (vacuumInput.vacuum.wasJustPressed)
+			var hit = false;
+			foreach (var vacuumable in vacuumables)
 			{
-				var realTime = Time.realtimeSinceStartup;
-				if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
+				var vacuumableTransform = vacuumable.transform;
+				var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+				ray.origin = vacuumableTransform.InverseTransformPoint(ray.origin);
+				ray.direction = vacuumableTransform.InverseTransformDirection(ray.direction);
+				if (vacuumable.vacuumBounds.IntersectRay(ray))
 				{
-					var hit = false;
-					foreach (var vacuumable in vacuumables)
+					hit = true;
+					var vacuumInput = (VacuumInput)input;
+					if (vacuumInput.vacuum.wasJustPressed)
 					{
-						var vacuumableTransform = vacuumable.transform;
-						var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-						ray.origin = vacuumableTransform.InverseTransformPoint(ray.origin);
-						ray.direction = vacuumableTransform.InverseTransformDirection(ray.direction);
-						if (vacuumable.vacuumBounds.IntersectRay(ray))
+						var realTime = Time.realtimeSinceStartup;
+						if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
 						{
-							hit = true;
 							Coroutine coroutine;
 							if (m_VacuumingCoroutines.TryGetValue(vacuumableTransform, out coroutine))
 								StopCoroutine(coroutine);
 
 							m_VacuumingCoroutines[vacuumableTransform] = StartCoroutine(VacuumToViewer(vacuumable));
+							consumeControl(vacuumInput.vacuum);
+						}
+
+						m_LastClickTime = realTime;
+					}
+
+					if (m_Feedback.Count == 0)
+					{
+						foreach (var kvp in m_Controls)
+						{
+							foreach (var id in kvp.Value)
+							{
+								var request = new ProxyFeedbackRequest
+								{
+									control = id,
+									node = node.Value,
+									tooltipText = "Double-tap to summon workspace"
+								};
+
+								m_Feedback.Add(request);
+								this.AddFeedbackRequest(request);
+							}
 						}
 					}
 
-					if (hit)
-						consumeControl(vacuumInput.vacuum);
+					break;
 				}
+			}
 
-				m_LastClickTime = realTime;
+			if (!hit)
+			{
+				foreach (var request in m_Feedback)
+				{
+					this.RemoveFeedbackRequest(request);
+				}
+				m_Feedback.Clear();
 			}
 		}
 

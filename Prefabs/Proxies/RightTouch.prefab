@@ -332,7 +332,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 141214}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.25, y: -0.775, z: 0}
+  m_LocalPosition: {x: 0, y: -0.775, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 484770}
@@ -1259,7 +1259,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1172441472411894}
   m_LocalRotation: {x: 0.036001876, y: 0.9469688, z: 0.31843576, w: 0.023508724}
-  m_LocalPosition: {x: 0.0432064, y: -0.029995611, z: -0.026119232}
+  m_LocalPosition: {x: 0.0326, y: -0.0291, z: -0.0263}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 449518}
@@ -1488,7 +1488,7 @@ MonoBehaviour:
   m_TooltipText: 
   m_TooltipTarget: {fileID: 4512895743762768}
   m_TooltipSource: {fileID: 431526}
-  m_TooltipAlignment: 1
+  m_TooltipAlignment: 2
 --- !u!114 &114713234785505344
 MonoBehaviour:
   m_ObjectHideFlags: 1

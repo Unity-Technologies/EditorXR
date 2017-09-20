@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -28,6 +29,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
+		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+
 		public Transform rayOrigin { get; set; }
 		public Node? node { get; set; }
 
@@ -46,12 +49,20 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
 			createPrimitiveMenu.close = Close;
 
-			this.AddFeedbackRequest(new ProxyFeedbackRequest
+			InputUtils.GetBindingDictionaryFromActionMap(standardActionMap, m_Controls);
+
+			foreach (var control in m_Controls)
 			{
-				node = node.Value,
-				control = VRInputDevice.VRControl.Trigger1,
-				tooltipText = "Draw"
-			});
+				foreach (var id in control.Value)
+				{
+					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = "Draw"
+					});
+				}
+			}
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -173,6 +184,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
 			this.ClearFeedbackRequests();
 		}
+
+		public ActionMap standardActionMap { private get; set; }
 	}
 }
 #endif

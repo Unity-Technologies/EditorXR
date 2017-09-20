@@ -42,6 +42,31 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				deviceSlots.Add(deviceSlot);
 			}
 		}
+
+		public static void GetBindingDictionaryFromActionMap(ActionMap actionMap, Dictionary<string, List<VRInputDevice.VRControl>> bindingDictionary)
+		{
+			var actions = actionMap.actions;
+			foreach (var scheme in actionMap.controlSchemes)
+			{
+				var bindings = scheme.bindings;
+				for (var i = 0; i < bindings.Count; i++)
+				{
+					var binding = bindings[i];
+					var action = actions[i].name;
+					List<VRInputDevice.VRControl> controls;
+					if (!bindingDictionary.TryGetValue(action, out controls))
+					{
+						controls = new List<VRInputDevice.VRControl>();
+						bindingDictionary[action] = controls;
+					}
+
+					foreach (var source in binding.sources)
+					{
+						bindingDictionary[action].Add((VRInputDevice.VRControl)source.controlIndex);
+					}
+				}
+			}
+		}
 	}
 }
 #endif

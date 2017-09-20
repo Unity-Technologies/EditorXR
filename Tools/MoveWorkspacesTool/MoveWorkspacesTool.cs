@@ -36,6 +36,7 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 	
 	public Transform rayOrigin { private get; set; }
 	public List<IWorkspace> allWorkspaces { private get; set; }
+	public ActionMap standardActionMap { private get; set; }
 
 	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{

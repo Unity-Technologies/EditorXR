@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		GameObject m_ViewerScaleVisualsPrefab;
 
 		[SerializeField]
-		ActionMap m_BlinkActionMap;
+		ActionMap m_ActionMap;
 
 		[SerializeField]
 		GameObject m_SettingsMenuItemPrefab;
@@ -105,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
 
 
-		public ActionMap actionMap { get { return m_BlinkActionMap; } }
+		public ActionMap actionMap { get { return m_ActionMap; } }
 
 		public Transform rayOrigin { get; set; }
 
@@ -190,27 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
 			viewerScaleObject.SetActive(false);
 
-			var actions = m_BlinkActionMap.actions;
-			foreach (var scheme in m_BlinkActionMap.controlSchemes)
-			{
-				var bindings = scheme.bindings;
-				for (var i = 0; i < bindings.Count; i++)
-				{
-					var binding = bindings[i];
-					var action = actions[i].name;
-					List<VRInputDevice.VRControl> controls;
-					if (!m_Controls.TryGetValue(action, out controls))
-					{
-						controls = new List<VRInputDevice.VRControl>();
-						m_Controls[action] = controls;
-					}
-
-					foreach (var source in binding.sources)
-					{
-						m_Controls[action].Add((VRInputDevice.VRControl)source.controlIndex);
-					}
-				}
-			}
+			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
 
 			ShowCrawlFeedback();
 			ShowMainButtonFeedback();

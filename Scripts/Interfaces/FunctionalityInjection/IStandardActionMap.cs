@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿using UnityEngine.InputNew;
+
+#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
@@ -6,6 +8,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// </summary>
 	public interface IStandardActionMap : IProcessInput
 	{
+		ActionMap standardActionMap { set; }
 	}
 }
 #endif
