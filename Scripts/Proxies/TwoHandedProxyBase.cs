@@ -46,6 +46,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>> m_Buttons = new Dictionary<Node, Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>>();
 
+		// Local method use only -- created here to reduce garbage collection
+		readonly List<ProxyFeedbackRequest> m_FeedbackToRemove = new List<ProxyFeedbackRequest>();
+
 		public Transform leftHand { get { return m_LeftHand; } }
 		public Transform rightHand { get { return m_RightHand; } }
 
@@ -60,7 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			add { m_InputToEvents.activeChanged += value; }
 			remove { m_InputToEvents.activeChanged -= value; }
 		}
-
 
 		public virtual bool hidden
 		{
@@ -189,6 +191,24 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var proxyRequest = request as ProxyFeedbackRequest;
 			if (proxyRequest != null)
 			{
+				m_FeedbackToRemove.Clear();
+				foreach (var existingRequest in new List<ProxyFeedbackRequest>(m_FeedbackRequests))
+				{
+					if (existingRequest.node == proxyRequest.node
+						&& existingRequest.control == proxyRequest.control)
+					{
+						if (existingRequest.priority <= proxyRequest.priority)
+							RemoveFeedbackRequest(existingRequest);
+						else
+							return;
+					}
+				}
+
+				foreach (var feedback in m_FeedbackToRemove)
+				{
+					RemoveFeedbackRequest(feedback);
+				}
+
 				Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject> buttons;
 				if (m_Buttons.TryGetValue(proxyRequest.node, out buttons))
 				{

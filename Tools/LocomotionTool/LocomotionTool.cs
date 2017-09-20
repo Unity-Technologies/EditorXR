@@ -1,7 +1,8 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -95,6 +96,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Toggle m_BlinkToggle;
 		bool m_BlockValueChangedListener;
 
+		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+
 		public ActionMap actionMap { get { return m_BlinkActionMap; } }
 
 		public Transform rayOrigin { get; set; }
@@ -180,12 +183,59 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
 			viewerScaleObject.SetActive(false);
 
-			this.AddFeedbackRequest(new ProxyFeedbackRequest
+			var actions = m_BlinkActionMap.actions;
+			foreach (var scheme in m_BlinkActionMap.controlSchemes)
 			{
-				node = node.Value,
-				control = VRInputDevice.VRControl.Trigger2,
-				tooltipText = "Crawl"
-			});
+				var bindings = scheme.bindings;
+				for (var i = 0; i < bindings.Count; i++)
+				{
+					var binding = bindings[i];
+					var action = actions[i].name;
+					List<VRInputDevice.VRControl> controls;
+					if (!m_Controls.TryGetValue(action, out controls))
+					{
+						controls = new List<VRInputDevice.VRControl>();
+						m_Controls[action] = controls;
+					}
+
+					foreach (var source in binding.sources)
+					{
+						m_Controls[action].Add((VRInputDevice.VRControl)source.controlIndex);
+					}
+				}
+			}
+
+			var defaultControls = new [] { "Crawl", "Blink", "Speed" };
+
+			foreach (var control in defaultControls)
+			{
+				List<VRInputDevice.VRControl> ids;
+				if (m_Controls.TryGetValue(control, out ids))
+				{
+					foreach (var id in ids)
+					{
+						this.AddFeedbackRequest(new ProxyFeedbackRequest
+						{
+							node = node.Value,
+							control = id,
+							tooltipText = TooltipForControl(control)
+						});
+					}
+				}
+			}
+		}
+
+		string TooltipForControl(string controlName)
+		{
+			switch (controlName.ToLower())
+			{
+				case "blink":
+					return m_Preferences.blinkMode ? "Blink" : "Fly";
+				case "speed":
+					return m_Preferences.blinkMode ? "Extra distace" : "Extra speed";
+				default:
+					return controlName;
+			}
 		}
 
 		void OnDestroy()
@@ -319,6 +369,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_StartCrawling = true;
 					m_ActualRayOriginStartPosition = m_RayOriginStartPosition;
 					m_CrawlStartTime = Time.time;
+
+					ShowScaleFeedback();
+					ShowRotateFeedback();
 				}
 
 				var localRayPosition = cameraRig.position - rayOrigin.position;
@@ -348,6 +401,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool DoBlink(ConsumeControlDelegate consumeControl)
 		{
+			if (m_LocomotionInput.blink.wasJustPressed)
+				ShowRotateFeedback();
+
 			if (m_LocomotionInput.blink.isHeld)
 			{
 				this.AddRayVisibilitySettings(rayOrigin, this, false, false);
@@ -439,6 +495,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									m_ViewerScaleVisuals.leftHand = rayOrigin;
 									m_ViewerScaleVisuals.rightHand = otherRayOrigin;
 									m_ViewerScaleVisuals.gameObject.SetActive(true);
+
+									ShowResetScaleFeedback();
 								}
 
 								m_Scaling = true;
@@ -580,6 +638,70 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			cameraRig.position = targetPosition;
 			m_BlinkMoving = false;
+		}
+
+		void ShowRotateFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Rotate", out ids))
+			{
+				foreach (var id in ids)
+				{
+					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node.Value,
+						tooltipText = "Rotate"
+					});
+				}
+			}
+		}
+
+		void ShowScaleFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Crawl", out ids))
+			{
+				foreach (var id in ids)
+				{
+					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand,
+						tooltipText = "Scale"
+					});
+				}
+			}
+		}
+
+		void ShowResetScaleFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Scale Reset", out ids))
+			{
+				foreach (var id in ids)
+				{
+					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node.Value,
+						tooltipText = "Reset scale"
+					});
+				}
+			}
+
+			if (m_Controls.TryGetValue("World Reset", out ids))
+			{
+				foreach (var id in ids)
+				{
+					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node.Value,
+						tooltipText = "Reset position rotation and scale"
+					});
+				}
+			}
 		}
 
 		public object OnSerializePreferences()
