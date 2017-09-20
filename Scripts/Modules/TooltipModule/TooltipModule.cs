@@ -233,6 +233,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (m_Tooltips.ContainsKey(tooltip))
 				return;
 
+			Debug.Log(tooltip.tooltipText);
+
 			m_Tooltips[tooltip] = new TooltipData
 			{
 				startTime = Time.time,

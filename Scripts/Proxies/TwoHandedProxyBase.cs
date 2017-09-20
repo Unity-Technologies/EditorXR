@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReciever, ISetTooltipVisibility, ISetHighlight
 	{
 		const int k_RendererQueue = 9000;
-		const float k_FeedbackDuration = 5f;
+		const float k_FeedbackDuration = 50f;
 
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;

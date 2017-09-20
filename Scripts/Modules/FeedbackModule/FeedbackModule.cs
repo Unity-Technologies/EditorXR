@@ -45,6 +45,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		public void RemoveFeedbackRequest(FeedbackRequest request)
 		{
+			//Debug.Log("add");
 			foreach (var receiver in m_FeedbackReceivers)
 			{
 				receiver.RemoveFeedbackRequest(request);

@@ -97,6 +97,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		bool m_BlockValueChangedListener;
 
 		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+		readonly List<ProxyFeedbackRequest> m_MainButtonFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_SpeedFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_CrawlFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_ScaleFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_RotateFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
+
 
 		public ActionMap actionMap { get { return m_BlinkActionMap; } }
 
@@ -205,37 +212,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			var defaultControls = new [] { "Crawl", "Blink", "Speed" };
-
-			foreach (var control in defaultControls)
-			{
-				List<VRInputDevice.VRControl> ids;
-				if (m_Controls.TryGetValue(control, out ids))
-				{
-					foreach (var id in ids)
-					{
-						this.AddFeedbackRequest(new ProxyFeedbackRequest
-						{
-							node = node.Value,
-							control = id,
-							tooltipText = TooltipForControl(control)
-						});
-					}
-				}
-			}
-		}
-
-		string TooltipForControl(string controlName)
-		{
-			switch (controlName.ToLower())
-			{
-				case "blink":
-					return m_Preferences.blinkMode ? "Blink" : "Fly";
-				case "speed":
-					return m_Preferences.blinkMode ? "Extra distace" : "Extra speed";
-				default:
-					return controlName;
-			}
+			ShowCrawlFeedback();
+			ShowMainButtonFeedback();
 		}
 
 		void OnDestroy()
@@ -370,8 +348,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					m_ActualRayOriginStartPosition = m_RayOriginStartPosition;
 					m_CrawlStartTime = Time.time;
 
+					HideCrawlFeedback();
 					ShowScaleFeedback();
-					ShowRotateFeedback();
+					ShowAltRotateFeedback();
 				}
 
 				var localRayPosition = cameraRig.position - rayOrigin.position;
@@ -393,6 +372,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
+
+			if (m_StartCrawling)
+			{
+				ShowCrawlFeedback();
+				HideRotateFeedback();
+			}
 
 			m_StartCrawling = false;
 			m_Crawling = false;
@@ -640,6 +625,48 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_BlinkMoving = false;
 		}
 
+		void ShowCrawlFeedback()
+		{
+			Debug.Log("crawl");
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Crawl", out ids))
+			{
+				foreach (var id in ids)
+				{
+					Debug.Log(id);
+					var request = new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = "Crawl"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_CrawlFeedback.Add(request);
+				}
+			}
+		}
+
+		void ShowMainButtonFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Blink", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = m_Preferences.blinkMode ? "Blink" : "Fly"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_MainButtonFeedback.Add(request);
+				}
+			}
+		}
+
 		void ShowRotateFeedback()
 		{
 			List<VRInputDevice.VRControl> ids;
@@ -647,12 +674,35 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				foreach (var id in ids)
 				{
-					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					var request = new ProxyFeedbackRequest
 					{
 						control = id,
 						node = node.Value,
 						tooltipText = "Rotate"
-					});
+					};
+
+					this.AddFeedbackRequest(request);
+					m_RotateFeedback.Add(request);
+				}
+			}
+		}
+
+		void ShowAltRotateFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Blink", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node.Value,
+						tooltipText = "Rotate"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_RotateFeedback.Add(request);
 				}
 			}
 		}
@@ -664,12 +714,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				foreach (var id in ids)
 				{
-					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					var request = new ProxyFeedbackRequest
 					{
 						control = id,
 						node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand,
 						tooltipText = "Scale"
-					});
+					};
+
+					this.AddFeedbackRequest(request);
+					m_ScaleFeedback.Add(request);
 				}
 			}
 		}
@@ -677,30 +730,88 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void ShowResetScaleFeedback()
 		{
 			List<VRInputDevice.VRControl> ids;
-			if (m_Controls.TryGetValue("Scale Reset", out ids))
+			if (m_Controls.TryGetValue("ScaleReset", out ids))
 			{
 				foreach (var id in ids)
 				{
-					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					var request = new ProxyFeedbackRequest
 					{
 						control = id,
 						node = node.Value,
 						tooltipText = "Reset scale"
-					});
+					};
+
+					this.AddFeedbackRequest(request);
+					m_ResetScaleFeedback.Add(request);
 				}
 			}
 
-			if (m_Controls.TryGetValue("World Reset", out ids))
+			if (m_Controls.TryGetValue("WorldReset", out ids))
 			{
 				foreach (var id in ids)
 				{
-					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					var request = new ProxyFeedbackRequest
 					{
 						control = id,
 						node = node.Value,
 						tooltipText = "Reset position rotation and scale"
-					});
+					};
+
+					this.AddFeedbackRequest(request);
+					m_ResetScaleFeedback.Add(request);
 				}
+			}
+		}
+
+		void ShowSpeedFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Speed", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = m_Preferences.blinkMode ? "Extra distace" : "Extra speed"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_SpeedFeedback.Add(request);
+				}
+			}
+		}
+
+		void HideCrawlFeedback()
+		{
+			foreach (var request in m_CrawlFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+		}
+
+		void HideRotateFeedback()
+		{
+			foreach (var request in m_RotateFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+		}
+
+		void HideScaleFeedback()
+		{
+			foreach (var request in m_ScaleFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+		}
+
+		void HideResetScaleFeedback()
+		{
+			foreach (var request in m_ResetScaleFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
 			}
 		}
 
