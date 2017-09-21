@@ -234,9 +234,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			TooltipData data;
 			if (m_Tooltips.TryGetValue(tooltip, out data))
 			{
-				data.lastModifiedTime = Time.time;
 				data.persistent |= persistent;
-				data.duration = duration;
+				if (duration > 0)
+				{
+					data.duration = duration;
+					data.lastModifiedTime = Time.time;
+				}
+
 				return;
 			}
 

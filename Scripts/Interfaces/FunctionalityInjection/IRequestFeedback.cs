@@ -12,18 +12,32 @@ namespace UnityEditor.Experimental.EditorVR
 		public static Action<FeedbackRequest> removeFeedbackRequest { private get; set; }
 		public static Action<IRequestFeedback> clearFeedbackRequests { private get; set; }
 
-		public static void AddFeedbackRequest<TFeedbackRequest>(this IRequestFeedback obj, TFeedbackRequest request) where TFeedbackRequest : FeedbackRequest
+		/// <summary>
+		/// Add a feedback request to the system
+		/// </summary>
+		/// <param name="obj">The caller object</param>
+		/// <param name="request">The feedback request</param>
+		public static void AddFeedbackRequest(this IRequestFeedback obj, FeedbackRequest request)
 		{
 			request.caller = obj;
 			addFeedbackRequest(request);
 		}
 
-		public static void RemoveFeedbackRequest<TFeedbackRequest>(this IRequestFeedback obj, TFeedbackRequest request) where TFeedbackRequest : FeedbackRequest
+		/// <summary>
+		/// Remove a feedback request from the system
+		/// </summary>
+		/// <param name="obj">The caller object</param>
+		/// <param name="request">The feedback request</param>
+		public static void RemoveFeedbackRequest(this IRequestFeedback obj, FeedbackRequest request)
 		{
 			request.caller = obj;
 			removeFeedbackRequest(request);
 		}
 
+		/// <summary>
+		/// Clear all feedback requests submitted by this caller from the system
+		/// </summary>
+		/// <param name="obj">The caller object</param>
 		public static void ClearFeedbackRequests(this IRequestFeedback obj)
 		{
 			clearFeedbackRequests(obj);

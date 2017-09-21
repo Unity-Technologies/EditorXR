@@ -33,7 +33,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		bool m_MultiSelect;
 
 		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
-		readonly List<ProxyFeedbackRequest> m_SelectFeedback = new List<ProxyFeedbackRequest>();
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -81,6 +80,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					});
 				}
 			}
+		}
+
+		void OnDestroy()
+		{
+			this.ClearFeedbackRequests();
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

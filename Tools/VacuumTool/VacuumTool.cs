@@ -8,7 +8,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale, IRequestFeedback, IUsesNode
+	sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale,
+		IRequestFeedback, IUsesNode
 	{
 		[SerializeField]
 		ActionMap m_ActionMap;
@@ -32,6 +33,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void Start()
 		{
 			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+		}
+
+		void OnDestroy()
+		{
+			this.ClearFeedbackRequests();
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
