@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 	/// Base class for providing draggable handles in 3D (requires PhysicsRaycaster)
 	/// </summary>
 	class BaseHandle : MonoBehaviour, ISelectionFlags, IRayBeginDragHandler, IRayDragHandler, IRayEndDragHandler,
-		IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IGetRayVisibility, IPointerClickHandler, IDropReceiver, IDroppable
+		IRayEnterHandler, IRayExitHandler, IRayHoverHandler, IPointerClickHandler, IDropReceiver, IDroppable
 	{
 		protected const int k_DefaultCapacity = 2; // i.e. 2 controllers
 

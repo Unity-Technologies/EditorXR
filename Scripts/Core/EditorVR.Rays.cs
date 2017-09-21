@@ -7,6 +7,7 @@ using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -27,7 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal Dictionary<Transform, DefaultProxyRay> defaultRays { get { return m_DefaultRays; } }
 			readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
-			static readonly List<Transform> m_BlockedUIRayOrigins = new List<Transform>();
+			readonly Dictionary<Transform, MultipleRayInputModule.RaycastSource> m_RaycastSources = new Dictionary<Transform, MultipleRayInputModule.RaycastSource>();
 			readonly List<IProxy> m_Proxies = new List<IProxy>();
 
 			StandardManipulator m_StandardManipulator;
@@ -204,12 +205,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									deviceData.uiInput = deviceInputModule.CreateActionMapInput(actionMap, device);
 
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOrigin, source =>
+									var raycastSource = new MultipleRayInputModule.RaycastSource(proxy, rayOrigin, node, (UIActions)deviceData.uiInput, source =>
 									{
-										// Proceed only for raycast sources that haven't been blocked via IBlockUIInteraction
-										if (m_BlockedUIRayOrigins.Contains(rayOrigin))
-											return false;
-
 										// Do not invalidate UI raycasts in the middle of a drag operation
 										if (!source.draggedObject)
 										{
@@ -228,8 +225,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 												return false;
 										}
 
-										return Menus.IsValidHover(source);
+										if (!Menus.IsValidHover(source))
+											return false;
+
+										// Proceed only for raycast sources that haven't been blocked via IBlockUIInteraction
+										if (source.blocked)
+											return false;
+
+										return true;
 									});
+
+									m_RaycastSources[rayOrigin] = raycastSource;
+									inputModule.AddRaycastSource(raycastSource);
 								}
 							}
 
@@ -515,13 +522,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return highlightModule.highlightColor;
 			}
 
-			static void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
+			void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
 			{
-				var rayOriginCurrentlyBlocked = m_BlockedUIRayOrigins.Contains(rayOrigin);
-				if (blocked && !rayOriginCurrentlyBlocked)
-					m_BlockedUIRayOrigins.Add(rayOrigin);
-				else if (!blocked && rayOriginCurrentlyBlocked)
-					m_BlockedUIRayOrigins.Remove(rayOrigin);
+				MultipleRayInputModule.RaycastSource source;
+				if (m_RaycastSources.TryGetValue(rayOrigin, out source))
+					source.blocked = blocked;
 			}
 		}
 	}
