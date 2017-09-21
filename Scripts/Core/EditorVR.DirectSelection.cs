@@ -1,6 +1,7 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -16,6 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
 			readonly List<IGrabObjects> m_ObjectGrabbers = new List<IGrabObjects>();
 			readonly List<IUsesDirectSelection> m_DirectSelectionUsers = new List<IUsesDirectSelection>();
+			readonly List<ITwoHandedScaler> m_TwoHandedScalers = new List<ITwoHandedScaler>();
 
 			IntersectionModule m_IntersectionModule;
 
@@ -47,6 +49,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var usesDirectSelection = obj as IUsesDirectSelection;
 				if (usesDirectSelection != null)
 					m_DirectSelectionUsers.Add(usesDirectSelection);
+
+				var twoHandedScaler = obj as ITwoHandedScaler;
+				if (twoHandedScaler != null)
+					m_TwoHandedScalers.Add(twoHandedScaler);
 			}
 
 			public void DisconnectInterface(object obj, Transform rayOrigin = null)
@@ -90,6 +96,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return length;
 			}
 
+			internal bool IsHovering(Transform rayOrigin)
+			{
+				return m_DirectSelections.ContainsKey(rayOrigin);
+			}
+
+			internal bool IsScaling(Transform rayOrigin)
+			{
+				return m_TwoHandedScalers.Any(twoHandedScaler => twoHandedScaler.IsTwoHandedScaling(rayOrigin));
+			}
+
 			internal void UpdateDirectSelection()
 			{
 				m_DirectSelections.Clear();
@@ -97,7 +113,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				Rays.ForEachProxyDevice(deviceData =>
 				{
 					var rayOrigin = deviceData.rayOrigin;
-					var input = deviceData.directSelectInput;
 					Vector3 contactPoint;
 					var obj = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
 					if (obj && !obj.CompareTag(k_VRPlayerTag))
@@ -105,8 +120,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = obj,
-							node = deviceData.node,
-							input = input,
 							contactPoint = contactPoint
 						};
 					}
@@ -115,8 +128,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var ray in evr.GetNestedModule<MiniWorlds>().rays)
 				{
 					var rayOrigin = ray.Key;
-					var miniWorldRay = ray.Value;
-					var input = miniWorldRay.directSelectInput;
 					Vector3 contactPoint;
 					var go = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
 					if (go != null)
@@ -124,8 +135,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						m_DirectSelections[rayOrigin] = new DirectSelectionData
 						{
 							gameObject = go,
-							node = ray.Value.node,
-							input = input,
 							contactPoint = contactPoint
 						};
 					}
@@ -142,6 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester, out contactPoint);
 				if (renderer)
 					return renderer.gameObject;
+
 				return null;
 			}
 

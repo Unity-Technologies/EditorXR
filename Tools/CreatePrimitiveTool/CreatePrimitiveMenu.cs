@@ -1,5 +1,7 @@
 #if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -12,15 +14,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Action<PrimitiveType, bool> selectPrimitive;
 		public Action close;
 
-		public bool visible
+		public Bounds localBounds { get; private set; }
+
+		public MenuHideFlags menuHideFlags
 		{
-			get { return gameObject.activeSelf; }
-			set { gameObject.SetActive(value); }
+			get { return gameObject.activeSelf ? MenuHideFlags.Hidden : 0; }
+			set { gameObject.SetActive(value == 0); }
 		}
 
-		public GameObject menuContent
+		public GameObject menuContent { get { return gameObject; } }
+
+		void Awake()
 		{
-			get { return gameObject; }
+			localBounds = ObjectUtils.GetBounds(transform);
 		}
 
 		public void SelectPrimitive(int type)
@@ -39,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			selectPrimitive(PrimitiveType.Cube, true);
 
-			foreach (GameObject go in m_HighlightObjects)
+			foreach (var go in m_HighlightObjects)
 				go.SetActive(false);
 		}
 

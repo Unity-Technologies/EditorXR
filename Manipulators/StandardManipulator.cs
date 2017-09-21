@@ -36,20 +36,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			}
 		}
 
-		protected override void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData)
+		protected override void ShowHoverState(BaseHandle handle, bool hovering)
 		{
-			base.OnHandleHoverStarted(handle, eventData);
+			base.ShowHoverState(handle, hovering);
 
-			if (!handle.hasDragSource && handle is RadialHandle)
-				handle.GetComponent<MeshFilter>().sharedMesh = m_FatRadialHandleMesh;
-		}
-
-		protected override void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData)
-		{
-			base.OnHandleHoverEnded(handle, eventData);
-
-			if (!handle.hasDragSource && !handle.hasHoverSource && handle is RadialHandle)
-				handle.GetComponent<MeshFilter>().sharedMesh = m_RadialHandleMesh;
+			if (handle is RadialHandle)
+				handle.GetComponent<MeshFilter>().sharedMesh = hovering ? m_FatRadialHandleMesh : m_RadialHandleMesh;
 		}
 
 		protected override void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
@@ -95,9 +87,6 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
 			if (handle is SphereHandle)
 				handle.transform.localScale /= m_SphereHandleHideScale;
-
-			if (handle is RadialHandle && !handle.hasDragSource && !handle.hasHoverSource)
-				handle.GetComponent<MeshFilter>().sharedMesh = m_RadialHandleMesh;
 		}
 	}
 }

@@ -12,7 +12,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 	sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, 
-		IUsesViewerBody, ISetDefaultRayVisibility
+		IUsesViewerBody, IRayVisibilitySettings
 	{
 		const float k_PreviewDuration = 0.1f;
 		const float k_MinPreviewScale = 0.01f;
@@ -66,12 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public GameObject icon
 		{
-			private get
-			{
-				if (m_Icon)
-					return m_Icon;
-				return m_Cube.gameObject;
-			}
+			private get { return m_Icon ? m_Icon : m_Cube.gameObject; }
 			set
 			{
 				m_Cube.gameObject.SetActive(false);
@@ -201,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			transform.localScale = Vector3.one * scale;
 
-			m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
+			m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent);
 
 			if (m_Sphere.gameObject.activeInHierarchy)
 				m_Sphere.transform.Rotate(Vector3.up, k_RotateSpeed * Time.deltaTime, Space.Self);
@@ -298,8 +293,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.OnDragStarted(handle, eventData);
 
 			var rayOrigin = eventData.rayOrigin;
-			this.SetDefaultRayVisibility(rayOrigin, false);
-			this.LockRay(rayOrigin, this);
+			this.AddRayVisibilitySettings(rayOrigin, this, false, true);
 
 			var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
 			var cloneItem = clone.GetComponent<AssetGridItem>();
@@ -349,8 +343,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
 			var rayOrigin = eventData.rayOrigin;
-			this.UnlockRay(rayOrigin, this);
-			this.SetDefaultRayVisibility(rayOrigin, true);
+			this.RemoveRayVisibilitySettings(rayOrigin, this);
 
 			if (!this.IsOverShoulder(eventData.rayOrigin))
 			{

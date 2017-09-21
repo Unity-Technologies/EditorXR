@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,13 +11,15 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, ISetDefaultRayVisibility, ICustomActionMap,
-		ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences
+	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
+		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
+		IUsesProxyType, IGetVRPlayerObjects
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
 		const float k_RotationDamping = 0.2f;
 		const float k_RotationThreshold = 0.75f;
+		const float k_DistanceThreshold = 0.02f;
 
 		//TODO: Fix triangle intersection test at tiny scales, so this can go back to 0.01
 		const float k_MinScale = 0.1f;
@@ -26,13 +28,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		const string k_WorldScaleProperty = "_WorldScale";
 
 		const int k_RotationSegments = 32;
-
-		enum State
-		{
-			Inactive = 0,
-			Aiming = 1,
-			Moving = 3
-		}
 
 		[SerializeField]
 		GameObject m_BlinkVisualsPrefab;
@@ -62,8 +57,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		GameObject m_BlinkVisualsGO;
 		BlinkVisuals m_BlinkVisuals;
 
-		State m_State = State.Inactive;
-
 		bool m_AllowScaling = true;
 		bool m_Scaling;
 		float m_StartScale;
@@ -74,7 +67,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		float m_StartYaw;
 
 		bool m_Rotating;
+		bool m_StartCrawling;
 		bool m_Crawling;
+		bool m_WasRotating;
+		float m_CrawlStartTime;
+		Vector3 m_ActualRayOriginStartPosition;
 		Vector3 m_RayOriginStartPosition;
 		Vector3 m_RayOriginStartForward;
 		Vector3 m_RayOriginStartRight;
@@ -82,6 +79,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Vector3 m_RigStartPosition;
 		Vector3 m_CameraStartPosition;
 		Quaternion m_LastRotationDiff;
+
+		bool m_BlinkMoving;
 
 		// Allow shared updater to check input values and consume controls
 		LocomotionInput m_LocomotionInput;
@@ -144,6 +143,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
+		public Type proxyType { get; set; }
+
 		void Start()
 		{
 			if (this.IsSharedUpdater(this) && m_Preferences == null)
@@ -159,7 +160,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
 			m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
-			m_BlinkVisuals.enabled = false;
+			m_BlinkVisuals.ignoreList = this.GetVRPlayerObjects();
+			m_BlinkVisualsGO.SetActive(false);
 			m_BlinkVisualsGO.transform.parent = rayOrigin;
 			m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
 			m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
@@ -175,14 +177,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			viewerScaleObject.SetActive(false);
 		}
 
-		void OnDisable()
-		{
-			m_State = State.Inactive;
-		}
-
 		void OnDestroy()
 		{
-			this.SetDefaultRayVisibility(rayOrigin, true);
+			this.RemoveRayVisibilitySettings(rayOrigin, this);
 
 			if (m_ViewerScaleVisuals)
 				ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
@@ -192,20 +189,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			m_LocomotionInput = (LocomotionInput)input;
 
-			if (m_State == State.Moving)
+			if (DoTwoHandedScaling(consumeControl))
 				return;
 
-			foreach (var linkedObject in linkedObjects)
-			{
-				var locomotionTool = (LocomotionTool)linkedObject;
-				if (locomotionTool == this)
-					continue;
-
-				if (locomotionTool.m_State != State.Inactive)
-					return;
-			}
-
-			if (DoTwoHandedScaling(consumeControl))
+			if (DoRotating(consumeControl))
 				return;
 
 			if (m_Preferences.blinkMode)
@@ -228,6 +215,35 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var moving = m_LocomotionInput.forward.isHeld || reverse;
 			if (moving)
 			{
+				var speed = k_SlowMoveSpeed;
+				var speedControl = m_LocomotionInput.speed;
+				var speedControlValue = speedControl.value;
+				if (!Mathf.Approximately(speedControlValue, 0)) // Consume control to block selection
+				{
+					speed = k_SlowMoveSpeed + speedControlValue * (k_FastMoveSpeed - k_SlowMoveSpeed);
+					consumeControl(speedControl);
+				}
+
+				speed *= this.GetViewerScale();
+				if (reverse)
+					speed *= -1;
+
+				m_Rotating = false;
+				cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
+
+				consumeControl(m_LocomotionInput.forward);
+				return true;
+			}
+
+			return false;
+		}
+
+		bool DoRotating(ConsumeControlDelegate consumeControl)
+		{
+			var reverse = m_LocomotionInput.reverse.isHeld;
+			var move = m_LocomotionInput.forward.isHeld || reverse;
+			if (move)
+			{
 				if (m_LocomotionInput.rotate.isHeld)
 				{
 					var localRayRotation = Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation;
@@ -240,11 +256,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (!m_Rotating)
 					{
 						m_Rotating = true;
+						m_WasRotating = true;
 						m_RigStartPosition = cameraRig.position;
 						m_RigStartRotation = cameraRig.rotation;
 
 						m_RayOriginStartForward = localRayForward;
-						m_RayOriginStartRight = localRayRotation * (reverse ? Vector3.left : Vector3.right);
+						m_RayOriginStartRight = localRayRotation * (reverse ? Vector3.right : Vector3.left);
 						m_RayOriginStartRight.y = 0;
 						m_RayOriginStartRight.Normalize();
 
@@ -252,7 +269,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_LastRotationDiff = Quaternion.identity;
 					}
 
-					consumeControl(m_LocomotionInput.rotate);
 					var startOffset = m_RigStartPosition - m_CameraStartPosition;
 
 					var angle = Vector3.Angle(m_RayOriginStartForward, localRayForward);
@@ -267,29 +283,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					cameraRig.position = m_CameraStartPosition + segmentedRotation * startOffset;
 
 					m_LastRotationDiff = filteredRotation;
+					m_BlinkVisuals.visible = false;
+
+					m_StartCrawling = false;
+					m_Crawling = false;
+					return true;
 				}
-				else
-				{
-					var speed = k_SlowMoveSpeed;
-					var speedControl = m_LocomotionInput.speed;
-					var speedControlValue = speedControl.value;
-					if (!Mathf.Approximately(speedControlValue, 0)) // Consume control to block selection
-					{
-						speed = k_SlowMoveSpeed + speedControlValue * (k_FastMoveSpeed - k_SlowMoveSpeed);
-						consumeControl(speedControl);
-					}
-
-					speed *= this.GetViewerScale();
-					if (reverse)
-						speed *= -1;
-
-					m_Rotating = false;
-					cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
-				}
-
-				consumeControl(m_LocomotionInput.forward);
-				return true;
 			}
+
+			if (!m_LocomotionInput.rotate.isHeld)
+				m_WasRotating = false;
 
 			m_Rotating = false;
 			return false;
@@ -299,71 +302,69 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			if (!m_LocomotionInput.forward.isHeld && !m_LocomotionInput.blink.isHeld && m_LocomotionInput.crawl.isHeld)
 			{
-				consumeControl(m_LocomotionInput.crawl);
-				// Also consume thumbstick axes to disable radial menu
-				consumeControl(m_LocomotionInput.horizontal);
-				consumeControl(m_LocomotionInput.vertical);
-				if (!m_Crawling)
+				if (!m_StartCrawling && !m_WasRotating)
+				{
+					m_StartCrawling = true;
+					m_ActualRayOriginStartPosition = m_RayOriginStartPosition;
+					m_CrawlStartTime = Time.time;
+				}
+
+				var localRayPosition = cameraRig.position - rayOrigin.position;
+				var distance = Vector3.Distance(m_ActualRayOriginStartPosition, localRayPosition);
+				var distanceThreshold = distance > k_DistanceThreshold * this.GetViewerScale();
+				var timeThreshold = Time.time > m_CrawlStartTime + UIUtils.DoubleClickIntervalMax;
+				if (!m_Crawling && m_StartCrawling && (timeThreshold || distanceThreshold))
 				{
 					m_Crawling = true;
 					m_RigStartPosition = cameraRig.position;
 					m_RayOriginStartPosition = m_RigStartPosition - rayOrigin.position;
-
-					this.SetDefaultRayVisibility(rayOrigin, false);
-					this.LockRay(rayOrigin, this);
+					this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 				}
 
-				var localRayPosition = cameraRig.position - rayOrigin.position;
-				cameraRig.position = m_RigStartPosition + (localRayPosition - m_RayOriginStartPosition);
+				if (m_Crawling)
+					cameraRig.position = m_RigStartPosition + localRayPosition - m_RayOriginStartPosition;
 
 				return true;
 			}
 
-			this.UnlockRay(rayOrigin, this);
-			this.SetDefaultRayVisibility(rayOrigin, true);
+			this.RemoveRayVisibilitySettings(rayOrigin, this);
 
+			m_StartCrawling = false;
 			m_Crawling = false;
 			return false;
 		}
 
 		bool DoBlink(ConsumeControlDelegate consumeControl)
 		{
-			if (m_LocomotionInput.blink.wasJustPressed && !m_BlinkVisuals.outOfMaxRange)
+			if (m_LocomotionInput.blink.isHeld)
 			{
-				m_State = State.Aiming;
-				this.SetDefaultRayVisibility(rayOrigin, false);
-				this.LockRay(rayOrigin, this);
-
-				m_BlinkVisuals.ShowVisuals();
+				this.AddRayVisibilitySettings(rayOrigin, this, false, false);
+				m_BlinkVisuals.extraSpeed = m_LocomotionInput.speed.value;
+				m_BlinkVisuals.visible = true;
 
 				consumeControl(m_LocomotionInput.blink);
 				return true;
 			}
 
-			if (m_State == State.Aiming && m_LocomotionInput.blink.wasJustReleased)
+			if (m_LocomotionInput.blink.wasJustReleased)
 			{
-				this.UnlockRay(rayOrigin, this);
-				this.SetDefaultRayVisibility(rayOrigin, true);
+				this.RemoveRayVisibilitySettings(rayOrigin, this);
 
-				if (!m_BlinkVisuals.outOfMaxRange)
-				{
-					m_BlinkVisuals.HideVisuals();
-					StartCoroutine(MoveTowardTarget(m_BlinkVisuals.locatorPosition));
-				}
-				else
-				{
-					m_BlinkVisuals.enabled = false;
-					m_State = State.Inactive;
-				}
+				m_BlinkVisuals.visible = false;
+
+				if (m_BlinkVisuals.targetPosition.HasValue)
+					StartCoroutine(MoveTowardTarget(m_BlinkVisuals.targetPosition.Value));
+
+				return true;
 			}
 
-			return false;
+			this.RemoveRayVisibilitySettings(rayOrigin, this);
+
+			return m_BlinkMoving;
 		}
 
 		bool DoTwoHandedScaling(ConsumeControlDelegate consumeControl)
 		{
-			var result = false;
-
 			if (this.IsSharedUpdater(this))
 			{
 				var crawl = m_LocomotionInput.crawl;
@@ -379,6 +380,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								continue;
 
 							var otherLocomotionInput = locomotionTool.m_LocomotionInput;
+							if (otherLocomotionInput == null) // This can occur if crawl is pressed when EVR is opened
+								continue;
+
 							var otherCrawl = otherLocomotionInput.crawl;
 							if (otherCrawl.isHeld)
 							{
@@ -397,10 +401,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
 								var distance = Vector3.Distance(thisPosition, otherPosition);
 
-								this.SetDefaultRayVisibility(rayOrigin, false);
-								this.LockRay(rayOrigin, this);
-								this.SetDefaultRayVisibility(otherRayOrigin, false);
-								this.LockRay(otherRayOrigin, this);
+								this.AddRayVisibilitySettings(rayOrigin, this, false, false);
+								this.AddRayVisibilitySettings(otherRayOrigin, this, false, false);
 
 								var rayToRay = otherPosition - thisPosition;
 								var midPoint = thisPosition + rayToRay * 0.5f;
@@ -420,6 +422,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 									locomotionTool.m_Scaling = true;
 									locomotionTool.m_Crawling = false;
+									locomotionTool.m_StartCrawling = false;
 
 									m_ViewerScaleVisuals.leftHand = rayOrigin;
 									m_ViewerScaleVisuals.rightHand = otherRayOrigin;
@@ -427,6 +430,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								}
 
 								m_Scaling = true;
+								m_StartCrawling = false;
 								m_Crawling = false;
 
 								var currentScale = Mathf.Clamp(m_StartScale * (m_StartDistance / distance), k_MinScale, k_MaxScale);
@@ -470,8 +474,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								if (worldResetHeld && otherWorldResetHeld)
 								{
 									m_AllowScaling = false;
-
-									cameraRig.position = Vector3.up * VRView.HeadHeight;
+#if UNITY_EDITORVR
+									cameraRig.position = VRView.headCenteredOrigin;
+#endif
 									cameraRig.rotation = Quaternion.identity;
 
 									ResetViewerScale();
@@ -493,8 +498,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 									Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / currentScale);
 								}
-
-								result = true;
 								break;
 							}
 						}
@@ -509,7 +512,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			return result;
+			return m_Scaling;
 		}
 
 		void ResetViewerScale()
@@ -528,14 +531,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			foreach (var linkedObject in linkedObjects)
 			{
 				var locomotionTool = (LocomotionTool)linkedObject;
-				locomotionTool.m_Scaling = false;
 
-				if (!locomotionTool.m_Crawling)
+				if (!locomotionTool.m_Crawling && !locomotionTool.m_BlinkVisuals.gameObject.activeInHierarchy)
 				{
 					var rayOrigin = locomotionTool.rayOrigin;
-					this.UnlockRay(rayOrigin, this);
-					this.SetDefaultRayVisibility(rayOrigin, true);
+					this.RemoveRayVisibilitySettings(rayOrigin, this);
 				}
+
+				locomotionTool.m_Scaling = false;
 			}
 
 
@@ -544,8 +547,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		IEnumerator MoveTowardTarget(Vector3 targetPosition)
 		{
-			m_State = State.Moving;
-			targetPosition = new Vector3(targetPosition.x + (cameraRig.position.x - CameraUtils.GetMainCamera().transform.position.x), cameraRig.position.y, targetPosition.z + (cameraRig.position.z - CameraUtils.GetMainCamera().transform.position.z));
+			m_BlinkMoving = true;
+
+			var offset = cameraRig.position - CameraUtils.GetMainCamera().transform.position;
+			offset.y = 0;
+#if UNITY_EDITORVR
+			offset += VRView.HeadHeight * Vector3.up * this.GetViewerScale();
+#endif
+			targetPosition += offset;
 			const float kTargetDuration = 0.05f;
 			var currentPosition = cameraRig.position;
 			var currentDuration = 0f;
@@ -558,7 +567,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 
 			cameraRig.position = targetPosition;
-			m_State = State.Inactive;
+			m_BlinkMoving = false;
 		}
 
 		public object OnSerializePreferences()

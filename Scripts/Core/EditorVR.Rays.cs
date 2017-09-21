@@ -36,16 +36,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public Rays()
 			{
-				ISetDefaultRayVisibilityMethods.setDefaultRayVisibility = SetDefaultRayVisibility;
+				ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
+				IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
 
-				IUsesRayLockingMethods.lockRay = LockRay;
-				IUsesRayLockingMethods.unlockRay = UnlockRay;
+				IRayVisibilitySettingsMethods.removeRayVisibilitySettings = RemoveVisibilitySettings;
+				IRayVisibilitySettingsMethods.addRayVisibilitySettings = AddVisibilitySettings;
 
 				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
 				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
 				IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
+				IGetRayVisibilityMethods.isRayVisible = IsRayActive;
+				IGetRayVisibilityMethods.isConeVisible = IsConeActive;
 			}
 
 			internal override void OnDestroy()
@@ -106,15 +109,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var mainMenu = deviceData.mainMenu;
 				var customMenu = deviceData.customMenu;
-				if (mainMenu.visible || (customMenu != null && customMenu.visible))
+				if (mainMenu.menuHideFlags == 0 || (customMenu != null && customMenu.menuHideFlags == 0))
 				{
-					SetDefaultRayVisibility(rayOrigin, false);
-					LockRay(rayOrigin, mainMenu);
+					AddVisibilitySettings(rayOrigin, mainMenu, false, false);
 				}
 				else
 				{
-					UnlockRay(rayOrigin, mainMenu);
-					SetDefaultRayVisibility(rayOrigin, true);
+					RemoveVisibilitySettings(rayOrigin, mainMenu);
 				}
 			}
 
@@ -180,6 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						foreach (var rayOriginPair in proxy.rayOrigins)
 						{
 							var node = rayOriginPair.Key;
+							var rayOrigin = rayOriginPair.Value;
 
 							var systemDevices = deviceInputModule.GetSystemDevices();
 							var actionMap = inputModule.actionMap;
@@ -195,23 +197,42 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									evrDeviceData.Add(deviceData);
 									deviceData.proxy = proxy;
 									deviceData.node = node;
-									deviceData.rayOrigin = rayOriginPair.Value;
+									deviceData.rayOrigin = rayOrigin;
 									deviceData.inputDevice = device;
 									deviceData.uiInput = deviceInputModule.CreateActionMapInput(actionMap, device);
-									deviceData.directSelectInput = deviceInputModule.CreateActionMapInput(deviceInputModule.directSelectActionMap, device);
 
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOriginPair.Value);
+									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOrigin, source =>
+									{
+										// Do not invalidate UI raycasts in the middle of a drag operation
+										if (!source.draggedObject)
+										{
+											var sourceRayOrigin = source.rayOrigin;
+											if (evr.GetNestedModule<DirectSelection>().IsHovering(sourceRayOrigin))
+												return false;
+
+											var hoveredObject = source.hoveredObject;
+											// The manipulator needs rays to go through scene objects in order to work
+											var isManipulator = hoveredObject && hoveredObject.GetComponentInParent<IManipulator>() != null;
+											float sceneObjectDistance;
+											var raycastObject = intersectionModule.GetFirstGameObject(sourceRayOrigin, out sceneObjectDistance);
+											var uiDistance = source.eventData.pointerCurrentRaycast.distance;
+											// If the distance to a scene object is less than the distance to the hovered UI, invalidate the UI raycast
+											if (!isManipulator && raycastObject && sceneObjectDistance < uiDistance)
+												return false;
+										}
+
+										return Menus.IsValidHover(source);
+									});
 								}
 							}
 
-							var rayOrigin = rayOriginPair.Value;
 							rayOrigin.name = string.Format("{0} Ray Origin", node);
 							var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;
 							rayTransform.position = rayOrigin.position;
 							rayTransform.rotation = rayOrigin.rotation;
 							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
-							dpr.SetColor(node == Node.LeftHand ? highlightModule.leftColor : highlightModule.rightColor);
+							dpr.SetColor(highlightModule.highlightColor);
 							m_DefaultRays.Add(rayOrigin, dpr);
 
 							keyboardModule.SpawnKeyboardMallet(rayOrigin);
@@ -385,37 +406,36 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			internal static bool IsRayActive(Transform rayOrigin)
+			static bool IsRayActive(Transform rayOrigin)
 			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 				return dpr == null || dpr.rayVisible;
 			}
 
-			internal static void SetDefaultRayVisibility(Transform rayOrigin, bool visible, bool rayOnly = false)
+			static bool IsConeActive(Transform rayOrigin)
+			{
+				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+				return dpr == null || dpr.coneVisible;
+			}
+
+			internal static void AddVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
 			{
 				if (rayOrigin)
 				{
 					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 					if (dpr)
-					{
-						if (visible)
-							dpr.Show(rayOnly);
-						else
-							dpr.Hide(rayOnly);
-					}
+						dpr.AddVisibilitySettings(caller, rayVisible, coneVisible, priority);
 				}
 			}
 
-			internal static bool LockRay(Transform rayOrigin, object obj)
+			internal static void RemoveVisibilitySettings(Transform rayOrigin, object obj)
 			{
-				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-				return dpr && dpr.LockRay(obj);
-			}
+				if (!rayOrigin) // Prevent MissingReferenceException on closing EVR
+					return;
 
-			internal static bool UnlockRay(Transform rayOrigin, object obj)
-			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-				return dpr && dpr.UnlockRay(obj);
+				if (dpr)
+					dpr.RemoveVisibilitySettings(obj);
 			}
 
 			internal void PreProcessRaycastSource(Transform rayOrigin)
@@ -442,22 +462,52 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			static Node? RequestNodeFromRayOrigin(Transform rayOrigin)
 			{
-				Node? node = null;
-				var evrDeviceData = evr.m_DeviceData;
-				for (var i = 0; i < evrDeviceData.Count; i++)
+				foreach (var deviceData in evr.m_DeviceData)
 				{
-					var deviceData = evrDeviceData[i];
 					if (!deviceData.proxy.active)
 						continue;
 
 					if (deviceData.rayOrigin == rayOrigin)
+						return deviceData.node;
+				}
+
+				foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
+				{
+					if (kvp.Key == rayOrigin)
+						return kvp.Value.node;
+				}
+
+				return null;
+			}
+
+			static void SetDefaultRayColor(Transform rayOrigin, Color color)
+			{
+				if (rayOrigin)
+				{
+					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					if (dpr)
 					{
-						node = deviceData.node;
-						break;
+						dpr.SetColor(color);
 					}
 				}
 
-				return node;
+				var highlightModule = evr.GetModule<HighlightModule>();
+				highlightModule.highlightColor = color;
+			}
+
+			static Color GetDefaultRayColor(Transform rayOrigin)
+			{
+				if (rayOrigin)
+				{
+					var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+					if (dpr)
+					{
+						return dpr.GetColor();
+					}
+				}
+
+				var highlightModule = evr.GetModule<HighlightModule>();
+				return highlightModule.highlightColor;
 			}
 		}
 	}

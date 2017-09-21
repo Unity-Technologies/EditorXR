@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				this.rayOrigin = rayOrigin;
 				this.node = node;
 				this.actionMapInput = actionMapInput;
-				this.isValid = validationCallback ?? delegate { return true; };
+				isValid = validationCallback;
 			}
 		}
 
@@ -50,6 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		private ActionMap m_UIActionMap;
 
 		public event Action<GameObject, RayEventData> rayEntered;
+		public event Action<GameObject, RayEventData> rayHovering;
 		public event Action<GameObject, RayEventData> rayExited;
 		public event Action<GameObject, RayEventData> dragStarted;
 		public event Action<GameObject, RayEventData> dragEnded;
@@ -106,8 +107,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_EventCamera.nearClipPlane = camera.nearClipPlane;
 			m_EventCamera.farClipPlane = camera.farClipPlane;
 
+			// The sources dictionary can change during iteration, so cache it before iterating
 			m_RaycastSourcesCopy.Clear();
-			m_RaycastSourcesCopy.AddRange(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
+			foreach (var kvp in m_RaycastSources)
+			{
+				m_RaycastSourcesCopy.Add(kvp.Value);
+			}
 
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSourcesCopy)
@@ -131,8 +136,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				eventData.rayOrigin = rayOrigin;
 				eventData.pointerLength = this.GetPointerLength(eventData.rayOrigin);
 
-				if (!source.isValid(source))
+				if (source.isValid != null && !source.isValid(source))
+				{
+					var currentRaycast = eventData.pointerCurrentRaycast;
+					currentRaycast.gameObject = null;
+					eventData.pointerCurrentRaycast = currentRaycast;
+					source.hoveredObject = null;
+					HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
 					continue;
+				}
 
 				HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
 
@@ -228,7 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return clone;
 		}
 
-		void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget)
+		void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget, bool exitOnly = false)
 		{
 			// Cache properties before executing base method, so we can complete additional ray events later
 			var cachedEventData = GetTempEventDataClone(eventData);
@@ -236,7 +248,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// This will modify the event data (new target will be set)
 			base.HandlePointerExitAndEnter(eventData, newEnterTarget);
 
-			if (newEnterTarget == null || cachedEventData.pointerEnter == null)
+			var pointerEnter = cachedEventData.pointerEnter;
+			if (newEnterTarget == null || pointerEnter == null)
 			{
 				for (var i = 0; i < cachedEventData.hovered.Count; ++i)
 				{
@@ -251,57 +264,64 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					return;
 			}
 
-			Transform t = null;
-
-			// if we have not changed hover target
-			if (cachedEventData.pointerEnter == newEnterTarget && newEnterTarget)
+			if (!exitOnly)
 			{
-				t = newEnterTarget.transform;
-				while (t != null)
+				// if we have not changed hover target
+				if (newEnterTarget && pointerEnter == newEnterTarget)
 				{
-					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
-					t = t.parent;
+					var transform = newEnterTarget.transform;
+					while (transform != null)
+					{
+						ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
+						if (rayHovering != null)
+							rayHovering(transform.gameObject, cachedEventData);
+
+						transform = transform.parent;
+					}
+					return;
 				}
-				return;
 			}
 
-			GameObject commonRoot = FindCommonRoot(cachedEventData.pointerEnter, newEnterTarget);
+			GameObject commonRoot = FindCommonRoot(pointerEnter, newEnterTarget);
 
 			// and we already an entered object from last time
-			if (cachedEventData.pointerEnter != null)
+			if (pointerEnter != null)
 			{
 				// send exit handler call to all elements in the chain
 				// until we reach the new target, or null!
-				t = cachedEventData.pointerEnter.transform;
+				var transform = pointerEnter.transform;
 
-				while (t != null)
+				while (transform != null)
 				{
 					// if we reach the common root break out!
-					if (commonRoot != null && commonRoot.transform == t)
+					if (commonRoot != null && commonRoot.transform == transform)
 						break;
 
-					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
+					ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
 					if (rayExited != null)
-						rayExited(t.gameObject, cachedEventData);
+						rayExited(transform.gameObject, cachedEventData);
 
-					t = t.parent;
+					transform = transform.parent;
 				}
 			}
 
-			// now issue the enter call up to but not including the common root
-			cachedEventData.pointerEnter = newEnterTarget;
-			t = newEnterTarget.transform;
-			while (t != null && t.gameObject != commonRoot)
+			if (!exitOnly)
 			{
-				ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
-				if (rayEntered != null)
-					rayEntered(t.gameObject, cachedEventData);
+				// now issue the enter call up to but not including the common root
+				cachedEventData.pointerEnter = newEnterTarget;
+				var transform = newEnterTarget.transform;
+				while (transform != null && transform.gameObject != commonRoot)
+				{
+					ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
+					if (rayEntered != null)
+						rayEntered(transform.gameObject, cachedEventData);
 
-				t = t.parent;
+					transform = transform.parent;
+				}
 			}
 		}
 
-		private void OnSelectPressed(RaycastSource source)
+		void OnSelectPressed(RaycastSource source)
 		{
 			Deselect();
 

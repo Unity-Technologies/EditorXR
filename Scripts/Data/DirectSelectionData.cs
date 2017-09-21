@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -10,19 +9,9 @@ namespace UnityEditor.Experimental.EditorVR
 	public sealed class DirectSelectionData
 	{
 		/// <summary>
-		/// The Node used to select the object
-		/// </summary>
-		public Node node { get; set; }
-
-		/// <summary>
 		/// The object which is selected
 		/// </summary>
 		public GameObject gameObject { get; set; }
-
-		/// <summary>
-		/// The input which is associated with the rayOrigin
-		/// </summary>
-		public ActionMapInput input { get; set; }
 
 		/// <summary>
 		/// The point in world space where the tester intersects with the object

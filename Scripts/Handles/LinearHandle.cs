@@ -72,11 +72,10 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		{
 			var linearEventData = (LinearHandleEventData)eventData;
 
+			m_LastPositions[eventData.rayOrigin] = linearEventData.raycastHitWorldPosition;
+
 			if (m_DragSources.Count == 0)
-			{
-				m_LastPositions[eventData.rayOrigin] = linearEventData.raycastHitWorldPosition;
 				UpdateEventData(linearEventData);
-			}
 
 			base.OnHandleHoverStarted(eventData);
 		}
