@@ -880,7 +880,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			});
 
 			var handle = snappingEnabledUI.GetComponent<BaseHandle>();
-			handle.hoverStarted += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Enable Snapping" : "Disable snapping"; };
+			handle.hoverStarted += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Enable snapping" : "Disable snapping"; };
 			handle.hoverEnded += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Snapping disabled" : "Snapping enabled"; };
 
 			var groundSnappingUI = m_SnappingModuleSettingsUI.groundSnappingEnabled;

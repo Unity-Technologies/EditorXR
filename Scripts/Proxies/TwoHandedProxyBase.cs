@@ -267,7 +267,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public void ClearFeedbackRequests(IRequestFeedback caller)
 		{
-			var requests = m_FeedbackRequests.Where(feedbackRequest => feedbackRequest.caller == caller).ToList();
+			var requests = caller == null
+				? new List<ProxyFeedbackRequest>(m_FeedbackRequests)
+				: m_FeedbackRequests.Where(feedbackRequest => feedbackRequest.caller == caller).ToList();
+
 			foreach (var feedbackRequest in requests)
 			{
 				RemoveFeedbackRequest(feedbackRequest);
