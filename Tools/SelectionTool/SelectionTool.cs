@@ -33,6 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		bool m_MultiSelect;
 
 		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+		readonly List<ProxyFeedbackRequest> m_SelectFeedback = new List<ProxyFeedbackRequest>();
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -65,21 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
 
-			foreach (var control in m_Controls)
-			{
-				if (control.Key != "Select")
-					continue;
-
-				foreach (var id in control.Value)
-				{
-					this.AddFeedbackRequest(new ProxyFeedbackRequest
-					{
-						node = node.Value,
-						control = id,
-						tooltipText = "Select"
-					});
-				}
-			}
+			ShowSelectFeedback();
 		}
 
 		void OnDestroy()
@@ -216,6 +203,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
+			if (!this.IsRayVisible(rayOrigin))
+				HideSelectFeedback();
+			else if (m_SelectFeedback.Count == 0)
+				ShowSelectFeedback();
+
 			if (!IsRayActive())
 				return;
 
@@ -312,6 +304,37 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 
 		public void OnResetDirectSelectionState() { }
+
+		void ShowSelectFeedback()
+		{
+			foreach (var control in m_Controls)
+			{
+				if (control.Key != "Select")
+					continue;
+
+				foreach (var id in control.Value)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = "Select"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_SelectFeedback.Add(request);
+				}
+			}
+		}
+
+		void HideSelectFeedback()
+		{
+			foreach (var request in m_SelectFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+			m_SelectFeedback.Clear();
+		}
 	}
 }
 #endif

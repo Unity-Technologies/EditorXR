@@ -191,9 +191,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			viewerScaleObject.SetActive(false);
 
 			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
-
-			ShowCrawlFeedback();
-			ShowMainButtonFeedback();
 		}
 
 		void OnDestroy()
@@ -330,10 +327,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					foreach (var linkedObject in linkedObjects)
 					{
 						var locomotionTool = (LocomotionTool)linkedObject;
-						locomotionTool.HideMainButtonFeedback();
 						locomotionTool.HideRotateFeedback();
+						locomotionTool.HideCrawlFeedback();
 						locomotionTool.HideScaleFeedback();
 						locomotionTool.HideSpeedFeedback();
+						if (!m_Preferences.blinkMode)
+							locomotionTool.HideMainButtonFeedback();
 					}
 
 					var localRayRotation = Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation;
@@ -413,6 +412,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool DoCrawl(ConsumeControlDelegate consumeControl)
 		{
+			foreach (var linkedObject in linkedObjects)
+			{
+				if (((LocomotionTool)linkedObject).m_Rotating)
+					return false;
+			}
+
 			var crawl = m_LocomotionInput.crawl;
 			var blink = m_LocomotionInput.blink;
 			if (!m_LocomotionInput.forward.isHeld && !blink.isHeld && crawl.isHeld)
@@ -495,22 +500,38 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool DoBlink(ConsumeControlDelegate consumeControl)
 		{
-			if (m_LocomotionInput.blink.wasJustPressed)
+			var blink = m_LocomotionInput.blink;
+			if (blink.wasJustPressed)
+			{
+				HideMainButtonFeedback();
+				HideCrawlFeedback();
 				ShowRotateFeedback();
+			}
 
-			if (m_LocomotionInput.blink.isHeld)
+			if (blink.isHeld)
 			{
 				this.AddRayVisibilitySettings(rayOrigin, this, false, false);
-				m_BlinkVisuals.extraSpeed = m_LocomotionInput.speed.value;
+				var speed = m_LocomotionInput.speed.value;
+				m_BlinkVisuals.extraSpeed = speed;
+
+				if (speed < 0)
+					HideSpeedFeedback();
+				else if (m_SpeedFeedback.Count == 0)
+					ShowSpeedFeedback();
+
 				m_BlinkVisuals.visible = true;
 
-				consumeControl(m_LocomotionInput.blink);
+				consumeControl(blink);
 				return true;
 			}
 
-			if (m_LocomotionInput.blink.wasJustReleased)
+			if (blink.wasJustReleased)
 			{
 				this.RemoveRayVisibilitySettings(rayOrigin, this);
+				HideRotateFeedback();
+				HideSpeedFeedback();
+				ShowMainButtonFeedback();
+				ShowCrawlFeedback();
 
 				m_BlinkVisuals.visible = false;
 
@@ -984,9 +1005,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				// Share one preferences object across all instances
 				foreach (var linkedObject in linkedObjects)
 				{
-					((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
+					var locomotionTool = (LocomotionTool)linkedObject;
+					locomotionTool.m_Preferences = m_Preferences;
 					m_BlinkToggle.isOn = m_Preferences.blinkMode;
 					m_FlyToggle.isOn = !m_Preferences.blinkMode;
+
+					locomotionTool.ShowCrawlFeedback();
+					locomotionTool.ShowMainButtonFeedback();
 				}
 			}
 		}
