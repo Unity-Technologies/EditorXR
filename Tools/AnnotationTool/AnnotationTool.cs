@@ -194,6 +194,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void Start()
 	{
+		// Clear selection so we can't manipulate things
+		Selection.activeGameObject = null;
+
 		SetupPreferences();
 
 		this.AddRayVisibilitySettings(rayOrigin, this, false, false);

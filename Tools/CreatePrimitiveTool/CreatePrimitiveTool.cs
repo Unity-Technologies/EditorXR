@@ -43,6 +43,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Start()
 		{
+			// Clear selection so we can't manipulate things
+			Selection.activeGameObject = null;
+
 			m_ToolMenu = this.InstantiateMenuUI(rayOrigin, m_MenuPrefab);
 			var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
 			this.ConnectInterfaces(createPrimitiveMenu, rayOrigin);
