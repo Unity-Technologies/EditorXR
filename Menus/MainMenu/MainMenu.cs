@@ -54,9 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
 		public Node? node { get; set; }
-
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
-
 		public Transform rayOrigin { private get; set; }
 
 		public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
@@ -115,8 +113,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
-			m_MainMenuUI.buttonHovered += OnButtonHovered;
-			m_MainMenuUI.buttonClicked += OnButtonClicked;
 
 			CreateFaceButtons();
 			UpdateToolButtons();
@@ -186,7 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (buttonData == null)
 						buttonData = new MainMenuUI.ButtonData(type.Name);
 
-					var toolButton = CreateFaceButton(buttonData, tooltip, () =>
+					var mainMenuButton = CreateFaceButton(buttonData, tooltip, () =>
 					{
 						if (targetRayOrigin)
 						{
@@ -195,8 +191,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						}
 					});
 
-					if (toolButton)
-						m_ToolButtons[type] = toolButton;
+					// Assign Tools Menu button preview properties
+					if (mainMenuButton != null)
+						mainMenuButton.toolType = selectedType;
 				}
 
 				if (isWorkspace)
@@ -239,14 +236,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (mainMenuButton == null)
 				return null;
 
-			mainMenuButton.button.onClick.RemoveAllListeners();
-			mainMenuButton.button.onClick.AddListener(() =>
+			var button = mainMenuButton.button;
+			button.onClick.RemoveAllListeners();
+			button.onClick.AddListener(() =>
 			{
 				if (m_MenuHideFlags == 0)
 					buttonClickCallback();
 			});
 
+			mainMenuButton.hovered += OnButtonHovered;
+			mainMenuButton.clicked += OnButtonClicked;
 			mainMenuButton.tooltip = tooltip;
+
 			return mainMenuButton;
 		}
 
@@ -263,9 +264,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 		}
 
-		void OnButtonHovered(Transform rayOrigin)
+		void OnButtonHovered(Transform rayOrigin, Type buttonType, string buttonDescription)
 		{
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+
+			// Pass the pointer which is over us, so this information can supply context (e.g. selecting a tool for a different hand)
+			// Enable preview-mode on a Tools Menu button; Display on the opposite proxy device by evaluating the entering RayOrigin
+			// Disable any existing previews being displayed in ToolsMenus
+			this.ClearToolMenuButtonPreview();
+
+			if (buttonType != null && rayOrigin != null)
+				this.PreviewInToolMenuButton(rayOrigin, buttonType, buttonDescription);
 		}
 
 		void SendVisibilityPulse()

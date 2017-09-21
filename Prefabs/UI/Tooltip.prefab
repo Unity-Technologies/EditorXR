@@ -168,11 +168,11 @@ MeshRenderer:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011696208486}
   m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
   m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
   m_Materials:
   - {fileID: 2100000, guid: fd8559955928a5b45bf39973c09cc269, type: 2}
   m_StaticBatchInfo:
@@ -200,11 +200,11 @@ MeshRenderer:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011269692594}
   m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
   m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
+  m_LightProbeUsage: 0
+  m_ReflectionProbeUsage: 0
   m_Materials:
   - {fileID: 2100000, guid: fd8559955928a5b45bf39973c09cc269, type: 2}
   m_StaticBatchInfo:
@@ -407,6 +407,7 @@ MonoBehaviour:
   - {fileID: 4000010243013896}
   - {fileID: 4000013086257722}
   m_Highlight: {fileID: 114000011868131886}
+  m_Background: {fileID: 114000012161072266}
 --- !u!114 &114000013855091962
 MonoBehaviour:
   m_ObjectHideFlags: 1

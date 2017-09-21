@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
 
-		static readonly Vector3 k_LocatePlayerOffset = new Vector3(0.075f, 0.035f, -0.05f);
+		static readonly Vector3 k_LocatePlayerOffset = new Vector3(0.1385f, 0.035f, -0.05f);
 		static readonly float k_LocatePlayerArrowOffset = 0.05f;
 
 		const float k_InitReferenceScale = 15f; // We want to see a big region by default

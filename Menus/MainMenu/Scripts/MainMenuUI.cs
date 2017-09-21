@@ -164,8 +164,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Bounds localBounds { get; private set; }
 		public bool hovering { get; private set; }
 
-		public event Action<Transform> buttonHovered;
-		public event Action<Transform> buttonClicked;
 
 		void Awake()
 		{
@@ -178,6 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			transform.localScale = Vector3.zero;
 			m_AlternateMenu.localScale = Vector3.zero;
+			gameObject.SetActive(false);
 		}
 
 		void Update()
@@ -211,8 +210,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var button = ObjectUtils.Instantiate(m_ButtonTemplatePrefab.gameObject);
 			button.name = buttonData.name;
 			var mainMenuButton = button.GetComponent<MainMenuButton>();
-			mainMenuButton.clicked += OnButtonClick;
-			mainMenuButton.hovered += OnButtonHover;
 
 			if (string.IsNullOrEmpty(buttonData.sectionName))
 				buttonData.sectionName = k_UncategorizedFaceName;
@@ -457,18 +454,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			if (m_VisibilityState == VisibilityState.Hidden)
 				m_MenuFrameRenderer.SetBlendShapeWeight(0, 0);
-		}
-
-		void OnButtonHover(Transform rayOrigin)
-		{
-			if (buttonHovered != null)
-				buttonHovered(rayOrigin);
-		}
-
-		void OnButtonClick(Transform rayOrigin)
-		{
-			if (buttonClicked != null)
-				buttonClicked(rayOrigin);
 		}
 
 		public void OnRayEnter(RayEventData eventData)

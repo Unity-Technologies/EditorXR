@@ -52,7 +52,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// </summary>
 		/// <param name="node">Node on which to perform the pulse.</param>
 		/// <param name="hapticPulse">Haptic pulse</param>
-		public void Pulse(Node? node, HapticPulse hapticPulse)
+		/// <param name="durationMultiplier">(Optional) Multiplier value applied to the hapticPulse duration</param>
+		/// <param name="intensityMultiplier">(Optional) Multiplier value applied to the hapticPulse intensity</param>
+		public void Pulse(Node? node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f)
 		{
 			// Clip buffer can hold up to 800 milliseconds of samples
 			// At 320Hz, each sample is 3.125f milliseconds
@@ -62,13 +64,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #if ENABLE_OVR_INPUT
 			m_GeneratedHapticClip.Reset();
 
-			var duration = hapticPulse.duration;
-			var intensity = hapticPulse.intensity;
+			var duration = hapticPulse.duration * durationMultiplier;
+			var intensity = hapticPulse.intensity * intensityMultiplier;
 			var fadeIn = hapticPulse.fadeIn;
 			var fadeOut = hapticPulse.fadeOut;
 			if (duration > MaxDuration)
 			{
-				duration = Mathf.Clamp(duration, 0f, MaxDuration); // Clamp at maxiumum 800ms for sample buffer
+				duration = Mathf.Clamp(duration, 0f, MaxDuration); // Clamp at maximum 800ms for sample buffer
 
 				if (!m_SampleLengthWarningShown)
 					Debug.LogWarning("Pulse durations greater than 0.8f are not currently supported");
