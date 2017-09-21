@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IInstantiateUIMethods
 	{
-		internal delegate GameObject InstantiateUIDelegate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform connectInterfacesOverride = null);
+		internal delegate GameObject InstantiateUIDelegate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null);
 
 		internal static InstantiateUIDelegate instantiateUI { get; set; }
 

@@ -257,6 +257,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			get
 			{
+				if (!interactable && toolType == typeof(IMainMenu))
+					return "Main Menu hidden";
+
 				return tooltip != null ? tooltip.tooltipText : (previewToolType == null ? m_TooltipText : previewToolDescription);
 			}
 
@@ -303,6 +306,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 						this.RestartCoroutine(ref m_SecondaryButtonVisibilityCoroutine, HideSecondaryButton());
 				}
 			}
+		}
+
+		public bool interactable
+		{
+			get { return m_GradientButton.interactable; }
+			set { m_GradientButton.interactable = value; }
 		}
 
 		public bool secondaryButtonHighlighted { get { return m_CloseButton.highlighted; } }
@@ -497,6 +506,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnBackgroundButtonClick()
 		{
+			if (!interactable)
+				return;
+
 			selectTool(toolType);
 
 			if (!isMainMenu)

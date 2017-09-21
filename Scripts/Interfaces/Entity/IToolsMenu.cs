@@ -36,6 +36,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Then, select the tool button with corresponds to the type of the second parameter.
 		/// </summary>
 		Action<Type, Type> deleteToolsMenuButton { get; }
+
+		/// <summary>
+		/// Set the interactable state on the main menu activator button
+		/// </summary>
+		bool mainMenuActivatorInteractable { set; }
 	}
 
 	public static class IToolsMenuMethods

@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using UnityEngine;
-using UnityEditor.Experimental.EditorVR.Menus;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -55,23 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			static void OnMainMenuActivatorSelected(Transform rayOrigin)
 			{
 				var targetToolRayOrigin = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin != rayOrigin).rayOrigin;
-				var deviceData = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin == rayOrigin);
-
-				if (deviceData != null)
-				{
-					var mainMenu = deviceData.mainMenu;
-					if (mainMenu != null)
-					{
-						var menuHideFlags = deviceData.menuHideData;
-						menuHideFlags[mainMenu].hideFlags ^= MenuHideFlags.Hidden;
-
-						var customMenu = deviceData.customMenu;
-						if (customMenu != null)
-							menuHideFlags[customMenu].hideFlags &= ~MenuHideFlags.Hidden;
-
-						mainMenu.targetRayOrigin = targetToolRayOrigin;
-					}
-				}
+				Menus.OnMainMenuActivatorSelected(rayOrigin, targetToolRayOrigin);
 			}
 		}
 	}

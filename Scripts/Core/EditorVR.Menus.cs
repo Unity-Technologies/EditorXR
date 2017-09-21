@@ -191,9 +191,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (permanentlyHidden || wasPermanentlyHidden || !mainMenu.focus && (temporarilyHidden || wasTemporarilyHidden))
 						mainMenu.menuHideFlags = mainMenuHideFlags;
 
-					//TODO: Disable activator
 					// Disable the main menu activator if any temporary states are set
-					//deviceData.mainMenuActivator.interactable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0;
+					deviceData.ToolsMenu.mainMenuActivatorInteractable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0;
 
 					// Show/hide custom menu, if it exists
 					var customMenu = deviceData.customMenu;
@@ -352,6 +351,52 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							alternateMenuData.hideFlags |= MenuHideFlags.Hidden;
 					}
 				});
+			}
+
+			internal static void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
+			{
+				foreach (var deviceData in evr.m_DeviceData)
+				{
+					var mainMenu = deviceData.mainMenu;
+					if (mainMenu != null)
+					{
+						var customMenu = deviceData.customMenu;
+						var alternateMenu = deviceData.alternateMenu;
+						var menuHideData = deviceData.menuHideData;
+						var mainMenuHideData = menuHideData[mainMenu];
+						var alternateMenuVisible = alternateMenu != null
+							&& (menuHideData[alternateMenu].hideFlags & MenuHideFlags.Hidden) == 0;
+
+						// Do not delay when showing via activator
+						mainMenuHideData.autoShowTime = 0;
+
+						if (deviceData.rayOrigin == rayOrigin)
+						{
+							// Toggle main menu hidden flag
+							mainMenuHideData.hideFlags ^= MenuHideFlags.Hidden;
+							mainMenu.targetRayOrigin = targetRayOrigin;
+						}
+						else
+						{
+							mainMenuHideData.hideFlags |= MenuHideFlags.Hidden;
+
+							var customMenuOverridden = customMenu != null &&
+								(menuHideData[customMenu].hideFlags & MenuHideFlags.OtherMenu) != 0;
+							// Move alternate menu if overriding custom menu
+							if (customMenuOverridden && alternateMenuVisible)
+							{
+								foreach (var otherDeviceData in evr.m_DeviceData)
+								{
+									if (deviceData == otherDeviceData)
+										continue;
+
+									if (otherDeviceData.alternateMenu != null)
+										SetAlternateMenuVisibility(rayOrigin, true);
+								}
+							}
+						}
+					}
+				}
 			}
 
 			static GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)

@@ -123,6 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		GradientPair m_NormalGradientPair;
 
 		public GradientPair highlightGradientPair { get { return m_HighlightGradientPair; } set { m_HighlightGradientPair = value; } }
+
 		[SerializeField]
 		GradientPair m_HighlightGradientPair;
 
@@ -155,6 +156,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		[SerializeField]
 		Color m_NormalContentColor;
 
+		[SerializeField]
+		Color m_DisabledColor = Color.gray;
+
 		// The color that elements in the HighlightItems collection should inherit during the highlighted state
 		[SerializeField]
 		Color m_HighlightItemColor = UnityBrandColorScheme.light;
@@ -162,6 +166,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		// Collection of items that will change appearance during the highlighted state (color/position/etc)
 		[SerializeField]
 		Graphic[] m_HighlightItems;
+
+		[SerializeField]
+		bool m_Interactable;
 
 		[SerializeField]
 		float m_IconHighlightedLocalZOffset = -0.0015f;
@@ -202,6 +209,19 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		// The visibility & highlight coroutines
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
+
+		public bool interactable
+		{
+			get { return m_Interactable; }
+			set
+			{
+				if (m_Interactable == value)
+					return;
+
+				m_Interactable = value;
+				m_Icon.color = m_Interactable ? m_NormalContentColor : m_DisabledColor;
+			}
+		}
 
 		void Awake()
 		{
@@ -419,7 +439,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 				foreach (var graphic in m_HighlightItems)
 				{
-					if (graphic)
+					if (graphic && m_Interactable)
 						graphic.color = Color.Lerp(m_NormalContentColor, m_HighlightItemColor, transitionAmount);
 				}
 
@@ -429,7 +449,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 			foreach (var graphic in m_HighlightItems)
 			{
-				if (graphic)
+				if (graphic && m_Interactable)
 					graphic.color = m_HighlightItemColor;
 			}
 
@@ -451,7 +471,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 				foreach (var graphic in m_HighlightItems)
 				{
-					if (graphic != null)
+					if (graphic && m_Interactable)
 						graphic.color = Color.Lerp(m_NormalContentColor, m_HighlightItemColor, transitionAmount);
 				}
 
@@ -461,7 +481,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
 			foreach (var graphic in m_HighlightItems)
 			{
-				if (graphic != null)
+				if (graphic && m_Interactable)
 					graphic.color = m_NormalContentColor;
 			}
 

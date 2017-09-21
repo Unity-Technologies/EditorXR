@@ -56,6 +56,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public ActionMap actionMap { get { return m_MainMenuActionMap; } }
 		public Transform rayOrigin { get; set; }
 
+		public bool mainMenuActivatorInteractable
+		{
+			set { PreviewToolsMenuButton.interactable = value; }
+		}
+
 		void Awake()
 		{
 			setButtonForType = CreateToolsMenuButton;

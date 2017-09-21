@@ -37,7 +37,7 @@ GameObject:
   - component: {fileID: 4000011260103804}
   - component: {fileID: 114000010527895234}
   m_Layer: 0
-  m_Name: PinnedToolsMenu
+  m_Name: ToolsMenu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

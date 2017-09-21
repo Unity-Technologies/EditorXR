@@ -41,6 +41,11 @@ namespace UnityEditor.Experimental.EditorVR
 		bool highlighted { get; set; }
 
 		/// <summary>
+		/// Bool denoting button interactable state
+		/// </summary>
+		bool interactable { get; set; }
+
+		/// <summary>
 		/// Bool denoting the secondary button highlight state
 		/// </summary>
 		bool secondaryButtonHighlighted { get; }
