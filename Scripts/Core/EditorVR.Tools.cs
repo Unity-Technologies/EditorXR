@@ -303,7 +303,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						{
 							if (otherDeviceData != deviceData)
 							{
-								// Pop this tool of any other stack that references it (for single instance, multi-device tools)
+								// Pop this tool off any other stack that references it (for single instance, multi-device tools)
 								var otherTool = otherDeviceData.currentTool;
 								if (otherTool == tool)
 								{

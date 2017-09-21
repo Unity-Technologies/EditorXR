@@ -53,13 +53,13 @@ namespace UnityEditor.Experimental.EditorVR
 		void RemoveSettingsMenu(ISettingsMenuProvider provider);
 
 		/// <summary>
-		/// Add a settings menu to this menu item
+		/// Add a settings menu item to this menu
 		/// </summary>
 		/// <param name="provider">The object providing the settings menu item</param>
 		void AddSettingsMenuItem(ISettingsMenuItemProvider provider);
 
 		/// <summary>
-		/// Remove a settings menu from this menu item
+		/// Remove a settings menu item from this menu
 		/// </summary>
 		/// <param name="provider">The object which provided the settings menu item</param>
 		void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider);

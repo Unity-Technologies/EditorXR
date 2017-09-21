@@ -126,7 +126,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 						if (m_BlockValueChangedListener)
 							return;
 
-						// m_Preferences on all instances refer
+						// m_Preferences on all instances refer to a single preferences object
 						m_Preferences.meshGroupingMode = !isOn;
 						foreach (var linkedObject in linkedObjects)
 						{

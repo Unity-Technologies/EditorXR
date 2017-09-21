@@ -288,7 +288,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var submenuFace = submenu.GetComponent<SubmenuFace>();
 			if (submenuFace)
 			{
-				submenuFace.SetupBackButton(() => { face.RemoveSubmenu(); });
+				submenuFace.SetupBackButton(face.RemoveSubmenu);
 				submenuFace.gradientPair = face.gradientPair;
 			}
 
