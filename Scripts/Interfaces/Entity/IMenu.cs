@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
-using System;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
+using UnityEditor.Experimental.EditorVR.Menus;
 
 namespace UnityEditor.Experimental.EditorVR
 {

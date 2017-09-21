@@ -153,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		}
 		Vector2 m_ButtonInputDirection;
 
-		private bool semiTransparent
+		bool semiTransparent
 		{
 			set
 			{
@@ -165,11 +165,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
 					// Only set the semiTransparent value on menu slots representing actions
-					m_RadialMenuSlots[i].semiTransparent = m_Actions.Count > i ? m_SemiTransparent : false;
+					m_RadialMenuSlots[i].semiTransparent = m_Actions.Count > i && m_SemiTransparent;
 				}
 			}
 		}
-		private bool m_SemiTransparent;
+		bool m_SemiTransparent;
 
 		public event Action buttonHovered;
 		public event Action buttonClicked; 
@@ -234,7 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void UpdateRadialSlots()
 		{
-			var gradientPair = UnityBrandColorScheme.sessionGradient;
+			var gradientPair = UnityBrandColorScheme.saturatedSessionGradient;
 
 			for (int i = 0; i < m_Actions.Count; ++i)
 			{
@@ -282,17 +282,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			semiTransparent = false;
 			semiTransparent = true;
 
+			const float kSpeedScalar = 8f;
 			var revealAmount = 0f;
 			var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
 			while (revealAmount < 1)
 			{
-				revealAmount += Time.deltaTime * 8;
+				revealAmount += Time.unscaledDeltaTime * kSpeedScalar;
+				var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(revealAmount);
 
 				for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
 				{
 					if (i < m_Actions.Count)
 					{
-						m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount * revealAmount);
+						m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, shapedAmount);
 						m_RadialMenuSlots[i].CorrectIconRotation();
 					}
 				}

@@ -15,13 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		const float k_MainMenuAutoHideDelay = 0.125f;
 		const float k_MainMenuAutoShowDelay = 0.25f;
-
-		[SerializeField]
-		MainMenuActivator m_MainMenuActivatorPrefab;
-
-		[SerializeField]
-		PinnedToolButton m_PinnedToolButtonPrefab;
-
 		class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>
 		{
 			internal class MenuHideData
@@ -92,10 +85,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var alternateMenu = deviceData.alternateMenu;
 				alternateMenu.menuHideFlags = deviceData.currentTool is IExclusiveMode ? 0 : deviceData.menuHideData[alternateMenu].hideFlags;
 
-				// Move the activator button to an alternate position if the alternate menu will be shown
-				var mainMenuActivator = deviceData.mainMenuActivator;
-				if (mainMenuActivator != null)
-					mainMenuActivator.activatorButtonMoveAway = alternateMenu.menuHideFlags == 0;
+				// Move the Tools Menu buttons to an alternate position if the alternate menu will be shown
+				var toolsMenu = deviceData.ToolsMenu;
+				toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
 			}
 
 			internal void UpdateMenuVisibilities()
@@ -200,7 +192,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						mainMenu.menuHideFlags = mainMenuHideFlags;
 
 					// Disable the main menu activator if any temporary states are set
-					deviceData.mainMenuActivator.interactable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0;
+					deviceData.ToolsMenu.mainMenuActivatorInteractable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0;
 
 					// Show/hide custom menu, if it exists
 					var customMenu = deviceData.customMenu;
@@ -363,10 +355,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal static void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
 			{
-				if (evr.m_DeviceData.Any(deviceData => deviceData.rayOrigin == rayOrigin
-					&& !deviceData.mainMenuActivator.interactable))
-					return;
-
 				foreach (var deviceData in evr.m_DeviceData)
 				{
 					var mainMenu = deviceData.mainMenu;
@@ -468,20 +456,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return alternateMenu;
 			}
 
-			internal static MainMenuActivator SpawnMainMenuActivator(InputDevice device)
+			internal static IToolsMenu SpawnToolsMenu(Type type, InputDevice device, out ActionMapInput input)
 			{
-				var mainMenuActivator = ObjectUtils.Instantiate(evr.m_MainMenuActivatorPrefab.gameObject).GetComponent<MainMenuActivator>();
-				evr.m_Interfaces.ConnectInterfaces(mainMenuActivator, device);
+				input = null;
 
-				return mainMenuActivator;
-			}
+				if (!typeof(IToolsMenu).IsAssignableFrom(type))
+					return null;
 
-			public static PinnedToolButton SpawnPinnedToolButton(InputDevice device)
-			{
-				var button = ObjectUtils.Instantiate(evr.m_PinnedToolButtonPrefab.gameObject).GetComponent<PinnedToolButton>();
-				evr.m_Interfaces.ConnectInterfaces(button, device);
+				var menu = (IToolsMenu)ObjectUtils.AddComponent(type, evr.gameObject);
+				input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(menu, device);
+				evr.m_Interfaces.ConnectInterfaces(menu, device);
 
-				return button;
+				return menu;
 			}
 
 			internal static void UpdateAlternateMenuActions()

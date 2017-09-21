@@ -49,6 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
 				IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
+				INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
 				IGetRayVisibilityMethods.isRayVisible = IsRayActive;
 				IGetRayVisibilityMethods.isConeVisible = IsConeActive;
 				IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
@@ -112,6 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var mainMenu = deviceData.mainMenu;
 				var customMenu = deviceData.customMenu;
+
 				if (mainMenu.menuHideFlags == 0 || (customMenu != null && customMenu.menuHideFlags == 0))
 				{
 					AddVisibilitySettings(rayOrigin, mainMenu, false, false);
@@ -490,6 +492,39 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				return null;
+			}
+
+			static Transform RequestRayOriginFromNode(Node? node)
+			{
+				Transform rayOrigin = null;
+				if (node == null)
+					return rayOrigin;
+
+				foreach (var deviceData in evr.m_DeviceData)
+				{
+					if (!deviceData.proxy.active)
+						continue;
+
+					if (deviceData.node == node)
+					{
+						rayOrigin = deviceData.rayOrigin;
+						break;
+					}
+				}
+
+				if (!rayOrigin)
+				{
+					foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
+					{
+						if (kvp.Value.node == node)
+						{
+							rayOrigin = kvp.Value.originalRayOrigin;
+							break;
+						}
+					}
+				}
+
+				return rayOrigin;
 			}
 
 			static void SetDefaultRayColor(Transform rayOrigin, Color color)

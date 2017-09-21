@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IControlHapticsMethods
 	{
-		internal delegate void PulseDelegate(Node? node, HapticPulse hapticPulse);
+		internal delegate void PulseDelegate(Node? node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f);
 
 		internal static PulseDelegate pulse { get; set; }
 
@@ -21,9 +21,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		/// <param name="node">Node on which to control the pulse</param>
 		/// <param name="hapticPulse">Haptic pulse to perform</param>
-		public static void Pulse(this IControlHaptics obj, Node? node, HapticPulse hapticPulse)
+		/// <param name="durationMultiplier">(Optional) Multiplier value applied to the hapticPulse duration</param>
+		/// <param name="intensityMultiplier">(Optional) Multiplier value applied to the hapticPulse intensity</param>
+		public static void Pulse(this IControlHaptics obj, Node? node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f)
 		{
-			pulse(node, hapticPulse);
+			pulse(node, hapticPulse, durationMultiplier, intensityMultiplier);
 		}
 
 		internal delegate void StopPulsesDelegate(Node? node);

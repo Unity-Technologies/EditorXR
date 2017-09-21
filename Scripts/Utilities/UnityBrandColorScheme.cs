@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
 	/// <summary>
-	/// Class defining the Unity brancd color swatches & gradients
+	/// Class defining the Unity brand color swatches & gradients
 	/// </summary>
 	public static class UnityBrandColorScheme
 	{
@@ -42,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		static int s_RandomCuratedDarkGradientPairPosition = -1;
 
 		static GradientPair s_SessionGradient;
+		static GradientPair s_SaturatedSessionGradient;
 
 		static Color s_Red;
 		static Color s_RedLight;
@@ -150,9 +151,23 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				s_SessionGradient = value;
 
 				// In order to more easily differentiate curated gradients, they should not match the session gradient
-				RemoveSessionGradientFromCollection(s_CuratedGradientPairs);
-				RemoveSessionGradientFromCollection(s_CuratedLightGradientPairs);
-				RemoveSessionGradientFromCollection(s_CuratedDarkGradientPairs);
+				RemoveGradientFromCollection(s_SessionGradient, s_CuratedGradientPairs);
+				RemoveGradientFromCollection(s_SessionGradient, s_CuratedLightGradientPairs);
+				RemoveGradientFromCollection(s_SessionGradient, s_CuratedDarkGradientPairs);
+			}
+		}
+
+		public static GradientPair saturatedSessionGradient
+		{
+			get { return s_SaturatedSessionGradient; }
+			set
+			{
+				s_SaturatedSessionGradient = value;
+
+				// In order to more easily differentiate curated gradients, they should not match the session gradient
+				RemoveGradientFromCollection(s_SaturatedSessionGradient, s_CuratedGradientPairs);
+				RemoveGradientFromCollection(s_SaturatedSessionGradient, s_CuratedLightGradientPairs);
+				RemoveGradientFromCollection(s_SaturatedSessionGradient, s_CuratedDarkGradientPairs);
 			}
 		}
 
@@ -161,6 +176,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements
 		/// </summary>
 		public static GradientPair grayscaleSessionGradient { get; private set; }
+
+		/// <summary>
+		/// A darker low-contrast grayscale Unity brand color gradient, having no chroma
+		/// UI elements (or otherwise) can fetch this common gradient, for a uniform appearance across various elements (Gradient Button insets, etc)
+		/// </summary>
+		public static GradientPair darkGrayscaleSessionGradient { get; private set; }
 
 		/// <summary>
 		/// Static Constructor that sets up the swatch and gradient data
@@ -173,7 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <summary>
 		/// Setup Unity branded swatches and gradients
 		/// </summary>
-		private static void SetupUnityBrandColors()
+		static void SetupUnityBrandColors()
 		{
 			s_Red = MaterialUtils.HexToColor("F44336");
 			s_RedLight = MaterialUtils.HexToColor("FFEBEE");
@@ -243,6 +264,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			// Setup grayscale light/dark contrasting session gradient
 			grayscaleSessionGradient = new GradientPair(MaterialUtils.HexToColor("898A8AFF"), s_Light);
+			darkGrayscaleSessionGradient = new GradientPair(MaterialUtils.HexToColor("636565FF"), MaterialUtils.HexToColor("484949FF"));
 
 			// Setup neutral-luma curated gradient pairs
 			s_CuratedGradientPairs.Add(new GradientPair(cyan, blueDark));
@@ -274,18 +296,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			s_CuratedGradientPairs.Add(new GradientPair(blue, magenta));
 			s_CuratedGradientPairs.Add(new GradientPair(blue, purple));
 			s_CuratedGradientPairs.Add(new GradientPair(magenta, darker));
-			// Slightly lighter pairs added to main curated set
-			s_CuratedGradientPairs.Add(new GradientPair(yellowLight, tealDark));
-			s_CuratedGradientPairs.Add(new GradientPair(orangeDark, orangeLight));
-			s_CuratedGradientPairs.Add(new GradientPair(lime, greenLight));
-			s_CuratedGradientPairs.Add(new GradientPair(red, redLight));
-			s_CuratedGradientPairs.Add(new GradientPair(red, orangeLight));
-			s_CuratedGradientPairs.Add(new GradientPair(lime, orange));
-			s_CuratedGradientPairs.Add(new GradientPair(lime, teal));
-			s_CuratedGradientPairs.Add(new GradientPair(magenta, blueLight));
-			s_CuratedGradientPairs.Add(new GradientPair(blue, blueLight));
-			s_CuratedGradientPairs.Add(new GradientPair(blue, lime));
-			s_CuratedGradientPairs.Add(new GradientPair(blue, yellowLight));
 
 			// Setup dark-luma curated gradient pairs
 			s_CuratedDarkGradientPairs.Add(new GradientPair(tealDark, darkBlue));
@@ -386,7 +396,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			s_RandomCuratedGradientPairPosition = randomPosition;
 
-			return s_CuratedGradientPairs[s_RandomCuratedGradientPairPosition];;
+			return s_CuratedGradientPairs[s_RandomCuratedGradientPairPosition];
 		}
 
 		/// <summary>
@@ -403,7 +413,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			s_RandomCuratedLightGradientPairPosition = randomPosition;
 
-			return s_CuratedLightGradientPairs[s_RandomCuratedLightGradientPairPosition];;
+			return s_CuratedLightGradientPairs[s_RandomCuratedLightGradientPairPosition];
 		}
 
 		/// <summary>
@@ -420,18 +430,19 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
 			s_RandomCuratedDarkGradientPairPosition = randomPosition;
 
-			return s_CuratedDarkGradientPairs[s_RandomCuratedDarkGradientPairPosition];;
+			return s_CuratedDarkGradientPairs[s_RandomCuratedDarkGradientPairPosition];
 		}
 
 		/// <summary>
-		/// Remove the session gradient from a GradientPair collection, if it is found in the collection
+		/// Remove a gradient from a GradientPair collection, if it is found in the collection
 		/// </summary>
-		/// <param name="gradientPairCollection">Collection from which the SessionGradient will be removed</param>
-		static void RemoveSessionGradientFromCollection(List<GradientPair> gradientPairCollection)
+		/// <param name="gradientPair">Gradient Pair to remove from the target collection</param>
+		/// <param name="gradientPairCollection">Collection from which the Gradient Pair will be removed</param>
+		static void RemoveGradientFromCollection(GradientPair gradientPair, List<GradientPair> gradientPairCollection)
 		{
 			foreach (GradientPair pair in gradientPairCollection)
 			{
-				if (SwatchesSimilar(pair.a, s_SessionGradient.a, 0f) && SwatchesSimilar(pair.b, s_SessionGradient.b, 0f))
+				if (SwatchesSimilar(pair.a, gradientPair.a, 0f) && SwatchesSimilar(pair.b, gradientPair.b, 0f))
 				{
 					gradientPairCollection.Remove(pair);
 					break;
