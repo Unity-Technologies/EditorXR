@@ -222,6 +222,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				|| ExecuteEvents.GetEventHandler<IRayDragHandler>(currentObject)
 				|| ExecuteEvents.GetEventHandler<IRayBeginDragHandler>(currentObject)
 				|| ExecuteEvents.GetEventHandler<IRayEndDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IRayClickHandler>(currentObject)
 
 				|| hasScrollHandler;
 		}

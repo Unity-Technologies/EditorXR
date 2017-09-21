@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public MenuHideFlags menuHideFlags
 		{
-			get { return gameObject.activeSelf ? MenuHideFlags.Hidden : 0; }
+			get { return gameObject.activeSelf ? 0 : MenuHideFlags.Hidden; }
 			set { gameObject.SetActive(value == 0); }
 		}
 
