@@ -70,11 +70,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			s_LayerMask = LayerMask.GetMask("UI");
 			m_TempRayEvent = new RayEventData(eventSystem);
+
+			IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
 		}
 
-		public void AddRaycastSource(RaycastSource source)
+		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin, Func<RaycastSource, bool> validationCallback = null)
 		{
-			m_RaycastSources.Add(source.rayOrigin, source);
+			UIActions actions = (UIActions)actionMapInput;
+			actions.active = false;
+			m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, actions, validationCallback));
 		}
 
 		public void RemoveRaycastSource(Transform rayOrigin)
@@ -457,6 +461,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastSource source;
 			return m_RaycastSources.TryGetValue(rayOrigin, out source) && source.hasObject;
+		}
+
+		void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
+		{
+			RaycastSource source;
+			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
+				source.blocked = blocked;
 		}
 	}
 }
