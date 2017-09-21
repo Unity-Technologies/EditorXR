@@ -1,6 +1,4 @@
 #if UNITY_EDITOR
-using System;
-
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>

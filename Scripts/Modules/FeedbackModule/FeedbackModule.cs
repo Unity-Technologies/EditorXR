@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEngine;
 using UnityEngine.UI;
 
