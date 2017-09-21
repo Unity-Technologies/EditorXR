@@ -236,8 +236,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							// Spawn tool and collect all devices that this tool will need
 							HashSet<InputDevice> usedDevices;
 							var device = deviceData.inputDevice;
-							var toolData = SpawnTool(toolType, out usedDevices, device);
-							var multiTool = toolData.tool as IMultiDeviceTool;
+							var newTool = SpawnTool(toolType, out usedDevices, device);
+							var multiTool = newTool.tool as IMultiDeviceTool;
 							if (multiTool != null)
 							{
 								multiTool.primary = true;
@@ -263,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							}
 
 							// Exclusive mode tools always take over all tool stacks
-							if (toolData.tool is IExclusiveMode)
+							if (newTool.tool is IExclusiveMode)
 							{
 								foreach (var dev in evrDeviceData)
 								{

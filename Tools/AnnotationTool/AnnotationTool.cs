@@ -19,7 +19,8 @@ using UnityEngine.VR;
 [MainMenuItem("Annotation", "Create", "Draw in 3D")]
 public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
 	IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
-	IIsHoveringOverUI, IMultiDeviceTool, IUsesProxyType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject
+	IIsHoveringOverUI, IMultiDeviceTool, IUsesProxyType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
+	IUsesNode
 {
 	[Serializable]
 	class Preferences
@@ -102,6 +103,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public ActionMap actionMap { get { return m_ActionMap; } }
 
 	public List<ILinkedObject> linkedObjects { private get; set; }
+	public Node? node { private get; set; }
 
 	public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 	public GameObject settingsMenuItemInstance
@@ -153,7 +155,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 	void OnDestroy()
 	{
-		if (m_Preferences.meshGroupingMode)
+		if (m_Preferences != null && m_Preferences.meshGroupingMode)
 			CombineGroups();
 
 		CleanUpNames();
@@ -205,9 +207,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			var otherRayOrigin = otherRayOrigins.First();
 			var otherAltMenu = this.GetCustomAlternateMenuOrigin(otherRayOrigin);
 
-			m_ColorPickerActivator.transform.SetParent(otherAltMenu.GetComponentInChildren<MainMenuActivator>().transform);
+			const float UIOffset = 0.1f;
+			m_ColorPickerActivator.transform.SetParent(otherAltMenu);
 			m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
-			m_ColorPickerActivator.transform.localPosition = Vector3.right * 0.05f;
+			m_ColorPickerActivator.transform.localPosition = (node == Node.LeftHand ? Vector3.left : Vector3.right) * UIOffset;
 			m_ColorPickerActivator.transform.localScale = Vector3.one;
 
 			var activator = m_ColorPickerActivator.GetComponentInChildren<ColorPickerActivator>();
@@ -218,6 +221,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
 			OnColorPickerValueChanged(m_Preferences.annotationColor);
 
+			activator.node = node.Value;
 			activator.rayOrigin = otherRayOrigin;
 			activator.showColorPicker = ShowColorPicker;
 			activator.hideColorPicker = HideColorPicker;

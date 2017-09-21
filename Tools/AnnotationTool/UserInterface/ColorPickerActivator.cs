@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -21,6 +22,9 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 	[SerializeField]
 	GameObject m_Redo;
 
+	[SerializeField]
+	float m_PickerOffset = 0.045f;
+
 	Coroutine m_HighlightCoroutine;
 	GradientButton m_UndoButton;
 	GradientButton m_RedoButton;
@@ -28,6 +32,7 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 	public Transform rayOrigin { private get; set; }
 	public Action<Transform> showColorPicker { private get; set; }
 	public Action hideColorPicker { private get; set; }
+	public Node node { private get; set; }
 
 	public event Action undoButtonClick
 	{
@@ -87,12 +92,16 @@ public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointe
 		var amount = 0f;
 		var currentScale = m_Icon.localScale;
 		var targetScale = transitionIn ? m_TargetScale.localScale : Vector3.one;
+		var currentPosition = m_Icon.localPosition;
+		var targetPosition = transitionIn ? (node == Node.LeftHand ? Vector3.left : Vector3.right) * m_PickerOffset : Vector3.zero;
 		var speed = (currentScale.x + 0.5f / targetScale.x) * 4;
 
 		while (amount < 1f)
 		{
 			amount += Time.unscaledDeltaTime * speed;
-			m_Icon.localScale = Vector3.Lerp(currentScale, targetScale, Mathf.SmoothStep(0f, 1f, amount));
+			var t = Mathf.SmoothStep(0f, 1f, amount);
+			m_Icon.localScale = Vector3.Lerp(currentScale, targetScale, t);
+			m_Icon.localPosition = Vector3.Lerp(currentPosition, targetPosition, t);
 			yield return null;
 		}
 
