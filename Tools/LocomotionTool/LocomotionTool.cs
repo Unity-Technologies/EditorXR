@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
 		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-		IUsesProxyType, IGetVRPlayerObjects
+		IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -189,6 +189,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			m_LocomotionInput = (LocomotionInput)input;
 
+			this.SetUIBlockedForRayOrigin(rayOrigin, true);
+
 			if (DoTwoHandedScaling(consumeControl))
 				return;
 
@@ -206,7 +208,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					return;
 			}
 
-			DoCrawl(consumeControl);
+			if (DoCrawl(consumeControl))
+				return;
+
+			this.SetUIBlockedForRayOrigin(rayOrigin, false);
 		}
 
 		bool DoFlying(ConsumeControlDelegate consumeControl)
@@ -540,7 +545,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 				locomotionTool.m_Scaling = false;
 			}
-
 
 			m_ViewerScaleVisuals.gameObject.SetActive(false);
 		}

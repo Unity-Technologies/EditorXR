@@ -21,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public RayEventData eventData;
 			public GameObject hoveredObject;
 			public GameObject draggedObject;
+			public bool blocked;
 			public Func<RaycastSource, bool> isValid;
 
 			public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
@@ -29,6 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput, Func<RaycastSource, bool> validationCallback)
 			{
+				UIActions actions = (UIActions)actionMapInput;
+				actions.active = false;
 				this.proxy = proxy;
 				this.rayOrigin = rayOrigin;
 				this.node = node;
@@ -67,6 +70,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			s_LayerMask = LayerMask.GetMask("UI");
 			m_TempRayEvent = new RayEventData(eventSystem);
+
+			IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
 		}
 
 		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin, Func<RaycastSource, bool> validationCallback = null)
@@ -456,6 +461,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastSource source;
 			return m_RaycastSources.TryGetValue(rayOrigin, out source) && source.hasObject;
+		}
+
+		void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
+		{
+			RaycastSource source;
+			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
+				source.blocked = blocked;
 		}
 	}
 }

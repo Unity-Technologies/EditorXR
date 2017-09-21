@@ -224,7 +224,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 												return false;
 										}
 
-										return Menus.IsValidHover(source);
+										if (!Menus.IsValidHover(source))
+											return false;
+
+										// Proceed only for raycast sources that haven't been blocked via IBlockUIInteraction
+										if (source.blocked)
+											return false;
+
+										return true;
 									});
 								}
 							}
