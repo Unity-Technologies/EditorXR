@@ -1130,6 +1130,7 @@ MonoBehaviour:
   m_ColorPicker: {fileID: 114000010862220058}
   m_SliderBackground: {fileID: 114000013248295880}
   m_Picker: {fileID: 224000013288384236}
+  m_PickerBounds: {fileID: 224000012639415320}
   m_ColorPickerSquare: {fileID: 114000012642262872}
 --- !u!114 &114000010862220058
 MonoBehaviour:
@@ -1903,7 +1904,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -4, y: -4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224000013901019326
 RectTransform:

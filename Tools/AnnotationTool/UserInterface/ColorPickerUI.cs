@@ -21,6 +21,9 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 	RectTransform m_Picker;
 
 	[SerializeField]
+	RectTransform m_PickerBounds;
+
+	[SerializeField]
 	ColorPickerSquareUI m_ColorPickerSquare;
 
 	Vector3 m_PickerTargetPosition;
@@ -157,21 +160,15 @@ public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
 
 	Color GetColorForCurrentPosition()
 	{
-		var rect = m_ColorPicker.rectTransform.rect;
+		var rect = m_PickerBounds.rect;
 
-		var dir = m_PickerTargetPosition;
-		dir.z = 0;
+		var position = m_PickerTargetPosition;
 
-		// We want to avoid the edge of the image, which has feathered pixels
-		var maxMagnitude = rect.width * 0.495f;
-		if (dir.magnitude > maxMagnitude)
-			dir = Vector3.ClampMagnitude(dir, maxMagnitude);
+		position.x = (position.x + rect.width * 0.5f) / rect.width;
+		position.y = (position.y + rect.height * 0.5f) / rect.height;
 
-		dir.x = (dir.x + rect.width * 0.5f) / rect.width;
-		dir.y = (dir.y + rect.height * 0.5f) / rect.height;
-
-		var textureX = (int)(dir.x * m_ColorPickerTexture.width);
-		var textureY = (int)(dir.y * m_ColorPickerTexture.height);
+		var textureX = (int)(position.x * m_ColorPickerTexture.width);
+		var textureY = (int)(position.y * m_ColorPickerTexture.height);
 		var col = m_ColorPickerTexture.GetPixel(textureX, textureY);
 
 		return col;
