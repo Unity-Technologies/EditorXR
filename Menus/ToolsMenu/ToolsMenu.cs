@@ -39,11 +39,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		float m_AllowToolToggleBeforeThisTime;
 		Vector3 m_SpatialScrollStartPosition;
-		ToolsMenuUI m_ToolsMenuUi;
+		ToolsMenuUI m_ToolsMenuUI;
 
 		public Transform menuOrigin { get; set; }
-		List<IToolsMenuButton> buttons { get { return m_ToolsMenuUi.buttons; } }
-		public bool alternateMenuVisible { set { m_ToolsMenuUi.moveToAlternatePosition = value; } }
+		List<IToolsMenuButton> buttons { get { return m_ToolsMenuUI.buttons; } }
+		public bool alternateMenuVisible { set { m_ToolsMenuUI.moveToAlternatePosition = value; } }
 
 		public Action<Transform, int, bool> highlightSingleButton { get; set; }
 		public Action<Transform> selectHighlightedButton { get; set; }
@@ -69,16 +69,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void CreateToolsMenuUI()
 		{
-			m_ToolsMenuUi = this.InstantiateUI(m_ToolsMenuPrefab.gameObject, rayOrigin, true, rayOrigin).GetComponent<ToolsMenuUI>();
-			m_ToolsMenuUi.maxButtonCount = k_MaxButtonCount;
-			m_ToolsMenuUi.mainMenuActivatorSelected = this.MainMenuActivatorSelected;
-			m_ToolsMenuUi.buttonHovered += OnButtonHover;
-			m_ToolsMenuUi.buttonClicked += OnButtonClick;
-			m_ToolsMenuUi.buttonSelected += OnButtonSelected;
-			m_ToolsMenuUi.closeMenu += CloseMenu;
+			m_ToolsMenuUI = this.InstantiateUI(m_ToolsMenuPrefab.gameObject, rayOrigin, true, rayOrigin).GetComponent<ToolsMenuUI>();
+			m_ToolsMenuUI.maxButtonCount = k_MaxButtonCount;
+			m_ToolsMenuUI.mainMenuActivatorSelected = this.MainMenuActivatorSelected;
+			m_ToolsMenuUI.buttonHovered += OnButtonHover;
+			m_ToolsMenuUI.buttonClicked += OnButtonClick;
+			m_ToolsMenuUI.buttonSelected += OnButtonSelected;
+			m_ToolsMenuUI.closeMenu += CloseMenu;
 
 			// Alternate menu origin isn't set when awake or start run
-			var toolsMenuUITransform = m_ToolsMenuUi.transform;
+			var toolsMenuUITransform = m_ToolsMenuUI.transform;
 			toolsMenuUITransform.SetParent(alternateMenuOrigin);
 			toolsMenuUITransform.localPosition = Vector3.zero;
 			toolsMenuUITransform.localRotation = Quaternion.identity;
@@ -89,20 +89,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			// Verify first that the ToolsMenuUI exists
 			// This is called in EditorVR.Tools before the UI can be created herein in Awake
 			// The SelectionTool & MainMenu buttons are created immediately after instantiating the ToolsMenu
-			if (m_ToolsMenuUi == null)
+			if (m_ToolsMenuUI == null)
 				CreateToolsMenuUI();
 
 			// Select an existing ToolButton if the type is already present in a button
 			if (buttons.Any( x => x.toolType == toolType))
 			{
-				m_ToolsMenuUi.SelectExistingToolType(toolType);
+				m_ToolsMenuUI.SelectExistingToolType(toolType);
 				return;
 			}
 
 			if (buttons.Count >= k_MaxButtonCount) // Return if tool type already occupies a tool button
 				return;
 
-			var buttonTransform = ObjectUtils.Instantiate(_mToolsMenuButtonTemplate.gameObject, m_ToolsMenuUi.buttonContainer, false).transform;
+			var buttonTransform = ObjectUtils.Instantiate(_mToolsMenuButtonTemplate.gameObject, m_ToolsMenuUI.buttonContainer, false).transform;
 			var button = buttonTransform.GetComponent<ToolsMenuButton>();
 			this.ConnectInterfaces(button);
 
@@ -116,13 +116,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			if (toolType == typeof(IMainMenu))
 				PreviewToolsMenuButton = button;
 
-			m_ToolsMenuUi.AddButton(button, buttonTransform);
+			m_ToolsMenuUI.AddButton(button, buttonTransform);
 		}
 
 		void DeleteToolsMenuButton(Type toolTypeToDelete, Type toolTypeToSelectAfterDelete)
 		{
-			if (m_ToolsMenuUi.DeleteButtonOfType(toolTypeToDelete))
-				m_ToolsMenuUi.SelectNextExistingToolButton();
+			if (m_ToolsMenuUI.DeleteButtonOfType(toolTypeToDelete))
+				m_ToolsMenuUI.SelectNextExistingToolButton();
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -142,7 +142,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				consumeControl(toolslMenuInput.select);
 				OnButtonClick();
 				CloseMenu(); // Also ends spatial scroll
-				m_ToolsMenuUi.allButtonsVisible = false;
+				m_ToolsMenuUI.allButtonsVisible = false;
 			}
 
 			if (spatialScrollData == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld) && toolslMenuInput.select.wasJustPressed)
@@ -150,11 +150,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				m_SpatialScrollStartPosition = alternateMenuOrigin.position;
 				m_AllowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
 				this.SetSpatialHintControlNode(node);
-				m_ToolsMenuUi.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
+				m_ToolsMenuUI.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
 				consumeControl(toolslMenuInput.show);
 				consumeControl(toolslMenuInput.select);
 				// Assign initial SpatialScrollData; begin scroll
-				spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUi.buttons.Count, m_ToolsMenuUi.maxButtonCount);
+				spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
 			}
 			else if (spatialScrollData != null && toolslMenuInput.show.isHeld)
 			{
@@ -163,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				// Attempt to close a button, if a scroll has passed the trigger threshold
 				if (spatialScrollData != null && toolslMenuInput.select.wasJustPressed)
 				{
-					if (m_ToolsMenuUi.DeleteHighlightedButton())
+					if (m_ToolsMenuUI.DeleteHighlightedButton())
 						buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
 
 					if (buttonCount <= k_ActiveToolOrderPosition + 1)
@@ -177,22 +177,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				// normalized input should loop after reaching the 0.15f length
 				buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-				spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUi.buttons.Count, m_ToolsMenuUi.maxButtonCount);
+				spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
 				var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
 				if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
 				{
-					if (!m_ToolsMenuUi.allButtonsVisible)
+					if (!m_ToolsMenuUI.allButtonsVisible)
 					{
-						m_ToolsMenuUi.spatialDragDistance = spatialScrollData.dragDistance;
+						m_ToolsMenuUI.spatialDragDistance = spatialScrollData.dragDistance;
 						this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
-						m_ToolsMenuUi.allButtonsVisible = true;
+						m_ToolsMenuUI.allButtonsVisible = true;
 					}
 					else if (spatialScrollData.spatialDirection != null)
 					{
-						m_ToolsMenuUi.startingDragOrigin = spatialScrollData.spatialDirection;
+						m_ToolsMenuUI.startingDragOrigin = spatialScrollData.spatialDirection;
 					}
 
-					m_ToolsMenuUi.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
+					m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
 				}
 			}
 			else if (toolslMenuInput.show.wasJustReleased)
@@ -202,12 +202,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 				if (spatialScrollData != null && spatialScrollData.passedMinDragActivationThreshold)
 				{
-					m_ToolsMenuUi.SelectHighlightedButton();
+					m_ToolsMenuUI.SelectHighlightedButton();
 				}
 				else if (Time.realtimeSinceStartup < m_AllowToolToggleBeforeThisTime)
 				{
 					// Allow for single press+release to cycle through tools
-					m_ToolsMenuUi.SelectNextExistingToolButton();
+					m_ToolsMenuUI.SelectNextExistingToolButton();
 					OnButtonClick();
 				}
 
