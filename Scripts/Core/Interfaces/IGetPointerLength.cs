@@ -16,6 +16,11 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			return getPointerLength(rayOrigin);
 		}
+
+		public static Vector3 GetPointerPosition(this IGetPointerLength obj, Transform rayOrigin)
+		{
+			return rayOrigin.position + rayOrigin.forward * obj.GetPointerLength(rayOrigin);
+		}
 	}
 }
 #endif

@@ -179,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				if (resizing)
 				{
-					var pointerPosition = m_WorkspaceUI.GetPointerPositionForRayOrigin(rayOrigin);
+					var pointerPosition = m_WorkspaceUI.GetPointerPosition(rayOrigin);
 					m_DragStart = pointerPosition;
 					m_PositionStart = workspaceUI.transform.parent.position;
 					m_BoundsSizeStart = workspaceUI.bounds.size;
@@ -197,7 +197,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (m_Resizing)
 				{
 					var viewerScale = m_WorkspaceUI.GetViewerScale();
-					var pointerPosition = m_WorkspaceUI.GetPointerPositionForRayOrigin(rayOrigin);
+					var pointerPosition = m_WorkspaceUI.GetPointerPosition(rayOrigin);
 					var dragVector = (pointerPosition - m_DragStart) / viewerScale;
 					var bounds = m_WorkspaceUI.bounds;
 					var transform = m_WorkspaceUI.transform;
@@ -673,7 +673,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 					if (m_HovereringRayOrigins.Contains(rayOrigin))
 					{
-						var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+						var localPosition = transform.InverseTransformPoint(this.GetPointerPosition(rayOrigin));
 						var direction = GetResizeDirectionForLocalPosition(localPosition);
 						GetResizeIconForDirection(direction);
 					}
@@ -714,7 +714,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 
 				const float kVisibleOpacity = 0.75f;
-				var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
+				var localPosition = transform.InverseTransformPoint(this.GetPointerPosition(rayOrigin));
 				var direction = GetResizeDirectionForLocalPosition(localPosition);
 				var resizeIcon = GetResizeIconForDirection(direction);
 
@@ -767,7 +767,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			if (!dragRayOrigin)
 			{
 				var leftPosition = transform.InverseTransformPoint(leftRayOrigin.position);
-				var leftPointerPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
+				var leftPointerPosition = transform.InverseTransformPoint(this.GetPointerPosition(leftRayOrigin));
 				if (moveResizeLeft.wasJustPressed && (adjustedBounds.Contains(leftPosition) || adjustedBounds.Contains(leftPointerPosition)))
 				{
 					dragRayOrigin = leftRayOrigin;
@@ -776,7 +776,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				}
 
 				var rightPosition = transform.InverseTransformPoint(rightRayOrigin.position);
-				var rightPointerPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
+				var rightPointerPosition = transform.InverseTransformPoint(this.GetPointerPosition(rightRayOrigin));
 				if (moveResizeRight.wasJustPressed && (adjustedBounds.Contains(rightPosition) || adjustedBounds.Contains(rightPointerPosition)))
 				{
 					dragRayOrigin = rightRayOrigin;
@@ -800,11 +800,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 				highlightsVisible = true;
 			}
-		}
-
-		Vector3 GetPointerPositionForRayOrigin(Transform rayOrigin)
-		{
-			return rayOrigin.position + rayOrigin.forward * this.GetPointerLength(rayOrigin);
 		}
 
 		void OnDestroy()

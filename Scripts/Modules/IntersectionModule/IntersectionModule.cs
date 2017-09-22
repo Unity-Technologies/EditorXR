@@ -43,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
 
 			IRaycastMethods.raycast = Raycast;
+			ICheckBoundsMethods.checkBounds = CheckBounds;
 		}
 
 		internal void Setup(SpatialHash<Renderer> hash)
@@ -239,6 +240,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 							hit.normal = transform.TransformDirection(tmp.normal);
 							obj = renderer.gameObject;
 						}
+					}
+				}
+			}
+
+			return result;
+		}
+
+		internal bool CheckBounds(Bounds bounds, List<GameObject> objects, List<Renderer> ignoreList = null)
+		{
+			var result = false;
+			m_Intersections.Clear();
+			if (m_SpatialHash.GetIntersections(m_Intersections, bounds))
+			{
+				for (var i = 0; i < m_Intersections.Count; i++)
+				{
+					var renderer = m_Intersections[i];
+					if (ignoreList != null && ignoreList.Contains(renderer))
+						continue;
+
+					var transform = renderer.transform;
+
+					IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
+
+					if (IntersectionUtils.TestBox(m_CollisionTester, transform, bounds.center, bounds.extents, Quaternion.identity))
+					{
+						objects.Add(renderer.gameObject);
+						result = true;
 					}
 				}
 			}

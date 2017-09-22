@@ -14,9 +14,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
 		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
-		IUsesProxyType, IMenuIcon
+		IUsesProxyType, IMenuIcon, IGetPointerLength, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds
 	{
 		const float k_MultiselectHueShift = 0.5f;
+		const float k_BLockSelectDragThreshold = 0.01f;
 		static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
 		static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
 
@@ -26,6 +27,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		[SerializeField]
 		ActionMap m_ActionMap;
 
+		[SerializeField]
+		GameObject m_BlockSelectCube;
+
 		GameObject m_PressedObject;
 
 		SelectionInput m_SelectionInput;
@@ -34,10 +38,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Color m_NormalRayColor;
 		Color m_MultiselectRayColor;
 		bool m_MultiSelect;
+		bool m_BlockSelect;
+		Vector3 m_SelectStartPosition;
+		Renderer m_BlockSelectCubeRenderer;
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
-
 		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
+		readonly List<GameObject> m_BlockSelectHoverGameObjects = new List<GameObject>();
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
@@ -65,6 +72,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			tooltipTarget = ObjectUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
 			tooltipTarget.localPosition = k_TooltipPosition;
 			tooltipTarget.localRotation = k_TooltipRotation;
+
+			m_BlockSelectCube = ObjectUtils.Instantiate(m_BlockSelectCube, transform);
+			m_BlockSelectCube.SetActive(false);
+			m_BlockSelectCubeRenderer = m_BlockSelectCube.GetComponent<Renderer>();
+		}
+
+		void OnDestroy()
+		{
+			ObjectUtils.Destroy(m_BlockSelectCube);
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -111,9 +127,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				foreach (var linkedObject in linkedObjects)
 				{
 					var selectionTool = (SelectionTool)linkedObject;
-					var selectionRayOrigin = selectionTool.rayOrigin;
+					if (selectionTool.m_BlockSelect)
+						continue;
 
 					if (!selectionTool.IsRayActive())
+						continue;
+
+					var selectionRayOrigin = selectionTool.rayOrigin;
+					if (!this.IsRayVisible(selectionRayOrigin))
 						continue;
 
 					var hover = this.GetFirstGameObject(selectionRayOrigin);
@@ -170,6 +191,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (selectionTool == null)
 						continue;
 
+					if (selectionTool.m_BlockSelect)
+						continue;
+
 					if (!selectionTool.IsDirectActive())
 					{
 						m_HoverGameObjects.Remove(directRayOrigin);
@@ -208,26 +232,90 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (!GetSelectionCandidate(ref hoveredObject))
 				return;
 
+			var pointerPosition = this.GetPointerPosition(rayOrigin);
+
 			// Capture object on press
-			if (m_SelectionInput.select.wasJustPressed)
-				m_PressedObject = hoveredObject;
-
-			// Select button on release
-			if (m_SelectionInput.select.wasJustReleased)
+			var select = m_SelectionInput.select;
+			if (select.wasJustPressed)
 			{
-				if (m_PressedObject == hoveredObject)
-				{
-					this.SelectObject(m_PressedObject, rayOrigin, m_MultiSelect, true);
-					this.ResetDirectSelectionState();
+				m_SelectStartPosition = pointerPosition;
 
-					if (m_PressedObject != null)
-						this.SetHighlight(m_PressedObject, false, rayOrigin);
+				// Ray selection only if ray is visible
+				if (this.IsRayVisible(rayOrigin))
+					m_PressedObject = hoveredObject;
+			}
+
+			if (select.isHeld)
+			{
+				var startToEnd = pointerPosition - m_SelectStartPosition;
+				if (!m_BlockSelect && startToEnd.magnitude > k_BLockSelectDragThreshold * this.GetViewerScale())
+				{
+					m_BlockSelect = true;
+					m_BlockSelectCube.SetActive(true);
+					m_PressedObject = null;
+					this.AddRayVisibilitySettings(rayOrigin, this, false, true);
 				}
 
-				if (m_PressedObject)
-					consumeControl(m_SelectionInput.select);
+				if (m_BlockSelect)
+					this.SetManipulatorsVisible(this, false);
 
+				m_BlockSelectCube.transform.localScale = startToEnd;
+				m_BlockSelectCube.transform.position = m_SelectStartPosition + startToEnd * 0.5f;
+
+				foreach (var hover in m_BlockSelectHoverGameObjects)
+				{
+					this.SetHighlight(hover, false, rayOrigin);
+				}
+
+				m_BlockSelectHoverGameObjects.Clear();
+				this.CheckBounds(m_BlockSelectCubeRenderer.bounds, m_BlockSelectHoverGameObjects);
+
+				foreach (var hover in m_BlockSelectHoverGameObjects)
+				{
+					this.SetHighlight(hover, true, rayOrigin);
+				}
+			}
+
+			// Select button on release
+			if (select.wasJustReleased)
+			{
+				if (m_BlockSelect)
+				{
+					if (!m_MultiSelect)
+					{
+						this.SetManipulatorsVisible(this, true);
+						Selection.activeGameObject = null;
+					}
+
+					foreach (var hover in m_BlockSelectHoverGameObjects)
+					{
+						this.SelectObject(hover, rayOrigin, true);
+
+						if (hover != null)
+							this.SetHighlight(hover, false, rayOrigin);
+					}
+
+					this.ResetDirectSelectionState();
+				}
+				else
+				{
+					if (m_PressedObject == hoveredObject)
+					{
+						this.SelectObject(m_PressedObject, rayOrigin, m_MultiSelect, true);
+						this.ResetDirectSelectionState();
+
+						if (m_PressedObject != null)
+							this.SetHighlight(m_PressedObject, false, rayOrigin);
+					}
+
+					if (m_PressedObject)
+						consumeControl(select);
+				}
+
+				this.RemoveRayVisibilitySettings(rayOrigin, this);
+				m_BlockSelectCube.SetActive(false);
 				m_PressedObject = null;
+				m_BlockSelect = false;
 			}
 		}
 
@@ -274,9 +362,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return false;
 
 			if (this.IsInMiniWorld(rayOrigin))
-				return false;
-
-			if (!this.IsRayVisible(rayOrigin))
 				return false;
 
 			return true;

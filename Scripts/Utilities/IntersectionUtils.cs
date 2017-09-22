@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
@@ -179,6 +180,24 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			maxDistance = obj.InverseTransformVector(ray.direction * maxDistance).magnitude;
 
 			return collisionTester.Raycast(ray, out hit, maxDistance);
+		}
+
+		/// <summary>
+		/// Tests a box against a collider
+		/// </summary>
+		/// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+		/// <param name="obj">The object to test collision on</param>
+		/// <param name="center">The center of the box</param>
+		/// <param name="halfExtents">Half the size of the box in each dimension</param>
+		/// <param name="orientation">The rotation of the box</param>
+		/// <returns>The result of whether the box intersects with the object</returns>
+		public static bool TestBox(MeshCollider collisionTester, Transform obj, Vector3 center, Vector3 halfExtents, Quaternion orientation)
+		{
+			center = obj.InverseTransformPoint(center);
+			halfExtents = Vector3.Scale(halfExtents, obj.lossyScale.Inverse());
+			orientation = Quaternion.Inverse(obj.rotation) * orientation;
+
+			return Physics.CheckBox(center, halfExtents, orientation);
 		}
 
 		public static void SetupCollisionTester(MeshCollider collisionTester, Transform obj)
