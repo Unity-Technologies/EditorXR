@@ -4,9 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
@@ -14,7 +16,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
 		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
-		IUsesProxyType, IMenuIcon, IGetPointerLength, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds
+		IUsesProxyType, IMenuIcon, IGetPointerLength, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
+		ISettingsMenuItemProvider, ISerializePreferences
 	{
 		const float k_MultiselectHueShift = 0.5f;
 		const float k_BLockSelectDragThreshold = 0.01f;
@@ -30,6 +33,23 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		[SerializeField]
 		GameObject m_BlockSelectCube;
 
+		[SerializeField]
+		GameObject m_BlockSelectSphere;
+
+		[SerializeField]
+		GameObject m_SettingsMenuItemPrefab;
+
+		[Serializable]
+		class Preferences
+		{
+			[SerializeField]
+			bool m_SphereMode;
+
+			public bool sphereMode { get { return m_SphereMode; } set { m_SphereMode = value; } }
+		}
+
+		Preferences m_Preferences;
+
 		GameObject m_PressedObject;
 
 		SelectionInput m_SelectionInput;
@@ -42,13 +62,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Vector3 m_SelectStartPosition;
 		Renderer m_BlockSelectCubeRenderer;
 
+		Toggle m_CubeToggle;
+		Toggle m_SphereToggle;
+		bool m_BlockValueChangedListener;
+
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
 		readonly List<GameObject> m_BlockSelectHoverGameObjects = new List<GameObject>();
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
-		public Transform rayOrigin { private get; set; }
+		public Transform rayOrigin { get; set; }
 		public Node? node { private get; set; }
 
 		public Sprite icon { get { return m_Icon; } }
@@ -63,8 +87,62 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Transform tooltipSource { get { return rayOrigin; } }
 		public TextAlignment tooltipAlignment { get { return TextAlignment.Center; } }
 
+		public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
+
+		public GameObject settingsMenuItemInstance
+		{
+			set
+			{
+				var defaultToggleGroup = value.GetComponentInChildren<DefaultToggleGroup>();
+				foreach (var toggle in value.GetComponentsInChildren<Toggle>())
+				{
+					if (toggle == defaultToggleGroup.defaultToggle)
+					{
+						m_CubeToggle = toggle;
+						toggle.onValueChanged.AddListener(isOn =>
+						{
+							if (m_BlockValueChangedListener)
+								return;
+
+							// m_Preferences on all instances refer
+							m_Preferences.sphereMode = !isOn;
+							foreach (var linkedObject in linkedObjects)
+							{
+								var selectionTool = (SelectionTool)linkedObject;
+								if (selectionTool != this)
+								{
+									selectionTool.m_BlockValueChangedListener = true;
+
+									//selectionTool.m_ToggleGroup.NotifyToggleOn(isOn ? m_CubeToggle : m_SphereToggle);
+									// HACK: Toggle Group claims these toggles are not a part of the group
+									selectionTool.m_CubeToggle.isOn = isOn;
+									selectionTool.m_SphereToggle.isOn = !isOn;
+									selectionTool.m_BlockValueChangedListener = false;
+								}
+							}
+						});
+					}
+					else
+					{
+						m_SphereToggle = toggle;
+					}
+				}
+			}
+		}
+
 		void Start()
 		{
+			if (this.IsSharedUpdater(this) && m_Preferences == null)
+			{
+				m_Preferences = new Preferences();
+
+				// Share one preferences object across all instances
+				foreach (var linkedObject in linkedObjects)
+				{
+					((SelectionTool)linkedObject).m_Preferences = m_Preferences;
+				}
+			}
+
 			m_NormalRayColor = this.GetDefaultRayColor(rayOrigin);
 			m_MultiselectRayColor = m_NormalRayColor;
 			m_MultiselectRayColor = MaterialUtils.HueShift(m_MultiselectRayColor, k_MultiselectHueShift);
@@ -76,6 +154,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_BlockSelectCube = ObjectUtils.Instantiate(m_BlockSelectCube, transform);
 			m_BlockSelectCube.SetActive(false);
 			m_BlockSelectCubeRenderer = m_BlockSelectCube.GetComponent<Renderer>();
+
+			m_BlockSelectSphere= ObjectUtils.Instantiate(m_BlockSelectSphere, transform);
+			m_BlockSelectSphere.SetActive(false);
 		}
 
 		void OnDestroy()
@@ -248,10 +329,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (select.isHeld)
 			{
 				var startToEnd = pointerPosition - m_SelectStartPosition;
-				if (!m_BlockSelect && startToEnd.magnitude > k_BLockSelectDragThreshold * this.GetViewerScale())
+				var visuals = m_Preferences.sphereMode ? m_BlockSelectSphere : m_BlockSelectCube;
+				var distance = startToEnd.magnitude;
+				if (!m_BlockSelect && distance > k_BLockSelectDragThreshold * this.GetViewerScale())
 				{
 					m_BlockSelect = true;
-					m_BlockSelectCube.SetActive(true);
+					visuals.SetActive(true);
+
 					m_PressedObject = null;
 					this.AddRayVisibilitySettings(rayOrigin, this, false, true);
 				}
@@ -259,21 +343,33 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (m_BlockSelect)
 					this.SetManipulatorsVisible(this, false);
 
-				m_BlockSelectCube.transform.localScale = startToEnd;
-				m_BlockSelectCube.transform.position = m_SelectStartPosition + startToEnd * 0.5f;
-
+				//TODO: use hashsets to only unset highlights for removed objects
 				foreach (var hover in m_BlockSelectHoverGameObjects)
 				{
 					this.SetHighlight(hover, false, rayOrigin);
 				}
-
 				m_BlockSelectHoverGameObjects.Clear();
-				this.CheckBounds(m_BlockSelectCubeRenderer.bounds, m_BlockSelectHoverGameObjects);
+
+				var visualsTransform = visuals.transform;
+				if (m_Preferences.sphereMode)
+				{
+					visualsTransform.localScale = Vector3.one * distance * 2;
+					visualsTransform.position = m_SelectStartPosition;
+					this.CheckSphere(m_SelectStartPosition, distance, m_BlockSelectHoverGameObjects);
+				}
+				else
+				{
+					visualsTransform.localScale = startToEnd;
+					visualsTransform.position = m_SelectStartPosition + startToEnd * 0.5f;
+					this.CheckBounds(m_BlockSelectCubeRenderer.bounds, m_BlockSelectHoverGameObjects);
+				}
 
 				foreach (var hover in m_BlockSelectHoverGameObjects)
 				{
 					this.SetHighlight(hover, true, rayOrigin);
 				}
+
+				consumeControl(select);
 			}
 
 			// Select button on release
@@ -311,9 +407,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (m_PressedObject)
 						consumeControl(select);
 				}
-
 				this.RemoveRayVisibilitySettings(rayOrigin, this);
-				m_BlockSelectCube.SetActive(false);
+				(m_Preferences.sphereMode ? m_BlockSelectSphere : m_BlockSelectCube).SetActive(false);
 				m_PressedObject = null;
 				m_BlockSelect = false;
 			}
@@ -377,6 +472,42 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 
 		public void OnResetDirectSelectionState() { }
+
+
+		public object OnSerializePreferences()
+		{
+			if (this.IsSharedUpdater(this))
+			{
+				// Share one preferences object across all instances
+				foreach (var linkedObject in linkedObjects)
+				{
+					((SelectionTool)linkedObject).m_Preferences = m_Preferences;
+				}
+
+				return m_Preferences;
+			}
+
+			return null;
+		}
+
+		public void OnDeserializePreferences(object obj)
+		{
+			if (this.IsSharedUpdater(this))
+			{
+				var preferences = obj as Preferences;
+				if (preferences != null)
+					m_Preferences = preferences;
+
+				// Share one preferences object across all instances
+				foreach (var linkedObject in linkedObjects)
+				{
+					((SelectionTool)linkedObject).m_Preferences = m_Preferences;
+				}
+
+				m_SphereToggle.isOn = m_Preferences.sphereMode;
+				m_CubeToggle.isOn = !m_Preferences.sphereMode;
+			}
+		}
 	}
 }
 #endif

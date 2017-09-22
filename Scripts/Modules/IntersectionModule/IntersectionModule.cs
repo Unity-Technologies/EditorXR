@@ -44,6 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			IRaycastMethods.raycast = Raycast;
 			ICheckBoundsMethods.checkBounds = CheckBounds;
+			ICheckSphereMethods.checkSphere = CheckSphere;
 		}
 
 		internal void Setup(SpatialHash<Renderer> hash)
@@ -264,6 +265,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
 
 					if (IntersectionUtils.TestBox(m_CollisionTester, transform, bounds.center, bounds.extents, Quaternion.identity))
+					{
+						objects.Add(renderer.gameObject);
+						result = true;
+					}
+				}
+			}
+
+			return result;
+		}
+
+		internal bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<Renderer> ignoreList = null)
+		{
+			var result = false;
+			m_Intersections.Clear();
+			var bounds = new Bounds(center, Vector3.one * radius * 2);
+			if (m_SpatialHash.GetIntersections(m_Intersections, bounds))
+			{
+				for (var i = 0; i < m_Intersections.Count; i++)
+				{
+					var renderer = m_Intersections[i];
+					if (ignoreList != null && ignoreList.Contains(renderer))
+						continue;
+
+					var transform = renderer.transform;
+
+					IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
+
+					if (IntersectionUtils.TestSphere(m_CollisionTester, transform, center, radius))
 					{
 						objects.Add(renderer.gameObject);
 						result = true;

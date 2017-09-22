@@ -200,6 +200,22 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			return Physics.CheckBox(center, halfExtents, orientation);
 		}
 
+		/// <summary>
+		/// Tests a sphere against a collider
+		/// </summary>
+		/// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+		/// <param name="obj">The object to test collision on</param>
+		/// <param name="center">The center of the sphere</param>
+		/// <param name="radius">The radius of the sphere</param>
+		/// <returns>The result of whether the sphere intersects with the object</returns>
+		public static bool TestSphere(MeshCollider collisionTester, Transform obj, Vector3 center, float radius)
+		{
+			center = obj.InverseTransformPoint(center);
+			radius *= obj.lossyScale.Inverse().x;
+
+			return Physics.CheckSphere(center, radius);
+		}
+
 		public static void SetupCollisionTester(MeshCollider collisionTester, Transform obj)
 		{
 			var mf = obj.GetComponent<MeshFilter>();
