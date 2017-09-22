@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	static class MaterialUtils
 	{
 		/// <summary>
-		/// Get a material clone; IMPORTANT: Make sure to call U.Destroy() on this material when done!
+		/// Get a material clone; IMPORTANT: Make sure to call ObjectUtils.Destroy() on this material when done!
 		/// </summary>
 		/// <param name="renderer">Renderer that will have its material clone and replaced</param>
 		/// <returns>Cloned material</returns>
@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		/// <summary>
-		/// Get a material clone; IMPORTANT: Make sure to call U.Destroy() on this material when done!
+		/// Get a material clone; IMPORTANT: Make sure to call ObjectUtils.Destroy() on this material when done!
 		/// </summary>
 		/// <param name="graphic">Graphic that will have its material cloned and replaced</param>
 		/// <returns>Cloned material</returns>
@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		}
 
 		/// <summary>
-		/// Clone all materials within a renderer; IMPORTANT: Make sure to call U.Destroy() on this material when done!
+		/// Clone all materials within a renderer; IMPORTANT: Make sure to call ObjectUtils.Destroy() on this material when done!
 		/// </summary>
 		/// <param name="renderer">Renderer that will have its materials cloned and replaced</param>
 		/// <returns>Cloned materials</returns>
@@ -47,6 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			{
 				sharedMaterials[i] = UnityObject.Instantiate(sharedMaterials[i]);
 			}
+
 			renderer.sharedMaterials = sharedMaterials;
 			return sharedMaterials;
 		}

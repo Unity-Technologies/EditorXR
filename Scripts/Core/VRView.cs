@@ -94,6 +94,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
+		public static Vector3 headCenteredOrigin
+		{
+			get
+			{
+				return UnityEngine.XR.XRDevice.GetTrackingSpaceType() == UnityEngine.XR.TrackingSpaceType.Stationary ? Vector3.up * HeadHeight : Vector3.zero;
+			}
+		}
+
 		public static event Action viewEnabled;
 		public static event Action viewDisabled;
 		public static event Action<EditorWindow> beforeOnGUI;
@@ -131,11 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Camera.transform.parent = m_CameraRig;
 			m_Camera.nearClipPlane = 0.01f;
 			m_Camera.farClipPlane = 1000f;
-
-			// Generally, we want to be at a standing height, so default to that
-			Vector3 position = m_CameraRig.position;
-			position.y = HeadHeight;
-			m_CameraRig.position = position;
+			m_CameraRig.position = headCenteredOrigin;
 			m_CameraRig.rotation = Quaternion.identity;
 
 			m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);

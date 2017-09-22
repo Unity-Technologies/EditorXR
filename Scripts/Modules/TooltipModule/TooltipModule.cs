@@ -26,16 +26,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		[SerializeField]
 		Material m_HighlightMaterial;
 
+		[SerializeField]
+		Material m_TooltipBackgroundMaterial;
+
 		class TooltipData
 		{
 			public float startTime;
 			public TooltipUI tooltipUI;
+			public Material customHighlightMaterial;
 		}
 
 		readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
 
 		Transform m_TooltipCanvas;
 		Vector3 m_TooltipScale;
+		Color m_OriginalBackgroundColor;
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<ITooltip> m_TooltipsToHide = new List<ITooltip>();
@@ -46,6 +51,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_TooltipCanvas.SetParent(transform);
 			m_TooltipScale = m_TooltipPrefab.transform.localScale;
 			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
+			m_TooltipBackgroundMaterial = Instantiate(m_TooltipBackgroundMaterial);
+			m_OriginalBackgroundColor = m_TooltipBackgroundMaterial.color;
 			var sessionGradient = UnityBrandColorScheme.sessionGradient;
 			m_HighlightMaterial.SetColor(k_MaterialColorTopProperty, sessionGradient.a);
 			m_HighlightMaterial.SetColor(k_MaterialColorBottomProperty, sessionGradient.b);
@@ -71,6 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						tooltipUI = tooltipObject.GetComponent<TooltipUI>();
 						tooltipData.tooltipUI = tooltipUI;
 						tooltipUI.highlight.material = m_HighlightMaterial;
+						tooltipUI.background.material = m_TooltipBackgroundMaterial;
 						var tooltipTransform = tooltipObject.transform;
 						MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
 						tooltipTransform.localScale = Vector3.zero;
@@ -112,12 +120,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var tooltipTransform = tooltipUI.transform;
 
+			lerp = MathUtilsExt.SmoothInOutLerpFloat(lerp); // shape the lerp for better presentation
+
 			var tooltipText = tooltipUI.text;
 			if (tooltipText)
+			{
 				tooltipText.text = tooltip.tooltipText;
+				tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
+			}
 
 			var viewerScale = this.GetViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
+
+			TooltipData toolTipData;
+			m_Tooltips.TryGetValue(tooltip, out toolTipData);
+			var highlightMaterial = toolTipData != null ? toolTipData.customHighlightMaterial : m_HighlightMaterial;
+			tooltipUI.highlight.material= highlightMaterial;
+
+			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
 
 			var placement = tooltip as ITooltipPlacement;
 
@@ -224,9 +244,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (m_Tooltips.ContainsKey(tooltip))
 				return;
 
+			Material highlightMaterial = null;
+			var customToolTipColor = tooltip as ISetCustomTooltipColor;
+			if (customToolTipColor != null)
+			{
+				highlightMaterial = Instantiate(m_HighlightMaterial);
+				var customToolTipHighlightColor = customToolTipColor.customToolTipHighlightColor;
+				highlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipHighlightColor.a);
+				highlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipHighlightColor.b);
+			}
+
 			m_Tooltips[tooltip] = new TooltipData
 			{
-				startTime = Time.realtimeSinceStartup
+				startTime = Time.realtimeSinceStartup,
+				customHighlightMaterial = highlightMaterial
 			};
 		}
 

@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class ISelectToolMethods
 	{
-		internal static Func<Transform, Type, bool> selectTool { get; set; }
+		internal static Func<Transform, Type, bool, bool> selectTool { get; set; }
 		internal static Func<Transform, Type, bool> isToolActive { get; set; }
 
 		/// <summary>
@@ -22,9 +22,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin that the tool should spawn under</param>
 		/// <param name="toolType">Type of tool to spawn/select</param>
-		public static bool SelectTool(this ISelectTool obj, Transform rayOrigin, Type toolType)
+		/// <param name="despawnOnReselect">Despawn the tool, if re-selected while already the current tool</param>
+		public static bool SelectTool(this ISelectTool obj, Transform rayOrigin, Type toolType, bool despawnOnReselect = true)
 		{
-			return selectTool(rayOrigin, toolType);
+			return selectTool(rayOrigin, toolType, despawnOnReselect);
 		}
 
 		/// <summary>
