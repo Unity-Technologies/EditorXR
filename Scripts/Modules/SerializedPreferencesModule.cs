@@ -62,14 +62,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var serializer = obj as ISerializePreferences;
 			if (serializer != null)
+			{
+				if (m_Preferences != null)
+					Deserialize(serializer);
+
 				m_Serializers.Add(serializer);
+			}
 		}
 
 		public void DisconnectInterface(object obj, Transform rayOrigin = null)
 		{
 			var serializer = obj as ISerializePreferences;
 			if (serializer != null)
+			{
+				// TODO: Support serializing one type at a time
+				SerializePreferences();
 				m_Serializers.Remove(serializer);
+			}
 		}
 
 		internal void DeserializePreferences(string serializedPreferences)
@@ -81,12 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				foreach (var serializer in m_Serializers)
 				{
-					SerializedPreferenceItem item;
-					if (m_Preferences.items.TryGetValue(serializer.GetType(), out item))
-					{
-						var payload = JsonUtility.FromJson(item.payload, Type.GetType(item.payloadType));
-						serializer.OnDeserializePreferences(payload);
-					}
+					Deserialize(serializer);
 				}
 			}
 		}
@@ -119,6 +123,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			return JsonUtility.ToJson(m_Preferences);
+		}
+
+		void Deserialize(ISerializePreferences serializer)
+		{
+			SerializedPreferenceItem item;
+			if (m_Preferences.items.TryGetValue(serializer.GetType(), out item))
+			{
+				var payload = JsonUtility.FromJson(item.payload, Type.GetType(item.payloadType));
+				serializer.OnDeserializePreferences(payload);
+			}
 		}
 	}
 }

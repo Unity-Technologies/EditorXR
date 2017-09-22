@@ -72,7 +72,7 @@ GameObject:
   - component: {fileID: 224000010858218954}
   - component: {fileID: 114000011920048442}
   m_Layer: 5
-  m_Name: Blink
+  m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -122,7 +122,7 @@ GameObject:
   - component: {fileID: 224000011444372664}
   - component: {fileID: 114000013714903302}
   m_Layer: 5
-  m_Name: Fly
+  m_Name: Transform
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -158,7 +158,7 @@ GameObject:
   - component: {fileID: 114000012940195592}
   - component: {fileID: 114261882201029984}
   m_Layer: 5
-  m_Name: LocomotionMode
+  m_Name: Grouping Mode
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -284,7 +284,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Blink
+  m_Text: Mesh
 --- !u!114 &114000011835530144
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -389,7 +389,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Fly
+  m_Text: Transform
 --- !u!114 &114000012940195592
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -528,7 +528,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: '  Locomotion Mode:'
+  m_Text: '  Annotation Grouping Mode:'
 --- !u!114 &114261882201029984
 MonoBehaviour:
   m_ObjectHideFlags: 1

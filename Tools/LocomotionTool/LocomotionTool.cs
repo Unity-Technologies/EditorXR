@@ -107,6 +107,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			set
 			{
+				if (value == null)
+				{
+					m_FlyToggle = null;
+					m_BlinkToggle = null;
+					return;
+				}
+
 				var defaultToggleGroup = value.GetComponentInChildren<DefaultToggleGroup>();
 				foreach (var toggle in value.GetComponentsInChildren<Toggle>())
 				{
@@ -602,9 +609,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				foreach (var linkedObject in linkedObjects)
 				{
 					((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
-					m_BlinkToggle.isOn = m_Preferences.blinkMode;
-					m_FlyToggle.isOn = !m_Preferences.blinkMode;
 				}
+
+				//Setting toggles on this tool's menu will set them on other tool menus
+				m_BlinkToggle.isOn = m_Preferences.blinkMode;
+				m_FlyToggle.isOn = !m_Preferences.blinkMode;
 			}
 		}
 	}
