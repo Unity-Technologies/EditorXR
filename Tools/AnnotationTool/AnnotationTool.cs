@@ -199,10 +199,9 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
 		SetupPreferences();
 
-		this.AddRayVisibilitySettings(rayOrigin, this, false, false);
-
 		if (primary)
 		{
+			this.AddRayVisibilitySettings(rayOrigin, this, false, false);
 			SetupBrushUI();
 			HandleBrushSize(m_Preferences.brushSize);
 
