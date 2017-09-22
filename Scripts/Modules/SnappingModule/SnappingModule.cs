@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
 	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
-		IRaycast
+		IRaycast, IStandardIgnoreList
 	{
 		const float k_GroundPlaneScale = 1000f;
 

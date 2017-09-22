@@ -197,7 +197,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			halfExtents = Vector3.Scale(halfExtents, obj.lossyScale.Inverse());
 			orientation = Quaternion.Inverse(obj.rotation) * orientation;
 
-			return Physics.CheckBox(center, halfExtents, orientation);
+			foreach (var intersection in Physics.OverlapBox(center, halfExtents, orientation))
+			{
+				if (intersection.gameObject == collisionTester.gameObject)
+					return true;
+			}
+
+			return false;
 		}
 
 		/// <summary>
@@ -210,10 +216,58 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>The result of whether the sphere intersects with the object</returns>
 		public static bool TestSphere(MeshCollider collisionTester, Transform obj, Vector3 center, float radius)
 		{
-			center = obj.InverseTransformPoint(center);
-			radius *= obj.lossyScale.Inverse().x;
+			if (obj.lossyScale == Vector3.zero)
+				return false;
 
-			return Physics.CheckSphere(center, radius);
+			//Because our sphere check cannot be non-uniformly scaled, transform the test object instead
+			var testerTransform = collisionTester.transform;
+			testerTransform.position = obj.position;
+			testerTransform.rotation = obj.rotation;
+
+			//Negative scales cause mesh read errors
+			var objScale = obj.lossyScale;
+			UndoInverseScale(ref objScale.x, ref center, obj);
+			UndoInverseScale(ref objScale.y, ref center, obj);
+			UndoInverseScale(ref objScale.z, ref center, obj);
+
+			//Zero scales cause mesh read errors
+			PadZeroScale(ref objScale.x);
+			PadZeroScale(ref objScale.y);
+			PadZeroScale(ref objScale.z);
+
+			testerTransform.localScale = objScale;
+
+			var overlaps = Physics.OverlapSphere(center, radius);
+
+			testerTransform.position = Vector3.zero;
+			testerTransform.localScale = Vector3.one;
+			testerTransform.rotation = Quaternion.identity;
+
+			foreach (var intersection in overlaps)
+			{
+				if (intersection.gameObject == collisionTester.gameObject)
+					return true;
+			}
+
+			return false;
+		}
+
+		static void UndoInverseScale(ref float scale, ref Vector3 center, Transform obj)
+		{
+			if (scale < 0)
+			{
+				scale *= -1;
+				var offset = center - obj.position;
+				offset = Quaternion.AngleAxis(180, obj.up) * offset;
+				center = obj.position + offset;
+			}
+		}
+
+		static void PadZeroScale(ref float scale)
+		{
+			const float epsilon = 1e-5f;
+			if (Mathf.Approximately(scale, 0))
+				scale = epsilon;
 		}
 
 		public static void SetupCollisionTester(MeshCollider collisionTester, Transform obj)

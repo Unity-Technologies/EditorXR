@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
 		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
 		IUsesProxyType, IMenuIcon, IGetPointerLength, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
-		ISettingsMenuItemProvider, ISerializePreferences
+		ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction
 	{
 		const float k_MultiselectHueShift = 0.5f;
 		const float k_BLockSelectDragThreshold = 0.01f;
@@ -79,6 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public event Action<GameObject, Transform> hovered;
 
+		public List<Renderer> ignoreList { private get; set; }
 		public List<ILinkedObject> linkedObjects { get; set; }
 		public Type proxyType { get; set; }
 
@@ -215,8 +216,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						continue;
 
 					var selectionRayOrigin = selectionTool.rayOrigin;
-					if (!this.IsRayVisible(selectionRayOrigin))
-						continue;
 
 					var hover = this.GetFirstGameObject(selectionRayOrigin);
 
@@ -301,17 +300,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			if (!IsRayActive())
-				return;
+			GameObject hoveredObject = null;
+			var rayActive = IsRayActive();
+			if (rayActive)
+			{
+				// Need to call GetFirstGameObject a second time because we do not guarantee shared updater executes first
+				hoveredObject = this.GetFirstGameObject(rayOrigin);
 
-			// Need to call GetFirstGameObject a second time because we do not guarantee shared updater executes first
-			var hoveredObject = this.GetFirstGameObject(rayOrigin);
+				if (hovered != null)
+					hovered(hoveredObject, rayOrigin);
 
-			if (hovered != null)
-				hovered(hoveredObject, rayOrigin);
-
-			if (!GetSelectionCandidate(ref hoveredObject))
-				return;
+				if (!GetSelectionCandidate(ref hoveredObject))
+					return;
+			}
 
 			var pointerPosition = this.GetPointerPosition(rayOrigin);
 
@@ -322,8 +323,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_SelectStartPosition = pointerPosition;
 
 				// Ray selection only if ray is visible
-				if (this.IsRayVisible(rayOrigin))
-					m_PressedObject = hoveredObject;
+				m_PressedObject = hoveredObject;
 			}
 
 			if (select.isHeld)
@@ -338,6 +338,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					m_PressedObject = null;
 					this.AddRayVisibilitySettings(rayOrigin, this, false, true);
+					this.SetUIBlockedForRayOrigin(rayOrigin, true);
 				}
 
 				if (m_BlockSelect)
@@ -355,13 +356,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					visualsTransform.localScale = Vector3.one * distance * 2;
 					visualsTransform.position = m_SelectStartPosition;
-					this.CheckSphere(m_SelectStartPosition, distance, m_BlockSelectHoverGameObjects);
+					this.CheckSphere(m_SelectStartPosition, distance, m_BlockSelectHoverGameObjects, ignoreList);
 				}
 				else
 				{
 					visualsTransform.localScale = startToEnd;
 					visualsTransform.position = m_SelectStartPosition + startToEnd * 0.5f;
-					this.CheckBounds(m_BlockSelectCubeRenderer.bounds, m_BlockSelectHoverGameObjects);
+					this.CheckBounds(m_BlockSelectCubeRenderer.bounds, m_BlockSelectHoverGameObjects, ignoreList);
 				}
 
 				foreach (var hover in m_BlockSelectHoverGameObjects)
@@ -369,10 +370,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					this.SetHighlight(hover, true, rayOrigin);
 				}
 
-				consumeControl(select);
+				if (m_BlockSelect)
+					consumeControl(select);
 			}
 
-			// Select button on release
+			// Make selection on release
 			if (select.wasJustReleased)
 			{
 				if (m_BlockSelect)
@@ -393,7 +395,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					this.ResetDirectSelectionState();
 				}
-				else
+				else if (rayActive)
 				{
 					if (m_PressedObject == hoveredObject)
 					{
@@ -407,6 +409,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					if (m_PressedObject)
 						consumeControl(select);
 				}
+
+				this.SetUIBlockedForRayOrigin(rayOrigin, false);
 				this.RemoveRayVisibilitySettings(rayOrigin, this);
 				(m_Preferences.sphereMode ? m_BlockSelectSphere : m_BlockSelectCube).SetActive(false);
 				m_PressedObject = null;
@@ -457,6 +461,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return false;
 
 			if (this.IsInMiniWorld(rayOrigin))
+				return false;
+
+			if (!this.IsRayVisible(rayOrigin))
 				return false;
 
 			return true;

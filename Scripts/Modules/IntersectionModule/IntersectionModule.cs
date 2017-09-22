@@ -1,18 +1,20 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
+	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking, IInterfaceConnector
 	{
 		const int k_MaxTestsPerTester = 250;
 
 		readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
 		readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
 		readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
+		readonly List<Renderer> m_StandardIgnoreList = new List<Renderer>();
 
 		SpatialHash<Renderer> m_SpatialHash; 
 		MeshCollider m_CollisionTester;
@@ -27,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public List<IntersectionTester> testers { get { return m_Testers; } }
 		public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
 		public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
+		public List<Renderer> standardIgnoreList { get { return m_StandardIgnoreList; } }
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<Renderer> m_Intersections = new List<Renderer>();
@@ -301,6 +304,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			return result;
+		}
+
+		public void ConnectInterface(object obj, Transform rayOrigin = null)
+		{
+			var standardIgnoreList = obj as IStandardIgnoreList;
+			if (standardIgnoreList != null)
+				standardIgnoreList.ignoreList = m_StandardIgnoreList;
+		}
+
+		public void DisconnectInterface(object obj, Transform rayOrigin = null)
+		{
 		}
 	}
 }
