@@ -39,6 +39,30 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Does this menu have focus?
 		/// </summary>
 		bool focus { get; }
+
+		/// <summary>
+		/// Add a settings menu to this menu
+		/// </summary>
+		/// <param name="provider">The object providing the settings menu</param>
+		void AddSettingsMenu(ISettingsMenuProvider provider);
+
+		/// <summary>
+		/// Remove a settings menu from this menu
+		/// </summary>
+		/// <param name="provider">The object which provided the settings menu</param>
+		void RemoveSettingsMenu(ISettingsMenuProvider provider);
+
+		/// <summary>
+		/// Add a settings menu item to this menu
+		/// </summary>
+		/// <param name="provider">The object providing the settings menu item</param>
+		void AddSettingsMenuItem(ISettingsMenuItemProvider provider);
+
+		/// <summary>
+		/// Remove a settings menu item from this menu
+		/// </summary>
+		/// <param name="provider">The object which provided the settings menu item</param>
+		void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider);
 	}
 }
 #endif
