@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					allWorkspaces.allWorkspaces = workspaceModule.workspaces;
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 			}
 		}

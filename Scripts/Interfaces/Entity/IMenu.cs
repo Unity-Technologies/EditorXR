@@ -1,5 +1,6 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEngine;
+using UnityEditor.Experimental.EditorVR.Menus;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -9,9 +10,9 @@ namespace UnityEditor.Experimental.EditorVR
 	public interface IMenu
 	{
 		/// <summary>
-		/// Controls whether the menu is visible or not
+		/// Visibility state of this menu
 		/// </summary>
-		bool visible { get; set; }
+		MenuHideFlags menuHideFlags { get; set; }
 
 		/// <summary>
 		/// GameObject that this component is attached to
@@ -22,6 +23,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Root GameObject for visible menu content
 		/// </summary>
 		GameObject menuContent { get; }
+
+		/// <summary>
+		/// The local bounds of this menu
+		/// </summary>
+		Bounds localBounds { get; }
 	}
 }
 #endif

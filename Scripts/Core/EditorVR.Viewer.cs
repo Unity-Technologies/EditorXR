@@ -1,6 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -39,6 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			PlayerBody m_PlayerBody;
 			float m_OriginalNearClipPlane;
 			float m_OriginalFarClipPlane;
+			readonly List<Renderer> m_VRPlayerObjects = new List<Renderer>();
 
 			readonly Preferences m_Preferences = new Preferences();
 
@@ -55,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
 				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
 				IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
+				IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
 
 				VRView.hmdStatusChange += OnHMDStatusChange;
 
@@ -78,16 +81,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
-				var locomotion = obj as ILocomotor;
-				if (locomotion != null)
-					locomotion.cameraRig = VRView.cameraRig;
-
 				var usesCameraRig = obj as IUsesCameraRig;
 				if (usesCameraRig != null)
 					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 			}
 
@@ -157,6 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (evr.m_PreviewCameraPrefab)
 				{
 					var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
+					go.transform.SetParent(CameraUtils.GetCameraRig(), false);
 
 					customPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
 					if (customPreviewCamera != null)
@@ -181,7 +181,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				m_PlayerBody = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
 				var renderer = m_PlayerBody.GetComponent<Renderer>();
 				evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
-				evr.GetModule<SnappingModule>().ignoreList = renderer.GetComponentsInChildren<Renderer>(true);
+				renderer.GetComponentsInChildren(true, m_VRPlayerObjects);
+				evr.GetModule<SnappingModule>().ignoreList = m_VRPlayerObjects;
 			}
 
 			internal bool IsOverShoulder(Transform rayOrigin)

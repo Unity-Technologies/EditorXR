@@ -41,6 +41,38 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		readonly List<KeyValuePair<Transform, GameObject>> m_HoveredGameObjects = new List<KeyValuePair<Transform, GameObject>>();
 
+		public override List<HierarchyData> data
+		{
+			set
+			{
+				base.data = value;
+
+				if (m_Data != null && m_Data.Count > 0)
+				{
+					// Remove any objects that don't exist any more
+					var missingKeys = m_Data.Select(d => d.index).Except(m_ExpandStates.Keys);
+					foreach (var key in missingKeys)
+					{
+						m_ExpandStates.Remove(key);
+					}
+
+					// Expand the scenes by default
+					foreach (var scene in m_Data)
+					{
+						var instanceID = scene.index;
+						if (!m_ExpandStates.ContainsKey(instanceID))
+							m_ExpandStates[instanceID] = true;
+					}
+
+					foreach (var d in m_Data)
+					{
+						if (!m_ExpandStates.ContainsKey(d.index))
+							m_ExpandStates[d.index] = false;
+					}
+				}
+			}
+		}
+
 		public string lockedQueryString { private get; set; }
 
 		public Action<int> selectRow { private get; set; }
@@ -127,7 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void UpdateHierarchyItem(HierarchyData data, ref float offset, int depth, bool? expanded, ref bool doneSettling)
+		void UpdateHierarchyItem(HierarchyData data, int order, ref float offset, int depth, bool? expanded, ref bool doneSettling)
 		{
 			var index = data.index;
 			HierarchyListItem item;
@@ -154,14 +186,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			SetMaterialClip(item.dropZoneMaterial, transform.worldToLocalMatrix);
 
 			m_VisibleItemHeight+= itemSize.z;
-			UpdateItem(item.transform, offset + m_ScrollOffset, ref doneSettling);
+			UpdateItem(item.transform, order, offset + m_ScrollOffset, ref doneSettling);
 
 			var extraSpace = item.extraSpace * itemSize.z;
 			offset += extraSpace;
 			m_VisibleItemHeight += extraSpace;
 		}
 
-		protected override void UpdateRecursively(List<HierarchyData> data, ref float offset, ref bool doneSettling, int depth = 0)
+		protected override void UpdateRecursively(List<HierarchyData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
 		{
 			for (int i = 0; i < data.Count; i++)
 			{
@@ -211,27 +243,27 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 						if (shouldRecycle)
 							Recycle(index);
 						else
-							UpdateHierarchyItem(datum, ref offset, 0, null, ref doneSettling);
+							UpdateHierarchyItem(datum, order++, ref offset, 0, null, ref doneSettling);
 
 						offset += itemSize.z;
 					}
 
 					if (hasChildren)
-						UpdateRecursively(datum.children, ref offset, ref doneSettling);
+						UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling);
 				}
 				else
 				{
 					if (shouldRecycle)
 						Recycle(index);
 					else
-						UpdateHierarchyItem(datum, ref offset, depth, expanded, ref doneSettling);
+						UpdateHierarchyItem(datum, order++, ref offset, depth, expanded, ref doneSettling);
 
 					offset += itemSize.z;
 
 					if (hasChildren)
 					{
 						if (expanded)
-							UpdateRecursively(datum.children, ref offset, ref doneSettling, depth + 1);
+							UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling, depth + 1);
 						else
 							RecycleChildren(datum);
 					}

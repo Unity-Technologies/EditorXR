@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			public void DisconnectInterface(object obj)
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
 				var usesHierarchy = obj as IUsesHierarchyData;
 				if (usesHierarchy != null)

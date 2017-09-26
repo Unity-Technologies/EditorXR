@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
 	static class IConnectInterfacesMethods
 	{
 		internal delegate void ConnectInterfacesDelegate(object obj, Transform rayOrigin = null);
-		internal delegate void DisonnectInterfacesDelegate(object obj);
+		internal delegate void DisonnectInterfacesDelegate(object obj, Transform rayOrigin = null);
 
 		internal static ConnectInterfacesDelegate connectInterfaces { get; set; }
 		internal static DisonnectInterfacesDelegate disconnectInterfaces { get; set; }
@@ -32,9 +32,10 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Method provided by the system for disconnecting interfaces
 		/// </summary>
 		/// <param name="obj">Object to disconnect interfaces on</param>
-		public static void DisonnectInterfaces(this IConnectInterfaces ci, object obj)
+		/// /// <param name="rayOrigin">(Optional) ray origin (needed for disconnecting ray-based interfaces)</param>
+		public static void DisonnectInterfaces(this IConnectInterfaces ci, object obj, Transform rayOrigin = null)
 		{
-			disconnectInterfaces(obj);
+			disconnectInterfaces(obj, rayOrigin);
 		}
 	}
 

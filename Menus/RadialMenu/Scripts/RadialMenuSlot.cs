@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -56,7 +57,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public bool pressed
 		{
-			get { return m_Pressed; }
 			set
 			{
 				// Proceed only if value is true after previously being false
@@ -88,6 +88,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					// Only start the highlight coroutine if the highlight coroutine isnt already playing. Otherwise allow it to gracefully finish.
 					if (m_HighlightCoroutine == null)
 						m_HighlightCoroutine = StartCoroutine(Highlight());
+
+					if (hovered != null)
+						hovered();
 				}
 				else
 				{
@@ -106,6 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public bool semiTransparent
 		{
+			get { return m_SemiTransparent; }
 			set
 			{
 				if (value == m_SemiTransparent || !gameObject.activeSelf)
@@ -116,14 +120,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateSemiTransparent(value));
 				PostReveal();
 			}
-
-			get { return m_SemiTransparent; }
 		}
 		bool m_SemiTransparent;
 
 		public bool visible
 		{
-			get { return m_Visible; }
 			set
 			{
 				if (value && m_Visible == value) // Allow false to fall through and perform hiding regardless of visibility
@@ -204,6 +205,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		// For overriding text (i.e. TransformActions)
 		public ITooltip tooltip { private get; set; }
 
+		public event Action hovered;
+
 		void Awake()
 		{
 			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
@@ -223,7 +226,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_FrameMaterial = MaterialUtils.GetMaterialClone(m_FrameRenderer);
 			var frameMaterialColor = m_FrameMaterial.color;
 			s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
-			m_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.125f);
+			m_SemiTransparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0.5f);
 		}
 
 		void OnDisable()
@@ -233,7 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 		}
 
-		private void OnDestroy()
+		void OnDestroy()
 		{
 			ObjectUtils.Destroy(m_InsetMaterial);
 			ObjectUtils.Destroy(m_IconMaterial);
@@ -445,7 +448,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			if (m_InsetRevealCoroutine != null)
 			{
-				// In case semiTransparency is triggered immedlately upon showing the radial menu
+				// In case semiTransparency is triggered immediately upon showing the radial menu
 				this.StopCoroutine(ref m_InsetRevealCoroutine);
 				m_CanvasGroup.alpha = 1f;
 				PostReveal();
@@ -455,15 +458,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			var transitionAmount = Time.deltaTime;
 			var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
 			var currentScale = transform.localScale;
-			var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
-			var targetScale = makeSemiTransparent ? semiTransparentTargetScale : Vector3.one;
+			var targetScale = Vector3.one;
 			var currentFrameColor = m_FrameMaterial.color;
 			var transparentFrameColor = new Color (s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0f);
 			var targetFrameColor = m_CanvasGroup.interactable ? (makeSemiTransparent ? m_SemiTransparentFrameColor : s_FrameOpaqueColor) : transparentFrameColor;
 			var currentInsetAlpha = m_InsetMaterial.GetFloat(k_MaterialAlphaProperty);
 			var targetInsetAlpha = makeSemiTransparent ? 0.25f : 1f;
 			var currentIconColor = m_IconMaterial.GetColor(k_MaterialColorProperty);
-			var targetIconColor = makeSemiTransparent ? m_SemiTransparentFrameColor * 2 : Color.white;
+			var targetIconColor = makeSemiTransparent ? m_SemiTransparentFrameColor : Color.white;
 			var currentInsetScale = m_MenuInset.localScale;
 			var targetInsetScale = makeSemiTransparent ? m_HighlightedInsetLocalScale * 4 : m_VisibleInsetLocalScale;
 			var currentIconScale = m_IconContainer.localScale;
@@ -498,20 +500,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			this.RestartCoroutine(ref m_RayExitDelayCoroutine, RayExitDelay());
-		}
-
-		IEnumerator RayExitDelay()
-		{
-			// Wait before setting highlighted to false if the user is moving the ray between slots
-			// This delay prevents highlight flickering when navigating the menu via ray vs analog input
-			var duration = Time.deltaTime;
-			while (duration < 0.2f)
-			{
-				duration += Time.deltaTime;
-				yield return null;
-			}
-
 			highlighted = false;
 		}
 	}

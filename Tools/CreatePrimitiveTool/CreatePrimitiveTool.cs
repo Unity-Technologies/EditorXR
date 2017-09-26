@@ -7,10 +7,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
-		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool
+		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
+		IRayVisibilitySettings, IMenuIcon
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
+
+		[SerializeField]
+		Sprite m_Icon;
 
 		const float k_DrawDistance = 0.075f;
 
@@ -28,15 +32,20 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Transform rayOrigin { get; set; }
 
+		public Sprite icon { get { return m_Icon; } }
+
 		enum PrimitiveCreationStates
 		{
 			StartPoint,
 			EndPoint,
-			Freeform,
+			Freeform
 		}
 
 		void Start()
 		{
+			// Clear selection so we can't manipulate things
+			Selection.activeGameObject = null;
+
 			m_ToolMenu = this.InstantiateMenuUI(rayOrigin, m_MenuPrefab);
 			var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
 			this.ConnectInterfaces(createPrimitiveMenu, rayOrigin);
@@ -46,6 +55,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			if (!IsActive())
+				return;
+
 			var standardInput = (Standard)input;
 
 			switch (m_State)
@@ -70,6 +82,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					break;
 				}
 			}
+
+			if (m_State == PrimitiveCreationStates.StartPoint && this.IsHoveringOverUI(rayOrigin))
+				this.RemoveRayVisibilitySettings(rayOrigin, this);
+			else
+				this.AddRayVisibilitySettings(rayOrigin, this, false, true);
 		}
 
 		void SetSelectedPrimitive(PrimitiveType type, bool isFreeform)
@@ -104,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			var corner = (m_EndPoint - m_StartPoint).magnitude;
 
-			// it feels better to scale these primitives vertically with the drawpoint
+			// it feels better to scale these primitives vertically with the draw point
 			if (m_SelectedPrimitiveType == PrimitiveType.Capsule || m_SelectedPrimitiveType == PrimitiveType.Cylinder || m_SelectedPrimitiveType == PrimitiveType.Cube)
 				m_CurrentGameObject.transform.localScale = Vector3.one * corner * 0.5f;
 			else
@@ -121,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			var maxCorner = Vector3.Max(m_StartPoint, m_EndPoint);
 			var minCorner = Vector3.Min(m_StartPoint, m_EndPoint);
-			m_CurrentGameObject.transform.localScale = (maxCorner - minCorner);
+			m_CurrentGameObject.transform.localScale = maxCorner - minCorner;
 		}
 
 		void CheckForTriggerRelease(Standard standardInput, ConsumeControlDelegate consumeControl)
@@ -135,6 +152,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
+		bool IsActive()
+		{
+			return !this.IsMainMenuVisible(rayOrigin);
+		}
+
 		void Close()
 		{
 			this.SelectTool(rayOrigin, GetType());
@@ -143,6 +165,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		void OnDestroy()
 		{
 			ObjectUtils.Destroy(m_ToolMenu);
+
+			if (rayOrigin == null)
+				return;
+
+			this.RemoveRayVisibilitySettings(rayOrigin, this);
 		}
 	}
 }

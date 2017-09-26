@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -38,6 +38,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public float distance;
 		}
 
+		void Awake()
+		{
+			IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
+
+			IRaycastMethods.raycast = Raycast;
+		}
+
 		internal void Setup(SpatialHash<Renderer> hash)
 		{
 			m_SpatialHash = hash;
@@ -69,9 +76,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				{
 					var intersectionFound = false;
 					m_Intersections.Clear();
-					if (m_SpatialHash.GetIntersections(m_Intersections, tester.renderer.bounds))
+					var testerCollider = tester.collider;
+					if (m_SpatialHash.GetIntersections(m_Intersections, testerCollider.bounds))
 					{
-						var testerBounds = tester.renderer.bounds;
+						var testerBounds = testerCollider.bounds;
 						var testerBoundsCenter = testerBounds.center;
 
 						m_SortedIntersections.Clear();
@@ -172,8 +180,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal Renderer GetIntersectedObjectForTester(IntersectionTester tester)
 		{
-			Renderer obj;
-			m_IntersectedObjects.TryGetValue(tester, out obj);
+			Renderer obj = null;
+			if (tester)
+				m_IntersectedObjects.TryGetValue(tester, out obj);
+
 			return obj;
 		}
 
@@ -198,7 +208,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
 		}
 
-		internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
+		internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<Renderer> ignoreList = null)
 		{
 			obj = null;
 			hit = new RaycastHit();
@@ -210,11 +220,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				for (int i = 0; i < m_Intersections.Count; i++)
 				{
 					var renderer = m_Intersections[i];
-					var gameObject = renderer.gameObject;
-					if (ignoreList != null && ignoreList.Contains(gameObject))
+					if (ignoreList != null && ignoreList.Contains(renderer))
 						continue;
 
 					var transform = renderer.transform;
+
+					IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
 
 					RaycastHit tmp;
 					if (IntersectionUtils.TestRay(m_CollisionTester, transform, ray, out tmp, maxDistance))
@@ -228,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 							hit.distance = dist;
 							hit.point = point;
 							hit.normal = transform.TransformDirection(tmp.normal);
-							obj = gameObject;
+							obj = renderer.gameObject;
 						}
 					}
 				}

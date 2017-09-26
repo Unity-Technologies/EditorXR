@@ -65,9 +65,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// </summary>
 		/// <param name="parentRotation">Glboal rotation of the parent transform</param>
 		/// <returns></returns>
-		public static Quaternion LocalRotateTowardCamera(Quaternion parentRotation)
+		public static Quaternion LocalRotateTowardCamera(Transform parentTransform)
 		{
-			var camVector = Quaternion.Inverse(parentRotation) * GetMainCamera().transform.forward;
+			var toCamera = parentTransform.position - GetMainCamera().transform.position;
+			var camVector = Quaternion.Inverse(parentTransform.rotation) * toCamera;
 			camVector.x = 0;
 			return Quaternion.LookRotation(camVector, Vector3.Dot(camVector, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
 		}

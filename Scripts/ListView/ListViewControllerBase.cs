@@ -1,12 +1,13 @@
 ﻿#if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace ListView
 {
-	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler
+	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler, IControlHaptics
 	{
 		public float scrollOffset { get { return m_ScrollOffset; } set { m_ScrollOffset = value; } }
 
@@ -29,6 +30,9 @@ namespace ListView
 		[Tooltip("Item template prefabs (at least one is required)")]
 		[SerializeField]
 		protected GameObject[] m_Templates;
+
+		[SerializeField]
+		HapticPulse m_ScrollPulse;
 
 		[SerializeField]
 		protected float m_SettleSpeed = 0.4f;
@@ -64,7 +68,7 @@ namespace ListView
 
 		protected abstract float listHeight { get; }
 
-		public Vector3 size
+		public virtual Vector3 size
 		{
 			set
 			{
@@ -81,6 +85,9 @@ namespace ListView
 		void Update()
 		{
 			UpdateView();
+
+			if (m_Scrolling)
+				this.Pulse(null, m_ScrollPulse);
 		}
 
 		protected abstract void Setup();
@@ -158,14 +165,14 @@ namespace ListView
 			m_ScrollOffset = index * itemSize.z;
 		}
 
-		protected virtual void UpdateItem(Transform t, float offset, ref bool doneSettling)
+		protected virtual void UpdateItem(Transform t, int order, float offset, ref bool doneSettling)
 		{
 			var targetPosition = m_StartPosition + offset * Vector3.back;
 			var targetRotation = Quaternion.identity;
-			UpdateItemTransform(t, targetPosition, targetRotation, false, ref doneSettling);
+			UpdateItemTransform(t, order, targetPosition, targetRotation, false, ref doneSettling);
 		}
 
-		protected virtual void UpdateItemTransform(Transform t, Vector3 targetPosition, Quaternion targetRotation, bool dontSettle, ref bool doneSettling)
+		protected virtual void UpdateItemTransform(Transform t, int order, Vector3 targetPosition, Quaternion targetRotation, bool dontSettle, ref bool doneSettling)
 		{
 			if (m_Settling && !dontSettle)
 			{
@@ -182,6 +189,8 @@ namespace ListView
 				t.localPosition = targetPosition;
 				t.localRotation = targetRotation;
 			}
+
+			t.SetSiblingIndex(order);
 		}
 
 		protected virtual Vector3 GetObjectSize(GameObject g)
@@ -227,7 +236,7 @@ namespace ListView
 			material.SetVector("_ClipExtents", m_Extents);
 		}
 
-		public void OnScroll(PointerEventData eventData)
+		public virtual void OnScroll(PointerEventData eventData)
 		{
 			if (m_Settling)
 				return;

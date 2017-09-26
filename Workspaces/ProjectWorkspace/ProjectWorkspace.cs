@@ -7,7 +7,6 @@ using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -15,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 	sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, ISerializeWorkspace
 	{
 		const float k_LeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds
-		const float k_YBounds = 0.2f;
+		const float k_YBounds = 0.1f;
 
 		const float k_MinScale = 0.04f;
 		const float k_MaxScale = 0.09f;
@@ -82,8 +81,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(MinBounds.x, MinBounds.y, 0.5f);
-			m_CustomStartingBounds = new Vector3(0.8f, 0.4f, 0.5f);
+			minBounds = new Vector3(MinBounds.x, k_YBounds, 0.5f);
+			m_CustomStartingBounds = new Vector3(0.8f, k_YBounds, 0.5f);
 
 			base.Setup();
 
@@ -108,6 +107,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				this.ConnectInterfaces(mb);
 			}
 			filterList = m_FilterList;
+
+			foreach (var button in m_FilterUI.GetComponentsInChildren<WorkspaceButton>())
+			{
+				button.clicked += OnButtonClicked;
+				button.hovered += OnButtonHovered;
+			}
 
 			var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
 			m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
@@ -157,10 +162,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			var folderListView = m_ProjectUI.folderListView;
 
-			var preferences = new Preferences();
-			preferences.scaleFactor = m_ProjectUI.assetGridView.scaleFactor;
-			preferences.expandedFolders = folderListView.expandStates.Where(es => es.Value).Select(es => es.Key).ToList();
-			preferences.selectedFolder = folderListView.selectedFolder;
+			var preferences = new Preferences
+			{
+				scaleFactor = m_ProjectUI.assetGridView.scaleFactor,
+				expandedFolders = folderListView.expandStates.Where(es => es.Value).Select(es => es.Key).ToList(),
+				selectedFolder = folderListView.selectedFolder
+			};
 			return preferences;
 		}
 

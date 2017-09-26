@@ -1,0 +1,28 @@
+﻿#if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR
+{
+	/// <summary>
+	/// Provides access to the gameobjects that represent the VR player
+	/// </summary>
+	public interface IGetVRPlayerObjects
+	{
+	}
+
+	public static class IGetVRPlayerObjectsMethods
+	{
+		internal static Func<List<Renderer>> getVRPlayerObjects { get; set; }
+
+		/// <summary>
+		/// Returns objects that are used to represent the VR player
+		/// </summary>
+		public static List<Renderer> GetVRPlayerObjects(this IGetVRPlayerObjects obj)
+		{
+			return getVRPlayerObjects();
+		}
+	}
+}
+#endif

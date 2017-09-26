@@ -29,8 +29,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public override void Setup()
 		{
 			// Initial bounds must be set before the base.Setup() is called
-			minBounds = new Vector3(0.375f, MinBounds.y, 0.3f);
-			m_CustomStartingBounds = new Vector3(0.375f, MinBounds.y, 0.6f);
+			minBounds = new Vector3(0.502f, MinBounds.y, 0.3f);
+			m_CustomStartingBounds = new Vector3(0.502f, MinBounds.y, 0.6f);
 
 			base.Setup();
 			var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
@@ -38,7 +38,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			m_LockUI = ObjectUtils.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
 			this.ConnectInterfaces(m_LockUI);
-			m_LockUI.lockButtonPressed += SetIsLocked;
+			m_LockUI.clicked += OnLockButtonClicked;
+			m_LockUI.hovered += OnButtonHovered;
 			EditorApplication.delayCall += m_LockUI.Setup; // Need to write stencilRef after WorkspaceButton does it
 
 			var listView = m_InspectorUI.listView;
@@ -65,6 +66,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			Undo.postprocessModifications += OnPostprocessModifications;
 			Undo.undoRedoPerformed += OnUndoRedo;
+
+			// Propagate initial bounds
+			OnBoundsChanged();
 		}
 
 		void OnUndoRedo()
@@ -346,6 +350,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			if (!m_IsLocked)
 				OnSelectionChanged();
+
+			OnButtonClicked(null);
 		}
 
 		protected override void OnDestroy()
@@ -353,6 +359,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			Undo.postprocessModifications -= OnPostprocessModifications;
 			Undo.undoRedoPerformed -= OnUndoRedo;
 			base.OnDestroy();
+		}
+
+		void OnLockButtonClicked(Transform rayOrigin)
+		{
+			SetIsLocked();
+			OnButtonClicked(rayOrigin);
 		}
 	}
 }

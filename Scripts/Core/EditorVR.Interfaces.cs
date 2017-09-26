@@ -51,12 +51,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					connectInterfaces(obj, rayOrigin);
 			}
 
-			internal void DisconnectInterfaces(object obj)
+			internal void DisconnectInterfaces(object obj, Transform rayOrigin = null)
 			{
 				m_ConnectedInterfaces.Remove(obj);
 
 				if (disconnectInterfaces != null)
-					disconnectInterfaces(obj);
+					disconnectInterfaces(obj, rayOrigin);
 			}
 		}
 	}
