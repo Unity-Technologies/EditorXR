@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public string tooltipText;
 	}
 
-	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReciever, ISetTooltipVisibility, ISetHighlight
+	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
 	{
 		const int k_RendererQueue = 9000;
 		const float k_FeedbackDuration = 5f;

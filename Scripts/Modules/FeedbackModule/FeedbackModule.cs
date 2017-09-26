@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		Preferences m_Preferences;
 
-		readonly List<IFeedbackReciever> m_FeedbackReceivers = new List<IFeedbackReciever>();
+		readonly List<IFeedbackReceiver> m_FeedbackReceivers = new List<IFeedbackReceiver>();
 
 		public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 
@@ -77,14 +77,14 @@ namespace UnityEditor.Experimental.EditorVR
 
 		public void ConnectInterface(object obj, Transform rayOrigin = null)
 		{
-			var feedbackReceiver = obj as IFeedbackReciever;
+			var feedbackReceiver = obj as IFeedbackReceiver;
 			if (feedbackReceiver != null)
 				m_FeedbackReceivers.Add(feedbackReceiver);
 		}
 
 		public void DisconnectInterface(object obj, Transform rayOrigin = null)
 		{
-			var feedbackReceiver = obj as IFeedbackReciever;
+			var feedbackReceiver = obj as IFeedbackReceiver;
 			if (feedbackReceiver != null)
 				m_FeedbackReceivers.Remove(feedbackReceiver);
 		}
@@ -128,9 +128,9 @@ namespace UnityEditor.Experimental.EditorVR
 			if (caller == null) // Requesters are not allowed to clear all requests
 				return;
 
-			foreach (var reciever in m_FeedbackReceivers)
+			foreach (var receiver in m_FeedbackReceivers)
 			{
-				reciever.ClearFeedbackRequests(caller);
+				receiver.ClearFeedbackRequests(caller);
 			}
 		}
 
