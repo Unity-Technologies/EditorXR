@@ -63,7 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								StopCoroutine(coroutine);
 
 							m_VacuumingCoroutines[vacuumableTransform] = StartCoroutine(VacuumToViewer(vacuumable));
-							consumeControl(vacuumInput.vacuum);
 						}
 
 						m_LastClickTime = realTime;

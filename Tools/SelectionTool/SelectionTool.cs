@@ -99,8 +99,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					if (m_MultiSelect)
 						this.ShowTooltip(this);
-
-					consumeControl(multiSelectControl);
 				}
 
 				m_LastMultiSelectClickTime = realTime;
