@@ -15,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		/// <summary>
 		/// An instance of the menu face prefab that was added to the menu
+		/// May be null if menu item could not be added to menu
 		/// </summary>
 		GameObject settingsMenuItemInstance { set; }
 

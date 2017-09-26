@@ -43,18 +43,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		float m_LastRotationInput;
 		MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
+		readonly Dictionary<ISettingsMenuProvider, GameObject> m_SettingsMenus = new Dictionary<ISettingsMenuProvider, GameObject>();
+		readonly Dictionary<ISettingsMenuItemProvider, GameObject> m_SettingsMenuItems = new Dictionary<ISettingsMenuItemProvider, GameObject>();
 
 		public List<Type> menuTools { private get; set; }
 		public List<Type> menuWorkspaces { private get; set; }
-		public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { private get; set; }
-		public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { private get; set; }
+		public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
+		public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
 		public List<ActionMenuData> menuActions { get; set; }
 		public Transform targetRayOrigin { private get; set; }
 		public Type proxyType { private get; set; }
 		public Node? node { get; set; }
-
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
-
 		public Transform rayOrigin { private get; set; }
 
 		public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
@@ -113,17 +113,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
-			m_MainMenuUI.buttonHovered += OnButtonHovered;
-			m_MainMenuUI.buttonClicked += OnButtonClicked;
 
-			var types = new HashSet<Type>();
-			types.UnionWith(menuTools);
-			types.UnionWith(menuWorkspaces);
-			types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Key));
-			types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Key));
-
-			CreateFaceButtons(types.ToList());
-			m_MainMenuUI.SetupMenuFaces();
+			CreateFaceButtons();
 			UpdateToolButtons();
 		}
 
@@ -155,8 +146,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				ObjectUtils.Destroy(m_MainMenuUI.gameObject);
 		}
 
-		void CreateFaceButtons(List<Type> types)
+		void CreateFaceButtons()
 		{
+			var types = new HashSet<Type>();
+			types.UnionWith(menuTools);
+			types.UnionWith(menuWorkspaces);
+			types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Key));
+			types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Key));
+
 			foreach (var type in types)
 			{
 				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
@@ -185,7 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (buttonData == null)
 						buttonData = new MainMenuUI.ButtonData(type.Name);
 
-					m_ToolButtons[type] = CreateFaceButton(buttonData, tooltip, () =>
+					var mainMenuButton = CreateFaceButton(buttonData, tooltip, () =>
 					{
 						if (targetRayOrigin)
 						{
@@ -193,6 +190,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 							UpdateToolButtons();
 						}
 					});
+
+					// Assign Tools Menu button preview properties
+					if (mainMenuButton != null)
+						mainMenuButton.toolType = selectedType;
 				}
 
 				if (isWorkspace)
@@ -213,18 +214,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						var kvp = providerPair.Key;
 						if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
-						{
-							var menuProvider = providerPair.Value;
-							if (buttonData == null)
-								buttonData = new MainMenuUI.ButtonData(type.Name);
-
-							buttonData.sectionName = k_SettingsMenuSectionName;
-
-							CreateFaceButton(buttonData, tooltip, () =>
-							{
-								menuProvider.settingsMenuInstance = m_MainMenuUI.AddSubmenu(k_SettingsMenuSectionName, menuProvider.settingsMenuPrefab);
-							});
-						}
+							AddSettingsMenu(providerPair.Value, buttonData, tooltip);
 					}
 				}
 
@@ -234,15 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						var kvp = providerPair.Key;
 						if (kvp.Key == type && (kvp.Value == null || kvp.Value == rayOrigin))
-						{
-							var itemProvider = providerPair.Value;
-							if (buttonData == null)
-								buttonData = new MainMenuUI.ButtonData(type.Name);
-
-							buttonData.sectionName = "Settings";
-
-							itemProvider.settingsMenuItemInstance = m_MainMenuUI.CreateCustomButton(itemProvider.settingsMenuItemPrefab, buttonData);
-						}
+							AddSettingsMenuItem(providerPair.Value);
 					}
 				}
 			}
@@ -251,14 +233,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		MainMenuButton CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback)
 		{
 			var mainMenuButton = m_MainMenuUI.CreateFaceButton(buttonData);
-			mainMenuButton.button.onClick.RemoveAllListeners();
-			mainMenuButton.button.onClick.AddListener(() =>
+			if (mainMenuButton == null)
+				return null;
+
+			var button = mainMenuButton.button;
+			button.onClick.RemoveAllListeners();
+			button.onClick.AddListener(() =>
 			{
 				if (m_MenuHideFlags == 0)
 					buttonClickCallback();
 			});
 
+			mainMenuButton.hovered += OnButtonHovered;
+			mainMenuButton.clicked += OnButtonClicked;
 			mainMenuButton.tooltip = tooltip;
+
 			return mainMenuButton;
 		}
 
@@ -275,14 +264,92 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
 		}
 
-		void OnButtonHovered(Transform rayOrigin)
+		void OnButtonHovered(Transform rayOrigin, Type buttonType, string buttonDescription)
 		{
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+
+			// Pass the pointer which is over us, so this information can supply context (e.g. selecting a tool for a different hand)
+			// Enable preview-mode on a Tools Menu button; Display on the opposite proxy device by evaluating the entering RayOrigin
+			// Disable any existing previews being displayed in ToolsMenus
+			this.ClearToolMenuButtonPreview();
+
+			if (buttonType != null && rayOrigin != null)
+				this.PreviewInToolMenuButton(rayOrigin, buttonType, buttonDescription);
 		}
 
 		void SendVisibilityPulse()
 		{
 			this.Pulse(node, m_MenuHideFlags == 0 ? m_HidePulse : m_ShowPulse);
+		}
+
+		public void AddSettingsMenu(ISettingsMenuProvider provider)
+		{
+			var type = provider.GetType();
+			var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
+
+			ITooltip tooltip = null;
+			MainMenuUI.ButtonData buttonData;
+			if (customMenuAttribute != null && customMenuAttribute.shown)
+			{
+				tooltip = customMenuAttribute.tooltip;
+
+				buttonData = new MainMenuUI.ButtonData(customMenuAttribute.name)
+				{
+					sectionName = customMenuAttribute.sectionName,
+					description = customMenuAttribute.description
+				};
+			}
+			else
+			{
+				buttonData = new MainMenuUI.ButtonData(type.Name);
+			}
+
+			AddSettingsMenu(provider, buttonData, tooltip);
+		}
+
+		void AddSettingsMenu(ISettingsMenuProvider provider, MainMenuUI.ButtonData buttonData, ITooltip tooltip)
+		{
+			buttonData.sectionName = k_SettingsMenuSectionName;
+
+			CreateFaceButton(buttonData, tooltip, () =>
+			{
+				var instance = m_MainMenuUI.AddSubmenu(k_SettingsMenuSectionName, provider.settingsMenuPrefab);
+				m_SettingsMenus[provider] = instance;
+				provider.settingsMenuInstance = instance;
+			});
+		}
+
+		public void RemoveSettingsMenu(ISettingsMenuProvider provider)
+		{
+			GameObject instance;
+			if (m_SettingsMenus.TryGetValue(provider, out instance))
+			{
+				if (instance)
+					ObjectUtils.Destroy(instance);
+
+				m_SettingsMenus.Remove(provider);
+			}
+			provider.settingsMenuInstance = null;
+		}
+
+		public void AddSettingsMenuItem(ISettingsMenuItemProvider provider)
+		{
+			var instance = m_MainMenuUI.CreateCustomButton(provider.settingsMenuItemPrefab, k_SettingsMenuSectionName);
+			m_SettingsMenuItems[provider] = instance;
+			provider.settingsMenuItemInstance = instance;
+		}
+
+		public void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider)
+		{
+			GameObject instance;
+			if (m_SettingsMenuItems.TryGetValue(provider, out instance))
+			{
+				if (instance)
+					ObjectUtils.Destroy(instance);
+
+				m_SettingsMenuItems.Remove(provider);
+			}
+			provider.settingsMenuItemInstance = null;
 		}
 	}
 }

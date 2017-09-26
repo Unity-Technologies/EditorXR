@@ -98,7 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				inputModule.preProcessRaycastSource = evr.GetNestedModule<Rays>().PreProcessRaycastSource;
 			}
 
-			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
+			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform connectInterfacesOverride = null)
 			{
 				var go = ObjectUtils.Instantiate(prefab, parent ? parent : evr.transform, worldPositionStays);
 				foreach (var canvas in go.GetComponentsInChildren<Canvas>())
@@ -114,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
-					evr.m_Interfaces.ConnectInterfaces(mb);
+					evr.m_Interfaces.ConnectInterfaces(mb, connectInterfacesOverride);
 
 				return go;
 			}

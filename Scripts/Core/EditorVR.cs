@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -71,14 +70,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public Transform rayOrigin;
 			public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
 			public ActionMapInput uiInput;
-			public MainMenuActivator mainMenuActivator;
 			public IMainMenu mainMenu;
 			public ActionMapInput mainMenuInput;
 			public IAlternateMenu alternateMenu;
 			public ActionMapInput alternateMenuInput;
 			public ITool currentTool;
 			public IMenu customMenu;
-			public PinnedToolButton previousToolButton;
+			public IToolsMenu ToolsMenu;
+			public ActionMapInput toolsMenuInput;
 			public readonly Dictionary<IMenu, Menus.MenuHideData> menuHideData = new Dictionary<IMenu, Menus.MenuHideData>();
 		}
 
@@ -210,6 +209,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
+			UnityBrandColorScheme.saturatedSessionGradient = UnityBrandColorScheme.GetRandomCuratedGradient();
 
 			var sceneObjectModule = AddModule<SceneObjectModule>();
 			sceneObjectModule.tryPlaceObject = (obj, targetScale) =>
@@ -233,6 +233,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			};
 
 			AddModule<HapticsModule>();
+			AddModule<SpatialHintModule>();
+			AddModule<SpatialScrollModule>();
 
 			AddModule<FeedbackModule>();
 
@@ -380,6 +382,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var altMenuInput = altMenu as IProcessInput;
 				if (altMenuInput != null && altMenu.menuHideFlags == 0)
 					altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
+
+				var toolsMenu = deviceData.ToolsMenu;
+				var toolsMenuInput = toolsMenu as IProcessInput;
+				if (toolsMenuInput != null)
+					toolsMenuInput.ProcessInput(deviceData.toolsMenuInput, consumeControl);
 
 				foreach (var toolData in deviceData.toolData)
 				{

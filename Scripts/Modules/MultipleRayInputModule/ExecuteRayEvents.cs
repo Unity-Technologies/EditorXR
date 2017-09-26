@@ -23,6 +23,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public static ExecuteEvents.EventFunction<IRayHoverHandler> rayHoverHandler { get { return s_RayHoverHandler; } }
 		private static readonly ExecuteEvents.EventFunction<IRayHoverHandler> s_RayHoverHandler = Execute;
 
+		public static ExecuteEvents.EventFunction<IRayClickHandler> rayClickHandler { get { return s_RayClickHandler; } }
+		private static readonly ExecuteEvents.EventFunction<IRayClickHandler> s_RayClickHandler = Execute;
+
 		private static void Execute(IRayBeginDragHandler handler, BaseEventData eventData)
 		{
 			handler.OnBeginDrag(ExecuteEvents.ValidateEventData<RayEventData>(eventData));
@@ -51,6 +54,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		private static void Execute(IRayHoverHandler handler, BaseEventData eventData)
 		{
 			handler.OnRayHover(ExecuteEvents.ValidateEventData<RayEventData>(eventData));
+		}
+
+		private static void Execute(IRayClickHandler handler, BaseEventData eventData)
+		{
+			handler.OnRayClick(ExecuteEvents.ValidateEventData<RayEventData>(eventData));
 		}
 	}
 }

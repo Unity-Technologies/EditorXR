@@ -14,11 +14,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
 		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
-		IUsesProxyType, IRequestFeedback
+		IUsesProxyType, IMenuIcon, IRequestFeedback
 	{
 		const float k_MultiselectHueShift = 0.5f;
 		static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
 		static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
+
+		[SerializeField]
+		Sprite m_Icon;
 
 		[SerializeField]
 		ActionMap m_ActionMap;
@@ -43,6 +46,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Transform rayOrigin { private get; set; }
 		public Node? node { private get; set; }
+
+		public Sprite icon { get { return m_Icon; } }
 
 		public event Action<GameObject, Transform> hovered;
 

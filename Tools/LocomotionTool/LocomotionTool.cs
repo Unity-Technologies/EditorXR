@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
 		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-		IUsesProxyType, IGetVRPlayerObjects, IRequestFeedback, IUsesNode
+		IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -48,7 +48,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			[SerializeField]
 			bool m_BlinkMode;
 
-			public bool blinkMode { get { return m_BlinkMode; } set { m_BlinkMode = value; } }
+			public bool blinkMode
+			{
+				get { return m_BlinkMode; }
+				set { m_BlinkMode = value; }
+			}
 		}
 
 		Preferences m_Preferences;
@@ -103,7 +107,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
 
 
-		public ActionMap actionMap { get { return m_ActionMap; } }
+		public ActionMap actionMap
+		{
+			get { return m_ActionMap; }
+		}
 
 		public Transform rayOrigin { get; set; }
 
@@ -111,12 +118,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
-		public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
+		public GameObject settingsMenuItemPrefab
+		{
+			get { return m_SettingsMenuItemPrefab; }
+		}
 
 		public GameObject settingsMenuItemInstance
 		{
 			set
 			{
+				if (value == null)
+				{
+					m_FlyToggle = null;
+					m_BlinkToggle = null;
+					return;
+				}
+
 				var defaultToggleGroup = value.GetComponentInChildren<DefaultToggleGroup>();
 				foreach (var toggle in value.GetComponentsInChildren<Toggle>())
 				{
@@ -136,6 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								if (locomotionTool != this)
 								{
 									locomotionTool.m_BlockValueChangedListener = true;
+
 									//linkedObject.m_ToggleGroup.NotifyToggleOn(isOn ? m_FlyToggle : m_BlinkToggle);
 									// HACK: Toggle Group claims these toggles are not a part of the group
 									locomotionTool.m_FlyToggle.isOn = isOn;
@@ -204,6 +222,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			m_LocomotionInput = (LocomotionInput)input;
 
+			this.SetUIBlockedForRayOrigin(rayOrigin, true);
+
 			if (DoTwoHandedScaling(consumeControl))
 				return;
 
@@ -221,7 +241,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					return;
 			}
 
-			DoCrawl(consumeControl);
+			if (DoCrawl(consumeControl))
+				return;
+
+			this.SetUIBlockedForRayOrigin(rayOrigin, false);
 		}
 
 		bool DoFlying(ConsumeControlDelegate consumeControl)
@@ -1005,12 +1028,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					var locomotionTool = (LocomotionTool)linkedObject;
 					locomotionTool.m_Preferences = m_Preferences;
-					m_BlinkToggle.isOn = m_Preferences.blinkMode;
-					m_FlyToggle.isOn = !m_Preferences.blinkMode;
-
 					locomotionTool.ShowCrawlFeedback();
 					locomotionTool.ShowMainButtonFeedback();
 				}
+
+				//Setting toggles on this tool's menu will set them on other tool menus
+				m_BlinkToggle.isOn = m_Preferences.blinkMode;
+				m_FlyToggle.isOn = !m_Preferences.blinkMode;
 			}
 		}
 	}

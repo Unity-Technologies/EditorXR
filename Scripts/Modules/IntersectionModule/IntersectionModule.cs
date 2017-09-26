@@ -180,8 +180,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal Renderer GetIntersectedObjectForTester(IntersectionTester tester)
 		{
-			Renderer obj;
-			m_IntersectedObjects.TryGetValue(tester, out obj);
+			Renderer obj = null;
+			if (tester)
+				m_IntersectedObjects.TryGetValue(tester, out obj);
+
 			return obj;
 		}
 

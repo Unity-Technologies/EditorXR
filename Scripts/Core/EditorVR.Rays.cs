@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		ProxyExtras m_ProxyExtras;
 
-		class Rays : Nested, IInterfaceConnector
+		class Rays : Nested, IInterfaceConnector, IForEachRayOrigin
 		{
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -42,11 +42,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IRayVisibilitySettingsMethods.removeRayVisibilitySettings = RemoveVisibilitySettings;
 				IRayVisibilitySettingsMethods.addRayVisibilitySettings = AddVisibilitySettings;
 
-				IForEachRayOriginMethods.forEachRayOrigin = ForEachRayOrigin;
+				IForEachRayOriginMethods.forEachRayOrigin = IterateRayOrigins;
 				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
 				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
 				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
 				IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
+				INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
 				IGetRayVisibilityMethods.isRayVisible = IsRayActive;
 				IGetRayVisibilityMethods.isConeVisible = IsConeActive;
 			}
@@ -67,6 +68,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (ray != null)
 						ray.rayOrigin = rayOrigin;
 
+					var rayOrigins = obj as IUsesRayOrigins;
+					if (rayOrigins != null)
+					{
+						List<Transform> otherRayOrigins = new List<Transform>();
+						this.ForEachRayOrigin(ro =>
+						{
+							if (ro != rayOrigin)
+								otherRayOrigins.Add(ro);
+						});
+						rayOrigins.otherRayOrigins = otherRayOrigins;
+					}
+
 					var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 
 					var handedRay = obj as IUsesNode;
@@ -76,20 +89,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var usesProxy = obj as IUsesProxyType;
 					if (usesProxy != null && deviceData != null)
 						usesProxy.proxyType = deviceData.proxy.GetType();
-
-					var menuOrigins = obj as IUsesMenuOrigins;
-					if (menuOrigins != null)
-					{
-						Transform mainMenuOrigin;
-						var proxy = GetProxyForRayOrigin(rayOrigin);
-						if (proxy != null && proxy.menuOrigins.TryGetValue(rayOrigin, out mainMenuOrigin))
-						{
-							menuOrigins.menuOrigin = mainMenuOrigin;
-							Transform alternateMenuOrigin;
-							if (proxy.alternateMenuOrigins.TryGetValue(rayOrigin, out alternateMenuOrigin))
-								menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
-						}
-					}
 				}
 
 				var selectionModule = obj as SelectionModule;
@@ -109,6 +108,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var mainMenu = deviceData.mainMenu;
 				var customMenu = deviceData.customMenu;
+
 				if (mainMenu.menuHideFlags == 0 || (customMenu != null && customMenu.menuHideFlags == 0))
 				{
 					AddVisibilitySettings(rayOrigin, mainMenu, false, false);
@@ -224,7 +224,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 												return false;
 										}
 
-										return Menus.IsValidHover(source);
+										if (!Menus.IsValidHover(source))
+											return false;
+
+										// Proceed only for raycast sources that haven't been blocked via IBlockUIInteraction
+										if (source.blocked)
+											return false;
+
+										return true;
 									});
 								}
 							}
@@ -280,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var intersectionModule = evr.GetModule<IntersectionModule>();
 				var distance = k_DefaultRayLength * Viewer.GetViewerScale();
-				ForEachRayOrigin(rayOrigin => { intersectionModule.UpdateRaycast(rayOrigin, distance); });
+				IterateRayOrigins(rayOrigin => { intersectionModule.UpdateRaycast(rayOrigin, distance); });
 			}
 
 			internal void UpdateDefaultProxyRays()
@@ -333,12 +340,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			static void ForEachRayOrigin(ForEachRayOriginCallback callback)
+			static void IterateRayOrigins(ForEachRayOriginCallback callback)
 			{
 				ForEachProxyDevice(deviceData => callback(deviceData.rayOrigin));
 			}
 
-			static IProxy GetProxyForRayOrigin(Transform rayOrigin)
+			internal static IProxy GetProxyForRayOrigin(Transform rayOrigin)
 			{
 				IProxy result = null;
 				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
@@ -479,6 +486,39 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				return null;
+			}
+
+			static Transform RequestRayOriginFromNode(Node? node)
+			{
+				Transform rayOrigin = null;
+				if (node == null)
+					return rayOrigin;
+
+				foreach (var deviceData in evr.m_DeviceData)
+				{
+					if (!deviceData.proxy.active)
+						continue;
+
+					if (deviceData.node == node)
+					{
+						rayOrigin = deviceData.rayOrigin;
+						break;
+					}
+				}
+
+				if (!rayOrigin)
+				{
+					foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
+					{
+						if (kvp.Value.node == node)
+						{
+							rayOrigin = kvp.Value.originalRayOrigin;
+							break;
+						}
+					}
+				}
+
+				return rayOrigin;
 			}
 
 			static void SetDefaultRayColor(Transform rayOrigin, Color color)

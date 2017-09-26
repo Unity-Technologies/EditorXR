@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IPointerClickHandler
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
 	{
 		[SerializeField]
 		Button m_Button;
@@ -19,7 +19,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		Text m_ButtonTitle;
 
 		Color m_OriginalColor;
-		Transform m_InteractingRayOrigin;
 
 		public Button button { get { return m_Button; } }
 
@@ -27,11 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public ITooltip tooltip { private get; set; }
 
-		public void OnPointerClick(PointerEventData eventData)
-		{
-			if (clicked != null)
-				clicked(m_InteractingRayOrigin);
-		}
+		public Type toolType { get; set; }
 
 		public bool selected
 		{
@@ -50,17 +45,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		public event Action<Transform> hovered;
+		public event Action<Transform, Type, string> hovered;
 		public event Action<Transform> clicked;
 
 		void Awake()
 		{
 			m_OriginalColor = m_Button.targetGraphic.color;
-		}
-
-		void OnDisable()
-		{
-			m_InteractingRayOrigin = null;
 		}
 
 		public void SetData(string name, string description)
@@ -71,10 +61,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void OnRayEnter(RayEventData eventData)
 		{
-			m_InteractingRayOrigin = eventData.rayOrigin;
-
 			if (hovered != null)
-				hovered(eventData.rayOrigin);
+				hovered(eventData.rayOrigin, toolType, m_ButtonDescription.text);
+		}
+
+		public void OnRayExit(RayEventData eventData)
+		{
+			if (hovered != null)
+				hovered(eventData.rayOrigin, null, null);
+		}
+
+		public void OnPointerClick(PointerEventData eventData)
+		{
+			if (clicked != null)
+				clicked(null); // Pass null to perform the selection haptic pulse on both nodes
 		}
 	}
 }

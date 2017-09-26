@@ -10,10 +10,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
 		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
-		IRayVisibilitySettings, IRequestFeedback, IUsesNode
+		IRayVisibilitySettings, IMenuIcon, IRequestFeedback, IUsesNode
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
+
+		[SerializeField]
+		Sprite m_Icon;
 
 		const float k_DrawDistance = 0.075f;
 
@@ -34,6 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Transform rayOrigin { get; set; }
 		public Node? node { get; set; }
 
+		public Sprite icon { get { return m_Icon; } }
+
 		enum PrimitiveCreationStates
 		{
 			StartPoint,
@@ -43,6 +48,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		void Start()
 		{
+			// Clear selection so we can't manipulate things
+			Selection.activeGameObject = null;
+
 			m_ToolMenu = this.InstantiateMenuUI(rayOrigin, m_MenuPrefab);
 			var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
 			this.ConnectInterfaces(createPrimitiveMenu, rayOrigin);
