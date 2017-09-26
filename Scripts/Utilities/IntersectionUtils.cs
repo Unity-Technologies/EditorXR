@@ -134,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			ray.origin = obj.InverseTransformPoint(ray.origin);
 			ray.direction = obj.InverseTransformDirection(ray.direction);
-		
+
 			var boundsSize = collisionTester.bounds.size.magnitude;
 			var maxDistance = boundsSize * 2f;
 
@@ -148,7 +148,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				forwardHit = hitInfo.point;
 			else
 				return false;
-				
+
 			// Shoot a ray in the other direction, too, from outside the object (due to face normals)
 			Vector3 behindHit;
 			var behindRay = new Ray(ray.origin, -ray.direction);
@@ -189,17 +189,15 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			{
 				collisionTester.sharedMesh = mf.sharedMesh;
 				collisionTester.transform.localScale = Vector3.one;
+				return;
 			}
 
-			if (!mf)
+			var smr = obj.GetComponent<SkinnedMeshRenderer>();
+			if (smr)
 			{
-				var smr = obj.GetComponent<SkinnedMeshRenderer>();
-				if (smr)
-				{
-					smr.BakeMesh(BakedMesh);
-					collisionTester.sharedMesh = BakedMesh;
-					collisionTester.transform.localScale = obj.transform.lossyScale.Inverse();
-				}
+				smr.BakeMesh(BakedMesh);
+				collisionTester.sharedMesh = BakedMesh;
+				collisionTester.transform.localScale = obj.transform.lossyScale.Inverse();
 			}
 		}
 	}

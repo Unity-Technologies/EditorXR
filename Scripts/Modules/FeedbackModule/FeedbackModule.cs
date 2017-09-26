@@ -13,7 +13,6 @@ namespace UnityEditor.Experimental.EditorVR
 		public IRequestFeedback caller;
 		public GameObject settingsMenuItemPrefab { get; private set; }
 		public GameObject settingsMenuItemInstance { get; set; }
-		
 	}
 
 	public class FeedbackModule : MonoBehaviour, IInterfaceConnector, ISettingsMenuItemProvider, ISerializePreferences
@@ -48,15 +47,21 @@ namespace UnityEditor.Experimental.EditorVR
 
 				m_Toggles.Add(toggle);
 				var label = value.GetComponentInChildren<Text>();
+
+				const string feedbackEnabled = "Feedback enabled";
+				const string feedbackDisabled = "Feedback disabled";
+				const string enableFeedback = "Enable feedback";
+				const string disableFeedback = "Disable feedback";
+
 				toggle.onValueChanged.AddListener(isOn =>
 				{
-					label.text = isOn ? "Feedback enabled" : "Feedback disabled";
+					label.text = isOn ? feedbackEnabled : feedbackDisabled;
 					SetEnabled(isOn);
 				});
 
 				var handle = value.GetComponent<BaseHandle>();
-				handle.hoverStarted += (baseHandle, data) => { label.text = m_Preferences.enabled ? "Disable feedback" : "Enable feedback"; };
-				handle.hoverEnded += (baseHandle, data) => { label.text = m_Preferences.enabled ? "Feedback enabled" : "Feedback disabled"; };
+				handle.hoverStarted += (baseHandle, data) => { label.text = m_Preferences.enabled ? disableFeedback : enableFeedback; };
+				handle.hoverEnded += (baseHandle, data) => { label.text = m_Preferences.enabled ? feedbackEnabled : feedbackDisabled; };
 			}
 		}
 
