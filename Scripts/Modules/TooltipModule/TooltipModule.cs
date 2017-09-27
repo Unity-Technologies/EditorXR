@@ -260,13 +260,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			Material highlightMaterial = null;
-			var customToolTipColor = tooltip as ISetCustomTooltipColor;
-			if (customToolTipColor != null)
+			var customTooltipColor = tooltip as ISetCustomTooltipColor;
+			if (customTooltipColor != null)
 			{
 				highlightMaterial = Instantiate(m_HighlightMaterial);
-				var customToolTipHighlightColor = customToolTipColor.customToolTipHighlightColor;
-				highlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipHighlightColor.a);
-				highlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipHighlightColor.b);
+				var customTooltipHighlightColor = customTooltipColor.customTooltipHighlightColor;
+				highlightMaterial.SetColor(k_MaterialColorTopProperty, customTooltipHighlightColor.a);
+				highlightMaterial.SetColor(k_MaterialColorBottomProperty, customTooltipHighlightColor.b);
 			}
 
 			m_Tooltips[tooltip] = new TooltipData

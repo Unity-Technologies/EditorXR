@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		const float k_AlternateLocalScaleMultiplier = 0.85f; // Meets outer bounds of the radial menu
 		const string k_MaterialColorProperty = "_Color";
-		const string k_SelectionToolTipText = "Selection Tool (cannot be closed)";
+		const string k_SelectionTooltipText = "Selection Tool (cannot be closed)";
 		const string k_MainMenuTipText = "Main Menu";
 		readonly Vector3 k_ToolButtonActivePosition = new Vector3(0f, 0f, -0.035f);
 
@@ -106,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform rayOrigin { get; set; }
 		public Node node { get; set; }
 		public ITooltip tooltip { private get; set; } // Overrides text
-		public GradientPair customToolTipHighlightColor { get; set; }
+		public GradientPair customTooltipHighlightColor { get; set; }
 		public bool isSelectionTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
 		public bool isMainMenu { get { return m_ToolType != null && m_ToolType == typeof(IMainMenu); } }
 		public int activeButtonCount { get; set; }
@@ -144,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 					if (isSelectionTool || isMainMenu)
 					{
-						tooltipText = isSelectionTool ? k_SelectionToolTipText : k_MainMenuTipText;
+						tooltipText = isSelectionTool ? k_SelectionTooltipText : k_MainMenuTipText;
 						secondaryButtonCollidersEnabled = false;
 					}
 					else
@@ -189,7 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			set
 			{
 				m_GradientPair = value;
-				customToolTipHighlightColor = value;
+				customTooltipHighlightColor = value;
 			}
 		}
 
@@ -248,7 +248,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				else
 				{
 					m_PreviewToolDescription = null;
-					toolTipVisible = false;
+					tooltipVisible = false;
 				}
 			}
 		}
@@ -316,7 +316,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public bool secondaryButtonHighlighted { get { return m_CloseButton.highlighted; } }
 
-		public bool toolTipVisible
+		public bool tooltipVisible
 		{
 			set
 			{

@@ -275,7 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			for (int i = 0; i < m_OrderedButtons.Count; ++i)
 			{
 				var button = m_OrderedButtons[i];
-				button.toolTipVisible = false;
+				button.tooltipVisible = false;
 				if (IsMainMenuButton(button))
 					Reinsert(button, k_MenuButtonOrderPosition, true); // Return the main menu button to its original position after being hidden when showing tool buttons
 				else

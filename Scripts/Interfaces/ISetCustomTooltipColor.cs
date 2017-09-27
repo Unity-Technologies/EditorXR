@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Custom tooltip highlight color
 		/// </summary>
-		GradientPair customToolTipHighlightColor { get; }
+		GradientPair customTooltipHighlightColor { get; }
 	}
 }
 #endif

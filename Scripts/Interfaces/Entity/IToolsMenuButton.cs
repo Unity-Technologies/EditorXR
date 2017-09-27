@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <summary>
 		/// Bool denoting that the tooltip is visible
 		/// </summary>
-		bool toolTipVisible { set; }
+		bool tooltipVisible { set; }
 
 		/// <summary>
 		/// Bool denoting that this button implements a secondary button
@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR
 		Vector3 primaryUIContentContainerLocalScale { get; set; }
 
 		/// <summary>
-		/// Transform used for reference when placing toolTips
+		/// Transform used for reference when placing tooltips
 		/// </summary>
 		Transform tooltipTarget { set; }
 
