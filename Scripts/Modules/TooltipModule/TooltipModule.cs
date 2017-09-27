@@ -80,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
 						tooltipUI = tooltipObject.GetComponent<TooltipUI>();
 						tooltipData.tooltipUI = tooltipUI;
-						tooltipUI.highlight.material = m_HighlightMaterial;
+						tooltipUI.highlight.material = tooltipData.customHighlightMaterial ?? m_HighlightMaterial;
 						tooltipUI.background.material = m_TooltipBackgroundMaterial;
 						var tooltipTransform = tooltipObject.transform;
 						MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
@@ -141,11 +141,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			var viewerScale = this.GetViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
-
-			TooltipData toolTipData;
-			m_Tooltips.TryGetValue(tooltip, out toolTipData);
-			var highlightMaterial = toolTipData != null ? toolTipData.customHighlightMaterial : m_HighlightMaterial;
-			tooltipUI.highlight.material= highlightMaterial;
 
 			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
 
