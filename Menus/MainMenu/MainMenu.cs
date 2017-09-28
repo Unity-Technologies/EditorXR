@@ -189,10 +189,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						if (targetRayOrigin)
 						{
-							this.SelectTool(targetRayOrigin, selectedType);
+							this.SelectTool(targetRayOrigin, selectedType,
+								hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
 							UpdateToolButtons();
 						}
 					});
+
+					m_ToolButtons[type] = mainMenuButton;
 
 					// Assign Tools Menu button preview properties
 					if (mainMenuButton != null)
