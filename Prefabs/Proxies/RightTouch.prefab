@@ -111,6 +111,7 @@ GameObject:
   m_Component:
   - component: {fileID: 401760}
   - component: {fileID: 114000011379258124}
+  - component: {fileID: 114144120838688752}
   m_Layer: 0
   m_Name: RightTouch
   m_TagString: ShowInMiniWorld
@@ -1356,7 +1357,8 @@ MonoBehaviour:
   m_PreviewOrigin: {fileID: 4000013824268610}
   m_FieldGrabOrigin: {fileID: 4000013218449236}
   m_MeshRoot: {fileID: 484770}
-  m_Buttons:
+  m_ProxyUI: {fileID: 114144120838688752}
+  m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 482366}
     m_Renderer: {fileID: 13788364}
@@ -1378,6 +1380,7 @@ MonoBehaviour:
   - m_Control: 1
     m_Transform: {fileID: 451284}
     m_Renderer: {fileID: 13768278}
+  m_BodyVisibilityControlType: 0
 --- !u!114 &114099124700230328
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1390,6 +1393,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
+--- !u!114 &114144120838688752
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
 --- !u!114 &114431176106213124
 MonoBehaviour:
   m_ObjectHideFlags: 1
