@@ -1,31 +1,37 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.Serialization;
+using VisibilityControlType = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.VisibilityControlType;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
+	[Serializable]
+	public class AffordanceObject
+	{
+		[SerializeField]
+		VRInputDevice.VRControl m_Control;
+
+		[SerializeField]
+		Transform m_Transform;
+
+		[SerializeField]
+		Renderer m_Renderer;
+
+		public VRInputDevice.VRControl control { get { return m_Control; } }
+		public Transform transform { get { return m_Transform; } }
+		public Renderer renderer { get { return m_Renderer; } }
+	}
+
 	/// <summary>
 	/// Reference container for additional content origins on a device
 	/// </summary>
 	sealed class ProxyHelper : MonoBehaviour
 	{
-		[Serializable]
-		public class ButtonObject
-		{
-			[SerializeField]
-			VRInputDevice.VRControl m_Control;
-
-			[SerializeField]
-			Transform m_Transform;
-
-			[SerializeField]
-			Renderer m_Renderer;
-
-			public VRInputDevice.VRControl control { get { return m_Control; } }
-			public Transform transform { get { return m_Transform; } }
-			public Renderer renderer { get { return m_Renderer; } }
-		}
+		List<Renderer> m_BodyRenderers; // renderers not associated with controls, & will be hidden when displaying feedback/tooltips
+		bool m_BodyRenderersVisible;
 
 		/// <summary>
 		/// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
@@ -94,9 +100,39 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		private Transform m_MeshRoot;
 
 		[SerializeField]
-		ButtonObject[] m_Buttons;
+		ProxyUI m_ProxyUI;
 
-		public ButtonObject[] buttons { get { return m_Buttons; } }
+		[SerializeField]
+		[FormerlySerializedAs("m_Buttons")]
+		AffordanceObject[] m_Affordances;
+
+		public AffordanceObject[] Affordances { get { return m_Affordances; } }
+
+		[SerializeField]
+		VisibilityControlType m_BodyVisibilityControlType;
+
+		/// <summary>
+		/// Set the visibility of the renderers not associated with controls/input
+		/// </summary>
+		public bool bodyRenderersVisible { set { if (m_ProxyUI != null) m_ProxyUI.bodyRenderersVisible = value; } }
+
+		void Start()
+		{
+			m_ProxyUI.Affordances = m_Affordances;
+		}
+
+		public void ShowAllControls()
+		{
+			foreach (var button in m_Affordances)
+			{
+				button.renderer.enabled = true;
+			}
+		}
+
+		public void HideAffordances(AffordanceObject[] affordanceObjects)
+		{
+			// HIDE specific affordances
+		}
 	}
 }
 #endif
