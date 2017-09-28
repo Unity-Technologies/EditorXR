@@ -201,8 +201,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			if (DoTwoHandedScaling(consumeControl))
 			{
 				if (m_Preferences.blinkMode)
-					if (DoBlink(consumeControl))
-						return;
+					if (m_LocomotionInput.blink.isHeld)
+						m_BlinkVisuals.visible = false;
 				return;
 			}
 
