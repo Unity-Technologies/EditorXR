@@ -199,7 +199,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.SetUIBlockedForRayOrigin(rayOrigin, true);
 
 			if (DoTwoHandedScaling(consumeControl))
+			{
+				if (m_Preferences.blinkMode)
+					if (m_LocomotionInput.blink.isHeld)
+						m_BlinkVisuals.visible = false;
 				return;
+			}
 
 			if (DoRotating(consumeControl))
 				return;
