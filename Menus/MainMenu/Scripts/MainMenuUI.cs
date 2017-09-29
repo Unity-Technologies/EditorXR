@@ -121,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public float targetRotation { get; set; }
 
-		public Node? node { get; set; }
+		public Node node { get; set; }
 
 		public bool visible
 		{

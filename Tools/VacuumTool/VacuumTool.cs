@@ -28,7 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Vector3 defaultOffset { private get; set; }
 		public Quaternion defaultTilt { private get; set; }
-		public Node? node { private get; set; }
+		public Node node { private get; set; }
 
 		void Start()
 		{
@@ -77,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								var request = new ProxyFeedbackRequest
 								{
 									control = id,
-									node = node.Value,
+									node = node,
 									tooltipText = "Double-tap to summon workspace"
 								};
 

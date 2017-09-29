@@ -239,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
 		public Transform rayOrigin { private get; set; }
-		public Node? node { private get; set; }
+		public Node node { private get; set; }
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
@@ -368,7 +368,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						if (objectsGrabbed != null && !m_Scaling)
 							objectsGrabbed(directRayOrigin, grabbedObjects);
 
-						m_GrabData[grabbingNode.Value] = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray());
+						m_GrabData[grabbingNode] = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray());
 
 						// A direct selection has been made. Hide the manipulator until the selection changes
 						m_DirectSelected = true;
@@ -477,7 +477,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					var transformTool = (TransformTool)linkedObject;
 					var rayOrigin = transformTool.rayOrigin;
-					if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node.Value)))
+					if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node)))
 					{
 						this.RemoveRayVisibilitySettings(rayOrigin, this);
 					}

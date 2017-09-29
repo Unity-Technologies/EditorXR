@@ -26,8 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
 
-			public event Action updatePlayerHandleMaps;
-
 			public Tools()
 			{
 				allTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
@@ -98,10 +96,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (deviceData.proxy != proxy)
 						continue;
 
+					var rayOrigin = deviceData.rayOrigin;
 					foreach (var toolType in defaultTools)
 					{
 						HashSet<InputDevice> devices;
-						var toolData = SpawnTool(toolType, out devices, inputDevice);
+						var toolData = SpawnTool(toolType, out devices, inputDevice, rayOrigin);
 						AddToolToDeviceData(toolData, devices);
 
 						var tool = toolData.tool;
@@ -123,7 +122,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					var menus = evr.GetNestedModule<Menus>();
 					var menuHideData = deviceData.menuHideData;
-					var rayOrigin = deviceData.rayOrigin;
 					var mainMenu = menus.SpawnMainMenu(typeof(MainMenu), rayOrigin);
 					deviceData.mainMenu = mainMenu;
 					menuHideData[mainMenu] = new Menus.MenuHideData();
@@ -152,7 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			/// <param name="device">The input device whose tool stack the tool should be spawned on (optional). If not
 			/// specified, then it uses the action map to determine which devices the tool should be spawned on.</param>
 			/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
-			ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device = null)
+			ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device, Transform rayOrigin)
 			{
 				usedDevices = new HashSet<InputDevice>();
 				if (!typeof(ITool).IsAssignableFrom(toolType))
@@ -171,7 +169,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (usedDevices.Count == 0)
 					usedDevices.Add(device);
 
-				this.ConnectInterfaces(tool, device);
+				this.ConnectInterfaces(tool, rayOrigin);
 
 				var icon = tool as IMenuIcon;
 				return new ToolData { tool = tool, input = actionMapInput, icon = icon != null ? icon.icon : null};
@@ -240,7 +238,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							// Spawn tool and collect all devices that this tool will need
 							HashSet<InputDevice> usedDevices;
 							var device = deviceData.inputDevice;
-							var newTool = SpawnTool(toolType, out usedDevices, device);
+							var newTool = SpawnTool(toolType, out usedDevices, device, rayOrigin);
 							var multiTool = newTool.tool as IMultiDeviceTool;
 							if (multiTool != null)
 							{
@@ -250,7 +248,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									if (otherDeviceData != deviceData)
 									{
 										HashSet<InputDevice> otherUsedDevices;
-										var otherToolData = SpawnTool(toolType, out otherUsedDevices, otherDeviceData.inputDevice);
+										var otherToolData = SpawnTool(toolType, out otherUsedDevices, otherDeviceData.inputDevice, otherDeviceData.rayOrigin);
 										foreach (var dd in evrDeviceData)
 										{
 											if (!otherUsedDevices.Contains(dd.inputDevice))
@@ -393,11 +391,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
+			internal static void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
 			{
-				if (updatePlayerHandleMaps != null)
-					updatePlayerHandleMaps();
-
 				foreach (var deviceData in evr.m_DeviceData)
 				{
 					foreach (var td in deviceData.toolData)

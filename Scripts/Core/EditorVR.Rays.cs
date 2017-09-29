@@ -186,14 +186,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							var rayOrigin = rayOriginPair.Value;
 
 							var systemDevices = deviceInputModule.GetSystemDevices();
-							var actionMap = inputModule.actionMap;
 							for (int j = 0; j < systemDevices.Count; j++)
 							{
 								var device = systemDevices[j];
 
 								// Find device tagged with the node that matches this RayOrigin node
 								var deviceNode = deviceInputModule.GetDeviceNode(device);
-								if (deviceNode.HasValue && deviceNode.Value == node)
+								if (deviceNode == node)
 								{
 									var deviceData = new DeviceData();
 									evrDeviceData.Add(deviceData);
@@ -467,8 +466,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
 			}
 
-			static Node? RequestNodeFromRayOrigin(Transform rayOrigin)
+			static Node RequestNodeFromRayOrigin(Transform rayOrigin)
 			{
+				if (rayOrigin == null)
+					return Node.None;
+
 				foreach (var deviceData in evr.m_DeviceData)
 				{
 					if (!deviceData.proxy.active)
@@ -484,14 +486,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						return kvp.Value.node;
 				}
 
-				return null;
+				return Node.None;
 			}
 
-			static Transform RequestRayOriginFromNode(Node? node)
+			static Transform RequestRayOriginFromNode(Node node)
 			{
-				Transform rayOrigin = null;
-				if (node == null)
-					return rayOrigin;
+				if (node == Node.None)
+					return null;
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -499,25 +500,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						continue;
 
 					if (deviceData.node == node)
-					{
-						rayOrigin = deviceData.rayOrigin;
-						break;
-					}
+						return deviceData.rayOrigin;
 				}
 
-				if (!rayOrigin)
+				foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
 				{
-					foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
-					{
-						if (kvp.Value.node == node)
-						{
-							rayOrigin = kvp.Value.originalRayOrigin;
-							break;
-						}
-					}
+					if (kvp.Value.node == node)
+						return kvp.Value.originalRayOrigin;
 				}
 
-				return rayOrigin;
+				return null;
 			}
 
 			static void SetDefaultRayColor(Transform rayOrigin, Color color)

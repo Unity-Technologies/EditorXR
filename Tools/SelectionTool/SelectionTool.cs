@@ -45,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
 		public Transform rayOrigin { private get; set; }
-		public Node? node { private get; set; }
+		public Node node { private get; set; }
 
 		public Sprite icon { get { return m_Icon; } }
 
@@ -319,7 +319,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					var request = new ProxyFeedbackRequest
 					{
-						node = node.Value,
+						node = node,
 						control = id,
 						tooltipText = "Select"
 					};

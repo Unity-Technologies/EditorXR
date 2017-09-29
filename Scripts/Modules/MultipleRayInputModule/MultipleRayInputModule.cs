@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	sealed class MultipleRayInputModule : BaseInputModule, IGetPointerLength
+	sealed class MultipleRayInputModule : BaseInputModule, IGetPointerLength, IConnectInterfaces
 	{
 		public class RaycastSource : ICustomActionMap
 		{
@@ -23,20 +23,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public bool blocked;
 			public Func<RaycastSource, bool> isValid;
 
-			MultipleRayInputModule owner;
+			MultipleRayInputModule m_Owner;
 
 			public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
 
 			public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
 
-			public ActionMap actionMap { get; private set; }
+			public ActionMap actionMap { get { return m_Owner.m_UIActionMap; } }
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<RaycastSource, bool> validationCallback)
 			{
 				this.proxy = proxy;
 				this.rayOrigin = rayOrigin;
 				this.node = node;
-				this.owner = owner;
+				m_Owner = owner;
 				isValid = validationCallback;
 			}
 
@@ -45,18 +45,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (!(rayOrigin.gameObject.activeSelf || draggedObject) || !proxy.active)
 					return;
 
-				var preProcessRaycastSource = owner.preProcessRaycastSource;
+				var preProcessRaycastSource = m_Owner.preProcessRaycastSource;
 				if (preProcessRaycastSource != null)
 					preProcessRaycastSource(rayOrigin);
 
 				if (eventData == null)
-					eventData = new RayEventData(owner.eventSystem);
+					eventData = new RayEventData(m_Owner.eventSystem);
 
-				hoveredObject = owner.GetRayIntersection(this); // Check all currently running raycasters
+				hoveredObject = m_Owner.GetRayIntersection(this); // Check all currently running raycasters
 
 				eventData.node = node;
 				eventData.rayOrigin = rayOrigin;
-				eventData.pointerLength = owner.GetPointerLength(eventData.rayOrigin);
+				eventData.pointerLength = m_Owner.GetPointerLength(eventData.rayOrigin);
 
 				if (isValid != null && !isValid(this))
 				{
@@ -64,11 +64,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					currentRaycast.gameObject = null;
 					eventData.pointerCurrentRaycast = currentRaycast;
 					hoveredObject = null;
-					owner.HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
+					m_Owner.HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
 					return;
 				}
 
-				owner.HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
+				m_Owner.HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
 
 				var hasScrollHandler = false;
 				input.active = hasObject && ShouldActivateInput(eventData, currentObject, out hasScrollHandler);
@@ -89,12 +89,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				// Send select pressed and released events
 				if (select.wasJustPressed)
 				{
-					owner.OnSelectPressed(this);
+					m_Owner.OnSelectPressed(this);
 					consumeControl(select);
 				}
 
 				if (select.wasJustReleased)
-					owner.OnSelectReleased(this);
+					m_Owner.OnSelectReleased(this);
 
 				// Send Drag Events
 				if (draggedObject != null)
@@ -121,17 +121,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
+		static LayerMask s_LayerMask;
+
+		readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
+
+		Camera m_EventCamera;
+
+		[SerializeField]
+		ActionMap m_UIActionMap;
 
 		public Camera eventCamera { get { return m_EventCamera; } set { m_EventCamera = value; } }
-		private Camera m_EventCamera;
-
 		public LayerMask layerMask { get { return s_LayerMask; } set { s_LayerMask = value; } }
-		private static LayerMask s_LayerMask;
-
 		public ActionMap actionMap { get { return m_UIActionMap; } }
-		[SerializeField]
-		private ActionMap m_UIActionMap;
 
 		public event Action<GameObject, RayEventData> rayEntered;
 		public event Action<GameObject, RayEventData> rayHovering;
@@ -143,7 +144,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		// Local method use only -- created here to reduce garbage collection
 		RayEventData m_TempRayEvent;
-		//List<RaycastSource> m_RaycastSourcesCopy = new List<RaycastSource>();
 
 		protected override void Awake()
 		{
@@ -153,17 +153,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			s_LayerMask = LayerMask.GetMask("UI");
 			m_TempRayEvent = new RayEventData(eventSystem);
+		}
 
+		protected override void OnDestroy()
+		{
+			foreach (var source in m_RaycastSources)
+			{
+				this.DisconnectInterfaces(source);
+			}
 		}
 
 		public void AddRaycastSource(IProxy proxy, Node node, Transform rayOrigin, Func<RaycastSource, bool> validationCallback = null)
 		{
-			m_RaycastSources.Add(rayOrigin, new RaycastSource(proxy, rayOrigin, node, this, validationCallback));
-		}
-
-		public void RemoveRaycastSource(Transform rayOrigin)
-		{
-			m_RaycastSources.Remove(rayOrigin);
+			var source = new RaycastSource(proxy, rayOrigin, node, this, validationCallback);
+			this.ConnectInterfaces(source, rayOrigin);
+			m_RaycastSources.Add(rayOrigin, source);
 		}
 
 		public RayEventData GetPointerEventData(Transform rayOrigin)
@@ -361,7 +365,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		private void OnSelectReleased(RaycastSource source)
+		void OnSelectReleased(RaycastSource source)
 		{
 			var eventData = source.eventData;
 			var hoveredObject = source.hoveredObject;
@@ -397,16 +401,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void Deselect()
 		{
-			if (base.eventSystem.currentSelectedGameObject)
-				base.eventSystem.SetSelectedGameObject(null);
+			if (eventSystem.currentSelectedGameObject)
+				eventSystem.SetSelectedGameObject(null);
 		}
 
-		private void Select(GameObject go)
+		void Select(GameObject go)
 		{
 			Deselect();
 
 			if (ExecuteEvents.GetEventHandler<ISelectHandler>(go))
-				base.eventSystem.SetSelectedGameObject(go);
+				eventSystem.SetSelectedGameObject(go);
 		}
 
 		GameObject GetRayIntersection(RaycastSource source)
@@ -429,13 +433,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return hit;
 		}
 
-		private bool ExecuteUpdateOnSelectedObject()
+		bool ExecuteUpdateOnSelectedObject()
 		{
-			if (base.eventSystem.currentSelectedGameObject == null)
+			if (eventSystem.currentSelectedGameObject == null)
 				return false;
 
-			BaseEventData eventData = GetBaseEventData();
-			ExecuteEvents.Execute(base.eventSystem.currentSelectedGameObject, eventData, ExecuteEvents.updateSelectedHandler);
+			var eventData = GetBaseEventData();
+			ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, eventData, ExecuteEvents.updateSelectedHandler);
 			return eventData.used;
 		}
 

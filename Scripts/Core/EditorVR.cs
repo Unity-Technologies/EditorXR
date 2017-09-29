@@ -151,7 +151,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			deviceInputModule.InitializePlayerHandle();
 			deviceInputModule.CreateDefaultActionMapInputs();
 			deviceInputModule.processInput = ProcessInput;
-			deviceInputModule.updatePlayerHandleMaps = GetNestedModule<Tools>().UpdatePlayerHandleMaps;
+			deviceInputModule.updatePlayerHandleMaps = Tools.UpdatePlayerHandleMaps;
+			deviceInputModule.inputDeviceForRayOrigin = rayOrigin =>
+				(from deviceData in m_DeviceData
+				 where deviceData.rayOrigin == rayOrigin
+				 select deviceData.inputDevice).FirstOrDefault();
 
 			GetNestedModule<UI>().Initialize();
 

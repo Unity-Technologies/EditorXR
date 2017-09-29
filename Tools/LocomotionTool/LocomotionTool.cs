@@ -173,7 +173,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Type proxyType { get; set; }
 
-		public Node? node { private get; set; }
+		public Node node { private get; set; }
 
 		void Start()
 		{
@@ -798,7 +798,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					var request = new ProxyFeedbackRequest
 					{
-						node = node.Value,
+						node = node,
 						control = id,
 						tooltipText = "Crawl"
 					};
@@ -818,7 +818,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					var request = new ProxyFeedbackRequest
 					{
-						node = node.Value,
+						node = node,
 						control = id,
 						tooltipText = m_Preferences.blinkMode ? "Blink" : "Fly"
 					};
@@ -839,7 +839,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var request = new ProxyFeedbackRequest
 					{
 						control = id,
-						node = node.Value,
+						node = node,
 						tooltipText = "Rotate"
 					};
 
@@ -859,7 +859,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var request = new ProxyFeedbackRequest
 					{
 						control = id,
-						node = node.Value,
+						node = node,
 						tooltipText = "Rotate"
 					};
 
@@ -899,7 +899,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var request = new ProxyFeedbackRequest
 					{
 						control = id,
-						node = node.Value,
+						node = node,
 						tooltipText = "Reset scale"
 					};
 
@@ -915,7 +915,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					var request = new ProxyFeedbackRequest
 					{
 						control = id,
-						node = node.Value,
+						node = node,
 						tooltipText = "Reset position rotation and scale"
 					};
 
@@ -934,7 +934,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					var request = new ProxyFeedbackRequest
 					{
-						node = node.Value,
+						node = node,
 						control = id,
 						tooltipText = m_Preferences.blinkMode ? "Extra distance" : "Extra speed"
 					};

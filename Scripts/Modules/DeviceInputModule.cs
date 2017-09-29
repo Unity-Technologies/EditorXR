@@ -10,13 +10,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class DeviceInputModule : MonoBehaviour, IInterfaceConnector
 	{
-		class InputProcessor
-		{
-			public IProcessInput processor;
-			public ActionMapInput input;
-		}
-
-		public TrackedObject trackedObjectInput { get; private set; }
 		[SerializeField]
 		ActionMap m_TrackedObjectActionMap;
 
@@ -33,15 +26,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{ "Right", Node.RightHand }
 		};
 
-		readonly List<InputProcessor> m_InputProcessors = new List<InputProcessor>();
+		readonly Dictionary<IProcessInput, ActionMapInput> m_InputProcessors = new Dictionary<IProcessInput, ActionMapInput>();
+
+		public TrackedObject trackedObjectInput { get; private set; }
+		public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
+		public Action<List<ActionMapInput>> updatePlayerHandleMaps;
+		public Func<Transform, InputDevice> inputDeviceForRayOrigin;
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
 		readonly List<InputDevice> m_SystemDevices = new List<InputDevice>();
 		readonly Dictionary<Type, string[]> m_DeviceTypeTags = new Dictionary<Type, string[]>();
-
-		public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
-		public Action<List<ActionMapInput>>  updatePlayerHandleMaps;
+		readonly Dictionary<IProcessInput, ActionMapInput> m_InputProcessorsCopy = new Dictionary<IProcessInput, ActionMapInput>();
 
 		public List<InputDevice> GetSystemDevices()
 		{
@@ -72,25 +68,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void ConnectInterface(object @object, object userData = null)
 		{
-			var inputDevice = userData as InputDevice;
-			var processInput = @object as IProcessInput;
-			if (processInput != null && !(@object is ITool)) // Tools have their input processed separately
-			{
-				m_InputProcessors.Add(new InputProcessor
-				{
-					processor = processInput,
-					input = CreateActionMapInputForObject(@object, inputDevice)
-				});
-			}
-
-			// Tracked Object action maps shouldn't block each other so we share an instance
 			var trackedObjectMap = @object as ITrackedObjectActionMap;
 			if (trackedObjectMap != null)
 				trackedObjectMap.trackedObjectInput = trackedObjectInput;
+
+			var rayOrigin = userData as Transform;
+			var processInput = @object as IProcessInput;
+			if (processInput != null && !(@object is ITool)) // Tools have their input processed separately
+			{
+				var inputDevice = inputDeviceForRayOrigin(rayOrigin);
+				var input = CreateActionMapInputForObject(@object, inputDevice);
+				m_InputProcessors.Add(processInput, input);
+			}
 		}
 
 		public void DisconnectInterface(object @object, object userData = null)
 		{
+			var processInput = @object as IProcessInput;
+			if (processInput != null)
+				m_InputProcessors.Remove(processInput);
 		}
 
 		public void ProcessInput()
@@ -113,9 +109,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			m_ProcessedInputs.Clear();
 
-			foreach (var processor in m_InputProcessors)
+			m_InputProcessorsCopy.Clear();
+			foreach (var kvp in m_InputProcessors)
 			{
-				processor.processor.ProcessInput(processor.input, ConsumeControl);
+				m_InputProcessorsCopy[kvp.Key] = kvp.Value;
+			}
+
+			foreach (var kvp in m_InputProcessorsCopy)
+			{
+				kvp.Key.ProcessInput(kvp.Value, ConsumeControl);
 			}
 
 			// TODO: Replace this with a map of ActionMap,IProcessInput and go through those
@@ -165,7 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return actionMapInput;
 		}
 
-		public ActionMapInput CreateActionMapInputForObject(object obj, InputDevice device)
+		internal ActionMapInput CreateActionMapInputForObject(object obj, InputDevice device)
 		{
 			var customMap = obj as ICustomActionMap;
 			if (customMap != null)
@@ -192,9 +194,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var maps = m_PlayerHandle.maps;
 			maps.Clear();
 
-			foreach (var processor in m_InputProcessors)
+			foreach (var kvp in m_InputProcessors)
 			{
-				maps.Add(processor.input);
+				var input = kvp.Value;
+				if (input != null)
+					maps.Add(input);
 			}
 
 			maps.Add(trackedObjectInput);
@@ -269,7 +273,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public Node? GetDeviceNode(InputDevice device)
+		public Node GetDeviceNode(InputDevice device)
 		{
 			string[] tags;
 
@@ -288,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					return node;
 			}
 
-			return null;
+			return Node.None;
 		}
 	}
 }

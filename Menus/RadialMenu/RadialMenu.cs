@@ -41,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
 
-		public Node? node { get; set; }
+		public Node node { get; set; }
 
 		public Bounds localBounds { get { return default(Bounds); } }
 
