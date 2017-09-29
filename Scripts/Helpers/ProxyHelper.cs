@@ -103,7 +103,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		ProxyUI m_ProxyUI;
 
 		[SerializeField]
-		[FormerlySerializedAs("m_Buttons")]
 		AffordanceObject[] m_Affordances;
 
 		public AffordanceObject[] Affordances { get { return m_Affordances; } }

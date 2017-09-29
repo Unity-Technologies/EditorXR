@@ -19,6 +19,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		List<Material> m_BodyMaterials; // Collection of unique body MeshRenderer materials
 		Coroutine m_BodyVisibilityCoroutine;
 
+		// Map of unique body materials to their original Colors (used for affordances with the "color" visibility control type)
+		// The second param, ColorPair, houses the original cached color, and a value, representing the color to lerp FROM when animating visibility
+		Dictionary<Material, ColorPair> m_BodyMaterialOriginalColorMap = new Dictionary<Material, ColorPair>();
+
+		// Used to draw visual attention to individual affordances
+		Dictionary<VRInputDevice.VRControl, Dictionary<Material, Color>> m_AffordanceMaterialOriginalColorMap = new Dictionary<VRInputDevice.VRControl, Dictionary<Material, Color>>();
+
+		[SerializeField]
+		ProxyAffordanceMap m_AffordanceMap;
+
 		private class ColorPair
 		{
 			/// <summary>
@@ -38,30 +48,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 		}
 
-		// Map of unique body materials to their original Colors (used for affordances with the "color" visibility control type)
-		// The second/nested dictionary of color has a key, representing the original cached color, and a value, representing the color to lerp FROM when animating visibility
-		Dictionary<Material, ColorPair> m_BodyMaterialOriginalColorMap = new Dictionary<Material, ColorPair>();
-		Dictionary<VRInputDevice.VRControl, Dictionary<Material, Color>> m_AffordanceMaterialOriginalColorMap = new Dictionary<VRInputDevice.VRControl, Dictionary<Material, Color>>();
-
-		[SerializeField]
-		ProxyAffordanceMap m_AffordanceMap;
-
-		//public Dictionary<VRInputDevice.VRControl, AffordanceObject> controlToAffordanceMap { private get; set; }
-
-		//[SerializeField]
-		//ProxyHelper m_ProxyHelper;
-
-			//[SerializeField]
-			//ProxyHelper.VisibilityControlType m_BodyVisibilityControlType;
-
-			//public ProxyHelper.ButtonObject[] buttons { get; set; }
-
+		/// <summary>
+		/// Set ProxyHelper affordances in this ProxyUI
+		/// </summary>
 		public AffordanceObject[] Affordances
 		{
 			set
 			{
-				//build body material original color map for each control with color chosen as visibilty type in the affordance map that has a matching control
-
 				if (m_Affordances != null)
 					return;
 
@@ -76,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)
 				{
 					var control = affordanceDefinition.control;
-					var affordance = m_Affordances.Where(x => x.control == control).FirstOrDefault();
+					var affordance = m_Affordances.FirstOrDefault(x => x.control == control);
 					if (affordance != null)
 					{
 						var renderer = affordance.renderer;
@@ -87,13 +80,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 							{
 								var originalColor = materialClone.color;
 								var materialToOriginalColorMap = new Dictionary<Material, Color>();
-								affordanceRenderers.Add(renderer); // Add to collection for later comparison again body renderers
+								affordanceRenderers.Add(renderer); // Add to collection for later comparison against body renderers
 								materialToOriginalColorMap[materialClone] = originalColor;
 								m_AffordanceMaterialOriginalColorMap[control] = materialToOriginalColorMap;
 							}
 						}
 					}
 				}
+
 				// Collect renderers not associated with affordances
 				m_BodyRenderers = GetComponentsInChildren<Renderer>(true).Where(x => !affordanceRenderers.Contains(x)).ToList();
 				foreach (var renderer in m_BodyRenderers)
@@ -126,6 +120,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator AnimateBodyVisibility(bool isVisible)
 		{
+			// Cache current "from" colors
 			foreach (var kvp in m_BodyMaterialOriginalColorMap)
 			{
 				kvp.Value.animateFromColor = kvp.Key.GetColor("_Color");

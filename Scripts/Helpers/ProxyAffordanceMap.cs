@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	[CreateAssetMenu(menuName = "EditorVR/EXR Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
 	public class ProxyAffordanceMap : ScriptableObject
 	{
-		// TODO REMOVE - 5.6 HACK for items not appearing in the create menu
+		// TODO REMOVE - 5.6 HACK that remedies items not appearing in the create menu
 #if UNITY_EDITOR
 		[MenuItem("Assets/Create/EditorVR/EditorVR Proxy Affordance Map")]
 		public static void Create()
@@ -32,8 +32,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public enum VisibilityControlType
 		{
 			colorProperty,
-			alphaProperty,
-			materialSwap
+			//alphaProperty, // TODO: Support
+			//materialSwap // TODO: Support
 		}
 
 		[Serializable]
@@ -47,14 +47,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			//TODO Expose each visibility control type field set based on the selected visibility control type
 
-			[SerializeField]
+			[SerializeField] // colorProperty field
 			string m_ColorVisibilityProperty; // Consider custom inspector that only displays this if "shaderProperty" is chosen
 
-			[SerializeField]
-			string m_AlphaVisibilityProperty; // Consider custom inspector that only displays this if "shaderProperty" is chosen
+			//[SerializeField] // alphaProperty field
+			//string m_AlphaVisibilityProperty; // Consider custom inspector that only displays this if "shaderProperty" is chosen
 
-			[SerializeField]
-			Material m_SwapMaterial;
+			//[SerializeField] // materialSwap field
+			//Material m_SwapMaterial;
 
 			//[SerializeField]
 			//float m_PropertyHiddenValue;
@@ -62,8 +62,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public VRInputDevice.VRControl control { get { return m_Control; } }
 			public VisibilityControlType visibilityControlType { get { return m_VisibilityType; } }
 			public string colorVisibilityProperty { get { return m_ColorVisibilityProperty; } }
-			public string alphaVisibilityProperty { get { return m_AlphaVisibilityProperty; } }
-			public Material swapMaterial { get { return m_SwapMaterial; } }
+			//public string alphaVisibilityProperty { get { return m_AlphaVisibilityProperty; } }
+			//public Material swapMaterial { get { return m_SwapMaterial; } }
 		}
 
 		[SerializeField]
@@ -75,14 +75,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		public ButtonObject[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } }
 		public VisibilityControlType BodyVisibilityControlType { get { return m_BodyVisibilityType; } }
-
-		/*
-		// Don't allow public setting of value; use inspector-set values
-		public float duration { get { return m_Duration; } internal set { m_Duration = value; } }
-		public float intensity { get { return m_Intensity; } internal set { m_Intensity = value; } }
-		public bool fadeIn { get { return m_FadeIn; } }
-		public bool fadeOut { get { return m_FadeOut; } }
-		*/
 	}
 }
 #endif
