@@ -1,14 +1,21 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class DeviceInputModule : MonoBehaviour
+	sealed class DeviceInputModule : MonoBehaviour, IInterfaceConnector
 	{
+		class InputProcessor
+		{
+			public IProcessInput processor;
+			public ActionMapInput input;
+		}
+
 		public TrackedObject trackedObjectInput { get; private set; }
 		[SerializeField]
 		ActionMap m_TrackedObjectActionMap;
@@ -25,6 +32,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{ "Left", Node.LeftHand },
 			{ "Right", Node.RightHand }
 		};
+
+		readonly List<InputProcessor> m_InputProcessors = new List<InputProcessor>();
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
@@ -61,6 +70,29 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
 		}
 
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var inputDevice = userData as InputDevice;
+			var processInput = @object as IProcessInput;
+			if (processInput != null && !(@object is ITool)) // Tools have their input processed separately
+			{
+				m_InputProcessors.Add(new InputProcessor
+				{
+					processor = processInput,
+					input = CreateActionMapInputForObject(@object, inputDevice)
+				});
+			}
+
+			// Tracked Object action maps shouldn't block each other so we share an instance
+			var trackedObjectMap = @object as ITrackedObjectActionMap;
+			if (trackedObjectMap != null)
+				trackedObjectMap.trackedObjectInput = trackedObjectInput;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
+		}
+
 		public void ProcessInput()
 		{
 			// Maintain a consumed control, so that other AMIs don't pick up the input, until it's no longer used
@@ -80,6 +112,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			m_ProcessedInputs.Clear();
+
+			foreach (var processor in m_InputProcessors)
+			{
+				processor.processor.ProcessInput(processor.input, ConsumeControl);
+			}
 
 			// TODO: Replace this with a map of ActionMap,IProcessInput and go through those
 			if (processInput != null)
@@ -154,6 +191,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var maps = m_PlayerHandle.maps;
 			maps.Clear();
+
+			foreach (var processor in m_InputProcessors)
+			{
+				maps.Add(processor.input);
+			}
+
+			maps.Add(trackedObjectInput);
 
 			if (updatePlayerHandleMaps != null)
 				updatePlayerHandleMaps(maps);

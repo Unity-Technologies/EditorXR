@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -370,6 +370,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
+			IUsesSnappingMethods.manipulatorSnap = ManipulatorSnap;
+			IUsesSnappingMethods.directSnap = DirectSnap;
+			IUsesSnappingMethods.clearSnappingState = ClearSnappingState;
+
 			m_GroundPlane = ObjectUtils.Instantiate(m_GroundPlane, transform);
 			m_GroundPlane.SetActive(false);
 

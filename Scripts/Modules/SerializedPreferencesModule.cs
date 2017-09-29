@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,9 +58,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public string payload { get { return m_Payload; } set { m_Payload = value; } }
 		}
 
-		public void ConnectInterface(object obj, Transform rayOrigin = null)
+		public void ConnectInterface(object @object, object userData = null)
 		{
-			var serializer = obj as ISerializePreferences;
+			var serializer = @object as ISerializePreferences;
 			if (serializer != null)
 			{
 				if (m_Preferences != null)
@@ -70,9 +70,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public void DisconnectInterface(object obj, Transform rayOrigin = null)
+		public void DisconnectInterface(object @object, object userData = null)
 		{
-			var serializer = obj as ISerializePreferences;
+			var serializer = @object as ISerializePreferences;
 			if (serializer != null)
 			{
 				// TODO: Support serializing one type at a time

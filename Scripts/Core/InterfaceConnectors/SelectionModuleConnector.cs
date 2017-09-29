@@ -1,29 +1,21 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
+#if UNITY_EDITOR && UNITY_EDITORVR
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class SelectionModuleConnector : Nested, IInterfaceConnector, ILateBindInterfaceMethods<SelectionModule>
+		class SelectionModuleConnector : Nested, IInterfaceConnector
 		{
-			public void LateBindInterfaceMethods(SelectionModule provider)
+			public void ConnectInterface(object @object, object userData = null)
 			{
-				ISelectObjectMethods.getSelectionCandidate = provider.GetSelectionCandidate;
-				ISelectObjectMethods.selectObject = provider.SelectObject;
-			}
-
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
-			{
-				var selectionChanged = obj as ISelectionChanged;
+				var selectionChanged = @object as ISelectionChanged;
 				if (selectionChanged != null)
 					evr.selectionChanged += selectionChanged.OnSelectionChanged;
 			}
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
+			public void DisconnectInterface(object @object, object userData = null)
 			{
-				var selectionChanged = obj as ISelectionChanged;
+				var selectionChanged = @object as ISelectionChanged;
 				if (selectionChanged != null)
 					evr.selectionChanged -= selectionChanged.OnSelectionChanged;
 			}

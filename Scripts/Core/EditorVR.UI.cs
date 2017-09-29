@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		Camera m_EventCameraPrefab;
 
-		class UI : Nested, IInterfaceConnector
+		class UI : Nested, IInterfaceConnector, IConnectInterfaces
 		{
 			const byte k_MinStencilRef = 2;
 
@@ -45,18 +45,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
 			}
 
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void ConnectInterface(object @object, object userData = null)
 			{
-				var manipulatorController = obj as IManipulatorController;
+				var manipulatorController = @object as IManipulatorController;
 				if (manipulatorController != null)
 					m_ManipulatorControllers.Add(manipulatorController);
 
-				var usesStencilRef = obj as IUsesStencilRef;
+				var usesStencilRef = @object as IUsesStencilRef;
 				if (usesStencilRef != null)
 				{
 					byte? stencilRef = null;
 
-					var mb = obj as MonoBehaviour;
+					var mb = @object as MonoBehaviour;
 					if (mb)
 					{
 						var parent = mb.transform.parent;
@@ -73,9 +73,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
+			public void DisconnectInterface(object @object, object userData = null)
 			{
-				var manipulatorController = obj as IManipulatorController;
+				var manipulatorController = @object as IManipulatorController;
 				if (manipulatorController != null)
 					m_ManipulatorControllers.Remove(manipulatorController);
 			}
@@ -114,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
-					evr.m_Interfaces.ConnectInterfaces(mb, connectInterfacesOverride);
+					this.ConnectInterfaces(mb, connectInterfacesOverride);
 
 				return go;
 			}

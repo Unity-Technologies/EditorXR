@@ -1,13 +1,14 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
+	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking, IInterfaceConnector
 	{
 		class HighlightData
 		{
@@ -46,6 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
+			ISetHighlightMethods.setHighlight = SetHighlight;
+
 			m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
 			if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
 			{
@@ -54,6 +57,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_RayHighlightMaterial.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
 			}
 		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var customHighlight = @object as ICustomHighlight;
+			if (customHighlight != null)
+				this.customHighlight += customHighlight.OnHighlight;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
+			var customHighlight = @object as ICustomHighlight;
+			if (customHighlight != null)
+				this.customHighlight -= customHighlight.OnHighlight;
+			}
 
 		void LateUpdate()
 		{

@@ -1,12 +1,10 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
-
+#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	interface IInterfaceConnector
 	{
-		void ConnectInterface(object obj, Transform rayOrigin = null);
-		void DisconnectInterface(object obj, Transform rayOrigin = null);
+		void ConnectInterface(object @object, object userData = null);
+		void DisconnectInterface(object @object, object userData = null);
 	}
 }
 #endif

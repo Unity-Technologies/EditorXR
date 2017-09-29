@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -47,6 +47,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<ITooltip> m_TooltipsToHide = new List<ITooltip>();
+
+		void Awake()
+		{
+			ISetTooltipVisibilityMethods.showTooltip = ShowTooltip;
+			ISetTooltipVisibilityMethods.hideTooltip = HideTooltip;
+		}
 
 		void Start()
 		{

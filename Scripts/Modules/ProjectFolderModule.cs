@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class ProjectFolderModule : MonoBehaviour
+	sealed class ProjectFolderModule : MonoBehaviour, IConnectInterfaces
 	{
 		// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
 		const float k_MaxFrameTime = 0.01f;
@@ -33,6 +33,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void OnDisable()
 		{
 			EditorApplication.projectWindowChanged -= UpdateProjectFolders;
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var usesProjectFolderData = @object as IUsesProjectFolderData;
+			if (usesProjectFolderData != null)
+			{
+				AddConsumer(usesProjectFolderData);
+
+				var filterUI = @object as IFilterUI;
+				if (filterUI != null)
+					AddConsumer(filterUI);
+			}
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
+			var usesProjectFolderData = @object as IUsesProjectFolderData;
+			if (usesProjectFolderData != null)
+			{
+				RemoveConsumer(usesProjectFolderData);
+
+				var filterUI = @object as IFilterUI;
+				if (filterUI != null)
+					RemoveConsumer(filterUI);
+			}
 		}
 
 		public void AddConsumer(IUsesProjectFolderData consumer)

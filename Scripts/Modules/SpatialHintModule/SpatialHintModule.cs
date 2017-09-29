@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
@@ -83,6 +82,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
+			IControlSpatialHintingMethods.setSpatialHintState = SetState;
+			IControlSpatialHintingMethods.setSpatialHintPosition = SetPosition;
+			IControlSpatialHintingMethods.setSpatialHintContainerRotation = SetContainerRotation;
+			IControlSpatialHintingMethods.setSpatialHintShowHideRotationTarget = SetShowHideRotationTarget;
+			IControlSpatialHintingMethods.setSpatialHintLookAtRotation = LookAt;
+			IControlSpatialHintingMethods.setSpatialHintDragThresholdTriggerPosition = SetDragThresholdTriggerPosition;
+			IControlSpatialHintingMethods.pulseSpatialHintScrollArrows = PulseScrollArrows;
+			IControlSpatialHintingMethods.setSpatialHintControlNode = SetSpatialHintControlNode;
+
 			m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
 			this.ConnectInterfaces(m_SpatialHintUI);
 		}

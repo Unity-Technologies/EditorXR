@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		ProxyExtras m_ProxyExtras;
 
-		class Rays : Nested, IInterfaceConnector, IForEachRayOrigin
+		class Rays : Nested, IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces
 		{
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -58,17 +58,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					ObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
 			}
 
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void ConnectInterface(object @object, object userData = null)
 			{
+				var rayOrigin = userData as Transform;
 				if (rayOrigin)
 				{
 					var evrDeviceData = evr.m_DeviceData;
 
-					var ray = obj as IUsesRayOrigin;
+					var ray = @object as IUsesRayOrigin;
 					if (ray != null)
 						ray.rayOrigin = rayOrigin;
 
-					var rayOrigins = obj as IUsesRayOrigins;
+					var rayOrigins = @object as IUsesRayOrigins;
 					if (rayOrigins != null)
 					{
 						List<Transform> otherRayOrigins = new List<Transform>();
@@ -82,16 +83,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 
-					var handedRay = obj as IUsesNode;
+					var handedRay = @object as IUsesNode;
 					if (handedRay != null && deviceData != null)
 						handedRay.node = deviceData.node;
 
-					var usesProxy = obj as IUsesProxyType;
+					var usesProxy = @object as IUsesProxyType;
 					if (usesProxy != null && deviceData != null)
 						usesProxy.proxyType = deviceData.proxy.GetType();
 				}
 
-				var selectionModule = obj as SelectionModule;
+				var selectionModule = @object as SelectionModule;
 				if (selectionModule)
 				{
 					selectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
@@ -100,7 +101,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
+			public void DisconnectInterface(object @object, object userData = null)
 			{
 			}
 
@@ -150,11 +151,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal void CreateAllProxies()
 			{
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
-				var interfaceModule = evr.GetNestedModule<Interfaces>();
 				foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
 				{
 					var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig, false);
-					interfaceModule.ConnectInterfaces(proxy);
+					this.ConnectInterfaces(proxy);
 					proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
 					proxy.activeChanged += () => OnProxyActiveChanged(proxy);
 					proxy.hidden = true;
@@ -201,10 +201,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 									deviceData.node = node;
 									deviceData.rayOrigin = rayOrigin;
 									deviceData.inputDevice = device;
-									deviceData.uiInput = deviceInputModule.CreateActionMapInput(actionMap, device);
 
 									// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-									inputModule.AddRaycastSource(proxy, node, deviceData.uiInput, rayOrigin, source =>
+									inputModule.AddRaycastSource(proxy, node, rayOrigin, source =>
 									{
 										// Do not invalidate UI raycasts in the middle of a drag operation
 										if (!source.draggedObject)
@@ -278,7 +277,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							}
 						}
 
-						Tools.SpawnDefaultTools(proxy);
+						evr.GetNestedModule<Tools>().SpawnDefaultTools(proxy);
 					}
 				}
 			}

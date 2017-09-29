@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -29,6 +29,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// Allow for a single warning that informs the user of an attempted pulse with a length greater than 0.8f
 		/// </summary>
 		bool m_SampleLengthWarningShown;
+
+		void Awake()
+		{
+			IControlHapticsMethods.pulse = Pulse;
+			IControlHapticsMethods.stopPulses = StopPulses;
+		}
 
 		void Start()
 		{

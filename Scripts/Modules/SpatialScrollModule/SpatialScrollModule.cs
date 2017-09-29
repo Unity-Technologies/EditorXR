@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -102,6 +102,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				currentPosition = newPosition;
 			}
+		}
+
+		void Awake()
+		{
+			IControlSpatialScrollingMethods.performSpatialScroll = PerformScroll;
+			IControlSpatialScrollingMethods.endSpatialScroll = EndScroll;
 		}
 
 		internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
