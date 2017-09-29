@@ -1,11 +1,10 @@
 fileFormatVersion: 2
-guid: 460af9702a1fe674a932ad1a15f33bfa
-timeCreated: 1506676876
+guid: 17aba4cd6323b8f449bd702f964df0d9
+timeCreated: 1506680411
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
-  defaultReferences:
-  - m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
+  defaultReferences: []
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

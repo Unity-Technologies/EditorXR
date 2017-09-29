@@ -1,6 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -10,6 +11,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class DeviceInputModule : MonoBehaviour, IInterfaceConnector
 	{
+		class InputProcessor
+		{
+			public IProcessInput processor;
+			public ActionMapInput input;
+			public int order;
+		}
+
 		[SerializeField]
 		ActionMap m_TrackedObjectActionMap;
 
@@ -26,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{ "Right", Node.RightHand }
 		};
 
-		readonly Dictionary<IProcessInput, ActionMapInput> m_InputProcessors = new Dictionary<IProcessInput, ActionMapInput>();
+		readonly List<InputProcessor> m_InputProcessors = new List<InputProcessor>();
 
 		public TrackedObject trackedObjectInput { get; private set; }
 		public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
@@ -37,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
 		readonly List<InputDevice> m_SystemDevices = new List<InputDevice>();
 		readonly Dictionary<Type, string[]> m_DeviceTypeTags = new Dictionary<Type, string[]>();
-		readonly Dictionary<IProcessInput, ActionMapInput> m_InputProcessorsCopy = new Dictionary<IProcessInput, ActionMapInput>();
+		readonly List<InputProcessor> m_InputProcessorsCopy = new List<InputProcessor>();
 
 		public List<InputDevice> GetSystemDevices()
 		{
@@ -78,7 +86,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				var inputDevice = inputDeviceForRayOrigin(rayOrigin);
 				var input = CreateActionMapInputForObject(@object, inputDevice);
-				m_InputProcessors.Add(processInput, input);
+
+				var order = 0;
+				var processInputAttribute = (ProcessInputAttribute)@object.GetType().GetCustomAttributes(typeof(ProcessInputAttribute), true).FirstOrDefault();
+				if (processInputAttribute != null)
+					order = processInputAttribute.order;
+
+				m_InputProcessors.Add(new InputProcessor { processor = processInput, input = input, order = order });
+				m_InputProcessors.Sort((a, b) => b.order.CompareTo(a.order));
 			}
 		}
 
@@ -86,7 +101,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			var processInput = @object as IProcessInput;
 			if (processInput != null)
-				m_InputProcessors.Remove(processInput);
+			{
+				m_InputProcessorsCopy.Clear();
+				m_InputProcessorsCopy.AddRange(m_InputProcessors);
+				foreach (var processor in m_InputProcessorsCopy)
+				{
+					if (processor.processor == @object)
+						m_InputProcessors.Remove(processor);
+				}
+			}
 		}
 
 		public void ProcessInput()
@@ -110,14 +133,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_ProcessedInputs.Clear();
 
 			m_InputProcessorsCopy.Clear();
-			foreach (var kvp in m_InputProcessors)
+			m_InputProcessorsCopy.AddRange(m_InputProcessors);
+			foreach (var processor in m_InputProcessorsCopy)
 			{
-				m_InputProcessorsCopy[kvp.Key] = kvp.Value;
-			}
-
-			foreach (var kvp in m_InputProcessorsCopy)
-			{
-				kvp.Key.ProcessInput(kvp.Value, ConsumeControl);
+				processor.processor.ProcessInput(processor.input, ConsumeControl);
 			}
 
 			// TODO: Replace this with a map of ActionMap,IProcessInput and go through those
@@ -194,9 +213,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var maps = m_PlayerHandle.maps;
 			maps.Clear();
 
-			foreach (var kvp in m_InputProcessors)
+			foreach (var processor in m_InputProcessors)
 			{
-				var input = kvp.Value;
+				var input = processor.input;
 				if (input != null)
 					maps.Add(input);
 			}

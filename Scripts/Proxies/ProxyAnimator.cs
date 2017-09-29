@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using UnityEditor.Experimental.EditorVR;
+﻿using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
 using UnityEngine.InputNew;
 
+[ProcessInput(1)]
 [RequireComponent(typeof(ProxyHelper))]
 public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 {
@@ -24,6 +24,9 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 
 	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{
+		if (m_Buttons == null)
+			return;
+
 		var length = m_Buttons.Length;
 		if (m_Controls == null)
 		{
@@ -31,16 +34,21 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 			m_InitialPositions = new Vector3[length];
 			m_InitialRotations = new Vector3[length];
 
+			var bindings = input.actionMap.controlSchemes[0].bindings;
 			for (var i = 0; i < input.controlCount; i++)
 			{
 				var control = input[i];
+				var binding = bindings[i];
 				for (var j = 0; j < length; j++)
 				{
 					var button = m_Buttons[j];
-					if (control.data.componentControlIndices.Contains((int)button.control))
+					foreach (var index in binding.sources)
 					{
-						m_Controls[j] = control;
-						break;
+						if (index.controlIndex == (int)button.control)
+						{
+							m_Controls[j] = control;
+							break;
+						}
 					}
 				}
 			}
@@ -57,31 +65,32 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 		{
 			var button = m_Buttons[i];
 			var control = m_Controls[i];
+
 			//Assume control values are [-1, 1]
 			var min = button.min;
-			var offset = min + (control.rawValue + 1) * (button.max - min);
+			var offset = min + (control.rawValue + 1) * (button.max - min) * 0.5f;
 
 			var buttonTransform = button.transform;
 			var localPosition = m_InitialPositions[i];
 			var translateAxes = button.translateAxes;
-			if ((translateAxes | AxisFlags.X) != 0)
+			if ((translateAxes & AxisFlags.X) != 0)
 				localPosition.x += offset;
 
-			if ((translateAxes | AxisFlags.Y) != 0)
+			if ((translateAxes & AxisFlags.Y) != 0)
 				localPosition.y += offset;
 
-			if ((translateAxes | AxisFlags.Z) != 0)
+			if ((translateAxes & AxisFlags.Z) != 0)
 				localPosition.z += offset;
 
 			var localRotation = m_InitialRotations[i];
 			var rotateAxes = button.rotateAxes;
-			if ((rotateAxes | AxisFlags.X) != 0)
+			if ((rotateAxes & AxisFlags.X) != 0)
 				localRotation.x += offset;
 
-			if ((rotateAxes | AxisFlags.Y) != 0)
+			if ((rotateAxes & AxisFlags.Y) != 0)
 				localRotation.y += offset;
 
-			if ((rotateAxes | AxisFlags.Z) != 0)
+			if ((rotateAxes & AxisFlags.Z) != 0)
 				localRotation.z += offset;
 
 			buttonTransform.localPosition = localPosition;

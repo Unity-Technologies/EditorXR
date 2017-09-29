@@ -153,7 +153,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
 				foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
 				{
-					var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig, false);
+					var component = ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig, false);;
+					var proxy = (IProxy)component;
 					this.ConnectInterfaces(proxy);
 					proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
 					proxy.activeChanged += () => OnProxyActiveChanged(proxy);
@@ -277,6 +278,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 
 						evr.GetNestedModule<Tools>().SpawnDefaultTools(proxy);
+
+						foreach (var helper in ((Component)proxy).GetComponentsInChildren<ProxyHelper>(true))
+						{
+							this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(helper.gameObject), helper.rayOrigin);
+						}
 					}
 				}
 			}

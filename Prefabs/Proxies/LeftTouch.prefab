@@ -1395,26 +1395,26 @@ MonoBehaviour:
     m_Renderer: {fileID: 13767942}
     m_TranslateAxes: 1
     m_RotateAxes: 0
-    m_Min: 0.00455765
-    m_Max: -0.00455765
+    m_Min: -0.00455765
+    m_Max: 0.00455765
   - m_Control: 17
     m_Transform: {fileID: 442622}
     m_Renderer: {fileID: 13771122}
-    m_TranslateAxes: 2
+    m_TranslateAxes: 4
     m_RotateAxes: 0
     m_Min: 0.001793736
     m_Max: -0.001793736
   - m_Control: 18
     m_Transform: {fileID: 447250}
     m_Renderer: {fileID: 13791068}
-    m_TranslateAxes: 2
+    m_TranslateAxes: 4
     m_RotateAxes: 0
     m_Min: 0.001793736
     m_Max: -0.001793736
   - m_Control: 22
     m_Transform: {fileID: 407362}
     m_Renderer: {fileID: 13758356}
-    m_TranslateAxes: 2
+    m_TranslateAxes: 1
     m_RotateAxes: 0
     m_Min: 0.0002774392
     m_Max: -0.0002774392
