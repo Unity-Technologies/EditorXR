@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// Which axes are constrained
 	/// </summary>
 	[Flags]
-	public enum ConstrainedAxis
+	public enum AxisFlags
 	{
 		X = 1 << 0,
 		Y = 1 << 1,

@@ -587,13 +587,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.ClearSnappingState(rayOrigin);
 		}
 
-		void Translate(Vector3 delta, Transform rayOrigin, ConstrainedAxis constraints)
+		void Translate(Vector3 delta, Transform rayOrigin, AxisFlags constraints)
 		{
 			switch (constraints)
 			{
-				case ConstrainedAxis.X | ConstrainedAxis.Y:
-				case ConstrainedAxis.Y | ConstrainedAxis.Z:
-				case ConstrainedAxis.X | ConstrainedAxis.Z:
+				case AxisFlags.X | AxisFlags.Y:
+				case AxisFlags.Y | AxisFlags.Z:
+				case AxisFlags.X | AxisFlags.Z:
 					m_TargetPosition += delta;
 					break;
 				default:

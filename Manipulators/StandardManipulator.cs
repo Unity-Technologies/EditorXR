@@ -69,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 			}
 			else
 			{
-				ConstrainedAxis constraints = 0;
+				AxisFlags constraints = 0;
 				var constrainedHandle = handle as IAxisConstraints;
 				if (constrainedHandle != null)
 					constraints = constrainedHandle.constraints;
