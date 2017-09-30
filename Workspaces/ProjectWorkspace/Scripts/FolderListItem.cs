@@ -104,7 +104,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 			m_Text.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, (width - doubleMargin - indent) * 1 / textTransform.localScale.x);
 			textTransform.localPosition = new Vector3(doubleMargin + indent + arrowWidth - halfWidth, textTransform.localPosition.y, 0);
 
-			textTransform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent.rotation);
+			textTransform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent);
 
 			UpdateArrow(expanded);
 

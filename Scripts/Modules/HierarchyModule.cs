@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -9,11 +9,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	sealed class HierarchyModule : MonoBehaviour, ISelectionChanged
 	{
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
-		HierarchyData m_HierarchyData;
+		readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
 		HierarchyProperty m_HierarchyProperty;
 
 		readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
 		readonly HashSet<string> m_ObjectTypes = new HashSet<string>();
+		readonly List<GameObject> m_IgnoreList = new List<GameObject>();
+
+		// Local method use only -- created here to reduce garbage collection
+		readonly Stack<HierarchyData> m_DataStack = new Stack<HierarchyData>();
+		readonly Stack<int> m_SiblingIndexStack = new Stack<int>();
+
+		void Awake()
+		{
+			m_IgnoreList.Add(gameObject); // Ignore EditorVR
+			foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
+			{
+				m_IgnoreList.Add(manager.gameObject);
+			}
+
+#if UNITY_EDITORVR
+			foreach (var manager in Resources.FindObjectsOfTypeAll<EditingContextManager>())
+			{
+				m_IgnoreList.Add(manager.gameObject);
+			}
+#endif
+		}
 
 		void OnEnable()
 		{
@@ -60,10 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		List<HierarchyData> GetHierarchyData()
 		{
-			if (m_HierarchyData == null)
-				return new List<HierarchyData>();
-
-			return m_HierarchyData.children;
+			return m_HierarchyData ?? new List<HierarchyData>();
 		}
 
 		void UpdateHierarchyData()
@@ -71,19 +89,94 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_ObjectTypes.Clear();
 
 			if (m_HierarchyProperty == null)
-			{
 				m_HierarchyProperty = new HierarchyProperty(HierarchyType.GameObjects);
-				m_HierarchyProperty.Next(null);
-			}
 			else
-			{
 				m_HierarchyProperty.Reset();
-				m_HierarchyProperty.Next(null);
-			}
 
 			var hasChanged = false;
-			var hasNext = true;
-			m_HierarchyData = CollectHierarchyData(ref hasNext, ref hasChanged, m_HierarchyData, m_HierarchyProperty, m_ObjectTypes);
+			var lastDepth = 0;
+			m_DataStack.Clear();
+			m_SiblingIndexStack.Clear();
+			m_DataStack.Push(null);
+			m_SiblingIndexStack.Push(0);
+			while (m_HierarchyProperty.Next(null))
+			{
+				var instanceID = m_HierarchyProperty.instanceID;
+				var go = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
+				var currentDepth = m_HierarchyProperty.depth;
+				if (m_IgnoreList.Contains(go))
+				{
+					var depth = currentDepth;
+					// skip children of EVR to prevent the display of EVR contents
+					while (m_HierarchyProperty.Next(null) && m_HierarchyProperty.depth > depth) { }
+
+					currentDepth = m_HierarchyProperty.depth;
+					instanceID = m_HierarchyProperty.instanceID;
+					// If EVR is the last object, early out
+					if (instanceID == 0)
+						break;
+				}
+
+				if (currentDepth <= lastDepth)
+				{
+					if (m_DataStack.Count > 1) // Pop off last sibling
+					{
+						if (CleanUpHierarchyData(m_DataStack.Pop(), m_SiblingIndexStack.Pop()))
+							hasChanged = true;
+					}
+
+					var count = lastDepth - currentDepth;
+					while (count-- > 0)
+					{
+						if (CleanUpHierarchyData(m_DataStack.Pop(), m_SiblingIndexStack.Pop()))
+							hasChanged = true;
+					}
+				}
+
+				var parent = m_DataStack.Peek();
+				var siblingIndex = m_SiblingIndexStack.Pop();
+
+				if (parent != null && parent.children == null)
+					parent.children = new List<HierarchyData>();
+
+				var children = parent == null ? m_HierarchyData : parent.children;
+
+				HierarchyData currentHierarchyData;
+				if (siblingIndex >= children.Count)
+				{
+					currentHierarchyData = new HierarchyData(m_HierarchyProperty);
+					var types = new HashSet<string>();
+					InstanceIDToComponentTypes(instanceID, types, m_ObjectTypes);
+					currentHierarchyData.types = types;
+					children.Add(currentHierarchyData);
+					hasChanged = true;
+				}
+				else if (children[siblingIndex].index != instanceID)
+				{
+					currentHierarchyData = new HierarchyData(m_HierarchyProperty);
+					var types = new HashSet<string>();
+					InstanceIDToComponentTypes(instanceID, types, m_ObjectTypes);
+					currentHierarchyData.types = types;
+					children[siblingIndex] = currentHierarchyData;
+					hasChanged = true;
+				}
+				else
+				{
+					currentHierarchyData = children[siblingIndex];
+					InstanceIDToComponentTypes(instanceID, currentHierarchyData.types, m_ObjectTypes);
+				}
+
+				m_DataStack.Push(currentHierarchyData);
+				m_SiblingIndexStack.Push(siblingIndex + 1);
+				m_SiblingIndexStack.Push(0);
+				lastDepth = currentDepth;
+			}
+
+			while (m_SiblingIndexStack.Count > 0 && m_DataStack.Count > 0)
+			{
+				if (CleanUpHierarchyData(m_DataStack.Pop(), m_SiblingIndexStack.Pop()))
+					hasChanged = true;
+			}
 
 			if (hasChanged)
 			{
@@ -100,101 +193,31 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		HierarchyData CollectHierarchyData(ref bool hasNext, ref bool hasChanged, HierarchyData hd, HierarchyProperty hp, HashSet<string> objectTypes)
+		bool CleanUpHierarchyData(HierarchyData data, int lastSiblingIndex)
 		{
-			var depth = hp.depth;
-			var name = hp.name;
-			var instanceID = hp.instanceID;
-			var types = InstanceIDToComponentTypes(instanceID, objectTypes);
-
-			List<HierarchyData> children = null;
-			if (hp.hasChildren)
+			var children = data == null ? m_HierarchyData : data.children;
+			var childrenCount = children == null ? 0 : children.Count;
+			if (children != null && lastSiblingIndex < childrenCount)
 			{
-				if (hd != null && hd.children == null)
-					hasChanged = true;
+				children.RemoveRange(lastSiblingIndex, childrenCount - lastSiblingIndex);
+				if (data != null && children.Count == 0)
+					data.children = null;
 
-				children = hd == null || hd.children == null ? new List<HierarchyData>() : hd.children;
-
-				hasNext = hp.Next(null);
-				var i = 0;
-				while (hasNext && hp.depth > depth)
-				{
-					var go = EditorUtility.InstanceIDToObject(hp.instanceID);
-
-					if (go == gameObject)
-					{
-						// skip children of EVR to prevent the display of EVR contents
-						while (hp.Next(null) && hp.depth > depth + 1) { }
-
-						// If EVR is the last object, don't add anything to the list
-						if (hp.instanceID == 0)
-							break;
-
-						name = hp.name;
-						instanceID = hp.instanceID;
-						types = InstanceIDToComponentTypes(instanceID, objectTypes);
-					}
-
-					if (i >= children.Count)
-					{
-						children.Add(CollectHierarchyData(ref hasNext, ref hasChanged, null, hp, objectTypes));
-						hasChanged = true;
-					}
-					else if (children[i].index != hp.instanceID)
-					{
-						children[i] = CollectHierarchyData(ref hasNext, ref hasChanged, null, hp, objectTypes);
-						hasChanged = true;
-					}
-					else
-					{
-						children[i] = CollectHierarchyData(ref hasNext, ref hasChanged, children[i], hp, objectTypes);
-					}
-
-					if (hasNext)
-						hasNext = hp.Next(null);
-
-					i++;
-				}
-
-				if (i != children.Count)
-				{
-					children.RemoveRange(i, children.Count - i);
-					hasChanged = true;
-				}
-
-				if (children.Count == 0)
-					children = null;
-
-				if (hasNext)
-					hp.Previous(null);
-			}
-			else if (hd != null && hd.children != null)
-			{
-				hasChanged = true;
+				return true;
 			}
 
-			if (hd != null)
-			{
-				hd.children = children;
-				hd.name = name;
-				hd.instanceID = instanceID;
-				hd.types = types;
-			}
-
-			return hd ?? new HierarchyData(name, instanceID, types, children);
+			return false;
 		}
 
-		static HashSet<string> InstanceIDToComponentTypes(int instanceID, HashSet<string> allTypes)
+		static void InstanceIDToComponentTypes(int instanceID, HashSet<string> types, HashSet<string> allTypes)
 		{
-			var types = new HashSet<string>();
+			types.Clear();
 			var go = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
 			if (go)
 			{
 				var components = go.GetComponents<Component>();
-				for (int i = 0; i < components.Length; i++)
+				foreach (var component in components)
 				{
-					var component = components[i];
-
 					if (!component)
 						continue;
 
@@ -209,7 +232,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					allTypes.Add(typeName);
 				}
 			}
-			return types;
 		}
 	}
 }

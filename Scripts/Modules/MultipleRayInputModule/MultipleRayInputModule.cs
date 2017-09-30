@@ -21,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			public RayEventData eventData;
 			public GameObject hoveredObject;
 			public GameObject draggedObject;
+			public bool blocked;
 			public Func<RaycastSource, bool> isValid;
 
 			public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
@@ -29,11 +30,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput, Func<RaycastSource, bool> validationCallback)
 			{
+				UIActions actions = (UIActions)actionMapInput;
+				actions.active = false;
 				this.proxy = proxy;
 				this.rayOrigin = rayOrigin;
 				this.node = node;
 				this.actionMapInput = actionMapInput;
-				this.isValid = validationCallback ?? delegate { return true; };
+				isValid = validationCallback;
 			}
 		}
 
@@ -50,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		private ActionMap m_UIActionMap;
 
 		public event Action<GameObject, RayEventData> rayEntered;
+		public event Action<GameObject, RayEventData> rayHovering;
 		public event Action<GameObject, RayEventData> rayExited;
 		public event Action<GameObject, RayEventData> dragStarted;
 		public event Action<GameObject, RayEventData> dragEnded;
@@ -66,6 +70,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			s_LayerMask = LayerMask.GetMask("UI");
 			m_TempRayEvent = new RayEventData(eventSystem);
+
+			IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
 		}
 
 		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin, Func<RaycastSource, bool> validationCallback = null)
@@ -106,8 +112,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_EventCamera.nearClipPlane = camera.nearClipPlane;
 			m_EventCamera.farClipPlane = camera.farClipPlane;
 
+			// The sources dictionary can change during iteration, so cache it before iterating
 			m_RaycastSourcesCopy.Clear();
-			m_RaycastSourcesCopy.AddRange(m_RaycastSources.Values); // The sources dictionary can change during iteration, so cache it before iterating
+			foreach (var kvp in m_RaycastSources)
+			{
+				m_RaycastSourcesCopy.Add(kvp.Value);
+			}
 
 			//Process events for all different transforms in RayOrigins
 			foreach (var source in m_RaycastSourcesCopy)
@@ -131,17 +141,28 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				eventData.rayOrigin = rayOrigin;
 				eventData.pointerLength = this.GetPointerLength(eventData.rayOrigin);
 
-				if (!source.isValid(source))
+				var sourceAMI = source.actionMapInput;
+				var select = sourceAMI.select;
+
+				if (source.isValid != null && !source.isValid(source))
+				{
+					var currentRaycast = eventData.pointerCurrentRaycast;
+					currentRaycast.gameObject = null;
+					eventData.pointerCurrentRaycast = currentRaycast;
+					source.hoveredObject = null;
+					HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
+
+					if (select.wasJustReleased)
+						OnSelectReleased(source);
 					continue;
+				}
 
 				HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
 
 				var hasObject = source.hasObject;
 				var hasScrollHandler = false;
-				var sourceAMI = source.actionMapInput;
-				sourceAMI.active = hasObject && ShouldActivateInput(eventData, source.currentObject, out hasScrollHandler);
 
-				var select = sourceAMI.select;
+				sourceAMI.active = hasObject && ShouldActivateInput(eventData, source.currentObject, out hasScrollHandler);
 
 				// Proceed only if pointer is interacting with something
 				if (!sourceAMI.active)
@@ -210,6 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				|| ExecuteEvents.GetEventHandler<IRayDragHandler>(currentObject)
 				|| ExecuteEvents.GetEventHandler<IRayBeginDragHandler>(currentObject)
 				|| ExecuteEvents.GetEventHandler<IRayEndDragHandler>(currentObject)
+				|| ExecuteEvents.GetEventHandler<IRayClickHandler>(currentObject)
 
 				|| hasScrollHandler;
 		}
@@ -228,7 +250,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return clone;
 		}
 
-		void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget)
+		void HandlePointerExitAndEnter(RayEventData eventData, GameObject newEnterTarget, bool exitOnly = false)
 		{
 			// Cache properties before executing base method, so we can complete additional ray events later
 			var cachedEventData = GetTempEventDataClone(eventData);
@@ -236,7 +258,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// This will modify the event data (new target will be set)
 			base.HandlePointerExitAndEnter(eventData, newEnterTarget);
 
-			if (newEnterTarget == null || cachedEventData.pointerEnter == null)
+			var pointerEnter = cachedEventData.pointerEnter;
+			if (newEnterTarget == null || pointerEnter == null)
 			{
 				for (var i = 0; i < cachedEventData.hovered.Count; ++i)
 				{
@@ -251,57 +274,64 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					return;
 			}
 
-			Transform t = null;
-
-			// if we have not changed hover target
-			if (cachedEventData.pointerEnter == newEnterTarget && newEnterTarget)
+			if (!exitOnly)
 			{
-				t = newEnterTarget.transform;
-				while (t != null)
+				// if we have not changed hover target
+				if (newEnterTarget && pointerEnter == newEnterTarget)
 				{
-					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
-					t = t.parent;
+					var transform = newEnterTarget.transform;
+					while (transform != null)
+					{
+						ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayHoverHandler);
+						if (rayHovering != null)
+							rayHovering(transform.gameObject, cachedEventData);
+
+						transform = transform.parent;
+					}
+					return;
 				}
-				return;
 			}
 
-			GameObject commonRoot = FindCommonRoot(cachedEventData.pointerEnter, newEnterTarget);
+			GameObject commonRoot = FindCommonRoot(pointerEnter, newEnterTarget);
 
 			// and we already an entered object from last time
-			if (cachedEventData.pointerEnter != null)
+			if (pointerEnter != null)
 			{
 				// send exit handler call to all elements in the chain
 				// until we reach the new target, or null!
-				t = cachedEventData.pointerEnter.transform;
+				var transform = pointerEnter.transform;
 
-				while (t != null)
+				while (transform != null)
 				{
 					// if we reach the common root break out!
-					if (commonRoot != null && commonRoot.transform == t)
+					if (commonRoot != null && commonRoot.transform == transform)
 						break;
 
-					ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
+					ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayExitHandler);
 					if (rayExited != null)
-						rayExited(t.gameObject, cachedEventData);
+						rayExited(transform.gameObject, cachedEventData);
 
-					t = t.parent;
+					transform = transform.parent;
 				}
 			}
 
-			// now issue the enter call up to but not including the common root
-			cachedEventData.pointerEnter = newEnterTarget;
-			t = newEnterTarget.transform;
-			while (t != null && t.gameObject != commonRoot)
+			if (!exitOnly)
 			{
-				ExecuteEvents.Execute(t.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
-				if (rayEntered != null)
-					rayEntered(t.gameObject, cachedEventData);
+				// now issue the enter call up to but not including the common root
+				cachedEventData.pointerEnter = newEnterTarget;
+				var transform = newEnterTarget.transform;
+				while (transform != null && transform.gameObject != commonRoot)
+				{
+					ExecuteEvents.Execute(transform.gameObject, cachedEventData, ExecuteRayEvents.rayEnterHandler);
+					if (rayEntered != null)
+						rayEntered(transform.gameObject, cachedEventData);
 
-				t = t.parent;
+					transform = transform.parent;
+				}
 			}
 		}
 
-		private void OnSelectPressed(RaycastSource source)
+		void OnSelectPressed(RaycastSource source)
 		{
 			Deselect();
 
@@ -435,6 +465,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			RaycastSource source;
 			return m_RaycastSources.TryGetValue(rayOrigin, out source) && source.hasObject;
+		}
+
+		void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
+		{
+			RaycastSource source;
+			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
+				source.blocked = blocked;
 		}
 	}
 }

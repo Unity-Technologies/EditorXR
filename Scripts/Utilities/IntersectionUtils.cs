@@ -7,7 +7,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	static class IntersectionUtils
 	{
 		// Local method use only -- created here to reduce garbage collection
-		static readonly Vector3[] s_TriangleVertices = new Vector3[3];
+		static readonly Vector3[] k_TriangleVertices = new Vector3[3];
+		public static Mesh BakedMesh { private get; set; }
 
 		/// <summary>
 		/// Test whether an object collides with the tester
@@ -19,6 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
 		{
 			var transform = obj.transform;
+
+			SetupCollisionTester(collisionTester, transform);
 
 			// Try a simple test with specific rays located at vertices
 			for (var j = 0; j < tester.rays.Length; j++)
@@ -47,10 +50,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
 		public static bool TestEdges(MeshCollider collisionTester, Transform obj, IntersectionTester tester)
 		{
-			var mf = obj.GetComponent<MeshFilter>();
-			if (mf)
-				collisionTester.sharedMesh = mf.sharedMesh;
-
 			var boundsMagnitude = collisionTester.bounds.size.magnitude;
 
 			var triangles = tester.triangles;
@@ -59,16 +58,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			var testerTransform = tester.transform;
 			for (var i = 0; i < triangles.Length; i += 3)
 			{
-				s_TriangleVertices[0] = vertices[triangles[i]];
-				s_TriangleVertices[1] = vertices[triangles[i + 1]];
-				s_TriangleVertices[2] = vertices[triangles[i + 2]];
+				k_TriangleVertices[0] = vertices[triangles[i]];
+				k_TriangleVertices[1] = vertices[triangles[i + 1]];
+				k_TriangleVertices[2] = vertices[triangles[i + 2]];
 
 				for (var j = 0; j < 3; j++)
 				{
 					RaycastHit hitInfo;
 
-					var start = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[j]));
-					var end = obj.InverseTransformPoint(testerTransform.TransformPoint(s_TriangleVertices[(j + 1) % 3]));
+					var start = obj.InverseTransformPoint(testerTransform.TransformPoint(k_TriangleVertices[j]));
+					var end = obj.InverseTransformPoint(testerTransform.TransformPoint(k_TriangleVertices[(j + 1) % 3]));
 					var edge = end - start;
 					var maxDistance = Mathf.Max(edge.magnitude, boundsMagnitude);
 					var direction = edge.normalized;
@@ -132,10 +131,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
 		public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray)
 		{
-			var mf = obj.GetComponent<MeshFilter>();
-			if (mf)
-				collisionTester.sharedMesh = mf.sharedMesh;
-
 			ray.origin = obj.InverseTransformPoint(ray.origin);
 			ray.direction = obj.InverseTransformDirection(ray.direction);
 		
@@ -179,15 +174,28 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		/// <returns>The result of whether the ray intersects with the object</returns>
 		public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
 		{
-			var mf = obj.GetComponent<MeshFilter>();
-			if (mf)
-				collisionTester.sharedMesh = mf.sharedMesh;
-
 			ray.origin = obj.InverseTransformPoint(ray.origin);
 			ray.direction = obj.InverseTransformVector(ray.direction);
 			maxDistance = obj.InverseTransformVector(ray.direction * maxDistance).magnitude;
 
 			return collisionTester.Raycast(ray, out hit, maxDistance);
+		}
+
+		public static void SetupCollisionTester(MeshCollider collisionTester, Transform obj)
+		{
+			var mf = obj.GetComponent<MeshFilter>();
+			if (mf)
+				collisionTester.sharedMesh = mf.sharedMesh;
+
+			if (!mf)
+			{
+				var smr = obj.GetComponent<SkinnedMeshRenderer>();
+				if (smr)
+				{
+					smr.BakeMesh(BakedMesh);
+					collisionTester.sharedMesh = BakedMesh;
+				}
+			}
 		}
 	}
 }

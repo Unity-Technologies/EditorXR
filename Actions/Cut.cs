@@ -11,6 +11,9 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 			var selection = Selection.transforms;
 			if (selection != null)
 			{
+				Unsupported.CopyGameObjectsToPasteboard();
+				Paste.SetBufferDistance(Selection.transforms);
+
 				foreach (var transform in selection)
 				{
 					var go = transform.gameObject;
@@ -18,7 +21,6 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 					go.SetActive(false);
 				}
 
-				Paste.buffer = selection;
 				Selection.activeGameObject = null;
 			}
 		}

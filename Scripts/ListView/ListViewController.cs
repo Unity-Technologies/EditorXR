@@ -55,13 +55,14 @@ namespace ListView
 			var doneSettling = true;
 
 			var offset = 0f;
+			var order = 0;
 			for (int i = 0; i < m_Data.Count; i++)
 			{
 				var datum = m_Data[i];
 				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
 					Recycle(datum.index);
 				else
-					UpdateVisibleItem(datum, i * itemSize.z + m_ScrollOffset, ref doneSettling);
+					UpdateVisibleItem(datum, order++, i * itemSize.z + m_ScrollOffset, ref doneSettling);
 
 				offset += itemSize.z;
 			}
@@ -92,7 +93,7 @@ namespace ListView
 			item.gameObject.SetActive(false);
 		}
 
-		protected virtual void UpdateVisibleItem(TData data, float offset, ref bool doneSettling)
+		protected virtual void UpdateVisibleItem(TData data, int order, float offset, ref bool doneSettling)
 		{
 			TItem item;
 			var index = data.index;
@@ -102,7 +103,7 @@ namespace ListView
 				m_ListItems[index] = item;
 			}
 
-			UpdateItem(item.transform, offset, ref doneSettling);
+			UpdateItem(item.transform, order, offset, ref doneSettling);
 		}
 
 		protected virtual void SetRowGrabbed(TIndex index, Transform rayOrigin, bool grabbed)

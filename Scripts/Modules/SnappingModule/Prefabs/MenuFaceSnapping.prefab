@@ -403,7 +403,7 @@ GameObject:
   - component: {fileID: 114000012781285154}
   - component: {fileID: 222000013846753968}
   m_Layer: 5
-  m_Name: LocalOnly
+  m_Name: LimitRadius
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2158,7 +2158,7 @@ MonoBehaviour:
   m_SurfaceSnappingEnabled: {fileID: 114000012943056720}
   m_PivotSnappingEnabled: {fileID: 114000013071561082}
   m_RotationSnappingEnabled: {fileID: 114000010532990664}
-  m_LocalOnly: {fileID: 114000012781285154}
+  m_LimitRadius: {fileID: 114000012781285154}
   m_ManipulatorSnappingEnabled: {fileID: 114000010948304686}
   m_DirectSnappingEnabled: {fileID: 114000013490178622}
 --- !u!114 &114000013560910782

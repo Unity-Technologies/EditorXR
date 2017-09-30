@@ -13,12 +13,11 @@ using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	[InitializeOnLoad]
 	sealed class VRView : EditorWindow
 	{
+		public const float HeadHeight = 1.7f;
 		const string k_ShowDeviceView = "VRView.ShowDeviceView";
 		const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
-		const string k_LaunchOnExitPlaymode = "VRView.LaunchOnExitPlaymode";
 
 		DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
@@ -95,6 +94,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
+		public static Vector3 headCenteredOrigin
+		{
+			get
+			{
+				return VRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary ? Vector3.up * HeadHeight : Vector3.zero;
+			}
+		}
+
 		public static event Action viewEnabled;
 		public static event Action viewDisabled;
 		public static event Action<EditorWindow> beforeOnGUI;
@@ -102,11 +109,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public static event Action<bool> hmdStatusChange;
 
 		public Rect guiRect { get; private set; }
-
-		static VRView GetWindow()
-		{
-			return GetWindow<VRView>(true);
-		}
 
 		public static Coroutine StartCoroutine(IEnumerator routine)
 		{
@@ -119,25 +121,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			return null;
 		}
 
-		// Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
-		// EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
-		// we watch until playmode is done and then relaunch.  
-		static void ReopenOnExitPlaymode()
-		{
-			bool launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
-			if (!launch || !EditorApplication.isPlaying)
-			{
-				EditorPrefs.DeleteKey(k_LaunchOnExitPlaymode);
-				EditorApplication.update -= ReopenOnExitPlaymode;
-				if (launch)
-					GetWindow<VRView>();
-			}
-		}
-
 		public void OnEnable()
 		{
-			EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
-
 			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
 
 			autoRepaintOnSceneChange = true;
@@ -154,12 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			m_Camera.transform.parent = m_CameraRig;
 			m_Camera.nearClipPlane = 0.01f;
 			m_Camera.farClipPlane = 1000f;
-
-			// Generally, we want to be at a standing height, so default to that
-			const float kHeadHeight = 1.7f;
-			Vector3 position = m_CameraRig.position;
-			position.y = kHeadHeight;
-			m_CameraRig.position = position;
+			m_CameraRig.position = headCenteredOrigin;
 			m_CameraRig.rotation = Quaternion.identity;
 
 			m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
@@ -172,7 +152,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			var currentCamera = Camera.current;
 			Camera.SetupCurrent(m_Camera);
 			VRSettings.enabled = true;
-			InputTracking.Recenter();
 			Camera.SetupCurrent(currentCamera);
 
 			if (viewEnabled != null)
@@ -183,8 +162,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			if (viewDisabled != null)
 				viewDisabled();
-
-			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
 
 			VRSettings.enabled = false;
 
@@ -323,19 +300,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
-		private void OnPlaymodeStateChanged()
-		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
-			{
-				EditorPrefs.SetBool(k_LaunchOnExitPlaymode, true);
-				Close();
-			}
-		}
-
 		private void Update()
 		{
 			// If code is compiling, then we need to clean up the window resources before classes get re-initialized
-			if (EditorApplication.isCompiling)
+			if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode)
 			{
 				Close();
 				return;

@@ -754,6 +754,8 @@ MonoBehaviour:
   m_ButtonListGrid: {fileID: 114000013631895690}
   m_ButtonListCanvasGroup: {fileID: 225000014235020344}
   m_Background: {fileID: 23000011039186558}
+  m_VisibilityButton: {fileID: 114000013866040058}
+  m_SummaryButton: {fileID: 114000010158068876}
 --- !u!114 &114000011143325692
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1396,7 +1398,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 0.014759451, y: 0}
+  m_AnchoredPosition: {x: 0.07825945, y: 0}
   m_SizeDelta: {x: 0.22439998, y: 0.05}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!224 &224000012846441888

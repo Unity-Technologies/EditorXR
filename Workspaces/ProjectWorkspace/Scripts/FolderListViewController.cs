@@ -78,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			base.UpdateItems();
 		}
 
-		void UpdateFolderItem(FolderData data, float offset, int depth, bool expanded, ref bool doneSettling)
+		void UpdateFolderItem(FolderData data, int order, float offset, int depth, bool expanded, ref bool doneSettling)
 		{
 			var index = data.index;
 			FolderListItem item;
@@ -89,10 +89,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
-			UpdateItem(item.transform, offset, ref doneSettling);
+			UpdateItem(item.transform, order, offset, ref doneSettling);
 		}
 
-		protected override void UpdateRecursively(List<FolderData> data, ref float offset, ref bool doneSettling, int depth = 0)
+		protected override void UpdateRecursively(List<FolderData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
 		{
 			for (int i = 0; i < data.Count; i++)
 			{
@@ -105,14 +105,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
 					Recycle(index);
 				else
-					UpdateFolderItem(datum, offset + m_ScrollOffset, depth, expanded, ref doneSettling);
+					UpdateFolderItem(datum, order++, offset + m_ScrollOffset, depth, expanded, ref doneSettling);
 
 				offset += itemSize.z;
 
 				if (datum.children != null)
 				{
 					if (expanded)
-						UpdateRecursively(datum.children, ref offset, ref doneSettling, depth + 1);
+						UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling, depth + 1);
 					else
 						RecycleChildren(datum);
 				}
@@ -136,6 +136,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		void ToggleExpanded(string index)
 		{
+			if (data.Count == 1 && m_ListItems[index].data == data[0]) // Do not collapse Assets folder
+				return;
+
 			m_ExpandStates[index] = !m_ExpandStates[index];
 			StartSettling();
 		}

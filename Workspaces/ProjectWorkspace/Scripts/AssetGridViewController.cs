@@ -62,6 +62,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
+		public override Vector3 size
+		{
+			set
+			{
+				base.size = value; 
+				m_LastHiddenItemOffset = Mathf.Infinity;
+			}
+		}
+
 		protected override void Setup()
 		{
 			base.Setup();
@@ -105,6 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected override void UpdateItems()
 		{
 			var count = 0;
+			var order = 0;
 			foreach (var data in m_Data)
 			{
 				if (m_NumPerRow == 0) // If the list is too narrow, display nothing
@@ -125,7 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				else
 				{
 					var ignored = true;
-					UpdateVisibleItem(data, count, ref ignored);
+					UpdateVisibleItem(data, order++, count, ref ignored);
 				}
 
 				count++;
@@ -150,14 +160,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			});
 		}
 
-		protected override void UpdateVisibleItem(AssetData data, float offset, ref bool doneSettling)
+		protected override void UpdateVisibleItem(AssetData data, int order, float offset, ref bool doneSettling)
 		{
 			AssetGridItem item;
 			if (!m_ListItems.TryGetValue(data.index, out item))
 				item = GetItem(data);
 
 			if (item)
-				UpdateGridItem(item, (int)offset);
+				UpdateGridItem(item, order, (int)offset);
 		}
 
 		public override void OnScrollEnded()
@@ -176,7 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		void UpdateGridItem(AssetGridItem item, int count)
+		void UpdateGridItem(AssetGridItem item, int order, int count)
 		{
 			item.UpdateTransforms(m_ScaleFactor);
 
@@ -187,6 +197,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 			t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, k_PositionFollow);
 			t.localRotation = Quaternion.identity;
+
+			t.SetSiblingIndex(order);
 		}
 
 		protected override AssetGridItem GetItem(AssetData data)

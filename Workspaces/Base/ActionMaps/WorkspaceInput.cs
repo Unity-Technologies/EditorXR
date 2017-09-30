@@ -9,5 +9,7 @@ namespace UnityEngine.InputNew
 		
 		public ButtonInputControl @moveResizeLeft { get { return (ButtonInputControl)this[0]; } }
 		public ButtonInputControl @moveResizeRight { get { return (ButtonInputControl)this[1]; } }
+		public ButtonInputControl @miniWorldPanZoomLeft { get { return (ButtonInputControl)this[2]; } }
+		public ButtonInputControl @miniWorldPanZoomRight { get { return (ButtonInputControl)this[3]; } }
 	}
 }
