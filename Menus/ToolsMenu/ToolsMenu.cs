@@ -200,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
 				}
 			}
-			else if (spatialScrollData != null && !toolslMenuInput.show.isHeld && !toolslMenuInput.select.isHeld)
+			else if (toolslMenuInput.show.wasJustReleased)
 			{
 				consumeControl(toolslMenuInput.show);
 				consumeControl(toolslMenuInput.select);

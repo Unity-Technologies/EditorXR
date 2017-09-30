@@ -157,9 +157,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			foreach (var type in types)
 			{
 				var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
-				if (customMenuAttribute != null && !customMenuAttribute.shown)
-					continue;
-
 				var isTool = typeof(ITool).IsAssignableFrom(type) && menuTools.Contains(type);
 				var isWorkspace = typeof(Workspace).IsAssignableFrom(type);
 				var isSettingsProvider = typeof(ISettingsMenuProvider).IsAssignableFrom(type);
@@ -189,13 +186,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					{
 						if (targetRayOrigin)
 						{
-							this.SelectTool(targetRayOrigin, selectedType,
-								hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+							this.SelectTool(targetRayOrigin, selectedType);
 							UpdateToolButtons();
 						}
 					});
-
-					m_ToolButtons[type] = mainMenuButton;
 
 					// Assign Tools Menu button preview properties
 					if (mainMenuButton != null)
