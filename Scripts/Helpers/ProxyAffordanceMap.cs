@@ -32,49 +32,101 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		public enum VisibilityControlType
 		{
 			colorProperty,
-			//alphaProperty, // TODO: Support
-			//materialSwap // TODO: Support
+			alphaProperty,
+			materialSwap
 		}
 
 		[Serializable]
-		public class ButtonObject
+		public class AffordanceVisibilityDefinition
+		{
+			[SerializeField]
+			VisibilityControlType m_VisibilityType;
+
+			//TODO: Add support for alpha/float, & material swapping. Expose each visibility control type field set based on the selected visibility control type
+			[SerializeField] // colorProperty field
+			string m_ColorProperty; // Consider custom inspector that only displays this if this visibility type is chosen
+
+			[SerializeField] // alphaProperty field
+			string m_AlphaProperty; // Consider custom inspector that only displays this if this visibility type is chosen
+
+			[SerializeField]
+			Color m_HiddenColor = new Color(1f, 1f, 1f, 0f);
+
+			[SerializeField]
+			float m_HiddenAlpha;
+
+			[SerializeField]
+			Material m_HiddenMaterial;
+
+			/// <summary>
+			/// The original/cached color of the material
+			/// </summary>
+			public Color originalColor { get; set; }
+
+			/// <summary>
+			/// The hidden color of the material
+			/// </summary>
+			public Color hiddenColor { get { return m_HiddenColor; } set { m_HiddenColor = value; } }
+
+			/// <summary>
+			/// The color to lerp FROM as the current/starting color when animating visibility
+			/// </summary>
+			public Color animateFromColor { get; set; }
+
+			/// <summary>
+			/// The original/cached alpha value of the material
+			/// </summary>
+			public float originalAlpha { get; set; }
+
+			/// <summary>
+			/// The hidden alpha value of the material
+			/// </summary>
+			public float hiddenAlpha { get { return m_HiddenAlpha; } set { m_HiddenAlpha = value; } }
+
+			/// <summary>
+			/// The alpha value to lerp FROM as the current/starting alpha when animating visibility
+			/// </summary>
+			public float animateFromAlpha { get; set; }
+
+			/// <summary>
+			/// The original/cached material
+			/// </summary>
+			public Material originalMaterial { get; set; }
+
+			/// <summary>
+			/// The material to with which to swap instead of animating visibility (material blending is not supported)
+			/// </summary>
+			public Material hiddenMaterial { get { return m_HiddenMaterial; } set { m_HiddenMaterial = value; } }
+
+			public VisibilityControlType visibilityType { get { return m_VisibilityType; } }
+			public string colorProperty { get { return m_ColorProperty; } }
+			public string alphaProperty { get { return m_AlphaProperty; } }
+		}
+
+		[Serializable]
+		public class AffordanceDefinition
 		{
 			[SerializeField]
 			VRInputDevice.VRControl m_Control;
 
 			[SerializeField]
-			VisibilityControlType m_VisibilityType;
-
-			//TODO Expose each visibility control type field set based on the selected visibility control type
-
-			[SerializeField] // colorProperty field
-			string m_ColorVisibilityProperty; // Consider custom inspector that only displays this if "shaderProperty" is chosen
-
-			//[SerializeField] // alphaProperty field
-			//string m_AlphaVisibilityProperty; // Consider custom inspector that only displays this if "shaderProperty" is chosen
-
-			//[SerializeField] // materialSwap field
-			//Material m_SwapMaterial;
-
-			//[SerializeField]
-			//float m_PropertyHiddenValue;
+			AffordanceVisibilityDefinition m_VisibilityDefinition;
 
 			public VRInputDevice.VRControl control { get { return m_Control; } }
-			public VisibilityControlType visibilityControlType { get { return m_VisibilityType; } }
-			public string colorVisibilityProperty { get { return m_ColorVisibilityProperty; } }
-			//public string alphaVisibilityProperty { get { return m_AlphaVisibilityProperty; } }
-			//public Material swapMaterial { get { return m_SwapMaterial; } }
 		}
 
+		[Header("Non-Interactive Input-Device Body Elements")]
 		[SerializeField]
-		VisibilityControlType m_BodyVisibilityType;
+		AffordanceVisibilityDefinition m_BodyVisibilityDefinition;
 
+		[Space(20)]
+		[Header("Affordances / Interactive Input-Device Elements")]
 		[SerializeField]
 		[FormerlySerializedAs("m_Buttons")]
-		ButtonObject[] m_AffordanceDefinitions;
+		AffordanceDefinition[] m_AffordanceDefinitions;
 
-		public ButtonObject[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } }
-		public VisibilityControlType BodyVisibilityControlType { get { return m_BodyVisibilityType; } }
+		public AffordanceDefinition[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } }
+		public AffordanceVisibilityDefinition bodyVisibilityDefinition { get { return m_BodyVisibilityDefinition; } }
 	}
 }
 #endif
