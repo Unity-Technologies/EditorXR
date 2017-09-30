@@ -141,9 +141,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				eventData.rayOrigin = rayOrigin;
 				eventData.pointerLength = this.GetPointerLength(eventData.rayOrigin);
 
-				var sourceAMI = source.actionMapInput;
-				var select = sourceAMI.select;
-
 				if (source.isValid != null && !source.isValid(source))
 				{
 					var currentRaycast = eventData.pointerCurrentRaycast;
@@ -151,9 +148,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					eventData.pointerCurrentRaycast = currentRaycast;
 					source.hoveredObject = null;
 					HandlePointerExitAndEnter(eventData, null, true); // Send only exit events
-
-					if (select.wasJustReleased)
-						OnSelectReleased(source);
 					continue;
 				}
 
@@ -161,8 +155,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				var hasObject = source.hasObject;
 				var hasScrollHandler = false;
-
+				var sourceAMI = source.actionMapInput;
 				sourceAMI.active = hasObject && ShouldActivateInput(eventData, source.currentObject, out hasScrollHandler);
+
+				var select = sourceAMI.select;
 
 				// Proceed only if pointer is interacting with something
 				if (!sourceAMI.active)
