@@ -149,10 +149,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				{ m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.fieldGrabOrigin },
 				{ m_RightProxyHelper.rayOrigin, m_RightProxyHelper.fieldGrabOrigin }
 			};
-
-			var m_LeftTooltips = new List<Tooltip>();
-			var m_RightTooltips = new List<Tooltip>();
-
 		}
 
 		public virtual IEnumerator Start()
