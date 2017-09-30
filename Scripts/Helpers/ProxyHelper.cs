@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Serialization;
 using VisibilityControlType = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.VisibilityControlType;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
