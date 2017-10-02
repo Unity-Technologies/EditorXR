@@ -59,6 +59,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			Material m_HiddenMaterial;
 
 			/// <summary>
+			/// The renderer associated with this affordance
+			/// </summary>
+			public Renderer renderer { get; set; }
+
+			/// <summary>
 			/// The original/cached color of the material
 			/// </summary>
 			public Color originalColor { get; set; }
@@ -89,9 +94,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public float animateFromAlpha { get; set; }
 
 			/// <summary>
-			/// The original/cached material
+			/// The (cloned) material that will have its properties animated
 			/// </summary>
-			public Material originalMaterial { get; set; }
+			public Material material { get; set; }
 
 			/// <summary>
 			/// The material to with which to swap instead of animating visibility (material blending is not supported)
@@ -113,6 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			AffordanceVisibilityDefinition m_VisibilityDefinition;
 
 			public VRInputDevice.VRControl control { get { return m_Control; } }
+			public AffordanceVisibilityDefinition visibilityDefinition { get { return m_VisibilityDefinition; } }
 		}
 
 		[Header("Non-Interactive Input-Device Body Elements")]
@@ -122,7 +128,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[Space(20)]
 		[Header("Affordances / Interactive Input-Device Elements")]
 		[SerializeField]
-		[FormerlySerializedAs("m_Buttons")]
 		AffordanceDefinition[] m_AffordanceDefinitions;
 
 		public AffordanceDefinition[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } }
