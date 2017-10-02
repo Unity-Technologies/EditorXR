@@ -39,13 +39,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		protected Transform m_RightHand;
 		readonly List<Material> m_Materials = new List<Material>();
 		readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
-		readonly Dictionary<Node, int> m_ActiveFeedbackRequests = new Dictionary<Node, int>();
 
 		protected Dictionary<Node, Transform> m_RayOrigins;
 
 		ProxyHelper m_LeftProxyHelper;
 		ProxyHelper m_RightProxyHelper;
-		int m_ElementsHighlighted;
 		List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
 		readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, AffordanceObject>> m_Affordances = new Dictionary<Node, Dictionary<VRInputDevice.VRControl, AffordanceObject>>();
@@ -102,9 +100,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			m_ProxyMeshRoots.Add(m_LeftProxyHelper.meshRoot);
 			m_ProxyMeshRoots.Add(m_RightProxyHelper.meshRoot);
-
-			m_ActiveFeedbackRequests.Add(Node.LeftHand, 0);
-			m_ActiveFeedbackRequests.Add(Node.RightHand, 0);
 
 			var leftButtons = new Dictionary<VRInputDevice.VRControl, AffordanceObject>();
 			foreach (var button in m_LeftProxyHelper.Affordances)
@@ -199,20 +194,19 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 
 				Debug.LogError("FeedbackRequests: <color=yellow>" + m_FeedbackRequests.Count + "</color>");
-				Debug.LogError("ACTIVE LEFT FeedbackRequests: <color=green>" + m_ActiveFeedbackRequests[Node.LeftHand] + "</color>");
 			}
 		}
 
 		public void AddFeedbackRequest(FeedbackRequest request)
 		{
-			//validate requests for duplicates
-			Debug.LogError("RequestAdded");
 			var proxyRequest = request as ProxyFeedbackRequest;
 			if (proxyRequest != null)
 			{
-				m_FeedbackRequests.Add(proxyRequest); // TODO delete after dictionary addition?
+				m_FeedbackRequests.Add(proxyRequest);
 				ExecuteFeedback(proxyRequest);
 			}
+
+			UpdateVisibility();
 		}
 
 		void ExecuteFeedback(ProxyFeedbackRequest changedRequest)
@@ -242,7 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 					if (button.transform)
 					{
-						var tooltip = button.transform.GetComponent<Tooltip>(); // TODO optimize GetComponent calls on buttons via cacheing
+						var tooltip = button.transform.GetComponent<Tooltip>();
 						var tooltipText = request.tooltipText;
 						if (!string.IsNullOrEmpty(tooltipText) && tooltip)
 						{
@@ -251,20 +245,17 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 						}
 					}
 
-					m_ActiveFeedbackRequests[Node.LeftHand] += 1; // Increase feedback request count for this hand/node
 				}
 			}
-
-			UpdateVisibility();
 		}
 
 		public void RemoveFeedbackRequest(FeedbackRequest request)
 		{
-			m_ActiveFeedbackRequests[Node.LeftHand] -= 1; // Increase feedback request count for this hand/node
-
 			var proxyRequest = request as ProxyFeedbackRequest;
 			if (proxyRequest != null)
+			{
 				RemoveFeedbackRequest(proxyRequest);
+			}
 		}
 
 		void RemoveFeedbackRequest(ProxyFeedbackRequest request)
@@ -312,17 +303,19 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		void UpdateVisibility()
 		{
 			Debug.LogError("<color=green>" + m_FeedbackRequests.Count + "</color>");
-			if (m_ActiveFeedbackRequests.Count > 0)
+			var rightProxyRequestsExist = false;
+			var leftProxyRequestsExist = false;
+			if (m_FeedbackRequests.Count > 0)
 			{
-				var rightProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.RightHand).Any();
-				var leftProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.LeftHand).Any();
-
-				rightAffordanceRenderersVisible = rightProxyRequestsExist;
-				rightBodyRenderersVisible = rightProxyRequestsExist;
-
-				leftAffordanceRenderersVisible = leftProxyRequestsExist;
-				leftBodyRenderersVisible = leftProxyRequestsExist;
+				rightProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.RightHand).Any();
+				leftProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.LeftHand).Any();
 			}
+
+			rightAffordanceRenderersVisible = rightProxyRequestsExist;
+			rightBodyRenderersVisible = rightProxyRequestsExist;
+
+			leftAffordanceRenderersVisible = leftProxyRequestsExist;
+			leftBodyRenderersVisible = leftProxyRequestsExist;
 		}
 	}
 }
