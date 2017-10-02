@@ -181,6 +181,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			else
 				visible = true;
 		}
+
+		public void ClearSubmenus()
+		{
+			foreach (var submenu in m_Submenus)
+			{
+				ObjectUtils.Destroy(submenu);
+			}
+		}
 	}
 }
 #endif
