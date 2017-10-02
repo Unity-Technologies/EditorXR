@@ -74,8 +74,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					m_Hidden = value;
 					m_LeftHand.gameObject.SetActive(!value);
 					m_RightHand.gameObject.SetActive(!value);
-					leftBodyRenderersVisible = !value; // TODO support checking for existing feedback requests and handling body visibility when hiding/unHiding
-					rightBodyRenderersVisible = !value;
+
+					UpdateVisibility();
 				}
 			}
 		}
@@ -112,7 +112,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				leftButtons[button.control] = button;
 			}
 			m_Affordances[Node.LeftHand] = leftButtons;
-			//m_LeftProxyHelper.controlToAffordanceMap = leftButtons;
 
 			var rightButtons = new Dictionary<VRInputDevice.VRControl, AffordanceObject>();
 			foreach (var button in m_RightProxyHelper.Affordances)
@@ -120,7 +119,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				rightButtons[button.control] = button;
 			}
 			m_Affordances[Node.RightHand] = rightButtons;
-			//m_RightProxyHelper.controlToAffordanceMap = rightButtons;
 
 			m_RayOrigins = new Dictionary<Node, Transform>
 			{
@@ -248,14 +246,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 						{
 							tooltip.tooltipText = tooltipText;
 							this.ShowTooltip(tooltip, true, k_FeedbackDuration);
-
-							/*
-							var existingFeedback = m_ActiveFeedbackRequests.ContainsKey(tooltip);
-							if (existingFeedback)
-								m_ActiveFeedbackRequests[tooltip] = request; // Tooltips will hide themselves, replace the last existing reference
-							else
-								m_ActiveFeedbackRequests.Add(tooltip, request);
-							*/
 						}
 					}
 
@@ -263,48 +253,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				}
 			}
 
-			UpdateTransparency();
+			UpdateVisibility();
 		}
 
 		public void RemoveFeedbackRequest(FeedbackRequest request)
 		{
-			Debug.LogError("RequestRemoved - PUBLIC");
 			m_ActiveFeedbackRequests[Node.LeftHand] -= 1; // Increase feedback request count for this hand/node
 
 			var proxyRequest = request as ProxyFeedbackRequest;
 			if (proxyRequest != null)
 				RemoveFeedbackRequest(proxyRequest);
-
-			/*
-			var existingFeedback = m_ActiveFeedbackRequests.ContainsValue(proxyRequest);
-			if (existingFeedback)
-			{
-				//m_ActiveFeedbackRequests.Remove()[tooltip] = request; // Tooltips will hide themselves, remove the last existing reference
-				var tooltip = m_ActiveFeedbackRequests.FirstOrDefault(x => x.Value == proxyRequest).Key;
-				if (tooltip != null)
-					m_ActiveFeedbackRequests.Remove(tooltip);
-			}
-
-			foreach (var proxyNode in m_Buttons)
-			{
-				foreach (var kvp in proxyNode.Value)
-				{
-					var button = kvp.Value;
-					foreach (var x in m_ActiveFeedbackRequests.Values)
-					{
-
-					}
-			}
-
-			var existingFeedback = m_ActiveFeedbackRequests.ContainsKey(tooltip);
-			if (existingFeedback)
-				m_ActiveFeedbackRequests.Remove(tooltip); // Tooltips will hide themselves, remove the last existing reference
-			*/
 		}
 
 		void RemoveFeedbackRequest(ProxyFeedbackRequest request)
 		{
-			Debug.LogError("RequestRemoved - PRIVATE");
 			Dictionary<VRInputDevice.VRControl, AffordanceObject> buttons;
 			if (m_Affordances.TryGetValue(request.node, out buttons))
 			{
@@ -321,18 +283,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 						{
 							tooltip.tooltipText = string.Empty;
 							this.HideTooltip(tooltip, true);
-							//m_ActiveFeedbackRequests.Remove(tooltip);
 						}
 					}
 				}
 			}
 
-			//m_ActiveFeedbackRequests[Node.LeftHand] -= 1; // Increase feedback request count for this hand/node
 			m_FeedbackRequests.Remove(request);
 
 			ExecuteFeedback(request);
 
-			UpdateTransparency();
+			UpdateVisibility();
 		}
 
 		public void ClearFeedbackRequests(IRequestFeedback caller)
@@ -344,17 +304,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			foreach (var feedbackRequest in requests)
 			{
 				RemoveFeedbackRequest(feedbackRequest);
-				//m_ActiveFeedbackRequests.Remove(feedbackRequest.tooltipText);
 			}
 		}
 
-		void UpdateTransparency()
+		void UpdateVisibility()
 		{
-			//Debug.LogError("<color=green>" + m_FeedbackRequests.Count + "</color>");
+			Debug.LogError("<color=green>" + m_FeedbackRequests.Count + "</color>");
 			if (m_ActiveFeedbackRequests.Count > 0)
 			{
-				//var leftProxyRequestsExist = m_ActiveFeedbackRequests.Where(x => x.Value.node == Node.LeftHand).Any();
-				//var rightProxyRequestsExist = m_ActiveFeedbackRequests.Where(x => x.Value.node == Node.RightHand).Any();
 				var leftProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.LeftHand).Any();
 				var rightProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.RightHand).Any();
 
