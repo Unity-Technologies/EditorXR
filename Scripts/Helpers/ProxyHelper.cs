@@ -123,15 +123,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		void Start()
 		{
 			// Setup ProxyUI
-			m_ProxyUI.Affordances = m_Affordances;
-
 			List<Transform> origins = new List<Transform>();
 			origins.Add(rayOrigin);
 			origins.Add(menuOrigin);
 			origins.Add(alternateMenuOrigin);
 			origins.Add(previewOrigin);
 			origins.Add(fieldGrabOrigin);
-			m_ProxyUI.proxyOrigins = origins;
+
+			m_ProxyUI.Setup(m_Affordances, origins);
 		}
 	}
 }
