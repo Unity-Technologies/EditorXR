@@ -200,6 +200,34 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 		}
 
+		void OnDestroy()
+		{
+			// Cleanup cloned materials
+			foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)
+			{
+				var visibilityDefinition = affordanceDefinition.visibilityDefinition;
+				var visibilityType = visibilityDefinition.visibilityType;
+				if (visibilityType == VisibilityControlType.colorProperty || visibilityType == VisibilityControlType.alphaProperty)
+				{
+					var material = visibilityDefinition.material;
+					if (material != null)
+						ObjectUtils.Destroy(material);
+				}
+			}
+
+			var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
+			var bodyVisibilityType = bodyVisibilityDefinition.visibilityType;
+			if (bodyVisibilityType == VisibilityControlType.colorProperty || bodyVisibilityType == VisibilityControlType.alphaProperty)
+			{
+				foreach (var kvp in m_BodyMaterialOriginalColorMap)
+				{
+					var material = kvp.Key;
+					if (material != null)
+						ObjectUtils.Destroy(material);
+				}
+			}
+		}
+
 		/// <summary>
 		/// Setup this ProxyUI
 		/// </summary>
@@ -217,7 +245,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition)
 		{
 			// Set original cached color when visible, transparent when hidden
-			const float kSpeedScalar = 3f;
+			const float kSpeedScalar = 2f;
 			const float kTargetAmount = 1f;
 			const float kHiddenValue = 0.25f;
 			var currentAmount = 0f;
@@ -235,12 +263,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				yield return null;
 			}
 
+			// Mandate target value has been set
 			material.SetColor(shaderColorPropety, animateToColor);
 		}
 
 		IEnumerator AnimateAffordanceAlphaVisibility(bool isVisible, AffordanceDefinition definition)
 		{
-			const float kSpeedScalar = 3f;
+			const float kSpeedScalar = 2f;
 			const float kTargetAmount = 1f;
 			const float kHiddenValue = 0.25f;
 			var visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
