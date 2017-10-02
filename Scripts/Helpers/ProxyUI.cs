@@ -69,6 +69,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					return;
 				}
 
+				// Clone the affordance map, in order to allow a single map to drive the visuals of many duplicate
+				// This also allows coroutine sets in the ProxyAffordanceMap to be performed simultaneously for n-number of devices in a proxy
+				m_AffordanceMap = Instantiate(m_AffordanceMap);
+
 				m_Affordances = value;
 				m_AffordanceRenderers = new List<Renderer>();
 				foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)

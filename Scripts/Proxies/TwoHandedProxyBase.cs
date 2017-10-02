@@ -183,7 +183,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public virtual void OnDestroy()
 		{
 			foreach (var m in m_Materials)
+			{
 				ObjectUtils.Destroy(m);
+			}
 		}
 
 		public virtual void Update()
