@@ -110,26 +110,28 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		VisibilityControlType m_BodyVisibilityControlType;
 
 		/// <summary>
+		/// Set the visibility of the renderers associated with affordances(controls/input)
+		/// </summary>
+		/// Null checking before setting, as upon EXR setup, in Awake(), m_ProxyUI is null, even though it has been assigned in the inspector
+		public bool affordanceRenderersVisible { set { if (m_ProxyUI != null) m_ProxyUI.affordancesVisible = value; } }
+
+		/// <summary>
 		/// Set the visibility of the renderers not associated with controls/input
 		/// </summary>
-		public bool bodyRenderersVisible { set { if (m_ProxyUI != null) m_ProxyUI.bodyRenderersVisible = value; } }
+		public bool bodyRenderersVisible { set { if (m_ProxyUI != null) m_ProxyUI.bodyVisible = value; } }
 
 		void Start()
 		{
+			// Setup ProxyUI
 			m_ProxyUI.Affordances = m_Affordances;
-		}
 
-		public void ShowAllControls()
-		{
-			foreach (var button in m_Affordances)
-			{
-				button.renderer.enabled = true;
-			}
-		}
-
-		public void HideAffordances(AffordanceObject[] affordanceObjects)
-		{
-			// HIDE specific affordances
+			List<Transform> origins = new List<Transform>();
+			origins.Add(rayOrigin);
+			origins.Add(menuOrigin);
+			origins.Add(alternateMenuOrigin);
+			origins.Add(previewOrigin);
+			origins.Add(fieldGrabOrigin);
+			m_ProxyUI.proxyOrigins = origins;
 		}
 	}
 }
