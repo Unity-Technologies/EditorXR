@@ -23,6 +23,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		Coroutine m_BodyVisibilityCoroutine;
 
 		/// <summary>
+		/// Bool that denotes the ProxyUI has been setup
+		/// </summary>
+		bool m_ProxyUISetup;
+
+		/// <summary>
 		/// Collection of proxy origins under which not to perform any affordance/body visibility changes
 		/// </summary>
 		List<Transform> m_ProxyOrigins;
@@ -150,7 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		{
 			set
 			{
-				if (m_ProxyOrigins == null || !gameObject.activeInHierarchy || m_AffordanceRenderersVisible == value)
+				if (!m_ProxyUISetup || m_ProxyOrigins == null || !gameObject.activeInHierarchy || m_AffordanceRenderersVisible == value)
 					return;
 
 				m_AffordanceRenderersVisible = value;
@@ -180,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		{
 			set
 			{
-				if (m_ProxyOrigins == null || !gameObject.activeInHierarchy || m_BodyRenderersVisible == value)
+				if (!m_ProxyUISetup || m_ProxyOrigins == null || !gameObject.activeInHierarchy || m_BodyRenderersVisible == value)
 					return;
 
 				m_BodyRenderersVisible = value;
@@ -237,9 +242,23 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		{
 			// Set affordances AFTER setting origins, as the origins are referenced when setting up affordances
 			m_ProxyOrigins = proxyOrigins;
+
+			if (!m_ProxyUISetup)
+				StartCoroutine(DelayedSetup(affordances));
+		}
+
+		IEnumerator DelayedSetup(AffordanceObject[] affordances)
+		{
+			// HACK: Wait before setting up ProxyUI affordances
+			// Cloning affordance & body materials in Awake & Start doesn't reliably allow for the ability to change their shader properties
+			yield return new WaitForSeconds(1);
+
 			this.affordances = affordances;
 			affordancesVisible = false;
 			bodyVisible = false;
+
+			// Allow setting of affordance & body visibility after affordance+body setup is performed in the "affordances" property
+			m_ProxyUISetup = true;
 		}
 
 		IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition)
