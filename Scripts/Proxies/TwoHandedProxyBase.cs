@@ -312,13 +312,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			Debug.LogError("<color=green>" + m_FeedbackRequests.Count + "</color>");
 			if (m_ActiveFeedbackRequests.Count > 0)
 			{
-				var leftProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.LeftHand).Any();
 				var rightProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.RightHand).Any();
+				var leftProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.LeftHand).Any();
+
+				rightAffordanceRenderersVisible = rightProxyRequestsExist;
+				rightBodyRenderersVisible = rightProxyRequestsExist;
 
 				leftAffordanceRenderersVisible = leftProxyRequestsExist;
-				rightAffordanceRenderersVisible = rightProxyRequestsExist;
 				leftBodyRenderersVisible = leftProxyRequestsExist;
-				rightBodyRenderersVisible = rightProxyRequestsExist;
 			}
 		}
 	}
