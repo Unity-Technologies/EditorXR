@@ -205,8 +205,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				m_FeedbackRequests.Add(proxyRequest);
 				ExecuteFeedback(proxyRequest);
 			}
-
-			UpdateVisibility();
 		}
 
 		void ExecuteFeedback(ProxyFeedbackRequest changedRequest)
@@ -244,9 +242,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 							this.ShowTooltip(tooltip, true, k_FeedbackDuration);
 						}
 					}
-
 				}
 			}
+
+			UpdateVisibility();
 		}
 
 		public void RemoveFeedbackRequest(FeedbackRequest request)
@@ -284,8 +283,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_FeedbackRequests.Remove(request);
 
 			ExecuteFeedback(request);
-
-			UpdateVisibility();
 		}
 
 		public void ClearFeedbackRequests(IRequestFeedback caller)
