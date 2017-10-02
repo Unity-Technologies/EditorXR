@@ -87,8 +87,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public Dictionary<Transform, Transform> previewOrigins { get; set; }
 		public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
-		private bool leftBodyRenderersVisible { set { m_LeftProxyHelper.bodyRenderersVisible = value; } }
-		private bool rightBodyRenderersVisible { set { m_RightProxyHelper.bodyRenderersVisible = value; } }
+		bool leftAffordanceRenderersVisible { set { m_LeftProxyHelper.affordanceRenderersVisible = value; } }
+		bool rightAffordanceRenderersVisible { set { m_RightProxyHelper.affordanceRenderersVisible = value; } }
+		bool leftBodyRenderersVisible { set { m_LeftProxyHelper.bodyRenderersVisible = value; } }
+		bool rightBodyRenderersVisible { set { m_RightProxyHelper.bodyRenderersVisible = value; } }
 
 		public virtual void Awake()
 		{
@@ -261,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				}
 			}
 
-			UpdateBodyTransparency();
+			UpdateTransparency();
 		}
 
 		public void RemoveFeedbackRequest(FeedbackRequest request)
@@ -330,7 +332,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			ExecuteFeedback(request);
 
-			UpdateBodyTransparency();
+			UpdateTransparency();
 		}
 
 		public void ClearFeedbackRequests(IRequestFeedback caller)
@@ -346,7 +348,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 		}
 
-		void UpdateBodyTransparency()
+		void UpdateTransparency()
 		{
 			//Debug.LogError("<color=green>" + m_FeedbackRequests.Count + "</color>");
 			if (m_ActiveFeedbackRequests.Count > 0)
@@ -355,8 +357,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				//var rightProxyRequestsExist = m_ActiveFeedbackRequests.Where(x => x.Value.node == Node.RightHand).Any();
 				var leftProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.LeftHand).Any();
 				var rightProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.RightHand).Any();
-				leftBodyRenderersVisible = !leftProxyRequestsExist;
-				rightBodyRenderersVisible = !rightProxyRequestsExist;
+
+				leftAffordanceRenderersVisible = leftProxyRequestsExist;
+				rightAffordanceRenderersVisible = rightProxyRequestsExist;
+				leftBodyRenderersVisible = leftProxyRequestsExist;
+				rightBodyRenderersVisible = rightProxyRequestsExist;
 			}
 		}
 	}
