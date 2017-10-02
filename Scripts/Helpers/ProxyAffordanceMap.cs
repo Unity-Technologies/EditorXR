@@ -103,6 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			/// </summary>
 			public Material hiddenMaterial { get { return m_HiddenMaterial; } set { m_HiddenMaterial = value; } }
 
+			public Coroutine affordanceVisibilityCoroutine;
 			public VisibilityControlType visibilityType { get { return m_VisibilityType; } }
 			public string colorProperty { get { return m_ColorProperty; } }
 			public string alphaProperty { get { return m_AlphaProperty; } }
