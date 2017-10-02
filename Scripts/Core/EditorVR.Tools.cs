@@ -162,8 +162,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				{
 					usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
 					InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
-
-					actionMapInput.Reset(false);
 				}
 
 				if (usedDevices.Count == 0)
@@ -195,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return result;
 			}
 
-			internal static bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true, bool hideMenu = false)
+			internal static bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true)
 			{
 				var result = false;
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();
@@ -289,8 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						
 						deviceInputModule.UpdatePlayerHandleMaps();
 						result = spawnTool;
-					} else if (hideMenu)
-						deviceData.menuHideData[deviceData.mainMenu].hideFlags |= MenuHideFlags.Hidden;
+					}
 				});
 
 				return result;
@@ -311,8 +308,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							return;
 						}
 
-						var oldTool = deviceData.toolData.Pop();
-						oldTool.input.active = false;
+						deviceData.toolData.Pop();
 						topTool = deviceData.toolData.Peek();
 						deviceData.currentTool = topTool.tool;
 
@@ -325,8 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								var otherTool = otherDeviceData.currentTool;
 								if (otherTool == tool)
 								{
-									oldTool = otherDeviceData.toolData.Pop();
-									oldTool.input.active = false;
+									otherDeviceData.toolData.Pop();
 									var otherToolData = otherDeviceData.toolData.Peek();
 									if (otherToolData != null)
 										otherDeviceData.currentTool = otherToolData.tool;
@@ -340,8 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								{
 									if (otherTool.GetType() == toolType)
 									{
-										oldTool = otherDeviceData.toolData.Pop();
-										oldTool.input.active = false;
+										otherDeviceData.toolData.Pop();
 										var otherToolData = otherDeviceData.toolData.Peek();
 										if (otherToolData != null)
 										{
