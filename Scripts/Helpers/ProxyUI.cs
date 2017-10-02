@@ -217,7 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition)
 		{
 			// Set original cached color when visible, transparent when hidden
-			const float kSpeedScalar = 2f;
+			const float kSpeedScalar = 3f;
 			const float kTargetAmount = 1f;
 			const float kHiddenValue = 0.25f;
 			var currentAmount = 0f;
@@ -234,11 +234,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 				yield return null;
 			}
+
+			material.SetColor(shaderColorPropety, animateToColor);
 		}
 
 		IEnumerator AnimateAffordanceAlphaVisibility(bool isVisible, AffordanceDefinition definition)
 		{
-			const float kSpeedScalar = 2f;
+			const float kSpeedScalar = 3f;
 			const float kTargetAmount = 1f;
 			const float kHiddenValue = 0.25f;
 			var visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
