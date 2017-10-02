@@ -88,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 							if (materialClone != null)
 							{
 								var visualDefinition = affordanceDefinition.visibilityDefinition;
-								var originalColor = materialClone.color;
+								var originalColor = materialClone.GetColor(visualDefinition.colorProperty);
 								m_AffordanceRenderers.Add(renderer); // Add to collection for later optimized comparison against body renderers
 								visualDefinition.renderer = renderer;
 								visualDefinition.originalColor = originalColor;
@@ -116,7 +116,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 							var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials per-renderer
 							if (materialClone != null)
 							{
-								var originalColor = materialClone.color;
+								var originalColor = materialClone.GetColor(bodyVisibilityDefinition.colorProperty);
 								if (materialClone.HasProperty(k_ZWritePropertyName))
 									materialClone.SetFloat(k_ZWritePropertyName, 1);
 
@@ -303,6 +303,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			const float kTargetAmount = 1f;
 			const float kHiddenValue = 0.25f;
 			var currentAmount = 0f;
+			var shaderColorPropety = bodyVisibilityDefinition.colorProperty;
 			while (currentAmount < kTargetAmount)
 			{
 				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * kSpeedScalar);
@@ -312,7 +313,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					var valueFrom = kvp.Value.animateFromValue;
 					var valueTo = isVisible ? kvp.Value.originalValue : new Color(valueFrom.r, valueFrom.g, valueFrom.b, kHiddenValue);
 					var currentColor = Color.Lerp(valueFrom, valueTo, smoothedAmount);
-					kvp.Key.color = currentColor;
+					kvp.Key.SetColor(shaderColorPropety, currentColor);
 				}
 
 				yield return null;
@@ -322,7 +323,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			foreach (var kvp in m_BodyMaterialOriginalColorMap)
 			{
 				var originalColor = kvp.Value.originalValue;
-				kvp.Key.color = isVisible ? originalColor : new Color(originalColor.r, originalColor.g, originalColor.b, kHiddenValue);
+				kvp.Key.SetColor(shaderColorPropety, isVisible ? originalColor : new Color(originalColor.r, originalColor.g, originalColor.b, kHiddenValue));
 			}
 		}
 
