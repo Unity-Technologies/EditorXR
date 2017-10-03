@@ -567,7 +567,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			var offset = cameraRig.position - CameraUtils.GetMainCamera().transform.position;
 			offset.y = 0;
-#if UNITY_EDITORVR
+#if UNITY_2017_2_OR_NEWER
 			offset += VRView.HeadHeight * Vector3.up * this.GetViewerScale();
 #endif
 			targetPosition += offset;
