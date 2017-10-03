@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -29,6 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			const float k_TwoHandHideDistance = 0.25f;
 			const int k_PossibleOverlaps = 16;
 
+			readonly Dictionary<Transform, IMainMenu> m_MainMenus = new Dictionary<Transform, IMainMenu>();
 			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
 			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
 			List<Type> m_MainMenuTools;
@@ -42,17 +42,33 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				IInstantiateMenuUIMethods.instantiateMenuUI = InstantiateMenuUI;
 				IIsMainMenuVisibleMethods.isMainMenuVisible = IsMainMenuVisible;
+				IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
+				IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
 			}
 
 			public void ConnectInterface(object obj, Transform rayOrigin = null)
 			{
 				var settingsMenuProvider = obj as ISettingsMenuProvider;
 				if (settingsMenuProvider != null)
+				{
 					m_SettingsMenuProviders[new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin)] = settingsMenuProvider;
+					foreach (var kvp in m_MainMenus)
+					{
+						if (rayOrigin == null || kvp.Key == rayOrigin)
+							kvp.Value.AddSettingsMenu(settingsMenuProvider);
+					}
+				}
 
 				var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
 				if (settingsMenuItemProvider != null)
+				{
 					m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin)] = settingsMenuItemProvider;
+					foreach (var kvp in m_MainMenus)
+					{
+						if (rayOrigin == null || kvp.Key == rayOrigin)
+							kvp.Value.AddSettingsMenuItem(settingsMenuItemProvider);
+					}
+				}
 
 				var mainMenu = obj as IMainMenu;
 				if (mainMenu != null)
@@ -61,6 +77,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
 					mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
 					mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
+					m_MainMenus[rayOrigin] = mainMenu;
+				}
+
+				var menuOrigins = obj as IUsesMenuOrigins;
+				if (menuOrigins != null)
+				{
+					Transform mainMenuOrigin;
+					var proxy = Rays.GetProxyForRayOrigin(rayOrigin);
+					if (proxy != null && proxy.menuOrigins.TryGetValue(rayOrigin, out mainMenuOrigin))
+					{
+						menuOrigins.menuOrigin = mainMenuOrigin;
+						Transform alternateMenuOrigin;
+						if (proxy.alternateMenuOrigins.TryGetValue(rayOrigin, out alternateMenuOrigin))
+							menuOrigins.alternateMenuOrigin = alternateMenuOrigin;
+					}
 				}
 			}
 
@@ -68,11 +99,31 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var settingsMenuProvider = obj as ISettingsMenuProvider;
 				if (settingsMenuProvider != null)
+				{
+					foreach (var kvp in m_MainMenus)
+					{
+						if (rayOrigin == null || kvp.Key == rayOrigin)
+							kvp.Value.RemoveSettingsMenu(settingsMenuProvider);
+					}
+
 					m_SettingsMenuProviders.Remove(new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin));
+				}
 
 				var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
 				if (settingsMenuItemProvider != null)
+				{
+					foreach (var kvp in m_MainMenus)
+					{
+						if (rayOrigin == null || kvp.Key == rayOrigin)
+							kvp.Value.RemoveSettingsMenuItem(settingsMenuItemProvider);
+					}
+
 					m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin));
+				}
+
+				var mainMenu = obj as IMainMenu;
+				if (mainMenu != null)
+					m_MainMenus.Remove(rayOrigin);
 			}
 
 			public void LateBindInterfaceMethods(Tools provider)
@@ -88,6 +139,36 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				// Move the Tools Menu buttons to an alternate position if the alternate menu will be shown
 				var toolsMenu = deviceData.ToolsMenu;
 				toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
+			}
+
+			static Transform GetCustomMenuOrigin(Transform rayOrigin)
+			{
+				Transform mainMenuOrigin = null;
+
+				var proxy = Rays.GetProxyForRayOrigin(rayOrigin);
+				if (proxy != null)
+				{
+					var menuOrigins = proxy.menuOrigins;
+					if (menuOrigins.ContainsKey(rayOrigin))
+						mainMenuOrigin = menuOrigins[rayOrigin];
+				}
+
+				return mainMenuOrigin;
+			}
+
+			static Transform GetCustomAlternateMenuOrigin(Transform rayOrigin)
+			{
+				Transform alternateMenuOrigin = null;
+
+				var proxy = Rays.GetProxyForRayOrigin(rayOrigin);
+				if (proxy != null)
+				{
+					var alternateMenuOrigins = proxy.alternateMenuOrigins;
+					if (alternateMenuOrigins.ContainsKey(rayOrigin))
+						alternateMenuOrigin = alternateMenuOrigins[rayOrigin];
+				}
+
+				return alternateMenuOrigin;
 			}
 
 			internal void UpdateMenuVisibilities()
