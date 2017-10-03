@@ -1,5 +1,4 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
-
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
