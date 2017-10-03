@@ -12,6 +12,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Provides access to the custom action map
 		/// </summary>
 		ActionMap actionMap { get; }
+
+		/// <summary>
+		/// Whether the custom action map will always recieve input, regardless of locking
+		/// </summary>
+		bool ignoreLocking { get; }
 	}
 }
 #endif

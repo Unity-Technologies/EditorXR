@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		PlayerHandle m_PlayerHandle;
 
 		readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
+		readonly Dictionary<ActionMapInput, ICustomActionMap> m_IgnoreLocking = new Dictionary<ActionMapInput, ICustomActionMap>();
 
 		readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
 		{
@@ -107,7 +108,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				foreach (var processor in m_InputProcessorsCopy)
 				{
 					if (processor.processor == @object)
+					{
 						m_InputProcessors.Remove(processor);
+						var customActionMap = @object as ICustomActionMap;
+						if (customActionMap != null)
+							m_IgnoreLocking.Remove(processor.input);
+					}
 				}
 			}
 		}
@@ -194,7 +200,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (customMap is IStandardActionMap)
 					Debug.LogWarning("Cannot use IStandardActionMap and ICustomActionMap together in " + obj.GetType());
 
-				return CreateActionMapInput(customMap.actionMap, device);
+				var input = CreateActionMapInput(customMap.actionMap, device);
+				if (customMap.ignoreLocking)
+					m_IgnoreLocking[input] = customMap;
+
+				return input;
 			}
 
 			var standardMap = obj as IStandardActionMap;
@@ -287,6 +297,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			for (int i = 0; i < playerHandleMaps.Count; i++)
 			{
 				var input = playerHandleMaps[i];
+				if (m_IgnoreLocking.ContainsKey(input))
+					continue;
+
 				if (input != ami)
 					input.ResetControl(control);
 			}

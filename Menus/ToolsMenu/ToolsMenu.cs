@@ -54,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Transform alternateMenuOrigin { get; set; }
 		public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 		public ActionMap actionMap { get { return m_MainMenuActionMap; } }
+		public bool ignoreLocking { get { return false; } }
 		public Transform rayOrigin { get; set; }
 
 		public bool mainMenuActivatorInteractable

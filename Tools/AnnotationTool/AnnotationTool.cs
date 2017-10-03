@@ -7,7 +7,6 @@ using UnityEditor;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -101,6 +100,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	public Transform alternateMenuOrigin { private get; set; }
 
 	public ActionMap actionMap { get { return m_ActionMap; } }
+	public bool ignoreLocking { get { return false; } }
 
 	public List<ILinkedObject> linkedObjects { private get; set; }
 	public Node node { private get; set; }

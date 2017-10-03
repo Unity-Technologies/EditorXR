@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR;
+﻿using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -7,15 +8,30 @@ using UnityEngine.InputNew;
 [RequireComponent(typeof(ProxyHelper))]
 public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 {
+	class TransformInfo
+	{
+		public Vector3 initialPosition;
+		public Vector3 initialRotation;
+		public Vector3 positionOffset;
+		public Vector3 rotationOffset;
+
+		public void Reset()
+		{
+			positionOffset = Vector3.zero;
+			rotationOffset = Vector3.zero;
+		}
+	}
+
 	[SerializeField]
 	ActionMap m_ProxyActionMap;
 
 	ProxyHelper.ButtonObject[] m_Buttons;
 	InputControl[] m_Controls;
-	Vector3[] m_InitialPositions;
-	Vector3[] m_InitialRotations;
+
+	readonly Dictionary<Transform, TransformInfo> m_TransformInfos = new Dictionary<Transform, TransformInfo>();
 
 	public ActionMap actionMap { get { return m_ProxyActionMap; } }
+	public bool ignoreLocking { get { return true; } }
 
 	void Start()
 	{
@@ -31,8 +47,6 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 		if (m_Controls == null)
 		{
 			m_Controls = new InputControl[length];
-			m_InitialPositions = new Vector3[length];
-			m_InitialRotations = new Vector3[length];
 
 			var bindings = input.actionMap.controlSchemes[0].bindings;
 			for (var i = 0; i < input.controlCount; i++)
@@ -53,36 +67,51 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 				}
 			}
 
-			for (var i = 0; i < length; i++)
+			foreach (var button in m_Buttons)
 			{
-				var buttonTransform = m_Buttons[i].transform;
-				m_InitialPositions[i] = buttonTransform.localPosition;
-				m_InitialRotations[i] = buttonTransform.localRotation.eulerAngles;
+				var buttonTransform = button.transform;
+				TransformInfo info;
+				if (!m_TransformInfos.TryGetValue(buttonTransform, out info))
+				{
+					info = new TransformInfo();
+					m_TransformInfos[buttonTransform] = info;
+				}
+
+				info.initialPosition = buttonTransform.localPosition;
+				info.initialRotation = buttonTransform.localRotation.eulerAngles;
+
 			}
+		}
+
+		foreach (var kvp in m_TransformInfos)
+		{
+			kvp.Value.Reset();
 		}
 
 		for (var i = 0; i < length; i++)
 		{
 			var button = m_Buttons[i];
 			var control = m_Controls[i];
+			var info = m_TransformInfos[button.transform];
 
 			//Assume control values are [-1, 1]
 			var min = button.min;
 			var offset = min + (control.rawValue + 1) * (button.max - min) * 0.5f;
 
-			var buttonTransform = button.transform;
-			var localPosition = m_InitialPositions[i];
+			var positionOffset = info.positionOffset;
 			var translateAxes = button.translateAxes;
 			if ((translateAxes & AxisFlags.X) != 0)
-				localPosition.x += offset;
+				positionOffset.x += offset;
 
 			if ((translateAxes & AxisFlags.Y) != 0)
-				localPosition.y += offset;
+				positionOffset.y += offset;
 
 			if ((translateAxes & AxisFlags.Z) != 0)
-				localPosition.z += offset;
+				positionOffset.z += offset;
 
-			var localRotation = m_InitialRotations[i];
+			info.positionOffset = positionOffset;
+
+			var localRotation = info.rotationOffset;
 			var rotateAxes = button.rotateAxes;
 			if ((rotateAxes & AxisFlags.X) != 0)
 				localRotation.x += offset;
@@ -93,8 +122,15 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 			if ((rotateAxes & AxisFlags.Z) != 0)
 				localRotation.z += offset;
 
-			buttonTransform.localPosition = localPosition;
-			buttonTransform.localRotation = Quaternion.Euler(localRotation);
+			info.rotationOffset = localRotation;
+		}
+
+		foreach (var kvp in m_TransformInfos)
+		{
+			var buttonTransform = kvp.Key;
+			var info = kvp.Value;
+			buttonTransform.localPosition = info.initialPosition + info.positionOffset;
+			buttonTransform.localRotation = Quaternion.Euler(info.initialRotation + info.rotationOffset);
 		}
 	}
 }

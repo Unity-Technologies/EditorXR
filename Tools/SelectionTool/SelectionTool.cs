@@ -43,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
+		public bool ignoreLocking { get { return false; } }
 
 		public Transform rayOrigin { private get; set; }
 		public Node node { private get; set; }
