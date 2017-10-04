@@ -3,12 +3,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class ProjectFolderModule : MonoBehaviour, IConnectInterfaces
+	sealed class ProjectFolderModule : MonoBehaviour, IInterfaceConnector
 	{
 		// Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
 		const float k_MaxFrameTime = 0.01f;
