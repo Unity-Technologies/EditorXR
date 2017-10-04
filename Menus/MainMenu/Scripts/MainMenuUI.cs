@@ -377,7 +377,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			foreach (var kvp in m_Faces)
 			{
-				kvp.Value.visible = false;
+				var face = kvp.Value;
+				face.visible = false;
+				face.ClearSubmenus();
 			}
 
 			this.RestartCoroutine(ref m_FrameRevealCoroutine, AnimateFrameReveal(m_VisibilityState));
