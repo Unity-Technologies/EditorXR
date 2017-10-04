@@ -1,10 +1,10 @@
-using System;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public class NumericInputField : InputField, IRayBeginDragHandler, IRayEndDragHandler, IRayDragHandler
+	sealed class NumericInputField : InputField
 	{
 		public enum NumberType
 		{
@@ -12,81 +12,51 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			Int,
 		}
 
-		public const float kDragDeadzone = 0.025f;
-
-		const string kFloatFieldFormatString = "g7";
-		const string kIntFieldFormatString = "#######0";
-		const float kDragSensitivity = 0.02f;
-		const string kAllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
-		const string kAllowedCharactersForInt = "0123456789-*/+%^()";
-		const string kOperandCharacters = "-*/+%^()";
-		const int kMaxDecimals = 15; // We cannot round to more decimals than 15 according to docs for System.Math.Round.
+		const string k_FloatFieldFormatString = "g7";
+		const string k_IntFieldFormatString = "#######0";
+		const float k_FloatDragSensitivity = 2f;
+		const float k_IntDragSensitivity = 10f;
+		const string k_AllowedCharactersForFloat = "inftynaeINFTYNAE0123456789.,-*/+%^()";
+		const string k_AllowedCharactersForInt = "0123456789-*/+%^()";
+		const string k_OperandCharacters = "-*/+%^()";
 
 		public NumberType numberType { get { return m_NumberType; } set { m_NumberType = value; } }
 		[SerializeField]
 		NumberType m_NumberType = NumberType.Float;
 
-		bool m_UpdateDrag;
-		Vector3 m_StartDragPosition;
+		bool m_Dragging;
 		Vector3 m_LastPointerPosition;
 		int m_OperandCount;
-		bool m_UseYSign;
 
-		bool MayDrag()
+		public override string text
 		{
-			return IsActive()
-					&& IsInteractable()
-					&& m_TextComponent != null;
+			get { return base.text; }
+			set
+			{
+				if (m_Dragging)
+					return;
+
+				base.text = value;
+			}
 		}
 
-		public void OnBeginDrag(RayEventData eventData)
+		public void BeginSliderDrag(Transform rayOrigin)
 		{
-			if (!U.UI.IsValidEvent(eventData, selectionFlags) && MayDrag())
-				return;
-
-			m_StartDragPosition = GetLocalPointerPosition(eventData.rayOrigin);
+			ParseNumberField();
+			m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
+			m_Dragging = true;
+#if UNITY_EDITOR
+			Undo.IncrementCurrentGroup(); // Every drag start is a new modification
+#endif
 		}
 
-		public void OnDrag(RayEventData eventData)
+		public void EndSliderDrag(Transform rayOrigin)
 		{
-			if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
-				return;
-
-			SliderDrag(eventData.rayOrigin);
+			m_Dragging = false;
+			m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 		}
 
 		public void SliderDrag(Transform rayOrigin)
-		{
-			if (!m_UpdateDrag)
-			{
-				if (Mathf.Abs(GetLocalPointerPosition(rayOrigin).x - m_StartDragPosition.x) > kDragDeadzone)
-				{
-					ParseNumberField();
-					m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
-					m_UpdateDrag = true;
-				}
-			}
-			else
-			{
-				DragNumberValue(rayOrigin);
-				m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
-			}
-		}
-
-		public void OnEndDrag(RayEventData eventData)
-		{
-			if (!U.UI.IsValidEvent(eventData, selectionFlags) || !MayDrag())
-				return;
-
-			EndDrag();
-		}
-
-		public void EndDrag()
-		{
-			m_UpdateDrag = false;
-		}
-
-		void DragNumberValue(Transform rayOrigin)
 		{
 			var delta = GetLocalPointerPosition(rayOrigin) - m_LastPointerPosition;
 
@@ -96,10 +66,12 @@ namespace UnityEngine.Experimental.EditorVR.UI
 				if (!float.TryParse(text, out num))
 					num = 0f;
 
-				var dragSensitivity = CalculateFloatDragSensitivity(num);
-				num += GetNicePointerDelta(delta) * dragSensitivity;
-				num = RoundBasedOnMinimumDifference(num, dragSensitivity);
-				m_Text = num.ToString(kFloatFieldFormatString);
+				const float maxDelta = 0.1f;
+				var deltaX = Mathf.Clamp(delta.x, -maxDelta, maxDelta);
+				var dragSensitivity = CalculateDragSensitivity(num) * k_FloatDragSensitivity;
+				num += deltaX * dragSensitivity;
+				m_Text = num.ToString(k_FloatFieldFormatString);
+				m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 			}
 			else
 			{
@@ -107,9 +79,14 @@ namespace UnityEngine.Experimental.EditorVR.UI
 				if (!int.TryParse(text, out intNum))
 					intNum = 0;
 
-				var dragSensitivity = CalculateIntDragSensitivity(intNum);
-				intNum += (int)Math.Round(GetNicePointerDelta(delta) * dragSensitivity);
-				m_Text = intNum.ToString(kIntFieldFormatString);
+				var dragSensitivity = CalculateDragSensitivity(intNum) * k_IntDragSensitivity;
+				var change = (int)(delta.x * dragSensitivity);
+
+				intNum += change;
+
+				m_Text = intNum.ToString(k_IntFieldFormatString);
+				if (change != 0)
+					m_LastPointerPosition = GetLocalPointerPosition(rayOrigin);
 			}
 
 			SendOnValueChangedAndUpdateLabel();
@@ -118,7 +95,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		Vector3 GetLocalPointerPosition(Transform rayOrigin)
 		{
 			Vector3 hitPos;
-			U.Math.LinePlaneIntersection(out hitPos, rayOrigin.position, rayOrigin.forward, -transform.forward,
+			MathUtilsExt.LinePlaneIntersection(out hitPos, rayOrigin.position, rayOrigin.forward, -transform.forward,
 				transform.position);
 
 			return transform.InverseTransformPoint(hitPos);
@@ -168,9 +145,9 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			switch (m_NumberType)
 			{
 				case NumberType.Float:
-					return kAllowedCharactersForFloat.Contains(ch.ToString());
+					return k_AllowedCharactersForFloat.Contains(ch.ToString());
 				case NumberType.Int:
-					return kAllowedCharactersForInt.Contains(ch.ToString());
+					return k_AllowedCharactersForInt.Contains(ch.ToString());
 				default:
 					return false;
 			}
@@ -244,38 +221,15 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		bool IsOperand(char c)
 		{
-			return kOperandCharacters.Contains(c.ToString()) && !(m_Text.Length == 0 && c == '-');
+			return k_OperandCharacters.Contains(c.ToString()) && !(m_Text.Length == 0 && c == '-');
 		}
 
-		float CalculateFloatDragSensitivity(float value)
+		static float CalculateDragSensitivity(float value)
 		{
 			if (float.IsInfinity(value) || float.IsNaN(value))
 				return 0f;
 
-			return Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f)) * kDragSensitivity;
-		}
-
-		int CalculateIntDragSensitivity(int value)
-		{
-			return (int)Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f) * kDragSensitivity);
-		}
-
-		float RoundBasedOnMinimumDifference(float valueToRound, float minDifference)
-		{
-			if (Math.Abs(minDifference) < Mathf.Epsilon)
-				return DiscardLeastSignificantDecimal(valueToRound);
-			return (float)Math.Round(valueToRound, GetNumberOfDecimalsForMinimumDifference(minDifference), MidpointRounding.AwayFromZero);
-		}
-
-		float DiscardLeastSignificantDecimal(float v)
-		{
-			var decimals = Mathf.Clamp((int)(5 - Mathf.Log10(Mathf.Abs(v))), 0, kMaxDecimals);
-			return (float)Math.Round(v, decimals, MidpointRounding.AwayFromZero);
-		}
-
-		int GetNumberOfDecimalsForMinimumDifference(float minDifference)
-		{
-			return Mathf.Clamp(-Mathf.FloorToInt(Mathf.Log10(Mathf.Abs(minDifference))), 0, kMaxDecimals);
+			return Mathf.Max(1, Mathf.Pow(Mathf.Abs(value), 0.5f));
 		}
 
 		void ParseNumberField()
@@ -293,18 +247,18 @@ namespace UnityEngine.Experimental.EditorVR.UI
 				m_Text = m_Text.Replace(',', '.');
 
 				if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
-					floatVal = StringExpressionEvaluator.Evaluate<float>(m_Text);
+					floatVal = ExpressionEvaluator.Evaluate<float>(m_Text);
 
 				if (float.IsNaN(floatVal))
 					floatVal = 0;
 
-				m_Text = floatVal.ToString(kFloatFieldFormatString);
+				m_Text = floatVal.ToString(k_FloatFieldFormatString);
 			}
 			else
 			{
 				int intVal;
 				if (!int.TryParse(m_Text, out intVal))
-					m_Text = StringExpressionEvaluator.Evaluate<int>(m_Text).ToString(kIntFieldFormatString);
+					m_Text = ExpressionEvaluator.Evaluate<int>(m_Text).ToString(k_IntFieldFormatString);
 			}
 
 			m_OperandCount = 0;
@@ -312,24 +266,6 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			if (str != m_Text)
 				SendOnValueChangedAndUpdateLabel();
 		}
-
-		private float GetNicePointerDelta(Vector3 delta)
-		{
-			var d = delta;
-			d.y = -d.y;
-
-			if (Mathf.Abs(Mathf.Abs(d.x) - Mathf.Abs(d.y)) / Mathf.Max(Mathf.Abs(d.x), Mathf.Abs(d.y)) > .1f)
-			{
-				if (Mathf.Abs(d.x) > Mathf.Abs(d.y))
-					m_UseYSign = false;
-				else
-					m_UseYSign = true;
-			}
-
-			if (m_UseYSign)
-				return Mathf.Sign(d.y) * d.magnitude * 100f;
-			else
-				return Mathf.Sign(d.x) * d.magnitude * 100f;
-		}
 	}
 }
+#endif

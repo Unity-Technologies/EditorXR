@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 595ec5f9729f0498b803d283e747cb7b
+timeCreated: 1492068130
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_ClipShader: {fileID: 4800000, guid: fc3ee1f57abcecb47ae3889390740f03, type: 3}
+  - m_OutlineShader: {fileID: 4800000, guid: c7c3bef77c168284194265f81108c0a2, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

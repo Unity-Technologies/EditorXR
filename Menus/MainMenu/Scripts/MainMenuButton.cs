@@ -1,21 +1,32 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Modules;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenuButton : MonoBehaviour, IRayEnterHandler, IRayExitHandler
+	sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
 	{
-		public Button button { get { return m_Button; } }
 		[SerializeField]
-		private Button m_Button;
+		Button m_Button;
 
 		[SerializeField]
-		private Text m_ButtonDescription;
+		Text m_ButtonDescription;
+
 		[SerializeField]
-		private Text m_ButtonTitle;
+		Text m_ButtonTitle;
 
 		Color m_OriginalColor;
+
+		public Button button { get { return m_Button; } }
+
+		public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : null; } }
+
+		public ITooltip tooltip { private get; set; }
+
+		public Type toolType { get; set; }
 
 		public bool selected
 		{
@@ -31,30 +42,15 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 					m_Button.transition = Selectable.Transition.ColorTint;
 					m_Button.targetGraphic.color = m_OriginalColor;
 				}
-
-				// HACK: Force update of target graphic color
-				m_Button.enabled = false;
-				m_Button.enabled = true;
 			}
 		}
 
-		public Action clicked;
+		public event Action<Transform, Type, string> hovered;
+		public event Action<Transform> clicked;
 
-		/// <summary>
-		/// The ray that is hovering over the button
-		/// </summary>
-		public Transform hoveringRayOrigin { get; private set; }
-
-		private void Awake()
+		void Awake()
 		{
-			m_Button.onClick.AddListener(OnButtonClicked);
-
 			m_OriginalColor = m_Button.targetGraphic.color;
-		}
-
-		private void OnDestroy()
-		{
-			m_Button.onClick.RemoveListener(OnButtonClicked);
 		}
 
 		public void SetData(string name, string description)
@@ -63,22 +59,23 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			m_ButtonDescription.text = description;
 		}
 
-		private void OnButtonClicked()
-		{
-			if (clicked != null)
-				clicked();
-		}
-
 		public void OnRayEnter(RayEventData eventData)
 		{
-			// Track which pointer is over us, so this information can supply context (e.g. selecting a tool for a different hand)
-			hoveringRayOrigin = eventData.rayOrigin;
+			if (hovered != null)
+				hovered(eventData.rayOrigin, toolType, m_ButtonDescription.text);
 		}
 
 		public void OnRayExit(RayEventData eventData)
 		{
-			if (hoveringRayOrigin == eventData.rayOrigin)
-				hoveringRayOrigin = null;
+			if (hovered != null)
+				hovered(eventData.rayOrigin, null, null);
+		}
+
+		public void OnPointerClick(PointerEventData eventData)
+		{
+			if (clicked != null)
+				clicked(null); // Pass null to perform the selection haptic pulse on both nodes
 		}
 	}
 }
+#endif

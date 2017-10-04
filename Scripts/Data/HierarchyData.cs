@@ -1,22 +1,32 @@
-﻿using ListView;
+﻿#if UNITY_EDITOR
+using ListView;
 using System.Collections.Generic;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR
 {
-	public class HierarchyData : ListViewItemNestedData<HierarchyData>
+	sealed class HierarchyData : ListViewItemNestedData<HierarchyData, int>
 	{
-		const string kTemplateName = "HierarchyListItem";
+		const string k_TemplateName = "HierarchyListItem";
 
 		public string name { get; set; }
 
-		public int instanceID { get; set; }
-
-		public HierarchyData(string name, int instanceID, List<HierarchyData> children = null)
+		public override int index
 		{
-			template = kTemplateName;
-			this.name = name;
-			this.instanceID = instanceID;
-			m_Children = children;
+			get { return instanceID; }
+		}
+		public int instanceID { private get; set; }
+
+		public GameObject gameObject { get { return (GameObject)EditorUtility.InstanceIDToObject(instanceID); } }
+
+		public HashSet<string> types { get; set; }
+
+		public HierarchyData(HierarchyProperty property)
+		{
+			template = k_TemplateName;
+			name = property.name;
+			instanceID = property.instanceID;
 		}
 	}
 }
+#endif

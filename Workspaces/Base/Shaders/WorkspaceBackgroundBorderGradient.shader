@@ -9,7 +9,7 @@
 
 	SubShader
 	{
-		Tags { "Queue"="Transparent-1" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
+		Tags { "Queue"="Overlay+5001" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
 		
 		Pass
 		{
@@ -38,7 +38,7 @@
 			v2f vert(appdata_full v)
 			{
 				v2f output;
-				output.position = mul(UNITY_MATRIX_MVP, v.vertex);
+				output.position = UnityObjectToClipPos(v.vertex);
 				output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y);
 				return output;
 			}

@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Tools;
+using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Manipulators
+namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
-	public class DirectManipulator : MonoBehaviour, IManipulator
+	sealed class DirectManipulator : MonoBehaviour, IManipulator
 	{
 		public Transform target
 		{
@@ -13,19 +14,21 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 		}
 
 		[SerializeField]
-		private Transform m_Target;
+		Transform m_Target;
 
 		[SerializeField]
-		private List<BaseHandle> m_AllHandles = new List<BaseHandle>();
+		List<BaseHandle> m_AllHandles = new List<BaseHandle>();
+
+		Vector3 m_PositionOffset;
+		Quaternion m_RotationOffset;
+
+		public Action<Vector3, Transform, ConstrainedAxis> translate { private get; set; }
+		public Action<Quaternion, Transform> rotate { private get; set; }
+		public Action<Vector3> scale { private get; set; }
 
 		public bool dragging { get; private set; }
-
-		private Vector3 m_PositionOffset;
-		private Quaternion m_RotationOffset;
-
-		public Action<Vector3> translate { private get; set; }
-		public Action<Quaternion> rotate { private get; set; }
-		public Action<Vector3> scale { private get; set; }
+		public event Action dragStarted;
+		public event Action<Transform> dragEnded;
 
 		void OnEnable()
 		{
@@ -47,7 +50,7 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 			}
 		}
 
-		private void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
+		void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData)
 		{
 			foreach (var h in m_AllHandles)
 			{
@@ -61,18 +64,21 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 			var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
 			m_PositionOffset = inverseRotation * (target.transform.position - rayOrigin.position);
 			m_RotationOffset = inverseRotation * target.transform.rotation;
+
+			if (dragStarted != null)
+				dragStarted();
 		}
 
-		private void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
+		void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
 		{
 			var target = m_Target == null ? transform : m_Target;
 
 			var rayOrigin = eventData.rayOrigin;
-			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position);
-			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset);
+			translate(rayOrigin.position + rayOrigin.rotation * m_PositionOffset - target.position, rayOrigin, 0);
+			rotate(Quaternion.Inverse(target.rotation) * rayOrigin.rotation * m_RotationOffset, rayOrigin);
 		}
 
-		private void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
+		void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData)
 		{
 			if (gameObject.activeSelf)
 			{
@@ -83,6 +89,10 @@ namespace UnityEngine.Experimental.EditorVR.Manipulators
 			}
 
 			dragging = false;
+
+			if (dragEnded != null)
+				dragEnded(eventData.rayOrigin);
 		}
 	}
 }
+#endif

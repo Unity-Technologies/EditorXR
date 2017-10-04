@@ -1,11 +1,11 @@
-﻿Shader "Custom/List Clip Text"
+﻿Shader "EditorVR/Custom/List Clip Text"
 {
 	Properties
 	{
 		[PerRendererData] _MainTex("Sprite Texture", 2D) = "white" {}
 		_Color("Tint", Color) = (1,1,1,1)
 
-		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
+		_ClipExtents("Clip Extents", Vector) = (1,1,1,0)
 
 		_StencilComp("Stencil Comparison", Float) = 8
 		_Stencil("Stencil ID", Float) = 0
@@ -22,25 +22,16 @@
 	{
 		Tags
 		{
-			"Queue" = "Transparent"
+			"Queue" = "Overlay+5103"
 			"IgnoreProjector" = "True"
 			"RenderType" = "Transparent"
 			"PreviewType" = "Plane"
 			"CanUseSpriteAtlas" = "True"
 		}
 
-		Stencil
-		{
-			Ref[_Stencil]
-			Comp[_StencilComp]
-			Pass[_StencilOp]
-			ReadMask[_StencilReadMask]
-			WriteMask[_StencilWriteMask]
-		}
-
 		Cull Off
 		Lighting Off
-		ZWrite Off
+		ZWrite On
 		ZTest[unity_GUIZTestMode]
 		Blend SrcAlpha OneMinusSrcAlpha
 		ColorMask[_ColorMask]
@@ -84,7 +75,7 @@
 				v2f OUT;
 				OUT.worldPosition = IN.vertex;
 				OUT.localPosition = mul(_ParentMatrix, mul(UNITY_MATRIX_M, IN.vertex));
-				OUT.vertex = mul(UNITY_MATRIX_MVP, OUT.worldPosition);
+				OUT.vertex = UnityObjectToClipPos(OUT.worldPosition);
 
 				OUT.texcoord = IN.texcoord;
 

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 1fcda1e082c52714f97ebe326889ed79
+timeCreated: 1500334212
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_DefaultHighlightMaterial: {fileID: 2100000, guid: debb0327296a96e42886209b1b1cfd4f,
+      type: 2}
+  - m_RayHighlightMaterial: {fileID: 2100000, guid: 126c02ff78e41384a9ea90e2e8d351ad,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

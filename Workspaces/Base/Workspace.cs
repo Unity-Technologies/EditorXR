@@ -1,33 +1,58 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
-using UnityEngine.Experimental.EditorVR.Handles;
-using UnityEngine.Experimental.EditorVR.Tools;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
+using UnityEngine.InputNew;
 
-namespace UnityEngine.Experimental.EditorVR.Workspaces
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, ISetHighlight, IUsesStencilRef, IConnectInterfaces
+	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces,
+		IUsesViewerScale, IControlHaptics, IRayToNode
 	{
-		public static readonly Vector3 kDefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
+		const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 
-		public const float kHandleMargin = -0.15f; // Compensate for base size from frame model
+		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0f, 0.4f);
+		public static readonly Vector3 MinBounds = new Vector3(0.677f, 0f, 0.1f);
 
-		public event Action<IWorkspace> destroyed;
+		public const float FaceMargin = 0.025f;
+		public const float HighlightMargin = 0.002f;
+
+		[SerializeField]
+		Vector3 m_MinBounds = MinBounds;
+
+		[SerializeField]
+		GameObject m_BasePrefab;
+
+		[SerializeField]
+		ActionMap m_ActionMap;
+
+		[SerializeField]
+		HapticPulse m_ButtonClickPulse;
+
+		[SerializeField]
+		HapticPulse m_ButtonHoverPulse;
+
+		[SerializeField]
+		HapticPulse m_ResizePulse;
+
+		[SerializeField]
+		HapticPulse m_MovePulse;
+
+		Bounds m_ContentBounds;
+		BoxCollider m_OuterCollider;
+
+		Coroutine m_VisibilityCoroutine;
+		Coroutine m_ResetSizeCoroutine;
 
 		protected WorkspaceUI m_WorkspaceUI;
 
 		protected Vector3? m_CustomStartingBounds;
 
-		public static readonly Vector3 kMinBounds = new Vector3(0.55f, 0.4f, 0.1f);
-
 		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
-		[SerializeField]
-		private Vector3 m_MinBounds = kMinBounds;
 
-		/// <summary>
-		/// Bounding box for workspace content (ignores value.center) 
-		/// </summary>
 		public Bounds contentBounds
 		{
 			get { return m_ContentBounds; }
@@ -35,40 +60,33 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			{
 				if (!value.Equals(contentBounds))
 				{
-					Vector3 size = value.size;
-					size.x = Mathf.Max(size.x, minBounds.x);
+					m_ContentBounds = value;
+					var size = value.size;
+					size.x = Mathf.Clamp(Mathf.Max(size.x, minBounds.x), 0, k_MaxFrameSize);
 					size.y = Mathf.Max(size.y, minBounds.y);
-					size.z = Mathf.Max(size.z, minBounds.z);
+					size.z = Mathf.Clamp(Mathf.Max(size.z, minBounds.z), 0, k_MaxFrameSize);
+					m_ContentBounds.size = size;
 
-					m_ContentBounds.size = size; //Only set size, ignore center.
+					// Offset by half height
+					var center = m_ContentBounds.center;
+					center.y = size.y * 0.5f;
+					m_ContentBounds.center = center;
+
 					UpdateBounds();
 					OnBoundsChanged();
 				}
 			}
 		}
-		private Bounds m_ContentBounds;
-
-		[SerializeField]
-		private GameObject m_BasePrefab;
-
-		private Vector3 m_DragStart;
-		private Vector3 m_PositionStart;
-		private Vector3 m_BoundSizeStart;
-		private bool m_Dragging;
-		private bool m_Vacuuming;
-		bool m_Moving;
-		Coroutine m_VisibilityCoroutine;
-		Coroutine m_ResetSizeCoroutine;
 
 		public Bounds outerBounds
 		{
 			get
 			{
-				const float kOuterBoundsCenterOffset = 0.225f; //Amount to lower the center of the outerBounds for better interaction with menus
-				return new Bounds(contentBounds.center + Vector3.down * kOuterBoundsCenterOffset,
+				const float outerBoundsCenterOffset = 0.09275f; //Amount to extend the bounds to include frame
+				return new Bounds(contentBounds.center + Vector3.down * outerBoundsCenterOffset * 0.5f,
 					new Vector3(
 						contentBounds.size.x,
-						contentBounds.size.y,
+						contentBounds.size.y + outerBoundsCenterOffset,
 						contentBounds.size.z
 						));
 			}
@@ -76,13 +94,7 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 
 		public Bounds vacuumBounds { get { return outerBounds; } }
 
-		public InstantiateUIDelegate instantiateUI { protected get; set; }
-
-		public Action<GameObject, bool> setHighlight { protected get; set; }
-
 		public byte stencilRef { get; set; }
-
-		public ConnectInterfacesDelegate connectInterfaces { get; set; }
 
 		/// <summary>
 		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
@@ -90,14 +102,9 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		public bool dynamicFaceAdjustment { set { m_WorkspaceUI.dynamicFaceAdjustment = value; } }
 
 		/// <summary>
-		/// If true, prevent the resizing of a workspace via the front and back resize handles
+		/// If true, prevent the resizing of a workspace
 		/// </summary>
-		public bool preventFrontBackResize { set { m_WorkspaceUI.preventFrontBackResize = value; } }
-
-		/// <summary>
-		/// If true, prevent the resizing of a workspace via the left and right resize handles
-		/// </summary>
-		public bool preventLeftRightResize { set { m_WorkspaceUI.preventLeftRightResize = value; } }
+		public bool preventResize { set { m_WorkspaceUI.preventResize = value; } }
 
 		/// <summary>
 		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
@@ -112,144 +119,96 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		public Transform topPanel { get { return m_WorkspaceUI.topPanel; } }
+		public event Action<IWorkspace> destroyed;
+
+		public Transform topPanel { get { return m_WorkspaceUI.topFaceContainer; } }
 
 		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
+		public ActionMap actionMap { get { return m_ActionMap; } }
+
+		public Transform leftRayOrigin { protected get; set; }
+		public Transform rightRayOrigin { protected get; set; }
+
 		public virtual void Setup()
 		{
-			GameObject baseObject = instantiateUI(m_BasePrefab);
-			baseObject.transform.SetParent(transform, false);
+			var baseObject = this.InstantiateUI(m_BasePrefab, transform, false);
 
 			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
-			connectInterfaces(m_WorkspaceUI);
+			this.ConnectInterfaces(m_WorkspaceUI);
 			m_WorkspaceUI.closeClicked += OnCloseClicked;
 			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
+			m_WorkspaceUI.buttonHovered += OnButtonHovered;
+			m_WorkspaceUI.hoveringFrame += OnHoveringFrame;
+			m_WorkspaceUI.moving += OnMoving;
+			m_WorkspaceUI.resizing += OnResizing;
+
+			m_WorkspaceUI.leftRayOrigin = leftRayOrigin;
+			m_WorkspaceUI.rightRayOrigin = rightRayOrigin;
+
+			m_WorkspaceUI.resize += bounds =>
+			{
+				var size = contentBounds.size;
+				var boundsSize = bounds.size;
+				size.x = boundsSize.x;
+				size.z = boundsSize.z;
+				var content = contentBounds;
+				content.size = size;
+				contentBounds = content;
+			};
 
 			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
+			m_OuterCollider = gameObject.AddComponent<BoxCollider>();
+			m_OuterCollider.isTrigger = true;
+
+			var startingBounds = m_CustomStartingBounds ?? DefaultBounds;
 			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * kDefaultBounds.y * 0.5f, m_CustomStartingBounds == null ? kDefaultBounds : m_CustomStartingBounds.Value); // If custom bounds have been set, use them as the initial bounds
+			m_ContentBounds = new Bounds(Vector3.up * startingBounds.y * 0.5f, startingBounds); // If custom bounds have been set, use them as the initial bounds
 			UpdateBounds();
-
-			//Set up DirectManipulator
-			var directManipulator = m_WorkspaceUI.directManipulator;
-			directManipulator.target = transform;
-			directManipulator.translate = Translate;
-			directManipulator.rotate = Rotate;
-
-			//Set up the front "move" handle highglight, the move handle is used to translate/rotate the workspace
-			var moveHandle = m_WorkspaceUI.moveHandle;
-			moveHandle.dragStarted += OnMoveHandleDragStarted;
-			moveHandle.dragEnded += OnMoveHandleDragEnded;
-			moveHandle.hoverStarted += OnMoveHandleHoverStarted;
-			moveHandle.hoverEnded += OnMoveHandleHoverEnded;
-
-			var handles = new []
-			{
-				m_WorkspaceUI.leftHandle,
-				m_WorkspaceUI.frontHandle,
-				m_WorkspaceUI.backHandle,
-				m_WorkspaceUI.rightHandle
-			};
-
-			foreach (var handle in handles)
-			{
-				handle.dragStarted += OnHandleDragStarted;
-				handle.dragging += OnHandleDragging;
-				handle.dragEnded += OnHandleDragEnded;
-				handle.hoverStarted += OnHandleHoverStarted;
-				handle.hoverEnded += OnHandleHoverEnded;
-			}
 
 			this.StopCoroutine(ref m_VisibilityCoroutine);
 
 			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
 		}
 
-		public virtual void OnHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			m_WorkspaceUI.highlightsVisible = true;
-			m_PositionStart = transform.position;
-			m_DragStart = eventData.rayOrigin.position;
-			m_BoundSizeStart = contentBounds.size;
-			m_Dragging = true;
-		}
-
-		public virtual void OnHandleDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			if (m_Dragging)
-			{
-				Vector3 dragVector = eventData.rayOrigin.position - m_DragStart;
-				Bounds bounds = contentBounds;
-				Vector3 positionOffset = Vector3.zero;
-				if (handle.Equals(m_WorkspaceUI.leftHandle))
-				{
-					bounds.size = m_BoundSizeStart + Vector3.left * Vector3.Dot(dragVector, transform.right);
-					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
-				}
-				if (handle.Equals(m_WorkspaceUI.frontHandle))
-				{
-					bounds.size = m_BoundSizeStart + Vector3.back * Vector3.Dot(dragVector, transform.forward);
-					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
-				}
-				if (handle.Equals(m_WorkspaceUI.rightHandle))
-				{
-					bounds.size = m_BoundSizeStart + Vector3.right * Vector3.Dot(dragVector, transform.right);
-					positionOffset = transform.right * Vector3.Dot(dragVector, transform.right) * 0.5f;
-				}
-				if (handle.Equals(m_WorkspaceUI.backHandle))
-				{
-					bounds.size = m_BoundSizeStart + Vector3.forward * Vector3.Dot(dragVector, transform.forward);
-					positionOffset = transform.forward * Vector3.Dot(dragVector, transform.forward) * 0.5f;
-				}
-				contentBounds = bounds;
-				if (contentBounds.size == bounds.size) //Don't reposition if we hit minimum bounds
-					transform.position = m_PositionStart + positionOffset;
-			}
-		}
-
-		public virtual void OnHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			m_WorkspaceUI.highlightsVisible = false;
-			m_Dragging = false;
-		}
-
-		public virtual void OnHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-		}
-
-		public virtual void OnHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-		}
-
-		private void Translate(Vector3 deltaPosition)
-		{
-			transform.position += deltaPosition;
-		}
-
-		private void Rotate(Quaternion deltaRotation)
-		{
-			transform.rotation *= deltaRotation;
-		}
-
-		public virtual void OnCloseClicked()
+		public void Close()
 		{
 			this.StopCoroutine(ref m_VisibilityCoroutine);
-
 			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
 		}
 
-		public virtual void OnResetClicked()
+		protected virtual void OnCloseClicked(Transform rayOrigin)
 		{
-			this.StopCoroutine(ref m_ResetSizeCoroutine);
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+			Close();
+		}
 
+		protected virtual void OnResetClicked(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+
+			this.StopCoroutine(ref m_ResetSizeCoroutine);
 			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
 		}
 
-		private void UpdateBounds()
+		protected void OnButtonHovered(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+		}
+
+		public void SetUIHighlightsVisible(bool value)
+		{
+			m_WorkspaceUI.highlightsVisible = value;
+		}
+
+		void UpdateBounds()
 		{
 			m_WorkspaceUI.bounds = contentBounds;
+
+			var outerBounds = this.outerBounds;
+			m_OuterCollider.size = outerBounds.size;
+			m_OuterCollider.center = outerBounds.center;
 		}
 
 		protected virtual void OnDestroy()
@@ -265,18 +224,20 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 		{
 			m_WorkspaceUI.highlightsVisible = true;
 
-			var targetScale = transform.localScale;
+			var targetScale = Vector3.one;
 			var scale = Vector3.zero;
 			var smoothVelocity = Vector3.zero;
 			var currentDuration = 0f;
 			const float kTargetDuration = 0.75f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				transform.localScale = scale;
-				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				yield return null;
 			}
+
+			transform.localScale = targetScale;
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
@@ -291,56 +252,23 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			const float kTargetDuration = 0.185f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				transform.localScale = scale;
-				scale = U.Math.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				yield return null;
 			}
+			transform.localScale = targetScale;
 
 			m_WorkspaceUI.highlightsVisible = false;
 			m_VisibilityCoroutine = null;
-			U.Object.Destroy(gameObject);
-		}
-
-		void OnMoveHandleDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			if (m_Dragging)
-				return;
-
-			m_Moving = true;
-			m_WorkspaceUI.highlightsVisible = true;
-		}
-
-		void OnMoveHandleDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			if (m_Dragging)
-				return;
-
-			m_Moving = false;
-			m_WorkspaceUI.highlightsVisible = false;
-		}
-
-		void OnMoveHandleHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			if (m_Dragging || m_Moving)
-				return;
-
-			m_WorkspaceUI.frontHighlightVisible = true;
-		}
-
-		void OnMoveHandleHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
-		{
-			if (m_Dragging || m_Moving)
-				return;
-
-			m_WorkspaceUI.frontHighlightVisible = false;
+			ObjectUtils.Destroy(gameObject);
 		}
 
 		IEnumerator AnimateResetSize()
 		{
 			var currentBoundsSize = contentBounds.size;
 			var currentBoundsCenter = contentBounds.center;
-			var targetBoundsSize = m_CustomStartingBounds != null ? m_CustomStartingBounds.Value : minBounds;
+			var targetBoundsSize = m_CustomStartingBounds ?? minBounds;
 			var targetBoundsCenter = Vector3.zero;
 			var smoothVelocitySize = Vector3.zero;
 			var smoothVelocityCenter = Vector3.zero;
@@ -348,13 +276,39 @@ namespace UnityEngine.Experimental.EditorVR.Workspaces
 			const float kTargetDuration = 0.75f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentBoundsCenter = U.Math.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				currentBoundsSize = U.Math.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				currentBoundsCenter = MathUtilsExt.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+				currentBoundsSize = MathUtilsExt.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				contentBounds = new Bounds(currentBoundsCenter, currentBoundsSize);
 				OnBoundsChanged();
 				yield return null;
 			}
 		}
+
+		public virtual void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
+		{
+			m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);
+		}
+
+		protected void OnButtonClicked(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+		}
+
+		void OnMoving(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_MovePulse);
+		}
+
+		void OnResizing(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
+		}
+
+		void OnHoveringFrame(Transform rayOrigin)
+		{
+			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
+		}
 	}
 }
+#endif

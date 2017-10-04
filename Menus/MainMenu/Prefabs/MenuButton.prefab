@@ -16,13 +16,13 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000013707443896}
-  - 222: {fileID: 222000012380906712}
-  - 114: {fileID: 114000013676702038}
-  - 114: {fileID: 114000011038114608}
-  - 114: {fileID: 114000012845136458}
+  - component: {fileID: 224000013707443896}
+  - component: {fileID: 222000012380906712}
+  - component: {fileID: 114000013676702038}
+  - component: {fileID: 114000011038114608}
+  - component: {fileID: 114000012845136458}
   m_Layer: 5
   m_Name: MenuButton
   m_TagString: Untagged
@@ -35,11 +35,11 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000013226195212}
-  - 222: {fileID: 222000011344183890}
-  - 114: {fileID: 114000010258074492}
+  - component: {fileID: 224000013226195212}
+  - component: {fileID: 222000011344183890}
+  - component: {fileID: 114000010258074492}
   m_Layer: 5
   m_Name: ButtonTitleText
   m_TagString: Untagged
@@ -52,11 +52,11 @@ GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  serializedVersion: 4
+  serializedVersion: 5
   m_Component:
-  - 224: {fileID: 224000010412418182}
-  - 222: {fileID: 222000012529664350}
-  - 114: {fileID: 114000013996147424}
+  - component: {fileID: 224000010412418182}
+  - component: {fileID: 222000012529664350}
+  - component: {fileID: 114000013996147424}
   m_Layer: 5
   m_Name: ButtonTitleDescription
   m_TagString: Untagged
@@ -75,8 +75,7 @@ MonoBehaviour:
   m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: dec2d25be9058334c91a0402762efa61, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
@@ -109,7 +108,6 @@ MonoBehaviour:
   m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 1
   m_Navigation:
     m_Mode: 3
     m_SelectOnUp: {fileID: 0}
@@ -162,10 +160,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6fdf9e0896ac3f4e94809a2cb14ceb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 1
   m_Button: {fileID: 114000011038114608}
   m_ButtonDescription: {fileID: 114000013996147424}
   m_ButtonTitle: {fileID: 114000010258074492}
+  m_ClickPulse: {fileID: 11400000, guid: f66cb0a158f54124aa4158bbad3ed702, type: 2}
+  m_HoverPulse: {fileID: 11400000, guid: dd561ccb8162d1040adba0a7ea60eadc, type: 2}
 --- !u!114 &114000013676702038
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -177,8 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: -765806418, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: dec2d25be9058334c91a0402762efa61, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
@@ -205,8 +203,7 @@ MonoBehaviour:
   m_Script: {fileID: 708705254, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: dec2d25be9058334c91a0402762efa61, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
@@ -255,10 +252,10 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 2e-15}
   m_LocalScale: {x: 0.5, y: 0.5, z: 1.0000001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000013707443896}
   m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.06212008, y: 0.049828447}
   m_AnchorMax: {x: 0.9378799, y: 0.4077765}
   m_AnchoredPosition: {x: 0, y: 0}
@@ -273,10 +270,10 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children: []
   m_Father: {fileID: 224000013707443896}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.054141335, y: 0.3430812}
   m_AnchorMax: {x: 0.94585866, y: 0.89544195}
   m_AnchoredPosition: {x: 0, y: 0}
@@ -291,12 +288,12 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0.9865579}
   m_LocalScale: {x: 12.331973, y: 2000, z: 2000.0001}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 224000013226195212}
   - {fileID: 224000010412418182}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}

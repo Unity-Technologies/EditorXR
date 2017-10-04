@@ -1,11 +1,13 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Collections;
-using UnityEngine.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	internal class SpatialHashModule : MonoBehaviour
+	sealed class SpatialHashModule : MonoBehaviour
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 
@@ -25,7 +27,7 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		void SetupObjects()
 		{
-			MeshFilter[] meshFilters = FindObjectsOfType<MeshFilter>();
+			var meshFilters = FindObjectsOfType<MeshFilter>();
 			foreach (var mf in meshFilters)
 			{
 				if (mf.sharedMesh)
@@ -38,9 +40,21 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 						spatialHash.AddObject(renderer, renderer.bounds);
 				}
 			}
+
+			var skinnedMeshRenderers = FindObjectsOfType<SkinnedMeshRenderer>();
+			foreach (var skinnedMeshRenderer in skinnedMeshRenderers)
+			{
+				if (skinnedMeshRenderer.sharedMesh)
+				{
+					if (shouldExcludeObject != null && shouldExcludeObject(skinnedMeshRenderer.gameObject))
+						continue;
+
+					spatialHash.AddObject(skinnedMeshRenderer, skinnedMeshRenderer.bounds);
+				}
+			}
 		}
 
-		private IEnumerator UpdateDynamicObjects()
+		IEnumerator UpdateDynamicObjects()
 		{
 			while (true)
 			{
@@ -84,10 +98,16 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public void RemoveObject(GameObject gameObject)
 		{
-			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
+			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>(true))
 			{
 				spatialHash.RemoveObject(renderer);
 			}
 		}
+
+		public Bounds GetMaxBounds()
+		{
+			return spatialHash.GetMaxBounds();
+		}
 	}
 }
+#endif

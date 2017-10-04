@@ -1,34 +1,29 @@
-﻿using System;
-using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Actions
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Clone", ActionMenuItemAttribute.kDefaultActionSectionName, 3)]
-	public class Clone : BaseAction, IUsesSpatialHash
+	[ActionMenuItem("Clone", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
+	sealed class Clone : BaseAction, IUsesSpatialHash, IUsesViewerScale
 	{
-		public Action<GameObject> addToSpatialHash { get; set; }
-		public Action<GameObject> removeFromSpatialHash { get; set; }
-
 		public override void ExecuteAction()
 		{
-			var selection = Selection.gameObjects;
-			var clones = new GameObject[selection.Length];
-			var index = 0;
-			var bounds = U.Object.GetBounds(selection);
+			Unsupported.DuplicateGameObjectsUsingPasteboard();
+			var selection = Selection.transforms;
+			var bounds = ObjectUtils.GetBounds(selection);
 			foreach (var s in selection)
 			{
-				var clone = U.Object.Instantiate(s.gameObject);
+				var clone = s.gameObject;
 				clone.hideFlags = HideFlags.None;
 				var cloneTransform = clone.transform;
-				var cameraTransform = U.Camera.GetMainCamera().transform;
+				var cameraTransform = CameraUtils.GetMainCamera().transform;
 				var viewDirection = cloneTransform.position - cameraTransform.position;
-				cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude)
+				cloneTransform.position = cameraTransform.TransformPoint(Vector3.forward * viewDirection.magnitude / this.GetViewerScale())
 					+ cloneTransform.position - bounds.center;
-				addToSpatialHash(clone);
-				clones[index++] = clone;
+				this.AddToSpatialHash(clone);
 			}
-			Selection.objects = clones;
 		}
 	}
 }
+#endif

@@ -11,12 +11,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
   m_Name: SelectionInput
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_Actions:
   - {fileID: 114000010095369560}
   - {fileID: 114000010106806814}
+  - {fileID: 114957470106761538}
   m_ControlSchemes:
-  - m_Name: Sixense
+  - m_Name: SelectionInput
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
@@ -43,6 +43,15 @@ MonoBehaviour:
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 22
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
   m_MapTypeName: SelectionInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   m_CustomNamespace: 
@@ -57,7 +66,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: Multi Select
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 0
   m_ControlData:
@@ -78,7 +86,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
   m_Name: Select
   m_EditorClassIdentifier: 
-  m_RunInEditMode: 0
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 1
   m_ControlData:
@@ -87,4 +94,24 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
     name: Select
+    defaultValue: 0
+--- !u!114 &114957470106761538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Multi Select Alt
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 2
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Multi Select Alt
     defaultValue: 0

@@ -1,224 +1,247 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-internal class DefaultProxyRay : MonoBehaviour
+namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	[SerializeField]
-	private VRLineRenderer m_LineRenderer;
-
-	[SerializeField]
-	private GameObject m_Tip;
-
-	[SerializeField]
-	private float m_LineWidth;
-
-	[SerializeField]
-	private MeshFilter m_Cone;
-
-	private Vector3 m_TipStartScale;
-	Transform m_ConeTransform;
-	Vector3 m_OriginalConeLocalScale;
-	Coroutine m_RayVisibilityCoroutine;
-	Coroutine m_ConeVisibilityCoroutine;
-
-	/// <summary>
-	/// The object that is set when LockRay is called while the ray is unlocked.
-	/// As long as this reference is set, and the ray is locked, only that object can unlock the ray.
-	/// If the object reference becomes null, the ray will be free to show/hide/lock/unlock until another locking entity takes ownership.
-	/// </summary>
-	private object m_LockRayObject;
-
-	public bool LockRay(object lockCaller)
+	sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
 	{
-		// Allow the caller to lock the ray
-		// If the reference to the lockCaller is destroyed, and the ray was not properly
-		// unlocked by the original locking caller, then allow locking by another object
-		if (m_LockRayObject == null)
+		struct DefaultRayVisibilitySettings
 		{
-			m_LockRayObject = lockCaller;
-			return true;
+			public int priority;
+			public bool rayVisible;
+			public bool coneVisible;
 		}
 
-		return false;
-	}
+		[SerializeField]
+		VRLineRenderer m_LineRenderer;
 
-	public bool UnlockRay(object unlockCaller)
-	{
-		// Only allow unlocking if the original lock caller is null or there is no locker caller set
-		if (m_LockRayObject == unlockCaller)
+		[SerializeField]
+		GameObject m_Tip;
+
+		[SerializeField]
+		float m_LineWidth;
+
+		[SerializeField]
+		MeshFilter m_Cone;
+
+		Vector3 m_TipStartScale;
+		Transform m_ConeTransform;
+		Vector3 m_OriginalConeLocalScale;
+		Coroutine m_RayVisibilityCoroutine;
+		Coroutine m_ConeVisibilityCoroutine;
+		Material m_RayMaterial;
+		float m_LastPointerLength;
+
+		readonly Dictionary<object, DefaultRayVisibilitySettings> m_VisibilitySettings = new Dictionary<object, DefaultRayVisibilitySettings>();
+
+		/// <summary>
+		/// The length of the direct selection pointer
+		/// </summary>
+		public float pointerLength
 		{
-			m_LockRayObject = null;
-			return true;
-		}
-
-		return false;
-	}
-
-	/// <summary>
-	/// The length of the direct selection pointer
-	/// </summary>
-	public float pointerLength
-	{
-		get
-		{
-			return (m_Cone.transform.TransformPoint(m_Cone.sharedMesh.bounds.size.z * Vector3.forward) - m_Cone.transform.position).magnitude;
-		}
-	}
-
-	public bool rayVisible { get; private set; }
-	public bool coneVisible { get; private set; }
-
-	void OnDisable()
-	{
-		this.StopCoroutine(ref m_RayVisibilityCoroutine);
-		this.StopCoroutine(ref m_ConeVisibilityCoroutine);
-	}
-
-	public void Hide(bool rayOnly = false)
-	{
-		if (isActiveAndEnabled && m_LockRayObject == null)
-		{
-			if (rayVisible)
+			get
 			{
-				rayVisible = false;
-				this.StopCoroutine(ref m_RayVisibilityCoroutine);
-				m_RayVisibilityCoroutine = StartCoroutine(HideRay());
-			}
+				if (!coneVisible || m_ConeVisibilityCoroutine != null)
+					return m_LastPointerLength;
 
-			if (!rayOnly && coneVisible)
-			{
-				coneVisible = false;
-				this.StopCoroutine(ref m_ConeVisibilityCoroutine);
-				m_ConeVisibilityCoroutine = StartCoroutine(HideCone());
+				m_LastPointerLength = (m_Cone.transform.TransformPoint(m_Cone.sharedMesh.bounds.size.z * Vector3.forward) - m_Cone.transform.position).magnitude;
+				return m_LastPointerLength;
 			}
 		}
-	}
 
-	public void Show(bool rayOnly = false)
-	{
-		if (isActiveAndEnabled && m_LockRayObject == null)
+		public bool rayVisible { get; private set; }
+		public bool coneVisible { get; private set; }
+
+		void OnDisable()
+		{
+			this.StopCoroutine(ref m_RayVisibilityCoroutine);
+			this.StopCoroutine(ref m_ConeVisibilityCoroutine);
+		}
+
+		public void AddVisibilitySettings(object caller, bool rayVisible, bool coneVisible, int priority = 0)
+		{
+			m_VisibilitySettings[caller] = new DefaultRayVisibilitySettings { rayVisible = rayVisible, coneVisible = coneVisible, priority = priority };
+		}
+
+		public void RemoveVisibilitySettings(object caller)
+		{
+			m_VisibilitySettings.Remove(caller);
+		}
+
+		public void SetLength(float length)
 		{
 			if (!rayVisible)
+				return;
+
+			var viewerScale = this.GetViewerScale();
+			var scaledWidth = m_LineWidth * viewerScale;
+			var scaledLength = length / viewerScale;
+
+			var lineRendererTransform = m_LineRenderer.transform;
+			lineRendererTransform.localScale = Vector3.one * scaledLength;
+			m_LineRenderer.SetWidth(scaledWidth, scaledWidth * scaledLength);
+			m_Tip.transform.position = transform.position + transform.forward * length;
+			m_Tip.transform.localScale = scaledLength * m_TipStartScale;
+		}
+
+		public void SetColor(Color c)
+		{
+			m_RayMaterial.color = c;
+		}
+
+		void Awake()
+		{
+			m_RayMaterial = MaterialUtils.GetMaterialClone(m_LineRenderer.GetComponent<MeshRenderer>());
+			m_ConeTransform = m_Cone.transform;
+			m_OriginalConeLocalScale = m_ConeTransform.localScale;
+
+			rayVisible = true;
+			coneVisible = true;
+		}
+
+		void Start()
+		{
+			m_TipStartScale = m_Tip.transform.localScale;
+			rayVisible = true;
+		}
+
+		void Update()
+		{
+			UpdateVisibility();
+		}
+
+		void UpdateVisibility()
+		{
+			var coneVisible = true;
+			var rayVisible = true;
+
+			if (m_VisibilitySettings.Count > 0)
 			{
-				rayVisible = true;
+				var maxPriority = m_VisibilitySettings.Select(setting => setting.Value.priority).Max();
+				foreach (var kvp in m_VisibilitySettings)
+				{
+					var settings = kvp.Value;
+					if (settings.priority == maxPriority)
+					{
+						rayVisible &= settings.rayVisible;
+						coneVisible &= settings.coneVisible;
+					}
+				}
+			}
+
+			if (this.rayVisible != rayVisible)
+			{
+				this.rayVisible = rayVisible;
 				this.StopCoroutine(ref m_RayVisibilityCoroutine);
-				m_RayVisibilityCoroutine = StartCoroutine(ShowRay());
+				m_RayVisibilityCoroutine = StartCoroutine(rayVisible ? ShowRay() : HideRay());
 			}
 
-			if (!rayOnly && !coneVisible)
+			if (this.coneVisible != coneVisible)
 			{
-				coneVisible = true;
+				this.coneVisible = coneVisible;
 				this.StopCoroutine(ref m_ConeVisibilityCoroutine);
-				m_ConeVisibilityCoroutine = StartCoroutine(ShowCone());
+				m_ConeVisibilityCoroutine = StartCoroutine(coneVisible ? ShowCone() : HideCone());
 			}
 		}
-	}
 
-	public void SetLength(float length)
-	{
-		if (!rayVisible)
-			return;
-
-		var lineRendererTransform = m_LineRenderer.transform;
-		lineRendererTransform.localScale = Vector3.one * length;
-		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth * length);
-		m_Tip.transform.position = transform.position + transform.forward * length;
-		m_Tip.transform.localScale = length * m_TipStartScale;
-
-		const float kLineRendererStartingOffset = 0.085f; // offset the ray starting point in front of the direct-select cone
-		m_LineRenderer.SetPosition(0, new Vector3(0f, 0f, (1f / lineRendererTransform.localScale.x) * kLineRendererStartingOffset));
-	}
-
-	private void Awake()
-	{
-		m_ConeTransform = m_Cone.transform;
-		m_OriginalConeLocalScale = m_ConeTransform.localScale;
-	}
-
-	private void Start()
-	{
-		m_TipStartScale = m_Tip.transform.localScale;
-		rayVisible = true;
-	}
-
-	private IEnumerator HideRay()
-	{
-		m_Tip.transform.localScale = Vector3.zero;
-
-		// cache current width for smooth animation to target value without snapping
-		var currentWidth = m_LineRenderer.widthStart;
-		const float kTargetWidth = 0f;
-		const float kSmoothTime = 0.1875f;
-		var smoothVelocity = 0f;
-		var currentDuration = 0f;
-		while (currentDuration < kSmoothTime)
+		IEnumerator HideRay()
 		{
-			currentDuration += Time.unscaledDeltaTime;
-			currentWidth = U.Math.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_LineRenderer.SetWidth(currentWidth, currentWidth);
-			yield return null;
+			m_Tip.transform.localScale = Vector3.zero;
+
+			// cache current width for smooth animation to target value without snapping
+			var currentWidth = m_LineRenderer.widthStart;
+			const float kTargetWidth = 0f;
+			const float kSmoothTime = 0.1875f;
+			var smoothVelocity = 0f;
+			var currentDuration = 0f;
+			while (currentDuration < kSmoothTime)
+			{
+				currentDuration += Time.deltaTime;
+				currentWidth = MathUtilsExt.SmoothDamp(currentWidth, kTargetWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
+				m_LineRenderer.SetWidth(currentWidth, currentWidth);
+				yield return null;
+			}
+
+			m_LineRenderer.SetWidth(kTargetWidth, kTargetWidth);
+			m_RayVisibilityCoroutine = null;
 		}
 
-		m_LineRenderer.SetWidth(kTargetWidth, kTargetWidth);
-		m_RayVisibilityCoroutine = null;
-	}
-
-	private IEnumerator ShowRay()
-	{
-		m_Tip.transform.localScale = m_TipStartScale;
-
-		var currentWidth = m_LineRenderer.widthStart;
-		var smoothVelocity = 0f;
-		const float kSmoothTime = 0.3125f;
-		var currentDuration = 0f;
-		while (currentDuration < kSmoothTime)
+		IEnumerator ShowRay()
 		{
-			currentDuration += Time.unscaledDeltaTime;
-			currentWidth = U.Math.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_LineRenderer.SetWidth(currentWidth, currentWidth);
-			yield return null;
-		}
-		
-		m_LineRenderer.SetWidth(m_LineWidth, m_LineWidth);
-		m_RayVisibilityCoroutine = null;
-	}
+			m_Tip.transform.localScale = m_TipStartScale;
 
-	IEnumerator HideCone()
-	{
-		var currentScale = m_ConeTransform.localScale;
-		var smoothVelocity = Vector3.one;
-		const float kSmoothTime = 0.1875f;
-		var currentDuration = 0f;
-		while (currentDuration < kSmoothTime)
-		{
-			currentDuration += Time.unscaledDeltaTime;
-			currentScale = U.Math.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_ConeTransform.localScale = currentScale;
-			yield return null;
+			var viewerScale = this.GetViewerScale();
+			float scaledWidth;
+			var currentWidth = m_LineRenderer.widthStart / viewerScale;
+			var smoothVelocity = 0f;
+			const float kSmoothTime = 0.3125f;
+			var currentDuration = 0f;
+			while (currentDuration < kSmoothTime)
+			{
+				viewerScale = this.GetViewerScale();
+				currentDuration += Time.deltaTime;
+				currentWidth = MathUtilsExt.SmoothDamp(currentWidth, m_LineWidth, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
+				scaledWidth = currentWidth * viewerScale;
+				m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
+				yield return null;
+			}
+
+			viewerScale = this.GetViewerScale();
+			scaledWidth = m_LineWidth * viewerScale;
+			m_LineRenderer.SetWidth(scaledWidth, scaledWidth);
+			m_RayVisibilityCoroutine = null;
 		}
 
-		m_ConeTransform.localScale = Vector3.zero;
-		m_ConeVisibilityCoroutine = null;
-	}
-
-	IEnumerator ShowCone()
-	{
-		var currentScale = m_ConeTransform.localScale;
-		var smoothVelocity = Vector3.zero;
-		const float kSmoothTime = 0.3125f;
-		var currentDuration = 0f;
-		while (currentDuration < kSmoothTime)
+		IEnumerator HideCone()
 		{
-			currentDuration += Time.unscaledDeltaTime;
-			currentScale = U.Math.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-			m_ConeTransform.localScale = currentScale;
-			yield return null;
+			var currentScale = m_ConeTransform.localScale;
+			var smoothVelocity = Vector3.one;
+			const float kSmoothTime = 0.1875f;
+			var currentDuration = 0f;
+			while (currentDuration < kSmoothTime)
+			{
+				currentDuration += Time.deltaTime;
+				currentScale = MathUtilsExt.SmoothDamp(currentScale, Vector3.zero, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
+				m_ConeTransform.localScale = currentScale;
+				yield return null;
+			}
+
+			m_ConeTransform.localScale = Vector3.zero;
+			m_ConeVisibilityCoroutine = null;
 		}
 
-		m_ConeTransform.localScale = m_OriginalConeLocalScale;
-		m_ConeVisibilityCoroutine = null;
+		IEnumerator ShowCone()
+		{
+			var currentScale = m_ConeTransform.localScale;
+			var smoothVelocity = Vector3.zero;
+			const float kSmoothTime = 0.3125f;
+			var currentDuration = 0f;
+			while (currentDuration < kSmoothTime)
+			{
+				currentDuration += Time.deltaTime;
+				currentScale = MathUtilsExt.SmoothDamp(currentScale, m_OriginalConeLocalScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
+				m_ConeTransform.localScale = currentScale;
+				yield return null;
+			}
+
+			m_ConeTransform.localScale = m_OriginalConeLocalScale;
+			m_ConeVisibilityCoroutine = null;
+		}
+
+		public Color GetColor()
+		{
+			return m_RayMaterial.color;
+		}
+
+		void OnDestroy()
+		{
+			ObjectUtils.Destroy(m_RayMaterial);
+		}
 	}
 }
+#endif

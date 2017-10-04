@@ -8,6 +8,7 @@
 		_MainTex("Texture", 2D) = "white" {}
 		_Alpha("Alpha", Range(0, 1)) = 1
 		_StencilRef("StencilRef", Int) = 3
+		[Toggle] _StencilFailZero("Stencil Fail Zero", Float) = 0
 	}
 
 		Category
@@ -23,7 +24,7 @@
 				Ref [_StencilRef]
 				Comp NotEqual
 				Pass Zero
-				Fail Keep
+				Fail [_StencilFailZero]
 			}
 
 			SubShader
@@ -52,26 +53,28 @@
 						float yPos : FLOAT;
 					};
 
-					v2f vert(appdata_t v)
-					{
-						v2f output;
-						output.position = mul(UNITY_MATRIX_MVP, v.position);
-#if UNITY_UV_STARTS_AT_TOP
-						float scale = -1.0;
-						output.yPos = v.texcoord.y;
-#else
-						float scale = 1.0;
-						output.yPos = -v.texcoord.y;
-#endif
-						output.grab.xy = (float2(output.position.x, output.position.y*scale) + output.position.w) * 0.5;
-						output.grab.zw = output.position.zw;
-						return output;
-					}
-
 					sampler2D _GrabTexture;
 					float4 _GrabTexture_TexelSize;
 					float _Blur;
 					float _VerticalOffset;
+					float _WorldScale;
+
+					v2f vert(appdata_t v)
+					{
+						v2f output;
+						output.position = UnityObjectToClipPos(v.position);
+#if UNITY_UV_STARTS_AT_TOP
+						float sign = -1.0;
+						output.yPos = v.texcoord.y;
+#else
+						float sign = 1.0;
+						output.yPos = -v.texcoord.y;
+#endif
+						output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
+						output.grab.zw = output.position.zw;
+						output.grab *= _WorldScale;
+						return output;
+					}
 
 					half4 frag(v2f input) : COLOR
 					{
@@ -119,26 +122,28 @@
 					float yPos : FLOAT;
 				};
 
-				v2f vert(appdata_t v)
-				{
-					v2f output;
-					output.position = mul(UNITY_MATRIX_MVP, v.position);
-	#if UNITY_UV_STARTS_AT_TOP
-					float scale = -1.0;
-					output.yPos = v.texcoord.y;
-	#else
-					float scale = 1.0;
-					output.yPos = -v.texcoord.y;
-	#endif
-					output.grab.xy = (float2(output.position.x, output.position.y*scale) + output.position.w) * 0.5;
-					output.grab.zw = output.position.zw;
-					return output;
-				}
-
 				sampler2D _GrabTexture;
 				float4 _GrabTexture_TexelSize;
 				float _Blur;
 				float _VerticalOffset;
+				float _WorldScale;
+
+				v2f vert(appdata_t v)
+				{
+					v2f output;
+					output.position = UnityObjectToClipPos(v.position);
+	#if UNITY_UV_STARTS_AT_TOP
+					float sign = -1.0;
+					output.yPos = v.texcoord.y;
+	#else
+					float sign = 1.0;
+					output.yPos = -v.texcoord.y;
+	#endif
+					output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
+					output.grab.zw = output.position.zw;
+					output.grab *= _WorldScale;
+					return output;
+				}
 
 				half4 frag(v2f input) : COLOR
 				{
@@ -186,27 +191,28 @@
 				};
 
 				float4 _MainTex_ST;
-
-				v2f vert(appdata_t v)
-				{
-					v2f output;
-					output.position = mul(UNITY_MATRIX_MVP, v.position);
-	#if UNITY_UV_STARTS_AT_TOP
-					float scale = -1.0;
-	#else
-					float scale = 1.0;
-	#endif
-					output.grab.xy = (float2(output.position.x, output.position.y*scale) + output.position.w) * 0.5;
-					output.grab.zw = output.position.zw;
-					output.uvmain = TRANSFORM_TEX(v.texcoord, _MainTex);
-					return output;
-				}
-
 				fixed4 _Color;
 				sampler2D _GrabTexture;
 				float4 _GrabTexture_TexelSize;
 				sampler2D _MainTex;
 				half _Alpha;
+				float _WorldScale;
+
+				v2f vert(appdata_t v)
+				{
+					v2f output;
+					output.position = UnityObjectToClipPos(v.position);
+	#if UNITY_UV_STARTS_AT_TOP
+					float sign = -1.0;
+	#else
+					float sign = 1.0;
+	#endif
+					output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
+					output.grab.zw = output.position.zw;
+					output.grab *= _WorldScale;
+					output.uvmain = TRANSFORM_TEX(v.texcoord, _MainTex);
+					return output;
+				}
 
 				half4 frag(v2f i) : COLOR
 				{

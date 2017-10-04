@@ -1,4 +1,4 @@
-﻿Shader "Custom/List Clip"
+﻿Shader "EditorVR/Custom/List Clip"
 {
 	Properties
 	{
@@ -6,17 +6,19 @@
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
-		_ClipExtents("Clip Extents", Vector) = (0,0,0,0)
+		_ClipExtents("Clip Extents", Vector) = (1,1,1,0)
+		_StencilRef("StencilRef", Int) = 3
 	}
 	SubShader
 	{
 		Tags { "RenderType"="Transparent" "Queue" = "Overlay+5103" }
+		ZWrite On
 		LOD 200
 
 		Stencil
 		{
-			Ref 0
-			Comp Equal
+			Ref[_StencilRef]
+			Comp NotEqual
 		}
 
 		CGPROGRAM

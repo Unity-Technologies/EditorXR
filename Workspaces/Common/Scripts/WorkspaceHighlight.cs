@@ -1,14 +1,16 @@
-﻿using System.Collections;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using System.Collections;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	public class WorkspaceHighlight : MonoBehaviour
+	sealed class WorkspaceHighlight : MonoBehaviour
 	{
-		const string kTopColorProperty = "_ColorTop";
-		const string kBottomColorProperty = "_ColorBottom";
-		const string kAlphaProperty = "_Alpha";
+		const string k_TopColorProperty = "_ColorTop";
+		const string k_BottomColorProperty = "_ColorBottom";
+		const string k_AlphaProperty = "_Alpha";
 
 		Coroutine m_HighlightCoroutine;
 		Material m_TopHighlightMaterial;
@@ -38,53 +40,54 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		void Awake()
 		{
-			m_TopHighlightMaterial = U.Material.GetMaterialClone(m_TopHighlightRenderer);
-			m_TopHighlightMaterial.SetColor(kTopColorProperty, UnityBrandColorScheme.sessionGradient.a);
-			m_TopHighlightMaterial.SetColor(kBottomColorProperty, UnityBrandColorScheme.sessionGradient.b);
-			m_TopHighlightMaterial.SetFloat(kAlphaProperty, 0f); // hide the highlight initially
+			m_TopHighlightMaterial = MaterialUtils.GetMaterialClone(m_TopHighlightRenderer);
+			m_TopHighlightMaterial.SetColor(k_TopColorProperty, UnityBrandColorScheme.sessionGradient.a);
+			m_TopHighlightMaterial.SetColor(k_BottomColorProperty, UnityBrandColorScheme.sessionGradient.b);
+			m_TopHighlightMaterial.SetFloat(k_AlphaProperty, 0f); // hide the highlight initially
 		}
 
 		void OnDestroy()
 		{
-			U.Object.Destroy(m_TopHighlightMaterial);
+			ObjectUtils.Destroy(m_TopHighlightMaterial);
 		}
 
 		IEnumerator ShowHighlight()
 		{
 			const float kTargetAlpha = 1f;
-			var currentAlpha = m_TopHighlightMaterial.GetFloat(kAlphaProperty);
+			var currentAlpha = m_TopHighlightMaterial.GetFloat(k_AlphaProperty);
 			var smoothVelocity = 0f;
 			var currentDuration = 0f;
 			const float kTargetDuration = 0.3f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				m_TopHighlightMaterial.SetFloat(kAlphaProperty, currentAlpha);
+				currentDuration += Time.deltaTime;
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+				m_TopHighlightMaterial.SetFloat(k_AlphaProperty, currentAlpha);
 				yield return null;
 			}
 
-			m_TopHighlightMaterial.SetFloat(kAlphaProperty, kTargetAlpha); // set value after loop because precision matters in this case
+			m_TopHighlightMaterial.SetFloat(k_AlphaProperty, kTargetAlpha); // set value after loop because precision matters in this case
 			m_HighlightCoroutine = null;
 		}
 
 		IEnumerator HideHighlight()
 		{
 			const float kTargetAlpha = 0f;
-			var currentAlpha = m_TopHighlightMaterial.GetFloat(kAlphaProperty);
+			var currentAlpha = m_TopHighlightMaterial.GetFloat(k_AlphaProperty);
 			var smoothVelocity = 0f;
 			var currentDuration = 0f;
 			const float kTargetDuration = 0.35f;
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				currentAlpha = U.Math.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
-				m_TopHighlightMaterial.SetFloat(kAlphaProperty, currentAlpha);
+				currentDuration += Time.deltaTime;
+				currentAlpha = MathUtilsExt.SmoothDamp(currentAlpha, kTargetAlpha, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+				m_TopHighlightMaterial.SetFloat(k_AlphaProperty, currentAlpha);
 				yield return null;
 			}
 
-			m_TopHighlightMaterial.SetFloat(kAlphaProperty, kTargetAlpha); // set value after loop because precision matters in this case
+			m_TopHighlightMaterial.SetFloat(k_AlphaProperty, kTargetAlpha); // set value after loop because precision matters in this case
 			m_HighlightCoroutine = null;
 		}
 	}
 }
+#endif

@@ -5,17 +5,17 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 	[InitializeOnLoad]
 	public class BuildPlayerTest
 	{
-		const string kVerifySavingAssets = "VerifySavingAssets";
+		const string k_VerifySavingAssets = "VerifySavingAssets";
 
 		bool? m_VerifySavingAssets;
 
 		[SetUp]
 		public void SetUp()
 		{
-			if (EditorPrefs.HasKey(kVerifySavingAssets))
+			if (EditorPrefs.HasKey(k_VerifySavingAssets))
 			{
-				m_VerifySavingAssets = EditorPrefs.GetBool(kVerifySavingAssets);
-				EditorPrefs.SetBool(kVerifySavingAssets, false);
+				m_VerifySavingAssets = EditorPrefs.GetBool(k_VerifySavingAssets);
+				EditorPrefs.SetBool(k_VerifySavingAssets, false);
 			}
 		}
 
@@ -31,21 +31,9 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 			TestBuildPlayer(BuildTarget.StandaloneWindows64);
 		}
 
-		[Test]
-		public void Android()
-		{
-			TestBuildPlayer(BuildTarget.Android);
-		}
-
-		[Test]
-		public void WebGL()
-		{
-			TestBuildPlayer(BuildTarget.WebGL);
-		}
-
 		static void TestBuildPlayer(BuildTarget target)
 		{
-			var output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.None);
+			var output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.BuildScriptsOnly);
 
 			if (output.Contains("target is not supported"))
 				Assert.Inconclusive("Target platform {0} not installed", target);
@@ -57,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 		public void TearDown()
 		{
 			if (m_VerifySavingAssets.HasValue)
-				EditorPrefs.SetBool(kVerifySavingAssets, m_VerifySavingAssets.Value);
+				EditorPrefs.SetBool(k_VerifySavingAssets, m_VerifySavingAssets.Value);
 		}
 	}
 }

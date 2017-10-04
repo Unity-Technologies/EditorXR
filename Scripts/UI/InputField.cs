@@ -1,17 +1,22 @@
+#if UNITY_EDITOR
+#if !UNITY_EDITORVR
+#pragma warning disable 649 // "never assigned to" warning
+#endif
+
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
-using UnityEngine.Experimental.EditorVR.Extensions;
 
-namespace UnityEngine.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public abstract class InputField : Selectable, ISelectionFlags
+	abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale
 	{
-		const float kMoveKeyboardTime = 0.2f;
+		const float k_MoveKeyboardTime = 0.2f;
 		public SelectionFlags selectionFlags
 		{
 			get { return m_SelectionFlags; }
@@ -40,7 +45,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		Coroutine m_MoveKeyboardCoroutine;
 
-		public string text
+		public virtual string text
 		{
 			get
 			{
@@ -50,6 +55,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			{
 				if (m_Text == value)
 					return;
+
 				if (value == null)
 					value = "";
 
@@ -129,27 +135,31 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 			var keyboardOutOfRange = (m_Keyboard.transform.position - transform.position).magnitude > 0.25f;
 			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(keyboardOutOfRange));
+
+#if UNITY_EDITOR
+			Undo.IncrementCurrentGroup(); // Every time we open the keyboard is a new modification
+#endif
 		}
 
 		IEnumerator MoveKeyboardToInputField(bool instant)
 		{
 			const float kKeyboardYOffset = 0.05f;
-			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset;
+			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset * this.GetViewerScale();
 
 			if (!instant && !m_Keyboard.collapsed)
 			{
 				var t = 0f;
-				while (t < kMoveKeyboardTime)
+				while (t < k_MoveKeyboardTime)
 				{
-					m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / kMoveKeyboardTime);
-					m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
-					t += Time.unscaledDeltaTime;
+					m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / k_MoveKeyboardTime);
+					m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - CameraUtils.GetMainCamera().transform.position);
+					t += Time.deltaTime;
 					yield return null;
 				}
 			}
 
 			m_Keyboard.transform.position = targetPosition;
-			m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - U.Camera.GetMainCamera().transform.position);
+			m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - CameraUtils.GetMainCamera().transform.position);
 			m_MoveKeyboardCoroutine = null;
 
 			m_Keyboard.Setup(OnKeyPress);
@@ -246,5 +256,5 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		protected abstract void Shift();
 		protected abstract void CapsLock();
 	}
-
 }
+#endif

@@ -1,71 +1,74 @@
-﻿using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
+using UnityEngine.EventSystems;
 
-namespace UnityEngine.Experimental.EditorVR.Handles
+namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	public class SphereHandle : BaseHandle, IScrollHandler
+	sealed class SphereHandle : BaseHandle, IScrollHandler, IUsesViewerScale
 	{
-		private class SphereHandleEventData : HandleEventData
+		const float k_MaxSphereRadius = 1000f;
+
+		class SphereHandleEventData : HandleEventData
 		{
 			public float raycastHitDistance;
 
 			public SphereHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) {}
 		}
 
-		private const float kInitialScrollRate = 2f;
-		private const float kScrollAcceleration = 14f;
+		const float k_InitialScrollRate = 2f;
+		const float k_ScrollAcceleration = 14f;
 
-		readonly static float kScaleBump = 1.1f;
-		
-		private float m_ScrollRate;
-		private Vector3 m_LastPosition;
-		private float m_CurrentRadius;
+		const float k_DistanceScale = 0.1f;
+
+		float m_ScrollRate;
+		Vector3 m_LastPosition;
+		float m_CurrentRadius;
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{
-			return new SphereHandleEventData(eventData.rayOrigin, U.UI.IsDirectEvent(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
+			return new SphereHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
 		}
 
 		protected override void OnHandleDragStarted(HandleEventData eventData)
 		{
-			var sphereEventData = eventData as SphereHandleEventData;
+			var sphereEventData = (SphereHandleEventData)eventData;
 
-			m_CurrentRadius = sphereEventData.raycastHitDistance;
+			var rayOrigin = eventData.rayOrigin;
+			if (IndexOfDragSource(rayOrigin) == 0)
+			{
+				m_CurrentRadius = sphereEventData.raycastHitDistance;
+				m_ScrollRate = k_InitialScrollRate;
+				m_LastPosition = GetRayPoint(eventData);
 
-			m_LastPosition = GetRayPoint(eventData);
-
-			m_ScrollRate = kInitialScrollRate;
-
-			base.OnHandleDragStarted(eventData);
+				base.OnHandleDragStarted(eventData);
+			}
 		}
 
 		protected override void OnHandleDragging(HandleEventData eventData)
 		{
-			var worldPosition = GetRayPoint(eventData);
+			if (IndexOfDragSource(eventData.rayOrigin) == 0)
+			{
+				var worldPosition = GetRayPoint(eventData);
+				eventData.deltaPosition = worldPosition - m_LastPosition;
+				m_LastPosition = worldPosition;
 
-			eventData.deltaPosition = worldPosition - m_LastPosition;
-			m_LastPosition = worldPosition;
-
-			base.OnHandleDragging(eventData);
+				base.OnHandleDragging(eventData);
+			}
 		}
 
-		protected override void OnHandleHoverStarted(HandleEventData eventData)
+		protected override void OnHandleDragEnded(HandleEventData eventData)
 		{
-			transform.localScale *= kScaleBump;
-			base.OnHandleHoverStarted(eventData);
-		}
-
-		protected override void OnHandleHoverEnded(HandleEventData eventData)
-		{
-			transform.localScale /= kScaleBump;
-			base.OnHandleHoverStarted(eventData);
+			if (!hasDragSource)
+				base.OnHandleDragEnded(eventData);
 		}
 
 		public void ChangeRadius(float delta)
 		{
-			m_CurrentRadius += delta;
-			m_CurrentRadius = Mathf.Max(m_CurrentRadius, 0f);
+			var distance = Vector3.Distance(CameraUtils.GetMainCamera().transform.position, transform.position);
+			m_CurrentRadius += delta * distance * k_DistanceScale;
+			m_CurrentRadius = Mathf.Clamp(m_CurrentRadius, 0f, k_MaxSphereRadius * this.GetViewerScale());
 		}
 
 		public void OnScroll(PointerEventData eventData)
@@ -73,16 +76,16 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 			if (m_DragSources.Count == 0)
 				return;
 
-			// Scolling changes the radius of the sphere while dragging, and accelerates
+			// Scrolling changes the radius of the sphere while dragging, and accelerates
 			if (Mathf.Abs(eventData.scrollDelta.y) > 0.5f)
-				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y)*kScrollAcceleration*Time.unscaledDeltaTime;
+				m_ScrollRate += Mathf.Abs(eventData.scrollDelta.y) * k_ScrollAcceleration * Time.deltaTime;
 			else
-				m_ScrollRate = kInitialScrollRate;
+				m_ScrollRate = k_InitialScrollRate;
 
-			ChangeRadius(m_ScrollRate*eventData.scrollDelta.y*Time.unscaledDeltaTime);
+			ChangeRadius(m_ScrollRate * eventData.scrollDelta.y * Time.deltaTime);
 		}
 
-		private Vector3 GetRayPoint(HandleEventData eventData)
+		Vector3 GetRayPoint(HandleEventData eventData)
 		{
 			var rayOrigin = eventData.rayOrigin;
 			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
@@ -90,3 +93,4 @@ namespace UnityEngine.Experimental.EditorVR.Handles
 		}
 	}
 }
+#endif

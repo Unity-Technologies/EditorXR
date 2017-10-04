@@ -1,100 +1,107 @@
-﻿using System.Collections;
+﻿#if UNITY_EDITOR
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.Menus
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	public class MainMenuFace : MonoBehaviour
+	sealed class MainMenuFace : MonoBehaviour
 	{
+		static readonly Vector3 k_LocalOffset = Vector3.down * 0.15f;
+
 		[SerializeField]
-		private MeshRenderer m_BorderOutline;
+		MeshRenderer m_BorderOutline;
+
 		[SerializeField]
-		private CanvasGroup m_CanvasGroup;
+		CanvasGroup m_CanvasGroup;
+
 		[SerializeField]
-		private Text m_FaceTitle;
+		Text m_FaceTitle;
+
 		[SerializeField]
-		private Transform m_GridTransform;
+		Transform m_GridTransform;
+
 		[SerializeField]
-		private SkinnedMeshRenderer m_TitleIcon;
+		SkinnedMeshRenderer m_TitleIcon;
+
 		[SerializeField]
 		ScrollRect m_ScrollRect;
 
-		private Material m_BorderOutlineMaterial;
-		private Vector3 m_BorderOutlineOriginalLocalScale;
-		private Transform m_BorderOutlineTransform;
-		private List<Transform> m_MenuButtons;
-		private Material m_TitleIconMaterial;
-		private Coroutine m_VisibilityCoroutine;
-		private Coroutine m_RotationVisualsCoroutine;
-		
-		private const float kBorderScaleMultiplier = 1.0135f;
-		private const string kBottomGradientProperty = "_ColorBottom";
-		private const string kTopGradientProperty = "_ColorTop";
-		private readonly GradientPair kEmptyGradient = new GradientPair(UnityBrandColorScheme.light, UnityBrandColorScheme.darker);
+		Material m_BorderOutlineMaterial;
+		Vector3 m_BorderOutlineOriginalLocalScale;
+		Transform m_BorderOutlineTransform;
+		Material m_TitleIconMaterial;
+		Coroutine m_VisibilityCoroutine;
+		Coroutine m_RevealCoroutine;
+		GradientPair m_GradientPair;
+		Vector3 m_OriginalLocalScale;
+		Vector3 m_HiddenLocalScale;
+		readonly Stack<GameObject> m_Submenus = new Stack<GameObject>();
 
-		private void Awake()
+		const string k_BottomGradientProperty = "_ColorBottom";
+		const string k_TopGradientProperty = "_ColorTop";
+		readonly GradientPair k_EmptyGradient = new GradientPair(UnityBrandColorScheme.light, UnityBrandColorScheme.darker);
+
+		public GradientPair gradientPair
+		{
+			get { return m_GradientPair; }
+			set
+			{
+				m_GradientPair = value;
+				m_BorderOutlineMaterial.SetColor(k_TopGradientProperty, gradientPair.a);
+				m_BorderOutlineMaterial.SetColor(k_BottomGradientProperty, gradientPair.b);
+				m_TitleIconMaterial.SetColor(k_TopGradientProperty, gradientPair.a);
+				m_TitleIconMaterial.SetColor(k_BottomGradientProperty, gradientPair.b);
+			}
+		}
+
+		public string title { set { m_FaceTitle.text = value; } }
+
+		public bool visible
+		{
+			set
+			{
+				this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(value));
+			}
+		}
+
+		void Awake()
 		{
 			m_CanvasGroup.alpha = 0f;
 			m_CanvasGroup.interactable = false;
-			m_BorderOutlineMaterial = U.Material.GetMaterialClone(m_BorderOutline);
+			m_BorderOutlineMaterial = MaterialUtils.GetMaterialClone(m_BorderOutline);
 			m_BorderOutlineTransform = m_BorderOutline.transform;
 			m_BorderOutlineOriginalLocalScale = m_BorderOutlineTransform.localScale;
-			m_FaceTitle.text = "Not Set";
-			m_TitleIconMaterial = U.Material.GetMaterialClone(m_TitleIcon);
+			m_TitleIconMaterial = MaterialUtils.GetMaterialClone(m_TitleIcon);
 
-			SetGradientColors(kEmptyGradient);
+			m_OriginalLocalScale = transform.localScale;
+			m_HiddenLocalScale = new Vector3(0f, m_OriginalLocalScale.y * 0.5f, m_OriginalLocalScale.z);
+
+			gradientPair = k_EmptyGradient;
 		}
 
-		public void SetFaceData(string faceName, List<Transform> buttons, GradientPair gradientPair)
+		public void AddButton(Transform button)
 		{
-			if (m_MenuButtons != null && m_MenuButtons.Any())
-				foreach (var button in m_MenuButtons)
-					GameObject.DestroyImmediate(button);
-
-			m_FaceTitle.text = faceName;
-			m_MenuButtons = buttons;
-
-			foreach (var button in buttons)
-			{
-				Transform buttonTransform = button.transform;
-				buttonTransform.SetParent(m_GridTransform);
-				buttonTransform.localRotation = Quaternion.identity;
-				buttonTransform.localScale = Vector3.one;
-				buttonTransform.localPosition = Vector3.zero;
-			}
-
-			SetGradientColors(gradientPair);
+			button.SetParent(m_GridTransform);
+			button.localRotation = Quaternion.identity;
+			button.localScale = Vector3.one;
+			button.localPosition = Vector3.zero;
 		}
 
-		private void SetGradientColors(GradientPair gradientPair)
+		public void Reveal(float delay = 0f)
 		{
-			m_BorderOutlineMaterial.SetColor(kTopGradientProperty, gradientPair.a);
-			m_BorderOutlineMaterial.SetColor(kBottomGradientProperty, gradientPair.b);
-			m_TitleIconMaterial.SetColor(kTopGradientProperty, gradientPair.a);
-			m_TitleIconMaterial.SetColor(kBottomGradientProperty, gradientPair.b);
+			this.RestartCoroutine(ref m_RevealCoroutine, AnimateReveal(delay));
 		}
 
-		public void Show()
+		IEnumerator AnimateVisibility(bool show)
 		{
-			m_BorderOutlineTransform.localScale = m_BorderOutlineOriginalLocalScale;
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(true));
-		}
-
-		public void Hide()
-		{
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(false));
-		}
-
-		private IEnumerator AnimateVisibility(bool show)
-		{
-			if (m_VisibilityCoroutine != null)
-				yield break;
+			if (show)
+				m_BorderOutlineTransform.localScale = m_BorderOutlineOriginalLocalScale;
 
 			m_CanvasGroup.interactable = false;
 			
@@ -105,8 +112,8 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 			var currentDuration = 0f;
 			while (currentDuration < smoothTime)
 			{
-				startingOpacity = U.Math.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-				currentDuration += Time.unscaledDeltaTime;
+				startingOpacity = MathUtilsExt.SmoothDamp(startingOpacity, targetOpacity, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.deltaTime);
+				currentDuration += Time.deltaTime;
 				m_CanvasGroup.alpha = startingOpacity * startingOpacity;
 				yield return null;
 			}
@@ -117,50 +124,71 @@ namespace UnityEngine.Experimental.EditorVR.Menus
 				m_CanvasGroup.interactable = true;
 			else
 				m_TitleIcon.SetBlendShapeWeight(0, 0);
-
-			m_VisibilityCoroutine = null;
 		}
 
-		public void BeginVisuals()
+		IEnumerator AnimateReveal(float delay = 0f)
 		{
-			this.StopCoroutine(ref m_RotationVisualsCoroutine);
-			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(true));
-		}
+			var targetScale = m_OriginalLocalScale;
+			var targetPosition = Vector3.zero;
+			var currentScale = m_HiddenLocalScale;
+			var currentPosition = k_LocalOffset;
 
-		public void EndVisuals()
-		{
-			this.StopCoroutine(ref m_RotationVisualsCoroutine);
-			m_RotationVisualsCoroutine = StartCoroutine(AnimateVisuals(false));
-		}
+			transform.localScale = currentScale;
+			transform.localPosition = currentPosition;
 
-		private IEnumerator AnimateVisuals(bool focus)
-		{
-			if (m_RotationVisualsCoroutine != null)
-				yield break;
-
-			Vector3 targetBorderLocalScale = focus ? m_BorderOutlineOriginalLocalScale * kBorderScaleMultiplier : m_BorderOutlineOriginalLocalScale;
-			Vector3 currentBorderLocalScale = m_BorderOutlineTransform.localScale;
-
-			const float kLerpEmphasisWeight = 0.2f;
-			var currentBlendShapeWeight = m_TitleIcon.GetBlendShapeWeight(0);
-			var targetWeight = focus ? 100f : 0f;
-			var smoothTime = focus ? 0.25f : 0.5f;
-			var smoothVelocity = 0f;
-			var currentDuration = 0f;
-			while (currentDuration < smoothTime)
+			const float kSmoothTime = 0.1f;
+			var currentDelay = 0f;
+			var delayTarget = 0.25f + delay; // delay duration before starting the face reveal
+			while (currentDelay < delayTarget) // delay the reveal of each face slightly more than the previous
 			{
-				currentBlendShapeWeight = U.Math.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.unscaledDeltaTime);
-				currentDuration += Time.unscaledDeltaTime;
-				currentBorderLocalScale = Vector3.Lerp(currentBorderLocalScale, targetBorderLocalScale, currentBlendShapeWeight * kLerpEmphasisWeight);
-				m_BorderOutlineTransform.localScale = currentBorderLocalScale;
-				m_TitleIcon.SetBlendShapeWeight(0, currentBlendShapeWeight);
+				currentDelay += Time.deltaTime;
 				yield return null;
 			}
 
-			m_TitleIcon.SetBlendShapeWeight(0, targetWeight);
-			m_BorderOutlineTransform.localScale = targetBorderLocalScale;
+			var smoothVelocity = Vector3.zero;
+			while (!Mathf.Approximately(currentScale.x, targetScale.x))
+			{
+				currentScale = Vector3.SmoothDamp(currentScale, targetScale, ref smoothVelocity, kSmoothTime, Mathf.Infinity, Time.deltaTime);
+				currentPosition = Vector3.Lerp(currentPosition, targetPosition, Mathf.Pow(currentScale.x / targetScale.x, 2)); // lerp the position with extra emphasis on the beginning transition
+				transform.localScale = currentScale;
+				transform.localPosition = currentPosition;
+				yield return null;
+			}
 
-			m_RotationVisualsCoroutine = null;
+			transform.localScale = targetScale;
+			transform.localPosition = targetPosition;
+		}
+
+		public void AddSubmenu(Transform submenu)
+		{
+			submenu.SetParent(transform.parent);
+
+			submenu.localPosition = Vector3.zero;
+			submenu.localScale = Vector3.one;
+			submenu.localRotation = Quaternion.identity;
+			m_Submenus.Push(submenu.gameObject);
+			visible = false;
+		}
+
+		public void RemoveSubmenu()
+		{
+			var target = m_Submenus.Pop();
+			target.SetActive(false);
+			ObjectUtils.Destroy(target, .1f);
+
+			if (m_Submenus.Count > 1)
+				m_Submenus.Last().SetActive(true);
+			else
+				visible = true;
+		}
+
+		public void ClearSubmenus()
+		{
+			foreach (var submenu in m_Submenus)
+			{
+				ObjectUtils.Destroy(submenu);
+			}
 		}
 	}
 }
+#endif

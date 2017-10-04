@@ -1,8 +1,9 @@
-﻿using UnityEngine.EventSystems;
+﻿#if UNITY_EDITOR
+using UnityEngine.EventSystems;
 
-namespace UnityEngine.Experimental.EditorVR.Modules
+namespace UnityEditor.Experimental.EditorVR.Modules
 {	
-	internal static class ExecuteRayEvents
+	static class ExecuteRayEvents
 	{
 		public static ExecuteEvents.EventFunction<IRayBeginDragHandler> beginDragHandler { get { return s_BeginDragHandler; } }
 		private static readonly ExecuteEvents.EventFunction<IRayBeginDragHandler> s_BeginDragHandler = Execute;
@@ -21,6 +22,9 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 
 		public static ExecuteEvents.EventFunction<IRayHoverHandler> rayHoverHandler { get { return s_RayHoverHandler; } }
 		private static readonly ExecuteEvents.EventFunction<IRayHoverHandler> s_RayHoverHandler = Execute;
+
+		public static ExecuteEvents.EventFunction<IRayClickHandler> rayClickHandler { get { return s_RayClickHandler; } }
+		private static readonly ExecuteEvents.EventFunction<IRayClickHandler> s_RayClickHandler = Execute;
 
 		private static void Execute(IRayBeginDragHandler handler, BaseEventData eventData)
 		{
@@ -51,5 +55,11 @@ namespace UnityEngine.Experimental.EditorVR.Modules
 		{
 			handler.OnRayHover(ExecuteEvents.ValidateEventData<RayEventData>(eventData));
 		}
+
+		private static void Execute(IRayClickHandler handler, BaseEventData eventData)
+		{
+			handler.OnRayClick(ExecuteEvents.ValidateEventData<RayEventData>(eventData));
+		}
 	}
 }
+#endif

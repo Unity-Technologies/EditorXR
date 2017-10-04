@@ -1,11 +1,12 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 
 namespace ListView
 {
-	public class ListViewItemNestedData<ChildType> : ListViewItemData
+	abstract class ListViewItemNestedData<TChild, TIndex> : ListViewItemData<TIndex>
 	{
-		public List<ChildType> children
+		public List<TChild> children
 		{
 			get { return m_Children; }
 			set
@@ -16,8 +17,9 @@ namespace ListView
 				m_Children = value;
 			}
 		}
-		protected List<ChildType> m_Children;
+		protected List<TChild> m_Children;
 
-		public event Action<ListViewItemNestedData<ChildType>, List<ChildType>> childrenChanging;
+		public event Action<ListViewItemNestedData<TChild, TIndex>, List<TChild>> childrenChanging;
 	}
 }
+#endif

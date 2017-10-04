@@ -1,194 +1,150 @@
-#if UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.UI;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
 		[SerializeField]
 		Camera m_EventCameraPrefab;
 
-		[SerializeField]
-		KeyboardMallet m_KeyboardMalletPrefab;
-
-		[SerializeField]
-		KeyboardUI m_NumericKeyboardPrefab;
-
-		[SerializeField]
-		KeyboardUI m_StandardKeyboardPrefab;
-
-		readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
-		KeyboardUI m_NumericKeyboard;
-		KeyboardUI m_StandardKeyboard;
-
-		readonly List<IManipulatorVisibility> m_ManipulatorVisibilities = new List<IManipulatorVisibility>();
-		readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
-
-		Camera m_EventCamera;
-
-		DragAndDropModule m_DragAndDropModule;
-
-		void CreateEventSystem()
+		class UI : Nested, IInterfaceConnector
 		{
-			// Create event system, input module, and event camera
-			U.Object.AddComponent<EventSystem>(gameObject);
+			const byte k_MinStencilRef = 2;
 
-			m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
-			m_InputModule.getPointerLength = GetPointerLength;
-
-			if (m_CustomPreviewCamera != null)
-				m_InputModule.layerMask |= m_CustomPreviewCamera.hmdOnlyLayerMask;
-
-			m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
-			m_EventCamera.enabled = false;
-			m_InputModule.eventCamera = m_EventCamera;
-
-			m_InputModule.rayEntered += m_DragAndDropModule.OnRayEntered;
-			m_InputModule.rayExited += m_DragAndDropModule.OnRayExited;
-			m_InputModule.dragStarted += m_DragAndDropModule.OnDragStarted;
-			m_InputModule.dragEnded += m_DragAndDropModule.OnDragEnded;
-
-			m_InputModule.preProcessRaycastSource = PreProcessRaycastSource;
-
-			ForEachRayOrigin((proxy, rayOriginPair, device, deviceData) =>
+			byte stencilRef
 			{
-				// Create ui action map input for device.
-				if (deviceData.uiInput == null)
+				get { return m_StencilRef; }
+				set
 				{
-					deviceData.uiInput = CreateActionMapInput(m_InputModule.actionMap, device);
-					deviceData.directSelectInput = CreateActionMapInput(m_DirectSelectActionMap, device);
-				}
+					m_StencilRef = (byte)Mathf.Clamp(value, k_MinStencilRef, byte.MaxValue);
 
-				// Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-				m_InputModule.AddRaycastSource(proxy, rayOriginPair.Key, deviceData.uiInput, rayOriginPair.Value, source =>
+					// Wrap
+					if (m_StencilRef == byte.MaxValue)
+						m_StencilRef = k_MinStencilRef;
+				}
+			}
+			byte m_StencilRef = k_MinStencilRef;
+
+			Camera m_EventCamera;
+
+			readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
+			readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
+
+			public UI()
+			{
+				IInstantiateUIMethods.instantiateUI = InstantiateUI;
+				IRequestStencilRefMethods.requestStencilRef = RequestStencilRef;
+				ISetManipulatorsVisibleMethods.setManipulatorsVisible = SetManipulatorsVisible;
+				IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
+			}
+
+			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			{
+				var manipulatorController = obj as IManipulatorController;
+				if (manipulatorController != null)
+					m_ManipulatorControllers.Add(manipulatorController);
+
+				var usesStencilRef = obj as IUsesStencilRef;
+				if (usesStencilRef != null)
 				{
-					foreach (var miniWorld in m_MiniWorlds)
+					byte? stencilRef = null;
+
+					var mb = obj as MonoBehaviour;
+					if (mb)
 					{
-						var targetObject = source.hoveredObject ? source.hoveredObject : source.draggedObject;
-						if (miniWorld.Contains(source.rayOrigin.position))
+						var parent = mb.transform.parent;
+						if (parent)
 						{
-							if (targetObject && !targetObject.transform.IsChildOf(miniWorld.miniWorldTransform.parent))
-								return false;
+							// For workspaces and tools, it's likely that the stencil ref should be shared internally
+							var parentStencilRef = parent.GetComponentInParent<IUsesStencilRef>();
+							if (parentStencilRef != null)
+								stencilRef = parentStencilRef.stencilRef;
 						}
 					}
 
-					return true;
-				});
-			}, false);
-		}
-
-		KeyboardUI SpawnNumericKeyboard()
-		{
-			if (m_StandardKeyboard != null)
-				m_StandardKeyboard.gameObject.SetActive(false);
-
-			// Check if the prefab has already been instantiated
-			if (m_NumericKeyboard == null)
-				m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-
-			return m_NumericKeyboard;
-		}
-
-		KeyboardUI SpawnAlphaNumericKeyboard()
-		{
-			if (m_NumericKeyboard != null)
-				m_NumericKeyboard.gameObject.SetActive(false);
-
-			// Check if the prefab has already been instantiated
-			if (m_StandardKeyboard == null)
-				m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-
-			return m_StandardKeyboard;
-		}
-
-		void UpdateKeyboardMallets()
-		{
-			foreach (var proxy in m_Proxies)
-			{
-				proxy.hidden = !proxy.active;
-				if (proxy.active)
-				{
-					foreach (var rayOrigin in proxy.rayOrigins.Values)
-					{
-						var malletVisible = true;
-						var numericKeyboardNull = false;
-						var standardKeyboardNull = false;
-
-						if (m_NumericKeyboard != null)
-							malletVisible = m_NumericKeyboard.ShouldShowMallet(rayOrigin);
-						else
-							numericKeyboardNull = true;
-
-						if (m_StandardKeyboard != null)
-							malletVisible = malletVisible || m_StandardKeyboard.ShouldShowMallet(rayOrigin);
-						else
-							standardKeyboardNull = true;
-
-						if (numericKeyboardNull && standardKeyboardNull)
-							malletVisible = false;
-
-						var mallet = m_KeyboardMallets[rayOrigin];
-
-						if (mallet.visible != malletVisible)
-						{
-							mallet.visible = malletVisible;
-							var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-							if (dpr)
-							{
-								if (malletVisible)
-									dpr.Hide();
-								else
-									dpr.Show();
-							}
-						}
-
-						// TODO remove this after physics are in
-						mallet.CheckForKeyCollision();
-					}
+					usesStencilRef.stencilRef = stencilRef ?? RequestStencilRef();
 				}
 			}
-		}
 
-		GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true)
-		{
-			var go = U.Object.Instantiate(prefab);
-			go.transform.SetParent(parent ? parent : transform, worldPositionStays);
-			foreach (var canvas in go.GetComponentsInChildren<Canvas>())
-				canvas.worldCamera = m_EventCamera;
-
-			foreach (var inputField in go.GetComponentsInChildren<InputField>())
+			public void DisconnectInterface(object obj, Transform rayOrigin = null)
 			{
-				if (inputField is NumericInputField)
-					inputField.spawnKeyboard = SpawnNumericKeyboard;
-				else if (inputField is StandardInputField)
-					inputField.spawnKeyboard = SpawnAlphaNumericKeyboard;
+				var manipulatorController = obj as IManipulatorController;
+				if (manipulatorController != null)
+					m_ManipulatorControllers.Remove(manipulatorController);
 			}
 
-			foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
-				ConnectInterfaces(mb);
+			internal void Initialize()
+			{
+				// Create event system, input module, and event camera
+				ObjectUtils.AddComponent<EventSystem>(evr.gameObject);
 
-			return go;
-		}
+				var inputModule = evr.AddModule<MultipleRayInputModule>();
 
-		void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
-		{
-			if (visible)
-				m_ManipulatorsHiddenRequests.Remove(setter);
-			else
-				m_ManipulatorsHiddenRequests.Add(setter);
-		}
+				var customPreviewCamera = evr.GetNestedModule<Viewer>().customPreviewCamera;
+				if (customPreviewCamera != null)
+					inputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
 
-		void UpdateManipulatorVisibilites()
-		{
-			var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
-			foreach (var mv in m_ManipulatorVisibilities)
-				mv.manipulatorVisible = manipulatorsVisible;
+				m_EventCamera = ObjectUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
+				m_EventCamera.enabled = false;
+				inputModule.eventCamera = m_EventCamera;
+
+				inputModule.preProcessRaycastSource = evr.GetNestedModule<Rays>().PreProcessRaycastSource;
+			}
+
+			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform connectInterfacesOverride = null)
+			{
+				var go = ObjectUtils.Instantiate(prefab, parent ? parent : evr.transform, worldPositionStays);
+				foreach (var canvas in go.GetComponentsInChildren<Canvas>())
+					canvas.worldCamera = m_EventCamera;
+
+				var keyboardModule = evr.GetModule<KeyboardModule>();
+				foreach (var inputField in go.GetComponentsInChildren<InputField>())
+				{
+					if (inputField is NumericInputField)
+						inputField.spawnKeyboard = keyboardModule.SpawnNumericKeyboard;
+					else if (inputField is StandardInputField)
+						inputField.spawnKeyboard = keyboardModule.SpawnAlphaNumericKeyboard;
+				}
+
+				foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
+					evr.m_Interfaces.ConnectInterfaces(mb, connectInterfacesOverride);
+
+				return go;
+			}
+
+			void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
+			{
+				if (visible)
+					m_ManipulatorsHiddenRequests.Remove(setter);
+				else
+					m_ManipulatorsHiddenRequests.Add(setter);
+			}
+
+			bool GetManipulatorDragState()
+			{
+				return m_ManipulatorControllers.Any(controller => controller.manipulatorDragging);
+			}
+
+			internal void UpdateManipulatorVisibilites()
+			{
+				var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
+				foreach (var controller in m_ManipulatorControllers)
+				{
+					controller.manipulatorVisible = manipulatorsVisible;
+				}
+			}
+
+			byte RequestStencilRef()
+			{
+				return stencilRef++;
+			}
 		}
 	}
 }

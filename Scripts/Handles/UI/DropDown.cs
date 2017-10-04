@@ -1,15 +1,16 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Utilities;
 
-namespace UnityEngine.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public class DropDown : MonoBehaviour
+	sealed class DropDown : MonoBehaviour
 	{
 		Coroutine m_ShowDropdownCoroutine;
 		Coroutine m_HideDropdownCoroutine;
@@ -142,7 +143,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 				// Clear existing options
 				var children = listTransform.Cast<Transform>().ToList(); // Copy list, since destroying children changes count
 				foreach (var child in children)
-					U.Object.Destroy(child.gameObject);
+					ObjectUtils.Destroy(child.gameObject);
 
 				m_Toggles = new Toggle[m_Options.Length];
 
@@ -265,8 +266,8 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, m_VisibleBackgroundMeshLocalYScale, m_BackgroundMeshTransform.localScale.z);
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(m_HiddenDropdownItemYSpacing, m_VisibleDropdownItemYSpacing, transitionAmount));
 				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
 				m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
@@ -292,8 +293,8 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, 0f, m_BackgroundMeshTransform.localScale.z);
 			while (currentDuration < kTargetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				transitionAmount = U.Math.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
 				m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(currentSpacing, m_HiddenDropdownItemYSpacing, transitionAmount));
 				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
 				m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
@@ -306,3 +307,4 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		}
 	}
 }
+#endif

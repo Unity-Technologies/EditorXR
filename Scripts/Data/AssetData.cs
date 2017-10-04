@@ -1,57 +1,58 @@
-﻿using ListView;
-using UnityEditor;
+﻿#if UNITY_EDITOR
+using ListView;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-public class AssetData : ListViewItemData
+namespace UnityEditor.Experimental.EditorVR.Data
 {
-	const string kTemplateName = "AssetGridItem";
-
-	public string name { get; private set; }
-	public string guid { get; private set; }
-
-	public string type { get; private set; }
-
-	public GameObject preview { get; set; }
-
-	public Object asset
+	sealed class AssetData : ListViewItemData<string>
 	{
-		get
-		{
-			return m_Asset;
-		}
-		set
-		{
-			m_Asset = value;
-			if (m_Asset)
-				UpdateType(); // We lazy load assets and don't know the final type until the asset is loaded
-		}
-	}
-	Object m_Asset;
+		const string k_TemplateName = "AssetGridItem";
 
-	public AssetData(string name, string guid, string type)
-	{
-		template = kTemplateName;
-		this.name = name;
-		this.guid = guid;
-		this.type = type;
-	}
+		public string name { get; private set; }
+		
+		public string type { get; private set; }
 
-	void UpdateType()
-	{
-		if (type == "GameObject")
+		public GameObject preview { get; set; }
+
+		public Object asset
 		{
-#if UNITY_EDITOR
-			switch (PrefabUtility.GetPrefabType(asset))
+			get { return m_Asset; }
+			set
 			{
-				case PrefabType.ModelPrefab:
-					type = "Model";
-					break;
-				default:
-					type = "Prefab";
-					break;
+				m_Asset = value;
+				if (m_Asset)
+					UpdateType(); // We lazy load assets and don't know the final type until the asset is loaded
 			}
+		}
+
+		Object m_Asset;
+
+		public AssetData(string name, string guid, string type)
+		{
+			template = k_TemplateName;
+			index = guid;
+			this.name = name;
+			this.type = type;
+		}
+
+		void UpdateType()
+		{
+			if (type == "GameObject")
+			{
+#if UNITY_EDITOR
+				switch (PrefabUtility.GetPrefabType(asset))
+				{
+					case PrefabType.ModelPrefab:
+						type = "Model";
+						break;
+					default:
+						type = "Prefab";
+						break;
+				}
 #endif
+			}
 		}
 	}
 }
+#endif

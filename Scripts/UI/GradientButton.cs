@@ -1,22 +1,25 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
-using UnityEngine.UI;
+using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Experimental.EditorVR.Extensions;
-using UnityEngine.Experimental.EditorVR.Helpers;
-using UnityEngine.Experimental.EditorVR.Modules;
-using UnityEngine.Experimental.EditorVR.Utilities;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
 
-namespace UnityEngine.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.UI
 {
-	public class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+	sealed class GradientButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 	{
-		const float kIconHighlightedLocalZOffset = -0.0015f;
-		const string kMaterialAlphaProperty = "_Alpha";
-		const string kMaterialColorTopProperty = "_ColorTop";
-		const string kMaterialColorBottomProperty = "_ColorBottom";
+		const string k_MaterialAlphaProperty = "_Alpha";
+		const string k_MaterialColorTopProperty = "_ColorTop";
+		const string k_MaterialColorBottomProperty = "_ColorBottom";
 
-		public event Action onClick;
+		public event Action click;
+		public event Action hoverEnter;
+		public event Action hoverExit;
 
 		public Sprite iconSprite
 		{
@@ -33,9 +36,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			get { return m_Pressed; }
 			set
 			{
-				if (!m_Highlighted)
-					value = false;
-				else if (value != m_Pressed && value) // proceed only if value is true after previously being false
+				if (value != m_Pressed && value) // proceed only if value is true after previously being false
 				{
 					m_Pressed = value;
 
@@ -49,25 +50,27 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 		public bool highlighted
 		{
+			get { return m_Highlighted; }
 			set
 			{
 				if (m_Highlighted == value)
 					return;
+
+				// Stop any existing icon highlight coroutines
+				this.StopCoroutine(ref m_IconHighlightCoroutine);
+
+				m_Highlighted = value;
+
+				// Stop any existing begin/end highlight coroutine
+				this.StopCoroutine(ref m_HighlightCoroutine);
+
+				if (!gameObject.activeInHierarchy)
+					return;
+
+				if (m_Highlighted)
+					this.RestartCoroutine(ref m_HighlightCoroutine, BeginHighlight());
 				else
-				{
-					// Stop any existing icon highlight coroutines
-					this.StopCoroutine(ref m_IconHighlightCoroutine);
-
-					m_Highlighted = value;
-
-					// Stop any existing begin/end highlight coroutine
-					this.StopCoroutine(ref m_HighlightCoroutine);
-
-					if (!gameObject.activeInHierarchy)
-						return;
-
-					m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
-				}
+					this.RestartCoroutine(ref m_HighlightCoroutine, EndHighlight());
 			}
 		}
 		bool m_Highlighted;
@@ -95,23 +98,38 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 				m_Visible = value;
 
+				if (m_Visible && !gameObject.activeSelf)
+					gameObject.SetActive(true);
+
 				this.StopCoroutine(ref m_VisibilityCoroutine);
 				m_VisibilityCoroutine = value ? StartCoroutine(AnimateShow()) : StartCoroutine(AnimateHide());
 			}
 		}
 		bool m_Visible;
 
+		public float containerContentsAnimationSpeedMultiplier { set { m_ContainerContentsAnimationSpeedMultiplier = value; }}
+
+		public float iconHighlightedLocalZOffset
+		{
+			set
+			{
+				m_IconHighlightedLocalZOffset = value;
+				m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
+			}
+		}
+
 		public GradientPair normalGradientPair { get { return m_NormalGradientPair; } set { m_NormalGradientPair = value; } }
 		[SerializeField]
 		GradientPair m_NormalGradientPair;
 
 		public GradientPair highlightGradientPair { get { return m_HighlightGradientPair; } set { m_HighlightGradientPair = value; } }
+
 		[SerializeField]
 		GradientPair m_HighlightGradientPair;
-		
+
 		// The inner-button's background gradient MeshRenderer
 		[SerializeField]
-		MeshRenderer m_ButtonMeshRenderer;
+		Renderer m_ButtonMeshRenderer;
 
 		// Transform-root of the contents in the icon container (icons, text, etc)
 		[SerializeField]
@@ -138,13 +156,28 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		[SerializeField]
 		Color m_NormalContentColor;
 
-		// The color that elements in the HighlighItems collection should inherit during the highlighted state
+		[SerializeField]
+		Color m_DisabledColor = Color.gray;
+
+		// The color that elements in the HighlightItems collection should inherit during the highlighted state
 		[SerializeField]
 		Color m_HighlightItemColor = UnityBrandColorScheme.light;
 
 		// Collection of items that will change appearance during the highlighted state (color/position/etc)
 		[SerializeField]
 		Graphic[] m_HighlightItems;
+
+		[SerializeField]
+		bool m_Interactable;
+
+		[SerializeField]
+		float m_IconHighlightedLocalZOffset = -0.0015f;
+
+		[SerializeField]
+		float m_BeginHighlightDuration = 0.25f;
+
+		[SerializeField]
+		float m_EndHighlightDuration = 0.167f;
 
 		[Header("Animated Reveal Settings")]
 		[Tooltip("Default value is 0.25")]
@@ -154,11 +187,15 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		float m_DelayBeforeReveal = 0.25f;
 
 		[SerializeField]
-		float m_highlightZScaleMultiplier = 2f;
+		float m_HighlightZScaleMultiplier = 2f;
+
+		[SerializeField]
+		float m_ContainerContentsAnimationSpeedMultiplier = 1f;
 
 		Material m_ButtonMaterial;
 		Vector3 m_OriginalIconLocalPosition;
 		Vector3 m_OriginalContentContainerLocalScale;
+		Vector3 m_HighlightContentContainerLocalScale;
 		Vector3 m_IconHighlightedLocalPosition;
 		Vector3 m_IconPressedLocalPosition;
 		Sprite m_OriginalIconSprite;
@@ -167,20 +204,35 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		// The initial button reveal coroutines, before highlighting occurs
 		Coroutine m_VisibilityCoroutine;
 		Coroutine m_ContentVisibilityCoroutine;
+		Coroutine m_HighlighCoroutine;
 
 		// The visibility & highlight coroutines
 		Coroutine m_HighlightCoroutine;
 		Coroutine m_IconHighlightCoroutine;
 
+		public bool interactable
+		{
+			get { return m_Interactable; }
+			set
+			{
+				if (m_Interactable == value)
+					return;
+
+				m_Interactable = value;
+				m_Icon.color = m_Interactable ? m_NormalContentColor : m_DisabledColor;
+			}
+		}
+
 		void Awake()
 		{
 			m_OriginalIconSprite = m_Icon.sprite;
-			m_ButtonMaterial = U.Material.GetMaterialClone(m_ButtonMeshRenderer);
+			m_ButtonMaterial = MaterialUtils.GetMaterialClone(m_ButtonMeshRenderer);
 			m_OriginalLocalScale = transform.localScale;
 			m_OriginalIconLocalPosition = m_IconContainer.localPosition;
 			m_OriginalContentContainerLocalScale = m_ContentContainer.localScale;
-			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * kIconHighlightedLocalZOffset;
-			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * kIconHighlightedLocalZOffset;
+			m_HighlightContentContainerLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_HighlightZScaleMultiplier);
+			m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
+			m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * m_IconHighlightedLocalZOffset;
 
 			m_Icon.color = m_NormalContentColor;
 			m_Text.color = m_NormalContentColor;
@@ -214,7 +266,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		IEnumerator AnimateShow()
 		{
 			m_CanvasGroup.interactable = false;
-			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
+			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 			m_ContentContainer.localScale = m_OriginalContentContainerLocalScale;
 			SetMaterialColors(normalGradientPair);
 
@@ -230,23 +282,23 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			var visibleLocalScale = m_OriginalLocalScale;
 			while (currentDuration < totalDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				transform.localScale = scale;
-				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.y);
+				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.y);
 
 				// Perform initial delay
 				while (delay < m_DelayBeforeReveal)
 				{
-					delay += Time.unscaledDeltaTime;
+					delay += Time.deltaTime;
 					yield return null;
 				}
 
 				// Perform the button depth reveal
-				scale = U.Math.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				scale = MathUtilsExt.SmoothDamp(scale, visibleLocalScale, ref smoothVelocity, kScaleRevealDuration, Mathf.Infinity, Time.deltaTime);
 				yield return null;
 			}
 
-			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 1f);
+			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 1f);
 			transform.localScale = m_OriginalLocalScale;
 			m_VisibilityCoroutine = null;
 		}
@@ -256,9 +308,8 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		/// </summary>
 		IEnumerator AnimateHide()
 		{
-			Debug.LogError("Animate hide");
 			m_CanvasGroup.interactable = false;
-			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
+			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 
 			const float kTotalDuration = 0.25f;
 			var scale = transform.localScale;
@@ -267,15 +318,15 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			var currentDuration = 0f;
 			while (currentDuration < kTotalDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
-				scale = U.Math.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				currentDuration += Time.deltaTime;
+				scale = MathUtilsExt.SmoothDamp(scale, hiddenLocalScale, ref smoothVelocity, kTotalDuration, Mathf.Infinity, Time.deltaTime);
 				transform.localScale = scale;
-				m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, scale.z);
+				m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, scale.z);
 
 				yield return null;
 			}
 
-			m_ButtonMaterial.SetFloat(kMaterialAlphaProperty, 0f);
+			m_ButtonMaterial.SetFloat(k_MaterialAlphaProperty, 0f);
 			transform.localScale = hiddenLocalScale;
 			m_VisibilityCoroutine = null;
 			gameObject.SetActive(false);
@@ -299,16 +350,16 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			var targetDuration = targetDelay + kRevealDuration;
 			while (currentDuration < targetDuration)
 			{
-				currentDuration += Time.unscaledDeltaTime;
+				currentDuration += Time.deltaTime;
 				m_CanvasGroup.alpha = alpha;
 
 				while (delay < targetDelay)
 				{
-					delay += Time.unscaledDeltaTime;
+					delay += Time.deltaTime;
 					yield return null;
 				}
 
-				alpha = U.Math.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, targetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+				alpha = MathUtilsExt.SmoothDamp(alpha, kTargetAlpha, ref opacitySmoothVelocity, targetDuration, Mathf.Infinity, Time.deltaTime);
 				yield return null;
 			}
 
@@ -324,19 +375,16 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight());
 
-			const float kTargetTransitionAmount = 1f;
-			var transitionAmount = Time.unscaledDeltaTime;
-			var shapedTransitionAmount = 0f;
+			var transitionAmount = Time.deltaTime;
 			var currentGradientPair = GetMaterialColors();
 			var targetGradientPair = highlightGradientPair;
 			var currentLocalScale = m_ContentContainer.localScale;
-			var highlightedLocalScale = new Vector3(m_OriginalContentContainerLocalScale.x, m_OriginalContentContainerLocalScale.y, m_OriginalContentContainerLocalScale.z * m_highlightZScaleMultiplier);
-			while (transitionAmount < kTargetTransitionAmount)
+			var highlightedLocalScale = m_HighlightContentContainerLocalScale;
+			var highlightDuration = m_BeginHighlightDuration;
+			while (transitionAmount < highlightDuration) // Skip while look if user has set the m_BeginHighlightDuration to a value at or below zero
 			{
-				transitionAmount += Time.unscaledDeltaTime * 3;
-				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
+				var shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime / highlightDuration);
 				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, highlightedLocalScale, shapedTransitionAmount);
-
 				currentGradientPair = GradientPair.Lerp(currentGradientPair, targetGradientPair, shapedTransitionAmount);
 				SetMaterialColors(currentGradientPair);
 				yield return null;
@@ -355,21 +403,17 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			this.StopCoroutine(ref m_IconHighlightCoroutine);
 			m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsEndHighlight());
 
-			const float kTargetTransitionAmount = 1f;
-			var transitionAmount = Time.unscaledDeltaTime;
-			var shapedTransitionAmount = 0f;
-			var currentGradientPair = GetMaterialColors();
+			var transitionAmount = Time.deltaTime;
+			var originalGradientPair = GetMaterialColors();
 			var targetGradientPair = normalGradientPair;
 			var currentLocalScale = m_ContentContainer.localScale;
 			var targetScale = m_OriginalContentContainerLocalScale;
-			while (transitionAmount < kTargetTransitionAmount)
+			var highlightDuration = m_EndHighlightDuration > 0f ? m_EndHighlightDuration : 0.01f;  // Add sane default if highlight duration is zero
+			while (transitionAmount < highlightDuration)
 			{
-				transitionAmount += Time.unscaledDeltaTime * 3;
-				shapedTransitionAmount = Mathf.Pow(transitionAmount, 2);
-				currentGradientPair = GradientPair.Lerp(currentGradientPair, targetGradientPair, shapedTransitionAmount);
-
-				SetMaterialColors(normalGradientPair);
-
+				var shapedTransitionAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime / highlightDuration);
+				var transitioningGradientPair = GradientPair.Lerp(originalGradientPair, targetGradientPair, shapedTransitionAmount);
+				SetMaterialColors(transitioningGradientPair);
 				m_ContentContainer.localScale = Vector3.Lerp(currentLocalScale, targetScale, shapedTransitionAmount);
 				yield return null;
 			}
@@ -387,15 +431,15 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		{
 			var currentPosition = m_IconContainer.localPosition;
 			var targetPosition = pressed == false ? m_IconHighlightedLocalPosition : m_IconPressedLocalPosition; // forward for highlight, backward for press
-			var transitionAmount = Time.unscaledDeltaTime;
+			var transitionAmount = Time.deltaTime;
 			var transitionAddMultiplier = !pressed ? 2 : 5; // Faster transition in for highlight; slower for pressed highlight
 			while (transitionAmount < 1)
 			{
-				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier;
+				transitionAmount += Time.unscaledDeltaTime * transitionAddMultiplier * m_ContainerContentsAnimationSpeedMultiplier;
 
 				foreach (var graphic in m_HighlightItems)
 				{
-					if (graphic)
+					if (graphic && m_Interactable)
 						graphic.color = Color.Lerp(m_NormalContentColor, m_HighlightItemColor, transitionAmount);
 				}
 
@@ -405,7 +449,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 			foreach (var graphic in m_HighlightItems)
 			{
-				if (graphic)
+				if (graphic && m_Interactable)
 					graphic.color = m_HighlightItemColor;
 			}
 
@@ -423,11 +467,11 @@ namespace UnityEngine.Experimental.EditorVR.UI
 			const float kTransitionSubtractMultiplier = 5f;
 			while (transitionAmount > 0)
 			{
-				transitionAmount -= Time.unscaledDeltaTime * kTransitionSubtractMultiplier;
+				transitionAmount -= Time.deltaTime * kTransitionSubtractMultiplier;
 
 				foreach (var graphic in m_HighlightItems)
 				{
-					if (graphic != null)
+					if (graphic && m_Interactable)
 						graphic.color = Color.Lerp(m_NormalContentColor, m_HighlightItemColor, transitionAmount);
 				}
 
@@ -437,7 +481,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 
 			foreach (var graphic in m_HighlightItems)
 			{
-				if (graphic != null)
+				if (graphic && m_Interactable)
 					graphic.color = m_NormalContentColor;
 			}
 
@@ -452,6 +496,9 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		{
 			highlighted = true;
 
+			if (hoverEnter != null)
+				hoverEnter();
+
 			eventData.Use();
 		}
 
@@ -462,6 +509,9 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		{
 			highlighted = false;
 
+			if (hoverExit != null)
+				hoverExit();
+
 			eventData.Use();
 		}
 
@@ -471,7 +521,9 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		public void OnPointerClick(PointerEventData eventData)
 		{
 			SwapIconSprite();
-			onClick();
+
+			if (click != null)
+				click();
 		}
 
 		/// <summary>
@@ -491,7 +543,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		public void SetContent(string displayedText)
 		{
 			m_AlternateIconSprite = null;
-			m_IconSprite = null;
+			iconSprite = null;
 			m_Icon.enabled = false;
 			m_Text.text = displayedText.Substring(0, 2);
 		}
@@ -504,7 +556,7 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		public void SetContent(Sprite icon, Sprite alternateIcon = null)
 		{
 			m_Icon.enabled = true;
-			m_IconSprite = icon;
+			iconSprite = icon;
 			m_AlternateIconSprite = alternateIcon;
 			m_Text.text = string.Empty;
 		}
@@ -512,8 +564,8 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		GradientPair GetMaterialColors()
 		{
 			GradientPair gradientPair;
-			gradientPair.a = m_ButtonMaterial.GetColor(kMaterialColorTopProperty);
-			gradientPair.b = m_ButtonMaterial.GetColor(kMaterialColorBottomProperty);
+			gradientPair.a = m_ButtonMaterial.GetColor(k_MaterialColorTopProperty);
+			gradientPair.b = m_ButtonMaterial.GetColor(k_MaterialColorBottomProperty);
 			return gradientPair;
 		}
 
@@ -521,10 +573,16 @@ namespace UnityEngine.Experimental.EditorVR.UI
 		/// Set this button's gradient colors
 		/// </summary>
 		/// <param name="gradientPair">The gradient pair to set on this button's material</param>
-		public void SetMaterialColors(GradientPair gradientPair)
+		void SetMaterialColors(GradientPair gradientPair)
 		{
-			m_ButtonMaterial.SetColor(kMaterialColorTopProperty, gradientPair.a);
-			m_ButtonMaterial.SetColor(kMaterialColorBottomProperty, gradientPair.b);
+			m_ButtonMaterial.SetColor(k_MaterialColorTopProperty, gradientPair.a);
+			m_ButtonMaterial.SetColor(k_MaterialColorBottomProperty, gradientPair.b);
+		}
+
+		public void UpdateMaterialColors()
+		{
+			SetMaterialColors(m_Highlighted ? highlightGradientPair : normalGradientPair);
 		}
 	}
 }
+#endif

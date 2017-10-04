@@ -3,12 +3,13 @@
 	Properties
 	{
 		_StencilRef("StencilRef", Int) = 3
+		_ClipExtents("Clip Extents", Vector) = (1,1,1,0)
 	}
 
 	SubShader
 	{
-		Tags { "Queue"="Overlay+5100" "LightMode" = "Always" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
-		ZWrite Off
+		Tags { "Queue"="Overlay+5105" "LightMode" = "Always" "IgnoreProjector"="True" "ForceNoShadowCasting"="True" }
+		ZWrite On
 		ZTest LEqual
 		ColorMask 0
 
@@ -37,7 +38,7 @@
 			v2f vert(appdata_full v)
 			{
 				v2f output;
-				output.position = mul(UNITY_MATRIX_MVP, v.vertex);
+				output.position = UnityObjectToClipPos(v.vertex);
 				output.localPosition = mul(_ParentMatrix, mul(UNITY_MATRIX_M, v.vertex));
 				return output;
 			}

@@ -1,6 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Helpers
+namespace UnityEditor.Experimental.EditorVR.Helpers
 {
 	/// <summary>
 	/// Gradient pair container class
@@ -40,3 +42,4 @@ namespace UnityEngine.Experimental.EditorVR.Helpers
 		}
 	}
 }
+#endif

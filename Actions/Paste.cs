@@ -1,62 +1,42 @@
-﻿using System;
-using UnityEditor;
-using UnityEngine.Experimental.EditorVR.Utilities;
+﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
-namespace UnityEngine.Experimental.EditorVR.Actions
+namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Paste", ActionMenuItemAttribute.kDefaultActionSectionName, 6)]
-	public class Paste : BaseAction, IUsesSpatialHash
+	[ActionMenuItem("Paste", ActionMenuItemAttribute.DefaultActionSectionName, 6)]
+	sealed class Paste : BaseAction, IUsesSpatialHash, IUsesViewerScale
 	{
-		public static GameObject[] buffer
-		{
-			get
-			{
-				return m_Buffer;
-			}
-			set
-			{
-				m_Buffer = value;
+		static float s_BufferDistance;
 
-				if (value != null)
-				{
-					var bounds = U.Object.GetBounds(value);
-					
-					m_BufferDistance = bounds.size == Vector3.zero ? (bounds.center - U.Camera.GetMainCamera().transform.position).magnitude : 0f;
-				}
+		public static void SetBufferDistance(Transform[] transforms)
+		{
+			if (transforms != null)
+			{
+				var bounds = ObjectUtils.GetBounds(transforms);
+
+				s_BufferDistance = bounds.size != Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 1f;
+				s_BufferDistance /= IUsesViewerScaleMethods.getViewerScale(); // Normalize this value in case viewer scale changes before paste happens
 			}
 		}
-		static GameObject[] m_Buffer;
-
-		static float m_BufferDistance;
-
-		public Action<GameObject> addToSpatialHash { get; set; }
-		public Action<GameObject> removeFromSpatialHash { get; set; }
 
 		public override void ExecuteAction()
 		{
-			//return EditorApplication.ExecuteActionMenuItem("Edit/Paste");
-
-			if (buffer != null)
+			Unsupported.PasteGameObjectsFromPasteboard();
+			var transforms = Selection.transforms;
+			var bounds = ObjectUtils.GetBounds(transforms);
+			foreach (var transform in transforms)
 			{
-				var pastedGameObjects = new GameObject[buffer.Length];
-				var index = 0;
-				var bounds = U.Object.GetBounds(buffer);
-				foreach (var go in buffer)
-				{
-					var pasted = Instantiate(go);
-					var pastedTransform = pasted.transform;
-					pasted.hideFlags = HideFlags.None;
-					var cameraTransform = U.Camera.GetMainCamera().transform;
-					pastedTransform.position = cameraTransform.TransformPoint(Vector3.forward * m_BufferDistance)
-						+ pastedTransform.position - bounds.center;
-					pasted.SetActive(true);
-					addToSpatialHash(pasted);
-					pastedGameObjects[index++] = pasted;
-				}
-
-				if (pastedGameObjects.Length > 0)
-				    Selection.objects = pastedGameObjects;
+				var pasted = transform.gameObject;
+				var pastedTransform = pasted.transform;
+				pasted.hideFlags = HideFlags.None;
+				var cameraTransform = CameraUtils.GetMainCamera().transform;
+				pastedTransform.position = cameraTransform.TransformPoint(Vector3.forward * s_BufferDistance)
+					+ pastedTransform.position - bounds.center;
+				pasted.SetActive(true);
+				this.AddToSpatialHash(pasted);
 			}
 		}
 	}
 }
+#endif
