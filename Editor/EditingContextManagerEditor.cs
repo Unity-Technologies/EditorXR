@@ -1,5 +1,4 @@
-﻿#if UNITY_2017_2_OR_NEWER
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -49,4 +48,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		}
 	}
 }
-#endif

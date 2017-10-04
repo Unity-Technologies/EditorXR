@@ -239,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 			{
 				UnityObject.Destroy(o, t);
 			}
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR
 			else
 			{
 				if (Mathf.Approximately(t, 0f))

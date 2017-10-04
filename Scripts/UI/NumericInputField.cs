@@ -247,7 +247,11 @@ namespace UnityEditor.Experimental.EditorVR.UI
 				m_Text = m_Text.Replace(',', '.');
 
 				if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
+				{
+#if UNITY_2017_2_OR_NEWER
 					floatVal = ExpressionEvaluator.Evaluate<float>(m_Text);
+#endif
+				}
 
 				if (float.IsNaN(floatVal))
 					floatVal = 0;
@@ -258,7 +262,11 @@ namespace UnityEditor.Experimental.EditorVR.UI
 			{
 				int intVal;
 				if (!int.TryParse(m_Text, out intVal))
+				{
+#if UNITY_2017_2_OR_NEWER
 					m_Text = ExpressionEvaluator.Evaluate<int>(m_Text).ToString(k_IntFieldFormatString);
+#endif
+				}
 			}
 
 			m_OperandCount = 0;

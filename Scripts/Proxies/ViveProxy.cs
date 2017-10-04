@@ -4,7 +4,6 @@ using System.Collections;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
@@ -23,6 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public override void Awake()
 		{
+#if UNITY_2017_2_OR_NEWER
 			if (UnityEngine.XR.XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0)
 			{
 				m_LeftHandProxyPrefab = m_LeftHandTouchProxyPrefab;
@@ -34,6 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 #if !ENABLE_STEAMVR_INPUT
 			enabled = false;
+#endif
 #endif
 		}
 

@@ -313,7 +313,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (m_AnnotationPointer != null)
 		{
 			var brushSize = m_Preferences.brushSize;
-			if (UnityEngine.XR.XRSettings.loadedDeviceName == "OpenVR") // For vive controllers, use 1:1 touchpad setting.
+			if (proxyType == typeof(ViveProxy)) // For vive controllers, use 1:1 touchpad setting.
 			{
 				brushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, (value + 1) / 2f);
 			}
