@@ -6,7 +6,7 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.VR;
+using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -146,7 +146,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				viewerCamera.gameObject.hideFlags = defaultHideFlags;
 				m_OriginalNearClipPlane = viewerCamera.nearClipPlane;
 				m_OriginalFarClipPlane = viewerCamera.farClipPlane;
-				if (UnityEngine.XR.XRSettings.loadedDeviceName == "OpenVR")
+				if (XRSettings.loadedDeviceName == "OpenVR")
 				{
 					// Steam's reference position should be at the feet and not at the head as we do with Oculus
 					cameraRig.localPosition = Vector3.zero;
