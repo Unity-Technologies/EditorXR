@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,7 +120,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					view.Close();
 			}
 		}
-#endif
 
 		void OnEnable()
 		{
@@ -141,20 +140,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			// Force the window to repaint every tick, since we need live updating
 			// This also allows scripts with [ExecuteInEditMode] to run
-#if UNITY_2017_2_OR_NEWER
 			EditorApplication.update += EditorApplication.QueuePlayerLoopUpdate;
 
 			EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-#endif
 		}
 
 		void OnDisable()
 		{
-#if UNITY_2017_2_OR_NEWER
 			EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
 
 			EditorApplication.update -= EditorApplication.QueuePlayerLoopUpdate;
-#endif
 
 			VRView.afterOnGUI -= OnVRViewGUI;
 
@@ -170,6 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			
 			SaveUserSettings(m_Settings);
 		}
+#endif
 
 		void OnVRViewGUI(EditorWindow window)
 		{
