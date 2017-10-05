@@ -54,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
 			if (compositor != null)
 			{
 				var render = SteamVR_Render.instance;
+				render.transform.parent = gameObject.transform;
 				compositor.GetLastPoses(render.poses, render.gamePoses);
 				poses = render.poses;
 			}

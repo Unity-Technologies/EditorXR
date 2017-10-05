@@ -67,6 +67,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		[SerializeField]
 		ButtonObject[] m_Buttons;
 
+		[SerializeField]
+		Tooltip[] m_LeftTooltips;
+
+		[SerializeField]
+		Tooltip[] m_RightTooltips;
+
 		/// <summary>
 		/// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
 		/// </summary>
@@ -101,6 +107,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// Button objects to store transform and renderer references
 		/// </summary>
 		public ButtonObject[] buttons { get { return m_Buttons; } }
+
+		/// <summary>
+		/// Tooltip components to be removed from a right-handed controller
+		/// </summary>
+		public Tooltip[] leftTooltips { get { return m_LeftTooltips; } }
+
+		/// <summary>
+		/// Tooltip components to be removed from a left-handed controller
+		/// </summary>
+		public Tooltip[] rightTooltips { get { return m_RightTooltips; } }
 	}
 }
 #endif

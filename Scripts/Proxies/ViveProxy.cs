@@ -35,8 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #if ENABLE_STEAMVR_INPUT
 		public override IEnumerator Start()
 		{
-			SteamVR_Render.instance.transform.parent = gameObject.transform;
-
 			while (!active)
 				yield return null;
 
