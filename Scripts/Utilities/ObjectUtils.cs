@@ -286,9 +286,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 					foreach (var type in assembly.GetTypes())
 					{
 						if (type.Name.Equals(name) && typeof(UnityObject).IsAssignableFrom(type))
-						{
 							return type;
-						}
 					}
 				}
 				catch (ReflectionTypeLoadException) 
