@@ -21,8 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
 	{
-		const int k_RendererQueue = 9000;
-		const float k_FeedbackDuration = 5f;
+		const float k_FeedbackDuration = 500f;
 
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
@@ -37,14 +36,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		protected Transform m_LeftHand;
 		protected Transform m_RightHand;
-		readonly List<Material> m_Materials = new List<Material>();
 		readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
 
 		protected Dictionary<Node, Transform> m_RayOrigins;
 
 		bool m_Hidden;
-
-		List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
 		readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>>> m_Buttons =
 			new Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>>>();
@@ -82,6 +78,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public Dictionary<Transform, Transform> previewOrigins { get; set; }
 		public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
+		// Local method use only -- created here to reduce garbage collection
+		static readonly List<Tooltip> k_TooltipList = new List<Tooltip>();
+
 		public virtual void Awake()
 		{
 			m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
@@ -89,8 +88,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
 			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
-			m_ProxyMeshRoots.Add(leftProxyHelper.meshRoot);
-			m_ProxyMeshRoots.Add(rightProxyHelper.meshRoot);
+			foreach (var tooltip in leftProxyHelper.rightTooltips)
+			{
+				ObjectUtils.Destroy(tooltip);
+			}
+
+			foreach (var tooltip in rightProxyHelper.leftTooltips)
+			{
+				ObjectUtils.Destroy(tooltip);
+			}
 
 			var leftButtons = new Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>>();
 			foreach (var button in leftProxyHelper.buttons)
@@ -153,37 +159,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public virtual IEnumerator Start()
 		{
-			// In standalone play-mode usage, attempt to get the TrackedObjectInput 
+			// In standalone play-mode usage, attempt to get the TrackedObjectInput
 			if (trackedObjectInput == null && m_PlayerInput)
 				trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 
-			List<Renderer> renderers = new List<Renderer>();
-			while (renderers.Count == 0)
-			{
-				yield return null;
-				foreach (var meshRoot in m_ProxyMeshRoots)
-				{
-					// Only add models of the device and not anything else that is spawned underneath the hand (e.g. menu button, cone/ray)
-					renderers.AddRange(meshRoot.GetComponentsInChildren<Renderer>());
-				}
-			}
-
-			foreach (var r in renderers)
-			{
-				m_Materials.AddRange(MaterialUtils.CloneMaterials(r));
-			}
-
-			// Move controllers up into EVR range, so they render properly over our UI (e.g. manipulators)
-			foreach (var m in m_Materials)
-			{
-				m.renderQueue = k_RendererQueue;
-			}
+#pragma warning disable 162
+			if (false)
+				yield return null; //Unreachable yield to fix compiler error
+#pragma warning restore 162
 		}
 
 		public virtual void OnDestroy()
 		{
-			foreach (var m in m_Materials)
-				ObjectUtils.Destroy(m);
 		}
 
 		public virtual void Update()
@@ -235,12 +222,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 						if (button.transform)
 						{
-							var tooltip = button.transform.GetComponent<Tooltip>();
 							var tooltipText = request.tooltipText;
-							if (!string.IsNullOrEmpty(tooltipText) && tooltip)
+							if (!string.IsNullOrEmpty(tooltipText))
 							{
-								tooltip.tooltipText = tooltipText;
-								this.ShowTooltip(tooltip, true, k_FeedbackDuration);
+								k_TooltipList.Clear();
+								button.transform.GetComponents(k_TooltipList);
+								foreach (var tooltip in k_TooltipList)
+								{
+									tooltip.tooltipText = tooltipText;
+									this.ShowTooltip(tooltip, true, k_FeedbackDuration);
+								}
 							}
 						}
 					}
@@ -270,8 +261,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 						if (button.transform)
 						{
-							var tooltip = button.transform.GetComponent<Tooltip>();
-							if (tooltip)
+							k_TooltipList.Clear();
+							button.transform.GetComponents(k_TooltipList);
+							foreach (var tooltip in k_TooltipList)
 							{
 								tooltip.tooltipText = string.Empty;
 								this.HideTooltip(tooltip, true);

@@ -62,9 +62,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		Transform m_FieldGrabOrigin;
 
 		[SerializeField]
-		Transform m_MeshRoot;
-
-		[SerializeField]
 		ButtonObject[] m_Buttons;
 
 		[SerializeField]
@@ -97,11 +94,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// The transform that the display/preview objects will be parented under
 		/// </summary>
 		public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
-
-		/// <summary>
-		/// The root transform of the device/controller mesh-renderers/geometry
-		/// </summary>
-		public Transform meshRoot { get { return m_MeshRoot; } }
 
 		/// <summary>
 		/// Button objects to store transform and renderer references

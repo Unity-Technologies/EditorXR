@@ -46,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Color m_OriginalBackgroundColor;
 
 		// Local method use only -- created here to reduce garbage collection
-		readonly List<ITooltip> m_TooltipsToHide = new List<ITooltip>();
+		static readonly List<ITooltip> k_TooltipList = new List<ITooltip>();
 
 		void Awake()
 		{
@@ -69,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Update()
 		{
-			m_TooltipsToHide.Clear();
+			k_TooltipList.Clear();
 			foreach (var kvp in m_Tooltips)
 			{
 				var tooltip = kvp.Key;
@@ -107,17 +107,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				}
 
 				if (!IsValidTooltip(tooltip))
-					m_TooltipsToHide.Add(tooltip);
+					k_TooltipList.Add(tooltip);
 
 				if (tooltipData.persistent)
 				{
 					var duration = tooltipData.duration;
 					if (duration > 0 && Time.time - tooltipData.lastModifiedTime + k_Delay > duration)
-						m_TooltipsToHide.Add(tooltip);
+						k_TooltipList.Add(tooltip);
 				}
 			}
 
-			foreach (var tooltip in m_TooltipsToHide)
+			foreach (var tooltip in k_TooltipList)
 			{
 				HideTooltip(tooltip, true);
 			}
@@ -222,9 +222,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (gameObject == this.gameObject)
 				return;
 
-			var tooltip = gameObject.GetComponent<ITooltip>();
-			if (tooltip != null)
+			k_TooltipList.Clear();
+			gameObject.GetComponents(k_TooltipList);
+			foreach (var tooltip in k_TooltipList)
+			{
 				ShowTooltip(tooltip);
+			}
 		}
 
 		public void OnRayHovering(GameObject gameObject, RayEventData eventData)
@@ -232,18 +235,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (gameObject == this.gameObject)
 				return;
 
-			var tooltip = gameObject.GetComponent<ITooltip>();
-			if (tooltip != null)
+			k_TooltipList.Clear();
+			gameObject.GetComponents(k_TooltipList);
+			foreach (var tooltip in k_TooltipList)
+			{
 				ShowTooltip(tooltip);
+			}
 		}
 
 		public void OnRayExited(GameObject gameObject, RayEventData eventData)
 		{
 			if (gameObject && gameObject != this.gameObject)
 			{
-				var tooltip = gameObject.GetComponent<ITooltip>();
-				if (tooltip != null)
+				k_TooltipList.Clear();
+				gameObject.GetComponents(k_TooltipList);
+				foreach (var tooltip in k_TooltipList)
+				{
 					HideTooltip(tooltip);
+				}
 			}
 		}
 
