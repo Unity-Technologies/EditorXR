@@ -37,7 +37,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			const float k_CameraRigTransitionTime = 0.25f;
 
-            static Collider[] s_CachedColliders = new Collider[20];
+			// Local method use only -- created here to reduce garbage collection
+			const int k_MaxCollisionCheck = 32;
+			static Collider[] s_CachedColliders = new Collider[k_MaxCollisionCheck];
 
 			PlayerBody m_PlayerBody;
 			float m_OriginalNearClipPlane;
@@ -201,15 +203,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				var radius = DirectSelection.GetPointerLength(rayOrigin);
 
-			    var totalColliders = Physics.OverlapSphereNonAlloc(rayOrigin.position, radius, s_CachedColliders, -1, QueryTriggerInteraction.Collide);
-			    var colliderIndex = 0;
+				var totalColliders = Physics.OverlapSphereNonAlloc(rayOrigin.position, radius, s_CachedColliders, -1, QueryTriggerInteraction.Collide);
+				var colliderIndex = 0;
 
 				while (colliderIndex < totalColliders)
 				{
 					if (s_CachedColliders[colliderIndex] == trigger)
 						return true;
 
-				    colliderIndex++;
+					colliderIndex++;
 				}
 
 				return false;

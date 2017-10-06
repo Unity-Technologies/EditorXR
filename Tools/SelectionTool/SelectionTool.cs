@@ -20,6 +20,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
 		static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
 
+		// Local method use only -- created here to reduce garbage collection
+		static readonly Dictionary<Transform, GameObject> s_TempHovers = new Dictionary<Transform, GameObject>();
+
 		[SerializeField]
 		Sprite m_Icon;
 
@@ -38,8 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
 		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
-
-        Dictionary<Transform, GameObject> m_TempHovers = new Dictionary<Transform, GameObject>();
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
@@ -135,8 +136,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 
 				// Unset highlight old hovers
-				m_TempHovers.Clear();
-				foreach (var kvp in m_TempHovers)
+				s_TempHovers.Clear();
+				foreach (var kvp in s_TempHovers)
 				{
 					var directRayOrigin = kvp.Key;
 					var hover = kvp.Value;
@@ -148,7 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_HoverGameObjects.Remove(directRayOrigin);
 					}
 				}
-                m_TempHovers.Clear();
+				s_TempHovers.Clear();
 
 				// Find new hovers
 				foreach (var kvp in directSelection)

@@ -384,17 +384,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var rayOrigin = eventData.rayOrigin;
 
 				DeviceData deviceData = null;
-				var deviceDataList = evr.m_DeviceData;
-				var dataCounter = 0;
-				while (dataCounter < deviceDataList.Count)
+				foreach (var currentDevice in evr.m_DeviceData)
 				{
-					var currentDevice = deviceDataList[dataCounter];
 					if (currentDevice.rayOrigin == rayOrigin)
 					{
 						deviceData = currentDevice;
 						break;
 					}
-					dataCounter++;
 				}
 
 				if (deviceData != null)

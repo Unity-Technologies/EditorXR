@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 	/// Special utility class for getting components in the editor without allocations
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class ComponentUtils<T>
+	public static class ComponentUtils<T>
 	{
 		static List<T> s_RetrievalList = new List<T>();
 
