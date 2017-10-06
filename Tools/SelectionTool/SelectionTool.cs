@@ -34,9 +34,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Color m_NormalRayColor;
 		Color m_MultiselectRayColor;
 		bool m_MultiSelect;
+		bool m_HasDirectHover;
 
 		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
 		readonly List<ProxyFeedbackRequest> m_SelectFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_DirectSelectFeedback = new List<ProxyFeedbackRequest>();
 
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -71,8 +73,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			tooltipTarget.localRotation = k_TooltipRotation;
 
 			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
-
-			ShowSelectFeedback();
 		}
 
 		void OnDestroy()
@@ -116,12 +116,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				this.SetManipulatorsVisible(this, !m_MultiSelect);
 
-				var directSelection = this.GetDirectSelection();
-
 				m_SelectionHoverGameObjects.Clear();
 				foreach (var linkedObject in linkedObjects)
 				{
 					var selectionTool = (SelectionTool)linkedObject;
+					selectionTool.m_HasDirectHover = false; // Clear old hover state
 					var selectionRayOrigin = selectionTool.rayOrigin;
 
 					if (!selectionTool.IsRayActive())
@@ -142,6 +141,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_HoverGameObjects[selectionRayOrigin] = hover;
 					}
 				}
+
+				var directSelection = this.GetDirectSelection();
 
 				// Unset highlight old hovers
 				var hovers = new Dictionary<Transform, GameObject>(m_HoverGameObjects);
@@ -198,6 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						this.SetHighlight(lastHover, false, directRayOrigin);
 
 					m_HoverGameObjects[directRayOrigin] = directHoveredObject;
+					selectionTool.m_HasDirectHover = true;
 				}
 
 				// Set highlight on new hovers
@@ -207,13 +209,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
-			if (!this.IsRayVisible(rayOrigin))
-				HideSelectFeedback();
-			else if (m_SelectFeedback.Count == 0)
-				ShowSelectFeedback();
+			if (!m_HasDirectHover)
+				HideDirectSelectFeedback();
+			else if (m_DirectSelectFeedback.Count == 0)
+				ShowDirectSelectFeedback();
 
 			if (!IsRayActive())
+			{
+				HideSelectFeedback();
 				return;
+			}
 
 			// Need to call GetFirstGameObject a second time because we do not guarantee shared updater executes first
 			var hoveredObject = this.GetFirstGameObject(rayOrigin);
@@ -222,7 +227,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				hovered(hoveredObject, rayOrigin);
 
 			if (!GetSelectionCandidate(ref hoveredObject))
+			{
+				HideSelectFeedback();
 				return;
+			}
+
+			if (!hoveredObject)
+				HideSelectFeedback();
+			else if (m_SelectFeedback.Count == 0)
+				ShowSelectFeedback();
 
 			// Capture object on press
 			if (m_SelectionInput.select.wasJustPressed)
@@ -331,6 +344,28 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
+		void ShowDirectSelectFeedback()
+		{
+			foreach (var control in m_Controls)
+			{
+				if (control.Key != "Select")
+					continue;
+
+				foreach (var id in control.Value)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						node = node,
+						control = id,
+						tooltipText = "Direct Select"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_DirectSelectFeedback.Add(request);
+				}
+			}
+		}
+
 		void HideSelectFeedback()
 		{
 			foreach (var request in m_SelectFeedback)
@@ -338,6 +373,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				this.RemoveFeedbackRequest(request);
 			}
 			m_SelectFeedback.Clear();
+		}
+
+		void HideDirectSelectFeedback()
+		{
+			foreach (var request in m_DirectSelectFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+			m_DirectSelectFeedback.Clear();
 		}
 	}
 }

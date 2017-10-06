@@ -17,6 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public VRInputDevice.VRControl control;
 		public Node node;
 		public string tooltipText;
+		public bool hideExisting;
 	}
 
 	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
@@ -205,16 +206,21 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			foreach (var proxyNode in m_Buttons)
 			{
+				if (proxyNode.Key != changedRequest.node)
+					continue;
+
 				foreach (var kvp in proxyNode.Value)
 				{
+					if (kvp.Key != changedRequest.control)
+						continue;
+
 					ProxyFeedbackRequest request = null;
 					foreach (var req in m_FeedbackRequests)
 					{
-						var matchChanged = req.node == changedRequest.node && req.control == changedRequest.control;
-						var matchButton = req.node == proxyNode.Key && req.control == kvp.Key;
-						var sameCaller = req.caller == changedRequest.caller;
-						var priority = request == null || req.priority >= request.priority;
-						if (matchButton && priority && (matchChanged || sameCaller))
+						if (req.node != proxyNode.Key || req.control != kvp.Key)
+							continue;
+
+						if (request == null || req.priority >= request.priority)
 							request = req;
 					}
 
@@ -224,12 +230,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					foreach (var button in kvp.Value)
 					{
 						if (button.renderer)
-							this.SetHighlight(button.renderer.gameObject, true, duration: k_FeedbackDuration);
+							this.SetHighlight(button.renderer.gameObject, !request.hideExisting, duration: k_FeedbackDuration);
 
 						if (button.transform)
 						{
 							var tooltipText = request.tooltipText;
-							if (!string.IsNullOrEmpty(tooltipText))
+							if (!string.IsNullOrEmpty(tooltipText) || request.hideExisting)
 							{
 								k_TooltipList.Clear();
 								button.transform.GetComponents(k_TooltipList);
@@ -278,9 +284,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					}
 				}
 			}
-			m_FeedbackRequests.Remove(request);
 
-			ExecuteFeedback(request);
+			if (m_FeedbackRequests.Remove(request))
+				ExecuteFeedback(request);
 		}
 
 		public void ClearFeedbackRequests(IRequestFeedback caller)
