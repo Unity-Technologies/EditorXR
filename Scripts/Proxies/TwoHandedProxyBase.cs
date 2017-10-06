@@ -168,10 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(leftProxyHelper.gameObject), leftProxyHelper.rayOrigin);
 			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(rightProxyHelper.gameObject), rightProxyHelper.rayOrigin);
 
-#pragma warning disable 162
-			if (false)
-				yield return null; //Unreachable yield to fix compiler error
-#pragma warning restore 162
+			yield break;
 		}
 
 		public virtual void OnDestroy()
