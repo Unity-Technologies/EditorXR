@@ -199,6 +199,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		void ExecuteFeedback(ProxyFeedbackRequest changedRequest)
 		{
+			if (!active)
+				return;
+
 			foreach (var proxyNode in m_Buttons)
 			{
 				foreach (var kvp in proxyNode.Value)

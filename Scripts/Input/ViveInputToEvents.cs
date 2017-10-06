@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
 				isActive = true;
 
-				int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
+				int deviceIndex = hand == VRInputDevice.Handedness.Right ? 3 : 4; // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
 				SendButtonEvents(steamDeviceIndex, deviceIndex);
 				SendAxisEvents(steamDeviceIndex, deviceIndex);
 				SendTrackingEvents(steamDeviceIndex, deviceIndex, poses);

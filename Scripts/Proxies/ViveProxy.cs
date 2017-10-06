@@ -18,9 +18,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		[SerializeField]
 		GameObject m_RightHandTouchProxyPrefab;
 
+		bool m_IsOculus;
+
 		public override void Awake()
 		{
-			if (VRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0)
+			m_IsOculus = VRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
+
+			if (m_IsOculus)
 			{
 				m_LeftHandProxyPrefab = m_LeftHandTouchProxyPrefab;
 				m_RightHandProxyPrefab = m_RightHandTouchProxyPrefab;
@@ -68,8 +72,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			yield return base.Start();
 
-			m_LeftHand.GetComponent<ProxyAnimator>().postAnimate += PostAnimate;
-			m_RightHand.GetComponent<ProxyAnimator>().postAnimate += PostAnimate;
+			if (!m_IsOculus)
+			{
+				m_LeftHand.GetComponent<ProxyAnimator>().postAnimate += PostAnimate;
+				m_RightHand.GetComponent<ProxyAnimator>().postAnimate += PostAnimate;
+			}
 		}
 #endif
 	}
