@@ -19,9 +19,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public string tooltipText;
 	}
 
-	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
+	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
 	{
-		const float k_FeedbackDuration = 500f;
+		const float k_FeedbackDuration = 5f;
 
 		[SerializeField]
 		protected GameObject m_LeftHandProxyPrefab;
@@ -162,6 +162,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			// In standalone play-mode usage, attempt to get the TrackedObjectInput
 			if (trackedObjectInput == null && m_PlayerInput)
 				trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
+
+			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
+			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
+			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(leftProxyHelper.gameObject), leftProxyHelper.rayOrigin);
+			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(rightProxyHelper.gameObject), rightProxyHelper.rayOrigin);
 
 #pragma warning disable 162
 			if (false)

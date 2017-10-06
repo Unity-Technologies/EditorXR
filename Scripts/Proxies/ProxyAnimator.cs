@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
@@ -8,17 +9,33 @@ using UnityEngine.InputNew;
 [RequireComponent(typeof(ProxyHelper))]
 public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 {
-	class TransformInfo
+	public class TransformInfo
 	{
 		public Vector3 initialPosition;
 		public Vector3 initialRotation;
 		public Vector3 positionOffset;
 		public Vector3 rotationOffset;
 
-		public void Reset()
+		public void ResetOffsets()
 		{
 			positionOffset = Vector3.zero;
 			rotationOffset = Vector3.zero;
+		}
+
+		public void ResetPositionOffset()
+		{
+			positionOffset = Vector3.zero;
+		}
+
+		public void ResetRotationOffset()
+		{
+			rotationOffset = Vector3.zero;
+		}
+
+		public void Apply(Transform transform)
+		{
+			transform.localPosition = initialPosition + positionOffset;
+			transform.localRotation = Quaternion.Euler(initialRotation + rotationOffset);
 		}
 	}
 
@@ -32,6 +49,7 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 
 	public ActionMap actionMap { get { return m_ProxyActionMap; } }
 	public bool ignoreLocking { get { return true; } }
+	internal event Action<ProxyHelper.ButtonObject[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
 	void Start()
 	{
@@ -85,7 +103,7 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 
 		foreach (var kvp in m_TransformInfos)
 		{
-			kvp.Value.Reset();
+			kvp.Value.ResetOffsets();
 		}
 
 		for (var i = 0; i < length; i++)
@@ -127,10 +145,10 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 
 		foreach (var kvp in m_TransformInfos)
 		{
-			var buttonTransform = kvp.Key;
-			var info = kvp.Value;
-			buttonTransform.localPosition = info.initialPosition + info.positionOffset;
-			buttonTransform.localRotation = Quaternion.Euler(info.initialRotation + info.rotationOffset);
+			kvp.Value.Apply(kvp.Key);
 		}
+
+		if (postAnimate != null)
+			postAnimate(m_Buttons, m_TransformInfos, input);
 	}
 }

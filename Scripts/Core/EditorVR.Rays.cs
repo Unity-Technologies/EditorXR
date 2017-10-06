@@ -278,11 +278,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 
 						evr.GetNestedModule<Tools>().SpawnDefaultTools(proxy);
-
-						foreach (var helper in ((Component)proxy).GetComponentsInChildren<ProxyHelper>(true))
-						{
-							this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(helper.gameObject), helper.rayOrigin);
-						}
 					}
 				}
 			}
