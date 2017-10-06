@@ -67,9 +67,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #if ENABLE_STEAMVR_INPUT
 		public override IEnumerator Start()
 		{
-			while (!active)
-				yield return null;
-
 			yield return base.Start();
 
 			if (!m_IsOculus)

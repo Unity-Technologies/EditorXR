@@ -124,6 +124,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
+			if (!m_MainMenuUI.visible)
+				return;
+
 			var mainMenuInput = (MainMenuInput)input;
 			var rotationInput = -mainMenuInput.rotate.rawValue;
 

@@ -159,6 +159,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public virtual IEnumerator Start()
 		{
+			while (!active)
+				yield return null;
+
 			// In standalone play-mode usage, attempt to get the TrackedObjectInput
 			if (trackedObjectInput == null && m_PlayerInput)
 				trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
@@ -167,8 +170,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(leftProxyHelper.gameObject), leftProxyHelper.rayOrigin);
 			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(rightProxyHelper.gameObject), rightProxyHelper.rayOrigin);
-
-			yield break;
 		}
 
 		public virtual void OnDestroy()
