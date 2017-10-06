@@ -37,6 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
 		public Action<List<ActionMapInput>>  updatePlayerHandleMaps;
+		List<InputControl> m_RemoveList = new List<InputControl>();
 
 		public List<InputDevice> GetSystemDevices()
 		{
@@ -67,26 +68,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void ProcessInput()
 		{
+            m_RemoveList.Clear();
 			// Maintain a consumed control, so that other AMIs don't pick up the input, until it's no longer used
-			var removeList = new List<InputControl>();
 			foreach (var lockedControl in m_LockedControls)
 			{
 				if (!lockedControl.provider.active || Mathf.Approximately(lockedControl.rawValue,
 					lockedControl.provider.GetControlData(lockedControl.index).defaultValue))
-					removeList.Add(lockedControl);
+					m_RemoveList.Add(lockedControl);
 				else
 					ConsumeControl(lockedControl);
 			}
 
 			// Remove separately, since we cannot remove while iterating
-			foreach (var inputControl in removeList)
+			foreach (var inputControl in m_RemoveList)
 			{
 				if (!inputControl.provider.active)
 					ResetControl(inputControl);
 
 				m_LockedControls.Remove(inputControl);
 			}
-
+			m_RemoveList.Clear();
 			m_ProcessedInputs.Clear();
 
 			// TODO: Replace this with a map of ActionMap,IProcessInput and go through those

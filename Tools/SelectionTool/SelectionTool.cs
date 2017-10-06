@@ -39,6 +39,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
 
+        Dictionary<Transform, GameObject> m_TempHovers = new Dictionary<Transform, GameObject>();
+
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
 		public Transform rayOrigin { private get; set; }
@@ -133,8 +135,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 
 				// Unset highlight old hovers
-				var hovers = new Dictionary<Transform, GameObject>(m_HoverGameObjects);
-				foreach (var kvp in hovers)
+				m_TempHovers.Clear();
+				foreach (var kvp in m_TempHovers)
 				{
 					var directRayOrigin = kvp.Key;
 					var hover = kvp.Value;
@@ -146,6 +148,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_HoverGameObjects.Remove(directRayOrigin);
 					}
 				}
+                m_TempHovers.Clear();
 
 				// Find new hovers
 				foreach (var kvp in directSelection)

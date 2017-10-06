@@ -129,7 +129,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			bool GetManipulatorDragState()
 			{
-				return m_ManipulatorControllers.Any(controller => controller.manipulatorDragging);
+			    var controllerCounter = 0;
+			    while (controllerCounter < m_ManipulatorControllers.Count)
+			    {
+			        if (m_ManipulatorControllers[controllerCounter].manipulatorDragging)
+			        {
+			            return true;
+			        }
+			        controllerCounter++;
+			    }
+			    return false;
 			}
 
 			internal void UpdateManipulatorVisibilites()

@@ -382,7 +382,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var eventData = source.eventData;
 				var rayOrigin = eventData.rayOrigin;
-				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+
+				DeviceData deviceData = null;
+				var deviceDataList = evr.m_DeviceData;
+				var dataCounter = 0;
+				while (dataCounter < deviceDataList.Count)
+				{
+					var currentDevice = deviceDataList[dataCounter];
+					if (currentDevice.rayOrigin == rayOrigin)
+					{
+						deviceData = currentDevice;
+						break;
+					}
+					dataCounter++;
+				}
+
 				if (deviceData != null)
 				{
 					if (go.transform.IsChildOf(deviceData.rayOrigin)) // Don't let UI on this hand block the menu

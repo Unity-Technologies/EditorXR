@@ -211,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (gameObject == this.gameObject)
 				return;
 
-			var tooltip = gameObject.GetComponent<ITooltip>();
+			var tooltip = ComponentUtils<ITooltip>.GetComponent(gameObject);
 			if (tooltip != null)
 				ShowTooltip(tooltip);
 		}
@@ -221,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (gameObject == this.gameObject)
 				return;
 
-			var tooltip = gameObject.GetComponent<ITooltip>();
+			var tooltip = ComponentUtils<ITooltip>.GetComponent(gameObject);
 			if (tooltip != null)
 				ShowTooltip(tooltip);
 		}
@@ -230,7 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			if (gameObject && gameObject != this.gameObject)
 			{
-				var tooltip = gameObject.GetComponent<ITooltip>();
+				var tooltip = ComponentUtils<ITooltip>.GetComponent(gameObject);
 				if (tooltip != null)
 					HideTooltip(tooltip);
 			}

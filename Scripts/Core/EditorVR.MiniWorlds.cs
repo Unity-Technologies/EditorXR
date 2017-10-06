@@ -463,26 +463,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 
 				// Update ray visibilities
-				Rays.ForEachProxyDevice(data =>
+				Rays.ForEachProxyDevice(UpdateRayContaimnent);
+			}
+
+			void UpdateRayContaimnent(DeviceData data)
+			{
+				bool wasContained;
+				var rayOrigin = data.rayOrigin;
+				m_RayWasContained.TryGetValue(rayOrigin, out wasContained);
+
+				var isContained = false;
+				foreach (var miniWorld in m_Worlds)
 				{
-					bool wasContained;
-					var rayOrigin = data.rayOrigin;
-					m_RayWasContained.TryGetValue(rayOrigin, out wasContained);
+					isContained |= miniWorld.Contains(rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin));
+				}
 
-					var isContained = false;
-					foreach (var miniWorld in m_Worlds)
-					{
-						isContained |= miniWorld.Contains(rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin));
-					}
+				if (isContained && !wasContained)
+					Rays.AddVisibilitySettings(rayOrigin, this, false, true);
 
-					if (isContained && !wasContained)
-						Rays.AddVisibilitySettings(rayOrigin, this, false, true);
+				if (!isContained && wasContained)
+					Rays.RemoveVisibilitySettings(rayOrigin, this);
 
-					if (!isContained && wasContained)
-						Rays.RemoveVisibilitySettings(rayOrigin, this);
-
-					m_RayWasContained[rayOrigin] = isContained;
-				});
+				m_RayWasContained[rayOrigin] = isContained;
 			}
 
 			internal void OnWorkspaceCreated(IWorkspace workspace)
