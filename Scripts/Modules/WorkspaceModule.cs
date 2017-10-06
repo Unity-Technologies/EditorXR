@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces, ISerializePreferences, IInterfaceConnector
+	sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces, ISerializePreferences
 	{
 		[Serializable]
 		class Preferences
@@ -68,8 +68,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			ICreateWorkspaceMethods.createWorkspace = CreateWorkspace;
-			IResetWorkspacesMethods.resetWorkspaceRotations = ResetWorkspaceRotations;
 			preserveWorkspaces = true;
 		}
 
@@ -201,17 +199,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		static void ResetRotation(IWorkspace workspace, Vector3 forward)
 		{
 			workspace.transform.rotation = Quaternion.LookRotation(forward) * DefaultWorkspaceTilt;
-		}
-
-		public void ConnectInterface(object @object, object userData = null)
-		{
-			var allWorkspaces = @object as IAllWorkspaces;
-			if (allWorkspaces != null)
-				allWorkspaces.allWorkspaces = workspaces;
-		}
-
-		public void DisconnectInterface(object @object, object userData = null)
-		{
 		}
 	}
 }

@@ -20,12 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public event Action<Transform> selected;
 
-		void Awake()
-		{
-			ISelectObjectMethods.getSelectionCandidate = GetSelectionCandidate;
-			ISelectObjectMethods.selectObject = SelectObject;
-		}
-
 		public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
 		{
 			// If we can't even select the object we're starting with, then skip any further logic

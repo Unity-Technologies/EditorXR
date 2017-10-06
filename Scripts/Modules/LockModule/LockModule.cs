@@ -39,9 +39,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			IUsesGameObjectLockingMethods.setLocked = SetLocked;
-			IUsesGameObjectLockingMethods.isLocked = IsLocked;
-
 			m_LockModuleAction.execute = ToggleLocked;
 			UpdateAction(null);
 

@@ -13,13 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Func<Transform, Vector3, bool> tryPlaceObject;
 
-		void Awake()
-		{
-			IDeleteSceneObjectMethods.deleteSceneObject = DeleteSceneObject;
-			IPlaceSceneObjectMethods.placeSceneObject = PlaceSceneObject;
-			IPlaceSceneObjectsMethods.placeSceneObjects = PlaceSceneObjects;
-		}
-
 		public void PlaceSceneObject(Transform obj, Vector3 targetScale)
 		{
 			if (tryPlaceObject == null || !tryPlaceObject(obj, targetScale))
