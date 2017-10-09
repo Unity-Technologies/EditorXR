@@ -7,7 +7,6 @@ using UnityEditor;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -314,7 +313,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 		if (m_AnnotationPointer != null)
 		{
 			var brushSize = m_Preferences.brushSize;
-			if (VRSettings.loadedDeviceName == "OpenVR") // For vive controllers, use 1:1 touchpad setting.
+			if (proxyType == typeof(ViveProxy)) // For vive controllers, use 1:1 touchpad setting.
 			{
 				brushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, (value + 1) / 2f);
 			}

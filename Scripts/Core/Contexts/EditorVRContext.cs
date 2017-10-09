@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	class EditorVRContext : ScriptableObject, IEditingContext
 	{
 		[SerializeField]
-		List<MonoScript> m_DefaultToolStack;
+		internal List<MonoScript> m_DefaultToolStack;
 
 		EditorVR m_Instance;
 

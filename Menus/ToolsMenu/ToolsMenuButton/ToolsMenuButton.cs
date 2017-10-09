@@ -519,6 +519,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		void OnSecondaryButtonClicked()
 		{
+			if (!implementsSecondaryButton)
+				return;
 			this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
 			closeButton();
 			ActionButtonHoverExit();

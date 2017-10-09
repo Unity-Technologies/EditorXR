@@ -1,4 +1,8 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR
+#if !UNITY_2017_2_OR_NEWER
+#pragma warning disable 649 // "never assigned to" warning
+#endif
+
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -67,7 +71,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var removeList = new List<InputControl>();
 			foreach (var lockedControl in m_LockedControls)
 			{
-				if (Mathf.Approximately(lockedControl.rawValue, lockedControl.provider.GetControlData(lockedControl.index).defaultValue))
+				if (!lockedControl.provider.active || Mathf.Approximately(lockedControl.rawValue,
+					lockedControl.provider.GetControlData(lockedControl.index).defaultValue))
 					removeList.Add(lockedControl);
 				else
 					ConsumeControl(lockedControl);
@@ -76,6 +81,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// Remove separately, since we cannot remove while iterating
 			foreach (var inputControl in removeList)
 			{
+				if (!inputControl.provider.active)
+					ResetControl(inputControl);
+
 				m_LockedControls.Remove(inputControl);
 			}
 
@@ -214,7 +222,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// another AMI to pick up a wasPressed the next frame, since it's own input would have been cleared. The
 			// control is released when it returns to it's default value
 			m_LockedControls.Add(control);
+			ResetControl(control);
+		}
 
+		void ResetControl(InputControl control)
+		{
 			var ami = control.provider as ActionMapInput;
 			var playerHandleMaps = m_PlayerHandle.maps;
 			for (int i = 0; i < playerHandleMaps.Count; i++)

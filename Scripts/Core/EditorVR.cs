@@ -12,7 +12,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-#if UNITY_EDITORVR
+#if UNITY_2017_2_OR_NEWER
 	[RequiresTag(k_VRPlayerTag)]
 	sealed partial class EditorVR : MonoBehaviour
 	{
@@ -301,7 +301,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				if (result)
 				{
-					var logEntries = asm.GetType("UnityEditorInternal.LogEntries");
+					var logEntries = asm.GetType("UnityEditor.LogEntries");
 					var clearMethod = logEntries.GetMethod("Clear", BindingFlags.Static | BindingFlags.Public);
 					clearMethod.Invoke(null, null);
 				}
@@ -542,12 +542,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
 			{
-				var message = "EditorVR requires a custom editor build. Please see https://blogs.unity3d.com/2016/12/15/editorvr-experimental-build-available-today/";
-				var result = EditorUtility.DisplayDialogComplex("Custom Editor Build Required", message, "Download", "Ignore", "Remind Me Again");
+				var message = "EditorVR requires Unity 2017.2 or above.";
+				var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
 				switch (result)
 				{
 					case 0:
-						Application.OpenURL("http://rebrand.ly/EditorVR-build");
+						Application.OpenURL("https://unity3d.com/get-unity/download");
 						break;
 					case 1:
 						EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);

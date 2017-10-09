@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 		public void NoEditorVR()
 		{
 			var defines = EditorUserBuildSettings.activeScriptCompilationDefines.ToList();
-			defines.Remove("UNITY_EDITORVR");
+			defines.Remove("UNITY_2017_2_OR_NEWER");
 			TestCompile(defines.ToArray());
 		}
 
