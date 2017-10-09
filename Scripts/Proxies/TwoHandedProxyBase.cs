@@ -98,33 +98,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				ObjectUtils.Destroy(tooltip);
 			}
 
-			var leftButtons = new Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>>();
-			foreach (var button in leftProxyHelper.buttons)
-			{
-				List<ProxyHelper.ButtonObject> buttons;
-				if (!leftButtons.TryGetValue(button.control, out buttons))
-				{
-					buttons = new List<ProxyHelper.ButtonObject>();
-					leftButtons[button.control] = buttons;
-				}
-
-				buttons.Add(button);
-			}
-			m_Buttons[Node.LeftHand] = leftButtons;
-
-			var rightButtons = new Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>>();
-			foreach (var button in rightProxyHelper.buttons)
-			{
-				List<ProxyHelper.ButtonObject> buttons;
-				if (!rightButtons.TryGetValue(button.control, out buttons))
-				{
-					buttons = new List<ProxyHelper.ButtonObject>();
-					rightButtons[button.control] = buttons;
-				}
-
-				buttons.Add(button);
-			}
-			m_Buttons[Node.RightHand] = rightButtons;
+			m_Buttons[Node.LeftHand] = GetButtonDictionary(leftProxyHelper);
+			m_Buttons[Node.RightHand] = GetButtonDictionary(rightProxyHelper);
 
 			m_RayOrigins = new Dictionary<Node, Transform>
 			{
@@ -155,6 +130,23 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				{ leftProxyHelper.rayOrigin, leftProxyHelper.fieldGrabOrigin },
 				{ rightProxyHelper.rayOrigin, rightProxyHelper.fieldGrabOrigin }
 			};
+		}
+
+		static Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>> GetButtonDictionary(ProxyHelper helper)
+		{
+			var buttonDictionary = new Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>>();
+			foreach (var button in helper.buttons)
+			{
+				List<ProxyHelper.ButtonObject> buttons;
+				if (!buttonDictionary.TryGetValue(button.control, out buttons))
+				{
+					buttons = new List<ProxyHelper.ButtonObject>();
+					buttonDictionary[button.control] = buttons;
+				}
+
+				buttons.Add(button);
+			}
+			return buttonDictionary;
 		}
 
 		public virtual IEnumerator Start()
