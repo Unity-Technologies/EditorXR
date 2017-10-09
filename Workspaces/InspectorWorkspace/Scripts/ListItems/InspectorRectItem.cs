@@ -7,175 +7,177 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class InspectorRectItem : InspectorPropertyItem
-	{
-		[SerializeField]
-		NumericInputField[] m_CenterFields;
+    sealed class InspectorRectItem : InspectorPropertyItem
+    {
+        [SerializeField]
+        NumericInputField[] m_CenterFields;
 
-		[SerializeField]
-		NumericInputField[] m_SizeFields;
+        [SerializeField]
+        NumericInputField[] m_SizeFields;
 
-		public override void Setup(InspectorData data)
-		{
-			base.Setup(data);
+        public override void Setup(InspectorData data)
+        {
+            base.Setup(data);
 
-			UpdateInputFields();
-		}
+            UpdateInputFields();
+        }
 
-		void UpdateInputFields()
-		{
-			var rect = m_SerializedProperty.rectValue;
+        void UpdateInputFields()
+        {
+            var rect = m_SerializedProperty.rectValue;
 
-			for (var i = 0; i < m_CenterFields.Length; i++)
-			{
-				m_CenterFields[i].text = rect.center[i].ToString();
-				m_CenterFields[i].ForceUpdateLabel();
-				m_SizeFields[i].text = rect.size[i].ToString();
-				m_SizeFields[i].ForceUpdateLabel();
-			}
-		}
+            for (var i = 0; i < m_CenterFields.Length; i++)
+            {
+                m_CenterFields[i].text = rect.center[i].ToString();
+                m_CenterFields[i].ForceUpdateLabel();
+                m_SizeFields[i].text = rect.size[i].ToString();
+                m_SizeFields[i].ForceUpdateLabel();
+            }
+        }
 
-		void UpdateInputFields(Rect rect)
-		{
-			for (var i = 0; i < m_CenterFields.Length; i++)
-			{
-				m_CenterFields[i].text = rect.center[i].ToString();
-				m_CenterFields[i].ForceUpdateLabel();
-				m_SizeFields[i].text = rect.size[i].ToString();
-				m_SizeFields[i].ForceUpdateLabel();
-			}
-		}
+        void UpdateInputFields(Rect rect)
+        {
+            for (var i = 0; i < m_CenterFields.Length; i++)
+            {
+                m_CenterFields[i].text = rect.center[i].ToString();
+                m_CenterFields[i].ForceUpdateLabel();
+                m_SizeFields[i].text = rect.size[i].ToString();
+                m_SizeFields[i].ForceUpdateLabel();
+            }
+        }
 
-		protected override void FirstTimeSetup()
-		{
-			base.FirstTimeSetup();
+        protected override void FirstTimeSetup()
+        {
+            base.FirstTimeSetup();
 
-			for (var i = 0; i < m_CenterFields.Length; i++)
-			{
-				var index = i;
-				m_CenterFields[i].onValueChanged.AddListener(value =>
-				{
-					if (SetValue(value, index, true))
-						data.serializedObject.ApplyModifiedProperties();
-				});
-				m_SizeFields[i].onValueChanged.AddListener(value =>
-				{
-					if (SetValue(value, index))
-						data.serializedObject.ApplyModifiedProperties();
-				});
-			}
-		}
-		public override void OnObjectModified()
-		{
-			base.OnObjectModified();
-			UpdateInputFields();
-		}
+            for (var i = 0; i < m_CenterFields.Length; i++)
+            {
+                var index = i;
+                m_CenterFields[i].onValueChanged.AddListener(value =>
+                {
+                    if (SetValue(value, index, true))
+                        data.serializedObject.ApplyModifiedProperties();
+                });
+                m_SizeFields[i].onValueChanged.AddListener(value =>
+                {
+                    if (SetValue(value, index))
+                        data.serializedObject.ApplyModifiedProperties();
+                });
+            }
+        }
 
-		bool SetValue(string input, int index, bool center = false)
-		{
-			float value;
-			if (!float.TryParse(input, out value))
-				return false;
+        public override void OnObjectModified()
+        {
+            base.OnObjectModified();
+            UpdateInputFields();
+        }
 
-			var rect = m_SerializedProperty.rectValue;
-			var vector = center ? rect.center : rect.size;
+        bool SetValue(string input, int index, bool center = false)
+        {
+            float value;
+            if (!float.TryParse(input, out value))
+                return false;
 
-			if (!Mathf.Approximately(vector[index], value))
-			{
-				vector[index] = value;
-				if (center)
-					rect.center = vector;
-				else
-					rect.size = vector;
+            var rect = m_SerializedProperty.rectValue;
+            var vector = center ? rect.center : rect.size;
 
-				UpdateInputFields(rect);
-				m_SerializedProperty.rectValue = rect;
-				UpdateInputFields();
-				return true;
-			}
+            if (!Mathf.Approximately(vector[index], value))
+            {
+                vector[index] = value;
+                if (center)
+                    rect.center = vector;
+                else
+                    rect.size = vector;
 
-			return false;
-		}
+                UpdateInputFields(rect);
+                m_SerializedProperty.rectValue = rect;
+                UpdateInputFields();
+                return true;
+            }
 
-		protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
-		{
-			object dropObject = null;
-			var inputFields = fieldBlock.GetComponentsInChildren<NumericInputField>();
+            return false;
+        }
 
-			if (inputFields.Length > 3) // If we've grabbed all of the fields
-				dropObject = m_SerializedProperty.rectValue;
+        protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
+        {
+            object dropObject = null;
+            var inputFields = fieldBlock.GetComponentsInChildren<NumericInputField>();
 
-			if (inputFields.Length > 1) // If we've grabbed one vector
-			{
-				if (m_CenterFields.Intersect(inputFields).Any())
-					dropObject = m_SerializedProperty.rectValue.center;
-				else
-					dropObject = m_SerializedProperty.rectValue.size;
-			}
-			else if (inputFields.Length > 0) // If we've grabbed a single field
-				dropObject = inputFields[0].text;
+            if (inputFields.Length > 3) // If we've grabbed all of the fields
+                dropObject = m_SerializedProperty.rectValue;
 
-			return dropObject;
-		}
+            if (inputFields.Length > 1) // If we've grabbed one vector
+            {
+                if (m_CenterFields.Intersect(inputFields).Any())
+                    dropObject = m_SerializedProperty.rectValue.center;
+                else
+                    dropObject = m_SerializedProperty.rectValue.size;
+            }
+            else if (inputFields.Length > 0) // If we've grabbed a single field
+                dropObject = inputFields[0].text;
 
-		protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
-		{
-			return dropObject is string || dropObject is Rect || dropObject is Vector2
-				|| dropObject is Vector3 || dropObject is Vector4;
-		}
+            return dropObject;
+        }
 
-		protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
-		{
-			var str = dropObject as string;
-			if (str != null)
-			{
-				var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
-				var index = Array.IndexOf(m_SizeFields, inputField);
-				if (index > -1 && SetValue(str, index))
-				{
-					inputField.text = str;
-					inputField.ForceUpdateLabel();
+        protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+        {
+            return dropObject is string || dropObject is Rect || dropObject is Vector2
+                || dropObject is Vector3 || dropObject is Vector4;
+        }
 
-					FinalizeModifications();
-				}
+        protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+        {
+            var str = dropObject as string;
+            if (str != null)
+            {
+                var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
+                var index = Array.IndexOf(m_SizeFields, inputField);
+                if (index > -1 && SetValue(str, index))
+                {
+                    inputField.text = str;
+                    inputField.ForceUpdateLabel();
 
-				index = Array.IndexOf(m_CenterFields, inputField);
-				if (index > -1 && SetValue(str, index, true))
-				{
-					inputField.text = str;
-					inputField.ForceUpdateLabel();
+                    FinalizeModifications();
+                }
 
-					FinalizeModifications();
-				}
-			}
+                index = Array.IndexOf(m_CenterFields, inputField);
+                if (index > -1 && SetValue(str, index, true))
+                {
+                    inputField.text = str;
+                    inputField.ForceUpdateLabel();
 
-			if (dropObject is Rect)
-			{
-				m_SerializedProperty.rectValue = (Rect)dropObject;
+                    FinalizeModifications();
+                }
+            }
 
-				UpdateInputFields();
-				FinalizeModifications();
-				data.serializedObject.ApplyModifiedProperties();
-			}
+            if (dropObject is Rect)
+            {
+                m_SerializedProperty.rectValue = (Rect)dropObject;
 
-			if (dropObject is Vector2 || dropObject is Vector3 || dropObject is Vector4)
-			{
-				var vector2 = (Vector2)dropObject;
-				var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
-				var rect = m_SerializedProperty.rectValue;
+                UpdateInputFields();
+                FinalizeModifications();
+                data.serializedObject.ApplyModifiedProperties();
+            }
 
-				if (m_CenterFields.Contains(inputField))
-					rect.center = vector2;
-				else
-					rect.size = vector2;
+            if (dropObject is Vector2 || dropObject is Vector3 || dropObject is Vector4)
+            {
+                var vector2 = (Vector2)dropObject;
+                var inputField = fieldBlock.GetComponentInChildren<NumericInputField>();
+                var rect = m_SerializedProperty.rectValue;
 
-				m_SerializedProperty.rectValue = rect;
+                if (m_CenterFields.Contains(inputField))
+                    rect.center = vector2;
+                else
+                    rect.size = vector2;
 
-				UpdateInputFields();
-				FinalizeModifications();
-				data.serializedObject.ApplyModifiedProperties();
-			}
-		}
-	}
+                m_SerializedProperty.rectValue = rect;
+
+                UpdateInputFields();
+                FinalizeModifications();
+                data.serializedObject.ApplyModifiedProperties();
+            }
+        }
+    }
 }
+
 #endif
