@@ -1,6 +1,5 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -8,14 +7,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		class ActionsModuleConnector : Nested, IInterfaceConnector
 		{
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void ConnectInterface(object @object, object userData = null)
 			{
 				var actionsModule = evr.GetModule<ActionsModule>();
 				if (actionsModule)
 				{
 					var menuActions = actionsModule.menuActions;
 
-					var toolActions = obj as IActions;
+					var toolActions = @object as IActions;
 					if (toolActions != null)
 					{
 						// Delay connecting actions to allow tool / module to initialize first
@@ -40,15 +39,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						};
 					}
 
-					var alternateMenu = obj as IAlternateMenu;
+					var alternateMenu = @object as IAlternateMenu;
 					if (alternateMenu != null)
 						alternateMenu.menuActions = menuActions;
 				}
 			}
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
+			public void DisconnectInterface(object @object, object userData = null)
 			{
-				var toolActions = obj as IActions;
+				var toolActions = @object as IActions;
 				if (toolActions != null)
 				{
 					var evrActionsModule = evr.GetModule<ActionsModule>();

@@ -1,9 +1,6 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -13,8 +10,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
-			event IConnectInterfacesMethods.ConnectInterfacesDelegate connectInterfaces;
-			event IConnectInterfacesMethods.DisonnectInterfacesDelegate disconnectInterfaces;
+			event Action<object, object> connectInterfaces;
+			event Action<object, object> disconnectInterfaces;
 
 			public Interfaces()
 			{
@@ -22,9 +19,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
 			}
 
-			internal void AttachInterfaceConnectors(object obj)
+			internal void AttachInterfaceConnectors(object @object)
 			{
-				var connector = obj as IInterfaceConnector;
+				var connector = @object as IInterfaceConnector;
 				if (connector != null)
 				{
 					connectInterfaces += connector.ConnectInterface;
@@ -32,34 +29,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			internal void ConnectInterfaces(object obj, InputDevice device)
+			void ConnectInterfaces(object @object, object userData = null)
 			{
-				Transform rayOrigin = null;
-				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.inputDevice == device);
-				if (deviceData != null)
-					rayOrigin = deviceData.rayOrigin;
-
-				ConnectInterfaces(obj, rayOrigin);
-			}
-
-			internal void ConnectInterfaces(object obj, Transform rayOrigin = null)
-			{
-				if (!m_ConnectedInterfaces.Add(obj))
+				if (!m_ConnectedInterfaces.Add(@object))
 					return;
 
 				if (connectInterfaces != null)
-					connectInterfaces(obj, rayOrigin);
+					connectInterfaces(@object, userData);
 			}
 
-			internal void DisconnectInterfaces(object obj, Transform rayOrigin = null)
+			void DisconnectInterfaces(object @object, object userData = null)
 			{
-				m_ConnectedInterfaces.Remove(obj);
+				m_ConnectedInterfaces.Remove(@object);
 
 				if (disconnectInterfaces != null)
-					disconnectInterfaces(obj, rayOrigin);
+					disconnectInterfaces(@object, userData);
 			}
 		}
 	}
 }
-
 #endif

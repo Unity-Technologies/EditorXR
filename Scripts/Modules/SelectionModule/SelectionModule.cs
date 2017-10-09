@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -19,6 +19,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public Func<GameObject, bool> overrideSelectObject { private get; set; }
 
 		public event Action<Transform> selected;
+
+		void Awake()
+		{
+			ISelectObjectMethods.getSelectionCandidate = GetSelectionCandidate;
+			ISelectObjectMethods.selectObject = SelectObject;
+		}
 
 		public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
 		{

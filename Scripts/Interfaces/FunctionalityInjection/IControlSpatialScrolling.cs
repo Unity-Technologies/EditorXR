@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IControlSpatialScrollingMethods
 	{
-		internal delegate SpatialScrollModule.SpatialScrollData PerformSpatialScrollDelegate (IControlSpatialScrolling caller, Node? node, Vector3 startingPosition,
+		internal delegate SpatialScrollModule.SpatialScrollData PerformSpatialScrollDelegate (IControlSpatialScrolling caller, Node node, Vector3 startingPosition,
 			Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
 
 		internal static PerformSpatialScrollDelegate performSpatialScroll { private get; set; }
@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="maxItemCount">The maximum number of items that can be scrolled through for this action</param>
 		/// <param name="centerVisuals">If true, expand the scroll line visuals outward in both directions from the scroll start position</param>
 		/// <returns>The spatial scroll data for a single scroll action, but an individual caller object</returns>
-		public static SpatialScrollModule.SpatialScrollData PerformSpatialScroll(this IControlSpatialScrolling obj, Node? node,
+		public static SpatialScrollModule.SpatialScrollData PerformSpatialScroll(this IControlSpatialScrolling obj, Node node,
 			Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
 		{
 			return performSpatialScroll(obj, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);

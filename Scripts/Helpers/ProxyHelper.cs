@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 using UnityEngine.InputNew;
 using VisibilityControlType = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.VisibilityControlType;
@@ -19,9 +20,27 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		[SerializeField]
 		Renderer m_Renderer;
 
+		[FlagsProperty]
+		[SerializeField]
+		AxisFlags m_TranslateAxes;
+
+		[FlagsProperty]
+		[SerializeField]
+		AxisFlags m_RotateAxes;
+
+		[SerializeField]
+		float m_Min;
+
+		[SerializeField]
+		float m_Max;
+
 		public VRInputDevice.VRControl control { get { return m_Control; } }
 		public Transform transform { get { return m_Transform; } }
 		public Renderer renderer { get { return m_Renderer; } }
+		public AxisFlags translateAxes { get { return m_TranslateAxes; } }
+		public AxisFlags rotateAxes { get { return m_RotateAxes; } }
+		public float min { get { return m_Min; } }
+		public float max { get { return m_Max; } }
 	}
 
 	/// <summary>
@@ -32,71 +51,29 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		List<Renderer> m_BodyRenderers; // renderers not associated with controls, & will be hidden when displaying feedback/tooltips
 		bool m_BodyRenderersVisible;
 
-		/// <summary>
-		/// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
-		/// </summary>
-		public Transform rayOrigin
-		{
-			get { return m_RayOrigin; }
-		}
+		[SerializeField]
+		Transform m_RayOrigin;
 
 		[SerializeField]
-		private Transform m_RayOrigin;
-
-		/// <summary>
-		/// The transform that the menu content will be parented under
-		/// </summary>
-		public Transform menuOrigin
-		{
-			get { return m_MenuOrigin; }
-		}
+		Transform m_MenuOrigin;
 
 		[SerializeField]
-		private Transform m_MenuOrigin;
-
-		/// <summary>
-		/// The transform that the alternate-menu content will be parented under
-		/// </summary>
-		public Transform alternateMenuOrigin
-		{
-			get { return m_AlternateMenuOrigin; }
-		}
+		Transform m_AlternateMenuOrigin;
 
 		[SerializeField]
-		private Transform m_AlternateMenuOrigin;
-
-		/// <summary>
-		/// The transform that the display/preview objects will be parented under
-		/// </summary>
-		public Transform previewOrigin
-		{
-			get { return m_PreviewOrigin; }
-		}
+		Transform m_PreviewOrigin;
 
 		[SerializeField]
-		private Transform m_PreviewOrigin;
-
-		/// <summary>
-		/// The transform that the display/preview objects will be parented under
-		/// </summary>
-		public Transform fieldGrabOrigin
-		{
-			get { return m_FieldGrabOrigin; }
-		}
+		Transform m_FieldGrabOrigin;
 
 		[SerializeField]
-		private Transform m_FieldGrabOrigin;
-
-		/// <summary>
-		/// The root transform of the device/controller mesh-renderers/geometry
-		/// </summary>
-		public Transform meshRoot
-		{
-			get { return m_MeshRoot; }
-		}
+		Tooltip[] m_LeftTooltips;
 
 		[SerializeField]
-		private Transform m_MeshRoot;
+		Tooltip[] m_RightTooltips;
+
+		[SerializeField]
+		Transform m_MeshRoot;
 
 		[SerializeField]
 		ProxyUI m_ProxyUI;
@@ -104,10 +81,50 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		[SerializeField]
 		AffordanceObject[] m_Affordances;
 
-		public AffordanceObject[] Affordances { get { return m_Affordances; } }
+		/// <summary>
+		/// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
+		/// </summary>
+		public Transform rayOrigin { get { return m_RayOrigin; } }
 
-		[SerializeField]
-		VisibilityControlType m_BodyVisibilityControlType;
+		/// <summary>
+		/// The transform that the menu content will be parented under
+		/// </summary>
+		public Transform menuOrigin { get { return m_MenuOrigin; } }
+
+		/// <summary>
+		/// The transform that the alternate-menu content will be parented under
+		/// </summary>
+		public Transform alternateMenuOrigin { get { return m_AlternateMenuOrigin; } }
+
+		/// <summary>
+		/// The transform that the display/preview objects will be parented under
+		/// </summary>
+		public Transform previewOrigin { get { return m_PreviewOrigin; } }
+
+		/// <summary>
+		/// The transform that the display/preview objects will be parented under
+		/// </summary>
+		public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
+
+		/// <summary>
+		/// Tooltip components to be removed from a right-handed controller
+		/// </summary>
+		public Tooltip[] leftTooltips { get { return m_LeftTooltips; } }
+
+		/// <summary>
+		/// Tooltip components to be removed from a left-handed controller
+		/// </summary>
+		public Tooltip[] rightTooltips { get { return m_RightTooltips; } }
+
+		/// <summary>
+		/// The root transform of the device/controller mesh-renderers/geometry
+		/// </summary>
+		public Transform meshRoot { get { return m_MeshRoot; } }
+
+		/// <summary>
+		/// Affordance objects to store transform and renderer references
+		/// </summary>
+		public AffordanceObject[] affordances { get { return m_Affordances; } }
 
 		/// <summary>
 		/// Set the visibility of the renderers associated with affordances(controls/input)

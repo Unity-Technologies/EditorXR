@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IControlHapticsMethods
 	{
-		internal delegate void PulseDelegate(Node? node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f);
+		internal delegate void PulseDelegate(Node node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f);
 
 		internal static PulseDelegate pulse { get; set; }
 
@@ -23,12 +23,12 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="hapticPulse">Haptic pulse to perform</param>
 		/// <param name="durationMultiplier">(Optional) Multiplier value applied to the hapticPulse duration</param>
 		/// <param name="intensityMultiplier">(Optional) Multiplier value applied to the hapticPulse intensity</param>
-		public static void Pulse(this IControlHaptics obj, Node? node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f)
+		public static void Pulse(this IControlHaptics obj, Node node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f)
 		{
 			pulse(node, hapticPulse, durationMultiplier, intensityMultiplier);
 		}
 
-		internal delegate void StopPulsesDelegate(Node? node);
+		internal delegate void StopPulsesDelegate(Node node);
 
 		internal static StopPulsesDelegate stopPulses { get; set; }
 
@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Stop all haptic feedback on a specific device, or all devices
 		/// </summary>
 		/// <param name="node">Device RayOrigin/Transform on which to stop all pulses. A NULL value will stop pulses on all devices</param>
-		public static void StopPulses(this IControlHaptics obj, Node? node)
+		public static void StopPulses(this IControlHaptics obj, Node node)
 		{
 			stopPulses(node);
 		}

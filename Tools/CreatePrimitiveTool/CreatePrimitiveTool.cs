@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
 
 		public Transform rayOrigin { get; set; }
-		public Node? node { get; set; }
+		public Node node { get; set; }
 
 		public Sprite icon { get { return m_Icon; } }
 
@@ -65,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					this.AddFeedbackRequest(new ProxyFeedbackRequest
 					{
-						node = node.Value,
+						node = node,
 						control = id,
 						tooltipText = "Draw"
 					});

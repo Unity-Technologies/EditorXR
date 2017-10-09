@@ -21,7 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #if UNITY_EDITOR
 			EditorApplication.delayCall += () =>
 			{
-				transform.localPosition = Vector3.zero;
+				if (this != null)
+					transform.localPosition = Vector3.zero;
 			};
 #else
 			transform.localPosition = Vector3.zero;

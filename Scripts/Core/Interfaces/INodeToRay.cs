@@ -13,13 +13,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 	static class INodeToRayMethods
 	{
-		internal static Func<Node?, Transform> requestRayOriginFromNode { private get; set; }
+		internal static Func<Node, Transform> requestRayOriginFromNode { private get; set; }
 
 		/// <summary>
 		/// Get the corresponding ray origin for a given node
 		/// </summary>
 		/// <param name="node">The node to request a ray origin for</param>
-		internal static Transform RequestRayOriginFromNode(this INodeToRay obj, Node? node)
+		internal static Transform RequestRayOriginFromNode(this INodeToRay obj, Node node)
 		{
 			return requestRayOriginFromNode(node);
 		}

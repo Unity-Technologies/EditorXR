@@ -3,7 +3,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
 	interface IAxisConstraints
 	{
-		ConstrainedAxis constraints { get; }
+		AxisFlags constraints { get; }
 	}
 }
 #endif

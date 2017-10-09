@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,11 +6,10 @@ using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces, ISerializePreferences
+	sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces, ISerializePreferences, IInterfaceConnector
 	{
 		[Serializable]
 		class Preferences
@@ -52,9 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
 		readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
 
-		internal List<WorkspaceInput> workspaceInputs { get { return m_WorkspaceInputs; } }
-		readonly List<WorkspaceInput> m_WorkspaceInputs = new List<WorkspaceInput>();
-
 		internal event Action<IWorkspace> workspaceCreated;
 		internal event Action<IWorkspace> workspaceDestroyed;
 
@@ -70,8 +66,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			workspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
 		}
 
-		public WorkspaceModule()
+		void Awake()
 		{
+			ICreateWorkspaceMethods.createWorkspace = CreateWorkspace;
+			IResetWorkspacesMethods.resetWorkspaceRotations = ResetWorkspaceRotations;
 			preserveWorkspaces = true;
 		}
 
@@ -180,19 +178,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				workspaceCreated(workspace);
 		}
 
-		internal void ProcessInput(ConsumeControlDelegate consumeControl)
-		{
-			for (int i = 0; i < m_Workspaces.Count; i++)
-			{
-				m_Workspaces[i].ProcessInput(m_WorkspaceInputs[i], consumeControl);
-			}
-		}
-
 		void OnWorkspaceDestroyed(IWorkspace workspace)
 		{
 			m_Workspaces.Remove(workspace);
 
-			this.DisonnectInterfaces(workspace);
+			this.DisconnectInterfaces(workspace);
 
 			if (workspaceDestroyed != null)
 				workspaceDestroyed(workspace);
@@ -211,6 +201,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		static void ResetRotation(IWorkspace workspace, Vector3 forward)
 		{
 			workspace.transform.rotation = Quaternion.LookRotation(forward) * DefaultWorkspaceTilt;
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var allWorkspaces = @object as IAllWorkspaces;
+			if (allWorkspaces != null)
+				allWorkspaces.allWorkspaces = workspaces;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
 		}
 	}
 }

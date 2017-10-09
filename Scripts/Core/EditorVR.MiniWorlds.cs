@@ -567,7 +567,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			void OnObjectsDropped(Transform rayOrigin, Transform[] grabbedObjects)
 			{
-				Node? node = null;
+				var node = Node.None;
 				foreach (var ray in m_Rays)
 				{
 					var miniWorldRay = ray.Value;

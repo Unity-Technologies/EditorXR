@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -12,6 +12,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		const float k_GrowDuration = 0.5f;
 
 		public Func<Transform, Vector3, bool> tryPlaceObject;
+
+		void Awake()
+		{
+			IDeleteSceneObjectMethods.deleteSceneObject = DeleteSceneObject;
+			IPlaceSceneObjectMethods.placeSceneObject = PlaceSceneObject;
+			IPlaceSceneObjectsMethods.placeSceneObjects = PlaceSceneObjects;
+		}
 
 		public void PlaceSceneObject(Transform obj, Vector3 targetScale)
 		{

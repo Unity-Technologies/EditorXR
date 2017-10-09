@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -122,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public float targetRotation { get; set; }
 
-		public Node? node { get; set; }
+		public Node node { get; set; }
 
 		public bool visible
 		{
@@ -378,7 +377,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 			foreach (var kvp in m_Faces)
 			{
-				kvp.Value.visible = false;
+				var face = kvp.Value;
+				face.visible = false;
+				face.ClearSubmenus();
 			}
 
 			this.RestartCoroutine(ref m_FrameRevealCoroutine, AnimateFrameReveal(m_VisibilityState));

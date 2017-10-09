@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR

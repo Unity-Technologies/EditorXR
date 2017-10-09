@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -80,16 +80,16 @@ namespace UnityEditor.Experimental.EditorVR
 				m_Preferences = new Preferences();
 		}
 
-		public void ConnectInterface(object obj, Transform rayOrigin = null)
+		public void ConnectInterface(object @object, object userData = null)
 		{
-			var feedbackReceiver = obj as IFeedbackReceiver;
+			var feedbackReceiver = @object as IFeedbackReceiver;
 			if (feedbackReceiver != null)
 				m_FeedbackReceivers.Add(feedbackReceiver);
 		}
 
-		public void DisconnectInterface(object obj, Transform rayOrigin = null)
+		public void DisconnectInterface(object @object, object userData = null)
 		{
-			var feedbackReceiver = obj as IFeedbackReceiver;
+			var feedbackReceiver = @object as IFeedbackReceiver;
 			if (feedbackReceiver != null)
 				m_FeedbackReceivers.Remove(feedbackReceiver);
 		}

@@ -49,11 +49,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public Action<Transform> selectHighlightedButton { get; set; }
 		public Action<Type, Sprite> setButtonForType { get; set; }
 		public Action<Type, Type> deleteToolsMenuButton { get; set; }
-		public Node? node { get; set; }
+		public Node node { get; set; }
 		public IToolsMenuButton PreviewToolsMenuButton { get; private set; }
 		public Transform alternateMenuOrigin { get; set; }
 		public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 		public ActionMap actionMap { get { return m_MainMenuActionMap; } }
+		public bool ignoreLocking { get { return false; } }
 		public Transform rayOrigin { get; set; }
 
 		public bool mainMenuActivatorInteractable
@@ -200,7 +201,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
 				}
 			}
-			else if (toolslMenuInput.show.wasJustReleased)
+			else if (spatialScrollData != null && !toolslMenuInput.show.isHeld && !toolslMenuInput.select.isHeld)
 			{
 				consumeControl(toolslMenuInput.show);
 				consumeControl(toolslMenuInput.select);

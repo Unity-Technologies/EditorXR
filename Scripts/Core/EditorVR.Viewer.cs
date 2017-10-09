@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		GameObject m_PreviewCameraPrefab;
 
-		class Viewer : Nested, IInterfaceConnector, ISerializePreferences
+		class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces
 		{
 			[Serializable]
 			class Preferences
@@ -79,14 +79,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
 			}
 
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+			public void ConnectInterface(object @object, object userData = null)
 			{
-				var usesCameraRig = obj as IUsesCameraRig;
+				var usesCameraRig = @object as IUsesCameraRig;
 				if (usesCameraRig != null)
 					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
 			}
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
+			public void DisconnectInterface(object @object, object userData = null)
 			{
 			}
 
@@ -164,7 +164,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						VRView.customPreviewCamera = customPreviewCamera.previewCamera;
 						customPreviewCamera.vrCamera = VRView.viewerCamera;
 						hmdOnlyLayerMask = customPreviewCamera.hmdOnlyLayerMask;
-						evr.m_Interfaces.ConnectInterfaces(customPreviewCamera);
+						this.ConnectInterfaces(customPreviewCamera);
 					}
 				}
 				VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
