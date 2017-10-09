@@ -204,14 +204,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var radius = DirectSelection.GetPointerLength(rayOrigin);
 
 				var totalColliders = Physics.OverlapSphereNonAlloc(rayOrigin.position, radius, s_CachedColliders, -1, QueryTriggerInteraction.Collide);
-				var colliderIndex = 0;
 
-				while (colliderIndex < totalColliders)
+				for (var colliderIndex = 0; colliderIndex < totalColliders; colliderIndex++ )
 				{
 					if (s_CachedColliders[colliderIndex] == trigger)
 						return true;
-
-					colliderIndex++;
 				}
 
 				return false;
