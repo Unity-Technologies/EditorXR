@@ -1,10 +1,8 @@
 ﻿#if UNITY_EDITOR
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -36,8 +34,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Color m_NormalRayColor;
 		Color m_MultiselectRayColor;
 		bool m_MultiSelect;
-		bool m_RayWasHidden;
-		Coroutine m_ShowFeedbackRequestsCoroutine;
 
 		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
 		readonly List<ProxyFeedbackRequest> m_SelectFeedback = new List<ProxyFeedbackRequest>();
@@ -75,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
 
-			this.RestartCoroutine(ref m_ShowFeedbackRequestsCoroutine, ShowThenHideFeedbackRequests());
+			ShowSelectFeedback();
 		}
 
 		void OnDestroy()
@@ -211,15 +207,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 
 			if (!this.IsRayVisible(rayOrigin))
-			{
 				HideSelectFeedback();
-				m_RayWasHidden = true;
-			}
-			else if (m_RayWasHidden && m_SelectFeedback.Count == 0)
-			{
-				m_RayWasHidden = false;
-				this.RestartCoroutine(ref m_ShowFeedbackRequestsCoroutine, ShowThenHideFeedbackRequests());
-			}
+			else if (m_SelectFeedback.Count == 0)
+				ShowSelectFeedback();
 
 			if (!IsRayActive())
 				return;
@@ -307,15 +297,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			return true;
 		}
 
-		IEnumerator ShowThenHideFeedbackRequests()
-		{
-			ShowSelectFeedback();
-
-			yield return new WaitForSeconds(4);
-
-			HideSelectFeedback();
-		}
-
 		void OnDisable()
 		{
 			foreach (var kvp in m_HoverGameObjects)
@@ -323,8 +304,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				this.SetHighlight(kvp.Value, false, kvp.Key);
 			}
 			m_HoverGameObjects.Clear();
-
-			HideSelectFeedback();
 		}
 
 		public void OnResetDirectSelectionState() { }
