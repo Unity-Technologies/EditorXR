@@ -1,4 +1,8 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR
+#if !UNITY_2017_2_OR_NEWER
+#pragma warning disable 649 // "never assigned to" warning
+#endif
+
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Utilities;

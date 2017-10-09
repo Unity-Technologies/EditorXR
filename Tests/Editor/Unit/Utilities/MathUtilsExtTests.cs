@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if UNITY_5_6_OR_NEWER
+using NUnit.Framework;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -46,3 +47,4 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 		public void Cleanup() { }
 	}
 }
+#endif

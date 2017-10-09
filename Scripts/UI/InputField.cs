@@ -1,5 +1,5 @@
 #if UNITY_EDITOR
-#if !UNITY_EDITORVR
+#if !UNITY_2017_2_OR_NEWER
 #pragma warning disable 649 // "never assigned to" warning
 #endif
 

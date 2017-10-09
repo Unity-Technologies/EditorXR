@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+#if UNITY_5_6_OR_NEWER
 using UnityEngine.TestTools;
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 {
@@ -73,6 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 			m_ToCleanupAfterEach.Add(clone);
 		}
 
+#if UNITY_5_6_OR_NEWER
 		[UnityTest]
 		public IEnumerator Destroy_OneArg_DestroysImmediately_InEditMode()
 		{
@@ -81,6 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 			yield return null; // skip frame to allow destruction to run
 			Assert.IsTrue(m_Other == null);
 		}
+#endif
 
 		// here, we could test the other types of calls to Destroy / Instantiate, but that
 		// would require refactor / making some things "internal" instead of private,
