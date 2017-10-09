@@ -1,4 +1,6 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -8,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
 		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
-		IRayVisibilitySettings, IMenuIcon
+		IRayVisibilitySettings, IMenuIcon, IRequestFeedback, IUsesNode
 	{
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
@@ -30,7 +32,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
+		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+
 		public Transform rayOrigin { get; set; }
+		public Node? node { get; set; }
 
 		public Sprite icon { get { return m_Icon; } }
 
@@ -51,6 +56,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.ConnectInterfaces(createPrimitiveMenu, rayOrigin);
 			createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
 			createPrimitiveMenu.close = Close;
+
+			InputUtils.GetBindingDictionaryFromActionMap(standardActionMap, m_Controls);
+
+			foreach (var control in m_Controls)
+			{
+				foreach (var id in control.Value)
+				{
+					this.AddFeedbackRequest(new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = "Draw"
+					});
+				}
+			}
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -170,7 +190,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				return;
 
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
+			this.ClearFeedbackRequests();
 		}
+
+		public ActionMap standardActionMap { private get; set; }
 	}
 }
 #endif

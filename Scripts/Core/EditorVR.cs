@@ -236,6 +236,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			AddModule<SpatialHintModule>();
 			AddModule<SpatialScrollModule>();
 
+			AddModule<FeedbackModule>();
+
 			viewer.AddPlayerModel();
 
 			GetNestedModule<Rays>().CreateAllProxies();

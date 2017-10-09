@@ -32,8 +32,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		class TooltipData
 		{
 			public float startTime;
+			public float lastModifiedTime;
 			public TooltipUI tooltipUI;
 			public Material customHighlightMaterial;
+			public bool persistent;
+			public float duration;
 		}
 
 		readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
@@ -65,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			{
 				var tooltip = kvp.Key;
 				var tooltipData = kvp.Value;
-				var hoverTime = Time.realtimeSinceStartup - tooltipData.startTime;
+				var hoverTime = Time.time - tooltipData.startTime;
 				if (hoverTime > k_Delay)
 				{
 					var placement = tooltip as ITooltipPlacement;
@@ -77,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
 						tooltipUI = tooltipObject.GetComponent<TooltipUI>();
 						tooltipData.tooltipUI = tooltipUI;
-						tooltipUI.highlight.material = m_HighlightMaterial;
+						tooltipUI.highlight.material = tooltipData.customHighlightMaterial ?? m_HighlightMaterial;
 						tooltipUI.background.material = m_TooltipBackgroundMaterial;
 						var tooltipTransform = tooltipObject.transform;
 						MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
@@ -99,21 +102,28 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				if (!IsValidTooltip(tooltip))
 					m_TooltipsToHide.Add(tooltip);
+
+				if (tooltipData.persistent)
+				{
+					var duration = tooltipData.duration;
+					if (duration > 0 && Time.time - tooltipData.lastModifiedTime + k_Delay > duration)
+						m_TooltipsToHide.Add(tooltip);
+				}
 			}
 
 			foreach (var tooltip in m_TooltipsToHide)
 			{
-				HideTooltip(tooltip);
+				HideTooltip(tooltip, true);
 			}
 		}
 
 		static Transform GetTooltipTarget(ITooltip tooltip)
 		{
 			var placement = tooltip as ITooltipPlacement;
-			var target = ((MonoBehaviour)tooltip).transform;
 			if (placement != null)
-				target = placement.tooltipTarget;
-			return target;
+				return placement.tooltipTarget;
+
+			return ((MonoBehaviour)tooltip).transform;
 		}
 
 		void UpdateVisuals(ITooltip tooltip, TooltipUI tooltipUI, Transform target, float lerp)
@@ -131,11 +141,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			var viewerScale = this.GetViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
-
-			TooltipData toolTipData;
-			m_Tooltips.TryGetValue(tooltip, out toolTipData);
-			var highlightMaterial = toolTipData != null ? toolTipData.customHighlightMaterial : m_HighlightMaterial;
-			tooltipUI.highlight.material= highlightMaterial;
 
 			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
 
@@ -236,28 +241,41 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public void ShowTooltip(ITooltip tooltip)
+		public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f)
 		{
 			if (!IsValidTooltip(tooltip))
 				return;
 
-			if (m_Tooltips.ContainsKey(tooltip))
+			TooltipData data;
+			if (m_Tooltips.TryGetValue(tooltip, out data))
+			{
+				data.persistent |= persistent;
+				if (duration > 0)
+				{
+					data.duration = duration;
+					data.lastModifiedTime = Time.time;
+				}
+
 				return;
+			}
 
 			Material highlightMaterial = null;
-			var customToolTipColor = tooltip as ISetCustomTooltipColor;
-			if (customToolTipColor != null)
+			var customTooltipColor = tooltip as ISetCustomTooltipColor;
+			if (customTooltipColor != null)
 			{
 				highlightMaterial = Instantiate(m_HighlightMaterial);
-				var customToolTipHighlightColor = customToolTipColor.customToolTipHighlightColor;
-				highlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipHighlightColor.a);
-				highlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipHighlightColor.b);
+				var customTooltipHighlightColor = customTooltipColor.customTooltipHighlightColor;
+				highlightMaterial.SetColor(k_MaterialColorTopProperty, customTooltipHighlightColor.a);
+				highlightMaterial.SetColor(k_MaterialColorBottomProperty, customTooltipHighlightColor.b);
 			}
 
 			m_Tooltips[tooltip] = new TooltipData
 			{
-				startTime = Time.realtimeSinceStartup,
-				customHighlightMaterial = highlightMaterial
+				customHighlightMaterial = highlightMaterial,
+				startTime = Time.time,
+				lastModifiedTime = Time.time,
+				persistent = persistent,
+				duration = duration
 			};
 		}
 
@@ -266,11 +284,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return !string.IsNullOrEmpty(tooltip.tooltipText);
 		}
 
-		public void HideTooltip(ITooltip tooltip)
+		public void HideTooltip(ITooltip tooltip, bool persistent = false)
 		{
 			TooltipData tooltipData;
 			if (m_Tooltips.TryGetValue(tooltip, out tooltipData))
 			{
+				if (!persistent && tooltipData.persistent)
+					return;
+
 				m_Tooltips.Remove(tooltip);
 
 				if (tooltipData.tooltipUI)

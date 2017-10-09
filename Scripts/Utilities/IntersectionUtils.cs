@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
@@ -133,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			ray.origin = obj.InverseTransformPoint(ray.origin);
 			ray.direction = obj.InverseTransformDirection(ray.direction);
-		
+
 			var boundsSize = collisionTester.bounds.size.magnitude;
 			var maxDistance = boundsSize * 2f;
 
@@ -147,7 +148,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				forwardHit = hitInfo.point;
 			else
 				return false;
-				
+
 			// Shoot a ray in the other direction, too, from outside the object (due to face normals)
 			Vector3 behindHit;
 			var behindRay = new Ray(ray.origin, -ray.direction);
@@ -185,16 +186,18 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			var mf = obj.GetComponent<MeshFilter>();
 			if (mf)
-				collisionTester.sharedMesh = mf.sharedMesh;
-
-			if (!mf)
 			{
-				var smr = obj.GetComponent<SkinnedMeshRenderer>();
-				if (smr)
-				{
-					smr.BakeMesh(BakedMesh);
-					collisionTester.sharedMesh = BakedMesh;
-				}
+				collisionTester.sharedMesh = mf.sharedMesh;
+				collisionTester.transform.localScale = Vector3.one;
+				return;
+			}
+
+			var smr = obj.GetComponent<SkinnedMeshRenderer>();
+			if (smr)
+			{
+				smr.BakeMesh(BakedMesh);
+				collisionTester.sharedMesh = BakedMesh;
+				collisionTester.transform.localScale = obj.transform.lossyScale.Inverse();
 			}
 		}
 	}

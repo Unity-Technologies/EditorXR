@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
@@ -8,6 +10,23 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 	/// </summary>
 	sealed class ProxyHelper : MonoBehaviour
 	{
+		[Serializable]
+		public class ButtonObject
+		{
+			[SerializeField]
+			VRInputDevice.VRControl m_Control;
+
+			[SerializeField]
+			Transform m_Transform;
+
+			[SerializeField]
+			Renderer m_Renderer;
+
+			public VRInputDevice.VRControl control { get { return m_Control; } }
+			public Transform transform { get { return m_Transform; } }
+			public Renderer renderer { get { return m_Renderer; } }
+		}
+
 		/// <summary>
 		/// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
 		/// </summary>
@@ -73,6 +92,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		[SerializeField]
 		private Transform m_MeshRoot;
+
+		[SerializeField]
+		ButtonObject[] m_Buttons;
+
+		public ButtonObject[] buttons { get { return m_Buttons; } }
 	}
 }
 #endif

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
 		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-		IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction
+		IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -36,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		GameObject m_ViewerScaleVisualsPrefab;
 
 		[SerializeField]
-		ActionMap m_BlinkActionMap;
+		ActionMap m_ActionMap;
 
 		[SerializeField]
 		GameObject m_SettingsMenuItemPrefab;
@@ -47,7 +48,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			[SerializeField]
 			bool m_BlinkMode;
 
-			public bool blinkMode { get { return m_BlinkMode; } set { m_BlinkMode = value; } }
+			public bool blinkMode
+			{
+				get { return m_BlinkMode; }
+				set { m_BlinkMode = value; }
+			}
 		}
 
 		Preferences m_Preferences;
@@ -93,7 +98,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Toggle m_BlinkToggle;
 		bool m_BlockValueChangedListener;
 
-		public ActionMap actionMap { get { return m_BlinkActionMap; } }
+		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+		readonly List<ProxyFeedbackRequest> m_MainButtonFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_SpeedFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_CrawlFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_ScaleFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_RotateFeedback = new List<ProxyFeedbackRequest>();
+		readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
+
+
+		public ActionMap actionMap
+		{
+			get { return m_ActionMap; }
+		}
 
 		public Transform rayOrigin { get; set; }
 
@@ -101,7 +118,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
-		public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
+		public GameObject settingsMenuItemPrefab
+		{
+			get { return m_SettingsMenuItemPrefab; }
+		}
 
 		public GameObject settingsMenuItemInstance
 		{
@@ -133,6 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								if (locomotionTool != this)
 								{
 									locomotionTool.m_BlockValueChangedListener = true;
+
 									//linkedObject.m_ToggleGroup.NotifyToggleOn(isOn ? m_FlyToggle : m_BlinkToggle);
 									// HACK: Toggle Group claims these toggles are not a part of the group
 									locomotionTool.m_FlyToggle.isOn = isOn;
@@ -151,6 +172,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 
 		public Type proxyType { get; set; }
+
+		public Node? node { private get; set; }
 
 		void Start()
 		{
@@ -182,11 +205,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var viewerScaleObject = ObjectUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
 			m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
 			viewerScaleObject.SetActive(false);
+
+			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
 		}
 
 		void OnDestroy()
 		{
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
+			this.ClearFeedbackRequests();
 
 			if (m_ViewerScaleVisuals)
 				ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
@@ -228,8 +254,64 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool DoFlying(ConsumeControlDelegate consumeControl)
 		{
-			var reverse = m_LocomotionInput.reverse.isHeld;
-			var moving = m_LocomotionInput.forward.isHeld || reverse;
+			foreach (var linkedObject in linkedObjects)
+			{
+				var locomotionTool = (LocomotionTool)linkedObject;
+				if (locomotionTool.m_LocomotionInput != null && locomotionTool.m_LocomotionInput.crawl.isHeld)
+					return false;
+			}
+
+			var forwardControl = m_LocomotionInput.forward;
+			var reverseControl = m_LocomotionInput.reverse;
+			if (forwardControl.wasJustPressed || reverseControl.wasJustPressed)
+			{
+				foreach (var linkedObject in linkedObjects)
+				{
+					var locomotionTool = (LocomotionTool)linkedObject;
+					if (locomotionTool == this)
+					{
+						locomotionTool.HideMainButtonFeedback();
+						locomotionTool.ShowRotateFeedback();
+					}
+
+					locomotionTool.HideCrawlFeedback();
+				}
+			}
+
+			if (forwardControl.wasJustReleased || reverseControl.wasJustReleased)
+			{
+				var otherControlHeld = false;
+				foreach (var linkedObject in linkedObjects)
+				{
+					var locomotionTool = (LocomotionTool)linkedObject;
+					if (locomotionTool == this)
+						continue;
+
+					var input = locomotionTool.m_LocomotionInput;
+					if (input.forward.isHeld || input.reverse.isHeld)
+					{
+						otherControlHeld = true;
+						break;
+					}
+				}
+
+				foreach (var linkedObject in linkedObjects)
+				{
+					var locomotionTool = (LocomotionTool)linkedObject;
+					if (locomotionTool == this)
+					{
+						locomotionTool.HideSpeedFeedback();
+						locomotionTool.HideRotateFeedback();
+						locomotionTool.ShowMainButtonFeedback();
+					}
+
+					if (!otherControlHeld)
+						locomotionTool.ShowCrawlFeedback();
+				}
+			}
+
+			var reverse = reverseControl.isHeld;
+			var moving = forwardControl.isHeld || reverse;
 			if (moving)
 			{
 				var speed = k_SlowMoveSpeed;
@@ -239,6 +321,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					speed = k_SlowMoveSpeed + speedControlValue * (k_FastMoveSpeed - k_SlowMoveSpeed);
 					consumeControl(speedControl);
+					HideSpeedFeedback();
+				}
+				else if (m_SpeedFeedback.Count == 0)
+				{
+					ShowSpeedFeedback();
 				}
 
 				speed *= this.GetViewerScale();
@@ -248,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_Rotating = false;
 				cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
 
-				consumeControl(m_LocomotionInput.forward);
+				consumeControl(forwardControl);
 				return true;
 			}
 
@@ -263,6 +350,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			{
 				if (m_LocomotionInput.rotate.isHeld)
 				{
+					foreach (var linkedObject in linkedObjects)
+					{
+						var locomotionTool = (LocomotionTool)linkedObject;
+						locomotionTool.HideRotateFeedback();
+						locomotionTool.HideCrawlFeedback();
+						locomotionTool.HideScaleFeedback();
+						locomotionTool.HideSpeedFeedback();
+						if (!m_Preferences.blinkMode)
+							locomotionTool.HideMainButtonFeedback();
+					}
+
 					var localRayRotation = Quaternion.Inverse(cameraRig.rotation) * rayOrigin.rotation;
 					var localRayForward = localRayRotation * Vector3.forward;
 					if (Mathf.Abs(Vector3.Dot(localRayForward, Vector3.up)) > k_RotationThreshold)
@@ -309,7 +407,30 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 
 			if (!m_LocomotionInput.rotate.isHeld)
+			{
+				if (m_WasRotating)
+				{
+					foreach (var linkedObject in linkedObjects)
+					{
+						var locomotionTool = (LocomotionTool)linkedObject;
+						var input = locomotionTool.m_LocomotionInput;
+						if (input.blink.isHeld)
+						{
+							locomotionTool.ShowSpeedFeedback();
+							locomotionTool.ShowRotateFeedback();
+						}
+						else
+						{
+							if (locomotionTool == this)
+								locomotionTool.ShowAltRotateFeedback();
+							else if (!input.crawl.isHeld)
+								locomotionTool.ShowMainButtonFeedback();
+						}
+					}
+				}
+
 				m_WasRotating = false;
+			}
 
 			m_Rotating = false;
 			return false;
@@ -317,13 +438,27 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool DoCrawl(ConsumeControlDelegate consumeControl)
 		{
-			if (!m_LocomotionInput.forward.isHeld && !m_LocomotionInput.blink.isHeld && m_LocomotionInput.crawl.isHeld)
+			foreach (var linkedObject in linkedObjects)
+			{
+				if (((LocomotionTool)linkedObject).m_Rotating)
+					return false;
+			}
+
+			var crawl = m_LocomotionInput.crawl;
+			var blink = m_LocomotionInput.blink;
+			if (!m_LocomotionInput.forward.isHeld && !blink.isHeld && crawl.isHeld)
 			{
 				if (!m_StartCrawling && !m_WasRotating)
 				{
 					m_StartCrawling = true;
 					m_ActualRayOriginStartPosition = m_RayOriginStartPosition;
 					m_CrawlStartTime = Time.time;
+
+					foreach (var linkedObject in linkedObjects)
+					{
+						((LocomotionTool)linkedObject).HideCrawlFeedback();
+						((LocomotionTool)linkedObject).HideMainButtonFeedback();
+					}
 				}
 
 				var localRayPosition = cameraRig.position - rayOrigin.position;
@@ -341,10 +476,48 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				if (m_Crawling)
 					cameraRig.position = m_RigStartPosition + localRayPosition - m_RayOriginStartPosition;
 
+				if (m_RotateFeedback.Count == 0)
+				{
+					HideMainButtonFeedback();
+					ShowAltRotateFeedback();
+				}
+
+				if (m_ScaleFeedback.Count == 0)
+					ShowScaleFeedback();
+
 				return true;
 			}
 
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
+
+			if (crawl.isHeld && blink.wasJustReleased || crawl.wasJustReleased)
+			{
+				var otherCrawlHeld = false;
+				foreach (var linkedObject in linkedObjects)
+				{
+					var locomotionTool = (LocomotionTool)linkedObject;
+					if (locomotionTool == this)
+						continue;
+
+					if (locomotionTool.m_LocomotionInput.crawl.isHeld)
+					{
+						otherCrawlHeld = true;
+						break;
+					}
+				}
+
+				if (!otherCrawlHeld)
+				{
+					HideRotateFeedback();
+					HideScaleFeedback();
+					foreach (var linkedObject in linkedObjects)
+					{
+						var locomotionTool = (LocomotionTool)linkedObject;
+						locomotionTool.ShowCrawlFeedback();
+						locomotionTool.ShowMainButtonFeedback();
+					}
+				}
+			}
 
 			m_StartCrawling = false;
 			m_Crawling = false;
@@ -353,19 +526,38 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool DoBlink(ConsumeControlDelegate consumeControl)
 		{
-			if (m_LocomotionInput.blink.isHeld)
+			var blink = m_LocomotionInput.blink;
+			if (blink.wasJustPressed)
+			{
+				HideMainButtonFeedback();
+				HideCrawlFeedback();
+				ShowRotateFeedback();
+			}
+
+			if (blink.isHeld)
 			{
 				this.AddRayVisibilitySettings(rayOrigin, this, false, false);
-				m_BlinkVisuals.extraSpeed = m_LocomotionInput.speed.value;
+				var speed = m_LocomotionInput.speed.value;
+				m_BlinkVisuals.extraSpeed = speed;
+
+				if (speed < 0)
+					HideSpeedFeedback();
+				else if (m_SpeedFeedback.Count == 0)
+					ShowSpeedFeedback();
+
 				m_BlinkVisuals.visible = true;
 
-				consumeControl(m_LocomotionInput.blink);
+				consumeControl(blink);
 				return true;
 			}
 
-			if (m_LocomotionInput.blink.wasJustReleased)
+			if (blink.wasJustReleased)
 			{
 				this.RemoveRayVisibilitySettings(rayOrigin, this);
+				HideRotateFeedback();
+				HideSpeedFeedback();
+				ShowMainButtonFeedback();
+				ShowCrawlFeedback();
 
 				m_BlinkVisuals.visible = false;
 
@@ -382,6 +574,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		bool DoTwoHandedScaling(ConsumeControlDelegate consumeControl)
 		{
+			foreach (var linkedObject in linkedObjects)
+			{
+				if (((LocomotionTool)linkedObject).m_Rotating)
+					return false;
+			}
+
 			if (this.IsSharedUpdater(this))
 			{
 				var crawl = m_LocomotionInput.crawl;
@@ -392,11 +590,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						var otherGripHeld = false;
 						foreach (var linkedObject in linkedObjects)
 						{
-							var locomotionTool = (LocomotionTool)linkedObject;
-							if (locomotionTool == this)
+							var otherLocomotionTool = (LocomotionTool)linkedObject;
+							if (otherLocomotionTool == this)
 								continue;
 
-							var otherLocomotionInput = locomotionTool.m_LocomotionInput;
+							var otherLocomotionInput = otherLocomotionTool.m_LocomotionInput;
 							if (otherLocomotionInput == null) // This can occur if crawl is pressed when EVR is opened
 								continue;
 
@@ -414,7 +612,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 								consumeControl(otherLocomotionInput.vertical);
 
 								var thisPosition = cameraRig.InverseTransformPoint(rayOrigin.position);
-								var otherRayOrigin = locomotionTool.rayOrigin;
+								var otherRayOrigin = otherLocomotionTool.rayOrigin;
 								var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
 								var distance = Vector3.Distance(thisPosition, otherPosition);
 
@@ -437,13 +635,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 									m_StartDirection = rayToRay;
 									m_StartYaw = cameraRig.rotation.eulerAngles.y;
 
-									locomotionTool.m_Scaling = true;
-									locomotionTool.m_Crawling = false;
-									locomotionTool.m_StartCrawling = false;
+									otherLocomotionTool.m_Scaling = true;
+									otherLocomotionTool.m_Crawling = false;
+									otherLocomotionTool.m_StartCrawling = false;
 
 									m_ViewerScaleVisuals.leftHand = rayOrigin;
 									m_ViewerScaleVisuals.rightHand = otherRayOrigin;
 									m_ViewerScaleVisuals.gameObject.SetActive(true);
+
+									foreach (var obj in linkedObjects)
+									{
+										var locomotionTool = (LocomotionTool)obj;
+										locomotionTool.HideScaleFeedback();
+										locomotionTool.HideRotateFeedback();
+										locomotionTool.HideMainButtonFeedback();
+										locomotionTool.ShowResetScaleFeedback();
+									}
 								}
 
 								m_Scaling = true;
@@ -554,6 +761,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 
 				locomotionTool.m_Scaling = false;
+				locomotionTool.HideResetScaleFeedback();
 			}
 
 			m_ViewerScaleVisuals.gameObject.SetActive(false);
@@ -583,6 +791,216 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_BlinkMoving = false;
 		}
 
+		void ShowCrawlFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Crawl", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = "Crawl"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_CrawlFeedback.Add(request);
+				}
+			}
+		}
+
+		void ShowMainButtonFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Blink", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = m_Preferences.blinkMode ? "Blink" : "Fly"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_MainButtonFeedback.Add(request);
+				}
+			}
+		}
+
+		void ShowRotateFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Rotate", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node.Value,
+						tooltipText = "Rotate"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_RotateFeedback.Add(request);
+				}
+			}
+		}
+
+		void ShowAltRotateFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Blink", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node.Value,
+						tooltipText = "Rotate"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_RotateFeedback.Add(request);
+				}
+			}
+		}
+
+		void ShowScaleFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Crawl", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand,
+						tooltipText = "Scale"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_ScaleFeedback.Add(request);
+				}
+			}
+		}
+
+		void ShowResetScaleFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("ScaleReset", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node.Value,
+						tooltipText = "Reset scale"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_ResetScaleFeedback.Add(request);
+				}
+			}
+
+			if (m_Controls.TryGetValue("WorldReset", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						control = id,
+						node = node.Value,
+						tooltipText = "Reset position rotation and scale"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_ResetScaleFeedback.Add(request);
+				}
+			}
+		}
+
+		void ShowSpeedFeedback()
+		{
+			List<VRInputDevice.VRControl> ids;
+			if (m_Controls.TryGetValue("Speed", out ids))
+			{
+				foreach (var id in ids)
+				{
+					var request = new ProxyFeedbackRequest
+					{
+						node = node.Value,
+						control = id,
+						tooltipText = m_Preferences.blinkMode ? "Extra distance" : "Extra speed"
+					};
+
+					this.AddFeedbackRequest(request);
+					m_SpeedFeedback.Add(request);
+				}
+			}
+		}
+
+		void HideMainButtonFeedback()
+		{
+			foreach (var request in m_MainButtonFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+			m_MainButtonFeedback.Clear();
+		}
+
+		void HideCrawlFeedback()
+		{
+			foreach (var request in m_CrawlFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+			m_CrawlFeedback.Clear();
+		}
+
+		void HideRotateFeedback()
+		{
+			foreach (var request in m_RotateFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+			m_RotateFeedback.Clear();
+		}
+
+		void HideScaleFeedback()
+		{
+			foreach (var request in m_ScaleFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+			m_ScaleFeedback.Clear();
+		}
+
+		void HideSpeedFeedback()
+		{
+			foreach (var request in m_SpeedFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+			m_SpeedFeedback.Clear();
+		}
+
+		void HideResetScaleFeedback()
+		{
+			foreach (var request in m_ResetScaleFeedback)
+			{
+				this.RemoveFeedbackRequest(request);
+			}
+			m_ResetScaleFeedback.Clear();
+		}
+
 		public object OnSerializePreferences()
 		{
 			if (this.IsSharedUpdater(this))
@@ -610,7 +1028,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				// Share one preferences object across all instances
 				foreach (var linkedObject in linkedObjects)
 				{
-					((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
+					var locomotionTool = (LocomotionTool)linkedObject;
+					locomotionTool.m_Preferences = m_Preferences;
+					locomotionTool.ShowCrawlFeedback();
+					locomotionTool.ShowMainButtonFeedback();
 				}
 
 				//Setting toggles on this tool's menu will set them on other tool menus

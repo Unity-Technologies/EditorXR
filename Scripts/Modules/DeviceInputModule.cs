@@ -149,7 +149,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 			var standardMap = obj as IStandardActionMap;
 			if (standardMap != null)
+			{
+				standardMap.standardActionMap = m_StandardToolActionMap;
 				return CreateActionMapInput(m_StandardToolActionMap, device);
+			}
 
 			return null;
 		}
