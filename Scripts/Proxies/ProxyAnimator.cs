@@ -16,22 +16,6 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 		public Vector3 positionOffset;
 		public Vector3 rotationOffset;
 
-		public void ResetOffsets()
-		{
-			positionOffset = Vector3.zero;
-			rotationOffset = Vector3.zero;
-		}
-
-		public void ResetPositionOffset()
-		{
-			positionOffset = Vector3.zero;
-		}
-
-		public void ResetRotationOffset()
-		{
-			rotationOffset = Vector3.zero;
-		}
-
 		public void Apply(Transform transform)
 		{
 			transform.localPosition = initialPosition + positionOffset;
@@ -103,7 +87,9 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 
 		foreach (var kvp in m_TransformInfos)
 		{
-			kvp.Value.ResetOffsets();
+			var transformInfo = kvp.Value;
+			transformInfo.positionOffset = Vector3.zero;
+			transformInfo.rotationOffset = Vector3.zero;
 		}
 
 		for (var i = 0; i < length; i++)

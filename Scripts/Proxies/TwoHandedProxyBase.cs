@@ -112,33 +112,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			m_ProxyMeshRoots.Add(m_LeftProxyHelper.meshRoot);
 			m_ProxyMeshRoots.Add(m_RightProxyHelper.meshRoot);
 
-			var leftButtons = new Dictionary<VRInputDevice.VRControl, List<AffordanceObject>>();
-			foreach (var button in m_LeftProxyHelper.affordances)
-			{
-				List<AffordanceObject> buttons;
-				if (!leftButtons.TryGetValue(button.control, out buttons))
-				{
-					buttons = new List<AffordanceObject>();
-					leftButtons[button.control] = buttons;
-				}
-
-				buttons.Add(button);
-			}
-			m_Affordances[Node.LeftHand] = leftButtons;
-
-			var rightButtons = new Dictionary<VRInputDevice.VRControl, List<AffordanceObject>>();
-			foreach (var button in m_RightProxyHelper.affordances)
-			{
-				List<AffordanceObject> buttons;
-				if (!rightButtons.TryGetValue(button.control, out buttons))
-				{
-					buttons = new List<AffordanceObject>();
-					rightButtons[button.control] = buttons;
-				}
-
-				buttons.Add(button);
-			}
-			m_Affordances[Node.RightHand] = rightButtons;
+			m_Affordances[Node.LeftHand] = GetAffordanceDictionary(m_LeftProxyHelper);
+			m_Affordances[Node.RightHand] = GetAffordanceDictionary(m_RightProxyHelper);
 
 			m_RayOrigins = new Dictionary<Node, Transform>
 			{
@@ -169,6 +144,23 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				{ m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.fieldGrabOrigin },
 				{ m_RightProxyHelper.rayOrigin, m_RightProxyHelper.fieldGrabOrigin }
 			};
+		}
+
+		static Dictionary<VRInputDevice.VRControl, List<AffordanceObject>> GetAffordanceDictionary(ProxyHelper helper)
+		{
+			var buttonDictionary = new Dictionary<VRInputDevice.VRControl, List<AffordanceObject>>();
+			foreach (var button in helper.affordances)
+			{
+				List<AffordanceObject> affordances;
+				if (!buttonDictionary.TryGetValue(button.control, out affordances))
+				{
+					affordances = new List<AffordanceObject>();
+					buttonDictionary[button.control] = affordances;
+				}
+
+				affordances.Add(button);
+			}
+			return buttonDictionary;
 		}
 
 		public virtual IEnumerator Start()

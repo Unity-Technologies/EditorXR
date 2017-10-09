@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 						{
 							var buttonTransform = button.transform;
 							var info = transformInfos[buttonTransform];
-							info.ResetRotationOffset();
+							info.rotationOffset = Vector3.zero;
 							info.Apply(buttonTransform);
 						}
 						break;
