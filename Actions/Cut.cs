@@ -3,27 +3,28 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
-	[ActionMenuItem("Cut", ActionMenuItemAttribute.DefaultActionSectionName, 4)]
-	sealed class Cut : BaseAction
-	{
-		public override void ExecuteAction()
-		{
-			var selection = Selection.transforms;
-			if (selection != null)
-			{
-				Unsupported.CopyGameObjectsToPasteboard();
-				Paste.SetBufferDistance(Selection.transforms);
+    [ActionMenuItem("Cut", ActionMenuItemAttribute.DefaultActionSectionName, 4)]
+    sealed class Cut : BaseAction
+    {
+        public override void ExecuteAction()
+        {
+            var selection = Selection.transforms;
+            if (selection != null)
+            {
+                Unsupported.CopyGameObjectsToPasteboard();
+                Paste.SetBufferDistance(Selection.transforms);
 
-				foreach (var transform in selection)
-				{
-					var go = transform.gameObject;
-					go.hideFlags = HideFlags.HideAndDontSave;
-					go.SetActive(false);
-				}
+                foreach (var transform in selection)
+                {
+                    var go = transform.gameObject;
+                    go.hideFlags = HideFlags.HideAndDontSave;
+                    go.SetActive(false);
+                }
 
-				Selection.activeGameObject = null;
-			}
-		}
-	}
+                Selection.activeGameObject = null;
+            }
+        }
+    }
 }
+
 #endif
