@@ -93,73 +93,50 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         // Unity Swatches 2016
         public static Color red { get { return s_Red; } }
-
         public static Color redLight { get { return s_RedLight; } }
-
         public static Color redDark { get { return s_RedDark; } }
 
         public static Color magenta { get { return s_Magenta; } }
-
         public static Color magentaLight { get { return s_MagentaLight; } }
-
         public static Color magentaDark { get { return s_MagentaDark; } }
 
         public static Color purple { get { return s_Purple; } }
-
         public static Color purpleLight { get { return s_PurpleLight; } }
-
         public static Color purpleDark { get { return s_PurpleDark; } }
 
         public static Color blue { get { return s_Blue; } }
-
         public static Color blueLight { get { return s_BlueLight; } }
-
         public static Color blueDark { get { return s_BlueDark; } }
 
         public static Color cyan { get { return s_Cyan; } }
-
         public static Color cyanLight { get { return s_CyanLight; } }
-
         public static Color cyanDark { get { return s_CyanDark; } }
 
         public static Color teal { get { return s_Teal; } }
-
         public static Color tealLight { get { return s_TealLight; } }
-
         public static Color tealDark { get { return s_TealDark; } }
 
         public static Color green { get { return s_Green; } }
-
         public static Color greenLight { get { return s_GreenLight; } }
-
         public static Color greenDark { get { return s_GreenDark; } }
 
         public static Color lime { get { return s_Lime; } }
-
         public static Color limeLight { get { return s_LimeLight; } }
-
         public static Color limeDark { get { return s_LimeDark; } }
 
         public static Color yellow { get { return s_Yellow; } }
-
         public static Color yellowLight { get { return s_YellowLight; } }
-
         public static Color yellowDark { get { return s_YellowDark; } }
 
         public static Color orange { get { return s_Orange; } }
-
         public static Color orangeLight { get { return s_OrangeLight; } }
-
         public static Color orangeDark { get { return s_OrangeDark; } }
 
         public static Color darkBlue { get { return s_DarkBlue; } }
-
         public static Color darkBlueLight { get { return s_DarkBlueLight; } }
 
         public static Color dark { get { return s_Dark; } }
-
         public static Color darker { get { return s_Darker; } }
-
         public static Color light { get { return s_Light; } }
 
         /// <summary>
