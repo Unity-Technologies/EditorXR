@@ -1,13 +1,16 @@
-﻿#if UNITY_EDITOR
+﻿
+#if UNITY_EDITOR
+
 namespace UnityEditor.Experimental.EditorVR
 {
-	/// <summary>
-	/// A tracked node within the system
-	/// </summary>
-	public enum Node
-	{
-		LeftHand,
-		RightHand
-	}
+    /// <summary>
+    /// A tracked node within the system
+    /// </summary>
+    public enum Node
+    {
+        LeftHand,
+        RightHand
+    }
 }
+
 #endif
