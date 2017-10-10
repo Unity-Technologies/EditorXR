@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.VR;
+using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
@@ -22,7 +22,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public override void Awake()
 		{
-			m_IsOculus = VRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
+#if UNITY_2017_2_OR_NEWER
+			m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
+#endif
 
 			if (m_IsOculus)
 			{

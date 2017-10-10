@@ -30,12 +30,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// </summary>
 		bool m_SampleLengthWarningShown;
 
-		void Awake()
-		{
-			IControlHapticsMethods.pulse = Pulse;
-			IControlHapticsMethods.stopPulses = StopPulses;
-		}
-
 		void Start()
 		{
 #if ENABLE_OVR_INPUT

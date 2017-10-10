@@ -1,15 +1,18 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR
+#if !UNITY_2017_2_OR_NEWER
+#pragma warning disable 649 // "never assigned to" warning
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class DeviceInputModule : MonoBehaviour, IInterfaceConnector
+	sealed class DeviceInputModule : MonoBehaviour
 	{
 		class InputProcessor
 		{
@@ -73,49 +76,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void OnDestroy()
 		{
 			PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
-		}
-
-		public void ConnectInterface(object @object, object userData = null)
-		{
-			var trackedObjectMap = @object as ITrackedObjectActionMap;
-			if (trackedObjectMap != null)
-				trackedObjectMap.trackedObjectInput = trackedObjectInput;
-
-			var rayOrigin = userData as Transform;
-			var processInput = @object as IProcessInput;
-			if (processInput != null && !(@object is ITool)) // Tools have their input processed separately
-			{
-				var inputDevice = inputDeviceForRayOrigin(rayOrigin);
-				var input = CreateActionMapInputForObject(@object, inputDevice);
-
-				var order = 0;
-				var processInputAttribute = (ProcessInputAttribute)@object.GetType().GetCustomAttributes(typeof(ProcessInputAttribute), true).FirstOrDefault();
-				if (processInputAttribute != null)
-					order = processInputAttribute.order;
-
-				m_InputProcessors.Add(new InputProcessor { processor = processInput, input = input, order = order });
-				m_InputProcessors.Sort((a, b) => b.order.CompareTo(a.order));
-			}
-		}
-
-		public void DisconnectInterface(object @object, object userData = null)
-		{
-			var processInput = @object as IProcessInput;
-			if (processInput != null)
-			{
-				m_InputProcessorsCopy.Clear();
-				m_InputProcessorsCopy.AddRange(m_InputProcessors);
-				foreach (var processor in m_InputProcessorsCopy)
-				{
-					if (processor.processor == @object)
-					{
-						m_InputProcessors.Remove(processor);
-						var customActionMap = @object as ICustomActionMap;
-						if (customActionMap != null)
-							m_IgnoreLocking.Remove(processor.input);
-					}
-				}
-			}
 		}
 
 		public void ProcessInput()
@@ -333,6 +293,37 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			return Node.None;
+		}
+
+		public void AddInputProcessor(IProcessInput processInput, object userData)
+		{
+			var rayOrigin = userData as Transform;
+			var inputDevice = inputDeviceForRayOrigin(rayOrigin);
+			var input = CreateActionMapInputForObject(processInput, inputDevice);
+
+			var order = 0;
+			var processInputAttribute = (ProcessInputAttribute)processInput.GetType().GetCustomAttributes(typeof(ProcessInputAttribute), true).FirstOrDefault();
+			if (processInputAttribute != null)
+				order = processInputAttribute.order;
+
+			m_InputProcessors.Add(new InputProcessor { processor = processInput, input = input, order = order });
+			m_InputProcessors.Sort((a, b) => b.order.CompareTo(a.order));
+		}
+
+		public void RemoveInputProcessor(IProcessInput processInput)
+		{
+			m_InputProcessorsCopy.Clear();
+			m_InputProcessorsCopy.AddRange(m_InputProcessors);
+			foreach (var processor in m_InputProcessorsCopy)
+			{
+				if (processor.processor == processInput)
+				{
+					m_InputProcessors.Remove(processor);
+					var customActionMap = processInput as ICustomActionMap;
+					if (customActionMap != null)
+						m_IgnoreLocking.Remove(processor.input);
+				}
+			}
 		}
 	}
 }

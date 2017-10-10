@@ -16,8 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			IUsesSpatialHashMethods.addToSpatialHash = AddObject;
-			IUsesSpatialHashMethods.removeFromSpatialHash = RemoveObject;
 			spatialHash = new SpatialHash<Renderer>();
 		}
 

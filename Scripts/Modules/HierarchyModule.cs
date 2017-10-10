@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HierarchyModule : MonoBehaviour, ISelectionChanged, IInterfaceConnector
+	sealed class HierarchyModule : MonoBehaviour, ISelectionChanged
 	{
 		readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
 		readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
@@ -28,12 +28,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				m_IgnoreList.Add(manager.gameObject);
 			}
 
-#if UNITY_EDITORVR
 			foreach (var manager in Resources.FindObjectsOfTypeAll<EditingContextManager>())
 			{
 				m_IgnoreList.Add(manager.gameObject);
 			}
-#endif
 		}
 
 		void OnEnable()
@@ -45,32 +43,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void OnDisable()
 		{
 			EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
-		}
-
-		public void ConnectInterface(object @object, object userData = null)
-		{
-			var usesHierarchyData = @object as IUsesHierarchyData;
-			if (usesHierarchyData != null)
-			{
-				AddConsumer(usesHierarchyData);
-
-				var filterUI = @object as IFilterUI;
-				if (filterUI != null)
-					AddConsumer(filterUI);
-			}
-		}
-
-		public void DisconnectInterface(object @object, object userData = null)
-		{
-			var usesHierarchy = @object as IUsesHierarchyData;
-			if (usesHierarchy != null)
-			{
-				RemoveConsumer(usesHierarchy);
-
-				var filterUI = @object as IFilterUI;
-				if (filterUI != null)
-					RemoveConsumer(filterUI);
-			}
 		}
 
 		public void OnSelectionChanged()

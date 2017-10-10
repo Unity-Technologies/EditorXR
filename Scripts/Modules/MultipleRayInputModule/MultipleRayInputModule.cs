@@ -152,8 +152,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		protected override void Awake()
 		{
-			IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
-			IIsHoveringOverUIMethods.isHoveringOverUI = IsHoveringOverUI;
 			base.Awake();
 
 			s_LayerMask = LayerMask.GetMask("UI");
@@ -454,7 +452,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return m_RaycastSources.TryGetValue(rayOrigin, out source) && source.hasObject;
 		}
 
-		void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
+		public void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
 		{
 			RaycastSource source;
 			if (m_RaycastSources.TryGetValue(rayOrigin, out source))

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#if UNITY_5_6_OR_NEWER
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -12,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
         int coIndex = 0;
         IEnumerator routine() { yield return coIndex++; }
 
-        [OneTimeSetUp]
+		[OneTimeSetUp]
         public void Setup()
         {
             mb = new GameObject().AddComponent<DefaultProxyRay>();
@@ -28,3 +29,4 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
         }
     }
 }
+#endif

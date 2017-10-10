@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 

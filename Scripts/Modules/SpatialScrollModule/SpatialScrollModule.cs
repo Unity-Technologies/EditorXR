@@ -104,12 +104,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		void Awake()
-		{
-			IControlSpatialScrollingMethods.performSpatialScroll = PerformScroll;
-			IControlSpatialScrollingMethods.endSpatialScroll = EndScroll;
-		}
-
 		internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
 		{
 			// Continue processing of spatial scrolling for a given caller,

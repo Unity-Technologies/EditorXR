@@ -370,10 +370,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			IUsesSnappingMethods.manipulatorSnap = ManipulatorSnap;
-			IUsesSnappingMethods.directSnap = DirectSnap;
-			IUsesSnappingMethods.clearSnappingState = ClearSnappingState;
-
 			m_GroundPlane = ObjectUtils.Instantiate(m_GroundPlane, transform);
 			m_GroundPlane.SetActive(false);
 
