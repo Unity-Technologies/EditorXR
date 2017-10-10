@@ -20,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 				foundComponent = s_RetrievalList[0];
 				s_RetrievalList.Clear();
 			}
+
 			return foundComponent;
 		}
 

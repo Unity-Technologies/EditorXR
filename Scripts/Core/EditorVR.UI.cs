@@ -132,10 +132,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				foreach (var currentController in m_ManipulatorControllers)
 				{
 					if (currentController.manipulatorDragging)
-					{
 						return true;
-					}
 				}
+
 				return false;
 			}
 

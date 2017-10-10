@@ -149,6 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						m_HoverGameObjects.Remove(directRayOrigin);
 					}
 				}
+
 				s_TempHovers.Clear();
 
 				// Find new hovers

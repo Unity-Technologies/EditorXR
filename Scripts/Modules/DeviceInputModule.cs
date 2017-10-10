@@ -87,6 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				m_LockedControls.Remove(inputControl);
 			}
+
 			s_RemoveList.Clear();
 			m_ProcessedInputs.Clear();
 
