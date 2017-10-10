@@ -11,5 +11,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnRayHover(RayEventData eventData);
     }
 }
-
 #endif

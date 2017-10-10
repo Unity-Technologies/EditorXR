@@ -90,5 +90,4 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         }
     }
 }
-
 #endif

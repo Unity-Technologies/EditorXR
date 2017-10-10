@@ -25,5 +25,4 @@ namespace UnityEditor.Experimental.EditorVR
         Transform rayOrigin { get; }
     }
 }
-
 #endif

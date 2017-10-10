@@ -101,5 +101,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public ButtonObject[] buttons { get { return m_Buttons; } }
     }
 }
-
 #endif

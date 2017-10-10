@@ -23,5 +23,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         private Transform m_BoundsCube;
     }
 }
-
 #endif

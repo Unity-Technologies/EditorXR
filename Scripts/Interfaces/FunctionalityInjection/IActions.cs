@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         List<IAction> actions { get; }
     }
 }
-
 #endif

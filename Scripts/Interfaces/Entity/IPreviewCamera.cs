@@ -29,5 +29,4 @@ namespace UnityEditor.Experimental.EditorVR
         bool enabled { get; set; }
     }
 }
-
 #endif

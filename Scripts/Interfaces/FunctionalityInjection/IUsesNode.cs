@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         Node? node { set; }
     }
 }
-
 #endif

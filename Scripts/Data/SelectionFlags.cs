@@ -15,5 +15,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         Direct = 1 << 1
     }
 }
-
 #endif

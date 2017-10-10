@@ -8,5 +8,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
     /// </summary>
     sealed class EditorMonoBehaviour : MonoBehaviour {}
 }
-
 #endif

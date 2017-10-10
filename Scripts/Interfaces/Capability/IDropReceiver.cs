@@ -33,5 +33,4 @@ namespace UnityEditor.Experimental.EditorVR
         void ReceiveDrop(object dropObject);
     }
 }
-
 #endif

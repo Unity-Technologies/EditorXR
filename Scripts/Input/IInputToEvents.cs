@@ -9,5 +9,4 @@ namespace UnityEditor.Experimental.EditorVR.Input
         event Action activeChanged;
     }
 }
-
 #endif

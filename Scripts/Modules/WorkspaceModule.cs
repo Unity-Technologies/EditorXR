@@ -244,5 +244,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-
 #endif

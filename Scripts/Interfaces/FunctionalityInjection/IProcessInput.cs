@@ -23,5 +23,4 @@ namespace UnityEditor.Experimental.EditorVR
         void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl);
     }
 }
-
 #endif

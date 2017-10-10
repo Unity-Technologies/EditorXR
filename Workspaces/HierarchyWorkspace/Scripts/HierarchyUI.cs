@@ -17,5 +17,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public BaseHandle scrollHandle { get { return m_ScrollHandle; } }
     }
 }
-
 #endif

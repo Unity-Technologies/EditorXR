@@ -32,5 +32,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Image m_Background;
     }
 }
-
 #endif

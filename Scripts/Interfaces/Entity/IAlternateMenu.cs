@@ -15,5 +15,4 @@ namespace UnityEditor.Experimental.EditorVR
         event Action<Transform> itemWasSelected;
     }
 }
-
 #endif

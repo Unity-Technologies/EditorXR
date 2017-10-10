@@ -9,5 +9,4 @@ namespace ListView
         public string template { get; protected set; }
     }
 }
-
 #endif

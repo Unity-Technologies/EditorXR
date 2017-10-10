@@ -11,5 +11,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnRayExit(RayEventData eventData);
     }
 }
-
 #endif

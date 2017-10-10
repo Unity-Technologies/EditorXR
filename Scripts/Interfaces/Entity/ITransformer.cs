@@ -8,5 +8,4 @@ namespace UnityEditor.Experimental.EditorVR
     /// </summary>
     public interface ITransformer {}
 }
-
 #endif

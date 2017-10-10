@@ -16,5 +16,4 @@ namespace UnityEditor.Experimental.EditorVR
         bool IsTwoHandedScaling(Transform rayOrigin);
     }
 }
-
 #endif

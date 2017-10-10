@@ -19,5 +19,4 @@ namespace UnityEditor.Experimental.EditorVR
         Transform transform { get; }
     }
 }
-
 #endif

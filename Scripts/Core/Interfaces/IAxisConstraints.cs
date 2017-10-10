@@ -8,5 +8,4 @@ namespace UnityEditor.Experimental.EditorVR
         ConstrainedAxis constraints { get; }
     }
 }
-
 #endif

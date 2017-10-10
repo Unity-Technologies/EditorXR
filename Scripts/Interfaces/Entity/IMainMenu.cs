@@ -65,5 +65,4 @@ namespace UnityEditor.Experimental.EditorVR
         void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider);
     }
 }
-
 #endif

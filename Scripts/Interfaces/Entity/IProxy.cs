@@ -65,5 +65,4 @@ namespace UnityEditor.Experimental.EditorVR
         Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
     }
 }
-
 #endif

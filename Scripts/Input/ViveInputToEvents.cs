@@ -181,5 +181,4 @@ namespace UnityEditor.Experimental.EditorVR.Input
 #endif
     }
 }
-
 #endif

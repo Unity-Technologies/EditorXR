@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         ActionMap actionMap { get; }
     }
 }
-
 #endif

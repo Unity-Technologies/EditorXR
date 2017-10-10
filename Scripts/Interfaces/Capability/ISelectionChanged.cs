@@ -15,5 +15,4 @@ namespace UnityEditor.Experimental.EditorVR
         void OnSelectionChanged();
     }
 }
-
 #endif

@@ -9,5 +9,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         void DisconnectInterface(object obj, Transform rayOrigin = null);
     }
 }
-
 #endif

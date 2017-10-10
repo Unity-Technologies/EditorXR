@@ -38,5 +38,4 @@ namespace UnityEditor.Experimental.EditorVR
         List<Renderer> ignoreList { set; }
     }
 }
-
 #endif

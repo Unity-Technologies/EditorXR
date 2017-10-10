@@ -9,5 +9,4 @@ namespace UnityEditor.Experimental.EditorVR
         void OnDeserializeWorkspace(object obj);
     }
 }
-
 #endif

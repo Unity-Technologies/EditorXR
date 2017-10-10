@@ -9,5 +9,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         void OnDeserializePreferences(object obj);
     }
 }
-
 #endif

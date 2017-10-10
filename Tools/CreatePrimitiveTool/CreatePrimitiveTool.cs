@@ -196,5 +196,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public ActionMap standardActionMap { private get; set; }
     }
 }
-
 #endif

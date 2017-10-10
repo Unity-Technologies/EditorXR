@@ -16,5 +16,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         public Collider aboveHeadTrigger { get { return m_AboveHeadTrigger; } }
     }
 }
-
 #endif

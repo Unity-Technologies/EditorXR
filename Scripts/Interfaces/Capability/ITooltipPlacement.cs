@@ -24,5 +24,4 @@ namespace UnityEditor.Experimental.EditorVR
         TextAlignment tooltipAlignment { get; }
     }
 }
-
 #endif

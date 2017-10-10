@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         bool primary { set; }
     }
 }
-
 #endif

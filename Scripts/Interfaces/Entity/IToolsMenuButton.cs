@@ -118,5 +118,4 @@ namespace UnityEditor.Experimental.EditorVR
         event Action hovered;
     }
 }
-
 #endif

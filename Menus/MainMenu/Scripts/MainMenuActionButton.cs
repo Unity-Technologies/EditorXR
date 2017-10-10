@@ -19,5 +19,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Func<Action, bool> buttonPressed { get; set; }
     }
 }
-
 #endif

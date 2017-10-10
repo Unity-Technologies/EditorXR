@@ -58,5 +58,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         ProxyExtraData[] m_Extras;
     }
 }
-
 #endif

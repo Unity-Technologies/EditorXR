@@ -26,5 +26,4 @@ namespace UnityEditor.Experimental.EditorVR.Input
         public event Action activeChanged;
     }
 }
-
 #endif

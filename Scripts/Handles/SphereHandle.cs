@@ -93,5 +93,4 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         }
     }
 }
-
 #endif

@@ -11,5 +11,4 @@ namespace UnityEditor.Experimental.EditorVR
         TrackedObject trackedObjectInput { set; }
     }
 }
-
 #endif

@@ -170,5 +170,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 #endif
     }
 }
-
 #endif

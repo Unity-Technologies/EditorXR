@@ -19,5 +19,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         public abstract void ExecuteAction();
     }
 }
-
 #endif

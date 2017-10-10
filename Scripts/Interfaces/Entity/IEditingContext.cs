@@ -25,5 +25,4 @@ namespace UnityEditor.Experimental.EditorVR
         void Dispose();
     }
 }
-
 #endif

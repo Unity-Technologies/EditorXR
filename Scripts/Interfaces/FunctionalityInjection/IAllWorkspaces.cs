@@ -11,5 +11,4 @@ namespace UnityEditor.Experimental.EditorVR
         List<IWorkspace> allWorkspaces { set; }
     }
 }
-
 #endif

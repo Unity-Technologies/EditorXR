@@ -343,5 +343,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-
 #endif

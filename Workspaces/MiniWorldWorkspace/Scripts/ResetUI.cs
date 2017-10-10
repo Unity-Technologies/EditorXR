@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         UnityEngine.UI.Button m_ResetButton;
     }
 }
-
 #endif

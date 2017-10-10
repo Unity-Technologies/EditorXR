@@ -78,5 +78,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-
 #endif

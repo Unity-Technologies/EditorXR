@@ -79,5 +79,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #endif
     }
 }
-
 #endif

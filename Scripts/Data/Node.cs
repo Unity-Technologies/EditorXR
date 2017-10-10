@@ -12,5 +12,4 @@ namespace UnityEditor.Experimental.EditorVR
         RightHand
     }
 }
-
 #endif

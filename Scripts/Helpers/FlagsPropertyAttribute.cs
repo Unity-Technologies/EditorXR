@@ -8,5 +8,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
     /// </summary>
     sealed class FlagsPropertyAttribute : PropertyAttribute {}
 }
-
 #endif

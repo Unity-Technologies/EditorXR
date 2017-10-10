@@ -38,5 +38,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public bool fadeOut { get { return m_FadeOut; } }
     }
 }
-
 #endif

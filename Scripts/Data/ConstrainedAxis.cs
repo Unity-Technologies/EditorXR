@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         Z = 1 << 2
     }
 }
-
 #endif

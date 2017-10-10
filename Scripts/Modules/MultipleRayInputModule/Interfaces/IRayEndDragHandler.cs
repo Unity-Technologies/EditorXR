@@ -11,5 +11,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnEndDrag(RayEventData eventData);
     }
 }
-
 #endif

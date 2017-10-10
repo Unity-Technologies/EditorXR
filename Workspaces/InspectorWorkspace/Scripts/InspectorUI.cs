@@ -31,5 +31,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         RectTransform m_ListPanel;
     }
 }
-
 #endif

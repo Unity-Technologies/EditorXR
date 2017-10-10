@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         byte stencilRef { get; set; }
     }
 }
-
 #endif

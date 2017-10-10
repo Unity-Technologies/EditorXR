@@ -24,5 +24,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public RayEventData(EventSystem eventSystem) : base(eventSystem) {}
     }
 }
-
 #endif

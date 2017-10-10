@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         List<ActionMenuData> menuActions { set; }
     }
 }
-
 #endif

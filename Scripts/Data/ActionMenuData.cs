@@ -34,5 +34,4 @@ namespace UnityEditor.Experimental.EditorVR
         public string tooltipText { get { return name; } }
     }
 }
-
 #endif

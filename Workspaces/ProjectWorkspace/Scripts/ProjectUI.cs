@@ -32,5 +32,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public WorkspaceHighlight folderPanelHighlight { get { return m_FolderPanelHighlight; } }
     }
 }
-
 #endif

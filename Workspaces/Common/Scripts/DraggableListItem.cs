@@ -103,5 +103,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected virtual void OnMagnetizeEnded() {}
     }
 }
-
 #endif

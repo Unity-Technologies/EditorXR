@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         SelectionFlags selectionFlags { get; set; }
     }
 }
-
 #endif

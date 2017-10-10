@@ -16,5 +16,4 @@ namespace UnityEditor.Experimental.EditorVR
         List<FolderData> folderData { set; }
     }
 }
-
 #endif

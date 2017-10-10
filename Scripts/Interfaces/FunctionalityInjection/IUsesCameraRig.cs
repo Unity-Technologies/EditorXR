@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         Transform cameraRig { set; }
     }
 }
-
 #endif

@@ -154,5 +154,4 @@ namespace UnityEditor.Experimental.EditorVR.Data
         }
     }
 }
-
 #endif

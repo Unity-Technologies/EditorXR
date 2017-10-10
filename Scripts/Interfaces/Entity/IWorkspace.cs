@@ -35,5 +35,4 @@ namespace UnityEditor.Experimental.EditorVR
         Bounds contentBounds { get; set; }
     }
 }
-
 #endif

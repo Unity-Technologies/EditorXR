@@ -8,5 +8,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         void LateBindInterfaceMethods(T provider);
     }
 }
-
 #endif

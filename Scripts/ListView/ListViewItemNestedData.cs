@@ -23,5 +23,4 @@ namespace ListView
         public event Action<ListViewItemNestedData<TChild, TIndex>, List<TChild>> childrenChanging;
     }
 }
-
 #endif

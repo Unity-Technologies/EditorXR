@@ -258,5 +258,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         protected abstract void CapsLock();
     }
 }
-
 #endif

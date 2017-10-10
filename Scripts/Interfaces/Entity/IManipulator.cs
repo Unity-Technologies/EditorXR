@@ -41,5 +41,4 @@ namespace UnityEditor.Experimental.EditorVR
         bool dragging { get; }
     }
 }
-
 #endif

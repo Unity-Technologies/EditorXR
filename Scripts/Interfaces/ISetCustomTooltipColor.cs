@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         GradientPair customTooltipHighlightColor { get; }
     }
 }
-
 #endif

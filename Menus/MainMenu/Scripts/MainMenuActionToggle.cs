@@ -16,5 +16,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         private Text m_NameText2;
     }
 }
-
 #endif

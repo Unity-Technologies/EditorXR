@@ -14,5 +14,4 @@ namespace UnityEditor.Experimental.EditorVR
         Type proxyType { set; }
     }
 }
-
 #endif

@@ -18,5 +18,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Temporary = OtherMenu | OverUI | OverWorkspace | HasDirectSelection
     }
 }
-
 #endif

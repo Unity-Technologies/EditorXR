@@ -55,5 +55,4 @@ namespace UnityEditor.Experimental.EditorVR
         event Action<Transform, Transform> objectsTransferred;
     }
 }
-
 #endif

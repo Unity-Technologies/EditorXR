@@ -19,5 +19,4 @@ namespace UnityEditor.Experimental.EditorVR
         bool manipulatorDragging { get; }
     }
 }
-
 #endif

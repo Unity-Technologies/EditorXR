@@ -15,5 +15,4 @@ namespace UnityEditor.Experimental.EditorVR
         List<HierarchyData> hierarchyData { set; }
     }
 }
-
 #endif

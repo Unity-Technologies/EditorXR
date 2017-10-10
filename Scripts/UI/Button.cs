@@ -83,5 +83,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
-
 #endif
