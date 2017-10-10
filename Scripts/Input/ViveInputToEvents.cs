@@ -3,6 +3,7 @@ using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.XR;
+
 #if ENABLE_STEAMVR_INPUT
 using System;
 using Valve.VR;
@@ -12,11 +13,11 @@ using Valve.VR;
 
 namespace UnityEditor.Experimental.EditorVR.Input
 {
-	/// <summary>
-	/// Sends events to the input system based on native SteamVR SDK calls
-	/// </summary>
-	sealed class ViveInputToEvents : BaseInputToEvents
-	{
+    /// <summary>
+    /// Sends events to the input system based on native SteamVR SDK calls
+    /// </summary>
+    sealed class ViveInputToEvents : BaseInputToEvents
+    {
 #if ENABLE_STEAMVR_INPUT
 		enum XorY
 		{
@@ -178,6 +179,6 @@ namespace UnityEditor.Experimental.EditorVR.Input
 			InputSystem.QueueEvent(inputEvent);
 		}
 #endif
-	}
+    }
 }
 #endif

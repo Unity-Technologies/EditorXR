@@ -7,141 +7,142 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
-		IControlHaptics, IUsesNode, IConnectInterfaces
-	{
-		const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
+    sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
+        IControlHaptics, IUsesNode, IConnectInterfaces
+    {
+        const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
 
-		public ActionMap actionMap { get {return m_RadialMenuActionMap; } }
-		[SerializeField]
-		ActionMap m_RadialMenuActionMap;
+        public ActionMap actionMap { get { return m_RadialMenuActionMap; } }
 
-		[SerializeField]
-		RadialMenuUI m_RadialMenuPrefab;
+        [SerializeField]
+        ActionMap m_RadialMenuActionMap;
 
-		[SerializeField]
-		HapticPulse m_ReleasePulse;
+        [SerializeField]
+        RadialMenuUI m_RadialMenuPrefab;
 
-		[SerializeField]
-		HapticPulse m_ButtonHoverPulse;
+        [SerializeField]
+        HapticPulse m_ReleasePulse;
 
-		[SerializeField]
-		HapticPulse m_ButtonClickedPulse;
+        [SerializeField]
+        HapticPulse m_ButtonHoverPulse;
 
-		RadialMenuUI m_RadialMenuUI;
-		List<ActionMenuData> m_MenuActions;
-		Transform m_AlternateMenuOrigin;
-		MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
+        [SerializeField]
+        HapticPulse m_ButtonClickedPulse;
 
-		public event Action<Transform> itemWasSelected;
+        RadialMenuUI m_RadialMenuUI;
+        List<ActionMenuData> m_MenuActions;
+        Transform m_AlternateMenuOrigin;
+        MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 
-		public Transform rayOrigin { private get; set; }
+        public event Action<Transform> itemWasSelected;
 
-		public Transform menuOrigin { get; set; }
+        public Transform rayOrigin { private get; set; }
 
-		public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
+        public Transform menuOrigin { get; set; }
 
-		public Node? node { get; set; }
+        public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
 
-		public Bounds localBounds { get { return default(Bounds); } }
+        public Node? node { get; set; }
 
-		public List<ActionMenuData> menuActions
-		{
-			get { return m_MenuActions; }
-			set
-			{
-				m_MenuActions = value;
+        public Bounds localBounds { get { return default(Bounds); } }
 
-				if (m_RadialMenuUI)
-					m_RadialMenuUI.actions = value;
-			}
-		}
+        public List<ActionMenuData> menuActions
+        {
+            get { return m_MenuActions; }
+            set
+            {
+                m_MenuActions = value;
 
-		public Transform alternateMenuOrigin
-		{
-			get { return m_AlternateMenuOrigin; }
-			set
-			{
-				m_AlternateMenuOrigin = value;
+                if (m_RadialMenuUI)
+                    m_RadialMenuUI.actions = value;
+            }
+        }
 
-				if (m_RadialMenuUI != null)
-					m_RadialMenuUI.alternateMenuOrigin = value;
-			}
-		}
+        public Transform alternateMenuOrigin
+        {
+            get { return m_AlternateMenuOrigin; }
+            set
+            {
+                m_AlternateMenuOrigin = value;
 
-		public MenuHideFlags menuHideFlags
-		{
-			get { return m_MenuHideFlags; }
-			set
-			{
-				if (m_MenuHideFlags != value)
-				{
-					m_MenuHideFlags = value;
-					if (m_RadialMenuUI)
-						m_RadialMenuUI.visible = value == 0;
-				}
-			}
-		}
+                if (m_RadialMenuUI != null)
+                    m_RadialMenuUI.alternateMenuOrigin = value;
+            }
+        }
 
-		void Start()
-		{
-			m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
-			m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
-			m_RadialMenuUI.actions = menuActions;
-			this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
-			m_RadialMenuUI.Setup();
-			m_RadialMenuUI.buttonHovered += OnButtonHovered;
-			m_RadialMenuUI.buttonClicked += OnButtonClicked;
-		}
+        public MenuHideFlags menuHideFlags
+        {
+            get { return m_MenuHideFlags; }
+            set
+            {
+                if (m_MenuHideFlags != value)
+                {
+                    m_MenuHideFlags = value;
+                    if (m_RadialMenuUI)
+                        m_RadialMenuUI.visible = value == 0;
+                }
+            }
+        }
 
-		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
-		{
-			var radialMenuInput = (RadialMenuInput)input;
-			if (radialMenuInput == null || m_MenuHideFlags != 0)
-				return;
-			
-			var inputDirection = radialMenuInput.navigate.vector2;
+        void Start()
+        {
+            m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
+            m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
+            m_RadialMenuUI.actions = menuActions;
+            this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
+            m_RadialMenuUI.Setup();
+            m_RadialMenuUI.buttonHovered += OnButtonHovered;
+            m_RadialMenuUI.buttonClicked += OnButtonClicked;
+        }
 
-			if (inputDirection.magnitude > k_ActivationThreshold)
-			{
-				// Composite controls need to be consumed separately
-				consumeControl(radialMenuInput.navigateX);
-				consumeControl(radialMenuInput.navigateY);
-				m_RadialMenuUI.buttonInputDirection = inputDirection;
-			}
-			else
-			{
-				m_RadialMenuUI.buttonInputDirection = Vector3.zero;
-				return;
-			}
+        public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
+        {
+            var radialMenuInput = (RadialMenuInput)input;
+            if (radialMenuInput == null || m_MenuHideFlags != 0)
+                return;
 
-			var selectControl = radialMenuInput.selectItem;
-			m_RadialMenuUI.pressedDown = selectControl.wasJustPressed;
-			if (m_RadialMenuUI.pressedDown)
-				consumeControl(selectControl);
+            var inputDirection = radialMenuInput.navigate.vector2;
 
-			if (selectControl.wasJustReleased)
-			{
-				this.Pulse(node, m_ReleasePulse);
+            if (inputDirection.magnitude > k_ActivationThreshold)
+            {
+                // Composite controls need to be consumed separately
+                consumeControl(radialMenuInput.navigateX);
+                consumeControl(radialMenuInput.navigateY);
+                m_RadialMenuUI.buttonInputDirection = inputDirection;
+            }
+            else
+            {
+                m_RadialMenuUI.buttonInputDirection = Vector3.zero;
+                return;
+            }
 
-				m_RadialMenuUI.SelectionOccurred();
+            var selectControl = radialMenuInput.selectItem;
+            m_RadialMenuUI.pressedDown = selectControl.wasJustPressed;
+            if (m_RadialMenuUI.pressedDown)
+                consumeControl(selectControl);
 
-				if (itemWasSelected != null)
-					itemWasSelected(rayOrigin);
+            if (selectControl.wasJustReleased)
+            {
+                this.Pulse(node, m_ReleasePulse);
 
-				consumeControl(selectControl);
-			}
-		}
+                m_RadialMenuUI.SelectionOccurred();
 
-		void OnButtonClicked()
-		{
-			this.Pulse(node, m_ButtonClickedPulse);
-		}
+                if (itemWasSelected != null)
+                    itemWasSelected(rayOrigin);
 
-		void OnButtonHovered()
-		{
-			this.Pulse(node, m_ButtonHoverPulse);
-		}
-	}
+                consumeControl(selectControl);
+            }
+        }
+
+        void OnButtonClicked()
+        {
+            this.Pulse(node, m_ButtonClickedPulse);
+        }
+
+        void OnButtonHovered()
+        {
+            this.Pulse(node, m_ButtonHoverPulse);
+        }
+    }
 }
 #endif

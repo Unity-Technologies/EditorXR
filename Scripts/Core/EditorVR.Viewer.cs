@@ -10,292 +10,305 @@ using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	partial class EditorVR
-	{
-		[SerializeField]
-		GameObject m_PlayerModelPrefab;
+    partial class EditorVR
+    {
+        [SerializeField]
+        GameObject m_PlayerModelPrefab;
 
-		[SerializeField]
-		GameObject m_PreviewCameraPrefab;
+        [SerializeField]
+        GameObject m_PreviewCameraPrefab;
 
-		class Viewer : Nested, IInterfaceConnector, ISerializePreferences
-		{
-			[Serializable]
-			class Preferences
-			{
-				[SerializeField]
-				Vector3 m_CameraPosition;
-				[SerializeField]
-				Quaternion m_CameraRotation;
-				[SerializeField]
-				float m_CameraRigScale = 1;
+        class Viewer : Nested, IInterfaceConnector, ISerializePreferences
+        {
+            [Serializable]
+            class Preferences
+            {
+                [SerializeField]
+                Vector3 m_CameraPosition;
+                [SerializeField]
+                Quaternion m_CameraRotation;
+                [SerializeField]
+                float m_CameraRigScale = 1;
 
-				public Vector3 cameraPosition { get { return m_CameraPosition; } set { m_CameraPosition = value; } }
-				public Quaternion cameraRotation { get { return m_CameraRotation; } set { m_CameraRotation = value; } }
-				public float cameraRigScale { get { return m_CameraRigScale; } set { m_CameraRigScale = value; } }
-			}
+                public Vector3 cameraPosition
+                {
+                    get { return m_CameraPosition; }
+                    set { m_CameraPosition = value; }
+                }
 
-			const float k_CameraRigTransitionTime = 0.25f;
+                public Quaternion cameraRotation
+                {
+                    get { return m_CameraRotation; }
+                    set { m_CameraRotation = value; }
+                }
 
-			PlayerBody m_PlayerBody;
-			float m_OriginalNearClipPlane;
-			float m_OriginalFarClipPlane;
-			readonly List<Renderer> m_VRPlayerObjects = new List<Renderer>();
+                public float cameraRigScale
+                {
+                    get { return m_CameraRigScale; }
+                    set { m_CameraRigScale = value; }
+                }
+            }
 
-			readonly Preferences m_Preferences = new Preferences();
+            const float k_CameraRigTransitionTime = 0.25f;
 
-			internal IPreviewCamera customPreviewCamera { get; private set; }
+            PlayerBody m_PlayerBody;
+            float m_OriginalNearClipPlane;
+            float m_OriginalFarClipPlane;
+            readonly List<Renderer> m_VRPlayerObjects = new List<Renderer>();
 
-			public bool preserveCameraRig { private get; set; }
+            readonly Preferences m_Preferences = new Preferences();
 
-			public bool hmdReady { get; private set; }
+            internal IPreviewCamera customPreviewCamera { get; private set; }
 
-			public Viewer()
-			{
-				IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
-				IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
-				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
-				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
-				IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
-				IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
+            public bool preserveCameraRig { private get; set; }
 
-				VRView.hmdStatusChange += OnHMDStatusChange;
+            public bool hmdReady { get; private set; }
 
-				preserveCameraRig = true;
-			}
+            public Viewer()
+            {
+                IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
+                IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
+                IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
+                IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
+                IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
+                IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
 
-			internal override void OnDestroy()
-			{
-				base.OnDestroy();
+                VRView.hmdStatusChange += OnHMDStatusChange;
 
-				VRView.hmdStatusChange -= OnHMDStatusChange;
+                preserveCameraRig = true;
+            }
 
-				var cameraRig = CameraUtils.GetCameraRig();
-				cameraRig.transform.parent = null;
+            internal override void OnDestroy()
+            {
+                base.OnDestroy();
 
-				ObjectUtils.Destroy(m_PlayerBody.gameObject);
+                VRView.hmdStatusChange -= OnHMDStatusChange;
 
-				if (customPreviewCamera != null)
-					ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
-			}
+                var cameraRig = CameraUtils.GetCameraRig();
+                cameraRig.transform.parent = null;
 
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
-			{
-				var usesCameraRig = obj as IUsesCameraRig;
-				if (usesCameraRig != null)
-					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
-			}
+                ObjectUtils.Destroy(m_PlayerBody.gameObject);
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
-			{
-			}
+                if (customPreviewCamera != null)
+                    ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
+            }
 
-			public object OnSerializePreferences()
-			{
-				if (!preserveCameraRig)
-					return null;
+            public void ConnectInterface(object obj, Transform rayOrigin = null)
+            {
+                var usesCameraRig = obj as IUsesCameraRig;
+                if (usesCameraRig != null)
+                    usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
+            }
 
-				if (hmdReady)
-					SaveCameraState();
+            public void DisconnectInterface(object obj, Transform rayOrigin = null) {}
 
-				return m_Preferences;
-			}
+            public object OnSerializePreferences()
+            {
+                if (!preserveCameraRig)
+                    return null;
 
-			void OnHMDStatusChange(bool ready)
-			{
-				hmdReady = ready;
-				if (!ready)
-					SaveCameraState();
-			}
+                if (hmdReady)
+                    SaveCameraState();
 
-			void SaveCameraState()
-			{
-				var camera = CameraUtils.GetMainCamera();
-				var cameraRig = CameraUtils.GetCameraRig();
-				var cameraTransform = camera.transform;
-				var cameraRigScale = cameraRig.localScale.x;
-				m_Preferences.cameraRigScale = cameraRigScale;
-				m_Preferences.cameraPosition = cameraTransform.position;
-				m_Preferences.cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
-			}
+                return m_Preferences;
+            }
 
-			public void OnDeserializePreferences(object obj)
-			{
-				if (!preserveCameraRig)
-					return;
+            void OnHMDStatusChange(bool ready)
+            {
+                hmdReady = ready;
+                if (!ready)
+                    SaveCameraState();
+            }
 
-				var preferences = (Preferences)obj;
+            void SaveCameraState()
+            {
+                var camera = CameraUtils.GetMainCamera();
+                var cameraRig = CameraUtils.GetCameraRig();
+                var cameraTransform = camera.transform;
+                var cameraRigScale = cameraRig.localScale.x;
+                m_Preferences.cameraRigScale = cameraRigScale;
+                m_Preferences.cameraPosition = cameraTransform.position;
+                m_Preferences.cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
+            }
 
-				var camera = CameraUtils.GetMainCamera();
-				var cameraRig = CameraUtils.GetCameraRig();
-				var cameraTransform = camera.transform;
-				var cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
-				var inverseRotation = Quaternion.Inverse(cameraRotation);
-				cameraRig.position = Vector3.zero;
-				cameraRig.rotation = inverseRotation * preferences.cameraRotation;
-				SetViewerScale(preferences.cameraRigScale);
-				cameraRig.position = preferences.cameraPosition - cameraTransform.position;
-			}
+            public void OnDeserializePreferences(object obj)
+            {
+                if (!preserveCameraRig)
+                    return;
 
-			internal void InitializeCamera()
-			{
-				var cameraRig = CameraUtils.GetCameraRig();
-				cameraRig.parent = evr.transform; // Parent the camera rig under EditorVR
-				cameraRig.hideFlags = defaultHideFlags;
-				var viewerCamera = CameraUtils.GetMainCamera();
-				viewerCamera.gameObject.hideFlags = defaultHideFlags;
-				m_OriginalNearClipPlane = viewerCamera.nearClipPlane;
-				m_OriginalFarClipPlane = viewerCamera.farClipPlane;
-				if (XRSettings.loadedDeviceName == "OpenVR")
-				{
-					// Steam's reference position should be at the feet and not at the head as we do with Oculus
-					cameraRig.localPosition = Vector3.zero;
-				}
+                var preferences = (Preferences)obj;
 
-				var hmdOnlyLayerMask = 0;
-				if (evr.m_PreviewCameraPrefab)
-				{
-					var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
-					go.transform.SetParent(CameraUtils.GetCameraRig(), false);
+                var camera = CameraUtils.GetMainCamera();
+                var cameraRig = CameraUtils.GetCameraRig();
+                var cameraTransform = camera.transform;
+                var cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
+                var inverseRotation = Quaternion.Inverse(cameraRotation);
+                cameraRig.position = Vector3.zero;
+                cameraRig.rotation = inverseRotation * preferences.cameraRotation;
+                SetViewerScale(preferences.cameraRigScale);
+                cameraRig.position = preferences.cameraPosition - cameraTransform.position;
+            }
 
-					customPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
-					if (customPreviewCamera != null)
-					{
-						VRView.customPreviewCamera = customPreviewCamera.previewCamera;
-						customPreviewCamera.vrCamera = VRView.viewerCamera;
-						hmdOnlyLayerMask = customPreviewCamera.hmdOnlyLayerMask;
-						evr.m_Interfaces.ConnectInterfaces(customPreviewCamera);
-					}
-				}
-				VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
-			}
+            internal void InitializeCamera()
+            {
+                var cameraRig = CameraUtils.GetCameraRig();
+                cameraRig.parent = evr.transform; // Parent the camera rig under EditorVR
+                cameraRig.hideFlags = defaultHideFlags;
+                var viewerCamera = CameraUtils.GetMainCamera();
+                viewerCamera.gameObject.hideFlags = defaultHideFlags;
+                m_OriginalNearClipPlane = viewerCamera.nearClipPlane;
+                m_OriginalFarClipPlane = viewerCamera.farClipPlane;
+                if (XRSettings.loadedDeviceName == "OpenVR")
+                {
+                    // Steam's reference position should be at the feet and not at the head as we do with Oculus
+                    cameraRig.localPosition = Vector3.zero;
+                }
 
-			internal void UpdateCamera()
-			{
-				if (customPreviewCamera != null)
-					customPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
-			}
+                var hmdOnlyLayerMask = 0;
+                if (evr.m_PreviewCameraPrefab)
+                {
+                    var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
+                    go.transform.SetParent(CameraUtils.GetCameraRig(), false);
 
-			internal void AddPlayerModel()
-			{
-				m_PlayerBody = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
-				var renderer = m_PlayerBody.GetComponent<Renderer>();
-				evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
-				renderer.GetComponentsInChildren(true, m_VRPlayerObjects);
-				evr.GetModule<SnappingModule>().ignoreList = m_VRPlayerObjects;
-			}
+                    customPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
+                    if (customPreviewCamera != null)
+                    {
+                        VRView.customPreviewCamera = customPreviewCamera.previewCamera;
+                        customPreviewCamera.vrCamera = VRView.viewerCamera;
+                        hmdOnlyLayerMask = customPreviewCamera.hmdOnlyLayerMask;
+                        evr.m_Interfaces.ConnectInterfaces(customPreviewCamera);
+                    }
+                }
+                VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
+            }
 
-			internal bool IsOverShoulder(Transform rayOrigin)
-			{
-				return Overlaps(rayOrigin, m_PlayerBody.overShoulderTrigger);
-			}
+            internal void UpdateCamera()
+            {
+                if (customPreviewCamera != null)
+                    customPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
+            }
 
-			bool IsAboveHead(Transform rayOrigin)
-			{
-				return Overlaps(rayOrigin, m_PlayerBody.aboveHeadTrigger);
-			}
+            internal void AddPlayerModel()
+            {
+                m_PlayerBody = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
+                var renderer = m_PlayerBody.GetComponent<Renderer>();
+                evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
+                renderer.GetComponentsInChildren(true, m_VRPlayerObjects);
+                evr.GetModule<SnappingModule>().ignoreList = m_VRPlayerObjects;
+            }
 
-			static bool Overlaps(Transform rayOrigin, Collider trigger)
-			{
-				var radius = DirectSelection.GetPointerLength(rayOrigin);
+            internal bool IsOverShoulder(Transform rayOrigin)
+            {
+                return Overlaps(rayOrigin, m_PlayerBody.overShoulderTrigger);
+            }
 
-				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
-				foreach (var collider in colliders)
-				{
-					if (collider == trigger)
-						return true;
-				}
+            bool IsAboveHead(Transform rayOrigin)
+            {
+                return Overlaps(rayOrigin, m_PlayerBody.aboveHeadTrigger);
+            }
 
-				return false;
-			}
+            static bool Overlaps(Transform rayOrigin, Collider trigger)
+            {
+                var radius = DirectSelection.GetPointerLength(rayOrigin);
 
-			internal static void DropPlayerHead(Transform playerHead)
-			{
-				var cameraRig = CameraUtils.GetCameraRig();
-				var mainCamera = CameraUtils.GetMainCamera().transform;
+                var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
+                foreach (var collider in colliders)
+                {
+                    if (collider == trigger)
+                        return true;
+                }
 
-				// Hide player head to avoid jarring impact
-				var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
-				foreach (var renderer in playerHeadRenderers)
-				{
-					renderer.enabled = false;
-				}
+                return false;
+            }
 
-				var rotationDiff = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
-				var cameraDiff = cameraRig.position - mainCamera.position;
-				cameraDiff.y = 0;
-				var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
+            internal static void DropPlayerHead(Transform playerHead)
+            {
+                var cameraRig = CameraUtils.GetCameraRig();
+                var mainCamera = CameraUtils.GetMainCamera().transform;
 
-				var endPosition = cameraRig.position + (playerHead.position - mainCamera.position) + rotationOffset;
-				var endRotation = cameraRig.rotation * rotationDiff;
-				var viewDirection = endRotation * Vector3.forward;
+                // Hide player head to avoid jarring impact
+                var playerHeadRenderers = playerHead.GetComponentsInChildren<Renderer>();
+                foreach (var renderer in playerHeadRenderers)
+                {
+                    renderer.enabled = false;
+                }
 
-				evr.StartCoroutine(UpdateCameraRig(endPosition, viewDirection, () =>
-				{
-					playerHead.hideFlags = defaultHideFlags;
-					playerHead.parent = mainCamera;
-					playerHead.localRotation = Quaternion.identity;
-					playerHead.localPosition = Vector3.zero;
+                var rotationDiff = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
+                var cameraDiff = cameraRig.position - mainCamera.position;
+                cameraDiff.y = 0;
+                var rotationOffset = rotationDiff * cameraDiff - cameraDiff;
 
-					foreach (var renderer in playerHeadRenderers)
-					{
-						renderer.enabled = true;
-					}
-				}));
-			}
+                var endPosition = cameraRig.position + (playerHead.position - mainCamera.position) + rotationOffset;
+                var endRotation = cameraRig.rotation * rotationDiff;
+                var viewDirection = endRotation * Vector3.forward;
 
-			static IEnumerator UpdateCameraRig(Vector3 position, Vector3? viewDirection, Action onComplete = null)
-			{
-				var cameraRig = CameraUtils.GetCameraRig();
+                evr.StartCoroutine(UpdateCameraRig(endPosition, viewDirection, () =>
+                {
+                    playerHead.hideFlags = defaultHideFlags;
+                    playerHead.parent = mainCamera;
+                    playerHead.localRotation = Quaternion.identity;
+                    playerHead.localPosition = Vector3.zero;
 
-				var startPosition = cameraRig.position;
-				var startRotation = cameraRig.rotation;
+                    foreach (var renderer in playerHeadRenderers)
+                    {
+                        renderer.enabled = true;
+                    }
+                }));
+            }
 
-				var rotation = startRotation;
-				if (viewDirection.HasValue)
-				{
-					var direction = viewDirection.Value;
-					direction.y = 0;
-					rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-				}
+            static IEnumerator UpdateCameraRig(Vector3 position, Vector3? viewDirection, Action onComplete = null)
+            {
+                var cameraRig = CameraUtils.GetCameraRig();
 
-				var diffTime = 0f;
-				var startTime = Time.realtimeSinceStartup;
-				while (diffTime < k_CameraRigTransitionTime)
-				{
-					var t = diffTime / k_CameraRigTransitionTime;
-					// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
-					cameraRig.position = Vector3.Lerp(startPosition, position, t);
-					cameraRig.rotation = Quaternion.Lerp(startRotation, rotation, t);
-					yield return null;
-					diffTime = Time.realtimeSinceStartup - startTime;
-				}
+                var startPosition = cameraRig.position;
+                var startRotation = cameraRig.rotation;
 
-				cameraRig.position = position;
-				cameraRig.rotation = rotation;
+                var rotation = startRotation;
+                if (viewDirection.HasValue)
+                {
+                    var direction = viewDirection.Value;
+                    direction.y = 0;
+                    rotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
+                }
 
-				if (onComplete != null)
-					onComplete();
-			}
+                var diffTime = 0f;
+                var startTime = Time.realtimeSinceStartup;
+                while (diffTime < k_CameraRigTransitionTime)
+                {
+                    var t = diffTime / k_CameraRigTransitionTime;
 
-			static void MoveCameraRig(Vector3 position, Vector3? viewdirection)
-			{
-				evr.StartCoroutine(UpdateCameraRig(position, viewdirection));
-			}
+                    // Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
+                    cameraRig.position = Vector3.Lerp(startPosition, position, t);
+                    cameraRig.rotation = Quaternion.Lerp(startRotation, rotation, t);
+                    yield return null;
+                    diffTime = Time.realtimeSinceStartup - startTime;
+                }
 
-			internal static float GetViewerScale()
-			{
-				return CameraUtils.GetCameraRig().localScale.x;
-			}
+                cameraRig.position = position;
+                cameraRig.rotation = rotation;
 
-			void SetViewerScale(float scale)
-			{
-				var camera = CameraUtils.GetMainCamera();
-				CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
-				camera.nearClipPlane = m_OriginalNearClipPlane * scale;
-				camera.farClipPlane = m_OriginalFarClipPlane * scale;
-			}
-		}
-	}
+                if (onComplete != null)
+                    onComplete();
+            }
+
+            static void MoveCameraRig(Vector3 position, Vector3? viewdirection)
+            {
+                evr.StartCoroutine(UpdateCameraRig(position, viewdirection));
+            }
+
+            internal static float GetViewerScale()
+            {
+                return CameraUtils.GetCameraRig().localScale.x;
+            }
+
+            void SetViewerScale(float scale)
+            {
+                var camera = CameraUtils.GetMainCamera();
+                CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
+                camera.nearClipPlane = m_OriginalNearClipPlane * scale;
+                camera.farClipPlane = m_OriginalFarClipPlane * scale;
+            }
+        }
+    }
 }
 #endif

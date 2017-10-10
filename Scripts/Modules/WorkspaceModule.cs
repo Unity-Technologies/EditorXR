@@ -10,208 +10,238 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces, ISerializePreferences
-	{
-		[Serializable]
-		class Preferences
-		{
-			[SerializeField]
-			List<WorkspaceLayout> m_WorkspaceLayouts = new List<WorkspaceLayout>();
+    sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces, ISerializePreferences
+    {
+        [Serializable]
+        class Preferences
+        {
+            [SerializeField]
+            List<WorkspaceLayout> m_WorkspaceLayouts = new List<WorkspaceLayout>();
 
-			public List<WorkspaceLayout> workspaceLayouts { get { return m_WorkspaceLayouts; } }
-		}
+            public List<WorkspaceLayout> workspaceLayouts { get { return m_WorkspaceLayouts; } }
+        }
 
-		[Serializable]
-		class WorkspaceLayout
-		{
-			[SerializeField]
-			string m_Name;
-			[SerializeField]
-			Vector3 m_LocalPosition;
-			[SerializeField]
-			Quaternion m_LocalRotation;
-			[SerializeField]
-			Bounds m_ContentBounds;
-			[SerializeField]
-			string m_PayloadType;
-			[SerializeField]
-			string m_Payload;
+        [Serializable]
+        class WorkspaceLayout
+        {
+            [SerializeField]
+            string m_Name;
+            [SerializeField]
+            Vector3 m_LocalPosition;
+            [SerializeField]
+            Quaternion m_LocalRotation;
+            [SerializeField]
+            Bounds m_ContentBounds;
+            [SerializeField]
+            string m_PayloadType;
+            [SerializeField]
+            string m_Payload;
 
-			public string name { get { return m_Name; } set { m_Name = value; } }
-			public Vector3 localPosition { get { return m_LocalPosition; } set { m_LocalPosition = value; } }
-			public Quaternion localRotation { get { return m_LocalRotation; } set { m_LocalRotation = value; } }
-			public Bounds contentBounds { get { return m_ContentBounds; } set { m_ContentBounds = value; } }
+            public string name
+            {
+                get { return m_Name; }
+                set { m_Name = value; }
+            }
 
-			public string payloadType { get { return m_PayloadType; } set { m_PayloadType = value; } }
-			public string payload { get { return m_Payload; } set { m_Payload = value; } }
-		}
+            public Vector3 localPosition
+            {
+                get { return m_LocalPosition; }
+                set { m_LocalPosition = value; }
+            }
 
-		internal static readonly Vector3 DefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
-		internal static readonly Quaternion DefaultWorkspaceTilt = Quaternion.AngleAxis(-45, Vector3.right);
+            public Quaternion localRotation
+            {
+                get { return m_LocalRotation; }
+                set { m_LocalRotation = value; }
+            }
 
-		internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
-		readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
+            public Bounds contentBounds
+            {
+                get { return m_ContentBounds; }
+                set { m_ContentBounds = value; }
+            }
 
-		internal List<WorkspaceInput> workspaceInputs { get { return m_WorkspaceInputs; } }
-		readonly List<WorkspaceInput> m_WorkspaceInputs = new List<WorkspaceInput>();
+            public string payloadType
+            {
+                get { return m_PayloadType; }
+                set { m_PayloadType = value; }
+            }
 
-		internal event Action<IWorkspace> workspaceCreated;
-		internal event Action<IWorkspace> workspaceDestroyed;
+            public string payload
+            {
+                get { return m_Payload; }
+                set { m_Payload = value; }
+            }
+        }
 
-		internal static List<Type> workspaceTypes { get; private set; }
+        internal static readonly Vector3 DefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
+        internal static readonly Quaternion DefaultWorkspaceTilt = Quaternion.AngleAxis(-45, Vector3.right);
 
-		internal Transform leftRayOrigin { private get; set; }
-		internal Transform rightRayOrigin { private get; set; }
+        internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
 
-		internal bool preserveWorkspaces { get; set; }
+        readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
 
-		static WorkspaceModule()
-		{
-			workspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
-		}
+        internal List<WorkspaceInput> workspaceInputs { get { return m_WorkspaceInputs; } }
 
-		public WorkspaceModule()
-		{
-			preserveWorkspaces = true;
-		}
+        readonly List<WorkspaceInput> m_WorkspaceInputs = new List<WorkspaceInput>();
 
-		void OnDestroy()
-		{
-			while (m_Workspaces.Count > 0)
-				ObjectUtils.Destroy(m_Workspaces[0].transform.gameObject);
-		}
+        internal event Action<IWorkspace> workspaceCreated;
+        internal event Action<IWorkspace> workspaceDestroyed;
 
-		public object OnSerializePreferences()
-		{
-			if (!preserveWorkspaces)
-				return null;
+        internal static List<Type> workspaceTypes { get; private set; }
 
-			var preferences = new Preferences();
-			var workspaceLayouts = preferences.workspaceLayouts;
-			foreach (var workspace in workspaces)
-			{
-				var layout = new WorkspaceLayout();
-				layout.name = workspace.GetType().FullName;
-				layout.localPosition = workspace.transform.localPosition;
-				layout.localRotation = workspace.transform.localRotation;
-				layout.contentBounds = workspace.contentBounds;
+        internal Transform leftRayOrigin { private get; set; }
+        internal Transform rightRayOrigin { private get; set; }
 
-				var serializeWorkspace = workspace as ISerializeWorkspace;
-				if (serializeWorkspace != null)
-				{
-					var payload = serializeWorkspace.OnSerializeWorkspace();
-					layout.payloadType = payload.GetType().FullName;
-					layout.payload = JsonUtility.ToJson(payload);
-				}
+        internal bool preserveWorkspaces { get; set; }
 
-				workspaceLayouts.Add(layout);
-			}
+        static WorkspaceModule()
+        {
+            workspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
+        }
 
-			return preferences;
-		}
+        public WorkspaceModule()
+        {
+            preserveWorkspaces = true;
+        }
 
-		public void OnDeserializePreferences(object obj)
-		{
-			if (!preserveWorkspaces)
-				return;
+        void OnDestroy()
+        {
+            while (m_Workspaces.Count > 0)
+                ObjectUtils.Destroy(m_Workspaces[0].transform.gameObject);
+        }
 
-			var preferences = (Preferences)obj;
+        public object OnSerializePreferences()
+        {
+            if (!preserveWorkspaces)
+                return null;
 
-			foreach (var workspaceLayout in preferences.workspaceLayouts)
-			{
-				var layout = workspaceLayout;
-				var workspaceType = Type.GetType(workspaceLayout.name);
-				if (workspaceType != null)
-				{
-					CreateWorkspace(workspaceType, workspace =>
-					{
-						workspace.transform.localPosition = layout.localPosition;
-						workspace.transform.localRotation = layout.localRotation;
-						workspace.contentBounds = layout.contentBounds;
+            var preferences = new Preferences();
+            var workspaceLayouts = preferences.workspaceLayouts;
+            foreach (var workspace in workspaces)
+            {
+                var layout = new WorkspaceLayout();
+                layout.name = workspace.GetType().FullName;
+                layout.localPosition = workspace.transform.localPosition;
+                layout.localRotation = workspace.transform.localRotation;
+                layout.contentBounds = workspace.contentBounds;
 
-						var serializeWorkspace = workspace as ISerializeWorkspace;
-						if (serializeWorkspace != null)
-						{
-							var payload = JsonUtility.FromJson(layout.payload, Type.GetType(layout.payloadType));
-							serializeWorkspace.OnDeserializeWorkspace(payload);
-						}
-					});
-				}
-			}
-		}
+                var serializeWorkspace = workspace as ISerializeWorkspace;
+                if (serializeWorkspace != null)
+                {
+                    var payload = serializeWorkspace.OnSerializeWorkspace();
+                    layout.payloadType = payload.GetType().FullName;
+                    layout.payload = JsonUtility.ToJson(payload);
+                }
 
-		internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
-		{
-			// HACK: MiniWorldWorkspace is not working in single pass yet
-			if (t == typeof(MiniWorldWorkspace) && PlayerSettings.stereoRenderingPath != StereoRenderingPath.MultiPass)
-			{
-				Debug.LogWarning("The MiniWorld workspace is not working on single pass, currently.");
-				return;
-			}
+                workspaceLayouts.Add(layout);
+            }
 
-			var cameraTransform = CameraUtils.GetMainCamera().transform;
+            return preferences;
+        }
 
-			var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
-			m_Workspaces.Add(workspace);
-			workspace.destroyed += OnWorkspaceDestroyed;
-			this.ConnectInterfaces(workspace);
+        public void OnDeserializePreferences(object obj)
+        {
+            if (!preserveWorkspaces)
+                return;
 
-			var evrWorkspace = workspace as Workspace;
-			if (evrWorkspace != null)
-			{
-				evrWorkspace.leftRayOrigin = leftRayOrigin;
-				evrWorkspace.rightRayOrigin = rightRayOrigin;
-			}
+            var preferences = (Preferences)obj;
 
-			//Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
-			workspace.Setup();
+            foreach (var workspaceLayout in preferences.workspaceLayouts)
+            {
+                var layout = workspaceLayout;
+                var workspaceType = Type.GetType(workspaceLayout.name);
+                if (workspaceType != null)
+                {
+                    CreateWorkspace(workspaceType, workspace =>
+                    {
+                        workspace.transform.localPosition = layout.localPosition;
+                        workspace.transform.localRotation = layout.localRotation;
+                        workspace.contentBounds = layout.contentBounds;
 
-			var offset = DefaultWorkspaceOffset;
-			offset.z += workspace.vacuumBounds.extents.z;
+                        var serializeWorkspace = workspace as ISerializeWorkspace;
+                        if (serializeWorkspace != null)
+                        {
+                            var payload = JsonUtility.FromJson(layout.payload, Type.GetType(layout.payloadType));
+                            serializeWorkspace.OnDeserializeWorkspace(payload);
+                        }
+                    });
+                }
+            }
+        }
 
-			var workspaceTransform = workspace.transform;
-			workspaceTransform.position = cameraTransform.TransformPoint(offset);
-			ResetRotation(workspace, cameraTransform.forward);
+        internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
+        {
+            // HACK: MiniWorldWorkspace is not working in single pass yet
+            if (t == typeof(MiniWorldWorkspace) && PlayerSettings.stereoRenderingPath != StereoRenderingPath.MultiPass)
+            {
+                Debug.LogWarning("The MiniWorld workspace is not working on single pass, currently.");
+                return;
+            }
 
-			if (createdCallback != null)
-				createdCallback(workspace);
+            var cameraTransform = CameraUtils.GetMainCamera().transform;
 
-			if (workspaceCreated != null)
-				workspaceCreated(workspace);
-		}
+            var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
+            m_Workspaces.Add(workspace);
+            workspace.destroyed += OnWorkspaceDestroyed;
+            this.ConnectInterfaces(workspace);
 
-		internal void ProcessInput(ConsumeControlDelegate consumeControl)
-		{
-			for (int i = 0; i < m_Workspaces.Count; i++)
-			{
-				m_Workspaces[i].ProcessInput(m_WorkspaceInputs[i], consumeControl);
-			}
-		}
+            var evrWorkspace = workspace as Workspace;
+            if (evrWorkspace != null)
+            {
+                evrWorkspace.leftRayOrigin = leftRayOrigin;
+                evrWorkspace.rightRayOrigin = rightRayOrigin;
+            }
 
-		void OnWorkspaceDestroyed(IWorkspace workspace)
-		{
-			m_Workspaces.Remove(workspace);
+            //Explicit setup call (instead of setting up in Awake) because we need interfaces to be hooked up first
+            workspace.Setup();
 
-			this.DisonnectInterfaces(workspace);
+            var offset = DefaultWorkspaceOffset;
+            offset.z += workspace.vacuumBounds.extents.z;
 
-			if (workspaceDestroyed != null)
-				workspaceDestroyed(workspace);
-		}
+            var workspaceTransform = workspace.transform;
+            workspaceTransform.position = cameraTransform.TransformPoint(offset);
+            ResetRotation(workspace, cameraTransform.forward);
 
-		internal void ResetWorkspaceRotations()
-		{
-			var cameraTransform = CameraUtils.GetMainCamera().transform;
-			foreach (var ws in workspaces)
-			{
-				var forward = (ws.transform.position - cameraTransform.position).normalized;
-				ResetRotation(ws, forward);
-			}
-		}
+            if (createdCallback != null)
+                createdCallback(workspace);
 
-		static void ResetRotation(IWorkspace workspace, Vector3 forward)
-		{
-			workspace.transform.rotation = Quaternion.LookRotation(forward) * DefaultWorkspaceTilt;
-		}
-	}
+            if (workspaceCreated != null)
+                workspaceCreated(workspace);
+        }
+
+        internal void ProcessInput(ConsumeControlDelegate consumeControl)
+        {
+            for (int i = 0; i < m_Workspaces.Count; i++)
+            {
+                m_Workspaces[i].ProcessInput(m_WorkspaceInputs[i], consumeControl);
+            }
+        }
+
+        void OnWorkspaceDestroyed(IWorkspace workspace)
+        {
+            m_Workspaces.Remove(workspace);
+
+            this.DisonnectInterfaces(workspace);
+
+            if (workspaceDestroyed != null)
+                workspaceDestroyed(workspace);
+        }
+
+        internal void ResetWorkspaceRotations()
+        {
+            var cameraTransform = CameraUtils.GetMainCamera().transform;
+            foreach (var ws in workspaces)
+            {
+                var forward = (ws.transform.position - cameraTransform.position).normalized;
+                ResetRotation(ws, forward);
+            }
+        }
+
+        static void ResetRotation(IWorkspace workspace, Vector3 forward)
+        {
+            workspace.transform.rotation = Quaternion.LookRotation(forward) * DefaultWorkspaceTilt;
+        }
+    }
 }
 #endif
