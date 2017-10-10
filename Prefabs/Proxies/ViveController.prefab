@@ -36,6 +36,7 @@ GameObject:
   - component: {fileID: 4000010742330424}
   - component: {fileID: 114000011293798520}
   - component: {fileID: 114673881177878536}
+  - component: {fileID: 114824948067497564}
   m_Layer: 0
   m_Name: ViveController
   m_TagString: ShowInMiniWorld
@@ -1403,7 +1404,9 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4000012662092726}
   m_PreviewOrigin: {fileID: 4000013779846498}
   m_FieldGrabOrigin: {fileID: 4000011094092792}
-  m_Buttons:
+  m_MeshRoot: {fileID: 4469504124180788}
+  m_ProxyUI: {fileID: 114824948067497564}
+  m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 4539810040550546}
     m_Renderer: {fileID: 23334373145171194}
@@ -1654,6 +1657,18 @@ MonoBehaviour:
   m_TooltipTarget: {fileID: 4662756588912008}
   m_TooltipSource: {fileID: 4851027070737694}
   m_TooltipAlignment: 1
+--- !u!114 &114824948067497564
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010426338840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AffordanceMap: {fileID: 0}
 --- !u!114 &114845929221920070
 MonoBehaviour:
   m_ObjectHideFlags: 1
