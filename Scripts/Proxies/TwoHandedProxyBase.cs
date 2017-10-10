@@ -99,15 +99,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			m_LeftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
 			m_RightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
-			foreach (var tooltip in m_LeftProxyHelper.rightTooltips)
-			{
-				ObjectUtils.Destroy(tooltip);
-			}
-
-			foreach (var tooltip in m_RightProxyHelper.leftTooltips)
-			{
-				ObjectUtils.Destroy(tooltip);
-			}
 
 			m_ProxyMeshRoots.Add(m_LeftProxyHelper.meshRoot);
 			m_ProxyMeshRoots.Add(m_RightProxyHelper.meshRoot);

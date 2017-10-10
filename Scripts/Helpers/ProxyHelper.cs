@@ -67,12 +67,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		Transform m_FieldGrabOrigin;
 
 		[SerializeField]
-		Tooltip[] m_LeftTooltips;
-
-		[SerializeField]
-		Tooltip[] m_RightTooltips;
-
-		[SerializeField]
 		Transform m_MeshRoot;
 
 		[SerializeField]
@@ -107,14 +101,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
 
 		/// <summary>
-		/// Tooltip components to be removed from a right-handed controller
-		/// </summary>
-		public Tooltip[] leftTooltips { get { return m_LeftTooltips; } }
-
-		/// <summary>
-		/// Tooltip components to be removed from a left-handed controller
-		/// </summary>
-		public Tooltip[] rightTooltips { get { return m_RightTooltips; } }
 
 		/// <summary>
 		/// The root transform of the device/controller mesh-renderers/geometry
