@@ -1,6 +1,4 @@
-﻿
-#if UNITY_EDITOR
-
+﻿#if UNITY_EDITOR
 namespace ListView
 {
     public abstract class ListViewItemData<TIndex>
