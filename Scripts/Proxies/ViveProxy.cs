@@ -33,6 +33,24 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			base.Awake();
 			m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
 
+			var proxyHelper = m_LeftHand.GetComponent<ViveProxyHelper>();
+			if (proxyHelper)
+			{
+				foreach (var tooltip in proxyHelper.leftTooltips)
+				{
+					ObjectUtils.Destroy(tooltip);
+				}
+			}
+
+			proxyHelper = m_RightHand.GetComponent<ViveProxyHelper>();
+			if (proxyHelper)
+			{
+				foreach (var tooltip in proxyHelper.rightTooltips)
+				{
+					ObjectUtils.Destroy(tooltip);
+				}
+			}
+
 #if !ENABLE_STEAMVR_INPUT
 			enabled = false;
 #endif

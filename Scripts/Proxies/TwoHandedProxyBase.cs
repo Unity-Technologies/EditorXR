@@ -88,16 +88,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
 			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
-			foreach (var tooltip in leftProxyHelper.rightTooltips)
-			{
-				ObjectUtils.Destroy(tooltip);
-			}
-
-			foreach (var tooltip in rightProxyHelper.leftTooltips)
-			{
-				ObjectUtils.Destroy(tooltip);
-			}
-
 			m_Buttons[Node.LeftHand] = GetButtonDictionary(leftProxyHelper);
 			m_Buttons[Node.RightHand] = GetButtonDictionary(rightProxyHelper);
 
