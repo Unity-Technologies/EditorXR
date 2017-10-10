@@ -5,8 +5,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Decorates types that need to move the camera rig
-    /// </summary>
-    public interface IMoveCameraRig {}
+    /// </summary>    public interface IMoveCameraRig
+    {
+    }
 
     public static class IMoveCameraRigMethods
     {

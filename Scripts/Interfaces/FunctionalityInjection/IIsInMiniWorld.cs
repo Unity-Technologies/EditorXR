@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to checks that can test whether a rayOrigin is contained in a miniworld
-    /// </summary>
-    public interface IIsInMiniWorld {}
+    /// </summary>    public interface IIsInMiniWorld
+    {
+    }
 
     public static class IIsInMiniWorldMethods
     {

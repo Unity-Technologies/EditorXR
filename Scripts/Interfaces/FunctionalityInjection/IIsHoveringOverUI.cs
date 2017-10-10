@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to checks that can test whether a ray is hovering over a UI element
-    /// </summary>
-    public interface IIsHoveringOverUI {}
+    /// </summary>    public interface IIsHoveringOverUI
+    {
+    }
 
     public static class IIsHoveringOverUIMethods
     {

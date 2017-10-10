@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     /// <summary>
     /// Provide the ability to request a corresponding ray origin for a node
-    /// </summary>
-    interface INodeToRay {}
+    /// </summary>    interface INodeToRay
+   {
+   }
 
     static class INodeToRayMethods
     {

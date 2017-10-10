@@ -5,8 +5,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provide the ability to request a new unique stencil ref value
-    /// </summary>
-    public interface IRequestStencilRef {}
+    /// </summary>    public interface IRequestStencilRef
+    {
+    }
 
     public static class IRequestStencilRefMethods
     {

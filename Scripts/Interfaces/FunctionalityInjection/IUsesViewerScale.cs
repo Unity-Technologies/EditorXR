@@ -2,8 +2,9 @@
 using System;
 
 namespace UnityEditor.Experimental.EditorVR
-{
-    public interface IUsesViewerScale {}
+{    public interface IUsesViewerScale
+    {
+    }
 
     public static class IUsesViewerScaleMethods
     {

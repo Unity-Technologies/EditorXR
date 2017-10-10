@@ -4,7 +4,9 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    interface IGetPointerLength {}
+    interface IGetPointerLength
+    {
+    }
 
     static class IGetPointerLengthMethods
     {

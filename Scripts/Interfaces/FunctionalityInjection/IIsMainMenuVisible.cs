@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to checks that can test whether the main menu is visible on a given ray origin
-    /// </summary>
-    public interface IIsMainMenuVisible {}
+    /// </summary>    public interface IIsMainMenuVisible
+    {
+    }
 
     public static class IIsMainMenuVisibleMethods
     {

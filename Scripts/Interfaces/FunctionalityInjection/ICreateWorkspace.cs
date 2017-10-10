@@ -5,8 +5,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Create workspaces
-    /// </summary>
-    public interface ICreateWorkspace {}
+    /// </summary>    public interface ICreateWorkspace
+    {
+    }
 
     static class ICreateWorkspaceMethods
     {

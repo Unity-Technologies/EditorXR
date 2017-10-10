@@ -3,7 +3,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Adds Node information to IUsesRayOrigin to determine which hand the tool is attached to
-    /// </summary>
-    public interface IUsesHandedRayOrigin : IUsesRayOrigin, IUsesNode {}
+    /// </summary>    public interface IUsesHandedRayOrigin : IUsesRayOrigin, IUsesNode
+    {
+    }
 }
 #endif

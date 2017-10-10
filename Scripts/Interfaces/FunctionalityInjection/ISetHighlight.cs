@@ -5,8 +5,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class ability to highlight a given GameObject
-    /// </summary>
-    public interface ISetHighlight {}
+    /// </summary>    public interface ISetHighlight
+    {
+    }
 
     public static class ISetHighlightMethods
     {

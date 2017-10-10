@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors can get the color of the default ray
-    /// </summary>
-    public interface IGetDefaultRayColor {}
+    /// </summary>    public interface IGetDefaultRayColor
+    {
+    }
 
     public static class IGetDefaultRayColorMethods
     {

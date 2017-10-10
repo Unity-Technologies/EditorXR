@@ -6,7 +6,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     delegate void ForEachRayOriginCallback(Transform rayOrigin);
 
-    interface IForEachRayOrigin {}
+    interface IForEachRayOrigin
+    {
+    }
 
     static class IForEachRayOriginMethods
     {

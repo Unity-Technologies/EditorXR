@@ -2,8 +2,9 @@
 using System;
 
 namespace UnityEditor.Experimental.EditorVR
-{
-    public interface IResetWorkspaces {}
+{    public interface IResetWorkspaces
+    {
+    }
 
     public static class IResetWorkspacesMethods
     {

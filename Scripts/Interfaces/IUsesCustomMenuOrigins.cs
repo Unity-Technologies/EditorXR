@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to transform roots for custom menus
-    /// </summary>
-    public interface IUsesCustomMenuOrigins {}
+    /// </summary>    public interface IUsesCustomMenuOrigins
+    {
+    }
 
     public static class IUsesCustomMenuOriginsMethods
     {

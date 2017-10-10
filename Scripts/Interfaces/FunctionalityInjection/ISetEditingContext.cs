@@ -3,8 +3,9 @@ using System;
 using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR
-{
-    public interface ISetEditingContext {}
+{    public interface ISetEditingContext
+    {
+    }
 
     public static class ISetEditingContextMethods
     {

@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors can request changes to visibility on parts of the default ray
-    /// </summary>
-    public interface IRayVisibilitySettings {}
+    /// </summary>    public interface IRayVisibilitySettings
+    {
+    }
 
     public static class IRayVisibilitySettingsMethods
     {

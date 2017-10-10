@@ -11,8 +11,9 @@ namespace UnityEditor.Experimental.EditorVR
     /// Spatial-Hinting visuals are displayed when performing a spatial-input action, such as spatial-scrolling
     /// These visual elements assist the user in seeing which spatial direction(s) will
     /// reveal/allow additional spatial interaction(s).
-    /// </summary>
-    public interface IControlSpatialHinting {}
+    /// </summary>    public interface IControlSpatialHinting
+    {
+    }
 
     public static class IControlSpatialHintingMethods
     {

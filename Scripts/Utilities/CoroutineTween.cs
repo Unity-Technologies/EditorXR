@@ -40,8 +40,9 @@ namespace UnityEditor.Experimental.Tweening
     //		transform.position = position;
     //	}
     struct PositionTween : ITweenValue
-    {
-        public class PositionTweenCallback : UnityEvent<Vector3> {}
+    {        public class PositionTweenCallback : UnityEvent<Vector3>
+        {
+        }
 
         private PositionTweenCallback m_OnChangedTarget;
         private UnityEvent m_OnCompleteTarget;
@@ -125,8 +126,9 @@ namespace UnityEditor.Experimental.Tweening
     }
 
     struct RotationTween : ITweenValue
-    {
-        public class RotationTweenCallback : UnityEvent<Quaternion> {}
+    {        public class RotationTweenCallback : UnityEvent<Quaternion>
+        {
+        }
 
         private RotationTweenCallback m_OnChangedTarget;
         private UnityEvent m_OnCompleteTarget;
@@ -215,8 +217,9 @@ namespace UnityEditor.Experimental.Tweening
     }
 
     struct ScaleTween : ITweenValue
-    {
-        public class ScaleTweenCallback : UnityEvent<Vector3> {}
+    {        public class ScaleTweenCallback : UnityEvent<Vector3>
+        {
+        }
 
         private ScaleTweenCallback m_OnChangedTarget;
         private UnityEvent m_OnCompleteTarget;
@@ -314,9 +317,10 @@ namespace UnityEditor.Experimental.Tweening
             All,
             RGB,
             Alpha
+        }
+        public class ColorTweenCallback : UnityEvent<Color>
+        {
         }
-
-        public class ColorTweenCallback : UnityEvent<Color> {}
 
         private ColorTweenCallback m_OnChangedTarget;
         private UnityEvent m_OnCompleteTarget;
@@ -420,8 +424,9 @@ namespace UnityEditor.Experimental.Tweening
     // TweenValue callback and then sets
     // the value on the target.
     struct FloatTween : ITweenValue
-    {
-        public class FloatTweenCallback : UnityEvent<float> {}
+    {        public class FloatTweenCallback : UnityEvent<float>
+        {
+        }
 
         private FloatTweenCallback m_OnChangedTarget;
         private UnityEvent m_OnCompleteTarget;

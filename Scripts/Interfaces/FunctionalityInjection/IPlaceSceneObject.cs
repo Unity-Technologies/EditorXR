@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class the ability to place objects in the scene, or a MiniWorld
-    /// </summary>
-    public interface IPlaceSceneObject {}
+    /// </summary>    public interface IPlaceSceneObject
+    {
+    }
 
     public static class IPlaceSceneObjectMethods
     {

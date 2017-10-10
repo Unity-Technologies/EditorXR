@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class the ability to use snapping
-    /// </summary>
-    public interface IUsesSnapping {}
+    /// </summary>    public interface IUsesSnapping
+    {
+    }
 
     public static class IUsesSnappingMethods
     {

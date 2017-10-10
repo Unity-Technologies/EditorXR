@@ -5,8 +5,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provide access to show or hide manipulator(s)
-    /// </summary>
-    public interface ISetManipulatorsVisible {}
+    /// </summary>    public interface ISetManipulatorsVisible
+    {
+    }
 
     public static class ISetManipulatorsVisibleMethods
     {

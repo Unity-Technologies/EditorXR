@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class the ability to select tools from a menu
-    /// </summary>
-    public interface ISelectTool {}
+    /// </summary>    public interface ISelectTool
+    {
+    }
 
     public static class ISelectToolMethods
     {

@@ -5,8 +5,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class ability to control haptic feedback
-    /// </summary>
-    public interface IControlHaptics {}
+    /// </summary>    public interface IControlHaptics
+    {
+    }
 
     public static class IControlHapticsMethods
     {

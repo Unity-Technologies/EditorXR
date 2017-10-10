@@ -31,8 +31,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
         public Func<KeyboardUI> spawnKeyboard;
         protected KeyboardUI m_Keyboard;
 
-        [Serializable]
-        public class OnChangeEvent : UnityEvent<string> {}
+        [Serializable]        public class OnChangeEvent : UnityEvent<string>
+        {
+        }
 
         public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
 

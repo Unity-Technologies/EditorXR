@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Get access to locking features
-    /// </summary>
-    public interface IUsesGameObjectLocking {}
+    /// </summary>    public interface IUsesGameObjectLocking
+    {
+    }
 
     public static class IUsesGameObjectLockingMethods
     {

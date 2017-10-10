@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class access to hover/intersection detection
-    /// </summary>
-    public interface IUsesRaycastResults {}
+    /// </summary>    public interface IUsesRaycastResults
+    {
+    }
 
     public static class IUsesRaycastResultsMethods
     {

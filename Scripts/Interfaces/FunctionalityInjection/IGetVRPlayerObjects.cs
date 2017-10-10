@@ -7,8 +7,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to the gameobjects that represent the VR player
-    /// </summary>
-    public interface IGetVRPlayerObjects {}
+    /// </summary>    public interface IGetVRPlayerObjects
+    {
+    }
 
     public static class IGetVRPlayerObjectsMethods
     {

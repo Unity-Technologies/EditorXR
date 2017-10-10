@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     /// <summary>
     /// Provide the ability to request a corresponding node for a ray origin
-    /// </summary>
-    interface IRayToNode {}
+    /// </summary>    interface IRayToNode
+   {
+   }
 
     static class IRayToNodeMethods
     {

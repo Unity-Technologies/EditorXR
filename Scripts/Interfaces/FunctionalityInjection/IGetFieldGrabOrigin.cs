@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors receive a field grab origin transform
-    /// </summary>
-    public interface IGetFieldGrabOrigin {}
+    /// </summary>    public interface IGetFieldGrabOrigin
+    {
+    }
 
     public static class IGetFieldGrabOriginMethods
     {

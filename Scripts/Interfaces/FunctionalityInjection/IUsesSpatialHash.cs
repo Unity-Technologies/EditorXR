@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Make use of the spatial hash
-    /// </summary>
-    public interface IUsesSpatialHash {}
+    /// </summary>    public interface IUsesSpatialHash
+    {
+    }
 
     public static class IUsesSpatialHashMethods
     {

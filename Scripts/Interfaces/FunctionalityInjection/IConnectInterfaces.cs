@@ -5,8 +5,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Decorates types that need to connect interfaces for spawned objects
-    /// </summary>
-    interface IConnectInterfaces {}
+    /// </summary>    interface IConnectInterfaces
+   {
+   }
 
     static class IConnectInterfacesMethods
     {

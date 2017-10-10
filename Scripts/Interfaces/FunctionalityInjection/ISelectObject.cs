@@ -5,8 +5,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives access to the selection module
-    /// </summary>
-    public interface ISelectObject {}
+    /// </summary>    public interface ISelectObject
+    {
+    }
 
     public static class ISelectObjectMethods
     {

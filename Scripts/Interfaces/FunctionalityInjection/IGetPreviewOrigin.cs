@@ -6,8 +6,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors receive a preview origin transform
-    /// </summary>
-    public interface IGetPreviewOrigin {}
+    /// </summary>    public interface IGetPreviewOrigin
+    {
+    }
 
     public static class IGetPreviewOriginMethods
     {
