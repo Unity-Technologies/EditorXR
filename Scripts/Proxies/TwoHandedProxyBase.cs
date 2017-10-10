@@ -172,10 +172,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			if (trackedObjectInput == null && m_PlayerInput)
 				trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 
-			var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
-			var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
-			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(leftProxyHelper.gameObject), leftProxyHelper.rayOrigin);
-			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(rightProxyHelper.gameObject), rightProxyHelper.rayOrigin);
+			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_LeftProxyHelper.gameObject), m_LeftProxyHelper.rayOrigin);
+			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_RightProxyHelper.gameObject), m_RightProxyHelper.rayOrigin);
+			this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_RightProxyHelper.gameObject), m_RightProxyHelper.rayOrigin);
 		}
 
 		public virtual void Update()
