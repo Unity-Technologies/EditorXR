@@ -12,6 +12,10 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
+	/// <summary>
+	/// ProxyFeedbackRequests reside in feedbackRequest collection until the action associated with an affordance changes
+	/// Some are removed immediately after being added; others exist for the duration of an action/tool's lifespan
+	/// </summary>
 	public class ProxyFeedbackRequest : FeedbackRequest
 	{
 		public int priority;
@@ -333,8 +337,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
 		{
 			request.visible = true;
+			const float kDuration = k_FeedbackDuration * 0.5f;
 			var currentDuration = 0f;
-			while (request != null && currentDuration < k_FeedbackDuration)
+			while (request != null && currentDuration < kDuration)
 			{
 				currentDuration += Time.unscaledDeltaTime;
 				yield return null;
