@@ -187,7 +187,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var proxyRequest = request as ProxyFeedbackRequest;
 			if (proxyRequest != null)
 			{
-				ProxyFeedbackRequest existingRequest = null;
 				var hasKey = m_FeedbackRequests.ContainsKey(proxyRequest);
 				if (hasKey) // Update existing request/coroutine pair
 				{
