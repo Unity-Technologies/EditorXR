@@ -59,96 +59,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 
 		/// <summary>
-		/// Set ProxyHelper affordances in this ProxyUI
-		/// </summary>
-		AffordanceObject[] affordances
-		{
-			set
-			{
-				if (m_Affordances != null)
-					return;
-
-				if (m_AffordanceMap == null)
-				{
-					Debug.LogError("An Affordance Map must be assigned to ProxyUI on : " + gameObject.name);
-					return;
-				}
-
-				// Clone the affordance map, in order to allow a single map to drive the visuals of many duplicate
-				// This also allows coroutine sets in the ProxyAffordanceMap to be performed simultaneously for n-number of devices in a proxy
-				m_AffordanceMap = Instantiate(m_AffordanceMap);
-
-				m_Affordances = value;
-				m_AffordanceRenderers = new List<Renderer>();
-				foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)
-				{
-					var control = affordanceDefinition.control;
-					var affordance = m_Affordances.FirstOrDefault(x => x.control == control);
-					if (affordance != null)
-					{
-						var renderer = affordance.renderer;
-						if (renderer != null)
-						{
-							var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials
-							if (materialClone != null)
-							{
-								var visualDefinition = affordanceDefinition.visibilityDefinition;
-								var originalColor = materialClone.GetColor(visualDefinition.colorProperty);
-								m_AffordanceRenderers.Add(renderer); // Add to collection for later optimized comparison against body renderers
-								visualDefinition.renderer = renderer;
-								visualDefinition.originalColor = originalColor;
-								visualDefinition.material = materialClone;
-
-								// Clone that utilize the standard can be cloned and lose their ZWrite value (1), if it was enabled on the material
-								// Set it again, to avoid ZWrite + transparency visual issues
-								if (materialClone.HasProperty(k_ZWritePropertyName))
-									materialClone.SetFloat(k_ZWritePropertyName, 1);
-							}
-						}
-					}
-				}
-
-				// Collect renderers not associated with affordances
-				// Material swaps don't need to cache original values, only alpha & color
-				var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
-				m_BodyRenderers = GetComponentsInChildren<Renderer>(true).Where(x => !m_AffordanceRenderers.Contains(x) && !IsChildOfProxyOrigin(x.transform)).ToList();
-				switch (m_AffordanceMap.bodyVisibilityDefinition.visibilityType)
-				{
-					case VisibilityControlType.colorProperty:
-						foreach (var renderer in m_BodyRenderers)
-						{
-							// TODO: support for skipping the cloning of materials in the body that are shared between objects, in order to reduce draw calls
-							var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials per-renderer
-							if (materialClone != null)
-							{
-								var originalColor = materialClone.GetColor(bodyVisibilityDefinition.colorProperty);
-								if (materialClone.HasProperty(k_ZWritePropertyName))
-									materialClone.SetFloat(k_ZWritePropertyName, 1);
-
-								m_BodyMaterialOriginalColorMap[materialClone] = new affordancePropertyTuple<Color>(originalColor, originalColor);
-							}
-						}
-						break;
-					case VisibilityControlType.alphaProperty:
-						string shaderAlphaPropety = bodyVisibilityDefinition.alphaProperty;
-						foreach (var renderer in m_BodyRenderers)
-						{
-							var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials per-renderer
-							if (materialClone != null)
-							{
-								var originalAlpha = materialClone.GetFloat(shaderAlphaPropety);
-								if (materialClone.HasProperty(k_ZWritePropertyName))
-									materialClone.SetFloat(k_ZWritePropertyName, 1);
-
-								m_BodyMaterialOriginalAlphaMap[materialClone] = new affordancePropertyTuple<float>(originalAlpha, originalAlpha);
-							}
-						}
-						break;
-				}
-			}
-		}
-
-		/// <summary>
 		/// Set the visibility of the affordance renderers that are associated with controls/input
 		/// </summary>
 		public bool affordancesVisible
@@ -253,7 +163,95 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			// Cloning affordance & body materials in Awake & Start doesn't reliably allow for the ability to change their shader properties
 			yield return new WaitForSeconds(1);
 
-			this.affordances = affordances;
+			SetupAffordances(affordances);
+		}
+
+		/// <summary>
+		/// Set ProxyHelper affordances in this ProxyUI
+		/// </summary>
+		void SetupAffordances(AffordanceObject[] affordances)
+		{
+			if (m_Affordances != null)
+				return;
+
+			if (m_AffordanceMap == null)
+			{
+				Debug.LogError("An Affordance Map must be assigned to ProxyUI on : " + gameObject.name);
+				return;
+			}
+
+			// Clone the affordance map, in order to allow a single map to drive the visuals of many duplicate
+			// This also allows coroutine sets in the ProxyAffordanceMap to be performed simultaneously for n-number of devices in a proxy
+			m_AffordanceMap = Instantiate(m_AffordanceMap);
+
+			m_Affordances = affordances;
+			m_AffordanceRenderers = new List<Renderer>();
+			foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)
+			{
+				var control = affordanceDefinition.control;
+				var affordance = m_Affordances.FirstOrDefault(x => x.control == control);
+				if (affordance != null)
+				{
+					var renderer = affordance.renderer;
+					if (renderer != null)
+					{
+						var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials
+						if (materialClone != null)
+						{
+							var visualDefinition = affordanceDefinition.visibilityDefinition;
+							var originalColor = materialClone.GetColor(visualDefinition.colorProperty);
+							m_AffordanceRenderers.Add(renderer); // Add to collection for later optimized comparison against body renderers
+							visualDefinition.renderer = renderer;
+							visualDefinition.originalColor = originalColor;
+							visualDefinition.material = materialClone;
+
+							// Clone that utilize the standard can be cloned and lose their ZWrite value (1), if it was enabled on the material
+							// Set it again, to avoid ZWrite + transparency visual issues
+							if (materialClone.HasProperty(k_ZWritePropertyName))
+								materialClone.SetFloat(k_ZWritePropertyName, 1);
+						}
+					}
+				}
+			}
+
+			// Collect renderers not associated with affordances
+			// Material swaps don't need to cache original values, only alpha & color
+			var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
+			m_BodyRenderers = GetComponentsInChildren<Renderer>(true).Where(x => !m_AffordanceRenderers.Contains(x) && !IsChildOfProxyOrigin(x.transform)).ToList();
+			switch (m_AffordanceMap.bodyVisibilityDefinition.visibilityType)
+			{
+				case VisibilityControlType.colorProperty:
+					foreach (var renderer in m_BodyRenderers)
+					{
+						// TODO: support for skipping the cloning of materials in the body that are shared between objects, in order to reduce draw calls
+						var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials per-renderer
+						if (materialClone != null)
+						{
+							var originalColor = materialClone.GetColor(bodyVisibilityDefinition.colorProperty);
+							if (materialClone.HasProperty(k_ZWritePropertyName))
+								materialClone.SetFloat(k_ZWritePropertyName, 1);
+
+							m_BodyMaterialOriginalColorMap[materialClone] = new affordancePropertyTuple<Color>(originalColor, originalColor);
+						}
+					}
+					break;
+				case VisibilityControlType.alphaProperty:
+					string shaderAlphaPropety = bodyVisibilityDefinition.alphaProperty;
+					foreach (var renderer in m_BodyRenderers)
+					{
+						var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials per-renderer
+						if (materialClone != null)
+						{
+							var originalAlpha = materialClone.GetFloat(shaderAlphaPropety);
+							if (materialClone.HasProperty(k_ZWritePropertyName))
+								materialClone.SetFloat(k_ZWritePropertyName, 1);
+
+							m_BodyMaterialOriginalAlphaMap[materialClone] = new affordancePropertyTuple<float>(originalAlpha, originalAlpha);
+						}
+					}
+					break;
+			}
+
 			affordancesVisible = false;
 			bodyVisible = false;
 
