@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public VRInputDevice.VRControl control;
 		public Node node;
 		public string tooltipText;
-		public bool hideExisting;
+		public bool suppressExisting;
 		public bool visible;
 	}
 
@@ -236,12 +236,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					foreach (var button in kvp.Value)
 					{
 						if (button.renderer)
-							this.SetHighlight(button.renderer.gameObject, !request.hideExisting, duration: k_FeedbackDuration);
+							this.SetHighlight(button.renderer.gameObject, !request.suppressExisting, duration: k_FeedbackDuration);
 
 						if (button.transform)
 						{
 							var tooltipText = request.tooltipText;
-							if (!string.IsNullOrEmpty(tooltipText) || request.hideExisting)
+							if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
 							{
 								k_TooltipList.Clear();
 								button.transform.GetComponents(k_TooltipList);

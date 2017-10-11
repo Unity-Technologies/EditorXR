@@ -802,7 +802,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						node = node,
 						control = id,
 						priority = 1,
-						hideExisting = true
+						suppressExisting = true
 					};
 
 					this.AddFeedbackRequest(request);
