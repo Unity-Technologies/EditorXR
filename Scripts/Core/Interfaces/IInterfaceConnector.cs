@@ -1,10 +1,10 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	interface IInterfaceConnector
-	{
-		void ConnectInterface(object @object, object userData = null);
-		void DisconnectInterface(object @object, object userData = null);
-	}
+    interface IInterfaceConnector
+    {
+        void ConnectInterface(object target, object userData = null);
+        void DisconnectInterface(object target, object userData = null);
+    }
 }
 #endif
