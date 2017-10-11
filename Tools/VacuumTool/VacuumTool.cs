@@ -8,6 +8,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
+    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
+
     sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale,
         IRequestFeedback, IUsesNode
     {
@@ -17,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         float m_LastClickTime;
         readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
 
-        readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+        readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_Feedback = new List<ProxyFeedbackRequest>();
 
         public ActionMap actionMap { get { return m_ActionMap; } }

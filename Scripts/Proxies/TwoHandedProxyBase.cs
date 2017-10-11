@@ -11,6 +11,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
+    using ButtonDictionary = Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>;
+
     public class ProxyFeedbackRequest : FeedbackRequest
     {
         public int priority;
@@ -44,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
-        readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>> m_Buttons = new Dictionary<Node, Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>>();
+        readonly Dictionary<Node, ButtonDictionary> m_Buttons = new Dictionary<Node, ButtonDictionary>();
 
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
@@ -91,14 +93,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_ProxyMeshRoots.Add(leftProxyHelper.meshRoot);
             m_ProxyMeshRoots.Add(rightProxyHelper.meshRoot);
 
-            var leftButtons = new Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>();
+            var leftButtons = new ButtonDictionary();
             foreach (var button in leftProxyHelper.buttons)
             {
                 leftButtons[button.control] = button;
             }
             m_Buttons[Node.LeftHand] = leftButtons;
 
-            var rightButtons = new Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>();
+            var rightButtons = new ButtonDictionary();
             foreach (var button in rightProxyHelper.buttons)
             {
                 rightButtons[button.control] = button;
@@ -240,7 +242,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void RemoveFeedbackRequest(ProxyFeedbackRequest request)
         {
-            Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject> buttons;
+            ButtonDictionary buttons;
             if (m_Buttons.TryGetValue(request.node, out buttons))
             {
                 ProxyHelper.ButtonObject button;

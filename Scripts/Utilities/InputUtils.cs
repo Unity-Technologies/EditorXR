@@ -5,6 +5,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
+    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
     /// <summary>
     /// Input related EditorVR utilities
     /// </summary>
@@ -43,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
         }
 
-        public static void GetBindingDictionaryFromActionMap(ActionMap actionMap, Dictionary<string, List<VRInputDevice.VRControl>> bindingDictionary)
+        public static void GetBindingDictionaryFromActionMap(ActionMap actionMap, BindingDictionary bindingDictionary)
         {
             var actions = actionMap.actions;
             foreach (var scheme in actionMap.controlSchemes)

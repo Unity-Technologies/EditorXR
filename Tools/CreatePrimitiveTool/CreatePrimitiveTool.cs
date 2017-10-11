@@ -7,6 +7,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
+    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
+
     [MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
     sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
         IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
@@ -32,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
-        readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+        readonly BindingDictionary m_Controls = new BindingDictionary();
 
         public Transform rayOrigin { get; set; }
         public Node node { get; set; }

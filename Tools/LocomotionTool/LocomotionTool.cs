@@ -12,6 +12,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
+    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
+
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
         IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
@@ -98,7 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Toggle m_BlinkToggle;
         bool m_BlockValueChangedListener;
 
-        readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+        readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_MainButtonFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_SpeedFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_CrawlFeedback = new List<ProxyFeedbackRequest>();
@@ -789,10 +791,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_BlinkMoving = false;
         }
 
-        void ShowCrawlFeedback()
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, string controlName, string tooltipText = null)
         {
+            if (tooltipText == null)
+                tooltipText = controlName;
+
             List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("Crawl", out ids))
+            if (m_Controls.TryGetValue(controlName, out ids))
             {
                 foreach (var id in ids)
                 {
@@ -800,203 +805,88 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     {
                         node = node,
                         control = id,
-                        tooltipText = "Crawl"
+                        tooltipText = tooltipText
                     };
 
                     this.AddFeedbackRequest(request);
-                    m_CrawlFeedback.Add(request);
+                    requests.Add(request);
                 }
             }
+        }
+
+        void ShowCrawlFeedback()
+        {
+            ShowFeedback(m_CrawlFeedback, "Crawl");
         }
 
         void ShowMainButtonFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("Blink", out ids))
-            {
-                foreach (var id in ids)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = m_Preferences.blinkMode ? "Blink" : "Fly"
-                    };
-
-                    this.AddFeedbackRequest(request);
-                    m_MainButtonFeedback.Add(request);
-                }
-            }
+            ShowFeedback(m_MainButtonFeedback, "Blink", m_Preferences.blinkMode ? "Blink" : "Fly");
         }
 
         void ShowRotateFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("Rotate", out ids))
-            {
-                foreach (var id in ids)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node,
-                        tooltipText = "Rotate"
-                    };
-
-                    this.AddFeedbackRequest(request);
-                    m_RotateFeedback.Add(request);
-                }
-            }
+            ShowFeedback(m_RotateFeedback, "Rotate");
         }
 
         void ShowAltRotateFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("Blink", out ids))
-            {
-                foreach (var id in ids)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node,
-                        tooltipText = "Rotate"
-                    };
-
-                    this.AddFeedbackRequest(request);
-                    m_RotateFeedback.Add(request);
-                }
-            }
+            ShowFeedback(m_RotateFeedback, "Blink", "Rotate");
         }
 
         void ShowScaleFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("Crawl", out ids))
-            {
-                foreach (var id in ids)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand,
-                        tooltipText = "Scale"
-                    };
-
-                    this.AddFeedbackRequest(request);
-                    m_ScaleFeedback.Add(request);
-                }
-            }
+            ShowFeedback(m_ScaleFeedback, "Crawl", "Scale");
         }
 
         void ShowResetScaleFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("ScaleReset", out ids))
-            {
-                foreach (var id in ids)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node,
-                        tooltipText = "Reset scale"
-                    };
-
-                    this.AddFeedbackRequest(request);
-                    m_ResetScaleFeedback.Add(request);
-                }
-            }
-
-            if (m_Controls.TryGetValue("WorldReset", out ids))
-            {
-                foreach (var id in ids)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node,
-                        tooltipText = "Reset position rotation and scale"
-                    };
-
-                    this.AddFeedbackRequest(request);
-                    m_ResetScaleFeedback.Add(request);
-                }
-            }
+            ShowFeedback(m_ResetScaleFeedback, "ScaleReset", "Reset scale");
+            ShowFeedback(m_ResetScaleFeedback, "WorldReset", "Reset position rotation and scale");
         }
 
         void ShowSpeedFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("Speed", out ids))
-            {
-                foreach (var id in ids)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = m_Preferences.blinkMode ? "Extra distance" : "Extra speed"
-                    };
+            ShowFeedback(m_SpeedFeedback, "Speed", m_Preferences.blinkMode ? "Extra distance" : "Extra speed");
+        }
 
-                    this.AddFeedbackRequest(request);
-                    m_SpeedFeedback.Add(request);
-                }
+        void HideFeedback(List<ProxyFeedbackRequest> requests)
+        {
+            foreach (var request in requests)
+            {
+                this.RemoveFeedbackRequest(request);
             }
+            requests.Clear();
         }
 
         void HideMainButtonFeedback()
         {
-            foreach (var request in m_MainButtonFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_MainButtonFeedback.Clear();
+            HideFeedback(m_MainButtonFeedback);
         }
 
         void HideCrawlFeedback()
         {
-            foreach (var request in m_CrawlFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_CrawlFeedback.Clear();
+            HideFeedback(m_CrawlFeedback);
         }
 
         void HideRotateFeedback()
         {
-            foreach (var request in m_RotateFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_RotateFeedback.Clear();
+            HideFeedback(m_RotateFeedback);
         }
 
         void HideScaleFeedback()
         {
-            foreach (var request in m_ScaleFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_ScaleFeedback.Clear();
+            HideFeedback(m_ScaleFeedback);
         }
 
         void HideSpeedFeedback()
         {
-            foreach (var request in m_SpeedFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_SpeedFeedback.Clear();
+            HideFeedback(m_SpeedFeedback);
         }
 
         void HideResetScaleFeedback()
         {
-            foreach (var request in m_ResetScaleFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_ResetScaleFeedback.Clear();
+            HideFeedback(m_ResetScaleFeedback);
         }
 
         public object OnSerializePreferences()
