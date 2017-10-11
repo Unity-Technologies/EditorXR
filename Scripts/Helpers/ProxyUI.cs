@@ -18,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		const string k_ZWritePropertyName = "_ZWrite";
 
 		List<Renderer> m_BodyRenderers; // Renderers not associated with affordances/controls, & will be HIDDEN when displaying feedback/tooltips
+		List<Material> m_BodySwapOriginalMaterials; // Material collection used when swapping materials
 		List<Renderer> m_AffordanceRenderers; // Renderers associated with affordances/controls, & will be SHOWN when displaying feedback/tooltips
 		bool m_BodyRenderersVisible = true; // Body renderers default to visible/true
 		bool m_AffordanceRenderersVisible = true; // Affordance renderers default to visible/true
@@ -59,7 +60,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				this.animateFromValue = animateFromValue;
 			}
 		}
-
 		/// <summary>
 		/// Set the visibility of the affordance renderers that are associated with controls/input
 		/// </summary>
@@ -126,9 +126,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				var visibilityType = visibilityDefinition.visibilityType;
 				if (visibilityType == VisibilityControlType.colorProperty || visibilityType == VisibilityControlType.alphaProperty)
 				{
-					var material = visibilityDefinition.material;
-					if (material != null)
-						ObjectUtils.Destroy(material);
+					var materialsAndAssociatedColors = visibilityDefinition.materialsAndAssociatedColors;
+					if (materialsAndAssociatedColors == null)
+						continue;;
+
+					foreach (var materialToAssociatedColors in visibilityDefinition.materialsAndAssociatedColors)
+					{
+						var material = materialToAssociatedColors.firstElement;
+						if (material != null)
+							ObjectUtils.Destroy(material);
+					}
 				}
 			}
 
@@ -139,6 +146,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				foreach (var kvp in m_BodyMaterialOriginalColorMap)
 				{
 					var material = kvp.Key;
+					if (material != null)
+						ObjectUtils.Destroy(material);
+				}
+			}
+			else if (bodyVisibilityType == VisibilityControlType.materialSwap)
+			{
+				foreach (var material in m_BodySwapOriginalMaterials)
+				{
 					if (material != null)
 						ObjectUtils.Destroy(material);
 				}
@@ -188,23 +203,53 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				var affordance = m_Affordances.FirstOrDefault(x => x.control == control);
 				if (affordance != null)
 				{
-					var renderer = affordance.renderer;
-					if (renderer != null)
+					// Setup animated transparency for all materials associated with all renderers under the control's transform
+					var renderers = affordance.transform.GetComponentsInChildren<Renderer>();
+					if (renderers != null)
 					{
-						var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials
-						if (materialClone != null)
+						var visibilityDefinition = affordanceDefinition.visibilityDefinition;;
+						foreach (var renderer in renderers)
 						{
-							var visualDefinition = affordanceDefinition.visibilityDefinition;
-							var originalColor = materialClone.GetColor(visualDefinition.colorProperty);
-							m_AffordanceRenderers.Add(renderer); // Add to collection for later optimized comparison against body renderers
-							visualDefinition.renderer = renderer;
-							visualDefinition.originalColor = originalColor;
-							visualDefinition.material = materialClone;
+							var materialClones = MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with the renderer
+							if (materialClones != null)
+							{
+								// Add to collection for later optimized comparison against body renderers
+								// Also stay in sync with visibilityDefinition.materialsAndAssociatedColors collection
+								m_AffordanceRenderers.Add(renderer);
 
-							// Clone that utilize the standard can be cloned and lose their ZWrite value (1), if it was enabled on the material
-							// Set it again, to avoid ZWrite + transparency visual issues
-							if (materialClone.HasProperty(k_ZWritePropertyName))
-								materialClone.SetFloat(k_ZWritePropertyName, 1);
+								var visibilityType = visibilityDefinition.visibilityType;
+								var hiddenColor = visibilityDefinition.hiddenColor;
+								var hiddenAlphaEncodedInColor = visibilityDefinition.hiddenAlpha * Color.white;
+								var shaderAlphaPropety = visibilityDefinition.alphaProperty;
+								var materialsAndAssociatedColors = new List<Tuple<Material, Color, Color, Color, Color>>();
+								// Material, original color, hidden color, animateFromColor(used by animating coroutines, not initialized here)
+								foreach (var material in materialClones)
+								{
+									// Clones that utilize the standard shader can be cloned and lose their enabled ZWrite value (1), if it was enabled on the material
+									// Set it again, to avoid ZWrite + transparency visual issues
+									if (visibilityType != VisibilityControlType.materialSwap && material.HasProperty(k_ZWritePropertyName))
+										material.SetFloat(k_ZWritePropertyName, 1);
+
+									Tuple<Material, Color, Color, Color, Color> materialAndAssociatedColors = null;
+									switch (visibilityDefinition.visibilityType)
+									{
+										case VisibilityControlType.colorProperty:
+											var originalColor = material.GetColor(visibilityDefinition.colorProperty);
+											materialAndAssociatedColors = new Tuple<Material, Color, Color, Color, Color>(material, originalColor, hiddenColor, Color.clear, Color.clear);
+											break;
+										case VisibilityControlType.alphaProperty:
+											var originalAlpha = material.GetFloat(shaderAlphaPropety);
+											var originalAlphaEncodedInColor = Color.white * originalAlpha;
+											// When animating based on alpha, use the Color.a value of the original, hidden, and animateFrom colors set below
+											materialAndAssociatedColors = new Tuple<Material, Color, Color, Color, Color>(material, originalAlphaEncodedInColor, hiddenAlphaEncodedInColor, Color.clear, Color.clear);
+											break;
+									}
+
+									materialsAndAssociatedColors.Add(materialAndAssociatedColors);
+								}
+
+								visibilityDefinition.materialsAndAssociatedColors = materialsAndAssociatedColors;
+							}
 						}
 					}
 				}
@@ -246,6 +291,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 						}
 					}
 					break;
+				case VisibilityControlType.materialSwap:
+					m_BodySwapOriginalMaterials = new List<Material>();
+					foreach (var renderer in m_BodyRenderers)
+					{
+						var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials per-renderer
+						m_BodySwapOriginalMaterials.Add(materialClone);
+					}
+					break;
 			}
 
 			affordancesVisible = false;
@@ -257,51 +310,67 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition)
 		{
-			// Set original cached color when visible, transparent when hidden
-			const float kTargetAmount = 1f;
-			const float kHiddenValue = 0.25f;
+			const float kTargetAmount = 1.1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
 			var speedScalar = isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
 			var currentAmount = 0f;
 			var visibilityDefinition = definition.visibilityDefinition;
-			var material = visibilityDefinition.material;
+			var materialsAndColors = visibilityDefinition.materialsAndAssociatedColors;
 			var shaderColorPropety = visibilityDefinition.colorProperty;
-			var animateFromColor = material.GetColor(shaderColorPropety);
-			var animateToColor = isVisible ? visibilityDefinition.originalColor : new Color(animateFromColor.r, animateFromColor.g, animateFromColor.b, kHiddenValue);
+
+			if (materialsAndColors == null)
+				yield break;
+
+			// Setup animateFromColors using the current color values of each material associated with all renderers drawing this affordance
+			foreach (var materialAndAssociatedColors in materialsAndColors)
+			{
+					var animateFromColor = materialAndAssociatedColors.firstElement.GetColor(shaderColorPropety); // Get current color from material
+					var animateToColor = isVisible ? materialAndAssociatedColors.secondElement : materialAndAssociatedColors.thirdElement; // (second)original or (third)hidden color(alpha/color.a)
+					materialAndAssociatedColors.fourthElement = animateFromColor;
+					materialAndAssociatedColors.fifthElement = animateToColor;
+			}
+
 			while (currentAmount < kTargetAmount)
 			{
 				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * speedScalar);
-				var currentColor = Color.Lerp(animateFromColor, animateToColor, smoothedAmount);
-				material.SetColor(shaderColorPropety, currentColor);
+				foreach (var materialAndAssociatedColors in materialsAndColors)
+				{
+					var currentColor = Color.Lerp(materialAndAssociatedColors.fourthElement, materialAndAssociatedColors.fifthElement, smoothedAmount);
+					materialAndAssociatedColors.firstElement.SetColor(shaderColorPropety, currentColor);
+				}
 
 				yield return null;
 			}
-
-			// Mandate target value has been set
-			material.SetColor(shaderColorPropety, animateToColor);
 		}
 
 		IEnumerator AnimateAffordanceAlphaVisibility(bool isVisible, AffordanceDefinition definition)
 		{
-			const float kTargetAmount = 1f;
-			const float kHiddenValue = 0.25f;
+			const float kTargetAmount = 1.1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
 			var speedScalar = isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
-			var visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
-			var material = visibilityDefinition.material;
-			var shaderAlphaPropety = visibilityDefinition.alphaProperty;
-			var animateFromAlpha = material.GetFloat(shaderAlphaPropety);
-			var animateToAlpha = isVisible ? visibilityDefinition.originalAlpha : kHiddenValue;
 			var currentAmount = 0f;
+			var visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
+			var materialsAndColors = visibilityDefinition.materialsAndAssociatedColors;
+			var shaderAlphaPropety = visibilityDefinition.alphaProperty;
+
+			// Setup animateFromColors using the current color values of each material associated with all renderers drawing this affordance
+			foreach (var materialAndAssociatedColors in materialsAndColors)
+			{
+				var animateFromAlpha = materialAndAssociatedColors.firstElement.GetFloat(shaderAlphaPropety); // Get current alpha from material
+				var animateToAlpha = isVisible ? materialAndAssociatedColors.secondElement.a : materialAndAssociatedColors.thirdElement.a; // (second)original or (third)hidden color(alpha/color.a)
+				materialAndAssociatedColors.fourthElement = Color.white * animateFromAlpha; // Encode the alpha for the FROM color value, color.a
+				materialAndAssociatedColors.fifthElement = Color.white * animateToAlpha; // // Encode the alpha for the TO color value, color.a
+			}
+
 			while (currentAmount < kTargetAmount)
 			{
 				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * speedScalar);
-				var currentAlpha = Mathf.Lerp(animateFromAlpha, animateToAlpha, smoothedAmount);
-				material.SetFloat(shaderAlphaPropety, currentAlpha);
+				foreach (var materialAndAssociatedColors in materialsAndColors)
+				{
+					var currentAlpha = Color.Lerp(materialAndAssociatedColors.fourthElement, materialAndAssociatedColors.fifthElement, smoothedAmount);
+					materialAndAssociatedColors.firstElement.SetFloat(shaderAlphaPropety, currentAlpha.a); // Alpha is encoded in color.a
+				}
 
 				yield return null;
 			}
-
-			// Mandate target value has been set
-			material.SetFloat(shaderAlphaPropety, animateToAlpha);
 		}
 
 		IEnumerator AnimateBodyColorVisibility(bool isVisible)
@@ -377,17 +446,22 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		void SwapAffordanceToHiddenMaterial(bool swapToHiddenMaterial, AffordanceDefinition definition)
 		{
 			var visibilityDefinition = definition.visibilityDefinition;
-			var swapMaterial = swapToHiddenMaterial ? visibilityDefinition.hiddenMaterial : visibilityDefinition.material;
-			var renderer = visibilityDefinition.renderer;
-			renderer.material = swapMaterial;
+			var materialsAndColors = visibilityDefinition.materialsAndAssociatedColors;
+			for (var i = 0; i < materialsAndColors.Count; ++i)
+			{
+				var swapMaterial = swapToHiddenMaterial ? visibilityDefinition.hiddenMaterial : materialsAndColors[i].firstElement;
+				// m_AffordanceRenderers is created/added in sync with the order of the materialsAndAssociatedColors in the affordance visibility definition
+				m_AffordanceRenderers[i].material = swapMaterial; // Set swapped material in associated renderer
+			}
 		}
 
 		void SwapBodyToHiddenMaterial(bool swapToHiddenMaterial)
 		{
 			var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
-			var swapMaterial = swapToHiddenMaterial ? bodyVisibilityDefinition.hiddenMaterial : bodyVisibilityDefinition.material;
-			foreach (var renderer in m_BodyRenderers)
+			for (var i = 0; i < m_BodyRenderers.Count; ++i)
 			{
+				var renderer = m_BodyRenderers[i];
+				var swapMaterial = swapToHiddenMaterial ? bodyVisibilityDefinition.hiddenMaterial : m_BodySwapOriginalMaterials[i];
 				renderer.material = swapMaterial;
 			}
 		}

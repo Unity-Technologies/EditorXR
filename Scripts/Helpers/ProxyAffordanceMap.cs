@@ -1,9 +1,9 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Serialization;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -59,14 +59,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			Material m_HiddenMaterial;
 
 			/// <summary>
-			/// The renderer associated with this affordance
+			/// The renderer & cloned materials associated with this affordance
+			/// Cloned materials associated with the renderer will have their properties animated by the ProxyUI
+			/// Element 1: Original material
+			/// Element 2: Original color, Color.a is used for alpha-only animation
+			/// Element 3: Hidden color, Color.a is used for alpha-only animation
+			/// Element 4: Animate FROM color (used in animated coroutines), color.a is used for alpha-only animation
+			/// Element 5: Animate TO color (used in animated coroutines), color.a is used for alpha-only animation
 			/// </summary>
-			public Renderer renderer { get; set; }
-
-			/// <summary>
-			/// The original/cached color of the material
-			/// </summary>
-			public Color originalColor { get; set; }
+			public List<Tuple<Material, Color, Color, Color, Color>> materialsAndAssociatedColors { get; set; }
 
 			/// <summary>
 			/// The hidden color of the material
@@ -74,29 +75,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public Color hiddenColor { get { return m_HiddenColor; } set { m_HiddenColor = value; } }
 
 			/// <summary>
-			/// The color to lerp FROM as the current/starting color when animating visibility
-			/// </summary>
-			public Color animateFromColor { get; set; }
-
-			/// <summary>
-			/// The original/cached alpha value of the material
-			/// </summary>
-			public float originalAlpha { get; set; }
-
-			/// <summary>
 			/// The hidden alpha value of the material
 			/// </summary>
 			public float hiddenAlpha { get { return m_HiddenAlpha; } set { m_HiddenAlpha = value; } }
-
-			/// <summary>
-			/// The alpha value to lerp FROM as the current/starting alpha when animating visibility
-			/// </summary>
-			public float animateFromAlpha { get; set; }
-
-			/// <summary>
-			/// The (cloned) material that will have its properties animated
-			/// </summary>
-			public Material material { get; set; }
 
 			/// <summary>
 			/// The material to with which to swap instead of animating visibility (material blending is not supported)

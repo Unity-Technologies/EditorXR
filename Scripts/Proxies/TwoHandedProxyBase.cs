@@ -311,7 +311,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		{
 			foreach (var kvp in m_FeedbackRequests)
 			{
-				if (kvp.Key.caller == caller)
+				if (kvp.Key != null && kvp.Key.caller == caller)
 					RemoveFeedbackRequest(kvp.Key);
 			}
 		}
