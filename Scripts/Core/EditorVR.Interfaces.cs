@@ -19,9 +19,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
             }
 
-            internal void AttachInterfaceConnectors(object @object)
+            internal void AttachInterfaceConnectors(object target)
             {
-                var connector = @object as IInterfaceConnector;
+                var connector = target as IInterfaceConnector;
                 if (connector != null)
                 {
                     connectInterfaces += connector.ConnectInterface;
@@ -29,21 +29,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            void ConnectInterfaces(object @object, object userData = null)
+            void ConnectInterfaces(object target, object userData = null)
             {
-                if (!m_ConnectedInterfaces.Add(@object))
+                if (!m_ConnectedInterfaces.Add(target))
                     return;
 
                 if (connectInterfaces != null)
-                    connectInterfaces(@object, userData);
+                    connectInterfaces(target, userData);
             }
 
-            void DisconnectInterfaces(object @object, object userData = null)
+            void DisconnectInterfaces(object target, object userData = null)
             {
-                m_ConnectedInterfaces.Remove(@object);
+                m_ConnectedInterfaces.Remove(target);
 
                 if (disconnectInterfaces != null)
-                    disconnectInterfaces(@object, userData);
+                    disconnectInterfaces(target, userData);
             }
         }
     }

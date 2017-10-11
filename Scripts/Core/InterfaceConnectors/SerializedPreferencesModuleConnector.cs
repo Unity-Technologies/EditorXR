@@ -7,16 +7,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
     {
         class SerializedPreferencesModuleConnector : Nested, IInterfaceConnector
         {
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var serializePreferences = @object as ISerializePreferences;
+                var serializePreferences = target as ISerializePreferences;
                 if (serializePreferences != null)
                     evr.GetModule<SerializedPreferencesModule>().AddSerializer(serializePreferences);
             }
 
-            public void DisconnectInterface(object @object, object userData = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var serializePreferences = @object as ISerializePreferences;
+                var serializePreferences = target as ISerializePreferences;
                 if (serializePreferences != null)
                     evr.GetModule<SerializedPreferencesModule>().RemoveSerializer(serializePreferences);
             }

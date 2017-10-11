@@ -7,29 +7,29 @@ namespace UnityEditor.Experimental.EditorVR.Core
     {
         class ProjectFolderModuleConnector : Nested, IInterfaceConnector
         {
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var usesProjectFolderData = @object as IUsesProjectFolderData;
+                var usesProjectFolderData = target as IUsesProjectFolderData;
                 if (usesProjectFolderData != null)
                 {
                     var evrProjectFolderModule = evr.GetModule<ProjectFolderModule>();
                     evrProjectFolderModule.AddConsumer(usesProjectFolderData);
 
-                    var filterUI = @object as IFilterUI;
+                    var filterUI = target as IFilterUI;
                     if (filterUI != null)
                         evrProjectFolderModule.AddConsumer(filterUI);
                 }
             }
 
-            public void DisconnectInterface(object @object, object userData = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var usesProjectFolderData = @object as IUsesProjectFolderData;
+                var usesProjectFolderData = target as IUsesProjectFolderData;
                 if (usesProjectFolderData != null)
                 {
                     var evrProjectFolderModule = evr.GetModule<ProjectFolderModule>();
                     evrProjectFolderModule.RemoveConsumer(usesProjectFolderData);
 
-                    var filterUI = @object as IFilterUI;
+                    var filterUI = target as IFilterUI;
                     if (filterUI != null)
                         evrProjectFolderModule.RemoveConsumer(filterUI);
                 }

@@ -13,16 +13,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 ISelectObjectMethods.selectObject = provider.SelectObject;
             }
 
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var selectionChanged = @object as ISelectionChanged;
+                var selectionChanged = target as ISelectionChanged;
                 if (selectionChanged != null)
                     evr.selectionChanged += selectionChanged.OnSelectionChanged;
             }
 
-            public void DisconnectInterface(object @object, object userData = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var selectionChanged = @object as ISelectionChanged;
+                var selectionChanged = target as ISelectionChanged;
                 if (selectionChanged != null)
                     evr.selectionChanged -= selectionChanged.OnSelectionChanged;
             }

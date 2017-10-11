@@ -5,16 +5,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
     {
         class FeedbackModuleConnector : Nested, IInterfaceConnector
         {
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var serializePreferences = @object as IFeedbackReceiver;
+                var serializePreferences = target as IFeedbackReceiver;
                 if (serializePreferences != null)
                     evr.GetModule<FeedbackModule>().AddReceiver(serializePreferences);
             }
 
-            public void DisconnectInterface(object @object, object userData = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var serializePreferences = @object as IFeedbackReceiver;
+                var serializePreferences = target as IFeedbackReceiver;
                 if (serializePreferences != null)
                     evr.GetModule<FeedbackModule>().RemoveReceiver(serializePreferences);
             }

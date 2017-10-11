@@ -18,21 +18,21 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Method provided by the system for connecting interfaces
         /// </summary>
-        /// <param name="object">Object to connect interfaces on</param>
+        /// <param name="target">Object to connect interfaces on</param>
         /// <param name="userData">(Optional) extra data needed to connect interfaces on this object</param>
-        public static void ConnectInterfaces(this IConnectInterfaces @this, object @object, object userData = null)
+        public static void ConnectInterfaces(this IConnectInterfaces @this, object target, object userData = null)
         {
-            connectInterfaces(@object, userData);
+            connectInterfaces(target, userData);
         }
 
         /// <summary>
         /// Method provided by the system for disconnecting interfaces
         /// </summary>
-        /// <param name="object">Object to disconnect interfaces on</param>
+        /// <param name="target">Object to disconnect interfaces on</param>
         /// <param name="userData">(Optional) extra data needed to connect interfaces on this object</param>
-        public static void DisconnectInterfaces(this IConnectInterfaces @this, object @object, object userData = null)
+        public static void DisconnectInterfaces(this IConnectInterfaces @this, object target, object userData = null)
         {
-            disconnectInterfaces(@object, userData);
+            disconnectInterfaces(target, userData);
         }
     }
 }

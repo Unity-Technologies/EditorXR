@@ -59,18 +59,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     ObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
             }
 
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
                 var rayOrigin = userData as Transform;
                 if (rayOrigin)
                 {
                     var evrDeviceData = evr.m_DeviceData;
 
-                    var ray = @object as IUsesRayOrigin;
+                    var ray = target as IUsesRayOrigin;
                     if (ray != null)
                         ray.rayOrigin = rayOrigin;
 
-                    var rayOrigins = @object as IUsesRayOrigins;
+                    var rayOrigins = target as IUsesRayOrigins;
                     if (rayOrigins != null)
                     {
                         List<Transform> otherRayOrigins = new List<Transform>();
@@ -84,16 +84,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
 
-                    var handedRay = @object as IUsesNode;
+                    var handedRay = target as IUsesNode;
                     if (handedRay != null && deviceData != null)
                         handedRay.node = deviceData.node;
 
-                    var usesProxy = @object as IUsesProxyType;
+                    var usesProxy = target as IUsesProxyType;
                     if (usesProxy != null && deviceData != null)
                         usesProxy.proxyType = deviceData.proxy.GetType();
                 }
 
-                var selectionModule = @object as SelectionModule;
+                var selectionModule = target as SelectionModule;
                 if (selectionModule)
                 {
                     selectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
@@ -102,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            public void DisconnectInterface(object @object, object userData = null) { }
+            public void DisconnectInterface(object target, object userData = null) { }
 
             internal static void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
             {

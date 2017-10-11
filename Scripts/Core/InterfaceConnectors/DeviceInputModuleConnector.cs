@@ -7,20 +7,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
     {
         class DeviceInputModuleConnector : Nested, IInterfaceConnector
         {
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var trackedObjectMap = @object as ITrackedObjectActionMap;
+                var trackedObjectMap = target as ITrackedObjectActionMap;
                 if (trackedObjectMap != null)
                     trackedObjectMap.trackedObjectInput = evr.GetModule<DeviceInputModule>().trackedObjectInput;
 
-                var processInput = @object as IProcessInput;
-                if (processInput != null && !(@object is ITool)) // Tools have their input processed separately
+                var processInput = target as IProcessInput;
+                if (processInput != null && !(target is ITool)) // Tools have their input processed separately
                     evr.GetModule<DeviceInputModule>().AddInputProcessor(processInput, userData);
             }
 
-            public void DisconnectInterface(object @object, object userData = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var processInput = @object as IProcessInput;
+                var processInput = target as IProcessInput;
                 if (processInput != null)
                     evr.GetModule<DeviceInputModule>().RemoveInputProcessor(processInput);
             }

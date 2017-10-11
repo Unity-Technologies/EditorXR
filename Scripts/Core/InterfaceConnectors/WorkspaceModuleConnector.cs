@@ -13,16 +13,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IResetWorkspacesMethods.resetWorkspaceRotations = provider.ResetWorkspaceRotations;
             }
 
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
                 var workspaceModule = evr.GetModule<WorkspaceModule>();
 
-                var allWorkspaces = @object as IAllWorkspaces;
+                var allWorkspaces = target as IAllWorkspaces;
                 if (allWorkspaces != null)
                     allWorkspaces.allWorkspaces = workspaceModule.workspaces;
             }
 
-            public void DisconnectInterface(object @object, object userData = null) { }
+            public void DisconnectInterface(object target, object userData = null) { }
         }
     }
 }

@@ -93,14 +93,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
             }
 
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var usesCameraRig = @object as IUsesCameraRig;
+                var usesCameraRig = target as IUsesCameraRig;
                 if (usesCameraRig != null)
                     usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
             }
 
-            public void DisconnectInterface(object @object, object userData = null) { }
+            public void DisconnectInterface(object target, object userData = null) { }
 
             public object OnSerializePreferences()
             {

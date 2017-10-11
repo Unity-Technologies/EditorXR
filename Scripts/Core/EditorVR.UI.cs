@@ -46,18 +46,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
             }
 
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var manipulatorController = @object as IManipulatorController;
+                var manipulatorController = target as IManipulatorController;
                 if (manipulatorController != null)
                     m_ManipulatorControllers.Add(manipulatorController);
 
-                var usesStencilRef = @object as IUsesStencilRef;
+                var usesStencilRef = target as IUsesStencilRef;
                 if (usesStencilRef != null)
                 {
                     byte? stencilRef = null;
 
-                    var mb = @object as MonoBehaviour;
+                    var mb = target as MonoBehaviour;
                     if (mb)
                     {
                         var parent = mb.transform.parent;
@@ -74,9 +74,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            public void DisconnectInterface(object @object, object userData = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var manipulatorController = @object as IManipulatorController;
+                var manipulatorController = target as IManipulatorController;
                 if (manipulatorController != null)
                     m_ManipulatorControllers.Remove(manipulatorController);
             }

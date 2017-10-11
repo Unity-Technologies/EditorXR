@@ -46,13 +46,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
             }
 
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
                 var rayOrigin = userData as Transform;
-                var settingsMenuProvider = @object as ISettingsMenuProvider;
+                var settingsMenuProvider = target as ISettingsMenuProvider;
                 if (settingsMenuProvider != null)
                 {
-                    m_SettingsMenuProviders[new KeyValuePair<Type, Transform>(@object.GetType(), rayOrigin)] = settingsMenuProvider;
+                    m_SettingsMenuProviders[new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuProvider;
                     foreach (var kvp in m_MainMenus)
                     {
                         if (rayOrigin == null || kvp.Key == rayOrigin)
@@ -60,10 +60,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
                 }
 
-                var settingsMenuItemProvider = @object as ISettingsMenuItemProvider;
+                var settingsMenuItemProvider = target as ISettingsMenuItemProvider;
                 if (settingsMenuItemProvider != null)
                 {
-                    m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(@object.GetType(), rayOrigin)] = settingsMenuItemProvider;
+                    m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuItemProvider;
                     foreach (var kvp in m_MainMenus)
                     {
                         if (rayOrigin == null || kvp.Key == rayOrigin)
@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
                 }
 
-                var mainMenu = @object as IMainMenu;
+                var mainMenu = target as IMainMenu;
                 if (mainMenu != null && rayOrigin != null)
                 {
                     mainMenu.menuTools = m_MainMenuTools;
@@ -81,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_MainMenus[rayOrigin] = mainMenu;
                 }
 
-                var menuOrigins = @object as IUsesMenuOrigins;
+                var menuOrigins = target as IUsesMenuOrigins;
                 if (menuOrigins != null)
                 {
                     Transform mainMenuOrigin;
@@ -96,10 +96,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            public void DisconnectInterface(object @object, object userData = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
                 var rayOrigin = userData as Transform;
-                var settingsMenuProvider = @object as ISettingsMenuProvider;
+                var settingsMenuProvider = target as ISettingsMenuProvider;
                 if (settingsMenuProvider != null)
                 {
                     foreach (var kvp in m_MainMenus)
@@ -108,10 +108,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             kvp.Value.RemoveSettingsMenu(settingsMenuProvider);
                     }
 
-                    m_SettingsMenuProviders.Remove(new KeyValuePair<Type, Transform>(@object.GetType(), rayOrigin));
+                    m_SettingsMenuProviders.Remove(new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin));
                 }
 
-                var settingsMenuItemProvider = @object as ISettingsMenuItemProvider;
+                var settingsMenuItemProvider = target as ISettingsMenuItemProvider;
                 if (settingsMenuItemProvider != null)
                 {
                     foreach (var kvp in m_MainMenus)
@@ -120,10 +120,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             kvp.Value.RemoveSettingsMenuItem(settingsMenuItemProvider);
                     }
 
-                    m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(@object.GetType(), rayOrigin));
+                    m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin));
                 }
 
-                var mainMenu = @object as IMainMenu;
+                var mainMenu = target as IMainMenu;
                 if (mainMenu != null && rayOrigin != null)
                     m_MainMenus.Remove(rayOrigin);
             }

@@ -35,12 +35,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 ISelectToolMethods.isToolActive = IsToolActive;
             }
 
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var linkedObject = @object as ILinkedObject;
+                var linkedObject = target as ILinkedObject;
                 if (linkedObject != null)
                 {
-                    var type = @object.GetType();
+                    var type = target.GetType();
                     List<ILinkedObject> linkedObjectList;
                     if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
                     {
@@ -53,12 +53,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            public void DisconnectInterface(object @object, object userData = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var linkedObject = @object as ILinkedObject;
+                var linkedObject = target as ILinkedObject;
                 if (linkedObject != null)
                 {
-                    var type = @object.GetType();
+                    var type = target.GetType();
                     List<ILinkedObject> linkedObjectList;
                     if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
                         return;

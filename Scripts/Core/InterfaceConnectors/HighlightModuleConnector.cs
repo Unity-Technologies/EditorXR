@@ -12,16 +12,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 ISetHighlightMethods.setHighlight = provider.SetHighlight;
             }
 
-            public void ConnectInterface(object @object, object userData = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var customHighlight = @object as ICustomHighlight;
+                var customHighlight = target as ICustomHighlight;
                 if (customHighlight != null)
                     evr.GetModule<HighlightModule>().customHighlight += customHighlight.OnHighlight;
             }
 
-            public void DisconnectInterface(object @object, object userData = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var customHighlight = @object as ICustomHighlight;
+                var customHighlight = target as ICustomHighlight;
                 if (customHighlight != null)
                     evr.GetModule<HighlightModule>().customHighlight -= customHighlight.OnHighlight;
             }
