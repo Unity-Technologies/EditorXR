@@ -21,15 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		public static UnityMaterial GetMaterialClone(Renderer renderer)
 		{
 			// The following is equivalent to renderer.material, but gets rid of the error messages in edit mode
-			Material clonedMaterial = null;
-			var sharedMaterial = renderer.sharedMaterial;
-			if (sharedMaterial)
-			{
-				clonedMaterial = UnityObject.Instantiate(sharedMaterial);
-				renderer.material = clonedMaterial;
-			}
-
-			return clonedMaterial;
+			return renderer.material = UnityObject.Instantiate(renderer.sharedMaterial);
 		}
 
 		/// <summary>
