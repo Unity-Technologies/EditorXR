@@ -102,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
 
 #if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
-				Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
+                Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
 
                 // Add EVR tags and layers if they don't exist
@@ -511,31 +511,31 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 #else
-	internal class NoEditorVR
-	{
-		const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
+    internal class NoEditorVR
+    {
+        const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 
-		static NoEditorVR()
-		{
-			if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
-			{
-				var message = "EditorVR requires Unity 2017.2 or above.";
-				var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
-				switch (result)
-				{
-					case 0:
-						Application.OpenURL("https://unity3d.com/get-unity/download");
-						break;
-					case 1:
-						EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);
-						break;
-					case 2:
-						Debug.Log("<color=orange>" + message + "</color>");
-						break;
-				}
-			}
-		}
-	}
+        static NoEditorVR()
+        {
+            if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
+            {
+                var message = "EditorVR requires Unity 2017.2 or above.";
+                var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
+                switch (result)
+                {
+                    case 0:
+                        Application.OpenURL("https://unity3d.com/get-unity/download");
+                        break;
+                    case 1:
+                        EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);
+                        break;
+                    case 2:
+                        Debug.Log("<color=orange>" + message + "</color>");
+                        break;
+                }
+            }
+        }
+    }
 #endif
 }
 #endif

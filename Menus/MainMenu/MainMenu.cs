@@ -64,7 +64,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public bool focus { get { return m_MainMenuUI.hovering; } }
 
         public ActionMap actionMap { get { return m_MainMenuActionMap; } }
-
         public bool ignoreLocking { get { return false; } }
 
         public Transform menuOrigin

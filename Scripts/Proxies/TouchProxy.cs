@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     transform.localPosition = Vector3.zero;
             };
 #else
-			transform.localPosition = Vector3.zero;
+            transform.localPosition = Vector3.zero;
 #endif
 
             return base.Start();
