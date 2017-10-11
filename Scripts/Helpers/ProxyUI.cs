@@ -13,7 +13,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
 	public class ProxyUI : MonoBehaviour
 	{
-		private const string k_ZWritePropertyName = "_ZWrite";
+		const float k_FadeInSpeedScalar = 4f;
+		const float k_FadeOutSpeedScalar = 0.5f;
+		const string k_ZWritePropertyName = "_ZWrite";
 
 		List<Renderer> m_BodyRenderers; // Renderers not associated with affordances/controls, & will be HIDDEN when displaying feedback/tooltips
 		List<Renderer> m_AffordanceRenderers; // Renderers associated with affordances/controls, & will be SHOWN when displaying feedback/tooltips
@@ -150,35 +152,29 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// <param name="proxyOrigins">ProxyOrigins whose child renderers will not be controlled by the PRoxyUI</param>
 		public void Setup(AffordanceObject[] affordances, List<Transform> proxyOrigins)
 		{
-			// Set affordances AFTER setting origins, as the origins are referenced when setting up affordances
-			m_ProxyOrigins = proxyOrigins;
-
-			if (!m_ProxyUISetup)
-				StartCoroutine(DelayedSetup(affordances));
-		}
-
-		IEnumerator DelayedSetup(AffordanceObject[] affordances)
-		{
-			// HACK: Wait before setting up ProxyUI affordances
-			// Cloning affordance & body materials in Awake & Start doesn't reliably allow for the ability to change their shader properties
-			yield return new WaitForSeconds(1);
-
-			SetupAffordances(affordances);
-		}
-
-		/// <summary>
-		/// Set ProxyHelper affordances in this ProxyUI
-		/// </summary>
-		void SetupAffordances(AffordanceObject[] affordances)
-		{
-			if (m_Affordances != null)
+			// Prevent multiple setups
+			if (m_ProxyUISetup)
+			{
+				Debug.LogError("ProxyUI can only be setup once on : " + gameObject.name);
 				return;
+			}
 
+			// Don't allow setup if affordances are invalid
+			if (m_Affordances != null || affordances.Length < 1)
+			{
+				Debug.LogError("Affordances invalid when attempting to setup ProxyUI on : " + gameObject.name);
+				return;
+			}
+
+			// Prevent further setup if affordance map isn't assigned
 			if (m_AffordanceMap == null)
 			{
 				Debug.LogError("An Affordance Map must be assigned to ProxyUI on : " + gameObject.name);
 				return;
 			}
+
+			// Set affordances AFTER setting origins, as the origins are referenced when setting up affordances
+			m_ProxyOrigins = proxyOrigins;
 
 			// Clone the affordance map, in order to allow a single map to drive the visuals of many duplicate
 			// This also allows coroutine sets in the ProxyAffordanceMap to be performed simultaneously for n-number of devices in a proxy
@@ -262,9 +258,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition)
 		{
 			// Set original cached color when visible, transparent when hidden
-			const float kSpeedScalar = 2f;
 			const float kTargetAmount = 1f;
 			const float kHiddenValue = 0.25f;
+			var speedScalar = isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
 			var currentAmount = 0f;
 			var visibilityDefinition = definition.visibilityDefinition;
 			var material = visibilityDefinition.material;
@@ -273,7 +269,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var animateToColor = isVisible ? visibilityDefinition.originalColor : new Color(animateFromColor.r, animateFromColor.g, animateFromColor.b, kHiddenValue);
 			while (currentAmount < kTargetAmount)
 			{
-				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * kSpeedScalar);
+				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * speedScalar);
 				var currentColor = Color.Lerp(animateFromColor, animateToColor, smoothedAmount);
 				material.SetColor(shaderColorPropety, currentColor);
 
@@ -286,18 +282,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		IEnumerator AnimateAffordanceAlphaVisibility(bool isVisible, AffordanceDefinition definition)
 		{
-			const float kSpeedScalar = 2f;
 			const float kTargetAmount = 1f;
 			const float kHiddenValue = 0.25f;
+			var speedScalar = isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
 			var visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
 			var material = visibilityDefinition.material;
-			string shaderAlphaPropety = visibilityDefinition.alphaProperty;
+			var shaderAlphaPropety = visibilityDefinition.alphaProperty;
 			var animateFromAlpha = material.GetFloat(shaderAlphaPropety);
 			var animateToAlpha = isVisible ? visibilityDefinition.originalAlpha : kHiddenValue;
 			var currentAmount = 0f;
 			while (currentAmount < kTargetAmount)
 			{
-				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * kSpeedScalar);
+				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * speedScalar);
 				var currentAlpha = Mathf.Lerp(animateFromAlpha, animateToAlpha, smoothedAmount);
 				material.SetFloat(shaderAlphaPropety, currentAlpha);
 
@@ -316,14 +312,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				kvp.Value.animateFromValue = kvp.Key.GetColor(bodyVisibilityDefinition.colorProperty);
 			}
 
-			const float kSpeedScalar = 2f;
 			const float kTargetAmount = 1f;
 			const float kHiddenValue = 0.25f;
+			var speedScalar = isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
 			var currentAmount = 0f;
 			var shaderColorPropety = bodyVisibilityDefinition.colorProperty;
 			while (currentAmount < kTargetAmount)
 			{
-				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * kSpeedScalar);
+				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * speedScalar);
 				foreach (var kvp in m_BodyMaterialOriginalColorMap)
 				{
 					// Set original cached color when visible, transparent when hidden
@@ -352,14 +348,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 				kvp.Value.animateFromValue = kvp.Key.GetFloat(bodyVisibilityDefinition.alphaProperty);
 			}
 
-			const float kSpeedScalar = 2f;
 			const float kTargetAmount = 1f;
 			const float kHiddenValue = 0.25f;
-			string shaderAlphaPropety = bodyVisibilityDefinition.alphaProperty;
+			var speedScalar = isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
+			var shaderAlphaPropety = bodyVisibilityDefinition.alphaProperty;
 			var currentAmount = 0f;
 			while (currentAmount < kTargetAmount)
 			{
-				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * kSpeedScalar);
+				var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * speedScalar);
 				foreach (var kvp in m_BodyMaterialOriginalAlphaMap)
 				{
 					var valueFrom = kvp.Value.animateFromValue;
