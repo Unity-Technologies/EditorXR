@@ -50,6 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly List<InputDevice> m_SystemDevices = new List<InputDevice>();
         readonly Dictionary<Type, string[]> m_DeviceTypeTags = new Dictionary<Type, string[]>();
         readonly List<InputProcessor> m_InputProcessorsCopy = new List<InputProcessor>();
+        readonly List<InputProcessor> m_RemoveInputProcessorsCopy = new List<InputProcessor>();
 
         public List<InputDevice> GetSystemDevices()
         {
@@ -313,9 +314,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void RemoveInputProcessor(IProcessInput processInput)
         {
-            m_InputProcessorsCopy.Clear();
-            m_InputProcessorsCopy.AddRange(m_InputProcessors);
-            foreach (var processor in m_InputProcessorsCopy)
+            m_RemoveInputProcessorsCopy.Clear();
+            m_RemoveInputProcessorsCopy.AddRange(m_InputProcessors);
+            foreach (var processor in m_RemoveInputProcessorsCopy)
             {
                 if (processor.processor == processInput)
                 {

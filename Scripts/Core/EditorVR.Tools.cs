@@ -58,16 +58,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var linkedObject = target as ILinkedObject;
                 if (linkedObject != null)
                 {
-                    var type = target.GetType();
-                    List<ILinkedObject> linkedObjectList;
-                    if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
-                        return;
+                    // Delay removal of linked objects in case shutdown logic relies on them
+                    // Specifically, SerialzePreferences in AnnotationTool calls IsSharedUpdater
+                    EditorApplication.delayCall += () =>
+                    {
+                        var type = target.GetType();
+                        List<ILinkedObject> linkedObjectList;
+                        if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
+                            return;
 
-                    linkedObjectList.Remove(linkedObject);
-                    linkedObject.linkedObjects = null;
+                        linkedObjectList.Remove(linkedObject);
+                        linkedObject.linkedObjects = null;
 
-                    if (linkedObjectList.Count == 0)
-                        m_LinkedObjects.Remove(type);
+                        if (linkedObjectList.Count == 0)
+                            m_LinkedObjects.Remove(type);
+                    };
                 }
             }
 
