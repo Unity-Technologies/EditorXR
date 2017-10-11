@@ -324,66 +324,56 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public void OnResetDirectSelectionState() { }
 
-        void ShowSelectFeedback()
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, string controlName, string tooltipText = null)
         {
-            foreach (var control in m_Controls)
-            {
-                if (control.Key != "Select")
-                    continue;
+            if (tooltipText == null)
+                tooltipText = controlName;
 
-                foreach (var id in control.Value)
+            List<VRInputDevice.VRControl> ids;
+            if (m_Controls.TryGetValue(controlName, out ids))
+            {
+                foreach (var id in ids)
                 {
                     var request = new ProxyFeedbackRequest
                     {
                         node = node,
                         control = id,
-                        tooltipText = "Select"
+                        tooltipText = tooltipText
                     };
 
                     this.AddFeedbackRequest(request);
-                    m_SelectFeedback.Add(request);
+                    requests.Add(request);
                 }
             }
+        }
+
+        void ShowSelectFeedback()
+        {
+            ShowFeedback(m_SelectFeedback, "Select");
         }
 
         void ShowDirectSelectFeedback()
         {
-            foreach (var control in m_Controls)
+            ShowFeedback(m_DirectSelectFeedback, "Select", "Direct Select");
+        }
+
+        void HideFeedback(List<ProxyFeedbackRequest> requests)
+        {
+            foreach (var request in requests)
             {
-                if (control.Key != "Select")
-                    continue;
-
-                foreach (var id in control.Value)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = "Direct Select"
-                    };
-
-                    this.AddFeedbackRequest(request);
-                    m_DirectSelectFeedback.Add(request);
-                }
+                this.RemoveFeedbackRequest(request);
             }
+            requests.Clear();
         }
 
         void HideSelectFeedback()
         {
-            foreach (var request in m_SelectFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_SelectFeedback.Clear();
+            HideFeedback(m_SelectFeedback);
         }
 
         void HideDirectSelectFeedback()
         {
-            foreach (var request in m_DirectSelectFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_DirectSelectFeedback.Clear();
+            HideFeedback(m_DirectSelectFeedback);
         }
     }
 }

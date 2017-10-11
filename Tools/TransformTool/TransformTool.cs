@@ -774,10 +774,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             return m_Scaling && m_GrabData.Any(kvp => kvp.Value.rayOrigin == rayOrigin);
         }
 
-        void ShowGrabFeedback(Node node)
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, string controlName, string tooltipText, Node node, bool hideExisting = false)
         {
             List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("Cancel", out ids))
+            if (m_Controls.TryGetValue(controlName, out ids))
             {
                 foreach (var id in ids)
                 {
@@ -785,70 +785,45 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     {
                         node = node,
                         control = id,
-                        tooltipText = "Cancel",
-                        priority = 1
-                    };
-
-                    this.AddFeedbackRequest(request);
-                    m_GrabFeedback.Add(request);
-                }
-            }
-
-            if (m_Controls.TryGetValue("Select", out ids))
-            {
-                foreach (var id in ids)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
+                        tooltipText = tooltipText,
                         priority = 1,
-                        hideExisting = true
+                        hideExisting = hideExisting
                     };
 
                     this.AddFeedbackRequest(request);
-                    m_GrabFeedback.Add(request);
+                    requests.Add(request);
                 }
             }
         }
 
-        void HideGrabFeedback()
+        void ShowGrabFeedback(Node node)
         {
-            foreach (var request in m_GrabFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_GrabFeedback.Clear();
+            ShowFeedback(m_GrabFeedback, "Cancel", "Cancel", node);
+            ShowFeedback(m_GrabFeedback, "Select", null, node, true);
         }
 
         void ShowScaleFeedback(Node node)
         {
-            List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("Select", out ids))
-            {
-                foreach (var id in ids)
-                {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = "Scale",
-                        priority = 1
-                    };
+            ShowFeedback(m_ScaleFeedback, "Select", "Scale", node);
+        }
 
-                    this.AddFeedbackRequest(request);
-                    m_ScaleFeedback.Add(request);
-                }
+        void HideFeedback(List<ProxyFeedbackRequest> requests)
+        {
+            foreach (var request in requests)
+            {
+                this.RemoveFeedbackRequest(request);
             }
+            requests.Clear();
+        }
+
+        void HideGrabFeedback()
+        {
+            HideFeedback(m_GrabFeedback);
         }
 
         void HideScaleFeedback()
         {
-            foreach (var request in m_ScaleFeedback)
-            {
-                this.RemoveFeedbackRequest(request);
-            }
-            m_ScaleFeedback.Clear();
+            HideFeedback(m_ScaleFeedback);
         }
     }
 }
