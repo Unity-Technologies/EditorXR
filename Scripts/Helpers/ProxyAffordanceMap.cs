@@ -129,6 +129,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[Space(20)]
 		[Header("Affordances / Interactive Input-Device Elements")]
 		[SerializeField]
+		AffordanceVisibilityDefinition m_DefaultAffordanceVisibilityDefinition;
+
+		[SerializeField]
 		AffordanceDefinition[] m_AffordanceDefinitions;
 
 		public AffordanceDefinition[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } }
