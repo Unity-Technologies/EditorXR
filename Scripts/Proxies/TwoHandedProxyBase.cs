@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -18,6 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		public Node node;
 		public string tooltipText;
 		public bool hideExisting;
+		public bool visible;
 	}
 
 	abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
@@ -37,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		protected Transform m_LeftHand;
 		protected Transform m_RightHand;
-		readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
+		readonly Dictionary<ProxyFeedbackRequest, Coroutine> m_FeedbackRequests = new Dictionary<ProxyFeedbackRequest, Coroutine>();
 
 		protected Dictionary<Node, Transform> m_RayOrigins;
 
@@ -177,8 +179,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 				m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
 				m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
-
-				Debug.LogError("FeedbackRequests: <color=yellow>" + m_FeedbackRequests.Count + "</color>");
 			}
 		}
 
@@ -187,7 +187,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			var proxyRequest = request as ProxyFeedbackRequest;
 			if (proxyRequest != null)
 			{
-				m_FeedbackRequests.Add(proxyRequest);
+				ProxyFeedbackRequest existingRequest = null;
+				var hasKey = m_FeedbackRequests.ContainsKey(proxyRequest);
+				if (hasKey) // Update existing request/coroutine pair
+				{
+					var lifespanMonitoringCoroutine = m_FeedbackRequests[proxyRequest];
+					this.RestartCoroutine(ref lifespanMonitoringCoroutine, MonitorFeedbackRequestLifespan(proxyRequest));
+					m_FeedbackRequests[proxyRequest] = lifespanMonitoringCoroutine;
+				}
+				else // Add a new request/coroutine pair
+				{
+					var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
+					m_FeedbackRequests.Add(proxyRequest, newMonitoringCoroutine);
+				}
+
 				ExecuteFeedback(proxyRequest);
 			}
 		}
@@ -210,11 +223,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 					ProxyFeedbackRequest request = null;
 					foreach (var req in m_FeedbackRequests)
 					{
-						if (req.node != proxyNode.Key || req.control != kvp.Key)
+						var key = req.Key;
+						if (key.node != proxyNode.Key || key.control != kvp.Key)
 							continue;
 
-						if (request == null || req.priority >= request.priority)
-							request = req;
+						if (request == null || key.priority >= request.priority)
+							request = key;
 					}
 
 					if (request == null)
@@ -292,25 +306,22 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 		public void ClearFeedbackRequests(IRequestFeedback caller)
 		{
-			var requests = caller == null
-				? new List<ProxyFeedbackRequest>(m_FeedbackRequests)
-				: m_FeedbackRequests.Where(feedbackRequest => feedbackRequest.caller == caller).ToList();
-
-			foreach (var feedbackRequest in requests)
+			foreach (var kvp in m_FeedbackRequests)
 			{
-				RemoveFeedbackRequest(feedbackRequest);
+				if (kvp.Key.caller == caller)
+					RemoveFeedbackRequest(kvp.Key);
 			}
 		}
 
 		void UpdateVisibility()
 		{
-			Debug.LogError("<color=green>" + m_FeedbackRequests.Count + "</color>");
 			var rightProxyRequestsExist = false;
 			var leftProxyRequestsExist = false;
 			if (m_FeedbackRequests.Count > 0)
 			{
-				rightProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.RightHand).Any();
-				leftProxyRequestsExist = m_FeedbackRequests.Where(x => x.node == Node.LeftHand).Any();
+				// Find any visible feedback requests for each hand
+				rightProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.RightHand && x.Key.visible);
+				leftProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.LeftHand && x.Key.visible);
 			}
 
 			rightAffordanceRenderersVisible = rightProxyRequestsExist;
@@ -318,6 +329,22 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 			leftAffordanceRenderersVisible = leftProxyRequestsExist;
 			leftBodyRenderersVisible = leftProxyRequestsExist;
+		}
+
+		IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
+		{
+			request.visible = true;
+			var currentDuration = 0f;
+			while (request != null && currentDuration < k_FeedbackDuration)
+			{
+				currentDuration += Time.unscaledDeltaTime;
+				yield return null;
+			}
+
+			if (request != null)
+				request.visible = false;
+
+			UpdateVisibility();
 		}
 	}
 }
