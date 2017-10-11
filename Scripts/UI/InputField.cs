@@ -14,247 +14,250 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale
-	{
-		const float k_MoveKeyboardTime = 0.2f;
-		public SelectionFlags selectionFlags
-		{
-			get { return m_SelectionFlags; }
-			set { m_SelectionFlags = value; }
-		}
-		[SerializeField]
-		[FlagsProperty]
-		protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
+    abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale
+    {
+        const float k_MoveKeyboardTime = 0.2f;
 
-		public Func<KeyboardUI> spawnKeyboard;
-		protected KeyboardUI m_Keyboard;
+        public SelectionFlags selectionFlags
+        {
+            get { return m_SelectionFlags; }
+            set { m_SelectionFlags = value; }
+        }
 
-		[Serializable]
-		public class OnChangeEvent : UnityEvent<string> { }
-		public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
-		[SerializeField]
-		private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
+        [SerializeField]
+        [FlagsProperty]
+        protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
-		[SerializeField]
-		protected Text m_TextComponent;
+        public Func<KeyboardUI> spawnKeyboard;
+        protected KeyboardUI m_Keyboard;
 
-		[SerializeField]
-		private int m_CharacterLimit = 10;
+        [Serializable]
+        public class OnChangeEvent : UnityEvent<string>
+        {
+        }
 
-		private bool m_KeyboardOpen;
+        public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
 
-		Coroutine m_MoveKeyboardCoroutine;
+        [SerializeField]
+        private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
-		public virtual string text
-		{
-			get
-			{
-				return m_Text;
-			}
-			set
-			{
-				if (m_Text == value)
-					return;
+        [SerializeField]
+        protected Text m_TextComponent;
 
-				if (value == null)
-					value = "";
+        [SerializeField]
+        private int m_CharacterLimit = 10;
 
-				m_Text = m_CharacterLimit > 0 && value.Length > m_CharacterLimit ? value.Substring(0, m_CharacterLimit) : value;
-			}
-		}
-		[HideInInspector]
-		[SerializeField] // Serialized so that this remains set after cloning
-		protected string m_Text = string.Empty;
+        private bool m_KeyboardOpen;
 
-		protected override void OnEnable()
-		{
-			base.OnEnable();
+        Coroutine m_MoveKeyboardCoroutine;
 
-			if (m_Text == null)
-				m_Text = string.Empty;
+        public virtual string text
+        {
+            get { return m_Text; }
+            set
+            {
+                if (m_Text == value)
+                    return;
 
-			if (m_TextComponent != null)
-				UpdateLabel();
-		}
+                if (value == null)
+                    value = "";
 
-		/// <summary>
-		/// Update the label with the current text
-		/// </summary>
-		public void ForceUpdateLabel()
-		{
-			UpdateLabel();
-		}
+                m_Text = m_CharacterLimit > 0 && value.Length > m_CharacterLimit ? value.Substring(0, m_CharacterLimit) : value;
+            }
+        }
 
-		/// <summary>
-		/// Clear all text from the field
-		/// </summary>
-		public virtual void ClearLabel()
-		{
-			Clear();
-		}
+        [HideInInspector]
+        [SerializeField] // Serialized so that this remains set after cloning
+        protected string m_Text = string.Empty;
 
-		public override void OnSelect(BaseEventData eventData)
-		{
-			// Don't do base functionality
-		}
+        protected override void OnEnable()
+        {
+            base.OnEnable();
 
-		protected void SendOnValueChangedAndUpdateLabel()
-		{
-			SendOnValueChanged();
-			UpdateLabel();
-		}
+            if (m_Text == null)
+                m_Text = string.Empty;
 
-		protected void SendOnValueChanged()
-		{
-			if (onValueChanged != null)
-				onValueChanged.Invoke(text);
-		}
+            if (m_TextComponent != null)
+                UpdateLabel();
+        }
 
-		protected virtual void UpdateLabel()
-		{
-			if (m_TextComponent != null && m_TextComponent.font != null)
-				m_TextComponent.text = m_Text;
-		}
+        /// <summary>
+        /// Update the label with the current text
+        /// </summary>
+        public void ForceUpdateLabel()
+        {
+            UpdateLabel();
+        }
 
+        /// <summary>
+        /// Clear all text from the field
+        /// </summary>
+        public virtual void ClearLabel()
+        {
+            Clear();
+        }
 
-		/// <summary>
-		/// Open a keyboard for this input field
-		/// </summary>
-		public virtual void OpenKeyboard()
-		{
-			if (m_KeyboardOpen)
-				return;
+        public override void OnSelect(BaseEventData eventData)
+        {
+            // Don't do base functionality
+        }
 
-			m_KeyboardOpen = true;
+        protected void SendOnValueChangedAndUpdateLabel()
+        {
+            SendOnValueChanged();
+            UpdateLabel();
+        }
 
-			m_Keyboard = spawnKeyboard();
+        protected void SendOnValueChanged()
+        {
+            if (onValueChanged != null)
+                onValueChanged.Invoke(text);
+        }
 
-			m_Keyboard.gameObject.SetActive(true);
+        protected virtual void UpdateLabel()
+        {
+            if (m_TextComponent != null && m_TextComponent.font != null)
+                m_TextComponent.text = m_Text;
+        }
 
-			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
+        /// <summary>
+        /// Open a keyboard for this input field
+        /// </summary>
+        public virtual void OpenKeyboard()
+        {
+            if (m_KeyboardOpen)
+                return;
 
-			var keyboardOutOfRange = (m_Keyboard.transform.position - transform.position).magnitude > 0.25f;
-			m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(keyboardOutOfRange));
+            m_KeyboardOpen = true;
+
+            m_Keyboard = spawnKeyboard();
+
+            m_Keyboard.gameObject.SetActive(true);
+
+            this.StopCoroutine(ref m_MoveKeyboardCoroutine);
+
+            var keyboardOutOfRange = (m_Keyboard.transform.position - transform.position).magnitude > 0.25f;
+            m_MoveKeyboardCoroutine = StartCoroutine(MoveKeyboardToInputField(keyboardOutOfRange));
 
 #if UNITY_EDITOR
-			Undo.IncrementCurrentGroup(); // Every time we open the keyboard is a new modification
+            Undo.IncrementCurrentGroup(); // Every time we open the keyboard is a new modification
 #endif
-		}
+        }
 
-		IEnumerator MoveKeyboardToInputField(bool instant)
-		{
-			const float kKeyboardYOffset = 0.05f;
-			var targetPosition = transform.position + Vector3.up * kKeyboardYOffset * this.GetViewerScale();
+        IEnumerator MoveKeyboardToInputField(bool instant)
+        {
+            const float kKeyboardYOffset = 0.05f;
+            var targetPosition = transform.position + Vector3.up * kKeyboardYOffset * this.GetViewerScale();
 
-			if (!instant && !m_Keyboard.collapsed)
-			{
-				var t = 0f;
-				while (t < k_MoveKeyboardTime)
-				{
-					m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / k_MoveKeyboardTime);
-					m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - CameraUtils.GetMainCamera().transform.position);
-					t += Time.deltaTime;
-					yield return null;
-				}
-			}
+            if (!instant && !m_Keyboard.collapsed)
+            {
+                var t = 0f;
+                while (t < k_MoveKeyboardTime)
+                {
+                    m_Keyboard.transform.position = Vector3.Lerp(m_Keyboard.transform.position, targetPosition, t / k_MoveKeyboardTime);
+                    m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - CameraUtils.GetMainCamera().transform.position);
+                    t += Time.deltaTime;
+                    yield return null;
+                }
+            }
 
-			m_Keyboard.transform.position = targetPosition;
-			m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - CameraUtils.GetMainCamera().transform.position);
-			m_MoveKeyboardCoroutine = null;
+            m_Keyboard.transform.position = targetPosition;
+            m_Keyboard.transform.rotation = Quaternion.LookRotation(transform.position - CameraUtils.GetMainCamera().transform.position);
+            m_MoveKeyboardCoroutine = null;
 
-			m_Keyboard.Setup(OnKeyPress);
-		}
+            m_Keyboard.Setup(OnKeyPress);
+        }
 
-		/// <summary>
-		/// Close the keyboard and optionally run a collapse animation
-		/// </summary>
-		/// <param name="collapse">Should animate collapse?</param>
-		/// <returns>If a keyboard was closed</returns>
-		public virtual bool CloseKeyboard(bool collapse = false)
-		{
-			if (m_Keyboard == null || !m_KeyboardOpen)
-				return false;
+        /// <summary>
+        /// Close the keyboard and optionally run a collapse animation
+        /// </summary>
+        /// <param name="collapse">Should animate collapse?</param>
+        /// <returns>If a keyboard was closed</returns>
+        public virtual bool CloseKeyboard(bool collapse = false)
+        {
+            if (m_Keyboard == null || !m_KeyboardOpen)
+                return false;
 
-			m_KeyboardOpen = false;
+            m_KeyboardOpen = false;
 
-			this.StopCoroutine(ref m_MoveKeyboardCoroutine);
+            this.StopCoroutine(ref m_MoveKeyboardCoroutine);
 
-			if (collapse)
-				m_Keyboard.Collapse(FinalizeClose);
-			else
-				FinalizeClose();
+            if (collapse)
+                m_Keyboard.Collapse(FinalizeClose);
+            else
+                FinalizeClose();
 
-			return true;
-		}
+            return true;
+        }
 
-		void FinalizeClose()
-		{
-			m_Keyboard.gameObject.SetActive(false);
-			m_Keyboard = null;
-		}
+        void FinalizeClose()
+        {
+            m_Keyboard.gameObject.SetActive(false);
+            m_Keyboard = null;
+        }
 
-		protected void OnKeyPress(char keyCode)
-		{
-			const KeyCode kNewline = (KeyCode)'\n';
-			switch ((KeyCode)keyCode)
-			{
-				case KeyCode.None:
-					return;
-				case KeyCode.Backspace:
-					Backspace();
-					return;
-				case KeyCode.Tab:
-					Tab();
-					return;
-				case KeyCode.Clear:
-					Clear();
-					return;
-				case kNewline:
-				case KeyCode.Return:
-					Return();
-					return;
-				case KeyCode.Escape:
-					Escape();
-					return;
-				case KeyCode.Space:
-					Space();
-					return;
-				case KeyCode.LeftShift:
-				case KeyCode.RightShift:
-					Shift();
-					return;
-				case KeyCode.CapsLock:
-					CapsLock();
-					return;
-			}
+        protected void OnKeyPress(char keyCode)
+        {
+            const KeyCode kNewline = (KeyCode)'\n';
+            switch ((KeyCode)keyCode)
+            {
+                case KeyCode.None:
+                    return;
+                case KeyCode.Backspace:
+                    Backspace();
+                    return;
+                case KeyCode.Tab:
+                    Tab();
+                    return;
+                case KeyCode.Clear:
+                    Clear();
+                    return;
+                case kNewline:
+                case KeyCode.Return:
+                    Return();
+                    return;
+                case KeyCode.Escape:
+                    Escape();
+                    return;
+                case KeyCode.Space:
+                    Space();
+                    return;
+                case KeyCode.LeftShift:
+                case KeyCode.RightShift:
+                    Shift();
+                    return;
+                case KeyCode.CapsLock:
+                    CapsLock();
+                    return;
+            }
 
-			if (IsValid(keyCode))
-				Append(keyCode);
-		}
+            if (IsValid(keyCode))
+                Append(keyCode);
+        }
 
-		protected virtual bool IsValid(char c)
-		{
-			return m_TextComponent.font.HasCharacter(c);
-		}
+        protected virtual bool IsValid(char c)
+        {
+            return m_TextComponent.font.HasCharacter(c);
+        }
 
-		protected virtual void Escape()
-		{
-			CloseKeyboard(true);
-		}
+        protected virtual void Escape()
+        {
+            CloseKeyboard(true);
+        }
 
-		protected virtual void Clear()
-		{
-			m_Text = "";
-			SendOnValueChangedAndUpdateLabel();
-		}
+        protected virtual void Clear()
+        {
+            m_Text = "";
+            SendOnValueChangedAndUpdateLabel();
+        }
 
-		protected abstract void Append(char c);
-		protected abstract void Backspace();
-		protected abstract void Tab();
-		protected abstract void Return();
-		protected abstract void Space();
-		protected abstract void Shift();
-		protected abstract void CapsLock();
-	}
+        protected abstract void Append(char c);
+        protected abstract void Backspace();
+        protected abstract void Tab();
+        protected abstract void Return();
+        protected abstract void Space();
+        protected abstract void Shift();
+        protected abstract void CapsLock();
+    }
 }
 #endif

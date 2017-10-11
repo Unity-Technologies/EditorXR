@@ -9,11 +9,11 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Input
 {
-	/// <summary>
-	/// Sends events to the input system based on native Sixense SDK calls
-	/// </summary>
-	sealed class SixenseInputToEvents : BaseInputToEvents
-	{
+    /// <summary>
+    /// Sends events to the input system based on native Sixense SDK calls
+    /// </summary>
+    sealed class SixenseInputToEvents : BaseInputToEvents
+    {
 #if ENABLE_SIXENSE_INPUT
 		const uint k_ControllerCount = SixenseInput.MAX_CONTROLLERS;
 		const int k_AxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
@@ -198,6 +198,6 @@ namespace UnityEditor.Experimental.EditorVR.Input
 				(m_RotationOffset * SixenseInput.Controllers[1].Position * k_HydraUnits);
 		}
 #endif
-	}
+    }
 }
 #endif
