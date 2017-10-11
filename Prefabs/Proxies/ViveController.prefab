@@ -35,6 +35,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4000010742330424}
   - component: {fileID: 114000011293798520}
+  - component: {fileID: 114673881177878536}
   m_Layer: 0
   m_Name: ViveController
   m_TagString: ShowInMiniWorld
@@ -1466,14 +1467,6 @@ MonoBehaviour:
     m_RotateAxes: 0
     m_Min: 0.018
     m_Max: -0.018
-  m_LeftTooltips:
-  - {fileID: 114558108786776402}
-  - {fileID: 114026251721049050}
-  - {fileID: 114116332399531262}
-  m_RightTooltips:
-  - {fileID: 114185068079462814}
-  - {fileID: 114195992931318178}
-  - {fileID: 114306613819668780}
 --- !u!114 &114026251721049050
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1627,6 +1620,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
+--- !u!114 &114673881177878536
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010426338840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdd11671dcb67934493cc2ccea551eef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_LeftTooltips:
+  - {fileID: 114185068079462814}
+  - {fileID: 114026251721049050}
+  - {fileID: 114116332399531262}
+  m_RightTooltips:
+  - {fileID: 114558108786776402}
+  - {fileID: 114195992931318178}
+  - {fileID: 114306613819668780}
 --- !u!114 &114819021981951190
 MonoBehaviour:
   m_ObjectHideFlags: 1
