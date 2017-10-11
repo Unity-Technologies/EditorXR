@@ -11,9 +11,13 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
     {
         MonoBehaviour mb;
         int coIndex = 0;
-        IEnumerator routine() { yield return coIndex++; }
 
-		[OneTimeSetUp]
+        IEnumerator routine()
+        {
+            yield return coIndex++;
+        }
+
+        [OneTimeSetUp]
         public void Setup()
         {
             mb = new GameObject().AddComponent<DefaultProxyRay>();
