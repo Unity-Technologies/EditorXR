@@ -836,7 +836,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowScaleFeedback()
         {
-            ShowFeedback(m_ScaleFeedback, "Crawl", "Scale");
+            List<VRInputDevice.VRControl> ids;
+            if (m_Controls.TryGetValue("Crawl", out ids))
+            {
+                foreach (var id in ids)
+                {
+                    var request = new ProxyFeedbackRequest
+                    {
+                        control = id,
+                        node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand,
+                        tooltipText = "Scale"
+                    };
+
+                    this.AddFeedbackRequest(request);
+                    m_ScaleFeedback.Add(request);
+                }
+            }
         }
 
         void ShowResetScaleFeedback()

@@ -23,6 +23,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             [SerializeField]
             Renderer m_Renderer;
 
+            [SerializeField]
+            Tooltip[] m_Tooltips;
+
             [FlagsProperty]
             [SerializeField]
             AxisFlags m_TranslateAxes;
@@ -40,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             public VRInputDevice.VRControl control { get { return m_Control; } }
             public Transform transform { get { return m_Transform; } }
             public Renderer renderer { get { return m_Renderer; } }
+            public Tooltip[] tooltips { get { return m_Tooltips; } }
             public AxisFlags translateAxes { get { return m_TranslateAxes; } }
             public AxisFlags rotateAxes { get { return m_RotateAxes; } }
             public float min { get { return m_Min; } }

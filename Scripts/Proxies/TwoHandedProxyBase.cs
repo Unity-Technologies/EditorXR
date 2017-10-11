@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Input;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -92,9 +91,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Dictionary<Transform, Transform> alternateMenuOrigins { get; set; }
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
-
-        // Local method use only -- created here to reduce garbage collection
-        static readonly List<Tooltip> k_TooltipList = new List<Tooltip>();
 
         public virtual void Awake()
         {
@@ -226,14 +222,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         if (button.renderer)
                             this.SetHighlight(button.renderer.gameObject, !request.hideExisting, duration: k_FeedbackDuration);
 
-                        if (button.transform)
+                        var tooltipText = request.tooltipText;
+                        if (!string.IsNullOrEmpty(tooltipText) || request.hideExisting)
                         {
-                            var tooltipText = request.tooltipText;
-                            if (!string.IsNullOrEmpty(tooltipText) || request.hideExisting)
+                            foreach (var tooltip in button.tooltips)
                             {
-                                k_TooltipList.Clear();
-                                button.transform.GetComponents(k_TooltipList);
-                                foreach (var tooltip in k_TooltipList)
+                                if (tooltip)
                                 {
                                     tooltip.tooltipText = tooltipText;
                                     this.ShowTooltip(tooltip, true, k_FeedbackDuration);
@@ -265,11 +259,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         if (button.renderer)
                             this.SetHighlight(button.renderer.gameObject, false);
 
-                        if (button.transform)
+                        foreach (var tooltip in button.tooltips)
                         {
-                            k_TooltipList.Clear();
-                            button.transform.GetComponents(k_TooltipList);
-                            foreach (var tooltip in k_TooltipList)
+                            if (tooltip)
                             {
                                 tooltip.tooltipText = string.Empty;
                                 this.HideTooltip(tooltip, true);
