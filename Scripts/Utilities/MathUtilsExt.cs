@@ -216,6 +216,19 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             // t^3 * (t * (6 * t - 15) + 10)
             return Mathf.Pow(lerpAmount, 3) * (lerpAmount * (6f * lerpAmount - 15f) + 10f);
         }
+
+        /// <summary>
+        /// Get a Vector3 corresponding to the axis described by this AxisFlags
+        /// </summary>
+        /// <returns>The axis</returns>
+        public static Vector3 GetAxis(this AxisFlags @this)
+        {
+            return new Vector3(
+                (@this & AxisFlags.X) != 0 ? 1 : 0,
+                (@this & AxisFlags.Y) != 0 ? 1 : 0,
+                (@this & AxisFlags.Z) != 0 ? 1 : 0
+            );
+        }
     }
 }
 #endif

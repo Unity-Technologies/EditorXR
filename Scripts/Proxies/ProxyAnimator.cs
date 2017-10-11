@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -97,31 +98,8 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
             var min = button.min;
             var offset = min + (control.rawValue + 1) * (button.max - min) * 0.5f;
 
-            var positionOffset = info.positionOffset;
-            var translateAxes = button.translateAxes;
-            if ((translateAxes & AxisFlags.X) != 0)
-                positionOffset.x += offset;
-
-            if ((translateAxes & AxisFlags.Y) != 0)
-                positionOffset.y += offset;
-
-            if ((translateAxes & AxisFlags.Z) != 0)
-                positionOffset.z += offset;
-
-            info.positionOffset = positionOffset;
-
-            var localRotation = info.rotationOffset;
-            var rotateAxes = button.rotateAxes;
-            if ((rotateAxes & AxisFlags.X) != 0)
-                localRotation.x += offset;
-
-            if ((rotateAxes & AxisFlags.Y) != 0)
-                localRotation.y += offset;
-
-            if ((rotateAxes & AxisFlags.Z) != 0)
-                localRotation.z += offset;
-
-            info.rotationOffset = localRotation;
+            info.positionOffset += button.translateAxes.GetAxis() * offset;
+            info.rotationOffset += button.rotateAxes.GetAxis() * offset;
         }
 
         foreach (var kvp in m_TransformInfos)
