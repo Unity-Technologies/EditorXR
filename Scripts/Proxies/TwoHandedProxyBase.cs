@@ -337,7 +337,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
 		{
 			request.visible = true;
-			const float kDuration = k_FeedbackDuration * 0.5f;
+			const float kDuration = k_FeedbackDuration * 0.125f;
 			var currentDuration = 0f;
 			while (request != null && currentDuration < kDuration)
 			{
