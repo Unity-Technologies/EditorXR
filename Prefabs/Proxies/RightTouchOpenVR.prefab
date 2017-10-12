@@ -308,7 +308,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4617753192742486}
   - component: {fileID: 114700073176764548}
-  - component: {fileID: 114734654386234162}
   m_Layer: 0
   m_Name: RightTouchOpenVR
   m_TagString: Untagged
@@ -465,6 +464,8 @@ GameObject:
   - component: {fileID: 136497482760722588}
   - component: {fileID: 114904225304444658}
   - component: {fileID: 114510401113800598}
+  - component: {fileID: 114195443192961852}
+  - component: {fileID: 114178596385280704}
   m_Layer: 0
   m_Name: rctrl:b_stick
   m_TagString: ShowInMiniWorld
@@ -1042,6 +1043,36 @@ MonoBehaviour:
   m_TooltipTarget: {fileID: 4446763199465236}
   m_TooltipSource: {fileID: 4199321456540786}
   m_TooltipAlignment: 1
+--- !u!114 &114178596385280704
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1886015457735076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TooltipText: 
+  m_TooltipTarget: {fileID: 4020309191218892}
+  m_TooltipSource: {fileID: 4662592250246964}
+  m_TooltipAlignment: 1
+--- !u!114 &114195443192961852
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1886015457735076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TooltipText: 
+  m_TooltipTarget: {fileID: 4020309191218892}
+  m_TooltipSource: {fileID: 4662592250246964}
+  m_TooltipAlignment: 1
 --- !u!114 &114427722552533374
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1115,14 +1146,13 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4799468984284310}
   m_PreviewOrigin: {fileID: 4286406122114976}
   m_FieldGrabOrigin: {fileID: 4866118000331932}
-  m_LeftTooltips: []
-  m_RightTooltips: []
-  m_MeshRoot: {fileID: 4684511478074442}
-  m_ProxyUI: {fileID: 114734654386234162}
-  m_Affordances:
+  m_MeshRoot: {fileID: 0}
+  m_Buttons:
   - m_Control: 2
     m_Transform: {fileID: 4199321456540786}
     m_Renderer: {fileID: 137005679053573082}
+    m_Tooltips:
+    - {fileID: 114106734160267480}
     m_TranslateAxes: 0
     m_RotateAxes: 1
     m_Min: 20
@@ -1130,6 +1160,8 @@ MonoBehaviour:
   - m_Control: 3
     m_Transform: {fileID: 4010047915957694}
     m_Renderer: {fileID: 137200858950391162}
+    m_Tooltips:
+    - {fileID: 114427722552533374}
     m_TranslateAxes: 1
     m_RotateAxes: 0
     m_Min: 0.00455765
@@ -1137,6 +1169,8 @@ MonoBehaviour:
   - m_Control: 17
     m_Transform: {fileID: 4221126147080902}
     m_Renderer: {fileID: 137136063802218740}
+    m_Tooltips:
+    - {fileID: 114041942050554804}
     m_TranslateAxes: 4
     m_RotateAxes: 0
     m_Min: 0.001793736
@@ -1144,6 +1178,8 @@ MonoBehaviour:
   - m_Control: 18
     m_Transform: {fileID: 4022345611153456}
     m_Renderer: {fileID: 137918311825069984}
+    m_Tooltips:
+    - {fileID: 114698121262855600}
     m_TranslateAxes: 4
     m_RotateAxes: 0
     m_Min: 0.001793736
@@ -1151,6 +1187,8 @@ MonoBehaviour:
   - m_Control: 22
     m_Transform: {fileID: 4662592250246964}
     m_Renderer: {fileID: 137123611090237704}
+    m_Tooltips:
+    - {fileID: 114510401113800598}
     m_TranslateAxes: 1
     m_RotateAxes: 0
     m_Min: 0.0002774392
@@ -1158,6 +1196,8 @@ MonoBehaviour:
   - m_Control: 0
     m_Transform: {fileID: 4662592250246964}
     m_Renderer: {fileID: 137123611090237704}
+    m_Tooltips:
+    - {fileID: 114195443192961852}
     m_TranslateAxes: 0
     m_RotateAxes: 2
     m_Min: 15
@@ -1165,22 +1205,12 @@ MonoBehaviour:
   - m_Control: 1
     m_Transform: {fileID: 4662592250246964}
     m_Renderer: {fileID: 137123611090237704}
+    m_Tooltips:
+    - {fileID: 114178596385280704}
     m_TranslateAxes: 0
     m_RotateAxes: 4
     m_Min: 15
     m_Max: -15
---- !u!114 &114734654386234162
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1523256443734892}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
 --- !u!114 &114743270976659912
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1239,6 +1269,7 @@ SkinnedMeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -1254,6 +1285,7 @@ SkinnedMeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -1284,6 +1316,7 @@ SkinnedMeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -1300,6 +1333,7 @@ SkinnedMeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -1330,6 +1364,7 @@ SkinnedMeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -1345,6 +1380,7 @@ SkinnedMeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -1375,6 +1411,7 @@ SkinnedMeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -1390,6 +1427,7 @@ SkinnedMeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -1420,6 +1458,7 @@ SkinnedMeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -1435,6 +1474,7 @@ SkinnedMeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -1465,6 +1505,7 @@ SkinnedMeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -1480,6 +1521,7 @@ SkinnedMeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -1510,6 +1552,7 @@ SkinnedMeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -1525,6 +1568,7 @@ SkinnedMeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -1555,6 +1599,7 @@ SkinnedMeshRenderer:
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
@@ -1570,6 +1615,7 @@ SkinnedMeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5

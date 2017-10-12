@@ -1,385 +1,396 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using System.Reflection;
-using UnityEngine.VR;
+using UnityEngine.XR;
+
 #if ENABLE_STEAMVR_INPUT
 using Valve.VR;
 #endif
-using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	sealed class VRView : EditorWindow
-	{
-		public const float HeadHeight = 1.7f;
-		const string k_ShowDeviceView = "VRView.ShowDeviceView";
-		const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
+    sealed class VRView : EditorWindow
+    {
+        public const float HeadHeight = 1.7f;
+        const string k_ShowDeviceView = "VRView.ShowDeviceView";
+        const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
 
-		DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
+        DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
-		// To allow for alternate previews (e.g. smoothing)
-		public static Camera customPreviewCamera
-		{
-			set
-			{
-				if (s_ActiveView)
-					s_ActiveView.m_CustomPreviewCamera = value;
-			}
-			get
-			{
-				return s_ActiveView && s_ActiveView.m_UseCustomPreviewCamera ?
-					s_ActiveView.m_CustomPreviewCamera : null;
-			}
-		}
+        // To allow for alternate previews (e.g. smoothing)
+        public static Camera customPreviewCamera
+        {
+            set
+            {
+                if (s_ActiveView)
+                    s_ActiveView.m_CustomPreviewCamera = value;
+            }
+            get
+            {
+                return s_ActiveView && s_ActiveView.m_UseCustomPreviewCamera ?
+                    s_ActiveView.m_CustomPreviewCamera : null;
+            }
+        }
 
-		Camera m_CustomPreviewCamera;
+        Camera m_CustomPreviewCamera;
 
-		[NonSerialized]
-		Camera m_Camera;
+        [NonSerialized]
+        Camera m_Camera;
 
-		LayerMask? m_CullingMask;
-		RenderTexture m_TargetTexture;
-		bool m_ShowDeviceView;
-		EditorWindow[] m_EditorWindows;
+        LayerMask? m_CullingMask;
+        RenderTexture m_TargetTexture;
+        bool m_ShowDeviceView;
+        EditorWindow[] m_EditorWindows;
 
-		static VRView s_ActiveView;
+        static VRView s_ActiveView;
 
-		Transform m_CameraRig;
+        Transform m_CameraRig;
 
-		bool m_HMDReady;
-		bool m_UseCustomPreviewCamera;
+        bool m_HMDReady;
+        bool m_UseCustomPreviewCamera;
 
-		public static Transform cameraRig
-		{
-			get
-			{
-				if (s_ActiveView)
-					return s_ActiveView.m_CameraRig;
+        public static Transform cameraRig
+        {
+            get
+            {
+                if (s_ActiveView)
+                    return s_ActiveView.m_CameraRig;
 
-				return null;
-			}
-		}
+                return null;
+            }
+        }
 
-		public static Camera viewerCamera
-		{
-			get
-			{
-				if (s_ActiveView)
-					return s_ActiveView.m_Camera;
+        public static Camera viewerCamera
+        {
+            get
+            {
+                if (s_ActiveView)
+                    return s_ActiveView.m_Camera;
 
-				return null;
-			}
-		}
+                return null;
+            }
+        }
 
-		public static VRView activeView
-		{
-			get { return s_ActiveView; }
-		}
+        public static VRView activeView
+        {
+            get { return s_ActiveView; }
+        }
 
-		public static bool showDeviceView
-		{
-			get { return s_ActiveView && s_ActiveView.m_ShowDeviceView; }
-		}
+        public static bool showDeviceView
+        {
+            get { return s_ActiveView && s_ActiveView.m_ShowDeviceView; }
+        }
 
-		public static LayerMask cullingMask
-		{
-			set
-			{
-				if (s_ActiveView)
-					s_ActiveView.m_CullingMask = value;
-			}
-		}
+        public static LayerMask cullingMask
+        {
+            set
+            {
+                if (s_ActiveView)
+                    s_ActiveView.m_CullingMask = value;
+            }
+        }
 
-		public static Vector3 headCenteredOrigin
-		{
-			get
-			{
-				return VRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary ? Vector3.up * HeadHeight : Vector3.zero;
-			}
-		}
+        public static Vector3 headCenteredOrigin
+        {
+            get
+            {
+#if UNITY_2017_2_OR_NEWER
+                return XRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary ? Vector3.up * HeadHeight : Vector3.zero;
+#else
+                return Vector3.zero;
+#endif
+            }
+        }
 
-		public static event Action viewEnabled;
-		public static event Action viewDisabled;
-		public static event Action<EditorWindow> beforeOnGUI;
-		public static event Action<EditorWindow> afterOnGUI;
-		public static event Action<bool> hmdStatusChange;
+        public static event Action viewEnabled;
+        public static event Action viewDisabled;
+        public static event Action<EditorWindow> beforeOnGUI;
+        public static event Action<EditorWindow> afterOnGUI;
+        public static event Action<bool> hmdStatusChange;
 
-		public Rect guiRect { get; private set; }
+        public Rect guiRect { get; private set; }
 
-		public static Coroutine StartCoroutine(IEnumerator routine)
-		{
-			if (s_ActiveView && s_ActiveView.m_CameraRig)
-			{
-				var mb = s_ActiveView.m_CameraRig.GetComponent<EditorMonoBehaviour>();
-				return mb.StartCoroutine(routine);
-			}
+        public static Coroutine StartCoroutine(IEnumerator routine)
+        {
+            if (s_ActiveView && s_ActiveView.m_CameraRig)
+            {
+                var mb = s_ActiveView.m_CameraRig.GetComponent<EditorMonoBehaviour>();
+                return mb.StartCoroutine(routine);
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		public void OnEnable()
-		{
-			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
+        public void OnEnable()
+        {
+            Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
 
-			autoRepaintOnSceneChange = true;
-			s_ActiveView = this;
+            autoRepaintOnSceneChange = true;
+            s_ActiveView = this;
 
-			GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
-			m_Camera = cameraGO.GetComponent<Camera>();
-			m_Camera.useOcclusionCulling = false;
-			m_Camera.enabled = false;
-			m_Camera.cameraType = CameraType.VR;
+            GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
+            m_Camera = cameraGO.GetComponent<Camera>();
+            m_Camera.useOcclusionCulling = false;
+            m_Camera.enabled = false;
+            m_Camera.cameraType = CameraType.VR;
 
-			GameObject rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", HideFlags.HideAndDontSave, typeof(EditorMonoBehaviour));
-			m_CameraRig = rigGO.transform;
-			m_Camera.transform.parent = m_CameraRig;
-			m_Camera.nearClipPlane = 0.01f;
-			m_Camera.farClipPlane = 1000f;
-			m_CameraRig.position = headCenteredOrigin;
-			m_CameraRig.rotation = Quaternion.identity;
+            GameObject rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", HideFlags.HideAndDontSave, typeof(EditorMonoBehaviour));
+            m_CameraRig = rigGO.transform;
+            m_Camera.transform.parent = m_CameraRig;
+            m_Camera.nearClipPlane = 0.01f;
+            m_Camera.farClipPlane = 1000f;
+            m_CameraRig.position = headCenteredOrigin;
+            m_CameraRig.rotation = Quaternion.identity;
 
-			m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
-			m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
+            m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
+            m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
 
-			// Disable other views to increase rendering performance for EditorVR
-			SetOtherViewsEnabled(false);
+            // Disable other views to increase rendering performance for EditorVR
+            SetOtherViewsEnabled(false);
 
-			// VRSettings.enabled latches the reference pose for the current camera
-			var currentCamera = Camera.current;
-			Camera.SetupCurrent(m_Camera);
-			VRSettings.enabled = true;
-			Camera.SetupCurrent(currentCamera);
+            // VRSettings.enabled latches the reference pose for the current camera
+            var currentCamera = Camera.current;
+            Camera.SetupCurrent(m_Camera);
+#if UNITY_2017_2_OR_NEWER
+            XRSettings.enabled = true;
+#endif
+            Camera.SetupCurrent(currentCamera);
 
-			if (viewEnabled != null)
-				viewEnabled();
-		}
+            if (viewEnabled != null)
+                viewEnabled();
+        }
 
-		public void OnDisable()
-		{
-			if (viewDisabled != null)
-				viewDisabled();
+        public void OnDisable()
+        {
+            if (viewDisabled != null)
+                viewDisabled();
 
-			VRSettings.enabled = false;
+#if UNITY_2017_2_OR_NEWER
+            XRSettings.enabled = false;
+#endif
 
-			EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
-			EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
+            EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
+            EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
 
-			SetOtherViewsEnabled(true);
+            SetOtherViewsEnabled(true);
 
-			if (m_CameraRig)
-				DestroyImmediate(m_CameraRig.gameObject, true);
+            if (m_CameraRig)
+                DestroyImmediate(m_CameraRig.gameObject, true);
 
-			Assert.IsNotNull(s_ActiveView, "EditorVR should have an active view");
-			s_ActiveView = null;
-		}
+            Assert.IsNotNull(s_ActiveView, "EditorVR should have an active view");
+            s_ActiveView = null;
+        }
 
-		void UpdateCameraTransform()
-		{
-			var cameraTransform = m_Camera.transform;
-			cameraTransform.localPosition = InputTracking.GetLocalPosition(VRNode.Head);
-			cameraTransform.localRotation = InputTracking.GetLocalRotation(VRNode.Head);
-		}
+        void UpdateCameraTransform()
+        {
+            var cameraTransform = m_Camera.transform;
+#if UNITY_2017_2_OR_NEWER
+            cameraTransform.localPosition = InputTracking.GetLocalPosition(XRNode.Head);
+            cameraTransform.localRotation = InputTracking.GetLocalRotation(XRNode.Head);
+#endif
+        }
 
-		public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)
-		{
-			bool useSRGBTarget = QualitySettings.activeColorSpace == ColorSpace.Linear;
+        public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)
+        {
+            bool useSRGBTarget = QualitySettings.activeColorSpace == ColorSpace.Linear;
 
-			int msaa = Mathf.Max(1, QualitySettings.antiAliasing);
-			
-			RenderTextureFormat format = hdr ? RenderTextureFormat.ARGBHalf : RenderTextureFormat.ARGB32;
-			if (renderTexture != null)
-			{
-				bool matchingSRGB = renderTexture != null && useSRGBTarget == renderTexture.sRGB;
+            int msaa = Mathf.Max(1, QualitySettings.antiAliasing);
 
-				if (renderTexture.format != format || renderTexture.antiAliasing != msaa || !matchingSRGB)
-				{
-					DestroyImmediate(renderTexture);
-					renderTexture = null;
-				}
-			}
+            RenderTextureFormat format = hdr ? RenderTextureFormat.ARGBHalf : RenderTextureFormat.ARGB32;
+            if (renderTexture != null)
+            {
+                bool matchingSRGB = renderTexture != null && useSRGBTarget == renderTexture.sRGB;
 
-			Rect actualCameraRect = cameraRect;
-			int width = (int)actualCameraRect.width;
-			int height = (int)actualCameraRect.height;
+                if (renderTexture.format != format || renderTexture.antiAliasing != msaa || !matchingSRGB)
+                {
+                    DestroyImmediate(renderTexture);
+                    renderTexture = null;
+                }
+            }
 
-			if (renderTexture == null)
-			{
-				renderTexture = new RenderTexture(0, 0, 24, format);
-				renderTexture.name = "Scene RT";
-				renderTexture.antiAliasing = msaa;
-				renderTexture.hideFlags = HideFlags.HideAndDontSave;
-			}
-			if (renderTexture.width != width || renderTexture.height != height)
-			{
-				renderTexture.Release();
-				renderTexture.width = width;
-				renderTexture.height = height;
-			}
-			renderTexture.Create();
-		}
+            Rect actualCameraRect = cameraRect;
+            int width = (int)actualCameraRect.width;
+            int height = (int)actualCameraRect.height;
 
-		void PrepareCameraTargetTexture(Rect cameraRect)
-		{
-			// Always render camera into a RT
-			CreateCameraTargetTexture(ref m_TargetTexture, cameraRect, false);
-			m_Camera.targetTexture = m_ShowDeviceView ? m_TargetTexture : null;
-			VRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
-		}
+            if (renderTexture == null)
+            {
+                renderTexture = new RenderTexture(0, 0, 24, format);
+                renderTexture.name = "Scene RT";
+                renderTexture.antiAliasing = msaa;
+                renderTexture.hideFlags = HideFlags.HideAndDontSave;
+            }
+            if (renderTexture.width != width || renderTexture.height != height)
+            {
+                renderTexture.Release();
+                renderTexture.width = width;
+                renderTexture.height = height;
+            }
+            renderTexture.Create();
+        }
 
-		void OnGUI()
-		{
-			if (beforeOnGUI != null)
-				beforeOnGUI(this);
+        void PrepareCameraTargetTexture(Rect cameraRect)
+        {
+            // Always render camera into a RT
+            CreateCameraTargetTexture(ref m_TargetTexture, cameraRect, false);
+            m_Camera.targetTexture = m_ShowDeviceView ? m_TargetTexture : null;
+#if UNITY_2017_2_OR_NEWER
+            XRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
+#endif
+        }
 
-			var rect = guiRect;
-			rect.x = 0;
-			rect.y = 0;
-			rect.width = position.width;
-			rect.height = position.height;
-			guiRect = rect;
-			var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
-			PrepareCameraTargetTexture(cameraRect);
+        void OnGUI()
+        {
+            if (beforeOnGUI != null)
+                beforeOnGUI(this);
 
-			m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : UnityEditor.Tools.visibleLayers;
+            var rect = guiRect;
+            rect.x = 0;
+            rect.y = 0;
+            rect.width = position.width;
+            rect.height = position.height;
+            guiRect = rect;
+            var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
+            PrepareCameraTargetTexture(cameraRect);
 
-			DoDrawCamera(guiRect);
+            m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : UnityEditor.Tools.visibleLayers;
 
-			Event e = Event.current;
-			if (m_ShowDeviceView)
-			{
-				if (e.type == EventType.Repaint)
-				{
-					GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-					var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
-					GUI.BeginGroup(guiRect);
-					GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
-					GUI.EndGroup();
-					GL.sRGBWrite = false;
-				}
-			}
+            DoDrawCamera(guiRect);
 
-			GUILayout.BeginArea(guiRect);
-			{
-				if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
-					m_ShowDeviceView = !m_ShowDeviceView;
+            Event e = Event.current;
+            if (m_ShowDeviceView)
+            {
+                if (e.type == EventType.Repaint)
+                {
+                    GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+                    var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
+                    GUI.BeginGroup(guiRect);
+                    GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
+                    GUI.EndGroup();
+                    GL.sRGBWrite = false;
+                }
+            }
 
-				if (m_CustomPreviewCamera)
-				{
-					GUILayout.FlexibleSpace();
-					GUILayout.BeginHorizontal();
-					{
-						GUILayout.FlexibleSpace();
-						m_UseCustomPreviewCamera = GUILayout.Toggle(m_UseCustomPreviewCamera, "Use Presentation Camera");
-					}
-					GUILayout.EndHorizontal();
-				}
-			}
-			GUILayout.EndArea();
-			
-			if (afterOnGUI != null)
-				afterOnGUI(this);
-		}
+            GUILayout.BeginArea(guiRect);
+            {
+                if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
+                    m_ShowDeviceView = !m_ShowDeviceView;
 
-		void DoDrawCamera(Rect rect)
-		{
-			if (!m_Camera.gameObject.activeInHierarchy)
-				return;
+                if (m_CustomPreviewCamera)
+                {
+                    GUILayout.FlexibleSpace();
+                    GUILayout.BeginHorizontal();
+                    {
+                        GUILayout.FlexibleSpace();
+                        m_UseCustomPreviewCamera = GUILayout.Toggle(m_UseCustomPreviewCamera, "Use Presentation Camera");
+                    }
+                    GUILayout.EndHorizontal();
+                }
+            }
+            GUILayout.EndArea();
 
-			if (!VRDevice.isPresent)
-				return;
+            if (afterOnGUI != null)
+                afterOnGUI(this);
+        }
 
-			UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
-			if (Event.current.type == EventType.Repaint)
-			{
-				GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
-				RenderTexture.active = null; // Clean up after DrawCamera
-			}
-		}
+        void DoDrawCamera(Rect rect)
+        {
+            if (!m_Camera.gameObject.activeInHierarchy)
+                return;
 
-		private void Update()
-		{
-			// If code is compiling, then we need to clean up the window resources before classes get re-initialized
-			if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode)
-			{
-				Close();
-				return;
-			}
+#if UNITY_2017_2_OR_NEWER
+            if (!XRDevice.isPresent)
+                return;
+#endif
 
-			// Force the window to repaint every tick, since we need live updating
-			// This also allows scripts with [ExecuteInEditMode] to run
-			EditorApplication.SetSceneRepaintDirty();
+            UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
+            if (Event.current.type == EventType.Repaint)
+            {
+                GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
+                RenderTexture.active = null; // Clean up after DrawCamera
+            }
+        }
 
-			// Our camera is disabled, so it doesn't get automatically updated to HMD values until it renders
-			UpdateCameraTransform();
+        private void Update()
+        {
+            // If code is compiling, then we need to clean up the window resources before classes get re-initialized
+            if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                Close();
+                return;
+            }
 
-			UpdateHMDStatus();
+            // Our camera is disabled, so it doesn't get automatically updated to HMD values until it renders
+            UpdateCameraTransform();
 
-			SetSceneViewsAutoRepaint(false);
-		}
+            UpdateHMDStatus();
 
-		void UpdateHMDStatus()
-		{
-			if (hmdStatusChange != null)
-			{
-				var ready = GetIsUserPresent();
-				if (m_HMDReady != ready)
-				{
-					m_HMDReady = ready;
-					hmdStatusChange(ready);
-				}
-			}
-		}
+            SetSceneViewsAutoRepaint(false);
+        }
 
-		static bool GetIsUserPresent()
-		{
+        void UpdateHMDStatus()
+        {
+            if (hmdStatusChange != null)
+            {
+                var ready = GetIsUserPresent();
+                if (m_HMDReady != ready)
+                {
+                    m_HMDReady = ready;
+                    hmdStatusChange(ready);
+                }
+            }
+        }
+
+        static bool GetIsUserPresent()
+        {
+#if UNITY_2017_2_OR_NEWER
 #if ENABLE_OVR_INPUT
-			if (VRSettings.loadedDeviceName == "Oculus")
-				return OVRPlugin.userPresent;
+            if (XRSettings.loadedDeviceName == "Oculus")
+                return OVRPlugin.userPresent;
 #endif
 #if ENABLE_STEAMVR_INPUT
-			if (VRSettings.loadedDeviceName == "OpenVR")
-				return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
+            if (XRSettings.loadedDeviceName == "OpenVR")
+                return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
 #endif
-			return true;
-		}
+#endif
+            return true;
+        }
 
-		void SetGameViewsAutoRepaint(bool enabled)
-		{
-			var asm = Assembly.GetAssembly(typeof(UnityEditor.EditorWindow));
-			var type = asm.GetType("UnityEditor.GameView");
-			SetAutoRepaintOnSceneChanged(type, enabled);
-		}
+        void SetGameViewsAutoRepaint(bool enabled)
+        {
+            var asm = Assembly.GetAssembly(typeof(UnityEditor.EditorWindow));
+            var type = asm.GetType("UnityEditor.GameView");
+            SetAutoRepaintOnSceneChanged(type, enabled);
+        }
 
-		void SetSceneViewsAutoRepaint(bool enabled)
-		{
-			SetAutoRepaintOnSceneChanged(typeof(SceneView), enabled);
-		}
+        void SetSceneViewsAutoRepaint(bool enabled)
+        {
+            SetAutoRepaintOnSceneChanged(typeof(SceneView), enabled);
+        }
 
-		void SetOtherViewsEnabled(bool enabled)
-		{
-			SetGameViewsAutoRepaint(enabled);
-			SetSceneViewsAutoRepaint(enabled);
-		}
+        void SetOtherViewsEnabled(bool enabled)
+        {
+            SetGameViewsAutoRepaint(enabled);
+            SetSceneViewsAutoRepaint(enabled);
+        }
 
-		void SetAutoRepaintOnSceneChanged(Type viewType, bool enabled)
-		{
-			if (m_EditorWindows == null)
-				m_EditorWindows = Resources.FindObjectsOfTypeAll<EditorWindow>();
+        void SetAutoRepaintOnSceneChanged(Type viewType, bool enabled)
+        {
+            if (m_EditorWindows == null)
+                m_EditorWindows = Resources.FindObjectsOfTypeAll<EditorWindow>();
 
-			var windowCount = m_EditorWindows.Length;
-			var mouseOverWindow = EditorWindow.mouseOverWindow;
-			for (int i = 0; i < windowCount; i++)
-			{
-				var window = m_EditorWindows[i];
-				if (window.GetType() == viewType)
-					window.autoRepaintOnSceneChange = enabled || (window == mouseOverWindow);
-			}
-
-		}
-	}
+            var windowCount = m_EditorWindows.Length;
+            var mouseOverWindow = EditorWindow.mouseOverWindow;
+            for (int i = 0; i < windowCount; i++)
+            {
+                var window = m_EditorWindows[i];
+                if (window.GetType() == viewType)
+                    window.autoRepaintOnSceneChange = enabled || (window == mouseOverWindow);
+            }
+        }
+    }
 }
 #endif

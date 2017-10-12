@@ -1,51 +1,51 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	partial class EditorVR
-	{
-		class Interfaces : Nested
-		{
-			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
+    partial class EditorVR
+    {
+        class Interfaces : Nested
+        {
+            readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
-			event Action<object, object> connectInterfaces;
-			event Action<object, object> disconnectInterfaces;
+            event Action<object, object> connectInterfaces;
+            event Action<object, object> disconnectInterfaces;
 
-			public Interfaces()
-			{
-				IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
-				IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
-			}
+            public Interfaces()
+            {
+                IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
+                IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
+            }
 
-			internal void AttachInterfaceConnectors(object @object)
-			{
-				var connector = @object as IInterfaceConnector;
-				if (connector != null)
-				{
-					connectInterfaces += connector.ConnectInterface;
-					disconnectInterfaces += connector.DisconnectInterface;
-				}
-			}
+            internal void AttachInterfaceConnectors(object target)
+            {
+                var connector = target as IInterfaceConnector;
+                if (connector != null)
+                {
+                    connectInterfaces += connector.ConnectInterface;
+                    disconnectInterfaces += connector.DisconnectInterface;
+                }
+            }
 
-			void ConnectInterfaces(object @object, object userData = null)
-			{
-				if (!m_ConnectedInterfaces.Add(@object))
-					return;
+            void ConnectInterfaces(object target, object userData = null)
+            {
+                if (!m_ConnectedInterfaces.Add(target))
+                    return;
 
-				if (connectInterfaces != null)
-					connectInterfaces(@object, userData);
-			}
+                if (connectInterfaces != null)
+                    connectInterfaces(target, userData);
+            }
 
-			void DisconnectInterfaces(object @object, object userData = null)
-			{
-				m_ConnectedInterfaces.Remove(@object);
+            void DisconnectInterfaces(object target, object userData = null)
+            {
+                m_ConnectedInterfaces.Remove(target);
 
-				if (disconnectInterfaces != null)
-					disconnectInterfaces(@object, userData);
-			}
-		}
-	}
+                if (disconnectInterfaces != null)
+                    disconnectInterfaces(target, userData);
+            }
+        }
+    }
 }
 #endif
