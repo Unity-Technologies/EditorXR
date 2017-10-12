@@ -3,22 +3,27 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Input;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    using ButtonDictionary = Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>>;
-
+    /// <summary>
+    /// ProxyFeedbackRequests reside in feedbackRequest collection until the action associated with an affordance changes
+    /// Some are removed immediately after being added; others exist for the duration of an action/tool's lifespan
+    /// </summary>
     public class ProxyFeedbackRequest : FeedbackRequest
     {
         public int priority;
         public VRInputDevice.VRControl control;
         public Node node;
         public string tooltipText;
-        public bool hideExisting;
+        public bool suppressExisting;
+        public bool visible;
     }
 
     abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
@@ -38,35 +43,31 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
-        readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
+        readonly Dictionary<ProxyFeedbackRequest, Coroutine> m_FeedbackRequests = new Dictionary<ProxyFeedbackRequest, Coroutine>();
 
         protected Dictionary<Node, Transform> m_RayOrigins;
 
         bool m_Hidden;
+        ProxyHelper m_LeftProxyHelper;
+        ProxyHelper m_RightProxyHelper;
+        List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
-        readonly Dictionary<Node, ButtonDictionary> m_Buttons = new Dictionary<Node, ButtonDictionary>();
+        readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<AffordanceObject>>> m_Affordances =
+            new Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<AffordanceObject>>>();
 
-        public Transform leftHand
-        {
-            get { return m_LeftHand; }
-        }
+        bool leftAffordanceRenderersVisible { set { m_LeftProxyHelper.affordanceRenderersVisible = value; } }
+        bool rightAffordanceRenderersVisible { set { m_RightProxyHelper.affordanceRenderersVisible = value; } }
+        bool leftBodyRenderersVisible { set { m_LeftProxyHelper.bodyRenderersVisible = value; } }
+        bool rightBodyRenderersVisible { set { m_RightProxyHelper.bodyRenderersVisible = value; } }
 
-        public Transform rightHand
-        {
-            get { return m_RightHand; }
-        }
+        public Transform leftHand { get { return m_LeftHand; } }
+        public Transform rightHand { get { return m_RightHand; } }
 
-        public virtual Dictionary<Node, Transform> rayOrigins
-        {
-            get { return m_RayOrigins; }
-        }
+        public virtual Dictionary<Node, Transform> rayOrigins { get { return m_RayOrigins; } }
 
         public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-        public bool active
-        {
-            get { return m_InputToEvents.active; }
-        }
+        public bool active { get { return m_InputToEvents.active; } }
 
         public event Action activeChanged
         {
@@ -83,6 +84,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     m_Hidden = value;
                     m_LeftHand.gameObject.SetActive(!value);
                     m_RightHand.gameObject.SetActive(!value);
+
+                    UpdateVisibility();
                 }
             }
         }
@@ -96,56 +99,60 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
             m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
-            var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
-            var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
-            m_Buttons[Node.LeftHand] = GetButtonDictionary(leftProxyHelper);
-            m_Buttons[Node.RightHand] = GetButtonDictionary(rightProxyHelper);
+            m_LeftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
+            m_RightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
+
+            m_ProxyMeshRoots.Add(m_LeftProxyHelper.meshRoot);
+            m_ProxyMeshRoots.Add(m_RightProxyHelper.meshRoot);
+
+            m_Affordances[Node.LeftHand] = GetAffordanceDictionary(m_LeftProxyHelper);
+            m_Affordances[Node.RightHand] = GetAffordanceDictionary(m_RightProxyHelper);
 
             m_RayOrigins = new Dictionary<Node, Transform>
             {
-                { Node.LeftHand, leftProxyHelper.rayOrigin },
-                { Node.RightHand, rightProxyHelper.rayOrigin }
+                { Node.LeftHand, m_LeftProxyHelper.rayOrigin },
+                { Node.RightHand, m_RightProxyHelper.rayOrigin }
             };
 
             menuOrigins = new Dictionary<Transform, Transform>()
             {
-                { leftProxyHelper.rayOrigin, leftProxyHelper.menuOrigin },
-                { rightProxyHelper.rayOrigin, rightProxyHelper.menuOrigin },
+                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.menuOrigin },
+                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.menuOrigin },
             };
 
             alternateMenuOrigins = new Dictionary<Transform, Transform>()
             {
-                { leftProxyHelper.rayOrigin, leftProxyHelper.alternateMenuOrigin },
-                { rightProxyHelper.rayOrigin, rightProxyHelper.alternateMenuOrigin },
+                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.alternateMenuOrigin },
+                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.alternateMenuOrigin },
             };
 
             previewOrigins = new Dictionary<Transform, Transform>
             {
-                { leftProxyHelper.rayOrigin, leftProxyHelper.previewOrigin },
-                { rightProxyHelper.rayOrigin, rightProxyHelper.previewOrigin }
+                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.previewOrigin },
+                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.previewOrigin }
             };
 
             fieldGrabOrigins = new Dictionary<Transform, Transform>
             {
-                { leftProxyHelper.rayOrigin, leftProxyHelper.fieldGrabOrigin },
-                { rightProxyHelper.rayOrigin, rightProxyHelper.fieldGrabOrigin }
+                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.fieldGrabOrigin },
+                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.fieldGrabOrigin }
             };
         }
 
-        static ButtonDictionary GetButtonDictionary(ProxyHelper helper)
+        static Dictionary<VRInputDevice.VRControl, List<AffordanceObject>> GetAffordanceDictionary(ProxyHelper helper)
         {
-            var buttonDictionary = new ButtonDictionary();
-            foreach (var button in helper.buttons)
+            var buttonDictionary = new Dictionary<VRInputDevice.VRControl, List<AffordanceObject>>();
+            foreach (var button in helper.affordances)
             {
-                List<ProxyHelper.ButtonObject> buttons;
-                if (!buttonDictionary.TryGetValue(button.control, out buttons))
+                List<AffordanceObject> affordances;
+                if (!buttonDictionary.TryGetValue(button.control, out affordances))
                 {
-                    buttons = new List<ProxyHelper.ButtonObject>();
-                    buttonDictionary[button.control] = buttons;
+                    affordances = new List<AffordanceObject>();
+                    buttonDictionary[button.control] = affordances;
                 }
 
-                buttons.Add(button);
+                affordances.Add(button);
             }
             return buttonDictionary;
         }
@@ -159,13 +166,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (trackedObjectInput == null && m_PlayerInput)
                 trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 
-            var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
-            var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
-            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(leftProxyHelper.gameObject), leftProxyHelper.rayOrigin);
-            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(rightProxyHelper.gameObject), rightProxyHelper.rayOrigin);
+            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_LeftProxyHelper.gameObject), m_LeftProxyHelper.rayOrigin);
+            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_RightProxyHelper.gameObject), m_RightProxyHelper.rayOrigin);
+            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_RightProxyHelper.gameObject), m_RightProxyHelper.rayOrigin);
         }
-
-        public virtual void OnDestroy() { }
 
         public virtual void Update()
         {
@@ -184,7 +188,19 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var proxyRequest = request as ProxyFeedbackRequest;
             if (proxyRequest != null)
             {
-                m_FeedbackRequests.Add(proxyRequest);
+                var hasKey = m_FeedbackRequests.ContainsKey(proxyRequest);
+                if (hasKey) // Update existing request/coroutine pair
+                {
+                    var lifespanMonitoringCoroutine = m_FeedbackRequests[proxyRequest];
+                    this.RestartCoroutine(ref lifespanMonitoringCoroutine, MonitorFeedbackRequestLifespan(proxyRequest));
+                    m_FeedbackRequests[proxyRequest] = lifespanMonitoringCoroutine;
+                }
+                else // Add a new request/coroutine pair
+                {
+                    var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
+                    m_FeedbackRequests.Add(proxyRequest, newMonitoringCoroutine);
+                }
+
                 ExecuteFeedback(proxyRequest);
             }
         }
@@ -194,7 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (!active)
                 return;
 
-            foreach (var proxyNode in m_Buttons)
+            foreach (var proxyNode in m_Affordances)
             {
                 if (proxyNode.Key != changedRequest.node)
                     continue;
@@ -207,11 +223,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     ProxyFeedbackRequest request = null;
                     foreach (var req in m_FeedbackRequests)
                     {
-                        if (req.node != proxyNode.Key || req.control != kvp.Key)
+                        var key = req.Key;
+                        if (key.node != proxyNode.Key || key.control != kvp.Key)
                             continue;
 
-                        if (request == null || req.priority >= request.priority)
-                            request = req;
+                        if (request == null || key.priority >= request.priority)
+                            request = key;
                     }
 
                     if (request == null)
@@ -220,10 +237,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     foreach (var button in kvp.Value)
                     {
                         if (button.renderer)
-                            this.SetHighlight(button.renderer.gameObject, !request.hideExisting, duration: k_FeedbackDuration);
+                            this.SetHighlight(button.renderer.gameObject, !request.suppressExisting, duration: k_FeedbackDuration);
 
                         var tooltipText = request.tooltipText;
-                        if (!string.IsNullOrEmpty(tooltipText) || request.hideExisting)
+                        if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
                         {
                             foreach (var tooltip in button.tooltips)
                             {
@@ -237,6 +254,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     }
                 }
             }
+
+            UpdateVisibility();
         }
 
         public void RemoveFeedbackRequest(FeedbackRequest request)
@@ -248,26 +267,29 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void RemoveFeedbackRequest(ProxyFeedbackRequest request)
         {
-            Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>> group;
-            if (m_Buttons.TryGetValue(request.node, out group))
+            Dictionary<VRInputDevice.VRControl, List<AffordanceObject>> affordanceDictionary;
+            if (m_Affordances.TryGetValue(request.node, out affordanceDictionary))
             {
-                List<ProxyHelper.ButtonObject> buttons;
-                if (group.TryGetValue(request.control, out buttons))
+                List<AffordanceObject> affordances;
+                if (affordanceDictionary.TryGetValue(request.control, out affordances))
                 {
-                    foreach (var button in buttons)
-                    {
-                        if (button.renderer)
-                            this.SetHighlight(button.renderer.gameObject, false);
+	                foreach (var kvp in affordanceDictionary)
+	                {
+		                foreach (var affordance in kvp.Value)
+		                {
+			                if (affordance.renderer)
+				                this.SetHighlight(affordance.renderer.gameObject, false);
 
-                        foreach (var tooltip in button.tooltips)
-                        {
-                            if (tooltip)
-                            {
-                                tooltip.tooltipText = string.Empty;
-                                this.HideTooltip(tooltip, true);
-                            }
-                        }
-                    }
+			                foreach (var tooltip in affordance.tooltips)
+			                {
+				                if (tooltip)
+				                {
+					                tooltip.tooltipText = string.Empty;
+					                this.HideTooltip(tooltip, true);
+				                }
+			                }
+		                }
+	                }
                 }
             }
 
@@ -277,14 +299,46 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            var requests = caller == null
-                ? new List<ProxyFeedbackRequest>(m_FeedbackRequests)
-                : m_FeedbackRequests.Where(feedbackRequest => feedbackRequest.caller == caller).ToList();
-
-            foreach (var feedbackRequest in requests)
+            foreach (var kvp in m_FeedbackRequests)
             {
-                RemoveFeedbackRequest(feedbackRequest);
+                if (kvp.Key != null && kvp.Key.caller == caller)
+                    RemoveFeedbackRequest(kvp.Key);
             }
+        }
+
+        void UpdateVisibility()
+        {
+            var rightProxyRequestsExist = false;
+            var leftProxyRequestsExist = false;
+            if (m_FeedbackRequests.Count > 0)
+            {
+                // Find any visible feedback requests for each hand
+                rightProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.RightHand && x.Key.visible);
+                leftProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.LeftHand && x.Key.visible);
+            }
+
+            rightAffordanceRenderersVisible = rightProxyRequestsExist;
+            rightBodyRenderersVisible = rightProxyRequestsExist;
+
+            leftAffordanceRenderersVisible = leftProxyRequestsExist;
+            leftBodyRenderersVisible = leftProxyRequestsExist;
+        }
+
+        IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
+        {
+            request.visible = true;
+            const float kDuration = k_FeedbackDuration * 0.125f;
+            var currentDuration = 0f;
+            while (request != null && currentDuration < kDuration)
+            {
+                currentDuration += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            if (request != null)
+                request.visible = false;
+
+            UpdateVisibility();
         }
     }
 }
