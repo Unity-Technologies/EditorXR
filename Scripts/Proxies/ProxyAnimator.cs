@@ -27,14 +27,14 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
     [SerializeField]
     ActionMap m_ProxyActionMap;
 
-    AffordanceObject[] m_Buttons;
+    Affordance[] m_Buttons;
     InputControl[] m_Controls;
 
     readonly Dictionary<Transform, TransformInfo> m_TransformInfos = new Dictionary<Transform, TransformInfo>();
 
     public ActionMap actionMap { get { return m_ProxyActionMap; } }
     public bool ignoreLocking { get { return true; } }
-    internal event Action<AffordanceObject[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
+    internal event Action<Affordance[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
     void Start()
     {

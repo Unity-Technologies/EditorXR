@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #endif
         }
 
-        static void PostAnimate(AffordanceObject[] buttons, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
+        static void PostAnimate(Affordance[] buttons, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
         {
             var proxyInput = (ProxyAnimatorInput)input;
 

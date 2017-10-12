@@ -52,8 +52,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         ProxyHelper m_RightProxyHelper;
         List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
-        readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<AffordanceObject>>> m_Affordances =
-            new Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<AffordanceObject>>>();
+        readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>> m_Affordances =
+            new Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>>();
 
         bool leftAffordanceRenderersVisible { set { m_LeftProxyHelper.affordanceRenderersVisible = value; } }
         bool rightAffordanceRenderersVisible { set { m_RightProxyHelper.affordanceRenderersVisible = value; } }
@@ -140,15 +140,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             };
         }
 
-        static Dictionary<VRInputDevice.VRControl, List<AffordanceObject>> GetAffordanceDictionary(ProxyHelper helper)
+        static Dictionary<VRInputDevice.VRControl, List<Affordance>> GetAffordanceDictionary(ProxyHelper helper)
         {
-            var buttonDictionary = new Dictionary<VRInputDevice.VRControl, List<AffordanceObject>>();
+            var buttonDictionary = new Dictionary<VRInputDevice.VRControl, List<Affordance>>();
             foreach (var button in helper.affordances)
             {
-                List<AffordanceObject> affordances;
+                List<Affordance> affordances;
                 if (!buttonDictionary.TryGetValue(button.control, out affordances))
                 {
-                    affordances = new List<AffordanceObject>();
+                    affordances = new List<Affordance>();
                     buttonDictionary[button.control] = affordances;
                 }
 
@@ -267,10 +267,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void RemoveFeedbackRequest(ProxyFeedbackRequest request)
         {
-            Dictionary<VRInputDevice.VRControl, List<AffordanceObject>> affordanceDictionary;
+            Dictionary<VRInputDevice.VRControl, List<Affordance>> affordanceDictionary;
             if (m_Affordances.TryGetValue(request.node, out affordanceDictionary))
             {
-                List<AffordanceObject> affordances;
+                List<Affordance> affordances;
                 if (affordanceDictionary.TryGetValue(request.control, out affordances))
                 {
 	                foreach (var kvp in affordanceDictionary)

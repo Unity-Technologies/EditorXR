@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         ProxyUI m_ProxyUI;
 
         [SerializeField]
-        AffordanceObject[] m_Affordances;
+        Affordance[] m_Affordances;
 
         /// <summary>
         /// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
@@ -69,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// <summary>
         /// Affordance objects to store transform and renderer references
         /// </summary>
-        public AffordanceObject[] affordances { get { return m_Affordances; } }
+        public Affordance[] affordances { get { return m_Affordances; } }
 
         /// <summary>
         /// Set the visibility of the renderers associated with affordances(controls/input)

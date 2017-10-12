@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		List<Renderer> m_AffordanceRenderers; // Renderers associated with affordances/controls, & will be SHOWN when displaying feedback/tooltips
 		bool m_BodyRenderersVisible = true; // Body renderers default to visible/true
 		bool m_AffordanceRenderersVisible = true; // Affordance renderers default to visible/true
-		AffordanceObject[] m_Affordances;
+		Affordance[] m_Affordances;
 		Coroutine m_BodyVisibilityCoroutine;
 
 		/// <summary>
@@ -165,7 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		/// </summary>
 		/// <param name="affordances">The ProxyHelper affordances that drive visual changes in the ProxyUI</param>
 		/// <param name="proxyOrigins">ProxyOrigins whose child renderers will not be controlled by the PRoxyUI</param>
-		public void Setup(AffordanceObject[] affordances, List<Transform> proxyOrigins)
+		public void Setup(Affordance[] affordances, List<Transform> proxyOrigins)
 		{
 			// Prevent multiple setups
 			if (m_ProxyUISetup)
