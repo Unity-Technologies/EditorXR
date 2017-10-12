@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -12,7 +13,9 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IUsesNode
+    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
+
+    sealed class WorkspaceUI : MonoBehaviour, IUsesStencilRef, IUsesViewerScale, IGetPointerLength, IRequestFeedback
     {
         const int k_AngledFaceBlendShapeIndex = 2;
         const int k_ThinFrameBlendShapeIndex = 3;
@@ -134,12 +137,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         WorkspaceButton m_ResizeButton;
 
-        [SerializeField]
-        ActionMap m_ActionMap;
-
         BoxCollider m_FrameCollider;
         Bounds m_Bounds;
         float? m_TopPanelDividerOffset;
+
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+        readonly List<ProxyFeedbackRequest> m_LeftFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_RightFeedback = new List<ProxyFeedbackRequest>();
 
         // Cached for optimization
         float m_PreviousXRotation;
@@ -361,7 +365,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public Transform leftRayOrigin { private get; set; }
         public Transform rightRayOrigin { private get; set; }
-        public Node node { get; set; }
 
         public event Action<Bounds> resize;
 
@@ -667,6 +670,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void ProcessInput(WorkspaceInput input, ConsumeControlDelegate consumeControl)
         {
+            if (m_Controls.Count == 0)
+                InputUtils.GetBindingDictionaryFromActionMap(input.actionMap, m_Controls);
+
             var moveResizeLeft = input.moveResizeLeft;
             var moveResizeRight = input.moveResizeRight;
 
@@ -683,13 +689,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     foreach (var smoothMotion in GetComponentsInChildren<SmoothMotion>())
                     {
                         smoothMotion.enabled = true;
-                    }
-
-                    if (m_HovereringRayOrigins.Contains(rayOrigin))
-                    {
-                        var localPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rayOrigin));
-                        var direction = GetResizeDirectionForLocalPosition(localPosition);
-                        GetResizeIconForDirection(direction);
                     }
 
                     highlightsVisible = false;
@@ -782,20 +781,32 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 var leftPosition = transform.InverseTransformPoint(leftRayOrigin.position);
                 var leftPointerPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(leftRayOrigin));
-                if (moveResizeLeft.wasJustPressed && (adjustedBounds.Contains(leftPosition) || adjustedBounds.Contains(leftPointerPosition)))
+                if (adjustedBounds.Contains(leftPosition) || adjustedBounds.Contains(leftPointerPosition))
                 {
-                    dragRayOrigin = leftRayOrigin;
-                    m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
-                    consumeControl(moveResizeLeft);
+                    if (m_LeftFeedback.Count == 0)
+                        ShowLeftMoveFeedback();
+
+                    if (moveResizeLeft.wasJustPressed)
+                    {
+                        dragRayOrigin = leftRayOrigin;
+                        m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
+                        consumeControl(moveResizeLeft);
+                    }
                 }
 
                 var rightPosition = transform.InverseTransformPoint(rightRayOrigin.position);
                 var rightPointerPosition = transform.InverseTransformPoint(GetPointerPositionForRayOrigin(rightRayOrigin));
-                if (moveResizeRight.wasJustPressed && (adjustedBounds.Contains(rightPosition) || adjustedBounds.Contains(rightPointerPosition)))
+                if (adjustedBounds.Contains(rightPosition) || adjustedBounds.Contains(rightPointerPosition))
                 {
-                    dragRayOrigin = rightRayOrigin;
-                    m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
-                    consumeControl(moveResizeRight);
+                    if (m_RightFeedback.Count == 0)
+                        ShowRightMoveFeedback();
+
+                    if (moveResizeRight.wasJustPressed)
+                    {
+                        dragRayOrigin = rightRayOrigin;
+                        m_LastResizeIcons.TryGetValue(dragRayOrigin, out dragResizeIcon);
+                        consumeControl(moveResizeRight);
+                    }
                 }
             }
 
@@ -813,6 +824,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
 
                 highlightsVisible = true;
+            }
+            else
+            {
+                HideLeftFeedback();
+                HideRightFeedback();
             }
         }
 
@@ -933,6 +949,70 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             if (resizing != null)
                 resizing(rayOrigin);
+        }
+
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, string controlName, string tooltipText = null)
+        {
+            if (tooltipText == null)
+                tooltipText = controlName;
+
+            List<VRInputDevice.VRControl> ids;
+            if (m_Controls.TryGetValue(controlName, out ids))
+            {
+                foreach (var id in ids)
+                {
+                    Debug.Log("show " + id + "m ");
+                    var request = new ProxyFeedbackRequest
+                    {
+                        //node = node,
+                        control = id,
+                        priority = 1,
+                        tooltipText = tooltipText
+                    };
+
+                    this.AddFeedbackRequest(request);
+                    requests.Add(request);
+                }
+            }
+        }
+
+        void ShowLeftResizeFeedback()
+        {
+            ShowFeedback(m_LeftFeedback, "Move Resize Left", "Resize Workspace");
+        }
+
+        void ShowLeftMoveFeedback()
+        {
+            ShowFeedback(m_LeftFeedback, "Move Resize Left", "Move Workspace");
+        }
+
+        void ShowRightResizeFeedback()
+        {
+            ShowFeedback(m_RightFeedback, "Move Resize Right", "Resize");
+        }
+
+        void ShowRightMoveFeedback()
+        {
+            ShowFeedback(m_RightFeedback, "Move Resize Right", "Move Workspace");
+        }
+
+        void HideFeedback(List<ProxyFeedbackRequest> requests)
+        {
+            foreach (var request in requests)
+            {
+                this.RemoveFeedbackRequest(request);
+            }
+            requests.Clear();
+        }
+
+        void HideLeftFeedback()
+        {
+            HideFeedback(m_LeftFeedback);
+        }
+
+        void HideRightFeedback()
+        {
+            HideFeedback(m_RightFeedback);
         }
     }
 }
