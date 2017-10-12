@@ -583,7 +583,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             this.AddFeedbackRequest(new ProxyFeedbackRequest
             {
-                caller = this,
                 control = VRInputDevice.VRControl.Trigger1,
                 node = node,
                 tooltipText = "Grab"
