@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -12,8 +13,10 @@ using Button = UnityEngine.UI.Button;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
+
     [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
-    sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace
+    sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRequestFeedback
     {
         class MiniWorldTooltip : ITooltip
         {
@@ -106,6 +109,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         float m_StartYaw;
 
         Coroutine m_UpdateLocationCoroutine;
+
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+        readonly List<ProxyFeedbackRequest> m_LeftMoveFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_RightMoveFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_LeftScaleFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_RightScaleFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_SuppressFeedback = new List<ProxyFeedbackRequest>();
 
         public IMiniWorld miniWorld
         {
@@ -240,31 +250,74 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public override void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            if (m_Controls.Count == 0)
+                InputUtils.GetBindingDictionaryFromActionMap(input.actionMap, m_Controls);
+
             base.ProcessInput(input, consumeControl);
             var workspaceInput = (WorkspaceInput)input;
 
             var leftControl = workspaceInput.miniWorldPanZoomLeft;
-            if (leftControl.wasJustPressed && miniWorld.Contains(leftRayOrigin.position))
+            var leftContained = miniWorld.Contains(leftRayOrigin.position);
+            var rightControl = workspaceInput.miniWorldPanZoomRight;
+            var rightContained = miniWorld.Contains(rightRayOrigin.position);
+
+            if (leftControl.isHeld && rightControl.isHeld)
+                ShowSuppressFeedback();
+            else
+                HideSuppressFeedback();
+
+            if (leftContained)
             {
-                OnPanZoomDragStarted(leftRayOrigin);
-                consumeControl(leftControl);
+                if (m_LeftMoveFeedback.Count == 0)
+                    ShowLeftMoveFeedback();
+
+                if (rightContained && rightControl.isHeld && m_LeftScaleFeedback.Count == 0)
+                    ShowLeftScaleFeedback();
+
+                if (leftControl.wasJustPressed)
+                {
+                    OnPanZoomDragStarted(leftRayOrigin);
+                    consumeControl(leftControl);
+                }
+            }
+            else
+            {
+                HideLeftMoveFeedback();
             }
 
-            var rightControl = workspaceInput.miniWorldPanZoomRight;
-            if (rightControl.wasJustPressed && miniWorld.Contains(rightRayOrigin.position))
+            if (rightContained)
             {
-                OnPanZoomDragStarted(rightRayOrigin);
-                consumeControl(rightControl);
+                if (m_RightMoveFeedback.Count == 0)
+                    ShowRightFeedback();
+
+                if (leftContained && leftControl.isHeld && m_RightScaleFeedback.Count == 0)
+                    ShowRightScaleFeedback();
+
+                if (rightControl.wasJustPressed)
+                {
+                    OnPanZoomDragStarted(rightRayOrigin);
+                    consumeControl(rightControl);
+                }
+            }
+            else
+            {
+                HideRightMoveFeedback();
             }
 
             if (leftControl.isHeld || rightControl.isHeld)
                 OnPanZoomDragging();
 
             if (leftControl.wasJustReleased)
+            {
                 OnPanZoomDragEnded(leftRayOrigin);
+                HideRightScaleFeedback();
+            }
 
             if (rightControl.wasJustReleased)
+            {
                 OnPanZoomDragEnded(rightRayOrigin);
+                HideLeftScaleFeedback();
+            }
         }
 
         protected override void OnBoundsChanged()
@@ -430,6 +483,88 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             ObjectUtils.Destroy(m_GridMaterial);
             base.OnDestroy();
+        }
+
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, Node node, string controlName, string tooltipText, bool hideExisting = false)
+        {
+            List<VRInputDevice.VRControl> ids;
+            if (m_Controls.TryGetValue(controlName, out ids))
+            {
+                foreach (var id in ids)
+                {
+                    var request = new ProxyFeedbackRequest
+                    {
+                        node = node,
+                        control = id,
+                        priority = 1,
+                        tooltipText = tooltipText,
+                        hideExisting = hideExisting
+                    };
+
+                    this.AddFeedbackRequest(request);
+                    requests.Add(request);
+                }
+            }
+        }
+
+        void ShowLeftMoveFeedback()
+        {
+            ShowFeedback(m_LeftMoveFeedback, Node.LeftHand, "Move Resize Left", "Move Miniworld View");
+        }
+
+        void ShowRightFeedback()
+        {
+            ShowFeedback(m_RightMoveFeedback, Node.RightHand, "Move Resize Right", "Move Miniworld View");
+        }
+
+        void ShowLeftScaleFeedback()
+        {
+            ShowFeedback(m_LeftScaleFeedback, Node.LeftHand, "Move Resize Left", "Scale Miniworld View");
+        }
+
+        void ShowRightScaleFeedback()
+        {
+            ShowFeedback(m_RightScaleFeedback, Node.RightHand, "Move Resize Right", "Scale Miniworld View");
+        }
+
+        void ShowSuppressFeedback()
+        {
+            ShowFeedback(m_SuppressFeedback, Node.LeftHand, "Move Resize Left", null, true);
+            ShowFeedback(m_SuppressFeedback, Node.RightHand, "Move Resize Right", null, true);
+        }
+
+        void HideFeedback(List<ProxyFeedbackRequest> requests)
+        {
+            foreach (var request in requests)
+            {
+                this.RemoveFeedbackRequest(request);
+            }
+            requests.Clear();
+        }
+
+        void HideLeftMoveFeedback()
+        {
+            HideFeedback(m_LeftMoveFeedback);
+        }
+
+        void HideRightMoveFeedback()
+        {
+            HideFeedback(m_RightMoveFeedback);
+        }
+
+        void HideLeftScaleFeedback()
+        {
+            HideFeedback(m_LeftScaleFeedback);
+        }
+
+        void HideRightScaleFeedback()
+        {
+            HideFeedback(m_RightScaleFeedback);
+        }
+
+        void HideSuppressFeedback()
+        {
+            HideFeedback(m_SuppressFeedback);
         }
     }
 }
