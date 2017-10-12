@@ -732,7 +732,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 if (rayOrigin == rightRayOrigin)
                 {
-                    if (m_RightMoveFeedback.Count == 0)
+                    if (m_RightResizeFeedback.Count == 0)
                         ShowRightResizeFeedback();
 
                     if (moveResizeRight.wasJustPressed)
@@ -793,6 +793,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         iconPosition.y = Mathf.Lerp(iconPositionY, tergetPositionY, smoothFollow);
                         break;
                 }
+
                 iconTransform.localPosition = iconPosition;
             }
 
@@ -980,7 +981,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 resizing(rayOrigin);
         }
 
-        void ShowFeedback(List<ProxyFeedbackRequest> requests, Node node, string controlName, string tooltipText = null)
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, Node node, string controlName, string tooltipText, int priority = 1)
         {
             if (tooltipText == null)
                 tooltipText = controlName;
@@ -994,7 +995,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     {
                         node = node,
                         control = id,
-                        priority = 1,
+                        priority = priority,
                         tooltipText = tooltipText
                     };
 
@@ -1004,24 +1005,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        void ShowLeftResizeFeedback()
-        {
-            ShowFeedback(m_LeftResizeFeedback, Node.LeftHand, "Move Resize Left", "Resize Workspace");
-        }
-
         void ShowLeftMoveFeedback()
         {
             ShowFeedback(m_LeftMoveFeedback, Node.LeftHand, "Move Resize Left", "Move Workspace");
         }
 
-        void ShowRightResizeFeedback()
+        void ShowLeftResizeFeedback()
         {
-            ShowFeedback(m_RightResizeFeedback, Node.RightHand, "Move Resize Right", "Resize");
+            ShowFeedback(m_LeftResizeFeedback, Node.LeftHand, "Move Resize Left", "Resize Workspace", 2);
         }
 
         void ShowRightMoveFeedback()
         {
             ShowFeedback(m_RightMoveFeedback, Node.RightHand, "Move Resize Right", "Move Workspace");
+        }
+
+        void ShowRightResizeFeedback()
+        {
+            ShowFeedback(m_RightResizeFeedback, Node.RightHand, "Move Resize Right", "Resize Workspace", 2);
         }
 
         void HideFeedback(List<ProxyFeedbackRequest> requests)

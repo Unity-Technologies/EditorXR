@@ -1,18 +1,21 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash,
-        IUsesViewerBody, IRayVisibilitySettings
+        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IRayToNode
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -390,6 +393,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     m_PreviewObjectTransform.localScale = m_PreviewTargetScale * k_ScaleBump;
                 }
             }
+
+            ShowGrabFeedback(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
         void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
@@ -406,6 +411,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     m_PreviewObjectTransform.localScale = m_PreviewTargetScale;
                 }
             }
+
+            HideGrabFeedback();
         }
 
         IEnumerator AnimatePreview(bool @out)
@@ -570,6 +577,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
             ObjectUtils.Destroy(itemToHide);
+        }
+
+        void ShowGrabFeedback(Node node)
+        {
+            this.AddFeedbackRequest(new ProxyFeedbackRequest
+            {
+                caller = this,
+                control = VRInputDevice.VRControl.Trigger1,
+                node = node,
+                tooltipText = "Grab"
+            });
+        }
+
+        void HideGrabFeedback()
+        {
+            this.ClearFeedbackRequests();
         }
     }
 }

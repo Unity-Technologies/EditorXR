@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         protected PlayerInput m_PlayerInput;
 
-        internal IInputToEvents m_InputToEvents;
+        protected IInputToEvents m_InputToEvents;
 
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
