@@ -6,244 +6,251 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
-	{
-		const int k_MaxTestsPerTester = 250;
+    sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
+    {
+        const int k_MaxTestsPerTester = 250;
 
-		readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
-		readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
-		readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
+        readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
+        readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
+        readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
 
-		SpatialHash<Renderer> m_SpatialHash; 
-		MeshCollider m_CollisionTester;
+        SpatialHash<Renderer> m_SpatialHash;
+        MeshCollider m_CollisionTester;
 
-		class RayIntersection
-		{
-			public GameObject go;
-			public float distance;
-		}
+        class RayIntersection
+        {
+            public GameObject go;
+            public float distance;
+        }
 
-		public bool ready { get { return m_SpatialHash != null; } }
-		public List<IntersectionTester> testers { get { return m_Testers; } }
-		public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
-		public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
+        public bool ready { get { return m_SpatialHash != null; } }
 
-		// Local method use only -- created here to reduce garbage collection
-		readonly List<Renderer> m_Intersections = new List<Renderer>();
-		readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
-		
-		struct SortableRenderer
-		{
-			public Renderer renderer;
-			public float distance;
-		}
+        public List<IntersectionTester> testers { get { return m_Testers; } }
 
-		void Awake()
-		{
-			IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
-		}
+        public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
 
-		internal void Setup(SpatialHash<Renderer> hash)
-		{
-			m_SpatialHash = hash;
-			m_CollisionTester = ObjectUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
-		}
+        public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 
-		void Update()
-		{
-			if (m_SpatialHash == null)
-				return;
+        // Local method use only -- created here to reduce garbage collection
+        readonly List<Renderer> m_Intersections = new List<Renderer>();
+        readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
 
-			if (m_Testers == null)
-				return;
+        struct SortableRenderer
+        {
+            public Renderer renderer;
+            public float distance;
+        }
 
-			for (int i = 0; i < m_Testers.Count; i++)
-			{
-				var tester = m_Testers[i];
-				if (!tester.active)
-				{
-					Renderer intersectedObject;
-					if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
-						OnIntersectionExit(tester);
+        void Awake()
+        {
+            IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
 
-					continue;
-				}
+            IRaycastMethods.raycast = Raycast;
+        }
 
-				var testerTransform = tester.transform;
-				if (testerTransform.hasChanged)
-				{
-					var intersectionFound = false;
-					m_Intersections.Clear();
-					var testerCollider = tester.collider;
-					if (m_SpatialHash.GetIntersections(m_Intersections, testerCollider.bounds))
-					{
-						var testerBounds = testerCollider.bounds;
-						var testerBoundsCenter = testerBounds.center;
+        internal void Setup(SpatialHash<Renderer> hash)
+        {
+            m_SpatialHash = hash;
+            m_CollisionTester = ObjectUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
+        }
 
-						m_SortedIntersections.Clear();
-						for (int j = 0; j < m_Intersections.Count; j++)
-						{
-							var obj = m_Intersections[j];
-							// Ignore destroyed objects
-							if (!obj)
-								continue;
+        void Update()
+        {
+            if (m_SpatialHash == null)
+                return;
 
-							// Ignore inactive objects
-							if (!obj.gameObject.activeInHierarchy)
-								continue;
+            if (m_Testers == null)
+                return;
 
-							// Ignore locked objects
-							if (this.IsLocked(obj.gameObject))
-								continue;
+            for (int i = 0; i < m_Testers.Count; i++)
+            {
+                var tester = m_Testers[i];
+                if (!tester.active)
+                {
+                    Renderer intersectedObject;
+                    if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
+                        OnIntersectionExit(tester);
 
-							// Bounds check
-							if (!obj.bounds.Intersects(testerBounds))
-								continue;
+                    continue;
+                }
 
-							m_SortedIntersections.Add(new SortableRenderer
-							{
-								renderer = obj,
-								distance = (obj.bounds.center - testerBoundsCenter).magnitude
-							});
-						}
+                var testerTransform = tester.transform;
+                if (testerTransform.hasChanged)
+                {
+                    var intersectionFound = false;
+                    m_Intersections.Clear();
+                    var testerCollider = tester.collider;
+                    if (m_SpatialHash.GetIntersections(m_Intersections, testerCollider.bounds))
+                    {
+                        var testerBounds = testerCollider.bounds;
+                        var testerBoundsCenter = testerBounds.center;
 
-						//Sort list to try and hit closer object first
-						m_SortedIntersections.Sort((a, b) => a.distance.CompareTo(b.distance));
+                        m_SortedIntersections.Clear();
+                        for (int j = 0; j < m_Intersections.Count; j++)
+                        {
+                            var obj = m_Intersections[j];
 
-						if (m_SortedIntersections.Count > k_MaxTestsPerTester)
-							continue;
+                            // Ignore destroyed objects
+                            if (!obj)
+                                continue;
 
-						for (int j = 0; j < m_SortedIntersections.Count; j++)
-						{
-							var obj = m_SortedIntersections[j].renderer;
-							if (IntersectionUtils.TestObject(m_CollisionTester, obj, tester))
-							{
-								intersectionFound = true;
-								Renderer currentObject;
-								if (m_IntersectedObjects.TryGetValue(tester, out currentObject))
-								{
-									if (currentObject == obj)
-									{
-										OnIntersectionStay(tester, obj);
-									}
-									else
-									{
-										OnIntersectionExit(tester);
-										OnIntersectionEnter(tester, obj);
-									}
-								}
-								else
-								{
-									OnIntersectionEnter(tester, obj);
-								}
-							}
+                            // Ignore inactive objects
+                            if (!obj.gameObject.activeInHierarchy)
+                                continue;
 
-							if (intersectionFound)
-								break;
-						}
-					}
+                            // Ignore locked objects
+                            if (this.IsLocked(obj.gameObject))
+                                continue;
 
-					if (!intersectionFound)
-					{
-						Renderer intersectedObject;
-						if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
-							OnIntersectionExit(tester);
-					}
+                            // Bounds check
+                            if (!obj.bounds.Intersects(testerBounds))
+                                continue;
 
-					testerTransform.hasChanged = false;
-				}
-			}
-		}
+                            m_SortedIntersections.Add(new SortableRenderer
+                            {
+                                renderer = obj,
+                                distance = (obj.bounds.center - testerBoundsCenter).magnitude
+                            });
+                        }
 
-		internal void AddTester(IntersectionTester tester)
-		{
-			m_IntersectedObjects.Clear();
-			m_Testers.Add(tester);
-		}
+                        //Sort list to try and hit closer object first
+                        m_SortedIntersections.Sort((a, b) => a.distance.CompareTo(b.distance));
 
-		void OnIntersectionEnter(IntersectionTester tester, Renderer obj)
-		{
-			m_IntersectedObjects[tester] = obj;
-		}
+                        if (m_SortedIntersections.Count > k_MaxTestsPerTester)
+                            continue;
 
-		void OnIntersectionStay(IntersectionTester tester, Renderer obj)
-		{
-			m_IntersectedObjects[tester] = obj;
-		}
+                        for (int j = 0; j < m_SortedIntersections.Count; j++)
+                        {
+                            var obj = m_SortedIntersections[j].renderer;
+                            if (IntersectionUtils.TestObject(m_CollisionTester, obj, tester))
+                            {
+                                intersectionFound = true;
+                                Renderer currentObject;
+                                if (m_IntersectedObjects.TryGetValue(tester, out currentObject))
+                                {
+                                    if (currentObject == obj)
+                                    {
+                                        OnIntersectionStay(tester, obj);
+                                    }
+                                    else
+                                    {
+                                        OnIntersectionExit(tester);
+                                        OnIntersectionEnter(tester, obj);
+                                    }
+                                }
+                                else
+                                {
+                                    OnIntersectionEnter(tester, obj);
+                                }
+                            }
 
-		void OnIntersectionExit(IntersectionTester tester)
-		{
-			m_IntersectedObjects.Remove(tester);
-		}
+                            if (intersectionFound)
+                                break;
+                        }
+                    }
 
-		internal Renderer GetIntersectedObjectForTester(IntersectionTester tester)
-		{
-			Renderer obj;
-			m_IntersectedObjects.TryGetValue(tester, out obj);
-			return obj;
-		}
+                    if (!intersectionFound)
+                    {
+                        Renderer intersectedObject;
+                        if (m_IntersectedObjects.TryGetValue(tester, out intersectedObject))
+                            OnIntersectionExit(tester);
+                    }
 
-		internal GameObject GetFirstGameObject(Transform rayOrigin, out float distance)
-		{
-			RayIntersection intersection;
-			if (m_RaycastGameObjects.TryGetValue(rayOrigin, out intersection))
-			{
-				distance = intersection.distance;
-				return intersection.go;
-			}
+                    testerTransform.hasChanged = false;
+                }
+            }
+        }
 
-			distance = 0;
-			return null;
-		}
+        internal void AddTester(IntersectionTester tester)
+        {
+            m_IntersectedObjects.Clear();
+            m_Testers.Add(tester);
+        }
 
-		internal void UpdateRaycast(Transform rayOrigin, float distance)
-		{
-			GameObject go;
-			RaycastHit hit;
-			Raycast(new Ray(rayOrigin.position, rayOrigin.forward), out hit, out go, distance);
-			m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
-		}
+        void OnIntersectionEnter(IntersectionTester tester, Renderer obj)
+        {
+            m_IntersectedObjects[tester] = obj;
+        }
 
-		internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
-		{
-			obj = null;
-			hit = new RaycastHit();
-			var result = false;
-			var distance = Mathf.Infinity;
-			m_Intersections.Clear();
-			if (m_SpatialHash.GetIntersections(m_Intersections, ray, maxDistance))
-			{
-				for (int i = 0; i < m_Intersections.Count; i++)
-				{
-					var renderer = m_Intersections[i];
-					var gameObject = renderer.gameObject;
-					if (ignoreList != null && ignoreList.Contains(gameObject))
-						continue;
+        void OnIntersectionStay(IntersectionTester tester, Renderer obj)
+        {
+            m_IntersectedObjects[tester] = obj;
+        }
 
-					var transform = renderer.transform;
+        void OnIntersectionExit(IntersectionTester tester)
+        {
+            m_IntersectedObjects.Remove(tester);
+        }
 
-					IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
+        internal Renderer GetIntersectedObjectForTester(IntersectionTester tester)
+        {
+            Renderer obj = null;
+            if (tester)
+                m_IntersectedObjects.TryGetValue(tester, out obj);
 
-					RaycastHit tmp;
-					if (IntersectionUtils.TestRay(m_CollisionTester, transform, ray, out tmp, maxDistance))
-					{
-						var point = transform.TransformPoint(tmp.point);
-						var dist = Vector3.Distance(point, ray.origin);
-						if (dist < distance)
-						{
-							result = true;
-							distance = dist;
-							hit.distance = dist;
-							hit.point = point;
-							hit.normal = transform.TransformDirection(tmp.normal);
-							obj = gameObject;
-						}
-					}
-				}
-			}
+            return obj;
+        }
 
-			return result;
-		}
-	}
+        internal GameObject GetFirstGameObject(Transform rayOrigin, out float distance)
+        {
+            RayIntersection intersection;
+            if (m_RaycastGameObjects.TryGetValue(rayOrigin, out intersection))
+            {
+                distance = intersection.distance;
+                return intersection.go;
+            }
+
+            distance = 0;
+            return null;
+        }
+
+        internal void UpdateRaycast(Transform rayOrigin, float distance)
+        {
+            GameObject go;
+            RaycastHit hit;
+            Raycast(new Ray(rayOrigin.position, rayOrigin.forward), out hit, out go, distance);
+            m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
+        }
+
+        internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<Renderer> ignoreList = null)
+        {
+            obj = null;
+            hit = new RaycastHit();
+            var result = false;
+            var distance = Mathf.Infinity;
+            m_Intersections.Clear();
+            if (m_SpatialHash.GetIntersections(m_Intersections, ray, maxDistance))
+            {
+                for (int i = 0; i < m_Intersections.Count; i++)
+                {
+                    var renderer = m_Intersections[i];
+                    if (ignoreList != null && ignoreList.Contains(renderer))
+                        continue;
+
+                    var transform = renderer.transform;
+
+                    IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
+
+                    RaycastHit tmp;
+                    if (IntersectionUtils.TestRay(m_CollisionTester, transform, ray, out tmp, maxDistance))
+                    {
+                        var point = transform.TransformPoint(tmp.point);
+                        var dist = Vector3.Distance(point, ray.origin);
+                        if (dist < distance)
+                        {
+                            result = true;
+                            distance = dist;
+                            hit.distance = dist;
+                            hit.point = point;
+                            hit.normal = transform.TransformDirection(tmp.normal);
+                            obj = renderer.gameObject;
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
 }
 #endif

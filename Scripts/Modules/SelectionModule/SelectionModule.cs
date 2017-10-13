@@ -7,99 +7,100 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics, IRayToNode
-	{
-		[SerializeField]
-		HapticPulse m_HoverPulse;
+    sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics, IRayToNode
+    {
+        [SerializeField]
+        HapticPulse m_HoverPulse;
 
-		GameObject m_CurrentGroupRoot;
-		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
+        GameObject m_CurrentGroupRoot;
+        readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
 
-		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
-		public Func<GameObject, bool> overrideSelectObject { private get; set; }
+        public Func<GameObject, GameObject> getGroupRoot { private get; set; }
+        public Func<GameObject, bool> overrideSelectObject { private get; set; }
 
-		public event Action<Transform> selected;
+        public event Action<Transform> selected;
 
-		public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
-		{
-			// If we can't even select the object we're starting with, then skip any further logic
-			if (!CanSelectObject(hoveredObject, false))
-				return null;
+        public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
+        {
+            // If we can't even select the object we're starting with, then skip any further logic
+            if (!CanSelectObject(hoveredObject, false))
+                return null;
 
-			// By default the selection candidate would be the same object passed in
-			if (!useGrouping)
-				return hoveredObject;
+            // By default the selection candidate would be the same object passed in
+            if (!useGrouping)
+                return hoveredObject;
 
-			// Only offer up the group root as the selection on first selection; Subsequent selections would allow children from the group
-			var groupRoot = getGroupRoot(hoveredObject);
-			if (groupRoot && groupRoot != m_CurrentGroupRoot && CanSelectObject(groupRoot, false))
-				return groupRoot;
-			
-			return hoveredObject;
-		}
+            // Only offer up the group root as the selection on first selection; Subsequent selections would allow children from the group
+            var groupRoot = getGroupRoot(hoveredObject);
+            if (groupRoot && groupRoot != m_CurrentGroupRoot && CanSelectObject(groupRoot, false))
+                return groupRoot;
 
-		bool CanSelectObject(GameObject hoveredObject, bool useGrouping)
-		{
-			if (this.IsLocked(hoveredObject))
-				return false;
+            return hoveredObject;
+        }
 
-			if (hoveredObject != null)
-			{
-				if (!hoveredObject.activeInHierarchy)
-					return false;
+        bool CanSelectObject(GameObject hoveredObject, bool useGrouping)
+        {
+            if (this.IsLocked(hoveredObject))
+                return false;
 
-				if (useGrouping)
-					return CanSelectObject(GetSelectionCandidate(hoveredObject, true), false);
-			}
+            if (hoveredObject != null)
+            {
+                if (!hoveredObject.activeInHierarchy)
+                    return false;
 
-			return true;
-		}
+                if (useGrouping)
+                    return CanSelectObject(GetSelectionCandidate(hoveredObject, true), false);
+            }
 
-		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
-		{
-			if (overrideSelectObject(hoveredObject))
-				return;
+            return true;
+        }
 
-			var selection = GetSelectionCandidate(hoveredObject, useGrouping);
+        public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
+        {
+            if (overrideSelectObject(hoveredObject))
+                return;
 
-			var groupRoot = getGroupRoot(hoveredObject);
-			if (useGrouping && groupRoot != m_CurrentGroupRoot)
-				m_CurrentGroupRoot = groupRoot;
+            var selection = GetSelectionCandidate(hoveredObject, useGrouping);
 
-			m_SelectedObjects.Clear();
+            var groupRoot = getGroupRoot(hoveredObject);
+            if (useGrouping && groupRoot != m_CurrentGroupRoot)
+                m_CurrentGroupRoot = groupRoot;
 
-			if (hoveredObject)
-				this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_HoverPulse);
+            m_SelectedObjects.Clear();
 
-			// Multi-Select
-			if (multiSelect)
-			{
-				m_SelectedObjects.AddRange(Selection.objects);
-				// Re-selecting an object removes it from selection
-				if (!m_SelectedObjects.Remove(selection))
-				{
-					m_SelectedObjects.Add(selection);
-					Selection.activeObject = selection;
-				}
-			}
-			else
-			{
-				m_SelectedObjects.Clear();
-				Selection.activeObject = selection;
-				m_SelectedObjects.Add(selection);
-			}
+            if (hoveredObject)
+                this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_HoverPulse);
 
-			Selection.objects = m_SelectedObjects.ToArray();
-			if (selected != null)
-				selected(rayOrigin);
-		}
+            // Multi-Select
+            if (multiSelect)
+            {
+                m_SelectedObjects.AddRange(Selection.objects);
 
-		public void OnSelectionChanged()
-		{
-			// Selection can change outside of this module, so stay in sync
-			if (Selection.objects.Length == 0)
-				m_CurrentGroupRoot = null;
-		}
-	}
+                // Re-selecting an object removes it from selection
+                if (!m_SelectedObjects.Remove(selection))
+                {
+                    m_SelectedObjects.Add(selection);
+                    Selection.activeObject = selection;
+                }
+            }
+            else
+            {
+                m_SelectedObjects.Clear();
+                Selection.activeObject = selection;
+                m_SelectedObjects.Add(selection);
+            }
+
+            Selection.objects = m_SelectedObjects.ToArray();
+            if (selected != null)
+                selected(rayOrigin);
+        }
+
+        public void OnSelectionChanged()
+        {
+            // Selection can change outside of this module, so stay in sync
+            if (Selection.objects.Length == 0)
+                m_CurrentGroupRoot = null;
+        }
+    }
 }
 #endif

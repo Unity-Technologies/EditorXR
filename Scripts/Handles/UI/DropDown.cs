@@ -10,301 +10,309 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	sealed class DropDown : MonoBehaviour
-	{
-		Coroutine m_ShowDropdownCoroutine;
-		Coroutine m_HideDropdownCoroutine;
-		float m_HiddenDropdownItemYSpacing;
-		float m_VisibleDropdownItemYSpacing;
-		float m_VisibleBackgroundMeshLocalYScale;
-		float m_PreviousXRotation;
-		Vector3 m_OptionsPanelOriginalLocalPosition;
+    sealed class DropDown : MonoBehaviour
+    {
+        Coroutine m_ShowDropdownCoroutine;
+        Coroutine m_HideDropdownCoroutine;
+        float m_HiddenDropdownItemYSpacing;
+        float m_VisibleDropdownItemYSpacing;
+        float m_VisibleBackgroundMeshLocalYScale;
+        float m_PreviousXRotation;
+        Vector3 m_OptionsPanelOriginalLocalPosition;
 
-		public string[] options
-		{
-			get { return m_Options; }
-			set
-			{
-				m_Options = value;
-				SetupOptions();
-			}
-		}
-		[SerializeField]
-		string[] m_Options;
+        public string[] options
+        {
+            get { return m_Options; }
+            set
+            {
+                m_Options = value;
+                SetupOptions();
+            }
+        }
 
-		public bool multiSelect { get { return m_MultiSelect; } set { m_MultiSelect = value; } }
-		[SerializeField]
-		bool m_MultiSelect;
-		
-		[SerializeField]
-		Text m_Label;
+        [SerializeField]
+        string[] m_Options;
 
-		[SerializeField]
-		RectTransform m_OptionsPanel;
+        public bool multiSelect
+        {
+            get { return m_MultiSelect; }
+            set { m_MultiSelect = value; }
+        }
 
-		[SerializeField]
-		GridLayoutGroup m_OptionsList;
+        [SerializeField]
+        bool m_MultiSelect;
 
-		[SerializeField]
-		GameObject m_TemplatePrefab;
+        [SerializeField]
+        Text m_Label;
 
-		[SerializeField]
-		GameObject m_MultiSelectTemplatePrefab;
+        [SerializeField]
+        RectTransform m_OptionsPanel;
 
-		[SerializeField]
-		CanvasGroup m_CanvasGroup;
+        [SerializeField]
+        GridLayoutGroup m_OptionsList;
 
-		[SerializeField]
-		Transform m_BackgroundMeshTransform;
+        [SerializeField]
+        GameObject m_TemplatePrefab;
 
-		public int value
-		{
-			get { return m_Value; }
-			set
-			{
-				m_Value = value;
-				UpdateLabel();
-			}
-		}
-		[SerializeField]
-		int m_Value;
+        [SerializeField]
+        GameObject m_MultiSelectTemplatePrefab;
 
-		public int[] values
-		{
-			get { return m_Values; }
-			set
-			{
-				m_Values = value;
-				UpdateToggles();
-				UpdateLabel();
-			}
-		}
-		[SerializeField]
-		int[] m_Values = new int[0];
+        [SerializeField]
+        CanvasGroup m_CanvasGroup;
 
-		Toggle[] m_Toggles;
+        [SerializeField]
+        Transform m_BackgroundMeshTransform;
 
-		public event Action<int, int[]> valueChanged;
+        public int value
+        {
+            get { return m_Value; }
+            set
+            {
+                m_Value = value;
+                UpdateLabel();
+            }
+        }
 
-		void Awake()
-		{
-			SetupOptions();
+        [SerializeField]
+        int m_Value;
 
-			m_HiddenDropdownItemYSpacing = -m_OptionsList.cellSize.y;
-			m_VisibleDropdownItemYSpacing = m_OptionsList.spacing.y;
-			m_VisibleBackgroundMeshLocalYScale = m_BackgroundMeshTransform.localScale.y;
-			m_OptionsPanelOriginalLocalPosition = m_OptionsPanel.localPosition;
-		}
+        public int[] values
+        {
+            get { return m_Values; }
+            set
+            {
+                m_Values = value;
+                UpdateToggles();
+                UpdateLabel();
+            }
+        }
 
-		void OnEnable()
-		{
-			m_OptionsPanel.gameObject.SetActive(false);
-			m_BackgroundMeshTransform.gameObject.SetActive(false);
-		}
+        [SerializeField]
+        int[] m_Values = new int[0];
 
-		void Update()
-		{
-			var currentXRotation = transform.rotation.eulerAngles.x;
-			currentXRotation = Mathf.Repeat(currentXRotation - 90, 360f); // Compensate for the rotation the lerp expects
-			if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
-				return; // Exit if no x rotation change occurred for this frame
+        Toggle[] m_Toggles;
 
-			m_PreviousXRotation = currentXRotation;
+        public event Action<int, int[]> valueChanged;
 
-			const float kLerpPadding = 1.2f; // pad lerp values increasingly as it increases, reaching intended rotation sooner
-			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
+        void Awake()
+        {
+            SetupOptions();
 
-			// add lerp padding to reach and maintain the target value sooner
-			var lerpAmount = (angledAmount / 90f) * kLerpPadding;
+            m_HiddenDropdownItemYSpacing = -m_OptionsList.cellSize.y;
+            m_VisibleDropdownItemYSpacing = m_OptionsList.spacing.y;
+            m_VisibleBackgroundMeshLocalYScale = m_BackgroundMeshTransform.localScale.y;
+            m_OptionsPanelOriginalLocalPosition = m_OptionsPanel.localPosition;
+        }
 
-			// offset options panel rotation according to workspace rotation angle
-			const float kAdditionalLerpPadding = 1.1f;
-			var parallelToWorkspaceRotation = new Vector3(0f, 0f, 0f);
-			var perpendicularToWorkspaceRotation = new Vector3(-90f, 0f, 0f);
-			var parallelToWorkspaceLocalPosition = new Vector3(m_OptionsPanelOriginalLocalPosition.x, m_OptionsPanelOriginalLocalPosition.y + 0.015f, m_OptionsPanelOriginalLocalPosition.z - 0.0125f);
-			m_OptionsPanel.localRotation = Quaternion.Euler(Vector3.Lerp(perpendicularToWorkspaceRotation, parallelToWorkspaceRotation, lerpAmount * kAdditionalLerpPadding));
-			m_OptionsPanel.localPosition = Vector3.Lerp(m_OptionsPanelOriginalLocalPosition, parallelToWorkspaceLocalPosition, lerpAmount);
-		}
+        void OnEnable()
+        {
+            m_OptionsPanel.gameObject.SetActive(false);
+            m_BackgroundMeshTransform.gameObject.SetActive(false);
+        }
 
-		void SetupOptions()
-		{
-			if (m_Options.Length > 0)
-				UpdateLabel();
+        void Update()
+        {
+            var currentXRotation = transform.rotation.eulerAngles.x;
+            currentXRotation = Mathf.Repeat(currentXRotation - 90, 360f); // Compensate for the rotation the lerp expects
+            if (Mathf.Approximately(currentXRotation, m_PreviousXRotation))
+                return; // Exit if no x rotation change occurred for this frame
 
-			var template = m_MultiSelect ? m_MultiSelectTemplatePrefab : m_TemplatePrefab;
+            m_PreviousXRotation = currentXRotation;
 
-			if (template)
-			{
-				var size = template.GetComponent<RectTransform>().rect.size;
-				m_OptionsPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y * m_Options.Length);
+            const float kLerpPadding = 1.2f; // pad lerp values increasingly as it increases, reaching intended rotation sooner
+            var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
 
-				var listTransform = m_OptionsList.transform;
+            // add lerp padding to reach and maintain the target value sooner
+            var lerpAmount = (angledAmount / 90f) * kLerpPadding;
 
-				// Clear existing options
-				var children = listTransform.Cast<Transform>().ToList(); // Copy list, since destroying children changes count
-				foreach (var child in children)
-					ObjectUtils.Destroy(child.gameObject);
+            // offset options panel rotation according to workspace rotation angle
+            const float kAdditionalLerpPadding = 1.1f;
+            var parallelToWorkspaceRotation = new Vector3(0f, 0f, 0f);
+            var perpendicularToWorkspaceRotation = new Vector3(-90f, 0f, 0f);
+            var parallelToWorkspaceLocalPosition = new Vector3(m_OptionsPanelOriginalLocalPosition.x, m_OptionsPanelOriginalLocalPosition.y + 0.015f, m_OptionsPanelOriginalLocalPosition.z - 0.0125f);
+            m_OptionsPanel.localRotation = Quaternion.Euler(Vector3.Lerp(perpendicularToWorkspaceRotation, parallelToWorkspaceRotation, lerpAmount * kAdditionalLerpPadding));
+            m_OptionsPanel.localPosition = Vector3.Lerp(m_OptionsPanelOriginalLocalPosition, parallelToWorkspaceLocalPosition, lerpAmount);
+        }
 
-				m_Toggles = new Toggle[m_Options.Length];
+        void SetupOptions()
+        {
+            if (m_Options.Length > 0)
+                UpdateLabel();
 
-				for (int i = 0; i < m_Options.Length; i++)
-				{
-					var optionObject = (GameObject)Instantiate(template, listTransform.position, listTransform.rotation, listTransform);
+            var template = m_MultiSelect ? m_MultiSelectTemplatePrefab : m_TemplatePrefab;
 
-					// Zero out Z local position
-					optionObject.transform.localPosition = new Vector3(optionObject.transform.localPosition.x, optionObject.transform.localPosition.y, 0f);
+            if (template)
+            {
+                var size = template.GetComponent<RectTransform>().rect.size;
+                m_OptionsPanel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y * m_Options.Length);
 
-					var optionText = optionObject.GetComponentInChildren<Text>();
-					if (optionText)
-						optionText.text = m_Options[i];
+                var listTransform = m_OptionsList.transform;
 
-					var toggle = optionObject.GetComponentInChildren<Toggle>();
-					if (toggle)
-						toggle.isOn = values.Contains(i);
+                // Clear existing options
+                var children = listTransform.Cast<Transform>().ToList(); // Copy list, since destroying children changes count
+                foreach (var child in children)
+                    ObjectUtils.Destroy(child.gameObject);
 
-					m_Toggles[i] = toggle;
+                m_Toggles = new Toggle[m_Options.Length];
 
-					var button = optionObject.GetComponentInChildren<Button>();
-					if (button)
-					{
-						var index = i;
-						button.onClick.AddListener(() =>
-						{
-							if (toggle)
-								toggle.isOn = !toggle.isOn;
-							OnOptionClicked(index);
-						});
-					}
-				}
-			}
-		}
+                for (int i = 0; i < m_Options.Length; i++)
+                {
+                    var optionObject = (GameObject)Instantiate(template, listTransform.position, listTransform.rotation, listTransform);
 
-		public void OpenPanel()
-		{
-			this.StopCoroutine(ref m_HideDropdownCoroutine);
-			this.StopCoroutine(ref m_ShowDropdownCoroutine);
-			m_ShowDropdownCoroutine = StartCoroutine(ShowDropDownContents());
-		}
+                    // Zero out Z local position
+                    optionObject.transform.localPosition = new Vector3(optionObject.transform.localPosition.x, optionObject.transform.localPosition.y, 0f);
 
-		public void ClosePanel()
-		{
-			this.StopCoroutine(ref m_ShowDropdownCoroutine);
-			this.StopCoroutine(ref m_HideDropdownCoroutine);
-			m_HideDropdownCoroutine = StartCoroutine(HideDropDownContents());
-		}
+                    var optionText = optionObject.GetComponentInChildren<Text>();
+                    if (optionText)
+                        optionText.text = m_Options[i];
 
-		public void LabelOverride(string text)
-		{
-			m_Label.text = text;
-		}
+                    var toggle = optionObject.GetComponentInChildren<Toggle>();
+                    if (toggle)
+                        toggle.isOn = values.Contains(i);
 
-		void OnOptionClicked(int val)
-		{
-			if (m_MultiSelect)
-			{
-				var list = new List<int>(values);
-				if (list.Contains(val))
-					list.Remove(val);
-				else
-					list.Add(val);
-				m_Values =  list.ToArray();
-			}
-			else
-				m_Value = val;
+                    m_Toggles[i] = toggle;
 
-			UpdateLabel();
+                    var button = optionObject.GetComponentInChildren<Button>();
+                    if (button)
+                    {
+                        var index = i;
+                        button.onClick.AddListener(() =>
+                        {
+                            if (toggle)
+                                toggle.isOn = !toggle.isOn;
+                            OnOptionClicked(index);
+                        });
+                    }
+                }
+            }
+        }
 
-			ClosePanel();
+        public void OpenPanel()
+        {
+            this.StopCoroutine(ref m_HideDropdownCoroutine);
+            this.StopCoroutine(ref m_ShowDropdownCoroutine);
+            m_ShowDropdownCoroutine = StartCoroutine(ShowDropDownContents());
+        }
 
-			if (valueChanged != null)
-				valueChanged(val, m_MultiSelect ? m_Values : new [] {m_Value});
-		}
+        public void ClosePanel()
+        {
+            this.StopCoroutine(ref m_ShowDropdownCoroutine);
+            this.StopCoroutine(ref m_HideDropdownCoroutine);
+            m_HideDropdownCoroutine = StartCoroutine(HideDropDownContents());
+        }
 
-		void UpdateToggles()
-		{
-			for (int i = 0; i < m_Toggles.Length; i++)
-			{
-				var toggle = m_Toggles[i];
-				if (toggle)
-					toggle.isOn = m_Values.Contains(i);
-			}
-		}
+        public void LabelOverride(string text)
+        {
+            m_Label.text = text;
+        }
 
-		void UpdateLabel()
-		{
-			if (m_MultiSelect)
-			{
-				var labelText = string.Empty;
-				if (values.Length > 0)
-				{
-					foreach (var v in values)
-						labelText += m_Options[v] + ", ";
-					m_Label.text = labelText.Substring(0, labelText.Length - 2);
-				}
-				else
-					m_Label.text = "Nothing";
-			}
-			else
-			{
-				if (m_Value >= 0 && m_Value < m_Options.Length)
-					m_Label.text = m_Options[m_Value];
-			}
-		}
+        void OnOptionClicked(int val)
+        {
+            if (m_MultiSelect)
+            {
+                var list = new List<int>(values);
+                if (list.Contains(val))
+                    list.Remove(val);
+                else
+                    list.Add(val);
+                m_Values = list.ToArray();
+            }
+            else
+                m_Value = val;
 
-		IEnumerator ShowDropDownContents()
-		{
-			m_OptionsPanel.gameObject.SetActive(true);
-			m_BackgroundMeshTransform.gameObject.SetActive(true);
+            UpdateLabel();
 
-			const float kTargetDuration = 0.5f;
-			var currentAlpha = m_CanvasGroup.alpha;
-			var kTargetAlpha = 1f;
-			var transitionAmount = 0f;
-			var velocity = 0f;
-			var currentDuration = 0f;
-			var currentBackgroundLocalScale = m_BackgroundMeshTransform.localScale;
-			var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, m_VisibleBackgroundMeshLocalYScale, m_BackgroundMeshTransform.localScale.z);
-			while (currentDuration < kTargetDuration)
-			{
-				currentDuration += Time.deltaTime;
-				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
-				m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(m_HiddenDropdownItemYSpacing, m_VisibleDropdownItemYSpacing, transitionAmount));
-				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
-				m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
-				yield return null;
-			}
+            ClosePanel();
 
-			m_OptionsList.spacing = new Vector2(0f, m_VisibleDropdownItemYSpacing);
-			m_BackgroundMeshTransform.localScale = targetBackgroundLocalScale;
-			m_CanvasGroup.alpha = 1f;
-			m_ShowDropdownCoroutine = null;
-		}
+            if (valueChanged != null)
+                valueChanged(val, m_MultiSelect ? m_Values : new[] { m_Value });
+        }
 
-		IEnumerator HideDropDownContents()
-		{
-			const float kTargetDuration = 0.25f;
-			var currentAlpha = m_CanvasGroup.alpha;
-			var kTargetAlpha = 0f;
-			var transitionAmount = 0f;
-			var currentSpacing = m_OptionsList.spacing.y;
-			var velocity = 0f;
-			var currentDuration = 0f;
-			var currentBackgroundLocalScale = m_BackgroundMeshTransform.localScale;
-			var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, 0f, m_BackgroundMeshTransform.localScale.z);
-			while (currentDuration < kTargetDuration)
-			{
-				currentDuration += Time.deltaTime;
-				transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
-				m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(currentSpacing, m_HiddenDropdownItemYSpacing, transitionAmount));
-				m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
-				m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
-				yield return null;
-			}
+        void UpdateToggles()
+        {
+            for (int i = 0; i < m_Toggles.Length; i++)
+            {
+                var toggle = m_Toggles[i];
+                if (toggle)
+                    toggle.isOn = m_Values.Contains(i);
+            }
+        }
 
-			m_OptionsPanel.gameObject.SetActive(false);
-			m_BackgroundMeshTransform.gameObject.SetActive(false);
-			m_HideDropdownCoroutine = null;
-		}
-	}
+        void UpdateLabel()
+        {
+            if (m_MultiSelect)
+            {
+                var labelText = string.Empty;
+                if (values.Length > 0)
+                {
+                    foreach (var v in values)
+                        labelText += m_Options[v] + ", ";
+                    m_Label.text = labelText.Substring(0, labelText.Length - 2);
+                }
+                else
+                    m_Label.text = "Nothing";
+            }
+            else
+            {
+                if (m_Value >= 0 && m_Value < m_Options.Length)
+                    m_Label.text = m_Options[m_Value];
+            }
+        }
+
+        IEnumerator ShowDropDownContents()
+        {
+            m_OptionsPanel.gameObject.SetActive(true);
+            m_BackgroundMeshTransform.gameObject.SetActive(true);
+
+            const float kTargetDuration = 0.5f;
+            var currentAlpha = m_CanvasGroup.alpha;
+            var kTargetAlpha = 1f;
+            var transitionAmount = 0f;
+            var velocity = 0f;
+            var currentDuration = 0f;
+            var currentBackgroundLocalScale = m_BackgroundMeshTransform.localScale;
+            var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, m_VisibleBackgroundMeshLocalYScale, m_BackgroundMeshTransform.localScale.z);
+            while (currentDuration < kTargetDuration)
+            {
+                currentDuration += Time.deltaTime;
+                transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(m_HiddenDropdownItemYSpacing, m_VisibleDropdownItemYSpacing, transitionAmount));
+                m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
+                m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
+                yield return null;
+            }
+
+            m_OptionsList.spacing = new Vector2(0f, m_VisibleDropdownItemYSpacing);
+            m_BackgroundMeshTransform.localScale = targetBackgroundLocalScale;
+            m_CanvasGroup.alpha = 1f;
+            m_ShowDropdownCoroutine = null;
+        }
+
+        IEnumerator HideDropDownContents()
+        {
+            const float kTargetDuration = 0.25f;
+            var currentAlpha = m_CanvasGroup.alpha;
+            var kTargetAlpha = 0f;
+            var transitionAmount = 0f;
+            var currentSpacing = m_OptionsList.spacing.y;
+            var velocity = 0f;
+            var currentDuration = 0f;
+            var currentBackgroundLocalScale = m_BackgroundMeshTransform.localScale;
+            var targetBackgroundLocalScale = new Vector3(m_BackgroundMeshTransform.localScale.x, 0f, m_BackgroundMeshTransform.localScale.z);
+            while (currentDuration < kTargetDuration)
+            {
+                currentDuration += Time.deltaTime;
+                transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                m_OptionsList.spacing = new Vector2(0f, Mathf.Lerp(currentSpacing, m_HiddenDropdownItemYSpacing, transitionAmount));
+                m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount * transitionAmount);
+                m_BackgroundMeshTransform.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, transitionAmount);
+                yield return null;
+            }
+
+            m_OptionsPanel.gameObject.SetActive(false);
+            m_BackgroundMeshTransform.gameObject.SetActive(false);
+            m_HideDropdownCoroutine = null;
+        }
+    }
 }
 #endif
