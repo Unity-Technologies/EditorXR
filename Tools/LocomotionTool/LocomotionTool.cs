@@ -108,15 +108,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<ProxyFeedbackRequest> m_RotateFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
 
-
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
-
         public Transform rayOrigin { get; set; }
-
         public Transform cameraRig { private get; set; }
-
         public List<ILinkedObject> linkedObjects { private get; set; }
+        public Type proxyType { get; set; }
+        public Node node { private get; set; }
 
         public GameObject settingsMenuItemPrefab
         {
@@ -170,10 +168,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
         }
-
-        public Type proxyType { get; set; }
-
-        public Node node { private get; set; }
 
         void Start()
         {

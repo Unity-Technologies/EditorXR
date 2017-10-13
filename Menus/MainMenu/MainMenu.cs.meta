@@ -1,12 +1,12 @@
 fileFormatVersion: 2
 guid: 52a6f827905e5da45b04e9ad17c95d45
-timeCreated: 1497598641
+timeCreated: 1507852516
 licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - m_MainMenuActionMap: {fileID: 11400000, guid: 5b2451b50b5b2ff4fb3c3d8cda77aa65,
-      type: 2}
+  - m_ActionMap: {fileID: 11400000, guid: 5b2451b50b5b2ff4fb3c3d8cda77aa65, type: 2}
   - m_FaceRotationPulse: {fileID: 11400000, guid: f5f56317312943d4da218b9b2e6ea9d0,
       type: 2}
   - m_ShowPulse: {fileID: 11400000, guid: 7c69a56582b55ec41b36b49c44a42905, type: 2}
