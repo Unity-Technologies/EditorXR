@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.VR;
+using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		GameObject m_PreviewCameraPrefab;
 
-		class Viewer : Nested, IInterfaceConnector, ISerializePreferences
+        class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces
 		{
 			[Serializable]
 			class Preferences
@@ -30,10 +30,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				[SerializeField]
 				float m_CameraRigScale = 1;
 
-				public Vector3 cameraPosition { get { return m_CameraPosition; } set { m_CameraPosition = value; } }
-				public Quaternion cameraRotation { get { return m_CameraRotation; } set { m_CameraRotation = value; } }
-				public float cameraRigScale { get { return m_CameraRigScale; } set { m_CameraRigScale = value; } }
+                public Vector3 cameraPosition
+                {
+                    get { return m_CameraPosition; }
+                    set { m_CameraPosition = value; }
 			}
+
+                public Quaternion cameraRotation
+                {
+                    get { return m_CameraRotation; }
+                    set { m_CameraRotation = value; }
+                }
+
+                public float cameraRigScale
+                {
+                    get { return m_CameraRigScale; }
+                    set { m_CameraRigScale = value; }
+                }
+            }
 
 			const float k_CameraRigTransitionTime = 0.25f;
 
@@ -79,16 +93,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
 			}
 
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
+            public void ConnectInterface(object target, object userData = null)
 			{
-				var usesCameraRig = obj as IUsesCameraRig;
+                var usesCameraRig = target as IUsesCameraRig;
 				if (usesCameraRig != null)
 					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
 			}
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
-			{
-			}
+            public void DisconnectInterface(object target, object userData = null) { }
 
 			public object OnSerializePreferences()
 			{
@@ -146,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				viewerCamera.gameObject.hideFlags = defaultHideFlags;
 				m_OriginalNearClipPlane = viewerCamera.nearClipPlane;
 				m_OriginalFarClipPlane = viewerCamera.farClipPlane;
-				if (VRSettings.loadedDeviceName == "OpenVR")
+                if (XRSettings.loadedDeviceName == "OpenVR")
 				{
 					// Steam's reference position should be at the feet and not at the head as we do with Oculus
 					cameraRig.localPosition = Vector3.zero;
@@ -164,7 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						VRView.customPreviewCamera = customPreviewCamera.previewCamera;
 						customPreviewCamera.vrCamera = VRView.viewerCamera;
 						hmdOnlyLayerMask = customPreviewCamera.hmdOnlyLayerMask;
-						evr.m_Interfaces.ConnectInterfaces(customPreviewCamera);
+                        this.ConnectInterfaces(customPreviewCamera);
 					}
 				}
 				VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
@@ -264,6 +276,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				while (diffTime < k_CameraRigTransitionTime)
 				{
 					var t = diffTime / k_CameraRigTransitionTime;
+
 					// Use a Lerp instead of SmoothDamp for constant velocity (avoid motion sickness)
 					cameraRig.position = Vector3.Lerp(startPosition, position, t);
 					cameraRig.rotation = Quaternion.Lerp(startRotation, rotation, t);

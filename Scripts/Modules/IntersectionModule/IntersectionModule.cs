@@ -1,13 +1,12 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking, IInterfaceConnector
+    sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
 		const int k_MaxTestsPerTester = 250;
 
@@ -26,8 +25,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		}
 
 		public bool ready { get { return m_SpatialHash != null; } }
+
 		public List<IntersectionTester> testers { get { return m_Testers; } }
+
 		public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
+
 		public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
 		public List<Renderer> standardIgnoreList { get { return m_StandardIgnoreList; } }
 
@@ -91,6 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 						for (int j = 0; j < m_Intersections.Count; j++)
 						{
 							var obj = m_Intersections[j];
+
 							// Ignore destroyed objects
 							if (!obj)
 								continue;

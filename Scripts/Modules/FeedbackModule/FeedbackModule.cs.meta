@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0c0af8559f906454db081815e6275f48
+timeCreated: 1505977262
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_SettingsMenuItemPrefab: {fileID: 1871321269361264, guid: 19cfca3e999de7f4a8ce17a546f821b0,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

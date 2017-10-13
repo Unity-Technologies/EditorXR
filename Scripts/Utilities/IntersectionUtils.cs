@@ -274,18 +274,20 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 		{
 			var mf = obj.GetComponent<MeshFilter>();
 			if (mf)
+            {
 				collisionTester.sharedMesh = mf.sharedMesh;
+                collisionTester.transform.localScale = Vector3.one;
+                return;
+            }
 
-			if (!mf)
-			{
 				var smr = obj.GetComponent<SkinnedMeshRenderer>();
 				if (smr)
 				{
 					smr.BakeMesh(BakedMesh);
 					collisionTester.sharedMesh = BakedMesh;
+                collisionTester.transform.localScale = obj.transform.lossyScale.Inverse();
 				}
 			}
 		}
 	}
-}
 #endif

@@ -134,6 +134,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		[SerializeField]
 		WorkspaceButton m_ResizeButton;
 
+        [SerializeField]
+        ActionMap m_ActionMap;
+
 		BoxCollider m_FrameCollider;
 		Bounds m_Bounds;
 		float? m_TopPanelDividerOffset;
@@ -327,11 +330,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			}
 		}
 
-		public Transform topFaceContainer { get { return m_TopFaceContainer; } set { m_TopFaceContainer = value; } }
+        public Transform topFaceContainer
+        {
+            get { return m_TopFaceContainer; }
+            set { m_TopFaceContainer = value; }
+        }
+
 		public Transform sceneContainer { get { return m_SceneContainer; } }
 		public RectTransform frontPanel { get { return m_FrontPanel; } }
 		public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
-		public bool dynamicFaceAdjustment { get { return m_DynamicFaceAdjustment; } set { m_DynamicFaceAdjustment = value; } }
+
+        public bool dynamicFaceAdjustment
+        {
+            get { return m_DynamicFaceAdjustment; }
+            set { m_DynamicFaceAdjustment = value; }
+        }
 
 		public bool preventResize
 		{
@@ -348,7 +361,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform leftRayOrigin { private get; set; }
 		public Transform rightRayOrigin { private get; set; }
-		public Node? node { get; set; }
+        public Node node { get; set; }
 
 		public event Action<Bounds> resize;
 
@@ -627,6 +640,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			const float kCorrectiveRevealShapeMultiplier = 1.85f;
 			var angledAmount = Mathf.Clamp(Mathf.DeltaAngle(currentXRotation, 0f), 0f, 90f);
 			var midRevealCorrectiveShapeAmount = Mathf.PingPong(angledAmount * kCorrectiveRevealShapeMultiplier, 90);
+
 			// add lerp padding to reach and maintain the target value sooner
 			m_LerpAmount = angledAmount / 90f;
 			var paddedLerp = m_LerpAmount * kLerpPadding;

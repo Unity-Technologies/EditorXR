@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +12,14 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
+    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
+
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
 		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
 		IUsesProxyType, IMenuIcon, IGetPointerLength, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
-		ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction
+		ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IRequestFeedback
 	{
 		const float k_MultiselectHueShift = 0.5f;
 		const float k_BLockSelectDragThreshold = 0.01f;
@@ -62,6 +64,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Vector3 m_SelectStartPosition;
 		Renderer m_BlockSelectCubeRenderer;
 
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+        readonly List<ProxyFeedbackRequest> m_SelectFeedback = new List<ProxyFeedbackRequest>();
+
 		Toggle m_CubeToggle;
 		Toggle m_SphereToggle;
 		bool m_BlockValueChangedListener;
@@ -71,9 +76,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly List<GameObject> m_BlockSelectHoverGameObjects = new List<GameObject>();
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
+        public bool ignoreLocking { get { return false; } }
 
 		public Transform rayOrigin { get; set; }
-		public Node? node { private get; set; }
+        public Node node { private get; set; }
 
 		public Sprite icon { get { return m_Icon; } }
 
@@ -158,11 +164,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			m_BlockSelectSphere= ObjectUtils.Instantiate(m_BlockSelectSphere, transform);
 			m_BlockSelectSphere.SetActive(false);
+
+            InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+
+            ShowSelectFeedback();
 		}
 
 		void OnDestroy()
 		{
 			ObjectUtils.Destroy(m_BlockSelectCube);
+			this.ClearFeedbackRequests();
 		}
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -190,8 +201,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					if (m_MultiSelect)
 						this.ShowTooltip(this);
-
-					consumeControl(multiSelectControl);
 				}
 
 				m_LastMultiSelectClickTime = realTime;
@@ -515,6 +524,37 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				m_CubeToggle.isOn = !m_Preferences.sphereMode;
 			}
 		}
+
+        void ShowSelectFeedback()
+        {
+            foreach (var control in m_Controls)
+            {
+                if (control.Key != "Select")
+                    continue;
+
+                foreach (var id in control.Value)
+                {
+                    var request = new ProxyFeedbackRequest
+                    {
+                        node = node,
+                        control = id,
+                        tooltipText = "Select"
+                    };
+
+                    this.AddFeedbackRequest(request);
+                    m_SelectFeedback.Add(request);
+                }
+            }
+        }
+
+        void HideSelectFeedback()
+        {
+            foreach (var request in m_SelectFeedback)
+            {
+                this.RemoveFeedbackRequest(request);
+            }
+            m_SelectFeedback.Clear();
+        }
 	}
 }
 #endif
