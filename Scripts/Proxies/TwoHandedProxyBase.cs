@@ -23,11 +23,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public string tooltipText;
         public bool suppressExisting;
         public bool visible;
+        public bool proxyShaken;
     }
 
     abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
     {
-        const float k_FeedbackDuration = 5f;
+        const float k_DefaultFeedbackDuration = 5f;
 
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
@@ -50,6 +51,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         ProxyHelper m_LeftProxyHelper;
         ProxyHelper m_RightProxyHelper;
         List<Transform> m_ProxyMeshRoots = new List<Transform>();
+
+        ProxyFeedbackRequest m_SemitransparentLock;
+        float m_ShakeFrequency;
+        Vector3 m_PreviousLeftHandPosition;
+        Vector3 m_PreviousRightHandPosition;
 
         readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>> m_Affordances =
             new Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>>();
@@ -174,11 +180,41 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             if (active)
             {
-                m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
+                var movementDelta = -Time.unscaledDeltaTime * 4;
+                var leftLocalPosition = trackedObjectInput.leftPosition.vector3;
+                m_LeftHand.localPosition = leftLocalPosition;
                 m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
 
-                m_RightHand.localPosition = trackedObjectInput.rightPosition.vector3;
+                var rightLocalPosition = trackedObjectInput.rightPosition.vector3;
+                m_RightHand.localPosition = rightLocalPosition;
                 m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
+
+                if (m_SemitransparentLock == null)
+                {
+                    movementDelta = Vector3.SqrMagnitude(leftLocalPosition - m_PreviousLeftHandPosition);
+                    movementDelta += Vector3.SqrMagnitude(rightLocalPosition - m_PreviousRightHandPosition);
+                    if (movementDelta > 0.001f)
+                    {
+                        m_ShakeFrequency += movementDelta;
+                        if (m_ShakeFrequency > 0.1f)
+                        {
+                            var shakeRequest = new ProxyFeedbackRequest
+                            {
+                                control = VRInputDevice.VRControl.LocalRotation,
+                                node = Node.None,
+                                tooltipText = null,
+                                suppressExisting = true,
+                                proxyShaken = true
+                            };
+
+                            AddFeedbackRequest(shakeRequest);
+                        }
+                    }
+
+                }
+
+                m_PreviousLeftHandPosition = leftLocalPosition;
+                m_PreviousRightHandPosition = rightLocalPosition;
             }
         }
 
@@ -236,7 +272,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     foreach (var button in kvp.Value)
                     {
                         if (button.renderer)
-                            this.SetHighlight(button.renderer.gameObject, !request.suppressExisting, duration: k_FeedbackDuration);
+                            this.SetHighlight(button.renderer.gameObject, !request.suppressExisting, duration: k_DefaultFeedbackDuration);
 
                         var tooltipText = request.tooltipText;
                         if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
@@ -246,7 +282,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                                 if (tooltip)
                                 {
                                     tooltip.tooltipText = tooltipText;
-                                    this.ShowTooltip(tooltip, true, k_FeedbackDuration);
+                                    this.ShowTooltip(tooltip, true, k_DefaultFeedbackDuration);
                                 }
                             }
                         }
@@ -272,23 +308,23 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 List<Affordance> affordances;
                 if (affordanceDictionary.TryGetValue(request.control, out affordances))
                 {
-	                foreach (var kvp in affordanceDictionary)
-	                {
-		                foreach (var affordance in kvp.Value)
-		                {
-			                if (affordance.renderer)
-				                this.SetHighlight(affordance.renderer.gameObject, false);
+                    foreach (var kvp in affordanceDictionary)
+                    {
+                        foreach (var affordance in kvp.Value)
+                        {
+                            if (affordance.renderer)
+                                this.SetHighlight(affordance.renderer.gameObject, false);
 
-			                foreach (var tooltip in affordance.tooltips)
-			                {
-				                if (tooltip)
-				                {
-					                tooltip.tooltipText = string.Empty;
-					                this.HideTooltip(tooltip, true);
-				                }
-			                }
-		                }
-	                }
+                            foreach (var tooltip in affordance.tooltips)
+                            {
+                                if (tooltip)
+                                {
+                                    tooltip.tooltipText = string.Empty;
+                                    this.HideTooltip(tooltip, true);
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -316,19 +352,26 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 leftProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.LeftHand && x.Key.visible);
             }
 
-			rightAffordanceRenderersVisible = rightProxyRequestsExist;
-			rightBodyRenderersVisible = allowBodyToBecomeVisible ? rightProxyRequestsExist : allowBodyToBecomeVisible;
-
+            rightAffordanceRenderersVisible = rightProxyRequestsExist;
             leftAffordanceRenderersVisible = leftProxyRequestsExist;
-            leftBodyRenderersVisible = allowBodyToBecomeVisible ? leftProxyRequestsExist : allowBodyToBecomeVisible;
+
+            var shakenVisibility = m_SemitransparentLock != null;
+            rightBodyRenderersVisible = shakenVisibility;
+            leftBodyRenderersVisible = shakenVisibility;
         }
 
         IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
         {
+            if (request.proxyShaken)
+                m_SemitransparentLock = request;
+
             request.visible = true;
-            const float kDuration = k_FeedbackDuration * 0.125f;
+
+            const float kShakenVisibilityDuration = 6f;
+            const float kShorterOpaqueDurationScalar = 0.125f;
+            float duration = request.proxyShaken ? kShakenVisibilityDuration : k_DefaultFeedbackDuration * kShorterOpaqueDurationScalar;
             var currentDuration = 0f;
-            while (request != null && currentDuration < kDuration)
+            while (request != null && currentDuration < duration)
             {
                 currentDuration += Time.unscaledDeltaTime;
                 yield return null;
@@ -336,6 +379,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             if (request != null)
                 request.visible = false;
+
+            // Unlock shaken body visibility if this was the most recent request the trigger the full body visibility
+            if (m_SemitransparentLock == request)
+            {
+                m_SemitransparentLock = null;
+                m_ShakeFrequency = 0;
+            }
 
             UpdateVisibility();
         }
