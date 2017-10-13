@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +10,22 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
+    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
+
 	sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
 		ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
 		ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
 		IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
-		IUsesProxyType
+        IUsesProxyType, IMenuIcon, IRequestFeedback
 	{
 		const float k_MultiselectHueShift = 0.5f;
 		static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
 		static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
 
 		[SerializeField]
+        Sprite m_Icon;
+
+        [SerializeField]
 		ActionMap m_ActionMap;
 
 		GameObject m_PressedObject;
@@ -32,14 +37,20 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		Color m_MultiselectRayColor;
 		bool m_MultiSelect;
 
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+        readonly List<ProxyFeedbackRequest> m_SelectFeedback = new List<ProxyFeedbackRequest>();
+
 		readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
 		readonly Dictionary<Transform, GameObject> m_SelectionHoverGameObjects = new Dictionary<Transform, GameObject>();
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
+        public bool ignoreLocking { get { return false; } }
 
 		public Transform rayOrigin { private get; set; }
-		public Node? node { private get; set; }
+        public Node node { private get; set; }
+
+        public Sprite icon { get { return m_Icon; } }
 
 		public event Action<GameObject, Transform> hovered;
 
@@ -60,7 +71,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			tooltipTarget = ObjectUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
 			tooltipTarget.localPosition = k_TooltipPosition;
 			tooltipTarget.localRotation = k_TooltipRotation;
+
+            InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+
+            ShowSelectFeedback();
 		}
+
+        void OnDestroy()
+        {
+            this.ClearFeedbackRequests();
+        }
 
 		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 		{
@@ -87,8 +107,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 					if (m_MultiSelect)
 						this.ShowTooltip(this);
-
-					consumeControl(multiSelectControl);
 				}
 
 				m_LastMultiSelectClickTime = realTime;
@@ -191,6 +209,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				}
 			}
 
+            if (!this.IsRayVisible(rayOrigin))
+                HideSelectFeedback();
+            else if (m_SelectFeedback.Count == 0)
+                ShowSelectFeedback();
+
 			if (!IsRayActive())
 				return;
 
@@ -287,6 +310,37 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 
 		public void OnResetDirectSelectionState() { }
+
+        void ShowSelectFeedback()
+        {
+            foreach (var control in m_Controls)
+            {
+                if (control.Key != "Select")
+                    continue;
+
+                foreach (var id in control.Value)
+                {
+                    var request = new ProxyFeedbackRequest
+                    {
+                        node = node,
+                        control = id,
+                        tooltipText = "Select"
+                    };
+
+                    this.AddFeedbackRequest(request);
+                    m_SelectFeedback.Add(request);
 	}
+}
+        }
+
+        void HideSelectFeedback()
+        {
+            foreach (var request in m_SelectFeedback)
+            {
+                this.RemoveFeedbackRequest(request);
+            }
+            m_SelectFeedback.Clear();
+        }
+    }
 }
 #endif

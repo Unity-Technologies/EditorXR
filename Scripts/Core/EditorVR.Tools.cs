@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,356 +11,413 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	partial class EditorVR
-	{
-		class Tools : Nested, IInterfaceConnector
-		{
-			internal class ToolData
-			{
-				public ITool tool;
-				public ActionMapInput input;
-			}
+    partial class EditorVR
+    {
+        class Tools : Nested, IInterfaceConnector, IConnectInterfaces
+        {
+            internal class ToolData
+            {
+                public ITool tool;
+                public ActionMapInput input;
+                public Sprite icon;
+            }
 
-			internal List<Type> allTools { get; private set; }
+            internal List<Type> allTools { get; private set; }
 
-			readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
+            readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
 
-			public Tools()
-			{
-				allTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
+            public Tools()
+            {
+                allTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
 
-				ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
-				ISelectToolMethods.selectTool = SelectTool;
-				ISelectToolMethods.isToolActive = IsToolActive;
-			}
+                ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
+                ISelectToolMethods.selectTool = SelectTool;
+                ISelectToolMethods.isToolActive = IsToolActive;
+            }
 
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
-			{
-				var linkedObject = obj as ILinkedObject;
-				if (linkedObject != null)
-				{
-					var type = obj.GetType();
-					List<ILinkedObject> linkedObjectList;
-					if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
-					{
-						linkedObjectList = new List<ILinkedObject>();
-						m_LinkedObjects[type] = linkedObjectList;
-					}
+            public void ConnectInterface(object target, object userData = null)
+            {
+                var linkedObject = target as ILinkedObject;
+                if (linkedObject != null)
+                {
+                    var type = target.GetType();
+                    List<ILinkedObject> linkedObjectList;
+                    if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
+                    {
+                        linkedObjectList = new List<ILinkedObject>();
+                        m_LinkedObjects[type] = linkedObjectList;
+                    }
 
-					linkedObjectList.Add(linkedObject);
-					linkedObject.linkedObjects = linkedObjectList;
-				}
-			}
+                    linkedObjectList.Add(linkedObject);
+                    linkedObject.linkedObjects = linkedObjectList;
+                }
+            }
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
-			{
-			}
+            public void DisconnectInterface(object target, object userData = null)
+            {
+                var linkedObject = target as ILinkedObject;
+                if (linkedObject != null)
+                {
+                    // Delay removal of linked objects in case shutdown logic relies on them
+                    // Specifically, SerialzePreferences in AnnotationTool calls IsSharedUpdater
+                    EditorApplication.delayCall += () =>
+                    {
+                        var type = target.GetType();
+                        List<ILinkedObject> linkedObjectList;
+                        if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))
+                            return;
 
-			bool IsSharedUpdater(ILinkedObject linkedObject)
-			{
-				var type = linkedObject.GetType();
-				return m_LinkedObjects[type].IndexOf(linkedObject) == 0;
-			}
+                        linkedObjectList.Remove(linkedObject);
+                        linkedObject.linkedObjects = null;
 
-			internal static bool IsDefaultTool(Type type)
-			{
-				return evr.m_DefaultTools.Contains(type);
-			}
+                        if (linkedObjectList.Count == 0)
+                            m_LinkedObjects.Remove(type);
+                    };
+                }
+            }
 
-			internal static void SpawnDefaultTools(IProxy proxy)
-			{
-				var vacuumables = evr.GetNestedModule<Vacuumables>();
-				var lockModule = evr.GetModule<LockModule>();
-				var defaultTools = evr.m_DefaultTools;
+            bool IsSharedUpdater(ILinkedObject linkedObject)
+            {
+                var type = linkedObject.GetType();
+                return m_LinkedObjects[type].IndexOf(linkedObject) == 0;
+            }
 
-				foreach (var deviceData in evr.m_DeviceData)
-				{
-					var inputDevice = deviceData.inputDevice;
+            internal static bool IsDefaultTool(Type type)
+            {
+                return evr.m_DefaultTools.Contains(type);
+            }
 
-					if (deviceData.proxy != proxy)
-						continue;
+            internal void SpawnDefaultTools(IProxy proxy)
+            {
+                var vacuumables = evr.GetNestedModule<Vacuumables>();
+                var lockModule = evr.GetModule<LockModule>();
+                var defaultTools = evr.m_DefaultTools;
 
-					foreach (var toolType in defaultTools)
-					{
-						HashSet<InputDevice> devices;
-						var toolData = SpawnTool(toolType, out devices, inputDevice);
-						AddToolToDeviceData(toolData, devices);
+                foreach (var deviceData in evr.m_DeviceData)
+                {
+                    var inputDevice = deviceData.inputDevice;
+                    ToolData selectionToolData = null;
 
-						var tool = toolData.tool;
-						var selectionTool = tool as SelectionTool;
-						if (selectionTool)
-							selectionTool.hovered += lockModule.OnHovered;
+                    if (deviceData.proxy != proxy)
+                        continue;
 
-						var vacuumTool = tool as VacuumTool;
-						if (vacuumTool)
-						{
-							vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
-							vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
-							vacuumTool.vacuumables = vacuumables.vacuumables;
-						}
-					}
+                    var rayOrigin = deviceData.rayOrigin;
+                    foreach (var toolType in defaultTools)
+                    {
+                        HashSet<InputDevice> devices;
+                        var toolData = SpawnTool(toolType, out devices, inputDevice, rayOrigin);
+                        AddToolToDeviceData(toolData, devices);
 
-					var menuHideData = deviceData.menuHideData;
-					var mainMenu = Menus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
-					deviceData.mainMenu = mainMenu;
-					menuHideData[mainMenu] = new Menus.MenuHideData();
+                        var tool = toolData.tool;
+                        var selectionTool = tool as SelectionTool;
+                        if (selectionTool)
+                        {
+                            selectionToolData = toolData;
+                            selectionTool.hovered += lockModule.OnHovered;
+                        }
 
-					var mainMenuActivator = Menus.SpawnMainMenuActivator(inputDevice);
-					deviceData.mainMenuActivator = mainMenuActivator;
-					mainMenuActivator.selected += Menus.OnMainMenuActivatorSelected;
+                        var vacuumTool = tool as VacuumTool;
+                        if (vacuumTool)
+                        {
+                            vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
+                            vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
+                            vacuumTool.vacuumables = vacuumables.vacuumables;
+                        }
+                    }
 
-					var pinnedToolButton = Menus.SpawnPinnedToolButton(inputDevice);
-					deviceData.previousToolButton = pinnedToolButton;
-					var pinnedToolButtonTransform = pinnedToolButton.transform;
-					pinnedToolButtonTransform.SetParent(mainMenuActivator.transform, false);
-					pinnedToolButtonTransform.localPosition = new Vector3(0f, 0f, -0.035f); // Offset from the main menu activator
+                    var menus = evr.GetNestedModule<Menus>();
+                    var menuHideData = deviceData.menuHideData;
+                    var mainMenu = menus.SpawnMainMenu(typeof(MainMenu), rayOrigin);
+                    deviceData.mainMenu = mainMenu;
+                    menuHideData[mainMenu] = new Menus.MenuHideData();
 
-					var alternateMenu = Menus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
-					deviceData.alternateMenu = alternateMenu;
-					menuHideData[alternateMenu] = new Menus.MenuHideData();
-					alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
-				}
+                    var alternateMenu = menus.SpawnAlternateMenu(typeof(RadialMenu), rayOrigin);
+                    deviceData.alternateMenu = alternateMenu;
+                    menuHideData[alternateMenu] = new Menus.MenuHideData();
+                    alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
 
-				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
-			}
+                    // Setup ToolsMenu
+                    var toolsMenu = menus.SpawnToolsMenu(typeof(Experimental.EditorVR.Menus.ToolsMenu), rayOrigin);
+                    deviceData.toolsMenu = toolsMenu;
+                    toolsMenu.rayOrigin = rayOrigin;
+                    toolsMenu.setButtonForType(typeof(IMainMenu), null);
+                    toolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
+                }
 
-			/// <summary>
-			/// Spawn a tool on a tool stack for a specific device (e.g. right hand).
-			/// </summary>
-			/// <param name="toolType">The tool to spawn</param>
-			/// <param name="usedDevices">A list of the used devices coming from the action map</param>
-			/// <param name="device">The input device whose tool stack the tool should be spawned on (optional). If not
-			/// specified, then it uses the action map to determine which devices the tool should be spawned on.</param>
-			/// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
-			static ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device = null)
-			{
-				usedDevices = new HashSet<InputDevice>();
-				if (!typeof(ITool).IsAssignableFrom(toolType))
-					return null;
+                evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
+            }
 
-				var deviceSlots = new HashSet<DeviceSlot>();
-				var tool = ObjectUtils.AddComponent(toolType, evr.gameObject) as ITool;
+            /// <summary>
+            /// Spawn a tool on a tool stack for a specific device (e.g. right hand).
+            /// </summary>
+            /// <param name="toolType">The tool to spawn</param>
+            /// <param name="usedDevices">A list of the used devices coming from the action map</param>
+            /// <param name="device">The input device whose tool stack the tool should be spawned on (optional). If not
+            /// specified, then it uses the action map to determine which devices the tool should be spawned on.</param>
+            /// <returns> Returns tool that was spawned or null if the spawn failed.</returns>
+            ToolData SpawnTool(Type toolType, out HashSet<InputDevice> usedDevices, InputDevice device, Transform rayOrigin)
+            {
+                usedDevices = new HashSet<InputDevice>();
+                if (!typeof(ITool).IsAssignableFrom(toolType))
+                    return null;
 
-				var actionMapInput = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(tool, device);
-				if (actionMapInput != null)
-				{
-					usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
-					InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
-				}
+                var deviceSlots = new HashSet<DeviceSlot>();
+                var tool = ObjectUtils.AddComponent(toolType, evr.gameObject) as ITool;
 
-				if (usedDevices.Count == 0)
-					usedDevices.Add(device);
+                var actionMapInput = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(tool, device);
+                if (actionMapInput != null)
+                {
+                    usedDevices.UnionWith(actionMapInput.GetCurrentlyUsedDevices());
+                    InputUtils.CollectDeviceSlotsFromActionMapInput(actionMapInput, ref deviceSlots);
 
-				evr.m_Interfaces.ConnectInterfaces(tool, device);
+                    actionMapInput.Reset(false);
+                }
 
-				return new ToolData { tool = tool, input = actionMapInput };
-			}
+                if (usedDevices.Count == 0)
+                    usedDevices.Add(device);
 
-			static void AddToolToDeviceData(ToolData toolData, HashSet<InputDevice> devices)
-			{
-				foreach (var dd in evr.m_DeviceData)
-				{
-					if (devices.Contains(dd.inputDevice))
-						AddToolToStack(dd, toolData);
-				}
-			}
+                this.ConnectInterfaces(tool, rayOrigin);
 
-			static bool IsToolActive(Transform targetRayOrigin, Type toolType)
-			{
-				var result = false;
+                var icon = tool as IMenuIcon;
+                return new ToolData { tool = tool, input = actionMapInput, icon = icon != null ? icon.icon : null };
+            }
 
-				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == targetRayOrigin);
-				if (deviceData != null)
-					result = deviceData.currentTool.GetType() == toolType;
+            static void AddToolToDeviceData(ToolData toolData, HashSet<InputDevice> devices)
+            {
+                foreach (var dd in evr.m_DeviceData)
+                {
+                    if (devices.Contains(dd.inputDevice))
+                        AddToolToStack(dd, toolData);
+                }
+            }
 
-				return result;
-			}
+            static bool IsToolActive(Transform targetRayOrigin, Type toolType)
+            {
+                var result = false;
 
-			static bool SelectTool(Transform rayOrigin, Type toolType)
-			{
-				var result = false;
-				var deviceInputModule = evr.GetModule<DeviceInputModule>();
-				Rays.ForEachProxyDevice(deviceData =>
-				{
-					if (deviceData.rayOrigin == rayOrigin)
-					{
-						var spawnTool = true;
+                var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == targetRayOrigin);
+                if (deviceData != null)
+                    result = deviceData.currentTool.GetType() == toolType;
 
-						// If this tool was on the current device already, then simply remove it
-						if (deviceData.currentTool != null && deviceData.currentTool.GetType() == toolType)
-						{
-							DespawnTool(deviceData, deviceData.currentTool);
+                return result;
+            }
 
-							// Don't spawn a new tool, since we are only removing the old tool
-							spawnTool = false;
-						}
+            internal bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true, bool hideMenu = false)
+            {
+                var result = false;
+                var deviceInputModule = evr.GetModule<DeviceInputModule>();
+                Rays.ForEachProxyDevice(deviceData =>
+                {
+                    if (deviceData.rayOrigin == rayOrigin)
+                    {
+                        var spawnTool = true;
+                        var currentTool = deviceData.currentTool;
+                        var currentToolType = currentTool.GetType();
+                        var currentToolIsSelect = currentToolType == typeof(SelectionTool);
+                        var setSelectAsCurrentTool = toolType == typeof(SelectionTool) && !currentToolIsSelect;
+                        var toolsMenu = deviceData.toolsMenu;
 
-						if (spawnTool)
-						{
-							// Spawn tool and collect all devices that this tool will need
-							HashSet<InputDevice> usedDevices;
-							var device = deviceData.inputDevice;
-							var newTool = SpawnTool(toolType, out usedDevices, device);
+                        // If this tool was on the current device already, remove it, if it is selected while already being the current tool
+                        var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentTool; // || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
+                        if (currentTool != null && despawn)
+                        {
+                            DespawnTool(deviceData, currentTool);
 
-							var evrDeviceData = evr.m_DeviceData;
+                            if (!setSelectAsCurrentTool)
+                            {
+                                // Delete a button of the first type parameter
+                                // Then select a button the second type param (the new current tool)
+                                // Don't spawn a new tool, since we are only removing the old tool
+                                toolsMenu.deleteToolsMenuButton(toolType, currentToolType);
+                            }
+                            else if (setSelectAsCurrentTool)
+                            {
+                                // Set the selection tool as the active tool, if select is to be the new current tool
+                                toolsMenu.setButtonForType(typeof(SelectionTool), null);
+                            }
 
-							// Exclusive mode tools always take over all tool stacks
-							if (newTool is IExclusiveMode)
-							{
-								foreach (var dev in evrDeviceData)
-								{
-									usedDevices.Add(dev.inputDevice);
-								}
-							}
+                            spawnTool = false;
+                        }
 
-							foreach (var dd in evrDeviceData)
-							{
-								if (!usedDevices.Contains(dd.inputDevice))
-									continue;
+                        if (spawnTool && !IsDefaultTool(toolType))
+                        {
+                            var evrDeviceData = evr.m_DeviceData;
 
-								if (deviceData.currentTool != null) // Remove the current tool on all devices this tool will be spawned on
-									DespawnTool(deviceData, deviceData.currentTool);
+                            // Spawn tool and collect all devices that this tool will need
+                            HashSet<InputDevice> usedDevices;
+                            var device = deviceData.inputDevice;
+                            var newTool = SpawnTool(toolType, out usedDevices, device, rayOrigin);
+                            var multiTool = newTool.tool as IMultiDeviceTool;
+                            if (multiTool != null)
+                            {
+                                multiTool.primary = true;
+                                Rays.ForEachProxyDevice(otherDeviceData =>
+                                {
+                                    if (otherDeviceData != deviceData)
+                                    {
+                                        HashSet<InputDevice> otherUsedDevices;
+                                        var otherToolData = SpawnTool(toolType, out otherUsedDevices, otherDeviceData.inputDevice, otherDeviceData.rayOrigin);
+                                        foreach (var dd in evrDeviceData)
+                                        {
+                                            if (!otherUsedDevices.Contains(dd.inputDevice))
+                                                continue;
 
-								AddToolToStack(dd, newTool);
-							}
-						}
+                                            var otherCurrentTool = otherDeviceData.currentTool;
+                                            if (otherCurrentTool != null) // Remove the current tool on all devices this tool will be spawned on
+                                                DespawnTool(otherDeviceData, otherCurrentTool);
 
-						deviceData.previousToolButton.rayOrigin = rayOrigin;
-						deviceData.previousToolButton.toolType = toolType; // assign the new current tool type to the active tool button
+                                            AddToolToStack(dd, otherToolData);
+                                        }
+                                    }
+                                });
+                            }
 
-						deviceInputModule.UpdatePlayerHandleMaps();
-						result = spawnTool;
-					}
-					else
-					{
-						deviceData.menuHideData[deviceData.mainMenu].hideFlags |= MenuHideFlags.Hidden;
-					}
-				});
+                            // Exclusive mode tools always take over all tool stacks
+                            if (newTool.tool is IExclusiveMode)
+                            {
+                                foreach (var dev in evrDeviceData)
+                                {
+                                    usedDevices.Add(dev.inputDevice);
+                                }
+                            }
 
-				return result;
-			}
+                            foreach (var data in evrDeviceData)
+                            {
+                                if (!usedDevices.Contains(data.inputDevice))
+                                    continue;
 
-			static void DespawnTool(DeviceData deviceData, ITool tool)
-			{
-				if (!IsDefaultTool(tool.GetType()))
-				{
-					// Remove the tool if it is the current tool on this device tool stack
-					if (deviceData.currentTool == tool)
-					{
-						var topTool = deviceData.toolData.Peek();
-						if (topTool == null || topTool.tool != deviceData.currentTool)
-						{
-							Debug.LogError("Tool at top of stack is not current tool.");
-							return;
-						}
+                                if (currentTool != null) // Remove the current tool on all devices this tool will be spawned on
+                                    DespawnTool(deviceData, currentTool);
 
-						deviceData.toolData.Pop();
-						topTool = deviceData.toolData.Peek();
-						deviceData.currentTool = topTool.tool;
+                                AddToolToStack(data, newTool);
 
-						// Pop this tool of any other stack that references it (for single instance tools)
-						foreach (var otherDeviceData in evr.m_DeviceData)
-						{
-							if (otherDeviceData != deviceData)
-							{
-								if (otherDeviceData.currentTool == tool)
-								{
-									otherDeviceData.toolData.Pop();
-									var otherToolData = otherDeviceData.toolData.Peek();
-									if (otherToolData != null)
-										otherDeviceData.currentTool = otherToolData.tool;
+                                toolsMenu.setButtonForType(toolType, newTool.icon);
+                            }
+                        }
 
-									if (tool is IExclusiveMode)
-										SetToolsEnabled(otherDeviceData, true);
-								}
+                        deviceInputModule.UpdatePlayerHandleMaps();
+                        result = spawnTool;
+                    }
+                    else if (hideMenu)
+                    {
+                        deviceData.menuHideData[deviceData.mainMenu].hideFlags |= MenuHideFlags.Hidden;
+                    }
+                });
 
-								// If the tool had a custom menu, the custom menu would spawn on the opposite device
-								var customMenu = otherDeviceData.customMenu;
-								if (customMenu != null)
-								{
-									otherDeviceData.menuHideData.Remove(customMenu);
-									otherDeviceData.customMenu = null;
-								}
-							}
-						}
-					}
-					evr.m_Interfaces.DisconnectInterfaces(tool, deviceData.rayOrigin);
+                return result;
+            }
 
-					// Exclusive tools disable other tools underneath, so restore those
-					if (tool is IExclusiveMode)
-						SetToolsEnabled(deviceData, true);
+            void DespawnTool(DeviceData deviceData, ITool tool)
+            {
+                var toolType = tool.GetType();
+                if (!IsDefaultTool(toolType))
+                {
+                    // Remove the tool if it is the current tool on this device tool stack
+                    if (deviceData.currentTool == tool)
+                    {
+                        var topTool = deviceData.toolData.Peek();
+                        if (topTool == null || topTool.tool != deviceData.currentTool)
+                        {
+                            Debug.LogError("Tool at top of stack is not current tool.");
+                            return;
+                        }
 
-					ObjectUtils.Destroy(tool as MonoBehaviour);
-				}
-			}
+                        var oldTool = deviceData.toolData.Pop();
+                        oldTool.input.active = false;
+                        topTool = deviceData.toolData.Peek();
+                        deviceData.currentTool = topTool.tool;
 
-			static void SetToolsEnabled(DeviceData deviceData, bool value)
-			{
-				foreach (var td in deviceData.toolData)
-				{
-					var mb = td.tool as MonoBehaviour;
-					mb.enabled = value;
-				}
-			}
+                        // Pop this tool off any other stack that references it (for single instance tools)
+                        foreach (var otherDeviceData in evr.m_DeviceData)
+                        {
+                            if (otherDeviceData != deviceData)
+                            {
+                                // Pop this tool off any other stack that references it (for single instance, multi-device tools)
+                                var otherTool = otherDeviceData.currentTool;
+                                if (otherTool == tool)
+                                {
+                                    oldTool = otherDeviceData.toolData.Pop();
+                                    oldTool.input.active = false;
+                                    var otherToolData = otherDeviceData.toolData.Peek();
+                                    if (otherToolData != null)
+                                        otherDeviceData.currentTool = otherToolData.tool;
 
-			static void AddToolToStack(DeviceData deviceData, ToolData toolData)
-			{
-				if (toolData != null)
-				{
-					// Exclusive tools render other tools disabled while they are on the stack
-					if (toolData.tool is IExclusiveMode)
-						SetToolsEnabled(deviceData, false);
+                                    if (tool is IExclusiveMode)
+                                        SetToolsEnabled(otherDeviceData, true);
+                                }
 
-					deviceData.toolData.Push(toolData);
-					deviceData.currentTool = toolData.tool;
-				}
-			}
+                                // Pop this tool of any other stack that references it (for IMultiDeviceTools)
+                                if (tool is IMultiDeviceTool)
+                                {
+                                    if (otherTool.GetType() == toolType)
+                                    {
+                                        oldTool = otherDeviceData.toolData.Pop();
+                                        oldTool.input.active = false;
+                                        var otherToolData = otherDeviceData.toolData.Peek();
+                                        if (otherToolData != null)
+                                        {
+                                            otherDeviceData.currentTool = otherToolData.tool;
+                                            this.DisconnectInterfaces(otherTool, otherDeviceData.rayOrigin);
+                                            ObjectUtils.Destroy(otherTool as MonoBehaviour);
+                                        }
+                                    }
+                                }
 
-			internal static void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
-			{
-				foreach (var input in evr.GetModule<WorkspaceModule>().workspaceInputs)
-				{
-					maps.Add(input);
-				}
+                                // If the tool had a custom menu, the custom menu would spawn on the opposite device
+                                var customMenu = otherDeviceData.customMenu;
+                                if (customMenu != null)
+                                {
+                                    otherDeviceData.menuHideData.Remove(customMenu);
+                                    otherDeviceData.customMenu = null;
+                                }
+                            }
+                        }
+                    }
+                    this.DisconnectInterfaces(tool, deviceData.rayOrigin);
 
-				var evrDeviceData = evr.m_DeviceData;
-				foreach (var deviceData in evrDeviceData)
-				{
-					var mainMenu = deviceData.mainMenu;
-					var mainMenuInput = deviceData.mainMenuInput;
-					if (mainMenu != null && mainMenuInput != null)
-					{
-						mainMenuInput.active = mainMenu.menuHideFlags == 0;
+                    // Exclusive tools disable other tools underneath, so restore those
+                    if (tool is IExclusiveMode)
+                        SetToolsEnabled(deviceData, true);
 
-						if (!maps.Contains(mainMenuInput))
-							maps.Add(mainMenuInput);
-					}
+                    ObjectUtils.Destroy(tool as MonoBehaviour);
+                }
+            }
 
-					var alternateMenu = deviceData.alternateMenu;
-					var alternateMenuInput = deviceData.alternateMenuInput;
-					if (alternateMenu != null && alternateMenuInput != null)
-					{
-						alternateMenuInput.active = alternateMenu.menuHideFlags == 0;
+            static void SetToolsEnabled(DeviceData deviceData, bool value)
+            {
+                foreach (var td in deviceData.toolData)
+                {
+                    var mb = td.tool as MonoBehaviour;
+                    if (mb)
+                        mb.enabled = value;
+                }
+            }
 
-						if (!maps.Contains(alternateMenuInput))
-							maps.Add(alternateMenuInput);
-					}
+            static void AddToolToStack(DeviceData deviceData, ToolData toolData)
+            {
+                if (toolData != null)
+                {
+                    // Exclusive tools render other tools disabled while they are on the stack
+                    if (toolData.tool is IExclusiveMode)
+                        SetToolsEnabled(deviceData, false);
 
-					maps.Add(deviceData.uiInput);
-				}
+                    deviceData.toolData.Push(toolData);
+                    deviceData.currentTool = toolData.tool;
+                }
+            }
 
-				maps.Add(evr.GetModule<DeviceInputModule>().trackedObjectInput);
-
-				foreach (var deviceData in evrDeviceData)
-				{
-					foreach (var td in deviceData.toolData)
-					{
-						if (td.input != null && !maps.Contains(td.input))
-							maps.Add(td.input);
-					}
-				}
-			}
-		}
-	}
+            internal static void UpdatePlayerHandleMaps(List<ActionMapInput> maps)
+            {
+                foreach (var deviceData in evr.m_DeviceData)
+                {
+                    foreach (var td in deviceData.toolData)
+                    {
+                        if (td.input != null && !maps.Contains(td.input))
+                            maps.Add(td.input);
+                    }
+                }
+            }
+        }
+    }
 }
 #endif

@@ -284,9 +284,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public List<ILinkedObject> linkedObjects { private get; set; }
 
 		public Transform rayOrigin { private get; set; }
-		public Node? node { private get; set; }
+        public Node node { private get; set; }
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
+        public bool ignoreLocking { get { return false; } }
 
 		void Start()
 		{
@@ -399,7 +400,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 							objectsGrabbed(directRayOrigin, grabbedObjects);
 
 						var grabData = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray(), directSelectionData.contactPoint);
-						m_GrabData[grabbingNode.Value] = grabData;
+						m_GrabData[grabbingNode] = grabData;
 
 						// Check if the other hand is already grabbing for two-handed scale
 						foreach (var grab in m_GrabData)
@@ -519,7 +520,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				{
 					var transformTool = (TransformTool)linkedObject;
 					var rayOrigin = transformTool.rayOrigin;
-					if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node.Value)))
+                    if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node)))
 					{
 						this.RemoveRayVisibilitySettings(rayOrigin, this);
 					}
@@ -539,6 +540,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 				var manipulatorTransform = manipulatorGameObject.transform;
 				var lerp = m_CurrentlySnapping ? 1f : k_LazyFollowTranslate * deltaTime;
 				manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, lerp);
+
 				// Manipulator does not rotate when in global mode
 				if (m_PivotRotation == PivotRotation.Local && m_CurrentManipulator == m_StandardManipulator)
 					manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, k_LazyFollowRotate * deltaTime);
@@ -629,13 +631,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.ClearSnappingState(rayOrigin);
 		}
 
-		void Translate(Vector3 delta, Transform rayOrigin, ConstrainedAxis constraints)
+        void Translate(Vector3 delta, Transform rayOrigin, AxisFlags constraints)
 		{
 			switch (constraints)
 			{
-				case ConstrainedAxis.X | ConstrainedAxis.Y:
-				case ConstrainedAxis.Y | ConstrainedAxis.Z:
-				case ConstrainedAxis.X | ConstrainedAxis.Z:
+                case AxisFlags.X | AxisFlags.Y:
+                case AxisFlags.Y | AxisFlags.Z:
+                case AxisFlags.X | AxisFlags.Z:
 					m_TargetPosition += delta;
 					break;
 				default:

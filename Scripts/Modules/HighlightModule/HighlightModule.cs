@@ -1,164 +1,200 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
-	{
-		const string k_SelectionOutlinePrefsKey = "Scene/Selected Outline";
+    sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
+    {
+        class HighlightData
+        {
+            public float startTime;
+            public float duration;
+        }
 
-		[SerializeField]
-		Material m_DefaultHighlightMaterial;
+        const string k_SelectionOutlinePrefsKey = "Scene/Selected Outline";
 
-		[SerializeField]
-		Material m_RayHighlightMaterial;
+        static readonly Dictionary<SkinnedMeshRenderer, Mesh> m_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
 
-		readonly Dictionary<Material, HashSet<GameObject>> m_Highlights = new Dictionary<Material, HashSet<GameObject>>();
-		readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
+        [SerializeField]
+        Material m_DefaultHighlightMaterial;
 
-		static Mesh s_BakedMesh;
+        [SerializeField]
+        Material m_RayHighlightMaterial;
 
-		public event Func<GameObject, Material, bool> customHighlight
-		{
-			add { m_CustomHighlightFuncs.Add(value); }
-			remove { m_CustomHighlightFuncs.Remove(value); }
-		}
-		readonly List<Func<GameObject, Material, bool>> m_CustomHighlightFuncs = new List<Func<GameObject, Material, bool>>();
+        readonly Dictionary<Material, Dictionary<GameObject, HighlightData>> m_Highlights = new Dictionary<Material, Dictionary<GameObject, HighlightData>>();
+        readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
 
-		public Color highlightColor
-		{
-			get { return m_RayHighlightMaterial.GetVector("_Color"); }
-			set { m_RayHighlightMaterial.color = value; }
-		}
+        // Local method use only -- created here to reduce garbage collection
+        readonly List<KeyValuePair<Material, GameObject>> m_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
 
-		void Awake()
-		{
-			s_BakedMesh = new Mesh();
+        public event Func<GameObject, Material, bool> customHighlight
+        {
+            add { m_CustomHighlightFuncs.Add(value); }
+            remove { m_CustomHighlightFuncs.Remove(value); }
+        }
 
-			m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
-			if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
-			{
-				var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
-				selectionColor.a = 1;
-				m_RayHighlightMaterial.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
-			}
-		}
+        readonly List<Func<GameObject, Material, bool>> m_CustomHighlightFuncs = new List<Func<GameObject, Material, bool>>();
 
-		void LateUpdate()
-		{
-			foreach (var highlight in m_Highlights)
-			{
-				var material = highlight.Key;
-				var highlights = highlight.Value;
-				foreach (var go in highlights)
-				{
-					if (go == null)
-						continue;
+        public Color highlightColor
+        {
+            get { return m_RayHighlightMaterial.GetVector("_Color"); }
+            set { m_RayHighlightMaterial.color = value; }
+        }
 
-					var shouldHighlight = true;
-					for (int i = 0; i < m_CustomHighlightFuncs.Count; i++)
-					{
-						var func = m_CustomHighlightFuncs[i];
-						if (func(go, material))
-							shouldHighlight = false;
-					}
+        void Awake()
+        {
+            m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
+            if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
+            {
+                var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
+                selectionColor.a = 1;
+                m_RayHighlightMaterial.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
+            }
+        }
 
-					if (shouldHighlight)
-						HighlightObject(go, material);
-				}
-			}
-		}
+        void LateUpdate()
+        {
+            m_HighlightsToRemove.Clear();
+            foreach (var highlight in m_Highlights)
+            {
+                var material = highlight.Key;
+                var highlights = highlight.Value;
+                foreach (var kvp in highlights)
+                {
+                    var go = kvp.Key;
+                    if (go == null)
+                        continue;
 
-		static void HighlightObject(GameObject go, Material material)
-		{
-			foreach (var meshFilter in go.GetComponentsInChildren<MeshFilter>())
-			{
-				var mesh = meshFilter.sharedMesh;
-				if (meshFilter.sharedMesh == null)
-					continue;
+                    var highlightData = kvp.Value;
+                    if (highlightData.duration > 0)
+                    {
+                        var visibleTime = Time.time - highlightData.startTime;
+                        if (visibleTime > highlightData.duration)
+                            m_HighlightsToRemove.Add(new KeyValuePair<Material, GameObject>(material, go));
+                    }
 
-				var localToWorldMatrix = meshFilter.transform.localToWorldMatrix;
-				var layer = meshFilter.gameObject.layer;
-				for (var i = 0; i < meshFilter.sharedMesh.subMeshCount; i++)
-				{
-					Graphics.DrawMesh(mesh, localToWorldMatrix, material, layer, null, i);
-				}
-			}
+                    var shouldHighlight = true;
+                    for (int i = 0; i < m_CustomHighlightFuncs.Count; i++)
+                    {
+                        var func = m_CustomHighlightFuncs[i];
+                        if (func(go, material))
+                            shouldHighlight = false;
+                    }
 
-			foreach (var skinnedMeshRenderer in go.GetComponentsInChildren<SkinnedMeshRenderer>())
-			{
-				if (skinnedMeshRenderer.sharedMesh == null)
-					continue;
+                    if (shouldHighlight)
+                        HighlightObject(go, material);
+                }
+            }
 
-				skinnedMeshRenderer.BakeMesh(s_BakedMesh);
+            foreach (var kvp in m_HighlightsToRemove)
+            {
+                var highlights = m_Highlights[kvp.Key];
+                if (highlights.Remove(kvp.Value) && highlights.Count == 0)
+                    m_Highlights.Remove(kvp.Key);
+            }
+        }
 
-				var localToWorldMatrix = skinnedMeshRenderer.transform.localToWorldMatrix;
-				var layer = skinnedMeshRenderer.gameObject.layer;
-				for (var i = 0; i < s_BakedMesh.subMeshCount; i++)
-				{
-					Graphics.DrawMesh(s_BakedMesh, localToWorldMatrix, material, layer, null, i);
-				}
-			}
-		}
+        static void HighlightObject(GameObject go, Material material)
+        {
+            foreach (var meshFilter in go.GetComponentsInChildren<MeshFilter>())
+            {
+                var mesh = meshFilter.sharedMesh;
+                if (meshFilter.sharedMesh == null)
+                    continue;
 
-		public void AddRayOriginForNode(Node node, Transform rayOrigin)
-		{
-			HashSet<Transform> set;
-			if (!m_NodeMap.TryGetValue(node, out set))
-			{
-				set = new HashSet<Transform>();
-				m_NodeMap[node] = set;
-			}
+                var localToWorldMatrix = meshFilter.transform.localToWorldMatrix;
+                var layer = meshFilter.gameObject.layer;
+                for (var i = 0; i < meshFilter.sharedMesh.subMeshCount; i++)
+                {
+                    Graphics.DrawMesh(mesh, localToWorldMatrix, material, layer, null, i);
+                }
+            }
 
-			set.Add(rayOrigin);
-		}
+            foreach (var skinnedMeshRenderer in go.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (skinnedMeshRenderer.sharedMesh == null)
+                    continue;
 
-		public void SetHighlight(GameObject go, bool active, Transform rayOrigin = null, Material material = null, bool force = false)
-		{
-			if (go == null)
-				return;
+                Mesh bakedMesh;
+                if (!m_BakedMeshes.TryGetValue(skinnedMeshRenderer, out bakedMesh))
+                {
+                    bakedMesh = new Mesh();
+                    m_BakedMeshes[skinnedMeshRenderer] = bakedMesh;
+                }
 
-			if (!force && active && this.IsLocked(go))
-				return;
+                skinnedMeshRenderer.BakeMesh(bakedMesh);
 
-			if (material == null)
-			{
-				material = rayOrigin ? m_RayHighlightMaterial : m_DefaultHighlightMaterial;
-			}
+                var localToWorldMatrix = skinnedMeshRenderer.transform.localToWorldMatrix * Matrix4x4.Scale(skinnedMeshRenderer.transform.lossyScale.Inverse());
+                var layer = skinnedMeshRenderer.gameObject.layer;
+                for (var i = 0; i < bakedMesh.subMeshCount; i++)
+                {
+                    Graphics.DrawMesh(bakedMesh, localToWorldMatrix, material, layer, null, i);
+                }
+            }
+        }
 
-			if (active) // Highlight
-			{
-				HashSet<GameObject> gameObjects;
-				if (!m_Highlights.TryGetValue(material, out gameObjects))
-				{
-					gameObjects = new HashSet<GameObject>();
-					m_Highlights[material] = gameObjects;
-				}
-				gameObjects.Add(go);
-			}
-			else // Unhighlight
-			{
-				if (force)
-				{
-					// A force removal removes the GameObject regardless of how it was highlighted (e.g. with a specific hand)
-					foreach (var gameObjects in m_Highlights.Values)
-					{
-						gameObjects.Remove(go);
-					}
-				}
-				else
-				{
-					HashSet<GameObject> gameObjects;
-					if (m_Highlights.TryGetValue(material, out gameObjects))
-					{
-						gameObjects.Remove(go);
-					}
-				}
-			}
-		}
-	}
+        public void AddRayOriginForNode(Node node, Transform rayOrigin)
+        {
+            HashSet<Transform> set;
+            if (!m_NodeMap.TryGetValue(node, out set))
+            {
+                set = new HashSet<Transform>();
+                m_NodeMap[node] = set;
+            }
+
+            set.Add(rayOrigin);
+        }
+
+        public void SetHighlight(GameObject go, bool active, Transform rayOrigin = null, Material material = null, bool force = false, float duration = 0f)
+        {
+            if (go == null)
+                return;
+
+            if (!force && active && this.IsLocked(go))
+                return;
+
+            if (material == null)
+            {
+                material = rayOrigin ? m_RayHighlightMaterial : m_DefaultHighlightMaterial;
+            }
+
+            if (active) // Highlight
+            {
+                Dictionary<GameObject, HighlightData> highlights;
+                if (!m_Highlights.TryGetValue(material, out highlights))
+                {
+                    highlights = new Dictionary<GameObject, HighlightData>();
+                    m_Highlights[material] = highlights;
+                }
+
+                highlights[go] = new HighlightData { startTime = Time.time, duration = duration };
+            }
+            else // Unhighlight
+            {
+                if (force)
+                {
+                    // A force removal removes the GameObject regardless of how it was highlighted (e.g. with a specific hand)
+                    foreach (var gameObjects in m_Highlights.Values)
+                    {
+                        gameObjects.Remove(go);
+                    }
+                }
+                else
+                {
+                    Dictionary<GameObject, HighlightData> highlights;
+                    if (m_Highlights.TryGetValue(material, out highlights))
+                        highlights.Remove(go);
+                }
+
+                var skinnedMeshRenderer = go.GetComponent<SkinnedMeshRenderer>();
+                if (skinnedMeshRenderer)
+                    m_BakedMeshes.Remove(skinnedMeshRenderer);
+            }
+        }
+    }
 }
 #endif
