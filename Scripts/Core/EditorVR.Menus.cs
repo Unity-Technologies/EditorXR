@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -34,9 +35,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             List<Type> m_MainMenuTools;
 
             // Local method use only -- created here to reduce garbage collection
-            readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
-            readonly List<IWorkspace> m_WorkspaceComponents = new List<IWorkspace>();
-            readonly Collider[] m_WorkspaceOverlaps = new Collider[k_PossibleOverlaps];
+            static readonly List<DeviceData> k_ActiveDeviceData = new List<DeviceData>();
+            static readonly List<IWorkspace> k_WorkspaceComponents = new List<IWorkspace>();
+            static readonly List<GradientButton> k_ButtonComponents = new List<GradientButton>();
+            static readonly Collider[] k_ColliderOverlaps = new Collider[k_PossibleOverlaps];
 
             public Menus()
             {
@@ -174,10 +176,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             internal void UpdateMenuVisibilities()
             {
-                m_ActiveDeviceData.Clear();
-                Rays.ForEachProxyDevice(deviceData => { m_ActiveDeviceData.Add(deviceData); });
+                k_ActiveDeviceData.Clear();
+                Rays.ForEachProxyDevice(deviceData => { k_ActiveDeviceData.Add(deviceData); });
 
-                foreach (var deviceData in m_ActiveDeviceData)
+                foreach (var deviceData in k_ActiveDeviceData)
                 {
                     var alternateMenu = deviceData.alternateMenu;
                     var mainMenu = deviceData.mainMenu;
@@ -204,7 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Kick the alternate menu to the other hand if a main menu or custom menu is visible
                     if (alternateMenuVisible && (mainMenuVisible || customMenuVisible))
                     {
-                        foreach (var otherDeviceData in m_ActiveDeviceData)
+                        foreach (var otherDeviceData in k_ActiveDeviceData)
                         {
                             if (otherDeviceData == deviceData)
                                 continue;
@@ -225,7 +227,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Check if menu bounds overlap with any workspace colliders
                     foreach (var kvp in menuHideData)
                     {
-                        CheckMenuWorkspaceOverlaps(kvp.Key, kvp.Value);
+                        CheckMenuColliderOverlaps(kvp.Key, kvp.Value);
                     }
 
                     // Check if there are currently any held objects, or if the other hand is in proximity for scaling
@@ -233,7 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 // Set show/hide timings
-                foreach (var deviceData in m_ActiveDeviceData)
+                foreach (var deviceData in k_ActiveDeviceData)
                 {
                     foreach (var kvp in deviceData.menuHideData)
                     {
@@ -251,7 +253,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 // Apply MenuHideFlags to UI visibility
-                foreach (var deviceData in m_ActiveDeviceData)
+                foreach (var deviceData in k_ActiveDeviceData)
                 {
                     var mainMenu = deviceData.mainMenu;
                     var mainMenuHideData = deviceData.menuHideData[mainMenu];
@@ -284,7 +286,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 // Reset Temporary states and set lastHideFlags
-                foreach (var deviceData in m_ActiveDeviceData)
+                foreach (var deviceData in k_ActiveDeviceData)
                 {
                     foreach (var kvp in deviceData.menuHideData)
                     {
@@ -313,7 +315,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         kvp.Value.hideFlags |= MenuHideFlags.HasDirectSelection;
                     }
 
-                    foreach (var otherDeviceData in m_ActiveDeviceData)
+                    foreach (var otherDeviceData in k_ActiveDeviceData)
                     {
                         if (otherDeviceData == deviceData)
                             continue;
@@ -337,34 +339,39 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            void CheckMenuWorkspaceOverlaps(IMenu menu, MenuHideData menuHideData)
+            void CheckMenuColliderOverlaps(IMenu menu, MenuHideData menuHideData)
             {
                 var menuBounds = menu.localBounds;
                 if (menuBounds.extents == Vector3.zero)
                     return;
 
-                Array.Clear(m_WorkspaceOverlaps, 0, m_WorkspaceOverlaps.Length);
-                var hoveringWorkspace = false;
+                Array.Clear(k_ColliderOverlaps, 0, k_ColliderOverlaps.Length);
+                var hoveringCollider = false;
                 var menuTransform = menu.menuContent.transform;
                 var menuRotation = menuTransform.rotation;
                 var viewerScale = Viewer.GetViewerScale();
                 var center = menuTransform.position + menuRotation * menuBounds.center * viewerScale;
-                if (Physics.OverlapBoxNonAlloc(center, menuBounds.extents * viewerScale, m_WorkspaceOverlaps, menuRotation) > 0)
+                if (Physics.OverlapBoxNonAlloc(center, menuBounds.extents * viewerScale, k_ColliderOverlaps, menuRotation) > 0)
                 {
-                    foreach (var overlap in m_WorkspaceOverlaps)
+                    foreach (var overlap in k_ColliderOverlaps)
                     {
                         if (overlap)
                         {
-                            m_WorkspaceComponents.Clear();
-                            overlap.GetComponents(m_WorkspaceComponents);
-                            if (m_WorkspaceComponents.Count > 0)
-                                hoveringWorkspace = true;
+                            k_WorkspaceComponents.Clear();
+                            overlap.GetComponents(k_WorkspaceComponents);
+                            if (k_WorkspaceComponents.Count > 0)
+                                hoveringCollider = true;
+
+                            k_ButtonComponents.Clear();
+                            overlap.GetComponents(k_ButtonComponents);
+                            if (k_ButtonComponents.Count > 0)
+                                hoveringCollider = true;
                         }
                     }
                 }
 
                 // Only set if hidden--value is reset every frame
-                if (hoveringWorkspace)
+                if (hoveringCollider)
                     menuHideData.hideFlags |= MenuHideFlags.OverWorkspace;
             }
 
