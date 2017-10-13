@@ -35,7 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public ActionMap actionMap { get { return m_Owner.m_UIActionMap; } }
             public bool ignoreLocking { get { return false; } }
 
-            readonly List<ProxyFeedbackRequest> m_ClickFeedback = new List<ProxyFeedbackRequest>();
             readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
 
             public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<RaycastSource, bool> validationCallback)
@@ -79,7 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (select.wasJustReleased)
                         m_Owner.OnSelectReleased(this);
 
-                    HideClickFeedback();
                     HideScrollFeedback();
 
                     return;
@@ -97,14 +95,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (hasObject && select.wasJustPressed)
                         consumeControl(select);
 
-                    HideClickFeedback();
                     HideScrollFeedback();
 
                     return;
                 }
-
-                if (m_ClickFeedback.Count == 0)
-                    ShowClickFeedback();
 
                 // Send select pressed and released events
                 if (select.wasJustPressed)
@@ -166,11 +160,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
 
-            void ShowClickFeedback()
-            {
-                ShowFeedback(m_ClickFeedback, "Select", "Click");
-            }
-
             void ShowScrollFeedback()
             {
                 ShowFeedback(m_ScrollFeedback, "VerticalScroll", "Scroll");
@@ -183,11 +172,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     this.RemoveFeedbackRequest(request);
                 }
                 requests.Clear();
-            }
-
-            void HideClickFeedback()
-            {
-                HideFeedback(m_ClickFeedback);
             }
 
             void HideScrollFeedback()
