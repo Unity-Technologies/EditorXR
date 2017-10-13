@@ -19,28 +19,29 @@ namespace UnityEditor.Experimental.Tweening
     }
 
     // Example usage: move an object from (0, 0, 0) to (1, 1, 1) over 1s
-    //	void Start()
-    //	{
-    //		PositionTween positionTween = new PositionTween
-    //		{
-    //			startPosition = Vector3.zero,
-    //			targetPosition = Vector3.one,
-    //			duration = 1f
-    //		};
-    //	
-    //		positionTween.AddOnChangedCallback(MoveObject);
-    //	
-    //	 	var tweenRunner = new TweenRunner<PositionTween>();
-    //		tweenRunner.Init(this);
-    //		tweenRunner.StartTween(positionTween);
-    //	}
-    //	
-    //	public void MoveObject(Vector3 position)
-    //	{
-    //		transform.position = position;
-    //	}
+    //  void Start()
+    //  {
+    //      PositionTween positionTween = new PositionTween
+    //      {
+    //          startPosition = Vector3.zero,
+    //          targetPosition = Vector3.one,
+    //          duration = 1f
+    //      };
+    //
+    //      positionTween.AddOnChangedCallback(MoveObject);
+    //
+    //      var tweenRunner = new TweenRunner<PositionTween>();
+    //      tweenRunner.Init(this);
+    //      tweenRunner.StartTween(positionTween);
+    //  }
+    //
+    //  public void MoveObject(Vector3 position)
+    //  {
+    //      transform.position = position;
+    //  }
     struct PositionTween : ITweenValue
-    {        public class PositionTweenCallback : UnityEvent<Vector3>
+    {
+        public class PositionTweenCallback : UnityEvent<Vector3>
         {
         }
 
@@ -126,7 +127,8 @@ namespace UnityEditor.Experimental.Tweening
     }
 
     struct RotationTween : ITweenValue
-    {        public class RotationTweenCallback : UnityEvent<Quaternion>
+    {
+        public class RotationTweenCallback : UnityEvent<Quaternion>
         {
         }
 
@@ -217,7 +219,8 @@ namespace UnityEditor.Experimental.Tweening
     }
 
     struct ScaleTween : ITweenValue
-    {        public class ScaleTweenCallback : UnityEvent<Vector3>
+    {
+        public class ScaleTweenCallback : UnityEvent<Vector3>
         {
         }
 
@@ -317,7 +320,8 @@ namespace UnityEditor.Experimental.Tweening
             All,
             RGB,
             Alpha
-        }
+        }
+
         public class ColorTweenCallback : UnityEvent<Color>
         {
         }
@@ -424,9 +428,8 @@ namespace UnityEditor.Experimental.Tweening
     // TweenValue callback and then sets
     // the value on the target.
     struct FloatTween : ITweenValue
-    {        public class FloatTweenCallback : UnityEvent<float>
-        {
-        }
+    {
+        public class FloatTweenCallback : UnityEvent<float> { }
 
         private FloatTweenCallback m_OnChangedTarget;
         private UnityEvent m_OnCompleteTarget;
@@ -503,8 +506,7 @@ namespace UnityEditor.Experimental.Tweening
         public bool ValidOnChangedTarget()
         {
             return false;
-
-//			return m_OnChangedTarget != null;
+//          return m_OnChangedTarget != null;
         }
     }
 
@@ -542,7 +544,7 @@ namespace UnityEditor.Experimental.Tweening
         protected bool m_Paused;
 
         // utility function for starting the tween
-//		private static IEnumerator Start(T tweenInfo)
+//      private static IEnumerator Start(T tweenInfo)
         private IEnumerator Start(T tweenInfo)
         {
             if (!tweenInfo.ValidOnChangedTarget())

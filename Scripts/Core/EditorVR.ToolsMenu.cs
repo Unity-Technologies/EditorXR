@@ -28,7 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 {
                     if (deviceData.rayOrigin == rayOrigin) // Enable Tools Menu preview on the opposite (handed) device
                     {
-                        var previewToolMenuButton = deviceData.ToolsMenu.PreviewToolsMenuButton;
+                        var previewToolMenuButton = deviceData.toolsMenu.PreviewToolsMenuButton;
                         previewToolMenuButton.previewToolType = toolType;
                         previewToolMenuButton.previewToolDescription = toolDescription;
                     }
@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             static void ClearToolMenuButtonPreview()
             {
-                Rays.ForEachProxyDevice((deviceData) => { deviceData.ToolsMenu.PreviewToolsMenuButton.previewToolType = null; });
+                Rays.ForEachProxyDevice(deviceData => { deviceData.toolsMenu.PreviewToolsMenuButton.previewToolType = null; });
             }
 
             static void OnToolButtonClicked(Transform rayOrigin, Type toolType)
@@ -45,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (toolType == typeof(IMainMenu))
                     OnMainMenuActivatorSelected(rayOrigin);
                 else
-                    Tools.SelectTool(rayOrigin, toolType);
+                    evr.GetNestedModule<Tools>().SelectTool(rayOrigin, toolType);
             }
 
             static void OnMainMenuActivatorSelected(Transform rayOrigin)

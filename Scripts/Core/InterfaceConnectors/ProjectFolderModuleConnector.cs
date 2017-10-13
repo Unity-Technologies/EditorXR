@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -8,29 +7,29 @@ namespace UnityEditor.Experimental.EditorVR.Core
     {
         class ProjectFolderModuleConnector : Nested, IInterfaceConnector
         {
-            public void ConnectInterface(object obj, Transform rayOrigin = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var usesProjectFolderData = obj as IUsesProjectFolderData;
+                var usesProjectFolderData = target as IUsesProjectFolderData;
                 if (usesProjectFolderData != null)
                 {
                     var evrProjectFolderModule = evr.GetModule<ProjectFolderModule>();
                     evrProjectFolderModule.AddConsumer(usesProjectFolderData);
 
-                    var filterUI = obj as IFilterUI;
+                    var filterUI = target as IFilterUI;
                     if (filterUI != null)
                         evrProjectFolderModule.AddConsumer(filterUI);
                 }
             }
 
-            public void DisconnectInterface(object obj, Transform rayOrigin = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var usesProjectFolderData = obj as IUsesProjectFolderData;
+                var usesProjectFolderData = target as IUsesProjectFolderData;
                 if (usesProjectFolderData != null)
                 {
                     var evrProjectFolderModule = evr.GetModule<ProjectFolderModule>();
                     evrProjectFolderModule.RemoveConsumer(usesProjectFolderData);
 
-                    var filterUI = obj as IFilterUI;
+                    var filterUI = target as IFilterUI;
                     if (filterUI != null)
                         evrProjectFolderModule.RemoveConsumer(filterUI);
                 }

@@ -10,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public void LateBindInterfaceMethods(MultipleRayInputModule provider)
             {
                 IIsHoveringOverUIMethods.isHoveringOverUI = provider.IsHoveringOverUI;
+                IBlockUIInteractionMethods.setUIBlockedForRayOrigin = provider.SetUIBlockedForRayOrigin;
             }
         }
     }

@@ -74,8 +74,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 #if UNITY_EDITOR
             empty = EditorUtility.CreateGameObjectWithHideFlags(name, hideFlags);
 #else
-			empty = new GameObject(name);
-			empty.hideFlags = hideFlags;
+            empty = new GameObject(name);
+            empty.hideFlags = hideFlags;
 #endif
             empty.transform.parent = parent;
             empty.transform.localPosition = Vector3.zero;
@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (!Application.isPlaying)
                 SetRunInEditModeRecursively(component.gameObject, true);
 #else
-			var component = new GameObject(type.Name).AddComponent(type);
+            var component = new GameObject(type.Name).AddComponent(type);
 #endif
             component.transform.SetParent(parent, worldPositionStays);
 

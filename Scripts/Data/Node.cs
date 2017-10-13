@@ -6,6 +6,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// </summary>
     public enum Node
     {
+        None,
         LeftHand,
         RightHand
     }

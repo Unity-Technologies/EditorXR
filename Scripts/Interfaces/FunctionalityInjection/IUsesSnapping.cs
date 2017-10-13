@@ -6,13 +6,14 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class the ability to use snapping
-    /// </summary>    public interface IUsesSnapping
+    /// </summary>
+    public interface IUsesSnapping
     {
     }
 
     public static class IUsesSnappingMethods
     {
-        internal delegate bool ManipulatorSnapDelegate(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints, PivotMode pivotMode);
+        internal delegate bool ManipulatorSnapDelegate(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, AxisFlags constraints, PivotMode pivotMode);
 
         internal delegate bool DirectSnapDelegate(Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
 
@@ -31,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <param name="constraints">The axis constraints</param>
         /// <param name="pivotMode">The current pivot mode</param>
         /// <returns>Whether the position was set to a snapped position</returns>
-        public static bool ManipulatorSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints, PivotMode pivotMode)
+        public static bool ManipulatorSnap(this IUsesSnapping usesSnaping, Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, AxisFlags constraints, PivotMode pivotMode)
         {
             return manipulatorSnap(rayOrigin, transforms, ref position, ref rotation, delta, constraints, pivotMode);
         }

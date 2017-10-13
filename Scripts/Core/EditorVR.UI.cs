@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         Camera m_EventCameraPrefab;
 
-        class UI : Nested, IInterfaceConnector
+        class UI : Nested, IInterfaceConnector, IConnectInterfaces
         {
             const byte k_MinStencilRef = 2;
 
@@ -46,18 +46,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
             }
 
-            public void ConnectInterface(object obj, Transform rayOrigin = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var manipulatorController = obj as IManipulatorController;
+                var manipulatorController = target as IManipulatorController;
                 if (manipulatorController != null)
                     m_ManipulatorControllers.Add(manipulatorController);
 
-                var usesStencilRef = obj as IUsesStencilRef;
+                var usesStencilRef = target as IUsesStencilRef;
                 if (usesStencilRef != null)
                 {
                     byte? stencilRef = null;
 
-                    var mb = obj as MonoBehaviour;
+                    var mb = target as MonoBehaviour;
                     if (mb)
                     {
                         var parent = mb.transform.parent;
@@ -74,9 +74,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            public void DisconnectInterface(object obj, Transform rayOrigin = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var manipulatorController = obj as IManipulatorController;
+                var manipulatorController = target as IManipulatorController;
                 if (manipulatorController != null)
                     m_ManipulatorControllers.Remove(manipulatorController);
             }
@@ -99,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 inputModule.preProcessRaycastSource = evr.GetNestedModule<Rays>().PreProcessRaycastSource;
             }
 
-            internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform connectInterfacesOverride = null)
+            internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
             {
                 var go = ObjectUtils.Instantiate(prefab, parent ? parent : evr.transform, worldPositionStays);
                 foreach (var canvas in go.GetComponentsInChildren<Canvas>())
@@ -115,7 +115,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 foreach (var mb in go.GetComponentsInChildren<MonoBehaviour>(true))
-                    evr.m_Interfaces.ConnectInterfaces(mb, connectInterfacesOverride);
+                    this.ConnectInterfaces(mb, rayOrigin);
 
                 return go;
             }

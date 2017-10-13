@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -14,16 +13,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 ISelectObjectMethods.selectObject = provider.SelectObject;
             }
 
-            public void ConnectInterface(object obj, Transform rayOrigin = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var selectionChanged = obj as ISelectionChanged;
+                var selectionChanged = target as ISelectionChanged;
                 if (selectionChanged != null)
                     evr.selectionChanged += selectionChanged.OnSelectionChanged;
             }
 
-            public void DisconnectInterface(object obj, Transform rayOrigin = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var selectionChanged = obj as ISelectionChanged;
+                var selectionChanged = target as ISelectionChanged;
                 if (selectionChanged != null)
                     evr.selectionChanged -= selectionChanged.OnSelectionChanged;
             }

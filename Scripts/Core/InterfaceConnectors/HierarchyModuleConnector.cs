@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -8,29 +7,29 @@ namespace UnityEditor.Experimental.EditorVR.Core
     {
         class HierarchyModuleConnector : Nested, IInterfaceConnector
         {
-            public void ConnectInterface(object obj, Transform rayOrigin = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var usesHierarchyData = obj as IUsesHierarchyData;
+                var usesHierarchyData = target as IUsesHierarchyData;
                 if (usesHierarchyData != null)
                 {
                     var evrHierarchyModule = evr.GetModule<HierarchyModule>();
                     evrHierarchyModule.AddConsumer(usesHierarchyData);
 
-                    var filterUI = obj as IFilterUI;
+                    var filterUI = target as IFilterUI;
                     if (filterUI != null)
                         evrHierarchyModule.AddConsumer(filterUI);
                 }
             }
 
-            public void DisconnectInterface(object obj, Transform rayOrigin = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var usesHierarchy = obj as IUsesHierarchyData;
+                var usesHierarchy = target as IUsesHierarchyData;
                 if (usesHierarchy != null)
                 {
                     var evrHierarchyModule = evr.GetModule<HierarchyModule>();
                     evrHierarchyModule.RemoveConsumer(usesHierarchy);
 
-                    var filterUI = obj as IFilterUI;
+                    var filterUI = target as IFilterUI;
                     if (filterUI != null)
                         evrHierarchyModule.RemoveConsumer(filterUI);
                 }

@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides functionality that allows all UI interaction to be negated for a given rayOrigin
-    /// </summary>    public interface IBlockUIInteraction
+    /// </summary>
+    public interface IBlockUIInteraction
     {
     }
 

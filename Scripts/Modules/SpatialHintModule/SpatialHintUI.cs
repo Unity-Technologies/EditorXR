@@ -40,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Transform m_ScrollVisualsTransform;
         Coroutine m_ScrollVisualsVisibilityCoroutine;
         Transform m_ScrollVisualsDragTargetArrowTransform;
-        Node? m_ControllingNode;
+        Node m_ControllingNode;
 
         /// <summary>
         /// Bool denoting the visibility of the Spatial Hint UI elements
@@ -150,14 +150,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         /// <summary>
         /// The node currently controlling the spatial hint visuals
         /// </summary>
-        public Node? controllingNode
+        public Node controllingNode
         {
             get { return m_ControllingNode; }
             set
             {
                 m_ControllingNode = value;
 
-                if (m_ControllingNode == null)
+                if (m_ControllingNode == Node.None)
                 {
                     scrollVisualsRotation = Vector3.zero;
                     this.RestartCoroutine(ref m_ScrollVisualsVisibilityCoroutine, HideScrollVisuals());

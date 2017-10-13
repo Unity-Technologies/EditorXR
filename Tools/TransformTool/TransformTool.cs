@@ -239,9 +239,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public List<ILinkedObject> linkedObjects { private get; set; }
 
         public Transform rayOrigin { private get; set; }
-        public Node? node { private get; set; }
+        public Node node { private get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
+        public bool ignoreLocking { get { return false; } }
 
         void Start()
         {
@@ -368,7 +369,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         if (objectsGrabbed != null && !m_Scaling)
                             objectsGrabbed(directRayOrigin, grabbedObjects);
 
-                        m_GrabData[grabbingNode.Value] = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray());
+                        m_GrabData[grabbingNode] = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray());
 
                         // A direct selection has been made. Hide the manipulator until the selection changes
                         m_DirectSelected = true;
@@ -477,7 +478,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     var transformTool = (TransformTool)linkedObject;
                     var rayOrigin = transformTool.rayOrigin;
-                    if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node.Value)))
+                    if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || m_GrabData.ContainsKey(transformTool.node)))
                     {
                         this.RemoveRayVisibilitySettings(rayOrigin, this);
                     }
@@ -588,13 +589,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             this.ClearSnappingState(rayOrigin);
         }
 
-        void Translate(Vector3 delta, Transform rayOrigin, ConstrainedAxis constraints)
+        void Translate(Vector3 delta, Transform rayOrigin, AxisFlags constraints)
         {
             switch (constraints)
             {
-                case ConstrainedAxis.X | ConstrainedAxis.Y:
-                case ConstrainedAxis.Y | ConstrainedAxis.Z:
-                case ConstrainedAxis.X | ConstrainedAxis.Z:
+                case AxisFlags.X | AxisFlags.Y:
+                case AxisFlags.Y | AxisFlags.Z:
+                case AxisFlags.X | AxisFlags.Z:
                     m_TargetPosition += delta;
                     break;
                 default:

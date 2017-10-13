@@ -54,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// <param name="hapticPulse">Haptic pulse</param>
         /// <param name="durationMultiplier">(Optional) Multiplier value applied to the hapticPulse duration</param>
         /// <param name="intensityMultiplier">(Optional) Multiplier value applied to the hapticPulse intensity</param>
-        public void Pulse(Node? node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f)
+        public void Pulse(Node node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f)
         {
             // Clip buffer can hold up to 800 milliseconds of samples
             // At 320Hz, each sample is 3.125f milliseconds
@@ -130,7 +130,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
         }
 
-        public void StopPulses(Node? node)
+        public void StopPulses(Node node)
         {
 #if ENABLE_OVR_INPUT
             var channel = GetTargetChannel(node);
@@ -150,10 +150,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
 #if ENABLE_OVR_INPUT
-        OVRHaptics.OVRHapticsChannel GetTargetChannel(Node? node)
+        OVRHaptics.OVRHapticsChannel GetTargetChannel(Node node)
         {
             OVRHaptics.OVRHapticsChannel channel = null;
-            if (node == null)
+            if (node == Node.None)
                 return channel;
 
             switch (node)

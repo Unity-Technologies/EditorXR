@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public class SpatialScrollData : INodeToRay
         {
-            public SpatialScrollData(IControlSpatialScrolling caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+            public SpatialScrollData(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
             {
                 this.caller = caller;
                 this.node = node;
@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// <summary>
             /// The node on which this spatial scroll is being processed
             /// </summary>
-            public Node? node { get; set; }
+            public Node node { get; set; }
 
             /// <summary>
             /// The ray origin on which this spatial scroll is being processed
@@ -104,7 +104,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node? node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
+        internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
         {
             // Continue processing of spatial scrolling for a given caller,
             // Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)

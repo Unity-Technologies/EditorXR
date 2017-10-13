@@ -51,12 +51,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Action<Transform> selectHighlightedButton { get; set; }
         public Action<Type, Sprite> setButtonForType { get; set; }
         public Action<Type, Type> deleteToolsMenuButton { get; set; }
-        public Node? node { get; set; }
+        public Node node { get; set; }
         public IToolsMenuButton PreviewToolsMenuButton { get; private set; }
         public Transform alternateMenuOrigin { get; set; }
         public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 
         public ActionMap actionMap { get { return m_MainMenuActionMap; } }
+        public bool ignoreLocking { get { return false; } }
 
         public Transform rayOrigin { get; set; }
 

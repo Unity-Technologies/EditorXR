@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         Vector3 m_PositionOffset;
         Quaternion m_RotationOffset;
 
-        public Action<Vector3, Transform, ConstrainedAxis> translate { private get; set; }
+        public Action<Vector3, Transform, AxisFlags> translate { private get; set; }
         public Action<Quaternion, Transform> rotate { private get; set; }
         public Action<Vector3> scale { private get; set; }
 

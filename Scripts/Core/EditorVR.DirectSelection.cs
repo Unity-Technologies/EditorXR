@@ -35,9 +35,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IGetPointerLengthMethods.getPointerLength = GetPointerLength;
             }
 
-            public void ConnectInterface(object obj, Transform rayOrigin = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var grabObjects = obj as IGrabObjects;
+                var grabObjects = target as IGrabObjects;
                 if (grabObjects != null)
                 {
                     m_ObjectGrabbers.Add(grabObjects);
@@ -46,18 +46,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     grabObjects.objectsTransferred += OnObjectsTransferred;
                 }
 
-                var usesDirectSelection = obj as IUsesDirectSelection;
+                var usesDirectSelection = target as IUsesDirectSelection;
                 if (usesDirectSelection != null)
                     m_DirectSelectionUsers.Add(usesDirectSelection);
 
-                var twoHandedScaler = obj as ITwoHandedScaler;
+                var twoHandedScaler = target as ITwoHandedScaler;
                 if (twoHandedScaler != null)
                     m_TwoHandedScalers.Add(twoHandedScaler);
             }
 
-            public void DisconnectInterface(object obj, Transform rayOrigin = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var grabObjects = obj as IGrabObjects;
+                var grabObjects = target as IGrabObjects;
                 if (grabObjects != null)
                 {
                     m_ObjectGrabbers.Remove(grabObjects);

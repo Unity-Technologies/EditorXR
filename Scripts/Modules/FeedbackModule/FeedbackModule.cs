@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR
         public GameObject settingsMenuItemInstance { get; set; }
     }
 
-    public class FeedbackModule : MonoBehaviour, IInterfaceConnector, ISettingsMenuItemProvider, ISerializePreferences
+    public class FeedbackModule : MonoBehaviour, ISettingsMenuItemProvider, ISerializePreferences
     {
         [Serializable]
         class Preferences
@@ -84,18 +84,14 @@ namespace UnityEditor.Experimental.EditorVR
                 m_Preferences = new Preferences();
         }
 
-        public void ConnectInterface(object obj, Transform rayOrigin = null)
+        public void AddReceiver(IFeedbackReceiver feedbackReceiver)
         {
-            var feedbackReceiver = obj as IFeedbackReceiver;
-            if (feedbackReceiver != null)
-                m_FeedbackReceivers.Add(feedbackReceiver);
+            m_FeedbackReceivers.Add(feedbackReceiver);
         }
 
-        public void DisconnectInterface(object obj, Transform rayOrigin = null)
+        public void RemoveReceiver(IFeedbackReceiver feedbackReceiver)
         {
-            var feedbackReceiver = obj as IFeedbackReceiver;
-            if (feedbackReceiver != null)
-                m_FeedbackReceivers.Remove(feedbackReceiver);
+            m_FeedbackReceivers.Remove(feedbackReceiver);
         }
 
         void SetEnabled(bool enabled)

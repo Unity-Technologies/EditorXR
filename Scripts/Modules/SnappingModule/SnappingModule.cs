@@ -433,7 +433,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool ManipulatorSnap(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, ConstrainedAxis constraints, PivotMode pivotMode)
+        public bool ManipulatorSnap(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, AxisFlags constraints, PivotMode pivotMode)
         {
             if (transforms.Length == 0)
                 return false;
@@ -524,7 +524,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return false;
         }
 
-        bool ManipulatorSnapConstrained(ref Vector3 position, ref Quaternion rotation, Vector3 delta, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float raycastDistance, ConstrainedAxis constraints, PivotMode pivotMode)
+        bool ManipulatorSnapConstrained(ref Vector3 position, ref Quaternion rotation, Vector3 delta, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float raycastDistance, AxisFlags constraints, PivotMode pivotMode)
         {
             var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
             var startRotation = state.startRotation;
@@ -546,15 +546,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 switch (constraints)
                 {
-                    case ConstrainedAxis.X:
+                    case AxisFlags.X:
                         if (Vector3.Dot(rotation * Vector3.right, direction) > 0)
                             projectedExtents *= -1;
                         break;
-                    case ConstrainedAxis.Y:
+                    case AxisFlags.Y:
                         if (Vector3.Dot(rotation * Vector3.up, direction) > 0)
                             projectedExtents *= -1;
                         break;
-                    case ConstrainedAxis.Z:
+                    case AxisFlags.Z:
                         if (Vector3.Dot(rotation * Vector3.forward, direction) > 0)
                             projectedExtents *= -1;
                         break;

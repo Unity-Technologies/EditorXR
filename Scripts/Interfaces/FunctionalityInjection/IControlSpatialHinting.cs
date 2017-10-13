@@ -11,7 +11,8 @@ namespace UnityEditor.Experimental.EditorVR
     /// Spatial-Hinting visuals are displayed when performing a spatial-input action, such as spatial-scrolling
     /// These visual elements assist the user in seeing which spatial direction(s) will
     /// reveal/allow additional spatial interaction(s).
-    /// </summary>    public interface IControlSpatialHinting
+    /// </summary>
+    public interface IControlSpatialHinting
     {
     }
 
@@ -24,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR
         internal static Action<Vector3> setSpatialHintLookAtRotation { get; set; }
         internal static Action pulseSpatialHintScrollArrows { get; set; }
         internal static Action<Vector3> setSpatialHintDragThresholdTriggerPosition { get; set; }
-        internal static Action<Node?> setSpatialHintControlNode { get; set; }
+        internal static Action<Node> setSpatialHintControlNode { get; set; }
 
         /// <summary>
         /// Set the spatial hint state
@@ -93,7 +94,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// Each control-object has it's spatial scrolling processed independently
         /// </summary>
         /// <param name="controlNode">Node on which spatial scrolling will be processed independently</param>
-        public static void SetSpatialHintControlNode(this IControlSpatialHinting obj, Node? controlNode)
+        public static void SetSpatialHintControlNode(this IControlSpatialHinting obj, Node controlNode)
         {
             setSpatialHintControlNode(controlNode);
         }

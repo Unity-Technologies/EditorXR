@@ -102,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             foreach (var dropZone in dropZones)
             {
                 dropZone.canDrop = CanDrop;
-                dropZone.receiveDrop = RecieveDrop;
+                dropZone.receiveDrop = ReceiveDrop;
                 dropZone.dropHoverStarted += DropHoverStarted;
                 dropZone.dropHoverEnded += DropHoverEnded;
             }
@@ -374,7 +374,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             return dropObject is HierarchyData;
         }
 
-        void RecieveDrop(BaseHandle handle, object dropObject)
+        void ReceiveDrop(BaseHandle handle, object dropObject)
         {
             if (handle == m_TopDropZone)
             {

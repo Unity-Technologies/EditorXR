@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -13,24 +12,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 ISetHighlightMethods.setHighlight = provider.SetHighlight;
             }
 
-            public void ConnectInterface(object obj, Transform rayOrigin = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var customHighlight = obj as ICustomHighlight;
+                var customHighlight = target as ICustomHighlight;
                 if (customHighlight != null)
-                {
-                    var evrHighlightModule = evr.GetModule<HighlightModule>();
-                    evrHighlightModule.customHighlight += customHighlight.OnHighlight;
-                }
+                    evr.GetModule<HighlightModule>().customHighlight += customHighlight.OnHighlight;
             }
 
-            public void DisconnectInterface(object obj, Transform rayOrigin = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var customHighlight = obj as ICustomHighlight;
+                var customHighlight = target as ICustomHighlight;
                 if (customHighlight != null)
-                {
-                    var evrHighlightModule = evr.GetModule<HighlightModule>();
-                    evrHighlightModule.customHighlight -= customHighlight.OnHighlight;
-                }
+                    evr.GetModule<HighlightModule>().customHighlight -= customHighlight.OnHighlight;
             }
         }
     }

@@ -7,6 +7,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
+    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
+
     [MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
     sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
         IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
@@ -32,10 +34,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
-        readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+        readonly BindingDictionary m_Controls = new BindingDictionary();
 
         public Transform rayOrigin { get; set; }
-        public Node? node { get; set; }
+        public Node node { get; set; }
 
         public Sprite icon { get { return m_Icon; } }
 
@@ -65,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     this.AddFeedbackRequest(new ProxyFeedbackRequest
                     {
-                        node = node.Value,
+                        node = node,
                         control = id,
                         tooltipText = "Draw"
                     });

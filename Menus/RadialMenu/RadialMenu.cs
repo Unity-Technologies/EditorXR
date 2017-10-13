@@ -12,8 +12,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     {
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
 
-        public ActionMap actionMap { get { return m_RadialMenuActionMap; } }
-
         [SerializeField]
         ActionMap m_RadialMenuActionMap;
 
@@ -42,9 +40,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
 
-        public Node? node { get; set; }
+        public Node node { get; set; }
 
         public Bounds localBounds { get { return default(Bounds); } }
+
+        public ActionMap actionMap { get { return m_RadialMenuActionMap; } }
+        public bool ignoreLocking { get { return false; } }
 
         public List<ActionMenuData> menuActions
         {

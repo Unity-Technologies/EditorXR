@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides CanGrabObject method used to check whether direct selection is possible on an object
-    /// </summary>    public interface ICanGrabObject
+    /// </summary>
+    public interface ICanGrabObject
     {
     }
 

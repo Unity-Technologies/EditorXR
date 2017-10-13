@@ -11,6 +11,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
+    using ButtonDictionary = Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>>;
+
     public class ProxyFeedbackRequest : FeedbackRequest
     {
         public int priority;
@@ -19,9 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public string tooltipText;
     }
 
-    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
+    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
     {
-        const int k_RendererQueue = 9000;
         const float k_FeedbackDuration = 5f;
 
         [SerializeField]
@@ -37,23 +38,35 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
-        readonly List<Material> m_Materials = new List<Material>();
         readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
 
         protected Dictionary<Node, Transform> m_RayOrigins;
 
-        List<Transform> m_ProxyMeshRoots = new List<Transform>();
+        bool m_Hidden;
 
-        readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>> m_Buttons = new Dictionary<Node, Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>>();
+        readonly Dictionary<Node, ButtonDictionary> m_Buttons = new Dictionary<Node, ButtonDictionary>();
 
-        public Transform leftHand { get { return m_LeftHand; } }
-        public Transform rightHand { get { return m_RightHand; } }
+        public Transform leftHand
+        {
+            get { return m_LeftHand; }
+        }
 
-        public virtual Dictionary<Node, Transform> rayOrigins { get { return m_RayOrigins; } }
+        public Transform rightHand
+        {
+            get { return m_RightHand; }
+        }
+
+        public virtual Dictionary<Node, Transform> rayOrigins
+        {
+            get { return m_RayOrigins; }
+        }
 
         public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-        public bool active { get { return m_InputToEvents.active; } }
+        public bool active
+        {
+            get { return m_InputToEvents.active; }
+        }
 
         public event Action activeChanged
         {
@@ -74,12 +87,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        private bool m_Hidden;
-
         public Dictionary<Transform, Transform> menuOrigins { get; set; }
         public Dictionary<Transform, Transform> alternateMenuOrigins { get; set; }
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
+
+        // Local method use only -- created here to reduce garbage collection
+        static readonly List<Tooltip> k_TooltipList = new List<Tooltip>();
 
         public virtual void Awake()
         {
@@ -88,22 +102,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
             var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
-            m_ProxyMeshRoots.Add(leftProxyHelper.meshRoot);
-            m_ProxyMeshRoots.Add(rightProxyHelper.meshRoot);
-
-            var leftButtons = new Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>();
-            foreach (var button in leftProxyHelper.buttons)
-            {
-                leftButtons[button.control] = button;
-            }
-            m_Buttons[Node.LeftHand] = leftButtons;
-
-            var rightButtons = new Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>();
-            foreach (var button in rightProxyHelper.buttons)
-            {
-                rightButtons[button.control] = button;
-            }
-            m_Buttons[Node.RightHand] = rightButtons;
+            m_Buttons[Node.LeftHand] = GetButtonDictionary(leftProxyHelper);
+            m_Buttons[Node.RightHand] = GetButtonDictionary(rightProxyHelper);
 
             m_RayOrigins = new Dictionary<Node, Transform>
             {
@@ -136,40 +136,39 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             };
         }
 
+        static ButtonDictionary GetButtonDictionary(ProxyHelper helper)
+        {
+            var buttonDictionary = new ButtonDictionary();
+            foreach (var button in helper.buttons)
+            {
+                List<ProxyHelper.ButtonObject> buttons;
+                if (!buttonDictionary.TryGetValue(button.control, out buttons))
+                {
+                    buttons = new List<ProxyHelper.ButtonObject>();
+                    buttonDictionary[button.control] = buttons;
+                }
+
+                buttons.Add(button);
+            }
+            return buttonDictionary;
+        }
+
         public virtual IEnumerator Start()
         {
-            // In standalone play-mode usage, attempt to get the TrackedObjectInput 
+            while (!active)
+                yield return null;
+
+            // In standalone play-mode usage, attempt to get the TrackedObjectInput
             if (trackedObjectInput == null && m_PlayerInput)
                 trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 
-            List<Renderer> renderers = new List<Renderer>();
-            while (renderers.Count == 0)
-            {
-                yield return null;
-                foreach (var meshRoot in m_ProxyMeshRoots)
-                {
-                    // Only add models of the device and not anything else that is spawned underneath the hand (e.g. menu button, cone/ray)
-                    renderers.AddRange(meshRoot.GetComponentsInChildren<Renderer>());
-                }
-            }
-
-            foreach (var r in renderers)
-            {
-                m_Materials.AddRange(MaterialUtils.CloneMaterials(r));
-            }
-
-            // Move controllers up into EVR range, so they render properly over our UI (e.g. manipulators)
-            foreach (var m in m_Materials)
-            {
-                m.renderQueue = k_RendererQueue;
-            }
+            var leftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
+            var rightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
+            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(leftProxyHelper.gameObject), leftProxyHelper.rayOrigin);
+            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(rightProxyHelper.gameObject), rightProxyHelper.rayOrigin);
         }
 
-        public virtual void OnDestroy()
-        {
-            foreach (var m in m_Materials)
-                ObjectUtils.Destroy(m);
-        }
+        public virtual void OnDestroy() { }
 
         public virtual void Update()
         {
@@ -195,6 +194,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void ExecuteFeedback(ProxyFeedbackRequest changedRequest)
         {
+            if (!active)
+                return;
+
             foreach (var proxyNode in m_Buttons)
             {
                 foreach (var kvp in proxyNode.Value)
@@ -213,18 +215,24 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     if (request == null)
                         continue;
 
-                    var button = kvp.Value;
-                    if (button.renderer)
-                        this.SetHighlight(button.renderer.gameObject, true, duration: k_FeedbackDuration);
-
-                    if (button.transform)
+                    foreach (var button in kvp.Value)
                     {
-                        var tooltip = button.transform.GetComponent<Tooltip>();
-                        var tooltipText = request.tooltipText;
-                        if (!string.IsNullOrEmpty(tooltipText) && tooltip)
+                        if (button.renderer)
+                            this.SetHighlight(button.renderer.gameObject, true, duration: k_FeedbackDuration);
+
+                        if (button.transform)
                         {
-                            tooltip.tooltipText = tooltipText;
-                            this.ShowTooltip(tooltip, true, k_FeedbackDuration);
+                            var tooltipText = request.tooltipText;
+                            if (!string.IsNullOrEmpty(tooltipText))
+                            {
+                                k_TooltipList.Clear();
+                                button.transform.GetComponents(k_TooltipList);
+                                foreach (var tooltip in k_TooltipList)
+                                {
+                                    tooltip.tooltipText = tooltipText;
+                                    this.ShowTooltip(tooltip, true, k_FeedbackDuration);
+                                }
+                            }
                         }
                     }
                 }
@@ -240,22 +248,26 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void RemoveFeedbackRequest(ProxyFeedbackRequest request)
         {
-            Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject> buttons;
-            if (m_Buttons.TryGetValue(request.node, out buttons))
+            Dictionary<VRInputDevice.VRControl, List<ProxyHelper.ButtonObject>> group;
+            if (m_Buttons.TryGetValue(request.node, out group))
             {
-                ProxyHelper.ButtonObject button;
-                if (buttons.TryGetValue(request.control, out button))
+                List<ProxyHelper.ButtonObject> buttons;
+                if (group.TryGetValue(request.control, out buttons))
                 {
-                    if (button.renderer)
-                        this.SetHighlight(button.renderer.gameObject, false);
-
-                    if (button.transform)
+                    foreach (var button in buttons)
                     {
-                        var tooltip = button.transform.GetComponent<Tooltip>();
-                        if (tooltip)
+                        if (button.renderer)
+                            this.SetHighlight(button.renderer.gameObject, false);
+
+                        if (button.transform)
                         {
-                            tooltip.tooltipText = string.Empty;
-                            this.HideTooltip(tooltip, true);
+                            k_TooltipList.Clear();
+                            button.transform.GetComponents(k_TooltipList);
+                            foreach (var tooltip in k_TooltipList)
+                            {
+                                tooltip.tooltipText = string.Empty;
+                                this.HideTooltip(tooltip, true);
+                            }
                         }
                     }
                 }

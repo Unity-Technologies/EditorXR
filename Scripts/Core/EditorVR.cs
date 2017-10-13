@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 #if UNITY_2017_2_OR_NEWER
     [RequiresTag(k_VRPlayerTag)]
-    sealed partial class EditorVR : MonoBehaviour
+    sealed partial class EditorVR : MonoBehaviour, IConnectInterfaces
     {
         const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
@@ -69,15 +69,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public Node node;
             public Transform rayOrigin;
             public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
-            public ActionMapInput uiInput;
             public IMainMenu mainMenu;
-            public ActionMapInput mainMenuInput;
             public IAlternateMenu alternateMenu;
-            public ActionMapInput alternateMenuInput;
             public ITool currentTool;
             public IMenu customMenu;
-            public IToolsMenu ToolsMenu;
-            public ActionMapInput toolsMenuInput;
+            public IToolsMenu toolsMenu;
             public readonly Dictionary<IMenu, Menus.MenuHideData> menuHideData = new Dictionary<IMenu, Menus.MenuHideData>();
         }
 
@@ -85,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             public static EditorVR evr { protected get; set; }
 
-            internal virtual void OnDestroy() {}
+            internal virtual void OnDestroy() { }
         }
 
         static void ResetPreferences()
@@ -106,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
 
 #if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
-				Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
+                Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
 
                 // Add EVR tags and layers if they don't exist
@@ -156,6 +152,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             deviceInputModule.CreateDefaultActionMapInputs();
             deviceInputModule.processInput = ProcessInput;
             deviceInputModule.updatePlayerHandleMaps = Tools.UpdatePlayerHandleMaps;
+            deviceInputModule.inputDeviceForRayOrigin = rayOrigin =>
+                (from deviceData in m_DeviceData
+                    where deviceData.rayOrigin == rayOrigin
+                    select deviceData.inputDevice).FirstOrDefault();
 
             GetNestedModule<UI>().Initialize();
 
@@ -170,7 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             multipleRayInputModule.dragEnded += dragAndDropModule.OnDragEnded;
 
             var tooltipModule = AddModule<TooltipModule>();
-            m_Interfaces.ConnectInterfaces(tooltipModule);
+            this.ConnectInterfaces(tooltipModule);
             multipleRayInputModule.rayEntered += tooltipModule.OnRayEntered;
             multipleRayInputModule.rayHovering += tooltipModule.OnRayHovering;
             multipleRayInputModule.rayExited += tooltipModule.OnRayExited;
@@ -188,7 +188,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             spatialHashModule.Setup();
 
             var intersectionModule = AddModule<IntersectionModule>();
-            m_Interfaces.ConnectInterfaces(intersectionModule);
+            this.ConnectInterfaces(intersectionModule);
             intersectionModule.Setup(spatialHashModule.spatialHash);
 
             AddModule<SnappingModule>();
@@ -200,11 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             workspaceModule.preserveWorkspaces = preserveLayout;
             workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
             workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
-            workspaceModule.workspaceCreated += workspace =>
-            {
-                workspaceModule.workspaceInputs.Add((WorkspaceInput)deviceInputModule.CreateActionMapInputForObject(workspace, null));
-                deviceInputModule.UpdatePlayerHandleMaps();
-            };
+            workspaceModule.workspaceCreated += workspace => { deviceInputModule.UpdatePlayerHandleMaps(); };
             workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
             workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
 
@@ -362,31 +358,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
         {
-            GetModule<WorkspaceModule>().ProcessInput(consumeControl);
-
             GetNestedModule<MiniWorlds>().UpdateMiniWorlds();
-
-            GetModule<MultipleRayInputModule>().ProcessInput(null, consumeControl);
 
             foreach (var deviceData in m_DeviceData)
             {
                 if (!deviceData.proxy.active)
                     continue;
-
-                var mainMenu = deviceData.mainMenu;
-                var menuInput = mainMenu as IProcessInput;
-                if (menuInput != null && mainMenu.menuHideFlags == 0)
-                    menuInput.ProcessInput(deviceData.mainMenuInput, consumeControl);
-
-                var altMenu = deviceData.alternateMenu;
-                var altMenuInput = altMenu as IProcessInput;
-                if (altMenuInput != null && altMenu.menuHideFlags == 0)
-                    altMenuInput.ProcessInput(deviceData.alternateMenuInput, consumeControl);
-
-                var toolsMenu = deviceData.ToolsMenu;
-                var toolsMenuInput = toolsMenu as IProcessInput;
-                if (toolsMenuInput != null)
-                    toolsMenuInput.ProcessInput(deviceData.toolsMenuInput, consumeControl);
 
                 foreach (var toolData in deviceData.toolData)
                 {
@@ -421,7 +398,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         lateBinding.LateBindInterfaceMethods((T)module);
                 }
 
-                m_Interfaces.ConnectInterfaces(module);
+                this.ConnectInterfaces(module);
                 m_Interfaces.AttachInterfaceConnectors(module);
             }
 
@@ -443,7 +420,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 if (m_Interfaces != null)
                 {
-                    m_Interfaces.ConnectInterfaces(nested);
+                    this.ConnectInterfaces(nested);
                     m_Interfaces.AttachInterfaceConnectors(nested);
                 }
             }
@@ -456,7 +433,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             foreach (var type in types)
             {
                 var lateBindings = type.GetInterfaces().Where(i =>
-                        i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ILateBindInterfaceMethods<>));
+                    i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ILateBindInterfaceMethods<>));
 
                 Nested nestedModule;
                 if (m_NestedModules.TryGetValue(type, out nestedModule))
@@ -534,31 +511,31 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 #else
-	internal class NoEditorVR
-	{
-		const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
+    internal class NoEditorVR
+    {
+        const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 
-		static NoEditorVR()
-		{
-			if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
-			{
-				var message = "EditorVR requires Unity 2017.2 or above.";
-				var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
-				switch (result)
-				{
-					case 0:
-						Application.OpenURL("https://unity3d.com/get-unity/download");
-						break;
-					case 1:
-						EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);
-						break;
-					case 2:
-						Debug.Log("<color=orange>" + message + "</color>");
-						break;
-				}
-			}
-		}
-	}
+        static NoEditorVR()
+        {
+            if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
+            {
+                var message = "EditorVR requires Unity 2017.2 or above.";
+                var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
+                switch (result)
+                {
+                    case 0:
+                        Application.OpenURL("https://unity3d.com/get-unity/download");
+                        break;
+                    case 1:
+                        EditorPrefs.SetBool(k_ShowCustomEditorWarning, false);
+                        break;
+                    case 2:
+                        Debug.Log("<color=orange>" + message + "</color>");
+                        break;
+                }
+            }
+        }
+    }
 #endif
 }
 #endif

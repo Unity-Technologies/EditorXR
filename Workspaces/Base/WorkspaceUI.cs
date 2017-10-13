@@ -134,6 +134,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         WorkspaceButton m_ResizeButton;
 
+        [SerializeField]
+        ActionMap m_ActionMap;
+
         BoxCollider m_FrameCollider;
         Bounds m_Bounds;
         float? m_TopPanelDividerOffset;
@@ -334,9 +337,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
 
         public Transform sceneContainer { get { return m_SceneContainer; } }
-
         public RectTransform frontPanel { get { return m_FrontPanel; } }
-
         public WorkspaceHighlight topHighlight { get { return m_TopHighlight; } }
 
         public bool dynamicFaceAdjustment
@@ -360,7 +361,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public Transform leftRayOrigin { private get; set; }
         public Transform rightRayOrigin { private get; set; }
-        public Node? node { get; set; }
+        public Node node { get; set; }
 
         public event Action<Bounds> resize;
 

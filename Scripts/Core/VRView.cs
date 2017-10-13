@@ -101,7 +101,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_2017_2_OR_NEWER
                 return XRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary ? Vector3.up * HeadHeight : Vector3.zero;
 #else
-				return Vector3.zero;
+                return Vector3.zero;
 #endif
             }
         }
@@ -352,8 +352,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return OVRPlugin.userPresent;
 #endif
 #if ENABLE_STEAMVR_INPUT
-			if (XRSettings.loadedDeviceName == "OpenVR")
-				return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
+            if (XRSettings.loadedDeviceName == "OpenVR")
+                return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
 #endif
 #endif
             return true;

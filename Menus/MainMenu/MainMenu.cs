@@ -53,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public List<ActionMenuData> menuActions { get; set; }
         public Transform targetRayOrigin { private get; set; }
         public Type proxyType { private get; set; }
-        public Node? node { get; set; }
+        public Node node { get; set; }
 
         public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
@@ -64,6 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public bool focus { get { return m_MainMenuUI.hovering; } }
 
         public ActionMap actionMap { get { return m_MainMenuActionMap; } }
+        public bool ignoreLocking { get { return false; } }
 
         public Transform menuOrigin
         {
@@ -108,20 +109,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        void Start()
+        void Awake()
         {
             m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
             this.ConnectInterfaces(m_MainMenuUI);
             m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
             m_MainMenuUI.menuOrigin = menuOrigin;
             m_MainMenuUI.Setup();
+        }
 
+        void Start()
+        {
             CreateFaceButtons();
             UpdateToolButtons();
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            if (!m_MainMenuUI.visible)
+                return;
+
             var mainMenuInput = (MainMenuInput)input;
             var rotationInput = -mainMenuInput.rotate.rawValue;
 

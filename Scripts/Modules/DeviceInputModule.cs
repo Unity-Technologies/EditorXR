@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -13,7 +14,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class DeviceInputModule : MonoBehaviour
     {
-        public TrackedObject trackedObjectInput { get; private set; }
+        class InputProcessor
+        {
+            public IProcessInput processor;
+            public ActionMapInput input;
+            public int order;
+        }
+
         [SerializeField]
         ActionMap m_TrackedObjectActionMap;
 
@@ -23,6 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         PlayerHandle m_PlayerHandle;
 
         readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
+        readonly Dictionary<ActionMapInput, ICustomActionMap> m_IgnoreLocking = new Dictionary<ActionMapInput, ICustomActionMap>();
 
         readonly Dictionary<string, Node> m_TagToNode = new Dictionary<string, Node>
         {
@@ -30,13 +38,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             { "Right", Node.RightHand }
         };
 
+        readonly List<InputProcessor> m_InputProcessors = new List<InputProcessor>();
+
+        public TrackedObject trackedObjectInput { get; private set; }
+        public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
+        public Action<List<ActionMapInput>> updatePlayerHandleMaps;
+        public Func<Transform, InputDevice> inputDeviceForRayOrigin;
+
         // Local method use only -- created here to reduce garbage collection
         readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
         readonly List<InputDevice> m_SystemDevices = new List<InputDevice>();
         readonly Dictionary<Type, string[]> m_DeviceTypeTags = new Dictionary<Type, string[]>();
-
-        public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
-        public Action<List<ActionMapInput>> updatePlayerHandleMaps;
+        readonly List<InputProcessor> m_InputProcessorsCopy = new List<InputProcessor>();
+        readonly List<InputProcessor> m_RemoveInputProcessorsCopy = new List<InputProcessor>();
 
         public List<InputDevice> GetSystemDevices()
         {
@@ -89,6 +103,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             m_ProcessedInputs.Clear();
 
+            m_InputProcessorsCopy.Clear();
+            m_InputProcessorsCopy.AddRange(m_InputProcessors);
+            foreach (var processor in m_InputProcessorsCopy)
+            {
+                processor.processor.ProcessInput(processor.input, ConsumeControl);
+            }
+
             // TODO: Replace this with a map of ActionMap,IProcessInput and go through those
             if (processInput != null)
                 processInput(m_ProcessedInputs, ConsumeControl);
@@ -137,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return actionMapInput;
         }
 
-        public ActionMapInput CreateActionMapInputForObject(object obj, InputDevice device)
+        internal ActionMapInput CreateActionMapInputForObject(object obj, InputDevice device)
         {
             var customMap = obj as ICustomActionMap;
             if (customMap != null)
@@ -145,7 +166,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (customMap is IStandardActionMap)
                     Debug.LogWarning("Cannot use IStandardActionMap and ICustomActionMap together in " + obj.GetType());
 
-                return CreateActionMapInput(customMap.actionMap, device);
+                var input = CreateActionMapInput(customMap.actionMap, device);
+                if (customMap.ignoreLocking)
+                    m_IgnoreLocking[input] = customMap;
+
+                return input;
             }
 
             var standardMap = obj as IStandardActionMap;
@@ -163,6 +188,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             var maps = m_PlayerHandle.maps;
             maps.Clear();
+
+            foreach (var processor in m_InputProcessors)
+            {
+                var input = processor.input;
+                if (input != null)
+                    maps.Add(input);
+            }
+
+            maps.Add(trackedObjectInput);
 
             if (updatePlayerHandleMaps != null)
                 updatePlayerHandleMaps(maps);
@@ -233,12 +267,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             for (int i = 0; i < playerHandleMaps.Count; i++)
             {
                 var input = playerHandleMaps[i];
+                if (m_IgnoreLocking.ContainsKey(input))
+                    continue;
+
                 if (input != ami)
                     input.ResetControl(control);
             }
         }
 
-        public Node? GetDeviceNode(InputDevice device)
+        public Node GetDeviceNode(InputDevice device)
         {
             string[] tags;
 
@@ -257,7 +294,38 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     return node;
             }
 
-            return null;
+            return Node.None;
+        }
+
+        public void AddInputProcessor(IProcessInput processInput, object userData)
+        {
+            var rayOrigin = userData as Transform;
+            var inputDevice = inputDeviceForRayOrigin(rayOrigin);
+            var input = CreateActionMapInputForObject(processInput, inputDevice);
+
+            var order = 0;
+            var processInputAttribute = (ProcessInputAttribute)processInput.GetType().GetCustomAttributes(typeof(ProcessInputAttribute), true).FirstOrDefault();
+            if (processInputAttribute != null)
+                order = processInputAttribute.order;
+
+            m_InputProcessors.Add(new InputProcessor { processor = processInput, input = input, order = order });
+            m_InputProcessors.Sort((a, b) => b.order.CompareTo(a.order));
+        }
+
+        public void RemoveInputProcessor(IProcessInput processInput)
+        {
+            m_RemoveInputProcessorsCopy.Clear();
+            m_RemoveInputProcessorsCopy.AddRange(m_InputProcessors);
+            foreach (var processor in m_RemoveInputProcessorsCopy)
+            {
+                if (processor.processor == processInput)
+                {
+                    m_InputProcessors.Remove(processor);
+                    var customActionMap = processInput as ICustomActionMap;
+                    if (customActionMap != null)
+                        m_IgnoreLocking.Remove(processor.input);
+                }
+            }
         }
     }
 }

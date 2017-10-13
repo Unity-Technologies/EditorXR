@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SerializedPreferencesModule : MonoBehaviour, IInterfaceConnector
+    sealed class SerializedPreferencesModule : MonoBehaviour
     {
         List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
         SerializedPreferences m_Preferences;
@@ -72,27 +72,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void ConnectInterface(object obj, Transform rayOrigin = null)
+        public void AddSerializer(ISerializePreferences serializer)
         {
-            var serializer = obj as ISerializePreferences;
-            if (serializer != null)
-            {
-                if (m_Preferences != null)
-                    Deserialize(serializer);
+            if (m_Preferences != null)
+                Deserialize(serializer);
 
-                m_Serializers.Add(serializer);
-            }
+            m_Serializers.Add(serializer);
         }
 
-        public void DisconnectInterface(object obj, Transform rayOrigin = null)
+        public void RemoveSerializer(ISerializePreferences serializer)
         {
-            var serializer = obj as ISerializePreferences;
-            if (serializer != null)
-            {
-                // TODO: Support serializing one type at a time
-                SerializePreferences();
-                m_Serializers.Remove(serializer);
-            }
+            // TODO: Support serializing one type at a time
+            SerializePreferences();
+            m_Serializers.Remove(serializer);
         }
 
         internal void DeserializePreferences(string serializedPreferences)

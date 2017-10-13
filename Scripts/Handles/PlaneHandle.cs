@@ -20,12 +20,12 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
         [FlagsProperty]
         [SerializeField]
-        ConstrainedAxis m_Constraints;
+        AxisFlags m_Constraints;
 
         Plane m_Plane;
         readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
 
-        public ConstrainedAxis constraints { get { return m_Constraints; } }
+        public AxisFlags constraints { get { return m_Constraints; } }
 
         protected override HandleEventData GetHandleEventData(RayEventData eventData)
         {

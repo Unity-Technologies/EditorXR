@@ -6,7 +6,6 @@ using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -15,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         const float k_MainMenuAutoHideDelay = 0.125f;
         const float k_MainMenuAutoShowDelay = 0.25f;
 
-        class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>
+        class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>, IConnectInterfaces
         {
             internal class MenuHideData
             {
@@ -47,12 +46,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
             }
 
-            public void ConnectInterface(object obj, Transform rayOrigin = null)
+            public void ConnectInterface(object target, object userData = null)
             {
-                var settingsMenuProvider = obj as ISettingsMenuProvider;
+                var rayOrigin = userData as Transform;
+                var settingsMenuProvider = target as ISettingsMenuProvider;
                 if (settingsMenuProvider != null)
                 {
-                    m_SettingsMenuProviders[new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin)] = settingsMenuProvider;
+                    m_SettingsMenuProviders[new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuProvider;
                     foreach (var kvp in m_MainMenus)
                     {
                         if (rayOrigin == null || kvp.Key == rayOrigin)
@@ -60,10 +60,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
                 }
 
-                var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
+                var settingsMenuItemProvider = target as ISettingsMenuItemProvider;
                 if (settingsMenuItemProvider != null)
                 {
-                    m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin)] = settingsMenuItemProvider;
+                    m_SettingsMenuItemProviders[new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin)] = settingsMenuItemProvider;
                     foreach (var kvp in m_MainMenus)
                     {
                         if (rayOrigin == null || kvp.Key == rayOrigin)
@@ -71,8 +71,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
                 }
 
-                var mainMenu = obj as IMainMenu;
-                if (mainMenu != null)
+                var mainMenu = target as IMainMenu;
+                if (mainMenu != null && rayOrigin != null)
                 {
                     mainMenu.menuTools = m_MainMenuTools;
                     mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
@@ -81,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_MainMenus[rayOrigin] = mainMenu;
                 }
 
-                var menuOrigins = obj as IUsesMenuOrigins;
+                var menuOrigins = target as IUsesMenuOrigins;
                 if (menuOrigins != null)
                 {
                     Transform mainMenuOrigin;
@@ -96,9 +96,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            public void DisconnectInterface(object obj, Transform rayOrigin = null)
+            public void DisconnectInterface(object target, object userData = null)
             {
-                var settingsMenuProvider = obj as ISettingsMenuProvider;
+                var rayOrigin = userData as Transform;
+                var settingsMenuProvider = target as ISettingsMenuProvider;
                 if (settingsMenuProvider != null)
                 {
                     foreach (var kvp in m_MainMenus)
@@ -107,10 +108,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             kvp.Value.RemoveSettingsMenu(settingsMenuProvider);
                     }
 
-                    m_SettingsMenuProviders.Remove(new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin));
+                    m_SettingsMenuProviders.Remove(new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin));
                 }
 
-                var settingsMenuItemProvider = obj as ISettingsMenuItemProvider;
+                var settingsMenuItemProvider = target as ISettingsMenuItemProvider;
                 if (settingsMenuItemProvider != null)
                 {
                     foreach (var kvp in m_MainMenus)
@@ -119,11 +120,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             kvp.Value.RemoveSettingsMenuItem(settingsMenuItemProvider);
                     }
 
-                    m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(obj.GetType(), rayOrigin));
+                    m_SettingsMenuItemProviders.Remove(new KeyValuePair<Type, Transform>(target.GetType(), rayOrigin));
                 }
 
-                var mainMenu = obj as IMainMenu;
-                if (mainMenu != null)
+                var mainMenu = target as IMainMenu;
+                if (mainMenu != null && rayOrigin != null)
                     m_MainMenus.Remove(rayOrigin);
             }
 
@@ -138,8 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 alternateMenu.menuHideFlags = deviceData.currentTool is IExclusiveMode ? 0 : deviceData.menuHideData[alternateMenu].hideFlags;
 
                 // Move the Tools Menu buttons to an alternate position if the alternate menu will be shown
-                var toolsMenu = deviceData.ToolsMenu;
-                toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
+                deviceData.toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
             }
 
             static Transform GetCustomMenuOrigin(Transform rayOrigin)
@@ -272,7 +272,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         mainMenu.menuHideFlags = mainMenuHideFlags;
 
                     // Disable the main menu activator if any temporary states are set
-                    deviceData.ToolsMenu.mainMenuActivatorInteractable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0;
+                    deviceData.toolsMenu.mainMenuActivatorInteractable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0;
 
                     // Show/hide custom menu, if it exists
                     var customMenu = deviceData.customMenu;
@@ -509,45 +509,35 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return go;
             }
 
-            internal static IMainMenu SpawnMainMenu(Type type, InputDevice device, bool visible, out ActionMapInput input)
+            internal IMainMenu SpawnMainMenu(Type type, Transform rayOrigin)
             {
-                input = null;
-
                 if (!typeof(IMainMenu).IsAssignableFrom(type))
                     return null;
 
                 var mainMenu = (IMainMenu)ObjectUtils.AddComponent(type, evr.gameObject);
-                input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(mainMenu, device);
-                evr.m_Interfaces.ConnectInterfaces(mainMenu, device);
-                mainMenu.menuHideFlags = visible ? 0 : MenuHideFlags.Hidden;
+                this.ConnectInterfaces(mainMenu, rayOrigin);
 
                 return mainMenu;
             }
 
-            internal static IAlternateMenu SpawnAlternateMenu(Type type, InputDevice device, out ActionMapInput input)
+            internal IAlternateMenu SpawnAlternateMenu(Type type, Transform rayOrigin)
             {
-                input = null;
-
                 if (!typeof(IAlternateMenu).IsAssignableFrom(type))
                     return null;
 
                 var alternateMenu = (IAlternateMenu)ObjectUtils.AddComponent(type, evr.gameObject);
-                input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(alternateMenu, device);
-                evr.m_Interfaces.ConnectInterfaces(alternateMenu, device);
+                this.ConnectInterfaces(alternateMenu, rayOrigin);
 
                 return alternateMenu;
             }
 
-            internal static IToolsMenu SpawnToolsMenu(Type type, InputDevice device, out ActionMapInput input)
+            internal IToolsMenu SpawnToolsMenu(Type type, Transform rayOrigin)
             {
-                input = null;
-
                 if (!typeof(IToolsMenu).IsAssignableFrom(type))
                     return null;
 
                 var menu = (IToolsMenu)ObjectUtils.AddComponent(type, evr.gameObject);
-                input = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(menu, device);
-                evr.m_Interfaces.ConnectInterfaces(menu, device);
+                this.ConnectInterfaces(menu, rayOrigin);
 
                 return menu;
             }
