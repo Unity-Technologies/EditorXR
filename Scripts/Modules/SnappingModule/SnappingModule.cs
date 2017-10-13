@@ -11,954 +11,954 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
-		IRaycast, IStandardIgnoreList
-	{
-		const float k_GroundPlaneScale = 1000f;
+    [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
+    sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
+        IRaycast, IStandardIgnoreList
+    {
+        const float k_GroundPlaneScale = 1000f;
 
-		const float k_GroundSnappingMaxRayLength = 25f;
-		const float k_SurfaceSnappingMaxRayLength = 100f;
+        const float k_GroundSnappingMaxRayLength = 25f;
+        const float k_SurfaceSnappingMaxRayLength = 100f;
 
-		const float k_GroundHeight = 0f;
+        const float k_GroundHeight = 0f;
 
-		const float k_BreakDistance = 0.04f;
-		const float k_SnapDistanceScale = 0.75f;
-		const float k_BlockedBreakScale = 5f;
-		const float k_MaxRayDot = -0.5f;
-		const float k_RayExtra = 0.02f;
+        const float k_BreakDistance = 0.04f;
+        const float k_SnapDistanceScale = 0.75f;
+        const float k_BlockedBreakScale = 5f;
+        const float k_MaxRayDot = -0.5f;
+        const float k_RayExtra = 0.02f;
 
-		const float k_WidgetScale = 0.03f;
+        const float k_WidgetScale = 0.03f;
 
-		const string k_MaterialColorLeftProperty = "_ColorLeft";
-		const string k_MaterialColorRightProperty = "_ColorRight";
+        const string k_MaterialColorLeftProperty = "_ColorLeft";
+        const string k_MaterialColorRightProperty = "_ColorRight";
 
-		[SerializeField]
-		GameObject m_GroundPlane;
+        [SerializeField]
+        GameObject m_GroundPlane;
 
-		[SerializeField]
-		GameObject m_Widget;
+        [SerializeField]
+        GameObject m_Widget;
 
-		[SerializeField]
-		GameObject m_SettingsMenuPrefab;
+        [SerializeField]
+        GameObject m_SettingsMenuPrefab;
 
-		[SerializeField]
-		Material m_ButtonHighlightMaterial;
+        [SerializeField]
+        Material m_ButtonHighlightMaterial;
 
-		class SnappingState
-		{
-			public Vector3 currentPosition { get; set; }
-			public bool groundSnapping { get; set; }
-			public bool surfaceSnapping { get; set; }
+        class SnappingState
+        {
+            public Vector3 currentPosition { get; set; }
+            public bool groundSnapping { get; set; }
+            public bool surfaceSnapping { get; set; }
 
-			public bool snapping { get { return surfaceSnapping || groundSnapping; } }
+            public bool snapping { get { return surfaceSnapping || groundSnapping; } }
 
-			public Quaternion startRotation { get; private set; }
-			public Bounds identityBounds { get; private set; }
+            public Quaternion startRotation { get; private set; }
+            public Bounds identityBounds { get; private set; }
 
-			public Transform widget { get; set; }
-			public Vector3 snappingPosition { get; set; }
-			public Quaternion snappingRotation { get; set; }
-			public Vector3 snappingNormal { get; set; }
-			public int directionIndex { get; set; }
+            public Transform widget { get; set; }
+            public Vector3 snappingPosition { get; set; }
+            public Quaternion snappingRotation { get; set; }
+            public Vector3 snappingNormal { get; set; }
+            public int directionIndex { get; set; }
 
-			public SnappingState(Transform[] transforms, Vector3 position, Quaternion rotation)
-			{
-				currentPosition = position;
-				startRotation = rotation;
-				Bounds identityBounds;
+            public SnappingState(Transform[] transforms, Vector3 position, Quaternion rotation)
+            {
+                currentPosition = position;
+                startRotation = rotation;
+                Bounds identityBounds;
 
-				if (transforms.Length == 1)
-				{
-					var transform = transforms[0];
-					var objRotation = transform.rotation;
+                if (transforms.Length == 1)
+                {
+                    var transform = transforms[0];
+                    var objRotation = transform.rotation;
 
-					transform.rotation = Quaternion.identity;
-					identityBounds = ObjectUtils.GetBounds(transform);
-					transform.rotation = objRotation;
-				}
-				else
-				{
-					float angle;
-					Vector3 axis;
-					rotation.ToAngleAxis(out angle, out axis);
-					foreach (var transform in transforms)
-					{
-						transform.transform.RotateAround(position, axis, -angle);
-					}
+                    transform.rotation = Quaternion.identity;
+                    identityBounds = ObjectUtils.GetBounds(transform);
+                    transform.rotation = objRotation;
+                }
+                else
+                {
+                    float angle;
+                    Vector3 axis;
+                    rotation.ToAngleAxis(out angle, out axis);
+                    foreach (var transform in transforms)
+                    {
+                        transform.transform.RotateAround(position, axis, -angle);
+                    }
 
-					identityBounds = ObjectUtils.GetBounds(transforms);
+                    identityBounds = ObjectUtils.GetBounds(transforms);
 
-					foreach (var transform in transforms)
-					{
-						transform.transform.RotateAround(position, axis, angle);
-					}
-				}
-				identityBounds.center -= position;
-				this.identityBounds = identityBounds;
-			}
+                    foreach (var transform in transforms)
+                    {
+                        transform.transform.RotateAround(position, axis, angle);
+                    }
+                }
+                identityBounds.center -= position;
+                this.identityBounds = identityBounds;
+            }
 
-			public void OnDestroy()
-			{
-				if (widget)
-					ObjectUtils.Destroy(widget.gameObject);
-			}
-		}
+            public void OnDestroy()
+            {
+                if (widget)
+                    ObjectUtils.Destroy(widget.gameObject);
+            }
+        }
 
-		struct SnappingDirection
-		{
-			public Vector3 direction;
-			public Vector3 upVector;
-			public Quaternion rotationOffset;
-		}
+        struct SnappingDirection
+        {
+            public Vector3 direction;
+            public Vector3 upVector;
+            public Quaternion rotationOffset;
+        }
 
-		static readonly SnappingDirection[] k_Directions =
-		{
-			new SnappingDirection
-			{
-				direction = Vector3.down,
-				upVector = Vector3.back,
-				rotationOffset = Quaternion.AngleAxis(90, Vector3.right)
-			},
-			new SnappingDirection
-			{
-				direction = Vector3.left,
-				upVector = Vector3.up,
-				rotationOffset = Quaternion.AngleAxis(90, Vector3.down)
-			},
-			new SnappingDirection
-			{
-				direction = Vector3.back,
-				upVector = Vector3.up,
-				rotationOffset = Quaternion.identity
-			},
-			new SnappingDirection
-			{
-				direction = Vector3.right,
-				upVector = Vector3.up,
-				rotationOffset = Quaternion.AngleAxis(90, Vector3.up)
-			},
-			new SnappingDirection
-			{
-				direction = Vector3.forward,
-				upVector = Vector3.up,
-				rotationOffset = Quaternion.AngleAxis(180, Vector3.up)
-			},
-			new SnappingDirection
-			{
-				direction = Vector3.up,
-				upVector = Vector3.forward,
-				rotationOffset = Quaternion.AngleAxis(90, Vector3.left)
-			}
-		};
+        static readonly SnappingDirection[] k_Directions =
+        {
+            new SnappingDirection
+            {
+                direction = Vector3.down,
+                upVector = Vector3.back,
+                rotationOffset = Quaternion.AngleAxis(90, Vector3.right)
+            },
+            new SnappingDirection
+            {
+                direction = Vector3.left,
+                upVector = Vector3.up,
+                rotationOffset = Quaternion.AngleAxis(90, Vector3.down)
+            },
+            new SnappingDirection
+            {
+                direction = Vector3.back,
+                upVector = Vector3.up,
+                rotationOffset = Quaternion.identity
+            },
+            new SnappingDirection
+            {
+                direction = Vector3.right,
+                upVector = Vector3.up,
+                rotationOffset = Quaternion.AngleAxis(90, Vector3.up)
+            },
+            new SnappingDirection
+            {
+                direction = Vector3.forward,
+                upVector = Vector3.up,
+                rotationOffset = Quaternion.AngleAxis(180, Vector3.up)
+            },
+            new SnappingDirection
+            {
+                direction = Vector3.up,
+                upVector = Vector3.forward,
+                rotationOffset = Quaternion.AngleAxis(90, Vector3.left)
+            }
+        };
 
-		[Serializable]
-		class Preferences
-		{
-			[SerializeField]
-			bool m_DisableAll;
+        [Serializable]
+        class Preferences
+        {
+            [SerializeField]
+            bool m_DisableAll;
 
-			// Snapping Modes
-			[SerializeField]
-			bool m_GroundSnappingEnabled = true;
-			[SerializeField]
-			bool m_SurfaceSnappingEnabled = true;
+            // Snapping Modes
+            [SerializeField]
+            bool m_GroundSnappingEnabled = true;
+            [SerializeField]
+            bool m_SurfaceSnappingEnabled = true;
 
-			// Modifiers (do not require reset on value change)
-			[SerializeField]
-			bool m_PivotSnappingEnabled;
-			[SerializeField]
-			bool m_RotationSnappingEnabled;
-			[SerializeField]
-			bool m_LimitRadius = true;
+            // Modifiers (do not require reset on value change)
+            [SerializeField]
+            bool m_PivotSnappingEnabled;
+            [SerializeField]
+            bool m_RotationSnappingEnabled;
+            [SerializeField]
+            bool m_LimitRadius = true;
 
-			// Sources
-			[SerializeField]
-			bool m_ManipulatorSnappingEnabled = true;
-			[SerializeField]
-			bool m_DirectSnappingEnabled = true;
+            // Sources
+            [SerializeField]
+            bool m_ManipulatorSnappingEnabled = true;
+            [SerializeField]
+            bool m_DirectSnappingEnabled = true;
 
-			public bool disableAll
-			{
-				get { return m_DisableAll; }
-				set { m_DisableAll = value; }
-			}
+            public bool disableAll
+            {
+                get { return m_DisableAll; }
+                set { m_DisableAll = value; }
+            }
 
-			public bool groundSnappingEnabled
-			{
-				get { return m_GroundSnappingEnabled; }
-				set { m_GroundSnappingEnabled = value; }
-			}
+            public bool groundSnappingEnabled
+            {
+                get { return m_GroundSnappingEnabled; }
+                set { m_GroundSnappingEnabled = value; }
+            }
 
-			public bool surfaceSnappingEnabled
-			{
-				get { return m_SurfaceSnappingEnabled; }
-				set { m_SurfaceSnappingEnabled = value; }
-			}
+            public bool surfaceSnappingEnabled
+            {
+                get { return m_SurfaceSnappingEnabled; }
+                set { m_SurfaceSnappingEnabled = value; }
+            }
 
-			public bool pivotSnappingEnabled
-			{
-				get { return m_PivotSnappingEnabled; }
-				set { m_PivotSnappingEnabled = value; }
-			}
+            public bool pivotSnappingEnabled
+            {
+                get { return m_PivotSnappingEnabled; }
+                set { m_PivotSnappingEnabled = value; }
+            }
 
-			public bool rotationSnappingEnabled
-			{
-				get { return m_RotationSnappingEnabled; }
-				set { m_RotationSnappingEnabled = value; }
-			}
+            public bool rotationSnappingEnabled
+            {
+                get { return m_RotationSnappingEnabled; }
+                set { m_RotationSnappingEnabled = value; }
+            }
 
-			public bool limitRadius
-			{
-				get { return m_LimitRadius; }
-				set { m_LimitRadius = value; }
-			}
+            public bool limitRadius
+            {
+                get { return m_LimitRadius; }
+                set { m_LimitRadius = value; }
+            }
 
-			public bool manipulatorSnappingEnabled
-			{
-				get { return m_ManipulatorSnappingEnabled; }
-				set { m_ManipulatorSnappingEnabled = value; }
-			}
+            public bool manipulatorSnappingEnabled
+            {
+                get { return m_ManipulatorSnappingEnabled; }
+                set { m_ManipulatorSnappingEnabled = value; }
+            }
 
-			public bool directSnappingEnabled
-			{
-				get { return m_DirectSnappingEnabled; }
-				set { m_DirectSnappingEnabled = value; }
-			}
-		}
+            public bool directSnappingEnabled
+            {
+                get { return m_DirectSnappingEnabled; }
+                set { m_DirectSnappingEnabled = value; }
+            }
+        }
 
-		Preferences m_Preferences = new Preferences();
+        Preferences m_Preferences = new Preferences();
 
-		SnappingModuleSettingsUI m_SnappingModuleSettingsUI;
-		Material m_ButtonHighlightMaterialClone;
+        SnappingModuleSettingsUI m_SnappingModuleSettingsUI;
+        Material m_ButtonHighlightMaterialClone;
 
-		readonly Dictionary<Transform, Dictionary<Transform, SnappingState>> m_SnappingStates = new Dictionary<Transform, Dictionary<Transform, SnappingState>>();
+        readonly Dictionary<Transform, Dictionary<Transform, SnappingState>> m_SnappingStates = new Dictionary<Transform, Dictionary<Transform, SnappingState>>();
 
-		public bool widgetEnabled { get; set; }
+        public bool widgetEnabled { get; set; }
 
-		public List<Renderer> ignoreList { private get; set; }
+        public List<Renderer> ignoreList { private get; set; }
 
-		public GameObject settingsMenuPrefab { get { return m_SettingsMenuPrefab; } }
+        public GameObject settingsMenuPrefab { get { return m_SettingsMenuPrefab; } }
 
-		public GameObject settingsMenuInstance
-		{
-			set
-			{
-				if (value == null)
-				{
-					m_SnappingModuleSettingsUI = null;
-					return;
-				}
+        public GameObject settingsMenuInstance
+        {
+            set
+            {
+                if (value == null)
+                {
+                    m_SnappingModuleSettingsUI = null;
+                    return;
+                }
 
-				m_SnappingModuleSettingsUI = value.GetComponent<SnappingModuleSettingsUI>();
-				SetupUI();
-			}
-		}
+                m_SnappingModuleSettingsUI = value.GetComponent<SnappingModuleSettingsUI>();
+                SetupUI();
+            }
+        }
 
-		public bool snappingEnabled
-		{
-			get { return !m_Preferences.disableAll && (groundSnappingEnabled || surfaceSnappingEnabled); }
-			set
-			{
-				Reset();
-				m_Preferences.disableAll = !value;
+        public bool snappingEnabled
+        {
+            get { return !m_Preferences.disableAll && (groundSnappingEnabled || surfaceSnappingEnabled); }
+            set
+            {
+                Reset();
+                m_Preferences.disableAll = !value;
 
-				if (m_SnappingModuleSettingsUI)
-					m_SnappingModuleSettingsUI.snappingEnabled.isOn = value;
-			}
-		}
+                if (m_SnappingModuleSettingsUI)
+                    m_SnappingModuleSettingsUI.snappingEnabled.isOn = value;
+            }
+        }
 
-		public bool groundSnappingEnabled
-		{
-			get { return m_Preferences.groundSnappingEnabled; }
-			set
-			{
-				if (value == m_Preferences.groundSnappingEnabled)
-					return;
+        public bool groundSnappingEnabled
+        {
+            get { return m_Preferences.groundSnappingEnabled; }
+            set
+            {
+                if (value == m_Preferences.groundSnappingEnabled)
+                    return;
 
-				Reset();
-				m_Preferences.groundSnappingEnabled = value;
+                Reset();
+                m_Preferences.groundSnappingEnabled = value;
 
-				if (m_SnappingModuleSettingsUI)
-					m_SnappingModuleSettingsUI.groundSnappingEnabled.isOn = value;
-			}
-		}
+                if (m_SnappingModuleSettingsUI)
+                    m_SnappingModuleSettingsUI.groundSnappingEnabled.isOn = value;
+            }
+        }
 
-		public bool surfaceSnappingEnabled
-		{
-			get { return m_Preferences.surfaceSnappingEnabled; }
-			set
-			{
-				if (value == m_Preferences.surfaceSnappingEnabled)
-					return;
+        public bool surfaceSnappingEnabled
+        {
+            get { return m_Preferences.surfaceSnappingEnabled; }
+            set
+            {
+                if (value == m_Preferences.surfaceSnappingEnabled)
+                    return;
 
-				Reset();
-				m_Preferences.surfaceSnappingEnabled = value;
+                Reset();
+                m_Preferences.surfaceSnappingEnabled = value;
 
-				if (m_SnappingModuleSettingsUI)
-					m_SnappingModuleSettingsUI.surfaceSnappingEnabled.isOn = value;
-			}
-		}
+                if (m_SnappingModuleSettingsUI)
+                    m_SnappingModuleSettingsUI.surfaceSnappingEnabled.isOn = value;
+            }
+        }
 
-		public bool pivotSnappingEnabled
-		{
-			get { return m_Preferences.pivotSnappingEnabled; }
-			set
-			{
-				m_Preferences.pivotSnappingEnabled = value;
+        public bool pivotSnappingEnabled
+        {
+            get { return m_Preferences.pivotSnappingEnabled; }
+            set
+            {
+                m_Preferences.pivotSnappingEnabled = value;
 
-				if (m_SnappingModuleSettingsUI)
-					m_SnappingModuleSettingsUI.pivotSnappingEnabled.isOn = value;
-			}
-		}
+                if (m_SnappingModuleSettingsUI)
+                    m_SnappingModuleSettingsUI.pivotSnappingEnabled.isOn = value;
+            }
+        }
 
-		public bool rotationSnappingEnabled
-		{
-			get { return m_Preferences.rotationSnappingEnabled; }
-			set
-			{
-				m_Preferences.rotationSnappingEnabled = value;
+        public bool rotationSnappingEnabled
+        {
+            get { return m_Preferences.rotationSnappingEnabled; }
+            set
+            {
+                m_Preferences.rotationSnappingEnabled = value;
 
-				if (m_SnappingModuleSettingsUI)
-					m_SnappingModuleSettingsUI.rotationSnappingEnabled.isOn = value;
-			}
-		}
+                if (m_SnappingModuleSettingsUI)
+                    m_SnappingModuleSettingsUI.rotationSnappingEnabled.isOn = value;
+            }
+        }
 
-		public bool limitRadius
-		{
-			get { return m_Preferences.limitRadius; }
-			set
-			{
-				m_Preferences.limitRadius = value;
+        public bool limitRadius
+        {
+            get { return m_Preferences.limitRadius; }
+            set
+            {
+                m_Preferences.limitRadius = value;
 
-				if (m_SnappingModuleSettingsUI)
-					m_SnappingModuleSettingsUI.limitRadius.isOn = value;
-			}
-		}
+                if (m_SnappingModuleSettingsUI)
+                    m_SnappingModuleSettingsUI.limitRadius.isOn = value;
+            }
+        }
 
-		public bool manipulatorSnappingEnabled
-		{
-			get { return m_Preferences.manipulatorSnappingEnabled; }
-			set
-			{
-				m_Preferences.manipulatorSnappingEnabled = value;
+        public bool manipulatorSnappingEnabled
+        {
+            get { return m_Preferences.manipulatorSnappingEnabled; }
+            set
+            {
+                m_Preferences.manipulatorSnappingEnabled = value;
 
-				if (m_SnappingModuleSettingsUI)
-					m_SnappingModuleSettingsUI.manipulatorSnappingEnabled.isOn = value;
-			}
-		}
+                if (m_SnappingModuleSettingsUI)
+                    m_SnappingModuleSettingsUI.manipulatorSnappingEnabled.isOn = value;
+            }
+        }
 
-		public bool directSnappingEnabled
-		{
+        public bool directSnappingEnabled
+        {
             get { return m_Preferences.directSnappingEnabled; }
-			set
-			{
-				m_Preferences.directSnappingEnabled = value;
+            set
+            {
+                m_Preferences.directSnappingEnabled = value;
 
-				if (m_SnappingModuleSettingsUI)
-					m_SnappingModuleSettingsUI.directSnappingEnabled.isOn = value;
-			}
-		}
+                if (m_SnappingModuleSettingsUI)
+                    m_SnappingModuleSettingsUI.directSnappingEnabled.isOn = value;
+            }
+        }
 
-		public Transform rayOrigin { get { return null; } }
+        public Transform rayOrigin { get { return null; } }
 
-		// Local method use only -- created here to reduce garbage collection
-		readonly List<Renderer> m_CombinedIgnoreList = new List<Renderer>();
-		Transform[] m_SingleTransformArray = new Transform[1];
+        // Local method use only -- created here to reduce garbage collection
+        readonly List<Renderer> m_CombinedIgnoreList = new List<Renderer>();
+        Transform[] m_SingleTransformArray = new Transform[1];
 
-		void Awake()
-		{
-			m_GroundPlane = ObjectUtils.Instantiate(m_GroundPlane, transform);
-			m_GroundPlane.SetActive(false);
+        void Awake()
+        {
+            m_GroundPlane = ObjectUtils.Instantiate(m_GroundPlane, transform);
+            m_GroundPlane.SetActive(false);
 
-			m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
+            m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
 
-			widgetEnabled = true;
-		}
+            widgetEnabled = true;
+        }
 
-		public object OnSerializePreferences()
-		{
-			return m_Preferences;
-		}
+        public object OnSerializePreferences()
+        {
+            return m_Preferences;
+        }
 
-		public void OnDeserializePreferences(object obj)
-		{
-			m_Preferences = (Preferences)obj;
-		}
+        public void OnDeserializePreferences(object obj)
+        {
+            m_Preferences = (Preferences)obj;
+        }
 
-		void Update()
-		{
-			if (snappingEnabled)
-			{
-				var camera = CameraUtils.GetMainCamera();
-				var shouldActivateGroundPlane = false;
-				foreach (var statesForRay in m_SnappingStates)
-				{
-					foreach (var kvp in statesForRay.Value)
-					{
-						var state = kvp.Value;
-						if (state.groundSnapping)
-							shouldActivateGroundPlane = true;
+        void Update()
+        {
+            if (snappingEnabled)
+            {
+                var camera = CameraUtils.GetMainCamera();
+                var shouldActivateGroundPlane = false;
+                foreach (var statesForRay in m_SnappingStates)
+                {
+                    foreach (var kvp in statesForRay.Value)
+                    {
+                        var state = kvp.Value;
+                        if (state.groundSnapping)
+                            shouldActivateGroundPlane = true;
 
-						var widget = state.widget;
-						if (state.surfaceSnapping && widgetEnabled)
-						{
-							if (widget == null)
-							{
-								widget = ObjectUtils.Instantiate(m_Widget, transform).transform;
-								state.widget = widget;
-							}
+                        var widget = state.widget;
+                        if (state.surfaceSnapping && widgetEnabled)
+                        {
+                            if (widget == null)
+                            {
+                                widget = ObjectUtils.Instantiate(m_Widget, transform).transform;
+                                state.widget = widget;
+                            }
 
-							widget.gameObject.SetActive(true);
+                            widget.gameObject.SetActive(true);
 
-							var distanceToCamera = Vector3.Distance(camera.transform.position, state.snappingPosition);
-							widget.position = state.snappingPosition;
-							widget.rotation = state.snappingRotation;
-							widget.localScale = Vector3.one * k_WidgetScale * distanceToCamera;
-						}
-						else if(state.widget != null)
-							widget.gameObject.SetActive(false);
-					}
-				}
+                            var distanceToCamera = Vector3.Distance(camera.transform.position, state.snappingPosition);
+                            widget.position = state.snappingPosition;
+                            widget.rotation = state.snappingRotation;
+                            widget.localScale = Vector3.one * k_WidgetScale * distanceToCamera;
+                        }
+                        else if (state.widget != null)
+                            widget.gameObject.SetActive(false);
+                    }
+                }
 
-				m_GroundPlane.SetActive(shouldActivateGroundPlane);
+                m_GroundPlane.SetActive(shouldActivateGroundPlane);
 
-				if (shouldActivateGroundPlane)
-					m_GroundPlane.transform.localScale = Vector3.one * k_GroundPlaneScale * this.GetViewerScale();
-			}
-			else
-			{
-				m_GroundPlane.SetActive(false);
-				m_Widget.SetActive(false);
-			}
-		}
+                if (shouldActivateGroundPlane)
+                    m_GroundPlane.transform.localScale = Vector3.one * k_GroundPlaneScale * this.GetViewerScale();
+            }
+            else
+            {
+                m_GroundPlane.SetActive(false);
+                m_Widget.SetActive(false);
+            }
+        }
 
         public bool ManipulatorSnap(Transform rayOrigin, Transform[] transforms, ref Vector3 position, ref Quaternion rotation, Vector3 delta, AxisFlags constraints, PivotMode pivotMode)
-		{
-			if (transforms.Length == 0)
-				return false;
+        {
+            if (transforms.Length == 0)
+                return false;
 
-			if (delta == Vector3.zero)
-				return false;
+            if (delta == Vector3.zero)
+                return false;
 
-			if (snappingEnabled && manipulatorSnappingEnabled)
-			{
-				var state = GetSnappingState(rayOrigin, transforms, position, rotation);
+            if (snappingEnabled && manipulatorSnappingEnabled)
+            {
+                var state = GetSnappingState(rayOrigin, transforms, position, rotation);
 
-				state.currentPosition += delta;
-				var targetPosition = state.currentPosition;
-				var targetRotation = state.startRotation;
+                state.currentPosition += delta;
+                var targetPosition = state.currentPosition;
+                var targetRotation = state.startRotation;
 
-				AddToIgnoreList(transforms);
+                AddToIgnoreList(transforms);
 
-				var breakScale = Vector3.Distance(CameraUtils.GetMainCamera().transform.position, position);
+                var breakScale = Vector3.Distance(CameraUtils.GetMainCamera().transform.position, position);
 
-				switch (constraints)
-				{
-					case 0:
-						if (limitRadius)
-						{
-							if (LocalSnapToSurface(ref position, ref rotation, targetPosition, targetRotation, state))
-								return true;
-						}
-						else
-						{
-							var pointerRay = new Ray(rayOrigin.position, rayOrigin.forward);
-							if (surfaceSnappingEnabled)
-							{
-								var bounds = state.identityBounds;
-								var boundsExtents = bounds.extents;
-								var projectedExtents = Vector3.Project(boundsExtents, Vector3.down);
-								var offset = projectedExtents - bounds.center;
-								var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
-								var startRotation = state.startRotation;
-								var upVector = startRotation * Vector3.back;
-								var maxRayLength = this.GetViewerScale() * k_SurfaceSnappingMaxRayLength;
-								
-								if (SnapToSurface(pointerRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, maxRayLength))
-									return true;
+                switch (constraints)
+                {
+                    case 0:
+                        if (limitRadius)
+                        {
+                            if (LocalSnapToSurface(ref position, ref rotation, targetPosition, targetRotation, state))
+                                return true;
+                        }
+                        else
+                        {
+                            var pointerRay = new Ray(rayOrigin.position, rayOrigin.forward);
+                            if (surfaceSnappingEnabled)
+                            {
+                                var bounds = state.identityBounds;
+                                var boundsExtents = bounds.extents;
+                                var projectedExtents = Vector3.Project(boundsExtents, Vector3.down);
+                                var offset = projectedExtents - bounds.center;
+                                var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
+                                var startRotation = state.startRotation;
+                                var upVector = startRotation * Vector3.back;
+                                var maxRayLength = this.GetViewerScale() * k_SurfaceSnappingMaxRayLength;
 
-								state.surfaceSnapping = false;
-							}
+                                if (SnapToSurface(pointerRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, maxRayLength))
+                                    return true;
 
-							if (groundSnappingEnabled)
-							{
-								var raycastDistance = this.GetViewerScale() * k_GroundSnappingMaxRayLength;
-								if (SnapToGround(pointerRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance))
-									return true;
-							}
+                                state.surfaceSnapping = false;
+                            }
 
-							if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakScale * k_BreakDistance))
-								return true;
-						}
+                            if (groundSnappingEnabled)
+                            {
+                                var raycastDistance = this.GetViewerScale() * k_GroundSnappingMaxRayLength;
+                                if (SnapToGround(pointerRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance))
+                                    return true;
+                            }
 
-						break;
-					default:
-						if (ManipulatorSnapConstrained(ref position, ref rotation, delta, targetPosition, targetRotation, state, breakScale * k_BreakDistance, constraints, pivotMode))
-							return true;
-						break;
-				}
-			}
+                            if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakScale * k_BreakDistance))
+                                return true;
+                        }
 
-			position += delta;
+                        break;
+                    default:
+                        if (ManipulatorSnapConstrained(ref position, ref rotation, delta, targetPosition, targetRotation, state, breakScale * k_BreakDistance, constraints, pivotMode))
+                            return true;
+                        break;
+                }
+            }
 
-			return false;
-		}
+            position += delta;
 
-		public bool DirectSnap(Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
-		{
-			if (snappingEnabled && directSnappingEnabled)
-			{
-				var state = GetSnappingState(rayOrigin, transform, position, rotation);
+            return false;
+        }
 
-				state.currentPosition = targetPosition;
+        public bool DirectSnap(Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation)
+        {
+            if (snappingEnabled && directSnappingEnabled)
+            {
+                var state = GetSnappingState(rayOrigin, transform, position, rotation);
 
-				AddToIgnoreList(transform);
-				if (LocalSnapToSurface(ref position, ref rotation, targetPosition, targetRotation, state))
-					return true;
-			}
+                state.currentPosition = targetPosition;
 
-			position = targetPosition;
-			rotation = targetRotation;
+                AddToIgnoreList(transform);
+                if (LocalSnapToSurface(ref position, ref rotation, targetPosition, targetRotation, state))
+                    return true;
+            }
 
-			return false;
-		}
+            position = targetPosition;
+            rotation = targetRotation;
+
+            return false;
+        }
 
         bool ManipulatorSnapConstrained(ref Vector3 position, ref Quaternion rotation, Vector3 delta, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float raycastDistance, AxisFlags constraints, PivotMode pivotMode)
-		{
-			var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
-			var startRotation = state.startRotation;
-			var upVector = startRotation * Vector3.back;
+        {
+            var rotationOffset = Quaternion.AngleAxis(90, Vector3.right);
+            var startRotation = state.startRotation;
+            var upVector = startRotation * Vector3.back;
 
-			var direction = delta.normalized;
-			var bounds = state.identityBounds;
-			var projectedExtents = Vector3.Project(rotation * bounds.extents, direction);
-			var axisRay = new Ray(targetPosition, direction);
+            var direction = delta.normalized;
+            var bounds = state.identityBounds;
+            var projectedExtents = Vector3.Project(rotation * bounds.extents, direction);
+            var axisRay = new Ray(targetPosition, direction);
 
-			var objectCenter = Vector3.zero;
-			var offset = Vector3.zero;
+            var objectCenter = Vector3.zero;
+            var offset = Vector3.zero;
 
-			if (!pivotSnappingEnabled)
-			{
-				objectCenter = targetPosition;
-				if (pivotMode != PivotMode.Center)
-					objectCenter += targetRotation * state.identityBounds.center;
+            if (!pivotSnappingEnabled)
+            {
+                objectCenter = targetPosition;
+                if (pivotMode != PivotMode.Center)
+                    objectCenter += targetRotation * state.identityBounds.center;
 
-				switch (constraints)
-				{
+                switch (constraints)
+                {
                     case AxisFlags.X:
-						if (Vector3.Dot(rotation * Vector3.right, direction) > 0)
-							projectedExtents *= -1;
-						break;
+                        if (Vector3.Dot(rotation * Vector3.right, direction) > 0)
+                            projectedExtents *= -1;
+                        break;
                     case AxisFlags.Y:
-						if (Vector3.Dot(rotation * Vector3.up, direction) > 0)
-							projectedExtents *= -1;
-						break;
+                        if (Vector3.Dot(rotation * Vector3.up, direction) > 0)
+                            projectedExtents *= -1;
+                        break;
                     case AxisFlags.Z:
-						if (Vector3.Dot(rotation * Vector3.forward, direction) > 0)
-							projectedExtents *= -1;
-						break;
-				}
+                        if (Vector3.Dot(rotation * Vector3.forward, direction) > 0)
+                            projectedExtents *= -1;
+                        break;
+                }
 
-				axisRay.origin = objectCenter - projectedExtents;
-				offset = targetPosition - axisRay.origin;
-			}
+                axisRay.origin = objectCenter - projectedExtents;
+                offset = targetPosition - axisRay.origin;
+            }
 
-			if (state.snapping)
-			{
-				var breakDistance = raycastDistance;
-				if (Vector3.Dot(targetPosition - position, state.snappingNormal) < 0)
-					breakDistance *= k_BlockedBreakScale;
+            if (state.snapping)
+            {
+                var breakDistance = raycastDistance;
+                if (Vector3.Dot(targetPosition - position, state.snappingNormal) < 0)
+                    breakDistance *= k_BlockedBreakScale;
 
-				TryBreakSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
-				return true;
-			}
+                TryBreakSnap(ref position, ref rotation, targetPosition, startRotation, state, breakDistance);
+                return true;
+            }
 
-			if (surfaceSnappingEnabled && SnapToSurface(axisRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance, constrained: true))
-				return true;
+            if (surfaceSnappingEnabled && SnapToSurface(axisRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance, constrained: true))
+                return true;
 
-			if (groundSnappingEnabled && SnapToGround(axisRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, offset, true))
-				return true;
+            if (groundSnappingEnabled && SnapToGround(axisRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, offset, true))
+                return true;
 
-			// Check other direction
-			axisRay.direction *= -1;
-			if (!pivotSnappingEnabled)
-			{
-				axisRay.origin = objectCenter + projectedExtents;
-				offset = targetPosition - axisRay.origin;
-			}
+            // Check other direction
+            axisRay.direction *= -1;
+            if (!pivotSnappingEnabled)
+            {
+                axisRay.origin = objectCenter + projectedExtents;
+                offset = targetPosition - axisRay.origin;
+            }
 
-			if (surfaceSnappingEnabled && SnapToSurface(axisRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance, constrained: true))
-				return true;
+            if (surfaceSnappingEnabled && SnapToSurface(axisRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance, constrained: true))
+                return true;
 
-			if (groundSnappingEnabled && SnapToGround(axisRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, offset, true))
-				return true;
+            if (groundSnappingEnabled && SnapToGround(axisRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, offset, true))
+                return true;
 
-			if (TryBreakSnap(ref position, ref rotation, targetPosition, startRotation, state, raycastDistance))
-				return true;
+            if (TryBreakSnap(ref position, ref rotation, targetPosition, startRotation, state, raycastDistance))
+                return true;
 
-			return false;
-		}
+            return false;
+        }
 
-		bool LocalSnapToSurface(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state)
-		{
-			var bounds = state.identityBounds;
-			var boundsCenter = bounds.center;
-			var boundsExtents = bounds.extents;
+        bool LocalSnapToSurface(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state)
+        {
+            var bounds = state.identityBounds;
+            var boundsCenter = bounds.center;
+            var boundsExtents = bounds.extents;
 
-			var viewerScale = this.GetViewerScale();
-			var breakDistance = viewerScale * k_BreakDistance;
+            var viewerScale = this.GetViewerScale();
+            var breakDistance = viewerScale * k_BreakDistance;
 
-			if (state.snapping)
-			{
-				var directionIndex = state.directionIndex;
-				var direction = k_Directions[directionIndex];
-				var upVector = targetRotation * direction.upVector;
-				var directionVector = direction.direction;
-				var rotationOffset = direction.rotationOffset;
+            if (state.snapping)
+            {
+                var directionIndex = state.directionIndex;
+                var direction = k_Directions[directionIndex];
+                var upVector = targetRotation * direction.upVector;
+                var directionVector = direction.direction;
+                var rotationOffset = direction.rotationOffset;
 
-				var projectedExtents = Vector3.Project(boundsExtents, directionVector);
-				var offset = -boundsCenter;
-				if (directionIndex > 2)
-					offset -= projectedExtents;
-				else
-					offset += projectedExtents;
+                var projectedExtents = Vector3.Project(boundsExtents, directionVector);
+                var offset = -boundsCenter;
+                if (directionIndex > 2)
+                    offset -= projectedExtents;
+                else
+                    offset += projectedExtents;
 
-				offset = rotation * offset;
+                offset = rotation * offset;
 
-				var snappingNormal = state.snappingNormal;
-				var breakVector = targetPosition - position;
-				if (Vector3.Dot(snappingNormal, breakVector) < 0)
-				{
-					var boundsBreakDist = breakDistance * k_BlockedBreakScale;
-					var raycastDistance = projectedExtents.magnitude + breakVector.magnitude;
-					directionVector = targetRotation * directionVector;
+                var snappingNormal = state.snappingNormal;
+                var breakVector = targetPosition - position;
+                if (Vector3.Dot(snappingNormal, breakVector) < 0)
+                {
+                    var boundsBreakDist = breakDistance * k_BlockedBreakScale;
+                    var raycastDistance = projectedExtents.magnitude + breakVector.magnitude;
+                    directionVector = targetRotation * directionVector;
 
-					var boundsRay = new Ray(targetPosition - Vector3.Project(breakVector, directionVector), directionVector);
-					if (pivotSnappingEnabled)
-					{
-						var extra = k_RayExtra * viewerScale;
-						raycastDistance += extra;
-						boundsRay.origin -= directionVector * extra;
-					}
-					else
-					{
-						boundsRay.origin += targetRotation * boundsCenter;
-					}
+                    var boundsRay = new Ray(targetPosition - Vector3.Project(breakVector, directionVector), directionVector);
+                    if (pivotSnappingEnabled)
+                    {
+                        var extra = k_RayExtra * viewerScale;
+                        raycastDistance += extra;
+                        boundsRay.origin -= directionVector * extra;
+                    }
+                    else
+                    {
+                        boundsRay.origin += targetRotation * boundsCenter;
+                    }
 
-					if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, boundsBreakDist))
-						return true;
+                    if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, boundsBreakDist))
+                        return true;
 
-					if (surfaceSnappingEnabled && SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance))
-						return true;
+                    if (surfaceSnappingEnabled && SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance))
+                        return true;
 
-					if (groundSnappingEnabled && SnapToGround(boundsRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, offset))
-						return true;
+                    if (groundSnappingEnabled && SnapToGround(boundsRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, offset))
+                        return true;
 
-					return true;
-				}
+                    return true;
+                }
 
-				if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
-					return true;
-			}
+                if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
+                    return true;
+            }
 
-			for (var i = 0; i < k_Directions.Length; i++)
-			{
-				var direction = k_Directions[i];
-				var upVector = targetRotation * direction.upVector;
-				var directionVector = direction.direction;
-				var rotationOffset = direction.rotationOffset;
-				var offset = Vector3.zero;
-				if (!pivotSnappingEnabled)
-				{
-					var projectedExtents = Vector3.Project(boundsExtents, directionVector);
-					offset = -boundsCenter;
-					if (i > 2)
-						offset -= projectedExtents;
-					else
-						offset += projectedExtents;
+            for (var i = 0; i < k_Directions.Length; i++)
+            {
+                var direction = k_Directions[i];
+                var upVector = targetRotation * direction.upVector;
+                var directionVector = direction.direction;
+                var rotationOffset = direction.rotationOffset;
+                var offset = Vector3.zero;
+                if (!pivotSnappingEnabled)
+                {
+                    var projectedExtents = Vector3.Project(boundsExtents, directionVector);
+                    offset = -boundsCenter;
+                    if (i > 2)
+                        offset -= projectedExtents;
+                    else
+                        offset += projectedExtents;
 
-					offset = rotation * offset;
-				}
+                    offset = rotation * offset;
+                }
 
-				var raycastDistance = breakDistance * 2;
-				directionVector = targetRotation * directionVector;
-				var boundsRay = new Ray(targetPosition - offset - directionVector * breakDistance, directionVector);
+                var raycastDistance = breakDistance * 2;
+                directionVector = targetRotation * directionVector;
+                var boundsRay = new Ray(targetPosition - offset - directionVector * breakDistance, directionVector);
 
-				if (surfaceSnappingEnabled && SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance, k_MaxRayDot))
-				{
-					state.directionIndex = i;
-					return true;
-				}
+                if (surfaceSnappingEnabled && SnapToSurface(boundsRay, ref position, ref rotation, state, offset, targetRotation, rotationOffset, upVector, raycastDistance, k_MaxRayDot))
+                {
+                    state.directionIndex = i;
+                    return true;
+                }
 
-				if (groundSnappingEnabled && SnapToGround(boundsRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, offset))
-				{
-					state.directionIndex = i;
-					return true;
-				}
-			}
+                if (groundSnappingEnabled && SnapToGround(boundsRay, ref position, ref rotation, targetPosition, targetRotation, state, raycastDistance, offset))
+                {
+                    state.directionIndex = i;
+                    return true;
+                }
+            }
 
-			if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
-				return true;
+            if (TryBreakSnap(ref position, ref rotation, targetPosition, targetRotation, state, breakDistance))
+                return true;
 
-			if (TryBreakSnap(ref position, ref rotation, state.snappingPosition, targetRotation, state, breakDistance))
-				return true;
+            if (TryBreakSnap(ref position, ref rotation, state.snappingPosition, targetRotation, state, breakDistance))
+                return true;
 
-			return false;
-		}
+            return false;
+        }
 
-		static bool TryBreakSnap(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance)
-		{
-			if (state.snapping)
-			{
-				if (Vector3.Distance(position, targetPosition) > breakDistance)
-				{
-					position = targetPosition;
-					rotation = targetRotation;
-					state.surfaceSnapping = false;
-					state.groundSnapping = false;
-					return true;
-				}
-			}
-			return false;
-		}
+        static bool TryBreakSnap(ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float breakDistance)
+        {
+            if (state.snapping)
+            {
+                if (Vector3.Distance(position, targetPosition) > breakDistance)
+                {
+                    position = targetPosition;
+                    rotation = targetRotation;
+                    state.surfaceSnapping = false;
+                    state.groundSnapping = false;
+                    return true;
+                }
+            }
+            return false;
+        }
 
-		void AddToIgnoreList(Transform transform)
-		{
-			m_SingleTransformArray[0] = transform;
-			AddToIgnoreList(m_SingleTransformArray);
-		}
+        void AddToIgnoreList(Transform transform)
+        {
+            m_SingleTransformArray[0] = transform;
+            AddToIgnoreList(m_SingleTransformArray);
+        }
 
-		void AddToIgnoreList(Transform[] transforms)
-		{
-			m_CombinedIgnoreList.Clear();
+        void AddToIgnoreList(Transform[] transforms)
+        {
+            m_CombinedIgnoreList.Clear();
 
-			for (var i = 0; i < transforms.Length; i++)
-			{
-				var renderers = transforms[i].GetComponentsInChildren<Renderer>();
-				for (var j = 0; j < renderers.Length; j++)
-				{
-					m_CombinedIgnoreList.Add(renderers[j]);
-				}
-			}
+            for (var i = 0; i < transforms.Length; i++)
+            {
+                var renderers = transforms[i].GetComponentsInChildren<Renderer>();
+                for (var j = 0; j < renderers.Length; j++)
+                {
+                    m_CombinedIgnoreList.Add(renderers[j]);
+                }
+            }
 
-			for (var i = 0; i < ignoreList.Count; i++)
-			{
-				m_CombinedIgnoreList.Add(ignoreList[i]);
-			}
-		}
+            for (var i = 0; i < ignoreList.Count; i++)
+            {
+                m_CombinedIgnoreList.Add(ignoreList[i]);
+            }
+        }
 
-		bool SnapToSurface(Ray ray, ref Vector3 position, ref Quaternion rotation, SnappingState state, Vector3 boundsOffset, Quaternion targetRotation, Quaternion rotationOffset, Vector3 upVector, float raycastDistance, float maxRayDot = Mathf.Infinity, bool constrained = false)
-		{
-			RaycastHit hit;
-			GameObject go;
-			if (this.Raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
-			{
-				if (Vector3.Dot(ray.direction, hit.normal) > maxRayDot)
-					return false;
+        bool SnapToSurface(Ray ray, ref Vector3 position, ref Quaternion rotation, SnappingState state, Vector3 boundsOffset, Quaternion targetRotation, Quaternion rotationOffset, Vector3 upVector, float raycastDistance, float maxRayDot = Mathf.Infinity, bool constrained = false)
+        {
+            RaycastHit hit;
+            GameObject go;
+            if (this.Raycast(ray, out hit, out go, raycastDistance, m_CombinedIgnoreList))
+            {
+                if (Vector3.Dot(ray.direction, hit.normal) > maxRayDot)
+                    return false;
 
-				if (!state.surfaceSnapping && hit.distance > raycastDistance * k_SnapDistanceScale)
-					return false;
+                if (!state.surfaceSnapping && hit.distance > raycastDistance * k_SnapDistanceScale)
+                    return false;
 
-				var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
+                var snappedRotation = Quaternion.LookRotation(hit.normal, upVector) * rotationOffset;
 
-				state.snappingNormal = hit.normal;
-				var hitPoint = hit.point;
-				
-				var snappedPosition = pivotSnappingEnabled ? hitPoint : hitPoint + boundsOffset;
+                state.snappingNormal = hit.normal;
+                var hitPoint = hit.point;
 
-				state.surfaceSnapping = true;
-				state.groundSnapping = false;
+                var snappedPosition = pivotSnappingEnabled ? hitPoint : hitPoint + boundsOffset;
 
-				position = snappedPosition;
-				rotation = !constrained && rotationSnappingEnabled ? snappedRotation : targetRotation;
+                state.surfaceSnapping = true;
+                state.groundSnapping = false;
 
-				state.snappingPosition = hitPoint;
-				state.snappingRotation = snappedRotation;
+                position = snappedPosition;
+                rotation = !constrained && rotationSnappingEnabled ? snappedRotation : targetRotation;
 
-				return true;
-			}
+                state.snappingPosition = hitPoint;
+                state.snappingRotation = snappedRotation;
 
-			return false;
-		}
+                return true;
+            }
 
-		bool SnapToGround(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float raycastDistance, Vector3 boundsOffset = default(Vector3), bool constrained = false)
-		{
-			if (Mathf.Approximately(Vector3.Dot(ray.direction, Vector3.up), 0))
-				return false;
+            return false;
+        }
 
-			var groundPlane = new Plane(Vector3.up, k_GroundHeight);
-			float distance;
-			if (groundPlane.Raycast(ray, out distance) && distance <= raycastDistance)
-			{
-				state.groundSnapping = true;
+        bool SnapToGround(Ray ray, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation, SnappingState state, float raycastDistance, Vector3 boundsOffset = default(Vector3), bool constrained = false)
+        {
+            if (Mathf.Approximately(Vector3.Dot(ray.direction, Vector3.up), 0))
+                return false;
 
-				state.snappingNormal = -Vector3.Project(ray.direction, Vector3.up).normalized;
+            var groundPlane = new Plane(Vector3.up, k_GroundHeight);
+            float distance;
+            if (groundPlane.Raycast(ray, out distance) && distance <= raycastDistance)
+            {
+                state.groundSnapping = true;
 
-				var hitPoint = ray.origin + ray.direction * distance;
-				var snappedPosition = pivotSnappingEnabled ? hitPoint : hitPoint + boundsOffset;
-				position = snappedPosition;
+                state.snappingNormal = -Vector3.Project(ray.direction, Vector3.up).normalized;
 
-				if (!constrained && rotationSnappingEnabled)
-					rotation = Quaternion.LookRotation(Vector3.up, targetRotation * Vector3.back) * Quaternion.AngleAxis(90, Vector3.right);
-				else
-					rotation = targetRotation;
+                var hitPoint = ray.origin + ray.direction * distance;
+                var snappedPosition = pivotSnappingEnabled ? hitPoint : hitPoint + boundsOffset;
+                position = snappedPosition;
 
-				return true;
-			}
+                if (!constrained && rotationSnappingEnabled)
+                    rotation = Quaternion.LookRotation(Vector3.up, targetRotation * Vector3.back) * Quaternion.AngleAxis(90, Vector3.right);
+                else
+                    rotation = targetRotation;
 
-			state.groundSnapping = false;
-			position = targetPosition;
-			rotation = targetRotation;
+                return true;
+            }
 
-			return false;
-		}
+            state.groundSnapping = false;
+            position = targetPosition;
+            rotation = targetRotation;
 
-		SnappingState GetSnappingState(Transform rayOrigin, Transform transform, Vector3 position, Quaternion rotation)
-		{
-			m_SingleTransformArray[0] = transform;
-			return GetSnappingState(rayOrigin, m_SingleTransformArray, position, rotation);
-		}
+            return false;
+        }
 
-		SnappingState GetSnappingState(Transform rayOrigin, Transform[] transforms, Vector3 position, Quaternion rotation)
-		{
-			Dictionary<Transform, SnappingState> states;
-			if (!m_SnappingStates.TryGetValue(rayOrigin, out states))
-			{
-				states = new Dictionary<Transform, SnappingState>();
-				m_SnappingStates[rayOrigin] = states;
-			}
+        SnappingState GetSnappingState(Transform rayOrigin, Transform transform, Vector3 position, Quaternion rotation)
+        {
+            m_SingleTransformArray[0] = transform;
+            return GetSnappingState(rayOrigin, m_SingleTransformArray, position, rotation);
+        }
 
-			var firstObject = transforms[0];
-			SnappingState state;
-			if (!states.TryGetValue(firstObject, out state))
-			{
-				state = new SnappingState(transforms, position, rotation);
-				states[firstObject] = state;
-			}
-			return state;
-		}
+        SnappingState GetSnappingState(Transform rayOrigin, Transform[] transforms, Vector3 position, Quaternion rotation)
+        {
+            Dictionary<Transform, SnappingState> states;
+            if (!m_SnappingStates.TryGetValue(rayOrigin, out states))
+            {
+                states = new Dictionary<Transform, SnappingState>();
+                m_SnappingStates[rayOrigin] = states;
+            }
 
-		public void ClearSnappingState(Transform rayOrigin)
-		{
-			Dictionary<Transform, SnappingState> states;
-			if (m_SnappingStates.TryGetValue(rayOrigin, out states))
-			{
-				foreach (var kvp in states)
-				{
-					kvp.Value.OnDestroy();
-				}
-				m_SnappingStates.Remove(rayOrigin);
-			}
-		}
+            var firstObject = transforms[0];
+            SnappingState state;
+            if (!states.TryGetValue(firstObject, out state))
+            {
+                state = new SnappingState(transforms, position, rotation);
+                states[firstObject] = state;
+            }
+            return state;
+        }
 
-		void Reset()
-		{
-			foreach (var statesForRay in m_SnappingStates)
-			{
-				foreach (var kvp in statesForRay.Value)
-				{
-					kvp.Value.OnDestroy();
-				}
-			}
-			m_SnappingStates.Clear();
-		}
+        public void ClearSnappingState(Transform rayOrigin)
+        {
+            Dictionary<Transform, SnappingState> states;
+            if (m_SnappingStates.TryGetValue(rayOrigin, out states))
+            {
+                foreach (var kvp in states)
+                {
+                    kvp.Value.OnDestroy();
+                }
+                m_SnappingStates.Remove(rayOrigin);
+            }
+        }
 
-		void SetupUI()
-		{
-			var snappingEnabledUI = m_SnappingModuleSettingsUI.snappingEnabled;
-			var text = snappingEnabledUI.GetComponentInChildren<Text>();
-			snappingEnabledUI.isOn = !m_Preferences.disableAll;
-			snappingEnabledUI.onValueChanged.AddListener(b =>
-			{
-				m_Preferences.disableAll = !snappingEnabledUI.isOn;
-				text.text = m_Preferences.disableAll ? "Snapping disabled" : "Snapping enabled";
-				Reset();
-				SetDependentTogglesGhosted();
-			});
+        void Reset()
+        {
+            foreach (var statesForRay in m_SnappingStates)
+            {
+                foreach (var kvp in statesForRay.Value)
+                {
+                    kvp.Value.OnDestroy();
+                }
+            }
+            m_SnappingStates.Clear();
+        }
 
-			var handle = snappingEnabledUI.GetComponent<BaseHandle>();
+        void SetupUI()
+        {
+            var snappingEnabledUI = m_SnappingModuleSettingsUI.snappingEnabled;
+            var text = snappingEnabledUI.GetComponentInChildren<Text>();
+            snappingEnabledUI.isOn = !m_Preferences.disableAll;
+            snappingEnabledUI.onValueChanged.AddListener(b =>
+            {
+                m_Preferences.disableAll = !snappingEnabledUI.isOn;
+                text.text = m_Preferences.disableAll ? "Snapping disabled" : "Snapping enabled";
+                Reset();
+                SetDependentTogglesGhosted();
+            });
+
+            var handle = snappingEnabledUI.GetComponent<BaseHandle>();
             handle.hoverStarted += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Enable snapping" : "Disable snapping"; };
-			handle.hoverEnded += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Snapping disabled" : "Snapping enabled"; };
+            handle.hoverEnded += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Snapping disabled" : "Snapping enabled"; };
 
-			var groundSnappingUI = m_SnappingModuleSettingsUI.groundSnappingEnabled;
-			groundSnappingUI.isOn = m_Preferences.groundSnappingEnabled;
-			groundSnappingUI.onValueChanged.AddListener(b =>
-			{
-				m_Preferences.groundSnappingEnabled = groundSnappingUI.isOn;
-				Reset();
-			});
+            var groundSnappingUI = m_SnappingModuleSettingsUI.groundSnappingEnabled;
+            groundSnappingUI.isOn = m_Preferences.groundSnappingEnabled;
+            groundSnappingUI.onValueChanged.AddListener(b =>
+            {
+                m_Preferences.groundSnappingEnabled = groundSnappingUI.isOn;
+                Reset();
+            });
 
-			var surfaceSnappingUI = m_SnappingModuleSettingsUI.surfaceSnappingEnabled;
-			surfaceSnappingUI.isOn = m_Preferences.surfaceSnappingEnabled;
-			surfaceSnappingUI.onValueChanged.AddListener(b =>
-			{
-				m_Preferences.surfaceSnappingEnabled = surfaceSnappingUI.isOn;
-				Reset();
-			});
+            var surfaceSnappingUI = m_SnappingModuleSettingsUI.surfaceSnappingEnabled;
+            surfaceSnappingUI.isOn = m_Preferences.surfaceSnappingEnabled;
+            surfaceSnappingUI.onValueChanged.AddListener(b =>
+            {
+                m_Preferences.surfaceSnappingEnabled = surfaceSnappingUI.isOn;
+                Reset();
+            });
 
-			var pivotSnappingUI = m_SnappingModuleSettingsUI.pivotSnappingEnabled;
-			m_SnappingModuleSettingsUI.SetToggleValue(pivotSnappingUI, m_Preferences.pivotSnappingEnabled);
-			pivotSnappingUI.onValueChanged.AddListener(b => { m_Preferences.pivotSnappingEnabled = pivotSnappingUI.isOn; });
+            var pivotSnappingUI = m_SnappingModuleSettingsUI.pivotSnappingEnabled;
+            m_SnappingModuleSettingsUI.SetToggleValue(pivotSnappingUI, m_Preferences.pivotSnappingEnabled);
+            pivotSnappingUI.onValueChanged.AddListener(b => { m_Preferences.pivotSnappingEnabled = pivotSnappingUI.isOn; });
 
-			var snapRotationUI = m_SnappingModuleSettingsUI.rotationSnappingEnabled;
-			snapRotationUI.isOn = m_Preferences.rotationSnappingEnabled;
-			snapRotationUI.onValueChanged.AddListener(b => { m_Preferences.rotationSnappingEnabled = snapRotationUI.isOn; });
+            var snapRotationUI = m_SnappingModuleSettingsUI.rotationSnappingEnabled;
+            snapRotationUI.isOn = m_Preferences.rotationSnappingEnabled;
+            snapRotationUI.onValueChanged.AddListener(b => { m_Preferences.rotationSnappingEnabled = snapRotationUI.isOn; });
 
-			var localOnlyUI = m_SnappingModuleSettingsUI.limitRadius;
-			localOnlyUI.isOn = m_Preferences.limitRadius;
-			localOnlyUI.onValueChanged.AddListener(b => { m_Preferences.limitRadius = localOnlyUI.isOn; });
+            var localOnlyUI = m_SnappingModuleSettingsUI.limitRadius;
+            localOnlyUI.isOn = m_Preferences.limitRadius;
+            localOnlyUI.onValueChanged.AddListener(b => { m_Preferences.limitRadius = localOnlyUI.isOn; });
 
-			var manipulatorSnappingUI = m_SnappingModuleSettingsUI.manipulatorSnappingEnabled;
-			manipulatorSnappingUI.isOn =  m_Preferences.manipulatorSnappingEnabled;
-			manipulatorSnappingUI.onValueChanged.AddListener(b => { m_Preferences.manipulatorSnappingEnabled = manipulatorSnappingUI.isOn; });
+            var manipulatorSnappingUI = m_SnappingModuleSettingsUI.manipulatorSnappingEnabled;
+            manipulatorSnappingUI.isOn = m_Preferences.manipulatorSnappingEnabled;
+            manipulatorSnappingUI.onValueChanged.AddListener(b => { m_Preferences.manipulatorSnappingEnabled = manipulatorSnappingUI.isOn; });
 
-			var directSnappingUI = m_SnappingModuleSettingsUI.directSnappingEnabled;
-			directSnappingUI.isOn = m_Preferences.directSnappingEnabled;
-			directSnappingUI.onValueChanged.AddListener(b => { m_Preferences.directSnappingEnabled = directSnappingUI.isOn; });
+            var directSnappingUI = m_SnappingModuleSettingsUI.directSnappingEnabled;
+            directSnappingUI.isOn = m_Preferences.directSnappingEnabled;
+            directSnappingUI.onValueChanged.AddListener(b => { m_Preferences.directSnappingEnabled = directSnappingUI.isOn; });
 
-			SetDependentTogglesGhosted();
+            SetDependentTogglesGhosted();
 
-			SetSessionGradientMaterial(m_SnappingModuleSettingsUI.GetComponent<SubmenuFace>().gradientPair);
-		}
+            SetSessionGradientMaterial(m_SnappingModuleSettingsUI.GetComponent<SubmenuFace>().gradientPair);
+        }
 
-		void SetDependentTogglesGhosted()
-		{
-			var toggles = new List<Toggle>
-			{
-				m_SnappingModuleSettingsUI.groundSnappingEnabled,
-				m_SnappingModuleSettingsUI.surfaceSnappingEnabled,
-				m_SnappingModuleSettingsUI.rotationSnappingEnabled,
-				m_SnappingModuleSettingsUI.limitRadius,
-				m_SnappingModuleSettingsUI.manipulatorSnappingEnabled,
-				m_SnappingModuleSettingsUI.directSnappingEnabled
-			};
+        void SetDependentTogglesGhosted()
+        {
+            var toggles = new List<Toggle>
+            {
+                m_SnappingModuleSettingsUI.groundSnappingEnabled,
+                m_SnappingModuleSettingsUI.surfaceSnappingEnabled,
+                m_SnappingModuleSettingsUI.rotationSnappingEnabled,
+                m_SnappingModuleSettingsUI.limitRadius,
+                m_SnappingModuleSettingsUI.manipulatorSnappingEnabled,
+                m_SnappingModuleSettingsUI.directSnappingEnabled
+            };
 
-			toggles.AddRange(m_SnappingModuleSettingsUI.pivotSnappingEnabled.group.GetComponentsInChildren<Toggle>(true));
+            toggles.AddRange(m_SnappingModuleSettingsUI.pivotSnappingEnabled.group.GetComponentsInChildren<Toggle>(true));
 
-			foreach (var toggle in toggles)
-			{
-				toggle.interactable = !m_Preferences.disableAll;
-				if (toggle.isOn)
-					toggle.graphic.gameObject.SetActive(!m_Preferences.disableAll);
-			}
+            foreach (var toggle in toggles)
+            {
+                toggle.interactable = !m_Preferences.disableAll;
+                if (toggle.isOn)
+                    toggle.graphic.gameObject.SetActive(!m_Preferences.disableAll);
+            }
 
-			foreach (var text in m_SnappingModuleSettingsUI.GetComponentsInChildren<Text>(true))
-			{
-				text.color = m_Preferences.disableAll ? Color.gray : Color.white;
-			}
-		}
+            foreach (var text in m_SnappingModuleSettingsUI.GetComponentsInChildren<Text>(true))
+            {
+                text.color = m_Preferences.disableAll ? Color.gray : Color.white;
+            }
+        }
 
-		void SetSessionGradientMaterial(GradientPair gradientPair)
-		{
-			m_ButtonHighlightMaterialClone.SetColor(k_MaterialColorLeftProperty, gradientPair.a);
-			m_ButtonHighlightMaterialClone.SetColor(k_MaterialColorRightProperty, gradientPair.b);
-			foreach (var graphic in m_SnappingModuleSettingsUI.GetComponentsInChildren<Graphic>())
-			{
-				if (graphic.material == m_ButtonHighlightMaterial)
-					graphic.material = m_ButtonHighlightMaterialClone;
-			}
-		}
-	}
+        void SetSessionGradientMaterial(GradientPair gradientPair)
+        {
+            m_ButtonHighlightMaterialClone.SetColor(k_MaterialColorLeftProperty, gradientPair.a);
+            m_ButtonHighlightMaterialClone.SetColor(k_MaterialColorRightProperty, gradientPair.b);
+            foreach (var graphic in m_SnappingModuleSettingsUI.GetComponentsInChildren<Graphic>())
+            {
+                if (graphic.material == m_ButtonHighlightMaterial)
+                    graphic.material = m_ButtonHighlightMaterialClone;
+            }
+        }
+    }
 }
 #endif

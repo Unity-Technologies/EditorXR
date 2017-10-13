@@ -4,15 +4,15 @@ using UnityEngine;
 #if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
-	/// <summary>
-	/// Receive the default list of ignored objects from the system for intersection purposes
-	/// </summary>
-	public interface IStandardIgnoreList
-	{
-		/// <summary>
-		/// List of system objects to ignore for intersection purposes
-		/// </summary>
-		List<Renderer> ignoreList { set; }
-	}
+    /// <summary>
+    /// Receive the default list of ignored objects from the system for intersection purposes
+    /// </summary>
+    public interface IStandardIgnoreList
+    {
+        /// <summary>
+        /// List of system objects to ignore for intersection purposes
+        /// </summary>
+        List<Renderer> ignoreList { set; }
+    }
 }
 #endif
