@@ -509,6 +509,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
             m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
             m_MenuInset.localScale = targetInsetScale;
+            m_MenuInset.gameObject.SetActive(!semiTransparent);
             m_IconContainer.localScale = targetIconScale;
         }
 

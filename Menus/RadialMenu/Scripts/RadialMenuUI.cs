@@ -80,10 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     m_Actions = value;
 
                     if (visible && actions.Count > 0)
-                    {
-                        this.StopCoroutine(ref m_VisibilityCoroutine);
-                        m_VisibilityCoroutine = StartCoroutine(AnimateShow());
-                    }
+                        this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
                 }
                 else if (visible && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
                     visible = false;
@@ -230,13 +227,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 // We move in counter-clockwise direction
                 // Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
-                m_PhaseOffset = node == Node.LeftHand ? rotationSpacing : -180f;
+                m_PhaseOffset = node == Node.LeftHand ? 90f : -90f - rotationSpacing;
                 slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + rotationSpacing * i, node == Node.LeftHand ? Vector3.up : Vector3.down);
                 slot.visible = false;
             }
 
-            this.StopCoroutine(ref m_VisibilityCoroutine);
-            m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+            this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
         }
 
         void UpdateRadialSlots()
@@ -293,7 +289,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
 
             var revealAmount = 0f;
-            var hiddenSlotRotation = 360f / k_SlotCount - (node == Node.LeftHand ? 0 : 180f);
+            var hiddenSlotRotation = 360f / k_SlotCount + (node == Node.LeftHand ? 90f : -90f);
             while (revealAmount < 1)
             {
                 revealAmount += Time.deltaTime * 8;
