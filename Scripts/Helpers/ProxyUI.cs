@@ -17,6 +17,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         const float k_FadeOutSpeedScalar = 0.5f;
         const string k_ZWritePropertyName = "_ZWrite";
 
+        [SerializeField]
+        ProxyAffordanceMap m_AffordanceMap;
+
         List<Renderer> m_BodyRenderers; // Renderers not associated with affordances/controls, & will be HIDDEN when displaying feedback/tooltips
         List<Material> m_BodySwapOriginalMaterials; // Material collection used when swapping materials
         List<Renderer> m_AffordanceRenderers; // Renderers associated with affordances/controls, & will be SHOWN when displaying feedback/tooltips
@@ -39,9 +42,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         // The second param, ColorPair, houses the original cached color, and a value, representing the color to lerp FROM when animating visibility
         Dictionary<Material, affordancePropertyTuple<Color>> m_BodyMaterialOriginalColorMap = new Dictionary<Material, affordancePropertyTuple<Color>>();
         Dictionary<Material, affordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, affordancePropertyTuple<float>>();
-
-        [SerializeField]
-        ProxyAffordanceMap m_AffordanceMap;
 
         /// <summary>
         /// Model containing original value, and values to "animate from", unique to each body MeshRenderer material.
