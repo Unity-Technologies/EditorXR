@@ -1690,7 +1690,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AffordanceMap: {fileID: 0}
+  m_AffordanceMap: {fileID: 11400000, guid: c067e5fde424eba4c883c573507d8a15, type: 2}
 --- !u!114 &114665279328025710
 MonoBehaviour:
   m_ObjectHideFlags: 1
