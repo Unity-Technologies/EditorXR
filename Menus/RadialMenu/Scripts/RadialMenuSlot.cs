@@ -129,6 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public bool visible
         {
+            get { return m_Visible; }
             set
             {
                 if (value && m_Visible == value) // Allow false to fall through and perform hiding regardless of visibility
@@ -211,12 +212,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public int orderIndex { get; set; }
 
-        public static Quaternion hiddenLocalRotation { get; set; } // All menu slots share the same hidden location
-
         public Quaternion visibleLocalRotation { get; set; }
 
         // For overriding text (i.e. TransformActions)
         public ITooltip tooltip { private get; set; }
+        public bool wasVisible { get; set; }
 
         public event Action hovered;
 
@@ -225,7 +225,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
             m_IconMaterial = MaterialUtils.GetMaterialClone(m_Icon);
             m_OriginalInsetGradientPair = new GradientPair(m_InsetMaterial.GetColor(k_MaterialColorTopProperty), m_InsetMaterial.GetColor(k_MaterialColorBottomProperty));
-            hiddenLocalRotation = transform.localRotation;
             m_VisibleInsetLocalScale = m_MenuInset.localScale;
             m_HighlightedInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_VisibleInsetLocalScale.y * 1.2f, m_VisibleInsetLocalScale.z);
             m_VisibleInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_MenuInset.localScale.y * 0.35f, m_VisibleInsetLocalScale.z);
