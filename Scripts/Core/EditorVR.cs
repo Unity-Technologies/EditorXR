@@ -37,13 +37,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static EditorVR s_Instance;
 
-        static HideFlags defaultHideFlags { get { return showGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave; } }
+        static HideFlags defaultHideFlags
+        {
+            get { return showGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave; }
+        }
 
-        static bool showGameObjects { get { return EditorPrefs.GetBool(k_ShowGameObjects, false); } set { EditorPrefs.SetBool(k_ShowGameObjects, value); } }
+        static bool showGameObjects
+        {
+            get { return EditorPrefs.GetBool(k_ShowGameObjects, false); }
+            set { EditorPrefs.SetBool(k_ShowGameObjects, value); }
+        }
 
-        static bool preserveLayout { get { return EditorPrefs.GetBool(k_PreserveLayout, true); } set { EditorPrefs.SetBool(k_PreserveLayout, value); } }
+        static bool preserveLayout
+        {
+            get { return EditorPrefs.GetBool(k_PreserveLayout, true); }
+            set { EditorPrefs.SetBool(k_PreserveLayout, value); }
+        }
 
-        static string serializedPreferences { get { return EditorPrefs.GetString(k_SerializedPreferences, string.Empty); } set { EditorPrefs.SetString(k_SerializedPreferences, value); } }
+        static string serializedPreferences
+        {
+            get { return EditorPrefs.GetString(k_SerializedPreferences, string.Empty); }
+            set { EditorPrefs.SetString(k_SerializedPreferences, value); }
+        }
 
         internal static Type[] defaultTools { get; set; }
 
