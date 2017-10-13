@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     // Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-    sealed class MultipleRayInputModule : BaseInputModule, IGetPointerLength, IConnectInterfaces
+    sealed class MultipleRayInputModule : BaseInputModule, IUsesPointer, IConnectInterfaces
     {
         public class RaycastSource : ICustomActionMap
         {

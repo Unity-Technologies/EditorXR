@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 ICanGrabObjectMethods.canGrabObject = CanGrabObject;
 
-                IGetPointerLengthMethods.getPointerLength = GetPointerLength;
+                IUsesPointerMethods.getPointerLength = GetPointerLength;
             }
 
             public void ConnectInterface(object target, object userData = null)
