@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Input;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -306,7 +305,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        void UpdateVisibility()
+        void UpdateVisibility(bool allowBodyToBecomeVisible = false)
         {
             var rightProxyRequestsExist = false;
             var leftProxyRequestsExist = false;
@@ -317,11 +316,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 leftProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.LeftHand && x.Key.visible);
             }
 
-            rightAffordanceRenderersVisible = rightProxyRequestsExist;
-            rightBodyRenderersVisible = rightProxyRequestsExist;
+			rightAffordanceRenderersVisible = rightProxyRequestsExist;
+			rightBodyRenderersVisible = allowBodyToBecomeVisible ? rightProxyRequestsExist : allowBodyToBecomeVisible;
 
             leftAffordanceRenderersVisible = leftProxyRequestsExist;
-            leftBodyRenderersVisible = leftProxyRequestsExist;
+            leftBodyRenderersVisible = allowBodyToBecomeVisible ? leftProxyRequestsExist : allowBodyToBecomeVisible;
         }
 
         IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)

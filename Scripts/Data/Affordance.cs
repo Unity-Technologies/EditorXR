@@ -3,7 +3,6 @@ using System;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Serialization;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
