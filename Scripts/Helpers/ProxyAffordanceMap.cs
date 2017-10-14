@@ -44,10 +44,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             //TODO: Add support for alpha/float, & material swapping. Expose each visibility control type field set based on the selected visibility control type
             [SerializeField] // colorProperty field
-            string m_ColorProperty; // Consider custom inspector that only displays this if this visibility type is chosen
+            string m_ColorProperty = "_Color"; // Consider custom inspector that only displays this if this visibility type is chosen
 
             [SerializeField] // alphaProperty field
-            string m_AlphaProperty; // Consider custom inspector that only displays this if this visibility type is chosen
+            string m_AlphaProperty = "_Alpha"; // Consider custom inspector that only displays this if this visibility type is chosen
 
             [SerializeField]
             Color m_HiddenColor = new Color(1f, 1f, 1f, 0f);
@@ -85,9 +85,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public Material hiddenMaterial { get { return m_HiddenMaterial; } set { m_HiddenMaterial = value; } }
 
             public Coroutine affordanceVisibilityCoroutine;
-            public VisibilityControlType visibilityType { get { return m_VisibilityType; } }
-            public string colorProperty { get { return m_ColorProperty; } }
-            public string alphaProperty { get { return m_AlphaProperty; } }
+            public VisibilityControlType visibilityType { get { return m_VisibilityType; } set { m_VisibilityType = value; } }
+            public string colorProperty { get { return m_ColorProperty; } set { m_ColorProperty = value; } }
+            public string alphaProperty { get { return m_AlphaProperty; } set { m_AlphaProperty = value; } }
         }
 
         [Serializable]
@@ -99,8 +99,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             [SerializeField]
             AffordanceVisibilityDefinition m_VisibilityDefinition;
 
-            public VRInputDevice.VRControl control { get { return m_Control; } }
-            public AffordanceVisibilityDefinition visibilityDefinition { get { return m_VisibilityDefinition; } }
+            public VRInputDevice.VRControl control { get { return m_Control; } set { m_Control = value; } }
+            public AffordanceVisibilityDefinition visibilityDefinition { get { return m_VisibilityDefinition; } set { m_VisibilityDefinition = value; } }
         }
 
         [Header("Non-Interactive Input-Device Body Elements")]
@@ -112,12 +112,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         AffordanceVisibilityDefinition m_DefaultAffordanceVisibilityDefinition;
 
-        [Header("Custom Override Affordance Definitions")]
+        [Header("Custom Affordance Overrides")]
         [SerializeField]
         AffordanceDefinition[] m_AffordanceDefinitions;
 
-        public AffordanceDefinition[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } }
+        public AffordanceDefinition[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } set { m_AffordanceDefinitions = value; } }
         public AffordanceVisibilityDefinition bodyVisibilityDefinition { get { return m_BodyVisibilityDefinition; } }
+        public AffordanceVisibilityDefinition defaultAffordanceVisibilityDefinition { get { return m_DefaultAffordanceVisibilityDefinition; } }
     }
 }
 #endif
