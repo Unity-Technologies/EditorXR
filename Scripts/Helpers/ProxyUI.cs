@@ -40,8 +40,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         // Map of unique body materials to their original Colors (used for affordances with the "color" visibility control type)
         // The second param, ColorPair, houses the original cached color, and a value, representing the color to lerp FROM when animating visibility
-        Dictionary<Material, affordancePropertyTuple<Color>> m_BodyMaterialOriginalColorMap = new Dictionary<Material, affordancePropertyTuple<Color>>();
-        Dictionary<Material, affordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, affordancePropertyTuple<float>>();
+        readonly Dictionary<Material, affordancePropertyTuple<Color>> m_BodyMaterialOriginalColorMap = new Dictionary<Material, affordancePropertyTuple<Color>>();
+        readonly Dictionary<Material, affordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, affordancePropertyTuple<float>>();
 
         /// <summary>
         /// Model containing original value, and values to "animate from", unique to each body MeshRenderer material.
@@ -60,6 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 this.animateFromValue = animateFromValue;
             }
         }
+
         /// <summary>
         /// Set the visibility of the affordance renderers that are associated with controls/input
         /// </summary>
@@ -80,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceColorVisibility(value, affordanceDefinition));
                             break;
                         case VisibilityControlType.alphaProperty:
-                            this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceAlphaVisibility(value, affordanceDefinition));
+                            this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceAlphaVisibility(value));
                             break;
                         case VisibilityControlType.materialSwap:
                             SwapAffordanceToHiddenMaterial(value, affordanceDefinition);
@@ -128,7 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 {
                     var materialsAndAssociatedColors = visibilityDefinition.materialsAndAssociatedColors;
                     if (materialsAndAssociatedColors == null)
-                        continue;;
+                        continue;
 
                     foreach (var materialToAssociatedColors in visibilityDefinition.materialsAndAssociatedColors)
                     {
@@ -204,17 +205,54 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             m_Affordances = affordances;
             m_AffordanceRenderers = new List<Renderer>();
-            foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)
+
+            // If no custom affordance definitions are defined in the affordance map, they will be populated by new generated definitions below
+            var affordanceMapDefinitions = m_AffordanceMap.AffordanceDefinitions;
+            var affordancesDefinedInMap = affordanceMapDefinitions != null && affordanceMapDefinitions.Length > 0 && affordanceMapDefinitions[0] != null;
+
+            // If affordanceMapDefinitions is null, set the list below into the map after setup
+            List<AffordanceDefinition> generatedAffordanceDefinitions = new List<AffordanceDefinition>();
+            var defaultAffordanceVisibilityDefinition = m_AffordanceMap.defaultAffordanceVisibilityDefinition;
+            foreach (var proxyAffordance in affordances)
             {
-                var control = affordanceDefinition.control;
-                var affordance = m_Affordances.FirstOrDefault(x => x.control == control);
-                if (affordance != null)
+                var renderers = proxyAffordance.renderer.GetComponentsInChildren<Renderer>(true);
+                if (renderers != null)
                 {
-                    // Setup animated transparency for all materials associated with all renderers under the control's transform
-                    var renderers = affordance.renderer.GetComponentsInChildren<Renderer>(true);
-                    if (renderers != null)
+                    // Setup animated color or alpha transparency for all materials associated with all renderers associated with the control
+                    ProxyAffordanceMap.AffordanceVisibilityDefinition visibilityDefinition;
+                    var control = proxyAffordance.control;
+
+                    // Assemble a new affordance definition and visibility definition for the affordance,
+                    // if a custom definition for the control was not defined in the AffordanceMap
+                    var matchingAffordanceDefinition = affordancesDefinedInMap ? affordanceMapDefinitions.FirstOrDefault(x => x.control == control) : null;
+                    if (matchingAffordanceDefinition == null)
                     {
-                        var visibilityDefinition = affordanceDefinition.visibilityDefinition;;
+                        // Deep copy the default visibility definition values into a new generated visibility defintion, to be set on a newly generated affordance
+                        visibilityDefinition = new ProxyAffordanceMap.AffordanceVisibilityDefinition
+                        {
+                            visibilityType = defaultAffordanceVisibilityDefinition.visibilityType,
+                            colorProperty = defaultAffordanceVisibilityDefinition.colorProperty,
+                            alphaProperty = defaultAffordanceVisibilityDefinition.alphaProperty,
+                            hiddenColor = defaultAffordanceVisibilityDefinition.hiddenColor,
+                            hiddenAlpha = defaultAffordanceVisibilityDefinition.hiddenAlpha,
+                            hiddenMaterial = defaultAffordanceVisibilityDefinition.hiddenMaterial
+                        };
+
+                        var generatedAffordanceDefinition = new AffordanceDefinition
+                        {
+                            control = control,
+                            visibilityDefinition = visibilityDefinition
+                        };
+
+                        generatedAffordanceDefinitions.Add(generatedAffordanceDefinition);
+                    }
+                    else
+                    {
+                        visibilityDefinition = matchingAffordanceDefinition.visibilityDefinition;
+                    }
+
+                    if (visibilityDefinition != null)
+                    {
                         foreach (var renderer in renderers)
                         {
                             var materialClones = MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with the renderer
@@ -262,6 +300,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 }
             }
 
+            if (!affordancesDefinedInMap)
+                m_AffordanceMap.AffordanceDefinitions = generatedAffordanceDefinitions.ToArray();
+
             // Collect renderers not associated with affordances
             // Material swaps don't need to cache original values, only alpha & color
             var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
@@ -271,8 +312,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 case VisibilityControlType.colorProperty:
                     foreach (var renderer in m_BodyRenderers)
                     {
-                        // TODO: support for skipping the cloning of materials in the body that are shared between objects, in order to reduce draw calls
-                        var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials per-renderer
+                        var materialClone = MaterialUtils.GetMaterialClone(renderer);
                         if (materialClone != null)
                         {
                             var originalColor = materialClone.GetColor(bodyVisibilityDefinition.colorProperty);
@@ -287,7 +327,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     string shaderAlphaPropety = bodyVisibilityDefinition.alphaProperty;
                     foreach (var renderer in m_BodyRenderers)
                     {
-                        var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials per-renderer
+                        var materialClone = MaterialUtils.GetMaterialClone(renderer);
                         if (materialClone != null)
                         {
                             var originalAlpha = materialClone.GetFloat(shaderAlphaPropety);
@@ -302,7 +342,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     m_BodySwapOriginalMaterials = new List<Material>();
                     foreach (var renderer in m_BodyRenderers)
                     {
-                        var materialClone = MaterialUtils.GetMaterialClone(renderer); // TODO: support multiple materials per-renderer
+                        var materialClone = MaterialUtils.GetMaterialClone(renderer);
                         m_BodySwapOriginalMaterials.Add(materialClone);
                     }
                     break;
@@ -349,7 +389,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        IEnumerator AnimateAffordanceAlphaVisibility(bool isVisible, AffordanceDefinition definition)
+        IEnumerator AnimateAffordanceAlphaVisibility(bool isVisible)
         {
             const float kTargetAmount = 1.1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
             var speedScalar = isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
