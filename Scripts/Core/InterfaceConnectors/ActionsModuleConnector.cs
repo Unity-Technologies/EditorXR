@@ -12,36 +12,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var actionsModule = evr.GetModule<ActionsModule>();
                 if (actionsModule)
                 {
-                    var menuActions = actionsModule.menuActions;
-
                     var toolActions = target as IActions;
                     if (toolActions != null)
-                    {
-                        // Delay connecting actions to allow tool / module to initialize first
-                        EditorApplication.delayCall += () =>
-                        {
-                            var actions = toolActions.actions;
-                            if (actions != null)
-                            {
-                                foreach (var action in actions)
-                                {
-                                    var actionMenuData = new ActionMenuData()
-                                    {
-                                        name = action.GetType().Name,
-                                        sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
-                                        priority = int.MaxValue,
-                                        action = action,
-                                    };
-                                    menuActions.Add(actionMenuData);
-                                }
-                                Menus.UpdateAlternateMenuActions();
-                            }
-                        };
-                    }
+                        actionsModule.ConnectToolActions(toolActions);
 
-                    var alternateMenu = target as IAlternateMenu;
+                    var alternateMenu = target as IUsesMenuActions;
                     if (alternateMenu != null)
-                        alternateMenu.menuActions = menuActions;
+                        alternateMenu.menuActions = actionsModule.menuActions;
                 }
             }
 
