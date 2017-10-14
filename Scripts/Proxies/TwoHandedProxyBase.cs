@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         ProxyHelper m_RightProxyHelper;
         List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
-        ProxyFeedbackRequest m_SemitransparentLock;
+        ProxyFeedbackRequest m_SemitransparentLockRequest;
         float m_ShakeFrequency;
         Vector3 m_PreviousLeftHandPosition;
         Vector3 m_PreviousRightHandPosition;
@@ -174,6 +174,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_LeftProxyHelper.gameObject), m_LeftProxyHelper.rayOrigin);
             this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_RightProxyHelper.gameObject), m_RightProxyHelper.rayOrigin);
             this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_RightProxyHelper.gameObject), m_RightProxyHelper.rayOrigin);
+
+            m_PreviousLeftHandPosition = trackedObjectInput.leftPosition.vector3;
+            m_PreviousRightHandPosition = trackedObjectInput.rightPosition.vector3;
         }
 
         public virtual void Update()
@@ -189,10 +192,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_RightHand.localPosition = rightLocalPosition;
                 m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 
-                if (m_SemitransparentLock == null)
+                if (m_SemitransparentLockRequest == null)
                 {
                     movementDelta = Vector3.SqrMagnitude(leftLocalPosition - m_PreviousLeftHandPosition);
                     movementDelta += Vector3.SqrMagnitude(rightLocalPosition - m_PreviousRightHandPosition);
+                    movementDelta *= Time.unscaledDeltaTime * 20;
                     if (movementDelta > 0.001f)
                     {
                         m_ShakeFrequency += movementDelta;
@@ -334,18 +338,26 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            foreach (var kvp in m_FeedbackRequests)
+            // Interate over keys instead of pairs in the dictionary, in order to prevent out-of-sync errors when exiting EXR
+            foreach (var key in m_FeedbackRequests.Keys.ToList())
             {
-                if (kvp.Key != null && kvp.Key.caller == caller)
-                    RemoveFeedbackRequest(kvp.Key);
+                if (key != null && key.caller == caller)
+                    RemoveFeedbackRequest(key);
             }
         }
 
-        void UpdateVisibility(bool allowBodyToBecomeVisible = false)
+        void UpdateVisibility()
         {
             var rightProxyRequestsExist = false;
             var leftProxyRequestsExist = false;
-            if (m_FeedbackRequests.Count > 0)
+            var shakenVisibility = m_SemitransparentLockRequest != null;
+            if (shakenVisibility)
+            {
+                // Left & right device affordances should be visible when the input-device is shaken
+                rightProxyRequestsExist = true;
+                leftProxyRequestsExist = true;
+            }
+            else if (m_FeedbackRequests.Count > 0)
             {
                 // Find any visible feedback requests for each hand
                 rightProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.RightHand && x.Key.visible);
@@ -355,7 +367,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             rightAffordanceRenderersVisible = rightProxyRequestsExist;
             leftAffordanceRenderersVisible = leftProxyRequestsExist;
 
-            var shakenVisibility = m_SemitransparentLock != null;
             rightBodyRenderersVisible = shakenVisibility;
             leftBodyRenderersVisible = shakenVisibility;
         }
@@ -363,11 +374,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
         {
             if (request.proxyShaken)
-                m_SemitransparentLock = request;
+            {
+                if (m_SemitransparentLockRequest != null)
+                    yield break;
+
+                m_SemitransparentLockRequest = request;
+            }
 
             request.visible = true;
 
-            const float kShakenVisibilityDuration = 6f;
+            const float kShakenVisibilityDuration = 5f;
             const float kShorterOpaqueDurationScalar = 0.125f;
             float duration = request.proxyShaken ? kShakenVisibilityDuration : k_DefaultFeedbackDuration * kShorterOpaqueDurationScalar;
             var currentDuration = 0f;
@@ -381,9 +397,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 request.visible = false;
 
             // Unlock shaken body visibility if this was the most recent request the trigger the full body visibility
-            if (m_SemitransparentLock == request)
+            if (m_SemitransparentLockRequest == request)
             {
-                m_SemitransparentLock = null;
+                m_SemitransparentLockRequest = null;
                 m_ShakeFrequency = 0;
             }
 
