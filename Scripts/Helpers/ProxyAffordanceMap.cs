@@ -44,6 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             [SerializeField]
             VisibilityControlType m_VisibilityType;
 
+            //TODO: Add custom Inspector : Expose each visibility control type field set based on the selected visibility control type
             [SerializeField] // colorProperty field
             string m_ColorProperty = "_Color"; // Consider custom inspector that only displays this if this visibility type is chosen
 

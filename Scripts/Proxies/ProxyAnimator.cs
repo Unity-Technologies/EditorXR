@@ -65,10 +65,10 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
                 var binding = bindings[i];
                 for (var j = 0; j < length; j++)
                 {
-                    var button = m_Affordances[j];
+                    var affordance = m_Affordances[j];
                     foreach (var index in binding.sources)
                     {
-                        if (index.controlIndex == (int)button.control)
+                        if (index.controlIndex == (int)affordance.control)
                         {
                             m_Controls[j] = control;
                             break;
@@ -77,18 +77,18 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
                 }
             }
 
-            foreach (var button in m_Affordances)
+            foreach (var affordance in m_Affordances)
             {
-                var buttonTransform = button.transform;
+                var affordanceTransform = affordance.transform;
                 TransformInfo info;
-                if (!m_TransformInfos.TryGetValue(buttonTransform, out info))
+                if (!m_TransformInfos.TryGetValue(affordanceTransform, out info))
                 {
                     info = new TransformInfo();
-                    m_TransformInfos[buttonTransform] = info;
+                    m_TransformInfos[affordanceTransform] = info;
                 }
 
-                info.initialPosition = buttonTransform.localPosition;
-                info.initialRotation = buttonTransform.localRotation.eulerAngles;
+                info.initialPosition = affordanceTransform.localPosition;
+                info.initialRotation = affordanceTransform.localRotation.eulerAngles;
             }
         }
 
