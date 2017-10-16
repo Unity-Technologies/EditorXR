@@ -13,8 +13,6 @@ using Button = UnityEngine.UI.Button;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
-
     [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
     sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRequestFeedback
     {

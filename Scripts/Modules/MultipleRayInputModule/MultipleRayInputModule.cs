@@ -10,8 +10,6 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
-
     // Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
     sealed class MultipleRayInputModule : BaseInputModule, IGetPointerLength, IConnectInterfaces
     {
