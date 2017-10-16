@@ -261,6 +261,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void CloseMenu()
         {
+            this.ClearFeedbackRequests();
             this.Pulse(node, m_HidingPulse);
             this.EndSpatialScroll(); // Free the spatial scroll data owned by this object
         }
@@ -313,11 +314,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void HideScrollFeedback()
         {
             HideFeedback(m_ScrollFeedback);
-        }
-
-        void HideRemoveFeedback()
-        {
-            HideFeedback(m_MenuFeedback);
         }
     }
 }
