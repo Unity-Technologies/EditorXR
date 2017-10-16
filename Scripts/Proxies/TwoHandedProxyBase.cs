@@ -45,6 +45,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
+        class ProxyFeedbackData
+        {
+            public int presentations;
+            public bool visibleThisPresentation;
+        }
+
         const float k_FeedbackDuration = 5f;
 
         [SerializeField]
@@ -61,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
         readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
-        readonly Dictionary<ProxyFeedbackRequestKey, int> m_RequestPresentations = new Dictionary<ProxyFeedbackRequestKey, int>();
+        readonly Dictionary<ProxyFeedbackRequestKey, ProxyFeedbackData> m_RequestData = new Dictionary<ProxyFeedbackRequestKey, ProxyFeedbackData>();
 
         protected Dictionary<Node, Transform> m_RayOrigins;
 
@@ -209,13 +215,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 m_FeedbackRequests.Add(proxyRequest);
                 ExecuteFeedback(proxyRequest);
-
-                var feedbackKey = new ProxyFeedbackRequestKey(proxyRequest);
-                int presentations;
-                if (!m_RequestPresentations.TryGetValue(feedbackKey, out presentations))
-                    m_RequestPresentations[feedbackKey] = 0;
-
-                m_RequestPresentations[feedbackKey] = presentations + 1;
             }
         }
 
@@ -248,11 +247,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         continue;
 
                     var feedbackKey = new ProxyFeedbackRequestKey(request);
-                    int presentations;
-                    if (!m_RequestPresentations.TryGetValue(feedbackKey, out presentations))
-                        m_RequestPresentations[feedbackKey] = 0;
+                    ProxyFeedbackData data;
+                    if (!m_RequestData.TryGetValue(feedbackKey, out data))
+                    {
+                        data = new ProxyFeedbackData();
+                        m_RequestData[feedbackKey] = data;
+                    }
 
-                    if (presentations > request.maxPresentations)
+                    if (data.presentations > request.maxPresentations)
                         continue;
 
                     foreach (var button in kvp.Value)
@@ -268,7 +270,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                                 if (tooltip)
                                 {
                                     tooltip.tooltipText = tooltipText;
-                                    this.ShowTooltip(tooltip, true, k_FeedbackDuration);
+                                    this.ShowTooltip(tooltip, true, k_FeedbackDuration, () =>
+                                    {
+                                        if (!data.visibleThisPresentation)
+                                            data.presentations++;
+
+                                        data.visibleThisPresentation = true;
+                                    });
                                 }
                             }
                         }
@@ -309,6 +317,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 }
             }
 
+            var feedbackKey = new ProxyFeedbackRequestKey(request);
+            ProxyFeedbackData data;
+            if (m_RequestData.TryGetValue(feedbackKey, out data))
+                data.visibleThisPresentation = false;
+
+            // If this feedback was removed, show any feedback that might have been blocked by it
             if (m_FeedbackRequests.Remove(request))
                 ExecuteFeedback(request);
         }

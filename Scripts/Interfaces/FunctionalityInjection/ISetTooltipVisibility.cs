@@ -1,15 +1,18 @@
+using System;
+
 #if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to the ability to show or hide a Tooltip
-    /// </summary>    public interface ISetTooltipVisibility
+    /// </summary>
+    public interface ISetTooltipVisibility
     {
     }
 
     public static class ISetTooltipVisibilityMethods
     {
-        public delegate void ShowTooltipDelegate(ITooltip tooltip, bool persistent = false, float duration = 0f);
+        public delegate void ShowTooltipDelegate(ITooltip tooltip, bool persistent = false, float duration = 0f, Action becameVisible = null);
 
         public delegate void HideTooltipDelegate(ITooltip tooltip, bool persistent = false);
 
@@ -22,9 +25,9 @@ namespace UnityEditor.Experimental.EditorVR
         /// <param name="tooltip">The tooltip to show</param>
         /// <param name="persistent">Whether the tooltip should stay visible regardless of raycasts</param>
         /// <param name="duration">If the tooltip is shown persistently, and duration is > 0, hide after the duration, in seconds</param>
-        public static void ShowTooltip(this ISetTooltipVisibility obj, ITooltip tooltip, bool persistent = false, float duration = 0f)
+        public static void ShowTooltip(this ISetTooltipVisibility obj, ITooltip tooltip, bool persistent = false, float duration = 0f, Action becameVisible = null)
         {
-            showTooltip(tooltip, persistent, duration);
+            showTooltip(tooltip, persistent, duration, becameVisible);
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : MonoBehaviour, IUsesViewerScale
+    sealed class TooltipModule : MonoBehaviour, IUsesViewerScale, IInstantiateUI
     {
         const float k_Delay = 0; // In case we want to bring back a delay
         const float k_TransitionDuration = 0.1f;
@@ -37,6 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public Material customHighlightMaterial;
             public bool persistent;
             public float duration;
+            public Action becameVisible;
         }
 
         readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
@@ -77,11 +79,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     var tooltipUI = tooltipData.tooltipUI;
                     if (!tooltipUI)
                     {
-                        var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
+                        var tooltipObject = this.InstantiateUI(m_TooltipPrefab, m_TooltipCanvas);
                         tooltipUI = tooltipObject.GetComponent<TooltipUI>();
                         tooltipData.tooltipUI = tooltipUI;
                         tooltipUI.highlight.material = tooltipData.customHighlightMaterial ?? m_HighlightMaterial;
                         tooltipUI.background.material = m_TooltipBackgroundMaterial;
+                        tooltipUI.becameVisible += tooltipData.becameVisible;
                         var tooltipTransform = tooltipObject.transform;
                         MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
                         tooltipTransform.localScale = Vector3.zero;
@@ -250,7 +253,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f)
+        public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f, Action becameVisible = null)
         {
             if (!IsValidTooltip(tooltip))
                 return;
@@ -284,7 +287,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 startTime = Time.time,
                 lastModifiedTime = Time.time,
                 persistent = persistent,
-                duration = duration
+                duration = duration,
+                becameVisible = becameVisible
             };
         }
 
