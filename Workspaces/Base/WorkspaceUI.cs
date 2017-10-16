@@ -961,7 +961,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 foreach (var id in ids)
                 {
-                    Debug.Log("show " + id + "m ");
                     var request = new ProxyFeedbackRequest
                     {
                         //node = node,
