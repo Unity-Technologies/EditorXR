@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -39,10 +40,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [Serializable]
         public class AffordanceVisibilityDefinition
         {
+            //TODO: Expose each visibility control fields, based on the selected visibility control type
             [SerializeField]
             VisibilityControlType m_VisibilityType;
 
-            //TODO: Add support for alpha/float, & material swapping. Expose each visibility control type field set based on the selected visibility control type
             [SerializeField] // colorProperty field
             string m_ColorProperty = "_Color"; // Consider custom inspector that only displays this if this visibility type is chosen
 
@@ -91,16 +92,47 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 
         [Serializable]
+        public class AffordanceAnimationDefinition
+        {
+            [FlagsProperty]
+            [SerializeField]
+            AxisFlags m_TranslateAxes;
+
+            [FlagsProperty]
+            [SerializeField]
+            AxisFlags m_RotateAxes;
+
+            [SerializeField]
+            float m_Min;
+
+            [SerializeField]
+            float m_Max = 5f;
+
+            [SerializeField]
+            bool m_FlipOnXAxis;
+
+            public AxisFlags translateAxes { get { return m_TranslateAxes; } set { m_TranslateAxes = value; } }
+            public AxisFlags rotateAxes { get { return m_RotateAxes; } set { m_RotateAxes = value; } }
+            public float min { get { return m_Min; } set { m_Min = value; } }
+            public float max { get { return m_Max; } set { m_Max = value; } }
+            public bool flipOnX { get { return m_FlipOnXAxis; } set { m_FlipOnXAxis = value; } }
+        }
+
+        [Serializable]
         public class AffordanceDefinition
         {
             [SerializeField]
             VRInputDevice.VRControl m_Control;
 
             [SerializeField]
+            AffordanceAnimationDefinition m_AnimationDefinition;
+
+            [SerializeField]
             AffordanceVisibilityDefinition m_VisibilityDefinition;
 
             public VRInputDevice.VRControl control { get { return m_Control; } set { m_Control = value; } }
             public AffordanceVisibilityDefinition visibilityDefinition { get { return m_VisibilityDefinition; } set { m_VisibilityDefinition = value; } }
+            public AffordanceAnimationDefinition animationDefinition { get { return m_AnimationDefinition; } set { m_AnimationDefinition = value; } }
         }
 
         [Header("Non-Interactive Input-Device Body Elements")]
@@ -109,6 +141,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         [Space(20)]
         [Header("Affordances / Interactive Input-Device Elements")]
+        [SerializeField]
+        AffordanceAnimationDefinition m_DefaultAffordanceAnimationDefinition;
+
         [SerializeField]
         AffordanceVisibilityDefinition m_DefaultAffordanceVisibilityDefinition;
 
@@ -119,6 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public AffordanceDefinition[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } set { m_AffordanceDefinitions = value; } }
         public AffordanceVisibilityDefinition bodyVisibilityDefinition { get { return m_BodyVisibilityDefinition; } }
         public AffordanceVisibilityDefinition defaultAffordanceVisibilityDefinition { get { return m_DefaultAffordanceVisibilityDefinition; } }
+        public AffordanceAnimationDefinition defaultAnimationDefinition { get { return m_DefaultAffordanceAnimationDefinition; } set { m_DefaultAffordanceAnimationDefinition = value; } }
     }
 }
 #endif

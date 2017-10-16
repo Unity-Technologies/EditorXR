@@ -213,6 +213,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             // If affordanceMapDefinitions is null, set the list below into the map after setup
             List<AffordanceDefinition> generatedAffordanceDefinitions = new List<AffordanceDefinition>();
             var defaultAffordanceVisibilityDefinition = m_AffordanceMap.defaultAffordanceVisibilityDefinition;
+            var defaultAffordanceAnimationDefinition = m_AffordanceMap.defaultAnimationDefinition;
             foreach (var proxyAffordance in affordances)
             {
                 var renderers = proxyAffordance.renderer.GetComponentsInChildren<Renderer>(true);
@@ -220,6 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 {
                     // Setup animated color or alpha transparency for all materials associated with all renderers associated with the control
                     ProxyAffordanceMap.AffordanceVisibilityDefinition visibilityDefinition;
+                    ProxyAffordanceMap.AffordanceAnimationDefinition animationDefinition;
                     var control = proxyAffordance.control;
 
                     // Assemble a new affordance definition and visibility definition for the affordance,
@@ -238,10 +240,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             hiddenMaterial = defaultAffordanceVisibilityDefinition.hiddenMaterial
                         };
 
+                        animationDefinition = new ProxyAffordanceMap.AffordanceAnimationDefinition
+                        {
+                            translateAxes = defaultAffordanceAnimationDefinition.translateAxes,
+                            rotateAxes = defaultAffordanceAnimationDefinition.rotateAxes,
+                            min = defaultAffordanceAnimationDefinition.min,
+                            max = defaultAffordanceAnimationDefinition.max,
+                            flipOnX = defaultAffordanceAnimationDefinition.flipOnX
+                        };
+
                         var generatedAffordanceDefinition = new AffordanceDefinition
                         {
                             control = control,
-                            visibilityDefinition = visibilityDefinition
+                            visibilityDefinition = visibilityDefinition,
+                            //animationDefinition = animationDefinition
                         };
 
                         generatedAffordanceDefinitions.Add(generatedAffordanceDefinition);

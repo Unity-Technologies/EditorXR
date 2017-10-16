@@ -13,6 +13,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         bool m_BodyRenderersVisible;
 
         [SerializeField]
+        Node m_Node;
+
+        [SerializeField]
         Transform m_RayOrigin;
 
         [SerializeField]

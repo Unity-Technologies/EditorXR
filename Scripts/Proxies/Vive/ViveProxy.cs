@@ -2,6 +2,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -58,12 +60,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #endif
         }
 
-        static void PostAnimate(Affordance[] buttons, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
+        static void PostAnimate(Affordance[] affordances, ProxyAffordanceMap.AffordanceDefinition[] affordanceDefinitions, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
         {
             var proxyInput = (ProxyAnimatorInput)input;
-
-            foreach (var button in buttons)
+            foreach (var button in affordances)
             {
+                var affordanceDefinition = affordanceDefinitions.Where(x => x.control == button.control).FirstOrDefault().animationDefinition;
                 switch (button.control)
                 {
                     case VRInputDevice.VRControl.LeftStickButton:
@@ -77,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         break;
                     case VRInputDevice.VRControl.Analog0:
                         // Trackpad touch sphere
-                        if (button.translateAxes != 0)
+                        if (affordanceDefinition.translateAxes != 0)
                             button.renderer.enabled = !Mathf.Approximately(proxyInput.stickX.value, 0) || !Mathf.Approximately(proxyInput.stickY.value, 0);
                         break;
                 }
