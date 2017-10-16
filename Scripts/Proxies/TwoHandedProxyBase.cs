@@ -19,10 +19,32 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Node node;
         public string tooltipText;
         public bool hideExisting;
+        public int maxPresentations = 2;
     }
 
     abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
     {
+        struct ProxyFeedbackRequestKey
+        {
+            readonly object caller;
+            readonly VRInputDevice.VRControl control;
+            readonly Node node;
+            readonly string tooltipText;
+
+            public ProxyFeedbackRequestKey(ProxyFeedbackRequest request)
+            {
+                caller = request.caller;
+                control = request.control;
+                node = request.node;
+                tooltipText = request.tooltipText;
+            }
+
+            public override int GetHashCode()
+            {
+                return caller.GetHashCode() ^ (int)control ^ (int)node ^ tooltipText.GetHashCode();
+            }
+        }
+
         const float k_FeedbackDuration = 5f;
 
         [SerializeField]
@@ -39,6 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
         readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
+        readonly Dictionary<ProxyFeedbackRequestKey, int> m_RequestPresentations = new Dictionary<ProxyFeedbackRequestKey, int>();
 
         protected Dictionary<Node, Transform> m_RayOrigins;
 
@@ -186,6 +209,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 m_FeedbackRequests.Add(proxyRequest);
                 ExecuteFeedback(proxyRequest);
+
+                var feedbackKey = new ProxyFeedbackRequestKey(proxyRequest);
+                int presentations;
+                if (!m_RequestPresentations.TryGetValue(feedbackKey, out presentations))
+                    m_RequestPresentations[feedbackKey] = 0;
+
+                m_RequestPresentations[feedbackKey] = presentations + 1;
             }
         }
 
@@ -215,6 +245,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     }
 
                     if (request == null)
+                        continue;
+
+                    var feedbackKey = new ProxyFeedbackRequestKey(request);
+                    int presentations;
+                    if (!m_RequestPresentations.TryGetValue(feedbackKey, out presentations))
+                        m_RequestPresentations[feedbackKey] = 0;
+
+                    if (presentations > request.maxPresentations)
                         continue;
 
                     foreach (var button in kvp.Value)
