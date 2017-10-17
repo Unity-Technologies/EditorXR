@@ -797,7 +797,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     {
                         node = node,
                         control = id,
-                        tooltipText = tooltipText
+                        tooltipText = tooltipText,
+                        suppressPresentation = () => false
                     };
 
                     this.AddFeedbackRequest(request);

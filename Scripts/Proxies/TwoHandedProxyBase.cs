@@ -21,6 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public string tooltipText;
         public bool hideExisting;
         public int maxPresentations = 2;
+
+        public Func<bool> suppressPresentation;
     }
 
     abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight,
@@ -284,7 +286,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         m_RequestData[feedbackKey] = data;
                     }
 
-                    if (data.presentations > request.maxPresentations)
+                    var suppress = data.presentations > request.maxPresentations;
+                    var suppressPresentation = request.suppressPresentation;
+                    if (suppressPresentation != null)
+                        suppress = suppressPresentation();
+
+                    if (suppress)
                         continue;
 
                     foreach (var button in kvp.Value)
