@@ -14,8 +14,6 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
-
     [MainMenuItem("Annotation", "Create", "Draw in 3D")]
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,

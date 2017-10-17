@@ -12,12 +12,13 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace,
-        ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin
+        ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
+        IRequestFeedback
     {
         const string k_SettingsMenuSectionName = "Settings";
 
         [SerializeField]
-        ActionMap m_MainMenuActionMap;
+        ActionMap m_ActionMap;
 
         [SerializeField]
         HapticPulse m_FaceRotationPulse;
@@ -46,6 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         readonly Dictionary<ISettingsMenuProvider, GameObject> m_SettingsMenus = new Dictionary<ISettingsMenuProvider, GameObject>();
         readonly Dictionary<ISettingsMenuItemProvider, GameObject> m_SettingsMenuItems = new Dictionary<ISettingsMenuItemProvider, GameObject>();
 
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+
         public List<Type> menuTools { private get; set; }
         public List<Type> menuWorkspaces { private get; set; }
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
@@ -63,7 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public bool focus { get { return m_MainMenuUI.hovering; } }
 
-        public ActionMap actionMap { get { return m_MainMenuActionMap; } }
+        public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
 
         public Transform menuOrigin
@@ -98,13 +101,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (m_MenuHideFlags != value)
                 {
                     m_MenuHideFlags = value;
+                    var visible = value == 0;
                     if (m_MainMenuUI)
                     {
                         var isPermanent = (value & MenuHideFlags.Hidden) != 0;
-                        m_MainMenuUI.visible = value == 0;
-                        if (wasPermanent && value == 0 || wasVisible && isPermanent)
+                        m_MainMenuUI.visible = visible;
+                        if (wasPermanent && visible || wasVisible && isPermanent)
                             SendVisibilityPulse();
                     }
+
+                    if (visible)
+                        ShowFeedback();
+                    else
+                        this.ClearFeedbackRequests();
                 }
             }
         }
@@ -116,6 +125,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
             m_MainMenuUI.menuOrigin = menuOrigin;
             m_MainMenuUI.Setup();
+
+            InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
         }
 
         void Start()
@@ -362,6 +373,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_SettingsMenuItems.Remove(provider);
             }
             provider.settingsMenuItemInstance = null;
+        }
+
+        void ShowFeedback()
+        {
+            var tooltipText = proxyType == typeof(ViveProxy) ? "Press to Rotate Menu" : "Rotate Menu";
+            List<VRInputDevice.VRControl> controls;
+            if (m_Controls.TryGetValue("FlickFace", out controls))
+            {
+                foreach (var id in controls)
+                {
+                    this.AddFeedbackRequest(new ProxyFeedbackRequest
+                    {
+                        control = id,
+                        node = node,
+                        tooltipText = tooltipText
+                    });
+                }
+            }
         }
     }
 }
