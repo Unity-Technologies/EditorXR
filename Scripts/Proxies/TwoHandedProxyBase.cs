@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -22,33 +23,57 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public int maxPresentations = 2;
     }
 
-    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
+    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight,
+        IConnectInterfaces, ISerializePreferences
     {
-        struct ProxyFeedbackRequestKey
+        [Serializable]
+        struct RequestKey
         {
-            readonly object caller;
-            readonly VRInputDevice.VRControl control;
-            readonly Node node;
-            readonly string tooltipText;
+            [SerializeField]
+            VRInputDevice.VRControl m_Control;
 
-            public ProxyFeedbackRequestKey(ProxyFeedbackRequest request)
+            [SerializeField]
+            Node m_Node;
+
+            [SerializeField]
+            string m_TooltipText;
+
+            public RequestKey(ProxyFeedbackRequest request)
             {
-                caller = request.caller;
-                control = request.control;
-                node = request.node;
-                tooltipText = request.tooltipText;
+                m_Control = request.control;
+                m_Node = request.node;
+                m_TooltipText = request.tooltipText;
             }
 
             public override int GetHashCode()
             {
-                return caller.GetHashCode() ^ (int)control ^ (int)node ^ tooltipText.GetHashCode();
+                var hashCode = (int)m_Control ^ (int)m_Node;
+
+                if (m_TooltipText != null)
+                    hashCode ^= m_TooltipText.GetHashCode();
+
+                return hashCode;
+            }
+
+            public override string ToString()
+            {
+                return m_Control + ", " + m_Node + ", " + m_TooltipText;
             }
         }
 
-        class ProxyFeedbackData
+        [Serializable]
+        class RequestData
         {
             public int presentations;
-            public bool visibleThisPresentation;
+
+            public bool visibleThisPresentation { get; set; }
+        }
+
+        [Serializable]
+        class SerializedFeedback
+        {
+            public RequestKey[] keys;
+            public RequestData[] values;
         }
 
         const float k_FeedbackDuration = 5f;
@@ -66,8 +91,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
+
+        SerializedFeedback m_SerializedFeedback;
         readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
-        readonly Dictionary<ProxyFeedbackRequestKey, ProxyFeedbackData> m_RequestData = new Dictionary<ProxyFeedbackRequestKey, ProxyFeedbackData>();
+        readonly Dictionary<RequestKey, RequestData> m_RequestData = new Dictionary<RequestKey, RequestData>();
 
         protected Dictionary<Node, Transform> m_RayOrigins;
 
@@ -184,6 +211,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             while (!active)
                 yield return null;
 
+            if (m_SerializedFeedback == null)
+                m_SerializedFeedback = new SerializedFeedback();
+
             // In standalone play-mode usage, attempt to get the TrackedObjectInput
             if (trackedObjectInput == null && m_PlayerInput)
                 trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
@@ -246,11 +276,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     if (request == null)
                         continue;
 
-                    var feedbackKey = new ProxyFeedbackRequestKey(request);
-                    ProxyFeedbackData data;
+                    var feedbackKey = new RequestKey(request);
+                    RequestData data;
                     if (!m_RequestData.TryGetValue(feedbackKey, out data))
                     {
-                        data = new ProxyFeedbackData();
+                        data = new RequestData();
                         m_RequestData[feedbackKey] = data;
                     }
 
@@ -317,8 +347,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 }
             }
 
-            var feedbackKey = new ProxyFeedbackRequestKey(request);
-            ProxyFeedbackData data;
+            var feedbackKey = new RequestKey(request);
+            RequestData data;
             if (m_RequestData.TryGetValue(feedbackKey, out data))
                 data.visibleThisPresentation = false;
 
@@ -329,13 +359,52 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            var requests = caller == null
-                ? new List<ProxyFeedbackRequest>(m_FeedbackRequests)
+            var requests = caller == null ? new List<ProxyFeedbackRequest>(m_FeedbackRequests)
                 : m_FeedbackRequests.Where(feedbackRequest => feedbackRequest.caller == caller).ToList();
 
             foreach (var feedbackRequest in requests)
             {
                 RemoveFeedbackRequest(feedbackRequest);
+            }
+        }
+
+        public object OnSerializePreferences()
+        {
+            if (!active)
+                return null;
+
+            if (m_SerializedFeedback != null)
+            {
+                var count = m_RequestData.Count;
+                var keys = new RequestKey[count];
+                var values = new RequestData[count];
+                count = 0;
+                foreach (var kvp in m_RequestData)
+                {
+                    keys[count] = kvp.Key;
+                    values[count] = kvp.Value;
+                    count++;
+                }
+
+                m_SerializedFeedback.keys = keys;
+                m_SerializedFeedback.values = values;
+            }
+
+            return m_SerializedFeedback;
+        }
+
+        public void OnDeserializePreferences(object obj)
+        {
+            m_SerializedFeedback = (SerializedFeedback)obj;
+            if (m_SerializedFeedback.keys == null)
+                return;
+
+            var length = m_SerializedFeedback.keys.Length;
+            var keys = m_SerializedFeedback.keys;
+            var values = m_SerializedFeedback.values;
+            for (var i = 0; i < length; i++)
+            {
+                m_RequestData[keys[i]] = values[i];
             }
         }
     }
