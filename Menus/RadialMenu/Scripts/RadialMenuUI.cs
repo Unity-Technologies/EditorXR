@@ -125,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 }
                 else if (value.magnitude > 0)
                 {
-                    if (node == Node.LeftHand)
+                    if (node == Node.RightHand)
                         value.y *= -1;
 
                     var angle = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg;
@@ -145,9 +145,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     {
                         m_HighlightedButton = m_RadialMenuSlots[(int)index];
                         foreach (var slot in m_RadialMenuSlots)
+                        {
                             slot.highlighted = slot == m_HighlightedButton;
+                        }
                     }
                 }
+
                 m_ButtonInputDirection = value;
             }
         }
@@ -204,7 +207,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 menuSlotGO.name = node + " Radial Menu Slot " + i;
                 var menuSlot = menuSlotGO.GetComponent<RadialMenuSlot>();
                 this.ConnectInterfaces(menuSlot);
-                menuSlot.orderIndex = i;
+                menuSlot.orderIndex = k_SlotCount - i - 1;
                 m_RadialMenuSlots.Add(menuSlot);
                 menuSlot.hovered += OnButtonHovered;
 
@@ -227,8 +230,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 // We move in counter-clockwise direction
                 // Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
-                m_PhaseOffset = node == Node.LeftHand ? 90f : -90f - rotationSpacing;
-                slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + rotationSpacing * i, node == Node.LeftHand ? Vector3.up : Vector3.down);
+                m_PhaseOffset = node == Node.LeftHand ? -90f - rotationSpacing : 90f;
+                slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + rotationSpacing * i, node == Node.LeftHand ? Vector3.down : Vector3.up);
                 slot.visible = false;
             }
 
@@ -277,19 +280,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
             {
                 var slot = m_RadialMenuSlots[i];
+
+                slot.wasVisible = slot.visible;
                 if (i < m_Actions.Count)
-                {
-                    slot.wasVisible = slot.visible;
                     slot.visible = true;
-                }
                 else
-                {
                     slot.visible = false;
-                }
             }
 
             var revealAmount = 0f;
-            var hiddenSlotRotation = 360f / k_SlotCount + (node == Node.LeftHand ? 90f : -90f);
+            var hiddenSlotRotation = node == Node.LeftHand ? 90f + 360f / k_SlotCount : 90f;
             while (revealAmount < 1)
             {
                 revealAmount += Time.deltaTime * 8;
@@ -305,7 +305,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         var transform = slot.transform;
                         var localRotation = transform.localRotation.eulerAngles;
                         var destRotation = slot.visibleLocalRotation.eulerAngles.y;
-                        if (node == Node.RightHand)
+                        if (node == Node.LeftHand && destRotation > 180f)
                             destRotation -= 360f;
 
                         localRotation.y = Mathf.Lerp(hiddenSlotRotation, destRotation, revealAmount * revealAmount);

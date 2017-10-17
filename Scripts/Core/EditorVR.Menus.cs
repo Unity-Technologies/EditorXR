@@ -424,7 +424,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 SetAlternateMenuVisibility(rayOrigin);
             }
 
-            internal static void SetAlternateMenuVisibility(Transform rayOrigin)
+            internal static void UpdateAlternateMenuActions(Transform rayOrigin, List<ActionMenuData> actions)
+            {
+                var actionsModule = evr.GetModule<ActionsModule>();
+                foreach (var deviceData in evr.m_DeviceData)
+                {
+                    if (deviceData.rayOrigin != rayOrigin)
+                        continue;
+
+                    var menuActions = actionsModule.menuActions;
+                    if (actions != null)
+                        menuActions.AddRange(actions);
+
+                    deviceData.alternateMenu.menuActions = menuActions;
+                }
+            }
+
+            static void SetAlternateMenuVisibility(Transform rayOrigin)
             {
                 Rays.ForEachProxyDevice(deviceData =>
                 {

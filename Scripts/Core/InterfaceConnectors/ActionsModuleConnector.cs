@@ -12,9 +12,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var actionsModule = evr.GetModule<ActionsModule>();
                 if (actionsModule)
                 {
-                    var toolActions = target as IActions;
-                    if (toolActions != null)
-                        actionsModule.ConnectToolActions(toolActions);
+                    var actions = target as IActions;
+                    if (actions != null)
+                        actionsModule.ConnectActions(actions, Menus.UpdateAlternateMenuActions);
 
                     var alternateMenu = target as IUsesMenuActions;
                     if (alternateMenu != null)

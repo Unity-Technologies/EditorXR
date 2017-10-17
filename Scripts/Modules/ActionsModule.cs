@@ -21,13 +21,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         .OrderBy(a => a.priority)
                         .ToList();
                 }
-                else
-                {
-                    return m_MenuActions
-                        .Where(a => a.action is Actions.Undo || a.action is Actions.Redo)
-                        .OrderBy(a => a.priority)
-                        .ToList();
-                }
+
+                return m_MenuActions
+                    .Where(a => a.action is Actions.Undo || a.action is Actions.Redo)
+                    .OrderBy(a => a.priority)
+                    .ToList();
             }
         }
 
@@ -75,7 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
         }
 
-        public void ConnectActions(IActions target)
+        public void ConnectActions(IActions target, Action completed)
         {
             // Delay connecting actions to allow tool / module to initialize first
             EditorApplication.delayCall += () =>
@@ -92,9 +90,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                             priority = int.MaxValue,
                             action = action,
                         };
-                        menuActions.Add(actionMenuData);
+                        m_MenuActions.Add(actionMenuData);
                     }
-                    Menus.UpdateAlternateMenuActions();
+
+                    if (completed != null)
+                        completed();
                 }
             };
         }
