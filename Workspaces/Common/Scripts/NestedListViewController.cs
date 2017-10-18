@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace ListView
 {
@@ -7,11 +8,21 @@ namespace ListView
         where TData : ListViewItemNestedData<TData, TIndex>
         where TItem : ListViewItem<TData, TIndex>
     {
+        protected struct UpdateData
+        {
+            public List<TData> data;
+            public int depth;
+
+            public int index;
+        }
+
         protected override float listHeight { get { return m_ExpandedDataLength; } }
 
         protected float m_ExpandedDataLength;
 
         protected readonly Dictionary<TIndex, bool> m_ExpandStates = new Dictionary<TIndex, bool>();
+
+        protected readonly Stack<UpdateData> m_UpdateStack = new Stack<UpdateData>();
 
         public override List<TData> data
         {
