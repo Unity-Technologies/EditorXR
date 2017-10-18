@@ -39,6 +39,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         int m_SelectedRow;
 
+        string m_LastSearchQuery;
+        bool m_HasLockedQuery;
+        bool m_HasFilterQuery;
+
         readonly List<KeyValuePair<Transform, GameObject>> m_HoveredGameObjects = new List<KeyValuePair<Transform, GameObject>>();
 
         public override List<HierarchyData> data
@@ -217,22 +221,27 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 var searchQuery = getSearchQuery();
 
-                var hasLockedQuery = searchQuery.Contains(lockedQueryString);
-                if (hasLockedQuery)
-                    searchQuery = searchQuery.Replace(lockedQueryString, string.Empty).Trim();
+                if (searchQuery != m_LastSearchQuery)
+                {
+                    m_HasLockedQuery = searchQuery.Contains(lockedQueryString);
+                    if (m_HasLockedQuery)
+                        searchQuery = searchQuery.Replace(lockedQueryString, string.Empty).Trim();
 
-                var hasFilterQuery = !string.IsNullOrEmpty(searchQuery);
+                    m_HasFilterQuery = !string.IsNullOrEmpty(searchQuery);
+                }
+
+                m_LastSearchQuery = searchQuery;
 
                 var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z;
 
-                if (hasLockedQuery || hasFilterQuery)
+                if (m_HasLockedQuery || m_HasFilterQuery)
                 {
                     var filterTestPass = true;
 
-                    if (hasLockedQuery)
+                    if (m_HasLockedQuery)
                         filterTestPass = this.IsLocked(datum.gameObject);
 
-                    if (hasFilterQuery)
+                    if (m_HasFilterQuery)
                         filterTestPass &= datum.types.Any(type => matchesFilter(type));
 
                     if (!filterTestPass) // If this item doesn't match, then move on to the next item; do not count
