@@ -209,7 +209,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_VisibleItemHeight += extraSpace;
         }
 
-        protected override void UpdateRecursively(List<HierarchyData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        protected override void UpdateNestedItems(List<HierarchyData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
         {
             m_UpdateStack.Push(new UpdateData
             {
