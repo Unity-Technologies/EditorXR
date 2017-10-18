@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 
 namespace ListView
@@ -116,7 +116,7 @@ namespace ListView
                     if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
                         Recycle(index);
                     else
-                        UpdateItem(datum, order++, offset, depth, ref doneSettling);
+                        UpdateNestedItem(datum, order++, offset, depth, ref doneSettling);
 
                     offset += itemSize.z;
 
@@ -146,7 +146,7 @@ namespace ListView
             }
         }
 
-        protected virtual void UpdateItem(TData data, int order, float count, int depth, ref bool doneSettling)
+        protected virtual void UpdateNestedItem(TData data, int order, float count, int depth, ref bool doneSettling)
         {
             UpdateVisibleItem(data, order, count, ref doneSettling);
         }
