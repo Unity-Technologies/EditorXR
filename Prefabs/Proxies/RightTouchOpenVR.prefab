@@ -309,6 +309,7 @@ GameObject:
   - component: {fileID: 4617753192742486}
   - component: {fileID: 114700073176764548}
   - component: {fileID: 114331393344479226}
+  - component: {fileID: 114374282034907428}
   m_Layer: 0
   m_Name: RightTouchOpenVR
   m_TagString: Untagged
@@ -1086,6 +1087,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
+--- !u!114 &114374282034907428
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1523256443734892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460af9702a1fe674a932ad1a15f33bfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
+  m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
 --- !u!114 &114427722552533374
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1161,6 +1175,7 @@ MonoBehaviour:
   m_FieldGrabOrigin: {fileID: 4866118000331932}
   m_MeshRoot: {fileID: 4802769266775244}
   m_ProxyUI: {fileID: 114331393344479226}
+  m_ProxyAnimator: {fileID: 0}
   m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 4199321456540786}

@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public bool proxyShaken;
     }
 
-    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
+    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
     {
         const float k_DefaultFeedbackDuration = 5f;
 
@@ -170,10 +170,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             // In standalone play-mode usage, attempt to get the TrackedObjectInput
             if (trackedObjectInput == null && m_PlayerInput)
                 trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
-
-            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_LeftProxyHelper.gameObject), m_LeftProxyHelper.rayOrigin);
-            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_RightProxyHelper.gameObject), m_RightProxyHelper.rayOrigin);
-            this.ConnectInterfaces(ObjectUtils.AddComponent<ProxyAnimator>(m_RightProxyHelper.gameObject), m_RightProxyHelper.rayOrigin);
 
             m_PreviousLeftHandPosition = trackedObjectInput.leftPosition.vector3;
             m_PreviousRightHandPosition = trackedObjectInput.rightPosition.vector3;

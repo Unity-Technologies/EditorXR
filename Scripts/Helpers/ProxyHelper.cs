@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -7,13 +8,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// <summary>
     /// Reference container for additional content origins on a device
     /// </summary>
-    sealed class ProxyHelper : MonoBehaviour
+    sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
     {
         List<Renderer> m_BodyRenderers; // renderers not associated with controls, & will be hidden when displaying feedback/tooltips
         bool m_BodyRenderersVisible;
-
-        [SerializeField]
-        Node m_Node;
 
         [SerializeField]
         Transform m_RayOrigin;
@@ -35,6 +33,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         [SerializeField]
         ProxyUI m_ProxyUI;
+
+        [SerializeField]
+        ProxyAnimator m_ProxyAnimator;
 
         [SerializeField]
         Affordance[] m_Affordances;
@@ -96,6 +97,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             origins.Add(fieldGrabOrigin);
 
             m_ProxyUI.Setup(m_Affordances, origins);
+            m_ProxyAnimator.Setup(m_Affordances);
+
+            this.ConnectInterfaces(m_ProxyAnimator, this.rayOrigin);
         }
     }
 }

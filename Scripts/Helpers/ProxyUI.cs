@@ -253,7 +253,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         {
                             control = control,
                             visibilityDefinition = visibilityDefinition,
-                            //animationDefinition = animationDefinition
+                            animationDefinition = animationDefinition
                         };
 
                         generatedAffordanceDefinitions.Add(generatedAffordanceDefinition);

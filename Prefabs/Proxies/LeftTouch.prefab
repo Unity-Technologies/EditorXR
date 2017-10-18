@@ -26,6 +26,7 @@ GameObject:
   - component: {fileID: 436998}
   - component: {fileID: 114000013861093962}
   - component: {fileID: 114942772046743868}
+  - component: {fileID: 114309355936498838}
   m_Layer: 0
   m_Name: LeftTouch
   m_TagString: ShowInMiniWorld
@@ -1402,6 +1403,7 @@ MonoBehaviour:
   m_FieldGrabOrigin: {fileID: 4000010810114962}
   m_MeshRoot: {fileID: 485484}
   m_ProxyUI: {fileID: 114942772046743868}
+  m_ProxyAnimator: {fileID: 114309355936498838}
   m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 4023718469717780}
@@ -1511,6 +1513,19 @@ MonoBehaviour:
   m_TooltipTarget: {fileID: 4310256503251038}
   m_TooltipSource: {fileID: 407362}
   m_TooltipAlignment: 1
+--- !u!114 &114309355936498838
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 118082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460af9702a1fe674a932ad1a15f33bfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
+  m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
 --- !u!114 &114543264181638874
 MonoBehaviour:
   m_ObjectHideFlags: 1

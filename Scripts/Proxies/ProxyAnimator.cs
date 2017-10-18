@@ -7,6 +7,7 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using AffordanceDefinition = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceDefinition;
 
 [ProcessInput(1)]
 [RequireComponent(typeof(ProxyHelper))]
@@ -40,11 +41,11 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 
     public ActionMap actionMap { get { return m_ProxyActionMap; } }
     public bool ignoreLocking { get { return true; } }
-    internal event Action<Affordance[], ProxyAffordanceMap.AffordanceDefinition[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
+    internal event Action<Affordance[], AffordanceDefinition[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
-    void Start()
+    public void Setup(Affordance[] affordances)
     {
-        m_Affordances = GetComponent<ProxyHelper>().affordances;
+        m_Affordances = affordances;
         m_AffordanceDefinitions = m_AffordanceMap.AffordanceDefinitions;
     }
 
