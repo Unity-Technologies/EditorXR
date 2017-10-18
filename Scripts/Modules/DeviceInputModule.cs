@@ -51,7 +51,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly Dictionary<Type, string[]> m_DeviceTypeTags = new Dictionary<Type, string[]>();
         readonly List<InputProcessor> m_InputProcessorsCopy = new List<InputProcessor>();
         readonly List<InputProcessor> m_RemoveInputProcessorsCopy = new List<InputProcessor>();
-        static readonly List<InputControl> s_RemoveList = new List<InputControl>();
+        static readonly List<InputControl> k_RemoveList = new List<InputControl>();
+        ConsumeControlDelegate m_ConsumeControl;
+
+        void Awake()
+        {
+            m_ConsumeControl = ConsumeControl;
+        }
 
         public List<InputDevice> GetSystemDevices()
         {
@@ -82,20 +88,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void ProcessInput()
         {
-            s_RemoveList.Clear();
+            k_RemoveList.Clear();
 
             // Maintain a consumed control, so that other AMIs don't pick up the input, until it's no longer used
             foreach (var lockedControl in m_LockedControls)
             {
                 if (!lockedControl.provider.active || Mathf.Approximately(lockedControl.rawValue,
                     lockedControl.provider.GetControlData(lockedControl.index).defaultValue))
-                    s_RemoveList.Add(lockedControl);
+                    k_RemoveList.Add(lockedControl);
                 else
                     ConsumeControl(lockedControl);
             }
 
             // Remove separately, since we cannot remove while iterating
-            foreach (var inputControl in s_RemoveList)
+            foreach (var inputControl in k_RemoveList)
             {
                 if (!inputControl.provider.active)
                     ResetControl(inputControl);
@@ -103,19 +109,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_LockedControls.Remove(inputControl);
             }
 
-            s_RemoveList.Clear();
+            k_RemoveList.Clear();
             m_ProcessedInputs.Clear();
 
             m_InputProcessorsCopy.Clear();
             m_InputProcessorsCopy.AddRange(m_InputProcessors);
             foreach (var processor in m_InputProcessorsCopy)
             {
-                processor.processor.ProcessInput(processor.input, ConsumeControl);
+                processor.processor.ProcessInput(processor.input, m_ConsumeControl);
             }
 
-            // TODO: Replace this with a map of ActionMap,IProcessInput and go through those
             if (processInput != null)
-                processInput(m_ProcessedInputs, ConsumeControl);
+                processInput(m_ProcessedInputs, m_ConsumeControl);
         }
 
         public void CreateDefaultActionMapInputs()

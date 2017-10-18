@@ -9,16 +9,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
     /// <typeparam name="T"></typeparam>
     public static class ComponentUtils<T>
     {
-        static List<T> s_RetrievalList = new List<T>();
+        static readonly List<T> k_RetrievalList = new List<T>();
 
         public static T GetComponent(GameObject go)
         {
             var foundComponent = default(T);
-            go.GetComponents<T>(s_RetrievalList);
-            if (s_RetrievalList.Count > 0)
+            go.GetComponents(k_RetrievalList);
+            if (k_RetrievalList.Count > 0)
             {
-                foundComponent = s_RetrievalList[0];
-                s_RetrievalList.Clear();
+                foundComponent = k_RetrievalList[0];
+                k_RetrievalList.Clear();
             }
 
             return foundComponent;

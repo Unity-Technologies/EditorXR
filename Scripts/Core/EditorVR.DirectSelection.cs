@@ -180,10 +180,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             void OnObjectsDropped(Transform rayOrigin, Transform[] grabbedObjects)
             {
+                HashSet<Transform> objects;
+                if (!m_GrabbedObjects.TryGetValue(rayOrigin, out objects))
+                    return;
+
                 var sceneObjectModule = evr.GetModule<SceneObjectModule>();
                 var viewer = evr.GetNestedModule<Viewer>();
                 var miniWorlds = evr.GetNestedModule<MiniWorlds>();
-                var objects = m_GrabbedObjects[rayOrigin];
                 var eventObjects = new List<Transform>();
                 foreach (var grabbedObject in grabbedObjects)
                 {

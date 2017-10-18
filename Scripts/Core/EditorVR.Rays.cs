@@ -472,7 +472,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (!m_StandardManipulator)
                 {
                     m_StandardManipulator = evr.GetComponentInChildren<StandardManipulator>();
-                    ConnectInterface(m_StandardManipulator);
+                    if (m_StandardManipulator)
+                        ConnectInterface(m_StandardManipulator);
                 }
 
                 if (m_StandardManipulator)
