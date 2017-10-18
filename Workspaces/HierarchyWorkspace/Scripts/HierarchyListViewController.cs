@@ -124,6 +124,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_VisibleItemHeight = 0;
 
+            var searchQuery = getSearchQuery();
+            if (searchQuery != null && searchQuery.CompareTo(m_LastSearchQuery) != 0)
+            {
+                m_LastSearchQuery = searchQuery;
+                m_HasLockedQuery = searchQuery.Contains(lockedQueryString);
+                if (m_HasLockedQuery)
+                    searchQuery = searchQuery.Replace(lockedQueryString, string.Empty).Trim();
+
+                m_HasFilterQuery = !string.IsNullOrEmpty(searchQuery);
+            }
+
             base.UpdateItems();
 
             UpdateDropZones();
@@ -218,19 +229,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
 
                 var hasChildren = datum.children != null;
-
-                var searchQuery = getSearchQuery();
-
-                if (searchQuery != m_LastSearchQuery)
-                {
-                    m_HasLockedQuery = searchQuery.Contains(lockedQueryString);
-                    if (m_HasLockedQuery)
-                        searchQuery = searchQuery.Replace(lockedQueryString, string.Empty).Trim();
-
-                    m_HasFilterQuery = !string.IsNullOrEmpty(searchQuery);
-                }
-
-                m_LastSearchQuery = searchQuery;
 
                 var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z;
 
