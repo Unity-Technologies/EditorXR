@@ -149,8 +149,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
 
                 // Unset highlight old hovers
-				s_TempHovers.Clear();
-				foreach (var kvp in s_TempHovers)
+                s_TempHovers.Clear();
+                foreach (var kvp in m_HoverGameObjects)
+                {
+                    s_TempHovers[kvp.Key] = kvp.Value;
+                }
+
+                foreach (var kvp in s_TempHovers)
                 {
                     var directRayOrigin = kvp.Key;
                     var hover = kvp.Value;
@@ -162,8 +167,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         m_HoverGameObjects.Remove(directRayOrigin);
                     }
                 }
-
-				s_TempHovers.Clear();
 
                 // Find new hovers
                 foreach (var kvp in directSelection)
