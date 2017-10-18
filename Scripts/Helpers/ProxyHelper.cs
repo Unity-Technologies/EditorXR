@@ -96,10 +96,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             origins.Add(previewOrigin);
             origins.Add(fieldGrabOrigin);
 
-            m_ProxyUI.Setup(m_Affordances, origins);
-            m_ProxyAnimator.Setup(m_Affordances);
+            if (m_ProxyUI)
+                m_ProxyUI.Setup(m_Affordances, origins);
 
-            this.ConnectInterfaces(m_ProxyAnimator, this.rayOrigin);
+            if (m_ProxyAnimator)
+            {
+                m_ProxyAnimator.Setup(m_Affordances);
+                this.ConnectInterfaces(m_ProxyAnimator, this.rayOrigin);
+            }
         }
     }
 }
