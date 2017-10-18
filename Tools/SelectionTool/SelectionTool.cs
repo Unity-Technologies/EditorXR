@@ -152,6 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 s_TempHovers.Clear();
                 foreach (var kvp in m_HoverGameObjects)
                 {
+                    Debug.Log(kvp.Value);
                     s_TempHovers[kvp.Key] = kvp.Value;
                 }
 

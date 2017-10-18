@@ -107,7 +107,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_ProcessedInputs.Clear();
 
             m_InputProcessorsCopy.Clear();
-            return;
             m_InputProcessorsCopy.AddRange(m_InputProcessors);
             foreach (var processor in m_InputProcessorsCopy)
             {
