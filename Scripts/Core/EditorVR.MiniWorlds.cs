@@ -464,7 +464,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 // Update ray visibilities
-                Rays.ForEachProxyDevice(UpdateRayContaimnent);
+                foreach (var deviceData in evr.m_DeviceData)
+                {
+                    var proxy = deviceData.proxy;
+                    if (!proxy.active)
+                        continue;
+
+                    UpdateRayContaimnent(deviceData);
+                }
             }
 
             void UpdateRayContaimnent(DeviceData data)

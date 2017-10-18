@@ -287,7 +287,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 var intersectionModule = evr.GetModule<IntersectionModule>();
                 var distance = k_DefaultRayLength * Viewer.GetViewerScale();
-                IterateRayOrigins(rayOrigin => { intersectionModule.UpdateRaycast(rayOrigin, distance); });
+                foreach (var deviceData in evr.m_DeviceData)
+                {
+                    var proxy = deviceData.proxy;
+                    if (!proxy.active)
+                        continue;
+
+                    intersectionModule.UpdateRaycast(deviceData.rayOrigin, distance);
+                }
             }
 
             internal void UpdateDefaultProxyRays()
@@ -301,8 +308,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (!proxy.active)
                         continue;
 
-                    foreach (var rayOrigin in proxy.rayOrigins.Values)
+                    foreach (var kvp in proxy.rayOrigins)
                     {
+                        var rayOrigin = kvp.Value;
                         var distance = k_DefaultRayLength * Viewer.GetViewerScale();
 
                         // Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
@@ -342,7 +350,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             static void IterateRayOrigins(ForEachRayOriginCallback callback)
             {
-                ForEachProxyDevice(deviceData => callback(deviceData.rayOrigin));
+                var evrDeviceData = evr.m_DeviceData;
+                for (var i = 0; i < evrDeviceData.Count; i++)
+                {
+                    var deviceData = evrDeviceData[i];
+                    var proxy = deviceData.proxy;
+                    if (!proxy.active)
+                        continue;
+
+                    callback(deviceData.rayOrigin);
+                }
             }
 
             internal static IProxy GetProxyForRayOrigin(Transform rayOrigin)
