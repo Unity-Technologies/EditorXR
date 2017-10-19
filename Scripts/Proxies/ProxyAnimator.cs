@@ -11,7 +11,7 @@ using AffordanceDefinition = UnityEditor.Experimental.EditorVR.Core.ProxyAfforda
 
 [ProcessInput(1)]
 [RequireComponent(typeof(ProxyHelper))]
-public class ProxyAnimator : MonoBehaviour, ICustomActionMap
+public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
 {
     public class TransformInfo
     {
@@ -39,8 +39,13 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 
     readonly Dictionary<Transform, TransformInfo> m_TransformInfos = new Dictionary<Transform, TransformInfo>();
 
+    bool m_RightHandedProxy;
+    Node m_Node;
+
     public ActionMap actionMap { get { return m_ProxyActionMap; } }
     public bool ignoreLocking { get { return true; } }
+    public Node node { get { return m_Node; } set { m_Node = value; m_RightHandedProxy = m_Node == Node.RightHand; } }
+
     internal event Action<Affordance[], AffordanceDefinition[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
     public void Setup(Affordance[] affordances)
@@ -107,13 +112,15 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
             var affordanceDefinition = m_AffordanceDefinitions.Where(x => x.control == affordance.control).FirstOrDefault();
             var animationDefinition = affordanceDefinition != null ? affordanceDefinition.animationDefinition : null;
             var info = m_TransformInfos[affordance.transform];
+            var handednessScalar = m_RightHandedProxy && animationDefinition.reverseForRightHand ? -1 : 1;
 
             // Animate any values defined in the ProxyAffordanceMap's Affordance Definition
             //Assume control values are [-1, 1]
             if (animationDefinition != null)
             {
-                var min = animationDefinition.min;
-                var offset = min + (control.rawValue + 1) * (animationDefinition.max - min) * 0.5f;
+                var min = animationDefinition.min * handednessScalar;
+                var max = animationDefinition.max * handednessScalar;
+                var offset = min + (control.rawValue + 1) * (max - min) * 0.5f;
 
                 info.positionOffset += animationDefinition.translateAxes.GetAxis() * offset;
                 info.rotationOffset += animationDefinition.rotateAxes.GetAxis() * offset;

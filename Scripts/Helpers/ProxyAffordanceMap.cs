@@ -110,13 +110,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             float m_Max = 5f;
 
             [SerializeField]
-            bool m_FlipOnXAxis;
+            bool m_ReverseForRightHand;
 
             public AxisFlags translateAxes { get { return m_TranslateAxes; } set { m_TranslateAxes = value; } }
             public AxisFlags rotateAxes { get { return m_RotateAxes; } set { m_RotateAxes = value; } }
             public float min { get { return m_Min; } set { m_Min = value; } }
             public float max { get { return m_Max; } set { m_Max = value; } }
-            public bool flipOnX { get { return m_FlipOnXAxis; } set { m_FlipOnXAxis = value; } }
+            public bool reverseForRightHand { get { return m_ReverseForRightHand; } set { m_ReverseForRightHand = value; } }
         }
 
         [Serializable]

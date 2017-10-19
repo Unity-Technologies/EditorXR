@@ -246,7 +246,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             rotateAxes = defaultAffordanceAnimationDefinition.rotateAxes,
                             min = defaultAffordanceAnimationDefinition.min,
                             max = defaultAffordanceAnimationDefinition.max,
-                            flipOnX = defaultAffordanceAnimationDefinition.flipOnX
+                            reverseForRightHand = defaultAffordanceAnimationDefinition.reverseForRightHand
                         };
 
                         var generatedAffordanceDefinition = new AffordanceDefinition
