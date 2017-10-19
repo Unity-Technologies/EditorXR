@@ -66,6 +66,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4397591939547504}
   - component: {fileID: 114752989612263042}
+  - component: {fileID: 114926072655415978}
   m_Layer: 0
   m_Name: LeftTouchOpenVR
   m_TagString: Untagged
@@ -1154,67 +1155,68 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4263165527348130}
   m_PreviewOrigin: {fileID: 4601081929867384}
   m_FieldGrabOrigin: {fileID: 4694679444484640}
-  m_MeshRoot: {fileID: 0}
-  m_Buttons:
+  m_MeshRoot: {fileID: 4725754007993800}
+  m_ProxyUI: {fileID: 114926072655415978}
+  m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 4739757693524634}
-    m_Renderer: {fileID: 137827934778804418}
     m_Tooltips:
     - {fileID: 114178244051393772}
+    m_Renderer: {fileID: 137827934778804418}
     m_TranslateAxes: 0
     m_RotateAxes: 1
     m_Min: 20
     m_Max: -20
   - m_Control: 3
     m_Transform: {fileID: 4520968933053068}
-    m_Renderer: {fileID: 137809521931614260}
     m_Tooltips:
     - {fileID: 114208349049674382}
+    m_Renderer: {fileID: 137809521931614260}
     m_TranslateAxes: 1
     m_RotateAxes: 0
     m_Min: -0.00455765
     m_Max: 0.00455765
   - m_Control: 17
     m_Transform: {fileID: 4822934406098802}
-    m_Renderer: {fileID: 137279077384400616}
     m_Tooltips:
     - {fileID: 114474480701569528}
+    m_Renderer: {fileID: 137279077384400616}
     m_TranslateAxes: 4
     m_RotateAxes: 0
     m_Min: 0.001793736
     m_Max: -0.001793736
   - m_Control: 18
     m_Transform: {fileID: 4987518757343592}
-    m_Renderer: {fileID: 137445039977449418}
     m_Tooltips:
     - {fileID: 114933204733924580}
+    m_Renderer: {fileID: 137445039977449418}
     m_TranslateAxes: 4
     m_RotateAxes: 0
     m_Min: 0.001793736
     m_Max: -0.001793736
   - m_Control: 22
     m_Transform: {fileID: 4490380767236794}
-    m_Renderer: {fileID: 137862233404870076}
     m_Tooltips:
     - {fileID: 114125306406013188}
+    m_Renderer: {fileID: 137862233404870076}
     m_TranslateAxes: 1
     m_RotateAxes: 0
     m_Min: 0.0002774392
     m_Max: -0.0002774392
   - m_Control: 0
     m_Transform: {fileID: 4490380767236794}
-    m_Renderer: {fileID: 137862233404870076}
     m_Tooltips:
     - {fileID: 114337431156793536}
+    m_Renderer: {fileID: 137862233404870076}
     m_TranslateAxes: 0
     m_RotateAxes: 2
     m_Min: 15
     m_Max: -15
   - m_Control: 1
     m_Transform: {fileID: 4490380767236794}
-    m_Renderer: {fileID: 137862233404870076}
     m_Tooltips:
     - {fileID: 114807140885831364}
+    m_Renderer: {fileID: 137862233404870076}
     m_TranslateAxes: 0
     m_RotateAxes: 4
     m_Min: 15
@@ -1246,6 +1248,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
+--- !u!114 &114926072655415978
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1121674342063006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
 --- !u!114 &114933204733924580
 MonoBehaviour:
   m_ObjectHideFlags: 1

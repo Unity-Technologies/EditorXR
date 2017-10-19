@@ -774,7 +774,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             return m_Scaling && m_GrabData.Any(kvp => kvp.Value.rayOrigin == rayOrigin);
         }
 
-        void ShowFeedback(List<ProxyFeedbackRequest> requests, string controlName, string tooltipText, Node node, bool hideExisting = false)
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, string controlName, string tooltipText, Node node, bool suppressExisting = false)
         {
             List<VRInputDevice.VRControl> ids;
             if (m_Controls.TryGetValue(controlName, out ids))
@@ -787,8 +787,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         control = id,
                         tooltipText = tooltipText,
                         priority = 1,
-                        hideExisting = hideExisting
-                    };
+	                    suppressExisting = suppressExisting
+					};
 
                     this.AddFeedbackRequest(request);
                     requests.Add(request);

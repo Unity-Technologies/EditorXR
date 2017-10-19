@@ -27,26 +27,26 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
     [SerializeField]
     ActionMap m_ProxyActionMap;
 
-    ProxyHelper.ButtonObject[] m_Buttons;
+    Affordance[] m_Affordances;
     InputControl[] m_Controls;
 
     readonly Dictionary<Transform, TransformInfo> m_TransformInfos = new Dictionary<Transform, TransformInfo>();
 
     public ActionMap actionMap { get { return m_ProxyActionMap; } }
     public bool ignoreLocking { get { return true; } }
-    internal event Action<ProxyHelper.ButtonObject[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
+    internal event Action<Affordance[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
     void Start()
     {
-        m_Buttons = GetComponent<ProxyHelper>().buttons;
+        m_Affordances = GetComponent<ProxyHelper>().affordances;
     }
 
     public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
     {
-        if (m_Buttons == null)
+        if (m_Affordances == null)
             return;
 
-        var length = m_Buttons.Length;
+        var length = m_Affordances.Length;
         if (m_Controls == null)
         {
             m_Controls = new InputControl[length];
@@ -58,10 +58,10 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
                 var binding = bindings[i];
                 for (var j = 0; j < length; j++)
                 {
-                    var button = m_Buttons[j];
+                    var affordance = m_Affordances[j];
                     foreach (var index in binding.sources)
                     {
-                        if (index.controlIndex == (int)button.control)
+                        if (index.controlIndex == (int)affordance.control)
                         {
                             m_Controls[j] = control;
                             break;
@@ -70,18 +70,18 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
                 }
             }
 
-            foreach (var button in m_Buttons)
+            foreach (var affordance in m_Affordances)
             {
-                var buttonTransform = button.transform;
+                var affordanceTransform = affordance.transform;
                 TransformInfo info;
-                if (!m_TransformInfos.TryGetValue(buttonTransform, out info))
+                if (!m_TransformInfos.TryGetValue(affordanceTransform, out info))
                 {
                     info = new TransformInfo();
-                    m_TransformInfos[buttonTransform] = info;
+                    m_TransformInfos[affordanceTransform] = info;
                 }
 
-                info.initialPosition = buttonTransform.localPosition;
-                info.initialRotation = buttonTransform.localRotation.eulerAngles;
+                info.initialPosition = affordanceTransform.localPosition;
+                info.initialRotation = affordanceTransform.localRotation.eulerAngles;
             }
         }
 
@@ -94,16 +94,16 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 
         for (var i = 0; i < length; i++)
         {
-            var button = m_Buttons[i];
+            var affordance = m_Affordances[i];
             var control = m_Controls[i];
-            var info = m_TransformInfos[button.transform];
+            var info = m_TransformInfos[affordance.transform];
 
             //Assume control values are [-1, 1]
-            var min = button.min;
-            var offset = min + (control.rawValue + 1) * (button.max - min) * 0.5f;
+            var min = affordance.min;
+            var offset = min + (control.rawValue + 1) * (affordance.max - min) * 0.5f;
 
-            info.positionOffset += button.translateAxes.GetAxis() * offset;
-            info.rotationOffset += button.rotateAxes.GetAxis() * offset;
+            info.positionOffset += affordance.translateAxes.GetAxis() * offset;
+            info.rotationOffset += affordance.rotateAxes.GetAxis() * offset;
         }
 
         foreach (var kvp in m_TransformInfos)
@@ -112,6 +112,6 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
         }
 
         if (postAnimate != null)
-            postAnimate(m_Buttons, m_TransformInfos, input);
+            postAnimate(m_Affordances, m_TransformInfos, input);
     }
 }

@@ -1,8 +1,6 @@
 ﻿#if UNITY_EDITOR
-using System;
-using UnityEditor.Experimental.EditorVR.UI;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
@@ -11,44 +9,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// </summary>
     sealed class ProxyHelper : MonoBehaviour
     {
-        [Serializable]
-        public class ButtonObject
-        {
-            [SerializeField]
-            VRInputDevice.VRControl m_Control;
-
-            [SerializeField]
-            Transform m_Transform;
-
-            [SerializeField]
-            Renderer m_Renderer;
-
-            [SerializeField]
-            Tooltip[] m_Tooltips;
-
-            [FlagsProperty]
-            [SerializeField]
-            AxisFlags m_TranslateAxes;
-
-            [FlagsProperty]
-            [SerializeField]
-            AxisFlags m_RotateAxes;
-
-            [SerializeField]
-            float m_Min;
-
-            [SerializeField]
-            float m_Max;
-
-            public VRInputDevice.VRControl control { get { return m_Control; } }
-            public Transform transform { get { return m_Transform; } }
-            public Renderer renderer { get { return m_Renderer; } }
-            public Tooltip[] tooltips { get { return m_Tooltips; } }
-            public AxisFlags translateAxes { get { return m_TranslateAxes; } }
-            public AxisFlags rotateAxes { get { return m_RotateAxes; } }
-            public float min { get { return m_Min; } }
-            public float max { get { return m_Max; }}
-        }
+        List<Renderer> m_BodyRenderers; // renderers not associated with controls, & will be hidden when displaying feedback/tooltips
+        bool m_BodyRenderersVisible;
 
         [SerializeField]
         Transform m_RayOrigin;
@@ -69,7 +31,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         Transform m_MeshRoot;
 
         [SerializeField]
-        ButtonObject[] m_Buttons;
+        ProxyUI m_ProxyUI;
+
+        [SerializeField]
+        Affordance[] m_Affordances;
 
         /// <summary>
         /// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
@@ -102,9 +67,33 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Transform meshRoot { get { return m_MeshRoot; } }
 
         /// <summary>
-        /// Button objects to store transform and renderer references
+        /// Affordance objects to store transform and renderer references
         /// </summary>
-        public ButtonObject[] buttons { get { return m_Buttons; } }
+        public Affordance[] affordances { get { return m_Affordances; } }
+
+        /// <summary>
+        /// Set the visibility of the renderers associated with affordances(controls/input)
+        /// </summary>
+        /// Null checking before setting, as upon EXR setup, in Awake(), m_ProxyUI is null, even though it has been assigned in the inspector
+        public bool affordanceRenderersVisible { set { if (m_ProxyUI != null) m_ProxyUI.affordancesVisible = value; } }
+
+        /// <summary>
+        /// Set the visibility of the renderers not associated with controls/input
+        /// </summary>
+        public bool bodyRenderersVisible { set { if (m_ProxyUI != null) m_ProxyUI.bodyVisible = value; } }
+
+        void Start()
+        {
+            // Setup ProxyUI
+            List<Transform> origins = new List<Transform>();
+            origins.Add(rayOrigin);
+            origins.Add(menuOrigin);
+            origins.Add(alternateMenuOrigin);
+            origins.Add(previewOrigin);
+            origins.Add(fieldGrabOrigin);
+
+            m_ProxyUI.Setup(m_Affordances, origins);
+        }
     }
 }
 #endif
