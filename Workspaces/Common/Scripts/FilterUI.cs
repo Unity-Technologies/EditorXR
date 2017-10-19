@@ -155,14 +155,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             for (int i = 0; i < m_VisibilityButtons.Length; i++)
                 if (clickedButton == m_VisibilityButtons[i])
-                    m_SearchQuery = i == 0 ? string.Empty : "t:" + m_FilterTypes[i];
+                    m_SearchQuery = i == 0 ? string.Empty : m_FilterTypes[i];
 
             foreach (FilterButtonUI button in m_VisibilityButtons)
             {
                 if (button == clickedButton)
                     button.color = m_ActiveColor;
                 else
-                    button.color = m_SearchQuery.Contains("t:") ? m_DisableColor : m_ActiveColor;
+                    button.color = !string.IsNullOrEmpty(m_SearchQuery) ? m_DisableColor : m_ActiveColor;
             }
 
             switch (clickedButton.text.text)
