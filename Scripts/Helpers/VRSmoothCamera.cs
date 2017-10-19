@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -54,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         Quaternion m_Rotation;
         int m_HMDOnlyLayerMask;
 
-        bool[] m_HiddenEnabled = new bool[5];
+        List<bool> m_HiddenEnabled = new List<bool>();
 
         /// <summary>
         /// A layer mask that controls what will always render in the HMD and not in the preview
@@ -111,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_VRCamera.GetComponentsInChildren(k_Renderers);
             var count = k_Renderers.Count;
 
-            Array.Clear(m_HiddenEnabled, 0, m_HiddenEnabled.Length);
+            m_HiddenEnabled.Clear();
             for (var i = 0; i < count; i++)
             {
                 var h = k_Renderers[i];
