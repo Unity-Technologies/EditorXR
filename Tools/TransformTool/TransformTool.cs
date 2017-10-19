@@ -742,14 +742,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         GrabData GrabDataForRayOrigin(Transform rayOrigin)
         {
-            var grabData = m_LeftGrabData;
-            if (grabData != null && grabData.rayOrigin == rayOrigin)
+            if (m_LeftGrabData != null && m_LeftGrabData.rayOrigin == rayOrigin)
+                return m_LeftGrabData;
+
+            if (m_RightGrabData != null && m_RightGrabData.rayOrigin == rayOrigin)
                 return m_RightGrabData;
 
-            if (grabData == null)
-                return null;
-
-            return grabData.rayOrigin == rayOrigin ? grabData : null;
+            return null;
         }
     }
 }
