@@ -53,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         Quaternion m_Rotation;
         int m_HMDOnlyLayerMask;
 
-        List<bool> m_HiddenEnabled = new List<bool>();
+        static readonly List<bool> k_HiddenEnabled = new List<bool>();
 
         /// <summary>
         /// A layer mask that controls what will always render in the HMD and not in the preview
@@ -110,11 +110,11 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_VRCamera.GetComponentsInChildren(k_Renderers);
             var count = k_Renderers.Count;
 
-            m_HiddenEnabled.Clear();
+            k_HiddenEnabled.Clear();
             for (var i = 0; i < count; i++)
             {
                 var h = k_Renderers[i];
-                m_HiddenEnabled[i] = h.enabled;
+                k_HiddenEnabled.Add(h.enabled);
                 h.enabled = false;
             }
 
@@ -124,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
             for (var i = 0; i < count; i++)
             {
-                k_Renderers[i].enabled = m_HiddenEnabled[i];
+                k_Renderers[i].enabled = k_HiddenEnabled[i];
             }
         }
     }
