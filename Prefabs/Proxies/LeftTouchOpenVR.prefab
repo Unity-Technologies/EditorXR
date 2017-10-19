@@ -1158,71 +1158,43 @@ MonoBehaviour:
   m_FieldGrabOrigin: {fileID: 4694679444484640}
   m_MeshRoot: {fileID: 4725754007993800}
   m_ProxyUI: {fileID: 114926072655415978}
-  m_ProxyAnimator: {fileID: 0}
+  m_ProxyAnimator: {fileID: 114831531447913008}
   m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 4739757693524634}
+    m_Renderer: {fileID: 137827934778804418}
     m_Tooltips:
     - {fileID: 114178244051393772}
-    m_Renderer: {fileID: 137827934778804418}
-    m_TranslateAxes: 0
-    m_RotateAxes: 1
-    m_Min: 20
-    m_Max: -20
   - m_Control: 3
     m_Transform: {fileID: 4520968933053068}
+    m_Renderer: {fileID: 137809521931614260}
     m_Tooltips:
     - {fileID: 114208349049674382}
-    m_Renderer: {fileID: 137809521931614260}
-    m_TranslateAxes: 1
-    m_RotateAxes: 0
-    m_Min: -0.00455765
-    m_Max: 0.00455765
   - m_Control: 17
     m_Transform: {fileID: 4822934406098802}
+    m_Renderer: {fileID: 137279077384400616}
     m_Tooltips:
     - {fileID: 114474480701569528}
-    m_Renderer: {fileID: 137279077384400616}
-    m_TranslateAxes: 4
-    m_RotateAxes: 0
-    m_Min: 0.001793736
-    m_Max: -0.001793736
   - m_Control: 18
     m_Transform: {fileID: 4987518757343592}
+    m_Renderer: {fileID: 137445039977449418}
     m_Tooltips:
     - {fileID: 114933204733924580}
-    m_Renderer: {fileID: 137445039977449418}
-    m_TranslateAxes: 4
-    m_RotateAxes: 0
-    m_Min: 0.001793736
-    m_Max: -0.001793736
   - m_Control: 22
     m_Transform: {fileID: 4490380767236794}
+    m_Renderer: {fileID: 137862233404870076}
     m_Tooltips:
     - {fileID: 114125306406013188}
-    m_Renderer: {fileID: 137862233404870076}
-    m_TranslateAxes: 1
-    m_RotateAxes: 0
-    m_Min: 0.0002774392
-    m_Max: -0.0002774392
   - m_Control: 0
     m_Transform: {fileID: 4490380767236794}
+    m_Renderer: {fileID: 137862233404870076}
     m_Tooltips:
     - {fileID: 114337431156793536}
-    m_Renderer: {fileID: 137862233404870076}
-    m_TranslateAxes: 0
-    m_RotateAxes: 2
-    m_Min: 15
-    m_Max: -15
   - m_Control: 1
     m_Transform: {fileID: 4490380767236794}
+    m_Renderer: {fileID: 137862233404870076}
     m_Tooltips:
     - {fileID: 114807140885831364}
-    m_Renderer: {fileID: 137862233404870076}
-    m_TranslateAxes: 0
-    m_RotateAxes: 4
-    m_Min: 15
-    m_Max: -15
 --- !u!114 &114807140885831364
 MonoBehaviour:
   m_ObjectHideFlags: 1
