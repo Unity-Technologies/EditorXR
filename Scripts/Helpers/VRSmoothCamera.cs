@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -45,12 +46,15 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         float m_SmoothingMultiplier = 3;
 
         const string k_HMDOnlyLayer = "HMDOnly";
+        readonly Rect k_DefaultCameraRect = new Rect(0f, 0f, 1f, 1f);
 
         RenderTexture m_RenderTexture;
 
         Vector3 m_Position;
         Quaternion m_Rotation;
         int m_HMDOnlyLayerMask;
+
+        bool[] m_HiddenEnabled = new bool[5];
 
         /// <summary>
         /// A layer mask that controls what will always render in the HMD and not in the preview
@@ -92,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_SmoothCamera.targetDisplay = m_TargetDisplay;
             m_SmoothCamera.cameraType = CameraType.Game;
             m_SmoothCamera.cullingMask &= ~hmdOnlyLayerMask;
-            m_SmoothCamera.rect = new Rect(0f, 0f, 1f, 1f);
+            m_SmoothCamera.rect = k_DefaultCameraRect;
             m_SmoothCamera.stereoTargetEye = StereoTargetEyeMask.None;
             m_SmoothCamera.fieldOfView = m_FieldOfView;
 
@@ -106,11 +110,12 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             k_Renderers.Clear();
             m_VRCamera.GetComponentsInChildren(k_Renderers);
             var count = k_Renderers.Count;
-            var hiddenEnabled = new bool[count];
+
+            Array.Clear(m_HiddenEnabled, 0, m_HiddenEnabled.Length);
             for (var i = 0; i < count; i++)
             {
                 var h = k_Renderers[i];
-                hiddenEnabled[i] = h.enabled;
+                m_HiddenEnabled[i] = h.enabled;
                 h.enabled = false;
             }
 
@@ -120,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
             for (var i = 0; i < count; i++)
             {
-                k_Renderers[i].enabled = hiddenEnabled[i];
+                k_Renderers[i].enabled = m_HiddenEnabled[i];
             }
         }
     }
