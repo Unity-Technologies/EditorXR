@@ -46,6 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Color m_OriginalBackgroundColor;
 
         // Local method use only -- created here to reduce garbage collection
+        static readonly List<ITooltip> k_TooltipsToRemove = new List<ITooltip>();
         static readonly List<ITooltip> k_TooltipList = new List<ITooltip>();
 
         void Start()
@@ -63,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void Update()
         {
-            k_TooltipList.Clear();
+            k_TooltipsToRemove.Clear();
             foreach (var kvp in m_Tooltips)
             {
                 var tooltip = kvp.Key;
@@ -73,6 +74,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 {
                     var placement = tooltip as ITooltipPlacement;
                     var target = GetTooltipTarget(tooltip);
+
+                    if (target == null)
+                        k_TooltipsToRemove.Add(tooltip);
 
                     var tooltipUI = tooltipData.tooltipUI;
                     if (!tooltipUI)
@@ -101,17 +105,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
 
                 if (!IsValidTooltip(tooltip))
-                    k_TooltipList.Add(tooltip);
+                    k_TooltipsToRemove.Add(tooltip);
 
                 if (tooltipData.persistent)
                 {
                     var duration = tooltipData.duration;
                     if (duration > 0 && Time.time - tooltipData.lastModifiedTime + k_Delay > duration)
-                        k_TooltipList.Add(tooltip);
+                        k_TooltipsToRemove.Add(tooltip);
                 }
             }
 
-            foreach (var tooltip in k_TooltipList)
+            foreach (var tooltip in k_TooltipsToRemove)
             {
                 HideTooltip(tooltip, true);
             }

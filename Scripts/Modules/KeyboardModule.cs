@@ -23,6 +23,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         KeyboardUI m_NumericKeyboard;
         KeyboardUI m_StandardKeyboard;
 
+        ForEachRayOriginCallback m_UpdateKeyboardMallets;
+
+        void Awake()
+        {
+            m_UpdateKeyboardMallets = UpdateKeyboardMallets;
+        }
+
         public KeyboardUI SpawnNumericKeyboard()
         {
             if (m_StandardKeyboard != null)
@@ -73,39 +80,41 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UpdateKeyboardMallets()
         {
-            this.ForEachRayOrigin(rayOrigin =>
+            this.ForEachRayOrigin(m_UpdateKeyboardMallets);
+        }
+
+        void UpdateKeyboardMallets(Transform rayOrigin)
+        {
+            var malletVisible = true;
+            var numericKeyboardNull = false;
+            var standardKeyboardNull = false;
+
+            if (m_NumericKeyboard != null)
+                malletVisible = m_NumericKeyboard.ShouldShowMallet(rayOrigin);
+            else
+                numericKeyboardNull = true;
+
+            if (m_StandardKeyboard != null)
+                malletVisible = malletVisible || m_StandardKeyboard.ShouldShowMallet(rayOrigin);
+            else
+                standardKeyboardNull = true;
+
+            if (numericKeyboardNull && standardKeyboardNull)
+                malletVisible = false;
+
+            var mallet = m_KeyboardMallets[rayOrigin];
+
+            if (mallet.visible != malletVisible)
             {
-                var malletVisible = true;
-                var numericKeyboardNull = false;
-                var standardKeyboardNull = false;
-
-                if (m_NumericKeyboard != null)
-                    malletVisible = m_NumericKeyboard.ShouldShowMallet(rayOrigin);
+                mallet.visible = malletVisible;
+                if (malletVisible)
+                    this.AddRayVisibilitySettings(rayOrigin, this, false, false);
                 else
-                    numericKeyboardNull = true;
+                    this.RemoveRayVisibilitySettings(rayOrigin, this);
+            }
 
-                if (m_StandardKeyboard != null)
-                    malletVisible = malletVisible || m_StandardKeyboard.ShouldShowMallet(rayOrigin);
-                else
-                    standardKeyboardNull = true;
-
-                if (numericKeyboardNull && standardKeyboardNull)
-                    malletVisible = false;
-
-                var mallet = m_KeyboardMallets[rayOrigin];
-
-                if (mallet.visible != malletVisible)
-                {
-                    mallet.visible = malletVisible;
-                    if (malletVisible)
-                        this.AddRayVisibilitySettings(rayOrigin, this, false, false);
-                    else
-                        this.RemoveRayVisibilitySettings(rayOrigin, this);
-                }
-
-                // TODO remove this after physics is in
-                mallet.CheckForKeyCollision();
-            });
+            // TODO remove this after physics is in
+            mallet.CheckForKeyCollision();
         }
     }
 }

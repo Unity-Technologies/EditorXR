@@ -262,7 +262,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             hasScrollHandler = false;
 
-            var selectionFlags = currentObject.GetComponent<ISelectionFlags>();
+            var selectionFlags = ComponentUtils<ISelectionFlags>.GetComponent(currentObject);
             if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !UIUtils.IsDirectEvent(eventData))
                 return false;
 

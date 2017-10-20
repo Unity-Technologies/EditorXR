@@ -23,6 +23,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         static HideFlags s_HideFlags = HideFlags.DontSave;
 
+        // Local method use only -- created here to reduce garbage collection
+        static readonly List<Renderer> k_Renderers = new List<Renderer>();
+
         public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
         {
             var go = UnityObject.Instantiate(prefab, parent, worldPositionStays);
@@ -131,10 +134,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         public static Bounds GetBounds(Transform transform)
         {
             var b = new Bounds(transform.position, Vector3.zero);
-            var renderers = transform.GetComponentsInChildren<Renderer>();
-            for (int i = 0; i < renderers.Length; i++)
+            k_Renderers.Clear();
+            transform.GetComponentsInChildren(k_Renderers);
+            foreach (var r in k_Renderers)
             {
-                var r = renderers[i];
                 if (r.bounds.size != Vector3.zero)
                     b.Encapsulate(r.bounds);
             }
