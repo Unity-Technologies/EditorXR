@@ -25,6 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public Func<RaycastSource, bool> isValid;
 
             MultipleRayInputModule m_Owner;
+            readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
 
             public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
 
@@ -32,8 +33,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             public ActionMap actionMap { get { return m_Owner.m_UIActionMap; } }
             public bool ignoreLocking { get { return false; } }
-
-            readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
 
             public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<RaycastSource, bool> validationCallback)
             {

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,8 +24,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             for (var i = k_Sides; i < k_Sides * 2; i++)
             {
                 var angle = (i / (float)k_Sides) * Mathf.PI * 2f;
-                var xPos = Mathf.Sin(angle) * 0.001f;
-                var yPos = Mathf.Sin(angle) * size;
+                var sin = Mathf.Sin(angle);
+                var xPos = sin * 0.001f;
+                var yPos = sin * size;
 
                 var point = new Vector3(xPos, yPos, AnnotationTool.TipDistance);
                 vertices[i] = point;
@@ -65,8 +66,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     points.Add(point);
                 }
             }
-            points.Add(new Vector3(0, 0, 0));
-            points.Add(new Vector3(0, 0, AnnotationTool.TipDistance));
+
+            points.Add(Vector3.zero);
+            points.Add(Vector3.forward * AnnotationTool.TipDistance);
 
             return points.ToArray();
         }
@@ -102,11 +104,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         static void GeneratePointerCapsTriangles(List<int> triangles)
         {
             // Generate the bottom circle cap.
+            const int upperLeft = k_Sides * 2 + 1;
             for (var i = 1; i < k_Sides; i++)
             {
                 var lowerLeft = i - 1;
                 var lowerRight = i;
-                const int upperLeft = k_Sides * 2;
 
                 triangles.Add(upperLeft);
                 triangles.Add(lowerRight);
@@ -123,7 +125,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 var lowerLeft = i - 1;
                 var lowerRight = i;
-                const int upperLeft = k_Sides * 2 + 1;
 
                 triangles.Add(lowerLeft);
                 triangles.Add(lowerRight);

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -27,6 +27,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_MaxScale = 1000f;
 
         const string k_WorldScaleProperty = "_WorldScale";
+
+        const string k_Crawl = "Crawl";
+        const string k_Rotate = "Rotate";
+        const string k_Blink = "Blink";
+        const string k_Fly = "Fly";
 
         const int k_RotationSegments = 32;
 
@@ -808,28 +813,28 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowCrawlFeedback()
         {
-            ShowFeedback(m_CrawlFeedback, "Crawl");
+            ShowFeedback(m_CrawlFeedback, k_Crawl);
         }
 
         void ShowMainButtonFeedback()
         {
-            ShowFeedback(m_MainButtonFeedback, "Blink", m_Preferences.blinkMode ? "Blink" : "Fly");
+            ShowFeedback(m_MainButtonFeedback, k_Blink, m_Preferences.blinkMode ? k_Blink : k_Fly);
         }
 
         void ShowRotateFeedback()
         {
-            ShowFeedback(m_RotateFeedback, "Rotate");
+            ShowFeedback(m_RotateFeedback, k_Rotate);
         }
 
         void ShowAltRotateFeedback()
         {
-            ShowFeedback(m_RotateFeedback, "Blink", "Rotate");
+            ShowFeedback(m_RotateFeedback, k_Blink, k_Rotate);
         }
 
         void ShowScaleFeedback()
         {
             List<VRInputDevice.VRControl> ids;
-            if (m_Controls.TryGetValue("Crawl", out ids))
+            if (m_Controls.TryGetValue(k_Crawl, out ids))
             {
                 foreach (var id in ids)
                 {
