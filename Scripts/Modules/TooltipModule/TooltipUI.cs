@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipUI : MonoBehaviour
+    sealed class TooltipUI : MonoBehaviour, IWillRender
     {
         [SerializeField]
         Text m_Text;
@@ -22,19 +22,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         Image m_Background;
 
-        [SerializeField]
-        TooltipVisibilityListener m_VisibilityListener;
-
         public Text text { get { return m_Text; } }
         public RawImage dottedLine { get { return m_DottedLine; } }
         public Transform[] spheres { get { return m_Spheres; } }
         public Image highlight { get { return m_Highlight; } }
         public Image background { get { return m_Background; } }
+        public event Action becameVisible;
 
-        public event Action becameVisible
+        public RectTransform rectTransform
         {
-            add { m_VisibilityListener.becameVisible += value; }
-            remove { m_VisibilityListener.becameVisible -= value; }
+            get { return m_Background.rectTransform; }
+        }
+
+        public void OnBecameVisible()
+        {
+            if (becameVisible != null)
+                becameVisible();
+        }
+
+        public void OnBecameInvisible()
+        {
         }
     }
 }

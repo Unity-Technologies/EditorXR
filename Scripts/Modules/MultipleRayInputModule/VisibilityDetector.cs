@@ -1,0 +1,47 @@
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
+
+namespace UnityEditor.Experimental.EditorVR.Modules
+{
+    public class VisibilityDetector : MonoBehaviour
+    {
+        readonly Vector3[] m_Corners = new Vector3[4];
+        readonly HashSet<IWillRender> m_Visibles = new HashSet<IWillRender>();
+        readonly List<IWillRender> m_WillRenders = new List<IWillRender>();
+
+        void Awake()
+        {
+            Canvas.willRenderCanvases += OnWillRenderCanvases;
+        }
+
+        void OnDestroy()
+        {
+            Canvas.willRenderCanvases -= OnWillRenderCanvases;
+        }
+
+        void OnWillRenderCanvases()
+        {
+            var planes = GeometryUtility.CalculateFrustumPlanes(CameraUtils.GetMainCamera());
+            m_WillRenders.Clear();
+            GetComponentsInChildren(m_WillRenders);
+            foreach (var willRender in m_WillRenders)
+            {
+                var rectTransform = willRender.rectTransform;
+                rectTransform.GetLocalCorners(m_Corners);
+                if (GeometryUtility.TestPlanesAABB(planes, GeometryUtility.CalculateBounds(m_Corners, rectTransform.localToWorldMatrix)))
+                {
+                    if (m_Visibles.Add(willRender))
+                        willRender.OnBecameVisible();
+                }
+                else
+                {
+                    if (m_Visibles.Remove(willRender))
+                        willRender.OnBecameInvisible();
+                }
+            }
+        }
+    }
+}
+#endif
