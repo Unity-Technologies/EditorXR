@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-        IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
+        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
     {
         const float k_FastMoveSpeed = 20f;
         const float k_SlowMoveSpeed = 1f;
@@ -116,7 +116,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform rayOrigin { get; set; }
         public Transform cameraRig { private get; set; }
         public List<ILinkedObject> linkedObjects { private get; set; }
-        public Type proxyType { get; set; }
         public Node node { private get; set; }
 
         public GameObject settingsMenuItemPrefab

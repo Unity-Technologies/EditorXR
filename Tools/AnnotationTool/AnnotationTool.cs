@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     [MainMenuItem("Annotation", "Create", "Draw in 3D")]
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
-        IIsHoveringOverUI, IMultiDeviceTool, IUsesProxyType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
+        IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
         IUsesNode, IRequestFeedback
     {
         [Serializable]
@@ -111,7 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         bool m_BlockValueChangedListener;
 
         public bool primary { private get; set; }
-        public Type proxyType { private get; set; }
         public Transform rayOrigin { get; set; }
         public List<Transform> otherRayOrigins { private get; set; }
 
@@ -361,7 +360,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (m_AnnotationPointer != null)
             {
                 var brushSize = m_Preferences.brushSize;
-                if (proxyType == typeof(ViveProxy)) // For vive controllers, use 1:1 touchpad setting.
+                if (this.GetDeviceType() == DeviceType.Vive) // For vive controllers, use 1:1 touchpad setting.
                 {
                     brushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, (value + 1) / 2f);
                 }
@@ -713,7 +712,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 // Secondary hand uses brush size input to do undo/redo
                 var value = annotationInput.changeBrushSize.value;
-                if (proxyType == typeof(ViveProxy))
+                if (this.GetDeviceType() == DeviceType.Vive)
                 {
                     if (annotationInput.stickButton.wasJustPressed)
                     {

@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
         ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
         IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
-        IUsesProxyType, IMenuIcon, IRequestFeedback
+        IUsesDeviceType, IMenuIcon, IRequestFeedback
     {
         const float k_MultiselectHueShift = 0.5f;
         static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
@@ -58,7 +58,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public event Action<GameObject, Transform> hovered;
 
         public List<ILinkedObject> linkedObjects { get; set; }
-        public Type proxyType { get; set; }
 
         public string tooltipText { get { return m_MultiSelect ? "Multi-Select Enabled" : ""; } }
         public Transform tooltipTarget { get; private set; }
@@ -91,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_SelectionInput = (SelectionInput)input;
 
             var multiSelectControl = m_SelectionInput.multiSelect;
-            if (proxyType == typeof(ViveProxy))
+            if (this.GetDeviceType() == DeviceType.Vive)
                 multiSelectControl = m_SelectionInput.multiSelectAlt;
 
             if (multiSelectControl.wasJustPressed)
