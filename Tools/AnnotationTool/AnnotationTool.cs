@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     [MainMenuItem("Annotation", "Create", "Draw in 3D")]
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
-        IIsHoveringOverUI, IMultiDeviceTool, IUsesProxyType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
+        IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
         IUsesNode, IRequestFeedback
     {
         [Serializable]
@@ -51,11 +51,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
         }
 
+        const float k_MinDistance = 0.003f;
+        const int k_InitialListSize = 1024; // Pre-allocate lists to avoid GC
+
+        const string k_GroupFormatString = "Group {0}";
+        const string k_AnnotationFormatStrig = "Annotation {0}";
+        const string k_MainHolderName = "Annotations";
+        const string k_MeshName = "Annotation";
+
         public const float TipDistance = 0.05f;
         public const float MinBrushSize = 0.0025f;
         public const float MaxBrushSize = 0.05f;
-        const float k_MinDistance = 0.003f;
-        const int k_InitialListSize = 1024; // Pre-allocate lists to avoid GC
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -72,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         [SerializeField]
         GameObject m_SettingsMenuItemPrefab;
 
-        Action<float> onBrushSizeChanged { set; get; }
+        Action<float> m_BrushSizeChanged;
 
         Preferences m_Preferences;
 
@@ -105,7 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         bool m_BlockValueChangedListener;
 
         public bool primary { private get; set; }
-        public Type proxyType { private get; set; }
         public Transform rayOrigin { get; set; }
         public List<Transform> otherRayOrigins { private get; set; }
 
@@ -203,9 +208,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             foreach (Transform child in m_AnnotationRoot)
             {
                 if (child.childCount > 0)
-                    child.name = "Group " + groupCount++;
+                    child.name = string.Format(k_GroupFormatString, groupCount++);
                 else
-                    child.name = "Annotation " + annotationCount++;
+                    child.name = string.Format(k_AnnotationFormatStrig, annotationCount++);
             }
         }
 
@@ -227,10 +232,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 var otherAltMenu = this.GetCustomAlternateMenuOrigin(otherRayOrigin);
 
                 const float UIOffset = 0.1f;
-                m_ColorPickerActivator.transform.SetParent(otherAltMenu);
-                m_ColorPickerActivator.transform.localRotation = Quaternion.identity;
-                m_ColorPickerActivator.transform.localPosition = (node == Node.LeftHand ? Vector3.left : Vector3.right) * UIOffset;
-                m_ColorPickerActivator.transform.localScale = Vector3.one;
+                var colorPickerActivatorTransform = m_ColorPickerActivator.transform;
+                colorPickerActivatorTransform.SetParent(otherAltMenu);
+                colorPickerActivatorTransform.localRotation = Quaternion.identity;
+                colorPickerActivatorTransform.localPosition = (node == Node.LeftHand ? Vector3.left : Vector3.right) * UIOffset;
+                colorPickerActivatorTransform.localScale = Vector3.one;
 
                 var activator = m_ColorPickerActivator.GetComponentInChildren<ColorPickerActivator>();
 
@@ -305,12 +311,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var brushSizeUi = this.InstantiateUI(m_BrushSizePrefab);
             m_BrushSizeUI = brushSizeUi.GetComponent<BrushSizeUI>();
 
-            var trans = brushSizeUi.transform;
-            var scale = brushSizeUi.transform.localScale;
-            trans.SetParent(alternateMenuOrigin, false);
-            trans.localPosition = Vector3.zero;
-            trans.localRotation = Quaternion.Euler(-90, 0, 0);
-            trans.localScale = scale;
+            var transform = brushSizeUi.transform;
+            var scale = transform.localScale;
+            transform.SetParent(alternateMenuOrigin, false);
+            transform.localPosition = Vector3.zero;
+            transform.localRotation = Quaternion.Euler(-90, 0, 0);
+            transform.localScale = scale;
 
             m_BrushSizeUI.onValueChanged = value =>
             {
@@ -318,7 +324,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 m_Preferences.brushSize = sliderValue;
                 m_AnnotationPointer.Resize(sliderValue);
             };
-            onBrushSizeChanged = m_BrushSizeUI.ChangeSliderValue;
+            m_BrushSizeChanged = m_BrushSizeUI.ChangeSliderValue;
         }
 
         void ShowColorPicker(Transform otherRayOrigin)
@@ -354,7 +360,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (m_AnnotationPointer != null)
             {
                 var brushSize = m_Preferences.brushSize;
-                if (proxyType == typeof(ViveProxy)) // For vive controllers, use 1:1 touchpad setting.
+                if (this.GetDeviceType() == DeviceType.Vive) // For vive controllers, use 1:1 touchpad setting.
                 {
                     brushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, (value + 1) / 2f);
                 }
@@ -364,10 +370,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     brushSize = Mathf.Clamp(brushSize, MinBrushSize, MaxBrushSize);
                 }
 
-                if (m_BrushSizeUI && onBrushSizeChanged != null)
+                if (m_BrushSizeUI && m_BrushSizeChanged != null)
                 {
                     var ratio = Mathf.InverseLerp(MinBrushSize, MaxBrushSize, brushSize);
-                    onBrushSizeChanged(ratio);
+                    m_BrushSizeChanged(ratio);
                 }
 
                 m_AnnotationPointer.Resize(brushSize);
@@ -384,7 +390,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Widths.Clear();
             m_Length = 0;
 
-            var go = new GameObject("Annotation " + m_AnnotationHolder.childCount);
+            var go = new GameObject(string.Format(k_AnnotationFormatStrig,+ m_AnnotationHolder.childCount));
 
             var goTrans = go.transform;
             goTrans.SetParent(m_AnnotationHolder);
@@ -400,18 +406,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_WorldToLocalMesh = goTrans.worldToLocalMatrix;
 
             m_CurrentMesh = new Mesh();
-            m_CurrentMesh.name = "Annotation";
+            m_CurrentMesh.name = k_MeshName;
         }
 
         void SetupHolder()
         {
-            var mainHolder = GameObject.Find("Annotations") ?? new GameObject("Annotations");
+            var mainHolder = GameObject.Find(k_MainHolderName) ?? new GameObject(k_MainHolderName);
             m_AnnotationRoot = mainHolder.transform;
 
             var newSession = GetNewSessionHolder();
             if (!newSession)
             {
-                newSession = new GameObject("Group " + m_AnnotationRoot.childCount);
+                newSession = new GameObject(string.Format(k_GroupFormatString, m_AnnotationRoot.childCount));
                 newSession.transform.position = GetPointerPosition();
                 m_Groups.Add(newSession);
             }
@@ -422,7 +428,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         GameObject GetNewSessionHolder()
         {
-            const float groupingDistance = .3f;
+            const float groupingDistance = 0.3f;
+            var position = rayOrigin.position;
             for (var i = 0; i < m_Groups.Count; i++)
             {
                 var child = m_Groups[i];
@@ -437,7 +444,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         bound.Encapsulate(renderers[r].bounds);
                     }
 
-                    if (bound.Contains(rayOrigin.position) || bound.SqrDistance(rayOrigin.position) < groupingDistance)
+                    if (bound.Contains(position) || bound.SqrDistance(position) < groupingDistance)
                         return child.gameObject;
                 }
             }
@@ -672,7 +679,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             var annotationInput = (AnnotationInput)input;
 
-            var isHeld = annotationInput.draw.isHeld;
+            var draw = annotationInput.draw;
+            var isHeld = draw.isHeld;
             if (primary)
             {
                 if (!Mathf.Approximately(annotationInput.changeBrushSize.value, 0))
@@ -682,29 +690,29 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     consumeControl(annotationInput.vertical);
                 }
 
-                if (annotationInput.draw.wasJustPressed)
+                if (draw.wasJustPressed)
                 {
                     SetupAnnotation();
-                    consumeControl(annotationInput.draw);
+                    consumeControl(draw);
                 }
 
                 if (isHeld)
                 {
                     UpdateAnnotation();
-                    consumeControl(annotationInput.draw);
+                    consumeControl(draw);
                 }
 
-                if (annotationInput.draw.wasJustReleased)
+                if (draw.wasJustReleased)
                 {
                     FinalizeMesh();
-                    consumeControl(annotationInput.draw);
+                    consumeControl(draw);
                 }
             }
             else
             {
                 // Secondary hand uses brush size input to do undo/redo
                 var value = annotationInput.changeBrushSize.value;
-                if (proxyType == typeof(ViveProxy))
+                if (this.GetDeviceType() == DeviceType.Vive)
                 {
                     if (annotationInput.stickButton.wasJustPressed)
                     {

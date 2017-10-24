@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (m_BaseSearchQuery != query)
                 {
                     m_BaseSearchQuery = query;
-                    m_CachedSearchQuery = string.Format("{0} {1}", m_BaseSearchQuery, k_LockedQuery);
+                    m_CachedSearchQuery = string.Format("{0} {1}", m_BaseSearchQuery, k_Locked);
                 }
 
                 return m_CachedSearchQuery;

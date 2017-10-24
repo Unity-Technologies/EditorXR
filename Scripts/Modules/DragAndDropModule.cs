@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -36,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void OnRayEntered(GameObject gameObject, RayEventData eventData)
         {
-            var dropReceiver = gameObject.GetComponent<IDropReceiver>();
+            var dropReceiver = ComponentUtils<IDropReceiver>.GetComponent(gameObject);
             if (dropReceiver != null)
             {
                 var rayOrigin = eventData.rayOrigin;
@@ -54,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (!gameObject)
                 return;
 
-            var dropReceiver = gameObject.GetComponent<IDropReceiver>();
+            var dropReceiver = ComponentUtils<IDropReceiver>.GetComponent(gameObject);
             if (dropReceiver != null)
             {
                 var rayOrigin = eventData.rayOrigin;
@@ -68,14 +69,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void OnDragStarted(GameObject gameObject, RayEventData eventData)
         {
-            var droppable = gameObject.GetComponent<IDroppable>();
+            var droppable = ComponentUtils<IDroppable>.GetComponent(gameObject);
             if (droppable != null)
                 m_Droppables[eventData.rayOrigin] = droppable;
         }
 
         public void OnDragEnded(GameObject gameObject, RayEventData eventData)
         {
-            var droppable = gameObject.GetComponent<IDroppable>();
+            var droppable = ComponentUtils<IDroppable>.GetComponent(gameObject);
             if (droppable != null)
             {
                 var rayOrigin = eventData.rayOrigin;

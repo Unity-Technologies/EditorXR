@@ -36,6 +36,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const float k_InitReferenceScale = 15f; // We want to see a big region by default
 
+        const string k_LeftActionString = "Move Resize Left";
+        const string k_RightActionString = "Move Resize Right";
+
+        const string k_MoveFeedbackString = "Move Miniworld View";
+        const string k_ScaleFeedbackString = "Scale Miniworld View";
+
         // Scales larger or smaller than this spam errors in the console
         const float k_MinScale = 0.01f;
         const float k_MaxScale = 1e12f;
@@ -507,28 +513,28 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void ShowLeftMoveFeedback()
         {
-            ShowFeedback(m_LeftMoveFeedback, Node.LeftHand, "Move Resize Left", "Move Miniworld View");
+            ShowFeedback(m_LeftMoveFeedback, Node.LeftHand, k_LeftActionString, k_MoveFeedbackString);
         }
 
         void ShowRightFeedback()
         {
-            ShowFeedback(m_RightMoveFeedback, Node.RightHand, "Move Resize Right", "Move Miniworld View");
+            ShowFeedback(m_RightMoveFeedback, Node.RightHand, k_RightActionString, k_MoveFeedbackString);
         }
 
         void ShowLeftScaleFeedback()
         {
-            ShowFeedback(m_LeftScaleFeedback, Node.LeftHand, "Move Resize Left", "Scale Miniworld View");
+            ShowFeedback(m_LeftScaleFeedback, Node.LeftHand, k_LeftActionString, k_ScaleFeedbackString);
         }
 
         void ShowRightScaleFeedback()
         {
-            ShowFeedback(m_RightScaleFeedback, Node.RightHand, "Move Resize Right", "Scale Miniworld View");
+            ShowFeedback(m_RightScaleFeedback, Node.RightHand, k_RightActionString, k_ScaleFeedbackString);
         }
 
         void ShowSuppressFeedback()
         {
-            ShowFeedback(m_SuppressFeedback, Node.LeftHand, "Move Resize Left", null, true);
-            ShowFeedback(m_SuppressFeedback, Node.RightHand, "Move Resize Right", null, true);
+            ShowFeedback(m_SuppressFeedback, Node.LeftHand, k_LeftActionString, null, true);
+            ShowFeedback(m_SuppressFeedback, Node.RightHand, k_RightActionString, null, true);
         }
 
         void HideFeedback(List<ProxyFeedbackRequest> requests)
