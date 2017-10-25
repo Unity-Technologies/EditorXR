@@ -266,7 +266,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                             control = id,
                             priority = 1,
                             tooltipText = tooltipText,
-	                        suppressExisting = suppressExisting
+                            suppressExisting = suppressExisting
                         });
                     }
                 }

@@ -787,8 +787,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         control = id,
                         tooltipText = tooltipText,
                         priority = 1,
-	                    suppressExisting = suppressExisting
-					};
+                        suppressExisting = suppressExisting
+                    };
 
                     this.AddFeedbackRequest(request);
                     requests.Add(request);
