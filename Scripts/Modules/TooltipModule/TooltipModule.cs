@@ -14,6 +14,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         const float k_UVScrollSpeed = 1.5f;
         const float k_Offset = 0.05f;
 
+        const int k_PoolInitialCapacity = 16;
+
         const string k_MaterialColorTopProperty = "_ColorTop";
         const string k_MaterialColorBottomProperty = "_ColorBottom";
 
@@ -40,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
+        readonly Queue<TooltipUI> m_TooltipPool = new Queue<TooltipUI>(k_PoolInitialCapacity);
 
         Transform m_TooltipCanvas;
         Vector3 m_TooltipScale;
@@ -48,6 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Local method use only -- created here to reduce garbage collection
         static readonly List<ITooltip> k_TooltipsToRemove = new List<ITooltip>();
         static readonly List<ITooltip> k_TooltipList = new List<ITooltip>();
+        static readonly List<TooltipUI> k_TooltipUIs = new List<TooltipUI>();
 
         void Start()
         {
@@ -81,22 +85,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     var tooltipUI = tooltipData.tooltipUI;
                     if (!tooltipUI)
                     {
-                        var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
-                        tooltipUI = tooltipObject.GetComponent<TooltipUI>();
+                        tooltipUI = CreateTooltipObject();
                         tooltipData.tooltipUI = tooltipUI;
                         tooltipUI.highlight.material = tooltipData.customHighlightMaterial ?? m_HighlightMaterial;
                         tooltipUI.background.material = m_TooltipBackgroundMaterial;
-                        var tooltipTransform = tooltipObject.transform;
+                        var tooltipTransform = tooltipUI.transform;
                         MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
                         tooltipTransform.localScale = Vector3.zero;
 
-                        if (placement == null)
+                        var hasLine = placement != null;
+                        tooltipUI.dottedLine.gameObject.SetActive(hasLine);
+                        foreach (var sphere in tooltipUI.spheres)
                         {
-                            ObjectUtils.Destroy(tooltipUI.dottedLine.gameObject);
-                            foreach (var sphere in tooltipUI.spheres)
-                            {
-                                ObjectUtils.Destroy(sphere.gameObject);
-                            }
+                            sphere.gameObject.SetActive(hasLine);
                         }
                     }
 
@@ -119,6 +120,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 HideTooltip(tooltip, true);
             }
+        }
+
+        TooltipUI CreateTooltipObject()
+        {
+            if (m_TooltipPool.Count > 0)
+            {
+                var pooledTooltip = m_TooltipPool.Dequeue();
+                pooledTooltip.gameObject.SetActive(true);
+                return pooledTooltip;
+            }
+
+            var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
+            tooltipObject.GetComponents(k_TooltipUIs);
+
+            var tooltipUI = k_TooltipUIs[0]; // We expect exactly one TooltipUI on the prefab root
+            m_TooltipPool.Enqueue(tooltipUI);
+
+            return tooltipUI;
         }
 
         static Transform GetTooltipTarget(ITooltip tooltip)
@@ -326,7 +345,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 yield return null;
             }
 
-            ObjectUtils.Destroy(tooltipUI.gameObject);
+            RecycleTooltip(tooltipUI);
+        }
+
+        void RecycleTooltip(TooltipUI tooltipUI)
+        {
+            tooltipUI.gameObject.SetActive(false);
+            m_TooltipPool.Enqueue(tooltipUI);
         }
     }
 }
