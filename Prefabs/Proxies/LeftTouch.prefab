@@ -1404,6 +1404,7 @@ MonoBehaviour:
   m_MeshRoot: {fileID: 485484}
   m_ProxyUI: {fileID: 114942772046743868}
   m_ProxyAnimator: {fileID: 114309355936498838}
+  m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
   m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 4023718469717780}
@@ -1497,7 +1498,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
-  m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
+  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114543264181638874
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1602,7 +1603,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
+  m_FadeInSpeedScalar: 4
+  m_FadeOutSpeedScalar: 0.5
+  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114957305131514852
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -32,6 +33,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         [SerializeField]
         ProxyAnimator m_ProxyAnimator;
+
+        [SerializeField]
+        ProxyAffordanceMap m_AffordanceMap;
 
         [SerializeField]
         Affordance[] m_Affordances;
@@ -85,7 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         void Start()
         {
             // Setup ProxyUI
-            List<Transform> origins = new List<Transform>();
+            var origins = new List<Transform>();
             origins.Add(rayOrigin);
             origins.Add(menuOrigin);
             origins.Add(alternateMenuOrigin);
@@ -93,11 +97,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             origins.Add(fieldGrabOrigin);
 
             if (m_ProxyUI)
-                m_ProxyUI.Setup(m_Affordances, origins);
+                m_ProxyUI.Setup(m_AffordanceMap, m_Affordances, origins);
 
             if (m_ProxyAnimator)
             {
-                m_ProxyAnimator.Setup(m_Affordances);
+                m_ProxyAnimator.Setup(m_AffordanceMap, m_Affordances);
                 this.ConnectInterfaces(m_ProxyAnimator, this.rayOrigin);
             }
         }

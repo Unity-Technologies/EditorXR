@@ -1428,88 +1428,53 @@ MonoBehaviour:
   m_MeshRoot: {fileID: 4469504124180788}
   m_ProxyUI: {fileID: 114650204159954584}
   m_ProxyAnimator: {fileID: 114760536874177710}
+  m_AffordanceMap: {fileID: 11400000, guid: c067e5fde424eba4c883c573507d8a15, type: 2}
   m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 4539810040550546}
+    m_Renderer: {fileID: 23334373145171194}
     m_Tooltips:
     - {fileID: 114185068079462814}
-    m_Renderer: {fileID: 23334373145171194}
-    m_TranslateAxes: 0
-    m_RotateAxes: 1
-    m_Min: 20
-    m_Max: -20
   - m_Control: 3
     m_Transform: {fileID: 4064835649293204}
+    m_Renderer: {fileID: 23569124774784352}
     m_Tooltips:
     - {fileID: 114116332399531262}
     - {fileID: 114306613819668780}
-    m_Renderer: {fileID: 23569124774784352}
-    m_TranslateAxes: 1
-    m_RotateAxes: 0
-    m_Min: 0.0005
-    m_Max: -0.0005
   - m_Control: 3
     m_Transform: {fileID: 4233998180511522}
+    m_Renderer: {fileID: 23366012271666804}
     m_Tooltips:
     - {fileID: 114195992931318178}
     - {fileID: 114026251721049050}
-    m_Renderer: {fileID: 23366012271666804}
-    m_TranslateAxes: 1
-    m_RotateAxes: 0
-    m_Min: -0.0005
-    m_Max: 0.0005
   - m_Control: 18
     m_Transform: {fileID: 4851027070737694}
+    m_Renderer: {fileID: 23772360735447006}
     m_Tooltips:
     - {fileID: 114819021981951190}
-    m_Renderer: {fileID: 23772360735447006}
-    m_TranslateAxes: 4
-    m_RotateAxes: 0
-    m_Min: 0.0005
-    m_Max: -0.0005
   - m_Control: 22
     m_Transform: {fileID: 4027072583190098}
+    m_Renderer: {fileID: 23166709740205842}
     m_Tooltips:
     - {fileID: 114055751475063944}
-    m_Renderer: {fileID: 23166709740205842}
-    m_TranslateAxes: 2
-    m_RotateAxes: 0
-    m_Min: 0.001
-    m_Max: -0.001
   - m_Control: 0
     m_Transform: {fileID: 4027072583190098}
+    m_Renderer: {fileID: 23166709740205842}
     m_Tooltips:
     - {fileID: 114396238560582176}
-    m_Renderer: {fileID: 23166709740205842}
-    m_TranslateAxes: 0
-    m_RotateAxes: 4
-    m_Min: -4
-    m_Max: 4
   - m_Control: 1
     m_Transform: {fileID: 4027072583190098}
+    m_Renderer: {fileID: 23166709740205842}
     m_Tooltips:
     - {fileID: 114548104952197750}
-    m_Renderer: {fileID: 23166709740205842}
-    m_TranslateAxes: 0
-    m_RotateAxes: 1
-    m_Min: 4
-    m_Max: -4
   - m_Control: 0
     m_Transform: {fileID: 4278513193597556}
-    m_Tooltips: []
     m_Renderer: {fileID: 23228397771655312}
-    m_TranslateAxes: 1
-    m_RotateAxes: 0
-    m_Min: 0.018
-    m_Max: -0.018
+    m_Tooltips: []
   - m_Control: 1
     m_Transform: {fileID: 4278513193597556}
-    m_Tooltips: []
     m_Renderer: {fileID: 23228397771655312}
-    m_TranslateAxes: 4
-    m_RotateAxes: 0
-    m_Min: 0.018
-    m_Max: -0.018
+    m_Tooltips: []
 --- !u!114 &114026251721049050
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1692,7 +1657,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AffordanceMap: {fileID: 11400000, guid: c067e5fde424eba4c883c573507d8a15, type: 2}
+  m_FadeInSpeedScalar: 4
+  m_FadeOutSpeedScalar: 0.5
+  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114665279328025710
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1736,7 +1703,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
-  m_AffordanceMap: {fileID: 11400000, guid: c067e5fde424eba4c883c573507d8a15, type: 2}
+  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114819021981951190
 MonoBehaviour:
   m_ObjectHideFlags: 1

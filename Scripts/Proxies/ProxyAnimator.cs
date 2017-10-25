@@ -30,8 +30,9 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
     [SerializeField]
     ActionMap m_ProxyActionMap;
 
+    [Header("Optional")]
     [SerializeField]
-    ProxyAffordanceMap m_AffordanceMap;
+    ProxyAffordanceMap m_AffordanceMapOverride;
 
     Affordance[] m_Affordances;
     ProxyAffordanceMap.AffordanceDefinition[] m_AffordanceDefinitions;
@@ -48,10 +49,14 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
 
     internal event Action<Affordance[], AffordanceDefinition[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
-    public void Setup(Affordance[] affordances)
+    public void Setup(ProxyAffordanceMap affordanceMap, Affordance[] affordances)
     {
+        // Assign the ProxyHelper's default AffordanceMap, if no override map was assigned to this ProxyAnimator
+        if (m_AffordanceMapOverride == null)
+            m_AffordanceMapOverride = affordanceMap;
+
         m_Affordances = affordances;
-        m_AffordanceDefinitions = m_AffordanceMap.AffordanceDefinitions;
+        m_AffordanceDefinitions = m_AffordanceMapOverride.AffordanceDefinitions;
     }
 
     public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
