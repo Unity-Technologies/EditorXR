@@ -8,6 +8,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using VisibilityControlType = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.VisibilityControlType;
 using AffordanceDefinition = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceDefinition;
+using AffordanceVisibilityDefinition = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceVisibilityDefinition;
 using AffordanceVisualStateData = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceVisibilityDefinition.AffordanceVisualStateData;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -46,8 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         // Map of unique body materials to their original Colors (used for affordances with the "color" visibility control type)
         // The second param, ColorPair, houses the original cached color, and a value, representing the color to lerp FROM when animating visibility
-        readonly Dictionary<Material, affordancePropertyTuple<Color>> m_BodyMaterialOriginalColorMap = new Dictionary<Material, affordancePropertyTuple<Color>>();
-        readonly Dictionary<Material, affordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, affordancePropertyTuple<float>>();
+        readonly Dictionary<Material, AffordancePropertyTuple<Color>> m_BodyMaterialOriginalColorMap = new Dictionary<Material, AffordancePropertyTuple<Color>>();
+        readonly Dictionary<Material, AffordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, AffordancePropertyTuple<float>>();
 
         /// <summary>
         /// Model containing original value, and values to "animate from", unique to each body MeshRenderer material.
@@ -55,12 +56,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// as opposed to individual interactable affordances, which each have their own AffordanceVisibilityDefinition, which contains their unique value data.
         /// This is a lightweight class to store that data, alleviating the need to duplicate an affordance definition for each body renderer as well.
         /// </summary>
-        class affordancePropertyTuple<T>
+        class AffordancePropertyTuple<T>
         {
             public T originalValue { get; private set; }
             public T animateFromValue { get; set; }
 
-            public affordancePropertyTuple(T originalValue, T animateFromValue)
+            public AffordancePropertyTuple(T originalValue, T animateFromValue)
             {
                 this.originalValue = originalValue;
                 this.animateFromValue = animateFromValue;
@@ -84,10 +85,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     switch (visibilityDefinition.visibilityType)
                     {
                         case VisibilityControlType.colorProperty:
-                            this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceColorVisibility(value, affordanceDefinition));
+                            this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceColorVisibility(value, affordanceDefinition, m_FadeInSpeedScalar, m_FadeOutSpeedScalar));
                             break;
                         case VisibilityControlType.alphaProperty:
-                            this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceAlphaVisibility(value));
+                            this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceAlphaVisibility(value, m_FadeInSpeedScalar, m_FadeOutSpeedScalar, m_AffordanceMapOverride.bodyVisibilityDefinition));
                             break;
                         case VisibilityControlType.materialSwap:
                             SwapAffordanceToHiddenMaterial(value, affordanceDefinition);
@@ -233,8 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 if (renderers != null)
                 {
                     // Setup animated color or alpha transparency for all materials associated with all renderers associated with the control
-                    ProxyAffordanceMap.AffordanceVisibilityDefinition visibilityDefinition;
-                    ProxyAffordanceMap.AffordanceAnimationDefinition animationDefinition;
+                    AffordanceVisibilityDefinition visibilityDefinition;
                     var control = proxyAffordance.control;
 
                     // Assemble a new affordance definition and visibility definition for the affordance,
@@ -243,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     if (matchingAffordanceDefinition == null)
                     {
                         // Deep copy the default visibility definition values into a new generated visibility defintion, to be set on a newly generated affordance
-                        visibilityDefinition = new ProxyAffordanceMap.AffordanceVisibilityDefinition
+                        visibilityDefinition = new AffordanceVisibilityDefinition
                         {
                             visibilityType = defaultAffordanceVisibilityDefinition.visibilityType,
                             colorProperty = defaultAffordanceVisibilityDefinition.colorProperty,
@@ -253,7 +253,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             hiddenMaterial = defaultAffordanceVisibilityDefinition.hiddenMaterial
                         };
 
-                        animationDefinition = new ProxyAffordanceMap.AffordanceAnimationDefinition
+                        var animationDefinition = new ProxyAffordanceMap.AffordanceAnimationDefinition
                         {
                             translateAxes = defaultAffordanceAnimationDefinition.translateAxes,
                             rotateAxes = defaultAffordanceAnimationDefinition.rotateAxes,
@@ -344,12 +344,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             if (materialClone.HasProperty(k_ZWritePropertyName))
                                 materialClone.SetFloat(k_ZWritePropertyName, 1);
 
-                            m_BodyMaterialOriginalColorMap[materialClone] = new affordancePropertyTuple<Color>(originalColor, originalColor);
+                            m_BodyMaterialOriginalColorMap[materialClone] = new AffordancePropertyTuple<Color>(originalColor, originalColor);
                         }
                     }
                     break;
                 case VisibilityControlType.alphaProperty:
-                    string shaderAlphaPropety = bodyVisibilityDefinition.alphaProperty;
+                    var shaderAlphaPropety = bodyVisibilityDefinition.alphaProperty;
                     foreach (var renderer in m_BodyRenderers)
                     {
                         var materialClone = MaterialUtils.GetMaterialClone(renderer);
@@ -359,7 +359,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             if (materialClone.HasProperty(k_ZWritePropertyName))
                                 materialClone.SetFloat(k_ZWritePropertyName, 1);
 
-                            m_BodyMaterialOriginalAlphaMap[materialClone] = new affordancePropertyTuple<float>(originalAlpha, originalAlpha);
+                            m_BodyMaterialOriginalAlphaMap[materialClone] = new AffordancePropertyTuple<float>(originalAlpha, originalAlpha);
                         }
                     }
                     break;
@@ -380,10 +380,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_ProxyUISetup = true;
         }
 
-        IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition)
+        static IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition, float fadeInSpeedScalar, float fadeOutSpeedScalar)
         {
             const float kTargetAmount = 1.1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
-            var speedScalar = isVisible ? m_FadeInSpeedScalar : m_FadeOutSpeedScalar;
+            var speedScalar = isVisible ? fadeInSpeedScalar : fadeOutSpeedScalar;
             var currentAmount = 0f;
             var visibilityDefinition = definition.visibilityDefinition;
             var materialsAndColors = visibilityDefinition.visualStateData;
@@ -395,10 +395,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             // Setup animateFromColors using the current color values of each material associated with all renderers drawing this affordance
             foreach (var materialAndAssociatedColors in materialsAndColors)
             {
-                    var animateFromColor = materialAndAssociatedColors.originalMaterial.GetColor(shaderColorPropety); // Get current color from material
-                    var animateToColor = isVisible ? materialAndAssociatedColors.originalColor : materialAndAssociatedColors.hiddenColor; // (second)original or (third)hidden color(alpha/color.a)
-                    materialAndAssociatedColors.animateFromColor = animateFromColor;
-                    materialAndAssociatedColors.animateToColor = animateToColor;
+                var animateFromColor = materialAndAssociatedColors.originalMaterial.GetColor(shaderColorPropety); // Get current color from material
+                var animateToColor = isVisible ? materialAndAssociatedColors.originalColor : materialAndAssociatedColors.hiddenColor; // (second)original or (third)hidden color(alpha/color.a)
+                materialAndAssociatedColors.animateFromColor = animateFromColor;
+                materialAndAssociatedColors.animateToColor = animateToColor;
             }
 
             while (currentAmount < kTargetAmount)
@@ -415,12 +415,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        IEnumerator AnimateAffordanceAlphaVisibility(bool isVisible)
+        static IEnumerator AnimateAffordanceAlphaVisibility(bool isVisible, float fadeInSpeedScalar, float fadeOutSpeedScalar, AffordanceVisibilityDefinition visibilityDefinition)
         {
             const float kTargetAmount = 1.1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
-            var speedScalar = isVisible ? m_FadeInSpeedScalar : m_FadeOutSpeedScalar;
+            var speedScalar = isVisible ? fadeInSpeedScalar : fadeOutSpeedScalar;
             var currentAmount = 0f;
-            var visibilityDefinition = m_AffordanceMapOverride.bodyVisibilityDefinition;
             var materialsAndColors = visibilityDefinition.visualStateData;
             var shaderAlphaPropety = visibilityDefinition.alphaProperty;
 

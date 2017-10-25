@@ -149,7 +149,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         AffordanceVisibilityDefinition m_BodyVisibilityDefinition;
 
-        [Space(20)]
         [Header("Affordances / Interactive Input-Device Elements")]
         [SerializeField]
         AffordanceAnimationDefinition m_DefaultAffordanceAnimationDefinition;

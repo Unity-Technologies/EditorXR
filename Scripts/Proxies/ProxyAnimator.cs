@@ -45,7 +45,19 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
 
     public ActionMap actionMap { get { return m_ProxyActionMap; } }
     public bool ignoreLocking { get { return true; } }
-    public Node node { get { return m_Node; } set { m_Node = value; m_RightHandedProxy = m_Node == Node.RightHand; } }
+
+    public Node node
+    {
+        get
+        {
+            return m_Node;
+        }
+
+        set
+        {
+            m_Node = value; m_RightHandedProxy = m_Node == Node.RightHand;
+        }
+    }
 
     internal event Action<Affordance[], AffordanceDefinition[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
