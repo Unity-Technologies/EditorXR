@@ -2,7 +2,8 @@
 using System;
 
 namespace UnityEditor.Experimental.EditorVR
-{    public interface IUsesViewerScale
+{
+    public interface IUsesViewerScale
     {
     }
 
@@ -12,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
         internal static Action<float> setViewerScale { get; set; }
 
         /// <summary>
-        /// Returns whether the specified transform is over the viewer's shoulders and behind the head
+        /// Returns the scale of the viewer object
         /// </summary>
         public static float GetViewerScale(this IUsesViewerScale obj)
         {
