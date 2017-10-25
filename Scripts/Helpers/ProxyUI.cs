@@ -8,6 +8,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using VisibilityControlType = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.VisibilityControlType;
 using AffordanceDefinition = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceDefinition;
+using AffordanceVisualStateData = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceVisibilityDefinition.AffordanceVisualStateData;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
@@ -127,13 +128,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 var visibilityType = visibilityDefinition.visibilityType;
                 if (visibilityType == VisibilityControlType.colorProperty || visibilityType == VisibilityControlType.alphaProperty)
                 {
-                    var materialsAndAssociatedColors = visibilityDefinition.materialsAndAssociatedColors;
+                    var materialsAndAssociatedColors = visibilityDefinition.visualStateData;
                     if (materialsAndAssociatedColors == null)
                         continue;
 
-                    foreach (var materialToAssociatedColors in visibilityDefinition.materialsAndAssociatedColors)
+                    foreach (var materialToAssociatedColors in visibilityDefinition.visualStateData)
                     {
-                        var material = materialToAssociatedColors.firstElement;
+                        var material = materialToAssociatedColors.originalMaterial;
                         if (material != null)
                             ObjectUtils.Destroy(material);
                     }
@@ -278,7 +279,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                                 var hiddenColor = visibilityDefinition.hiddenColor;
                                 var hiddenAlphaEncodedInColor = visibilityDefinition.hiddenAlpha * Color.white;
                                 var shaderAlphaPropety = visibilityDefinition.alphaProperty;
-                                var materialsAndAssociatedColors = new List<Tuple<Material, Color, Color, Color, Color>>();
+                                var materialsAndAssociatedColors = new List<AffordanceVisualStateData>();
                                 // Material, original color, hidden color, animateFromColor(used by animating coroutines, not initialized here)
                                 foreach (var material in materialClones)
                                 {
@@ -287,25 +288,25 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                                     if (visibilityType != VisibilityControlType.materialSwap && material.HasProperty(k_ZWritePropertyName))
                                         material.SetFloat(k_ZWritePropertyName, 1);
 
-                                    Tuple<Material, Color, Color, Color, Color> materialAndAssociatedColors = null;
+                                    AffordanceVisualStateData materialAndAssociatedColors = null;
                                     switch (visibilityDefinition.visibilityType)
                                     {
                                         case VisibilityControlType.colorProperty:
                                             var originalColor = material.GetColor(visibilityDefinition.colorProperty);
-                                            materialAndAssociatedColors = new Tuple<Material, Color, Color, Color, Color>(material, originalColor, hiddenColor, Color.clear, Color.clear);
+                                            materialAndAssociatedColors = new AffordanceVisualStateData(material, originalColor, hiddenColor, Color.clear, Color.clear);
                                             break;
                                         case VisibilityControlType.alphaProperty:
                                             var originalAlpha = material.GetFloat(shaderAlphaPropety);
                                             var originalAlphaEncodedInColor = Color.white * originalAlpha;
                                             // When animating based on alpha, use the Color.a value of the original, hidden, and animateFrom colors set below
-                                            materialAndAssociatedColors = new Tuple<Material, Color, Color, Color, Color>(material, originalAlphaEncodedInColor, hiddenAlphaEncodedInColor, Color.clear, Color.clear);
+                                            materialAndAssociatedColors = new AffordanceVisualStateData(material, originalAlphaEncodedInColor, hiddenAlphaEncodedInColor, Color.clear, Color.clear);
                                             break;
                                     }
 
                                     materialsAndAssociatedColors.Add(materialAndAssociatedColors);
                                 }
 
-                                visibilityDefinition.materialsAndAssociatedColors = materialsAndAssociatedColors;
+                                visibilityDefinition.visualStateData = materialsAndAssociatedColors;
                             }
                         }
                     }
@@ -373,7 +374,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var speedScalar = isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
             var currentAmount = 0f;
             var visibilityDefinition = definition.visibilityDefinition;
-            var materialsAndColors = visibilityDefinition.materialsAndAssociatedColors;
+            var materialsAndColors = visibilityDefinition.visualStateData;
             var shaderColorPropety = visibilityDefinition.colorProperty;
 
             if (materialsAndColors == null)
@@ -382,10 +383,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             // Setup animateFromColors using the current color values of each material associated with all renderers drawing this affordance
             foreach (var materialAndAssociatedColors in materialsAndColors)
             {
-                    var animateFromColor = materialAndAssociatedColors.firstElement.GetColor(shaderColorPropety); // Get current color from material
-                    var animateToColor = isVisible ? materialAndAssociatedColors.secondElement : materialAndAssociatedColors.thirdElement; // (second)original or (third)hidden color(alpha/color.a)
-                    materialAndAssociatedColors.fourthElement = animateFromColor;
-                    materialAndAssociatedColors.fifthElement = animateToColor;
+                    var animateFromColor = materialAndAssociatedColors.originalMaterial.GetColor(shaderColorPropety); // Get current color from material
+                    var animateToColor = isVisible ? materialAndAssociatedColors.originalColor : materialAndAssociatedColors.hiddenColor; // (second)original or (third)hidden color(alpha/color.a)
+                    materialAndAssociatedColors.animateFromColor = animateFromColor;
+                    materialAndAssociatedColors.animateToColor = animateToColor;
             }
 
             while (currentAmount < kTargetAmount)
@@ -393,8 +394,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * speedScalar);
                 foreach (var materialAndAssociatedColors in materialsAndColors)
                 {
-                    var currentColor = Color.Lerp(materialAndAssociatedColors.fourthElement, materialAndAssociatedColors.fifthElement, smoothedAmount);
-                    materialAndAssociatedColors.firstElement.SetColor(shaderColorPropety, currentColor);
+                    var currentColor = Color.Lerp(materialAndAssociatedColors.animateFromColor, materialAndAssociatedColors.animateToColor, smoothedAmount);
+                    materialAndAssociatedColors.originalMaterial.SetColor(shaderColorPropety, currentColor);
                 }
 
                 yield return null;
@@ -407,16 +408,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var speedScalar = isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
             var currentAmount = 0f;
             var visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
-            var materialsAndColors = visibilityDefinition.materialsAndAssociatedColors;
+            var materialsAndColors = visibilityDefinition.visualStateData;
             var shaderAlphaPropety = visibilityDefinition.alphaProperty;
 
             // Setup animateFromColors using the current color values of each material associated with all renderers drawing this affordance
             foreach (var materialAndAssociatedColors in materialsAndColors)
             {
-                var animateFromAlpha = materialAndAssociatedColors.firstElement.GetFloat(shaderAlphaPropety); // Get current alpha from material
-                var animateToAlpha = isVisible ? materialAndAssociatedColors.secondElement.a : materialAndAssociatedColors.thirdElement.a; // (second)original or (third)hidden color(alpha/color.a)
-                materialAndAssociatedColors.fourthElement = Color.white * animateFromAlpha; // Encode the alpha for the FROM color value, color.a
-                materialAndAssociatedColors.fifthElement = Color.white * animateToAlpha; // // Encode the alpha for the TO color value, color.a
+                var animateFromAlpha = materialAndAssociatedColors.originalMaterial.GetFloat(shaderAlphaPropety); // Get current alpha from material
+                var animateToAlpha = isVisible ? materialAndAssociatedColors.originalColor.a : materialAndAssociatedColors.hiddenColor.a; // (second)original or (third)hidden color(alpha/color.a)
+                materialAndAssociatedColors.animateFromColor = Color.white * animateFromAlpha; // Encode the alpha for the FROM color value, color.a
+                materialAndAssociatedColors.animateToColor = Color.white * animateToAlpha; // // Encode the alpha for the TO color value, color.a
             }
 
             while (currentAmount < kTargetAmount)
@@ -424,8 +425,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(currentAmount += Time.unscaledDeltaTime * speedScalar);
                 foreach (var materialAndAssociatedColors in materialsAndColors)
                 {
-                    var currentAlpha = Color.Lerp(materialAndAssociatedColors.fourthElement, materialAndAssociatedColors.fifthElement, smoothedAmount);
-                    materialAndAssociatedColors.firstElement.SetFloat(shaderAlphaPropety, currentAlpha.a); // Alpha is encoded in color.a
+                    var currentAlpha = Color.Lerp(materialAndAssociatedColors.animateFromColor, materialAndAssociatedColors.animateToColor, smoothedAmount);
+                    materialAndAssociatedColors.originalMaterial.SetFloat(shaderAlphaPropety, currentAlpha.a); // Alpha is encoded in color.a
                 }
 
                 yield return null;
@@ -505,10 +506,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         void SwapAffordanceToHiddenMaterial(bool swapToHiddenMaterial, AffordanceDefinition definition)
         {
             var visibilityDefinition = definition.visibilityDefinition;
-            var materialsAndColors = visibilityDefinition.materialsAndAssociatedColors;
+            var materialsAndColors = visibilityDefinition.visualStateData;
             for (var i = 0; i < materialsAndColors.Count; ++i)
             {
-                var swapMaterial = swapToHiddenMaterial ? visibilityDefinition.hiddenMaterial : materialsAndColors[i].firstElement;
+                var swapMaterial = swapToHiddenMaterial ? visibilityDefinition.hiddenMaterial : materialsAndColors[i].originalMaterial;
                 // m_AffordanceRenderers is created/added in sync with the order of the materialsAndAssociatedColors in the affordance visibility definition
                 m_AffordanceRenderers[i].material = swapMaterial; // Set swapped material in associated renderer
             }

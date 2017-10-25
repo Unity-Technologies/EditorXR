@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -10,9 +9,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// </summary>
     sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
     {
-        List<Renderer> m_BodyRenderers; // renderers not associated with controls, & will be hidden when displaying feedback/tooltips
-        bool m_BodyRenderersVisible;
-
         [SerializeField]
         Transform m_RayOrigin;
 

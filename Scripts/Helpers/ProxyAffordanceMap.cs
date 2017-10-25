@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using System.IO;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -11,25 +10,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [CreateAssetMenu(menuName = "EditorVR/EXR Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
     public class ProxyAffordanceMap : ScriptableObject
     {
-        // TODO REMOVE - 5.6 HACK that remedies items not appearing in the create menu
-#if UNITY_EDITOR
-        [MenuItem("Assets/Create/EditorVR/EditorVR Proxy Affordance Map")]
-        public static void Create()
-        {
-            var path = AssetDatabase.GetAssetPath(Selection.activeObject);
-
-            if (string.IsNullOrEmpty(path))
-                path = "Assets";
-
-            if (!Directory.Exists(path))
-                path = Path.GetDirectoryName(path);
-
-            var affordanceMap = ScriptableObject.CreateInstance<ProxyAffordanceMap>();
-            path = AssetDatabase.GenerateUniqueAssetPath(path + "/NewProxyAffordanceMap.asset");
-            AssetDatabase.CreateAsset(affordanceMap, path);
-        }
-#endif
-
         public enum VisibilityControlType
         {
             colorProperty,
@@ -58,16 +38,47 @@ namespace UnityEditor.Experimental.EditorVR.Core
             [SerializeField]
             Material m_HiddenMaterial;
 
+            public class AffordanceVisualStateData
+            {
+                /// <summary>
+                /// Original material
+                /// </summary>
+                public Material originalMaterial { get; set; }
+
+                /// <summary>
+                /// Original color, Color.a is used for alpha-only animation
+                /// </summary>
+                public Color originalColor { get; set; }
+
+                /// <summary>
+                /// Hidden color, Color.a is used for alpha-only animation
+                /// </summary>
+                public Color hiddenColor { get; set; }
+
+                /// <summary>
+                /// Animate FROM color (used in animated coroutines), color.a is used for alpha-only animation
+                /// </summary>
+                public Color animateFromColor { get; set; }
+
+                /// <summary>
+                /// Animate TO color (used in animated coroutines), color.a is used for alpha-only animation
+                /// </summary>
+                public Color animateToColor { get; set; }
+
+                public AffordanceVisualStateData(Material originalMaterial, Color originalColor, Color hiddenColor, Color animateFromColor, Color animateToColor)
+                {
+                    this.originalMaterial = originalMaterial;
+                    this.originalColor = originalColor;
+                    this.hiddenColor = hiddenColor;
+                    this.animateFromColor = animateFromColor;
+                    this.animateToColor = animateToColor;
+                }
+            }
+
             /// <summary>
-            /// The renderer & cloned materials associated with this affordance
-            /// Cloned materials associated with the renderer will have their properties animated by the ProxyUI
-            /// Element 1: Original material
-            /// Element 2: Original color, Color.a is used for alpha-only animation
-            /// Element 3: Hidden color, Color.a is used for alpha-only animation
-            /// Element 4: Animate FROM color (used in animated coroutines), color.a is used for alpha-only animation
-            /// Element 5: Animate TO color (used in animated coroutines), color.a is used for alpha-only animation
+            /// Data defining the original, and current visual state of an affordance
             /// </summary>
-            public List<Tuple<Material, Color, Color, Color, Color>> materialsAndAssociatedColors { get; set; }
+            public List<AffordanceVisualStateData> visualStateData { get; set; }
 
             /// <summary>
             /// The hidden color of the material
