@@ -200,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         {
                             var shakeRequest = new ProxyFeedbackRequest
                             {
-                                control = VRInputDevice.VRControl.LocalRotation,
+                                control = VRInputDevice.VRControl.LocalPosition,
                                 node = Node.None,
                                 tooltipText = null,
                                 suppressExisting = true,
@@ -356,8 +356,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             else if (m_FeedbackRequests.Count > 0)
             {
                 // Find any visible feedback requests for each hand
-                rightProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.RightHand && x.Key.visible);
-                leftProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.LeftHand && x.Key.visible);
+                foreach (var request in m_FeedbackRequests)
+                {
+                    var node = request.Key.node;
+                    var visible = request.Key.visible;
+
+                    if (!leftProxyRequestsExist)
+                        leftProxyRequestsExist = node == Node.LeftHand && visible;
+
+                    if (!rightProxyRequestsExist)
+                        rightProxyRequestsExist = node == Node.RightHand && visible;
+
+                    if (rightProxyRequestsExist && leftProxyRequestsExist)
+                        break;
+                }
             }
 
             rightAffordanceRenderersVisible = rightProxyRequestsExist;

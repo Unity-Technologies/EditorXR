@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -126,7 +125,16 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
         {
             var affordance = m_Affordances[i];
             var control = m_Controls[i];
-            var affordanceDefinition = m_AffordanceDefinitions.Where(x => x.control == affordance.control).FirstOrDefault();
+            AffordanceDefinition affordanceDefinition = null;
+            foreach (var definition in m_AffordanceDefinitions)
+            {
+                if (definition.control == affordance.control)
+                {
+                    affordanceDefinition = definition;
+                    break;
+                }
+            }
+
             var animationDefinition = affordanceDefinition != null ? affordanceDefinition.animationDefinition : null;
             var info = m_TransformInfos[affordance.transform];
             var handednessScalar = m_RightHandedProxy && animationDefinition.reverseForRightHand ? -1 : 1;
