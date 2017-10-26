@@ -24,7 +24,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         // from http://wiki.unity3d.com/index.php/3d_Math_functions
         //Get the intersection between a line and a plane. 
         //If the line and plane are not parallel, the function outputs true, otherwise false.
-        public static bool LinePlaneIntersection(out Vector3 intersection, Vector3 linePoint, Vector3 lineVec, Vector3 planeNormal, Vector3 planePoint)
+        public static bool LinePlaneIntersection(out Vector3 intersection, Vector3 linePoint, Vector3 lineVec,
+            Vector3 planeNormal, Vector3 planePoint)
         {
             float length;
             float dotNumerator;
@@ -54,7 +55,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return false;
         }
 
-        public static float SmoothDamp(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+        public static float SmoothDamp(float current, float target, ref float currentVelocity, float smoothTime,
+            float maxSpeed, float deltaTime)
         {
             // This will have us converge on 98% of our target value within the smooth time
             // Reference: http://devblog.aliasinggames.com/smoothdamp/
@@ -62,7 +64,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return Mathf.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
         }
 
-        public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+        public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime,
+            float maxSpeed, float deltaTime)
         {
             // This will have us converge on 98% of our target value within the smooth time
             // Reference: http://devblog.aliasinggames.com/smoothdamp/
@@ -89,7 +92,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="to">The object whose position will be updated (child)</param>
         /// <param name="positionOffset">The position vector from "from" to "to"</param>
         /// <param name="rotationOffset">The rotation which will rotate "from" to "to"</param>
-        public static void GetTransformOffset(Transform from, Transform to, out Vector3 positionOffset, out Quaternion rotationOffset)
+        public static void GetTransformOffset(Transform from, Transform to, out Vector3 positionOffset,
+            out Quaternion rotationOffset)
         {
             var inverseRotation = Quaternion.Inverse(from.rotation);
             positionOffset = inverseRotation * (to.position - from.position);
@@ -103,7 +107,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="child">The transform whose position we are setting</param>
         /// <param name="positionOffset">The position offset (local position)</param>
         /// <param name="rotationOffset">The rotation offset (local rotation)</param>
-        public static void SetTransformOffset(Transform parent, Transform child, Vector3 positionOffset, Quaternion rotationOffset)
+        public static void SetTransformOffset(Transform parent, Transform child, Vector3 positionOffset,
+            Quaternion rotationOffset)
         {
             child.position = parent.position + parent.rotation * positionOffset;
             child.rotation = parent.rotation * rotationOffset;
@@ -116,7 +121,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="targetPosition">The target position</param>
         /// <param name="targetRotation">The target rotation</param>
         /// <param name="t">Interpolation parameter for smooth transitions (Optional)</param>
-        public static void LerpTransform(Transform source, Vector3 targetPosition, Quaternion targetRotation, float t = 1f)
+        public static void LerpTransform(Transform source, Vector3 targetPosition, Quaternion targetRotation,
+            float t = 1f)
         {
             source.position = Vector3.Lerp(source.position, targetPosition, t);
             source.rotation = Quaternion.Slerp(source.rotation, targetRotation, t);

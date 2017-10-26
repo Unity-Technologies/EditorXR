@@ -26,7 +26,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         // Local method use only -- created here to reduce garbage collection
         static readonly List<Renderer> k_Renderers = new List<Renderer>();
 
-        public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
+        public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true,
+            bool runInEditMode = true, bool active = true)
         {
             var go = UnityObject.Instantiate(prefab, parent, worldPositionStays);
             if (worldPositionStays)
@@ -71,12 +72,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return empty;
         }
 
-        public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true) where T : Component
+        public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true)
+            where T : Component
         {
             return (T)CreateGameObjectWithComponent(typeof(T), parent, worldPositionStays);
         }
 
-        public static Component CreateGameObjectWithComponent(Type type, Transform parent = null, bool worldPositionStays = true)
+        public static Component CreateGameObjectWithComponent(Type type, Transform parent = null,
+            bool worldPositionStays = true)
         {
 #if UNITY_EDITOR
             var component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type).GetComponent(type);
@@ -183,8 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 }
                 catch (ReflectionTypeLoadException)
                 {
-                    // Skip any assemblies that don't load properly
-                    continue;
+                    // Skip any assemblies that don't load properly -- suppress errors
                 }
             }
         }
