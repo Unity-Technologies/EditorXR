@@ -8,63 +8,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
     /// </summary>
     static class MathUtilsExt
     {
-        // snaps value to a unit. unit can be any number.
-        // for example, with a unit of 0.2, 0.41 -> 0.4, and 0.52 -> 0.6
-        public static float SnapValueToUnit(float value, float unit)
-        {
-            var mult = value / unit;
-
-            // find lower and upper boundaries of snapping
-            var lowerMult = Mathf.FloorToInt(mult);
-            var upperMult = Mathf.CeilToInt(mult);
-            var lowerBoundary = lowerMult * unit;
-            var upperBoundary = upperMult * unit;
-
-            // figure out which is closest
-            var diffWithLower = value - lowerBoundary;
-            var diffWithHigher = upperBoundary - value;
-            return (diffWithLower < diffWithHigher) ? lowerBoundary : upperBoundary;
-        }
-
-        public static Vector3 SnapValuesToUnit(Vector3 values, float unit)
-        {
-            return new Vector3(SnapValueToUnit(values.x, unit),
-                SnapValueToUnit(values.y, unit),
-                SnapValueToUnit(values.z, unit));
-        }
-
-        // Like map in Processing.
-        // E1 and S1 must be different, else it will break
-        // val, in a, in b, out a, out b
-        public static float Map(float val, float ia, float ib, float oa, float ob)
-        {
-            return oa + (ob - oa) * ((val - ia) / (ib - ia));
-        }
-
-        // Like map, but eases in.
-        public static float MapInCubic(float val, float ia, float ib, float oa, float ob)
-        {
-            var t = (val - ia);
-            var d = (ib - ia);
-            t /= d;
-            return oa + (ob - oa) * (t) * t * t;
-        }
-
-        // Like map, but eases out.
-        public static float MapOutCubic(float val, float ia, float ib, float oa, float ob)
-        {
-            var t = (val - ia);
-            var d = (ib - ia);
-            t = (t / d) - 1;
-            return oa + (ob - oa) * (t * t * t + 1);
-        }
-
-        // Like map, but eases in.
-        public static float MapInSin(float val, float ia, float ib, float oa, float ob)
-        {
-            return oa + (ob - oa) * (1.0f - Mathf.Cos(((val - ia) / (ib - ia)) * Mathf.PI / 2));
-        }
-
         // from http://wiki.unity3d.com/index.php/3d_Math_functions
         //create a vector of direction "vector" with length "size"
         public static Vector3 SetVectorLength(Vector3 vector, float size)
@@ -109,32 +52,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             //output not valid
             return false;
-        }
-
-        public static Vector3 CalculateCubicBezierPoint(float t, Vector3[] points)
-        {
-            if (points.Length != 4)
-                return Vector3.zero;
-
-            var u = 1f - t;
-            var tt = t * t;
-            var uu = u * u;
-            var uuu = uu * u;
-            var ttt = tt * t;
-
-            //first term
-            var p = uuu * points[0];
-
-            //second term
-            p += 3f * uu * t * points[1];
-
-            //third term
-            p += 3f * u * tt * points[2];
-
-            //fourth term
-            p += ttt * points[3];
-
-            return p;
         }
 
         public static float SmoothDamp(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)

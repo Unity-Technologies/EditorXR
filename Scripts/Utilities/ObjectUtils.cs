@@ -47,21 +47,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return go;
         }
 
-        public static void RemoveAllChildren(GameObject obj)
-        {
-            var children = new List<GameObject>();
-            foreach (Transform child in obj.transform)
-                children.Add(child.gameObject);
-
-            foreach (var child in children)
-                UnityObject.Destroy(child);
-        }
-
-        public static bool IsInLayer(GameObject o, string s)
-        {
-            return o.layer == LayerMask.NameToLayer(s);
-        }
-
         /// <summary>
         /// Create an empty VR GameObject.
         /// </summary>
@@ -103,13 +88,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             component.transform.SetParent(parent, worldPositionStays);
 
             return component;
-        }
-
-        public static void SetLayerRecursively(GameObject root, int layer)
-        {
-            var transforms = root.GetComponentsInChildren<Transform>();
-            for (var i = 0; i < transforms.Length; i++)
-                transforms[i].gameObject.layer = layer;
         }
 
         public static Bounds GetBounds(Transform[] transforms)
