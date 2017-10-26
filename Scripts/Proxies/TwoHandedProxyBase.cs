@@ -182,7 +182,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             if (active)
             {
-                var movementDelta = -Time.unscaledDeltaTime * 4;
                 var leftLocalPosition = trackedObjectInput.leftPosition.vector3;
                 m_LeftHand.localPosition = leftLocalPosition;
                 m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
@@ -193,10 +192,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                 if (m_SemitransparentLockRequest == null)
                 {
-                    movementDelta = Vector3.SqrMagnitude(leftLocalPosition - m_PreviousLeftHandPosition);
+                    const float minShakeMovementThreshold = 0.001f;
+                    const int movementDetectionIncreaseScalar = 125;
+                    var movementDelta = Vector3.SqrMagnitude(leftLocalPosition - m_PreviousLeftHandPosition);
                     movementDelta += Vector3.SqrMagnitude(rightLocalPosition - m_PreviousRightHandPosition);
-                    movementDelta *= Time.unscaledDeltaTime * 20;
-                    if (movementDelta > 0.001f)
+                    movementDelta *= Time.unscaledDeltaTime * movementDetectionIncreaseScalar;
+                    if (movementDelta > minShakeMovementThreshold)
                     {
                         m_ShakeFrequency += movementDelta;
                         if (m_ShakeFrequency > 0.1f)
