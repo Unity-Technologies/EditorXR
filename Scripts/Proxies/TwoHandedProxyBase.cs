@@ -30,6 +30,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     {
         const float k_DefaultFeedbackDuration = 5f;
 
+        class AffordanceDictionary : Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>>
+        {
+        }
+
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
 
@@ -57,8 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         Vector3 m_PreviousLeftHandPosition;
         Vector3 m_PreviousRightHandPosition;
 
-        readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>> m_Affordances =
-            new Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>>();
+        readonly AffordanceDictionary m_Affordances = new AffordanceDictionary();
 
         bool leftAffordanceRenderersVisible { set { m_LeftProxyHelper.affordanceRenderersVisible = value; } }
         bool rightAffordanceRenderersVisible { set { m_RightProxyHelper.affordanceRenderersVisible = value; } }
