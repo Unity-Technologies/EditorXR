@@ -7,9 +7,7 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using VisibilityControlType = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.VisibilityControlType;
-using AffordanceDefinition = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceDefinition;
-using AffordanceVisibilityDefinition = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceVisibilityDefinition;
-using AffordanceVisualStateData = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceVisibilityDefinition.AffordanceVisualStateData;
+using AffordanceVisualStateData = UnityEditor.Experimental.EditorVR.Core.AffordanceVisibilityDefinition.AffordanceVisualStateData;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
@@ -253,7 +251,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             hiddenMaterial = defaultAffordanceVisibilityDefinition.hiddenMaterial
                         };
 
-                        var animationDefinition = new ProxyAffordanceMap.AffordanceAnimationDefinition
+                        var animationDefinition = new AffordanceAnimationDefinition
                         {
                             translateAxes = defaultAffordanceAnimationDefinition.translateAxes,
                             rotateAxes = defaultAffordanceAnimationDefinition.rotateAxes,

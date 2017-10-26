@@ -6,7 +6,6 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using AffordanceDefinition = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.AffordanceDefinition;
 
 [ProcessInput(1)]
 [RequireComponent(typeof(ProxyHelper))]
@@ -34,7 +33,7 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
     ProxyAffordanceMap m_AffordanceMapOverride;
 
     Affordance[] m_Affordances;
-    ProxyAffordanceMap.AffordanceDefinition[] m_AffordanceDefinitions;
+    AffordanceDefinition[] m_AffordanceDefinitions;
     InputControl[] m_Controls;
 
     readonly Dictionary<Transform, TransformInfo> m_TransformInfos = new Dictionary<Transform, TransformInfo>();

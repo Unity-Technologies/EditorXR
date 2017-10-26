@@ -59,12 +59,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #endif
         }
 
-        static void PostAnimate(Affordance[] affordances, ProxyAffordanceMap.AffordanceDefinition[] affordanceDefinitions, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
+        static void PostAnimate(Affordance[] affordances, AffordanceDefinition[] affordanceDefinitions, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
         {
             var proxyInput = (ProxyAnimatorInput)input;
             foreach (var button in affordances)
             {
-                ProxyAffordanceMap.AffordanceAnimationDefinition affordanceAnimationDefinition = null;
+                AffordanceAnimationDefinition affordanceAnimationDefinition = null;
                 foreach (var definition in affordanceDefinitions)
                 {
                     if (definition.control == button.control)
