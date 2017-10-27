@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Input;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -19,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public VRInputDevice.VRControl control;
         public Node node;
         public string tooltipText;
+        public bool hideExisting;
     }
 
     abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         protected PlayerInput m_PlayerInput;
 
-        internal IInputToEvents m_InputToEvents;
+        protected IInputToEvents m_InputToEvents;
 
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
@@ -91,9 +91,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Dictionary<Transform, Transform> alternateMenuOrigins { get; set; }
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
-
-        // Local method use only -- created here to reduce garbage collection
-        static readonly List<Tooltip> k_TooltipList = new List<Tooltip>();
 
         public virtual void Awake()
         {
@@ -199,16 +196,21 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             foreach (var proxyNode in m_Buttons)
             {
+                if (proxyNode.Key != changedRequest.node)
+                    continue;
+
                 foreach (var kvp in proxyNode.Value)
                 {
+                    if (kvp.Key != changedRequest.control)
+                        continue;
+
                     ProxyFeedbackRequest request = null;
                     foreach (var req in m_FeedbackRequests)
                     {
-                        var matchChanged = req.node == changedRequest.node && req.control == changedRequest.control;
-                        var matchButton = req.node == proxyNode.Key && req.control == kvp.Key;
-                        var sameCaller = req.caller == changedRequest.caller;
-                        var priority = request == null || req.priority >= request.priority;
-                        if (matchButton && priority && (matchChanged || sameCaller))
+                        if (req.node != proxyNode.Key || req.control != kvp.Key)
+                            continue;
+
+                        if (request == null || req.priority >= request.priority)
                             request = req;
                     }
 
@@ -218,16 +220,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     foreach (var button in kvp.Value)
                     {
                         if (button.renderer)
-                            this.SetHighlight(button.renderer.gameObject, true, duration: k_FeedbackDuration);
+                            this.SetHighlight(button.renderer.gameObject, !request.hideExisting, duration: k_FeedbackDuration);
 
-                        if (button.transform)
+                        var tooltipText = request.tooltipText;
+                        if (!string.IsNullOrEmpty(tooltipText) || request.hideExisting)
                         {
-                            var tooltipText = request.tooltipText;
-                            if (!string.IsNullOrEmpty(tooltipText))
+                            foreach (var tooltip in button.tooltips)
                             {
-                                k_TooltipList.Clear();
-                                button.transform.GetComponents(k_TooltipList);
-                                foreach (var tooltip in k_TooltipList)
+                                if (tooltip)
                                 {
                                     tooltip.tooltipText = tooltipText;
                                     this.ShowTooltip(tooltip, true, k_FeedbackDuration);
@@ -259,11 +259,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         if (button.renderer)
                             this.SetHighlight(button.renderer.gameObject, false);
 
-                        if (button.transform)
+                        foreach (var tooltip in button.tooltips)
                         {
-                            k_TooltipList.Clear();
-                            button.transform.GetComponents(k_TooltipList);
-                            foreach (var tooltip in k_TooltipList)
+                            if (tooltip)
                             {
                                 tooltip.tooltipText = string.Empty;
                                 this.HideTooltip(tooltip, true);
@@ -272,9 +270,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     }
                 }
             }
-            m_FeedbackRequests.Remove(request);
 
-            ExecuteFeedback(request);
+            if (m_FeedbackRequests.Remove(request))
+                ExecuteFeedback(request);
         }
 
         public void ClearFeedbackRequests(IRequestFeedback caller)

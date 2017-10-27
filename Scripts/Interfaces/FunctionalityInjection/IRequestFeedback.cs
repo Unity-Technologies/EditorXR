@@ -2,7 +2,8 @@
 using System;
 
 namespace UnityEditor.Experimental.EditorVR
-{    public interface IRequestFeedback
+{
+    public interface IRequestFeedback
     {
     }
 
