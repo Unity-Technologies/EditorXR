@@ -128,6 +128,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             this.StopAllCoroutines();
 
             // Cleanup cloned materials
+            if (m_AffordanceMapOverride == null)
+                return;
+
             foreach (var affordanceDefinition in m_AffordanceMapOverride.AffordanceDefinitions)
             {
                 var visibilityDefinition = affordanceDefinition.visibilityDefinition;
