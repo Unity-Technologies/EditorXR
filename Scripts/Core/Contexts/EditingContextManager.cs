@@ -50,7 +50,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 return context;
             }
-            set { m_Settings.defaultContextName = value.name; }
+            set
+            {
+                m_Settings.defaultContextName = value.name;
+            }
         }
 
         internal IEditingContext currentContext
@@ -138,6 +141,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var availableContexts = GetAvailableEditingContexts();
             m_ContextNames = availableContexts.Select(c => c.name).ToArray();
 
+            if (m_AvailableContexts.Count == 0)
+                throw new Exception("You can't start EditorVR without at least one context. Try re-importing the package or use version control to restore the default context asset");
+
             SetEditingContext(defaultContext);
 
             if (m_AvailableContexts.Count > 1)
@@ -158,8 +164,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             VRView.afterOnGUI -= OnVRViewGUI;
 
-            defaultContext = m_CurrentContext;
-            m_CurrentContext.Dispose();
+            if (m_CurrentContext != null)
+            {
+                defaultContext = m_CurrentContext;
+                m_CurrentContext.Dispose();
+            }
 
             m_AvailableContexts = null;
 
