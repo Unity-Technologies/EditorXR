@@ -30,6 +30,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public float min { get { return m_Min; } set { m_Min = value; } }
         public float max { get { return m_Max; } set { m_Max = value; } }
         public bool reverseForRightHand { get { return m_ReverseForRightHand; } set { m_ReverseForRightHand = value; } }
+
+        public AffordanceAnimationDefinition(AffordanceAnimationDefinition definitionToCopy)
+        {
+            translateAxes = definitionToCopy.translateAxes;
+            rotateAxes = definitionToCopy.rotateAxes;
+            min = definitionToCopy.min;
+            max = definitionToCopy.max;
+            reverseForRightHand = definitionToCopy.reverseForRightHand;
+        }
     }
 }
 #endif

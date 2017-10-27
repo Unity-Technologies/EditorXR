@@ -87,6 +87,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public ProxyAffordanceMap.VisibilityControlType visibilityType { get { return m_VisibilityType; } set { m_VisibilityType = value; } }
         public string colorProperty { get { return m_ColorProperty; } set { m_ColorProperty = value; } }
         public string alphaProperty { get { return m_AlphaProperty; } set { m_AlphaProperty = value; } }
+
+        public AffordanceVisibilityDefinition(AffordanceVisibilityDefinition definitionToCopy)
+        {
+            visibilityType = definitionToCopy.visibilityType;
+            colorProperty = definitionToCopy.colorProperty;
+            alphaProperty = definitionToCopy.alphaProperty;
+            hiddenColor = definitionToCopy.hiddenColor;
+            hiddenAlpha = definitionToCopy.hiddenAlpha;
+            hiddenMaterial = definitionToCopy.hiddenMaterial;
+        }
     }
 }
 #endif

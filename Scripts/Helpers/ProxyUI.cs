@@ -241,25 +241,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     if (matchingAffordanceDefinition == null)
                     {
                         // Deep copy the default visibility definition values into a new generated visibility defintion, to be set on a newly generated affordance
-                        visibilityDefinition = new AffordanceVisibilityDefinition
-                        {
-                            visibilityType = defaultAffordanceVisibilityDefinition.visibilityType,
-                            colorProperty = defaultAffordanceVisibilityDefinition.colorProperty,
-                            alphaProperty = defaultAffordanceVisibilityDefinition.alphaProperty,
-                            hiddenColor = defaultAffordanceVisibilityDefinition.hiddenColor,
-                            hiddenAlpha = defaultAffordanceVisibilityDefinition.hiddenAlpha,
-                            hiddenMaterial = defaultAffordanceVisibilityDefinition.hiddenMaterial
-                        };
-
-                        var animationDefinition = new AffordanceAnimationDefinition
-                        {
-                            translateAxes = defaultAffordanceAnimationDefinition.translateAxes,
-                            rotateAxes = defaultAffordanceAnimationDefinition.rotateAxes,
-                            min = defaultAffordanceAnimationDefinition.min,
-                            max = defaultAffordanceAnimationDefinition.max,
-                            reverseForRightHand = defaultAffordanceAnimationDefinition.reverseForRightHand
-                        };
-
+                        visibilityDefinition = new AffordanceVisibilityDefinition(defaultAffordanceVisibilityDefinition);
+                        var animationDefinition = new AffordanceAnimationDefinition(defaultAffordanceAnimationDefinition);
                         var generatedAffordanceDefinition = new AffordanceDefinition
                         {
                             control = control,
