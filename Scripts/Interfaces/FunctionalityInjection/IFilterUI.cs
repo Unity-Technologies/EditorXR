@@ -23,7 +23,11 @@ namespace UnityEditor.Experimental.EditorVR
     {
         public static bool MatchesFilter(this IFilterUI filterUI, string type)
         {
-            return filterUI.searchQuery.StartsWith(type);
+            var searchQuery = filterUI.searchQuery;
+            if (string.IsNullOrEmpty(searchQuery))
+                return true;
+
+            return searchQuery.StartsWith(type);
         }
     }
 }
