@@ -92,29 +92,58 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             UpdateItem(item.transform, order, offset, ref doneSettling);
         }
 
-        protected override void UpdateRecursively(List<FolderData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        protected override void UpdateNestedItems(List<FolderData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
         {
-            for (int i = 0; i < data.Count; i++)
+            m_UpdateStack.Push(new UpdateData
             {
-                var datum = data[i];
-                var index = datum.index;
-                bool expanded;
-                if (!m_ExpandStates.TryGetValue(index, out expanded))
-                    m_ExpandStates[index] = false;
+                data = data,
+                depth = depth
+            });
 
-                if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
-                    Recycle(index);
-                else
-                    UpdateFolderItem(datum, order++, offset + m_ScrollOffset, depth, expanded, ref doneSettling);
+            while (m_UpdateStack.Count > 0)
+            {
+                var stackData = m_UpdateStack.Pop();
+                data = stackData.data;
+                depth = stackData.depth;
 
-                offset += itemSize.z;
-
-                if (datum.children != null)
+                var i = stackData.index;
+                for (; i < data.Count; i++)
                 {
-                    if (expanded)
-                        UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling, depth + 1);
+                    var datum = data[i];
+                    var index = datum.index;
+                    bool expanded;
+                    if (!m_ExpandStates.TryGetValue(index, out expanded))
+                        m_ExpandStates[index] = false;
+
+                    if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
+                        Recycle(index);
                     else
+                        UpdateFolderItem(datum, order++, offset + m_ScrollOffset, depth, expanded, ref doneSettling);
+
+                    offset += itemSize.z;
+
+                    if (datum.children != null)
+                    {
+                        if (expanded)
+                        {
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = data,
+                                depth = depth,
+
+                                index = i + 1
+                            });
+
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = datum.children,
+                                depth = depth + 1
+                            });
+                            break;
+                        }
+
                         RecycleChildren(datum);
+                    }
                 }
             }
         }

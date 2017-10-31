@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 
 namespace ListView
@@ -7,11 +7,21 @@ namespace ListView
         where TData : ListViewItemNestedData<TData, TIndex>
         where TItem : ListViewItem<TData, TIndex>
     {
+        protected struct UpdateData
+        {
+            public List<TData> data;
+            public int depth;
+
+            public int index;
+        }
+
         protected override float listHeight { get { return m_ExpandedDataLength; } }
 
         protected float m_ExpandedDataLength;
 
         protected readonly Dictionary<TIndex, bool> m_ExpandStates = new Dictionary<TIndex, bool>();
+
+        protected readonly Stack<UpdateData> m_UpdateStack = new Stack<UpdateData>();
 
         public override List<TData> data
         {
@@ -70,39 +80,68 @@ namespace ListView
             var count = 0f;
             var order = 0;
 
-            UpdateRecursively(m_Data, ref order, ref count, ref doneSettling);
+            UpdateNestedItems(m_Data, ref order, ref count, ref doneSettling);
             m_ExpandedDataLength = count;
 
             if (m_Settling && doneSettling)
                 EndSettling();
         }
 
-        protected virtual void UpdateRecursively(List<TData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        protected virtual void UpdateNestedItems(List<TData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
         {
-            for (int i = 0; i < data.Count; i++)
+            m_UpdateStack.Push(new UpdateData
             {
-                var datum = data[i];
+                data = data,
+                depth = depth
+            });
 
-                var index = datum.index;
-                bool expanded;
-                if (!m_ExpandStates.TryGetValue(index, out expanded))
-                    m_ExpandStates[index] = false;
+            while (m_UpdateStack.Count > 0)
+            {
+                var stackData = m_UpdateStack.Pop();
+                data = stackData.data;
+                depth = stackData.depth;
 
-                var itemSize = m_ItemSize.Value;
-
-                if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
-                    Recycle(index);
-                else
-                    UpdateNestedItem(datum, order++, offset, depth, ref doneSettling);
-
-                offset += itemSize.z;
-
-                if (datum.children != null)
+                var i = stackData.index;
+                for (; i < data.Count; i++)
                 {
-                    if (expanded)
-                        UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling, depth + 1);
+                    var datum = data[i];
+
+                    var index = datum.index;
+                    bool expanded;
+                    if (!m_ExpandStates.TryGetValue(index, out expanded))
+                        m_ExpandStates[index] = false;
+
+                    var itemSize = m_ItemSize.Value;
+
+                    if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
+                        Recycle(index);
                     else
+                        UpdateNestedItem(datum, order++, offset, depth, ref doneSettling);
+
+                    offset += itemSize.z;
+
+                    if (datum.children != null)
+                    {
+                        if (expanded)
+                        {
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = data,
+                                depth = depth,
+
+                                index = i + 1
+                            });
+
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = datum.children,
+                                depth = depth + 1
+                            });
+                            break;
+                        }
+
                         RecycleChildren(datum);
+                    }
                 }
             }
         }

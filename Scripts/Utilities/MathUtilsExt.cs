@@ -8,63 +8,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
     /// </summary>
     static class MathUtilsExt
     {
-        // snaps value to a unit. unit can be any number.
-        // for example, with a unit of 0.2, 0.41 -> 0.4, and 0.52 -> 0.6
-        public static float SnapValueToUnit(float value, float unit)
-        {
-            var mult = value / unit;
-
-            // find lower and upper boundaries of snapping
-            var lowerMult = Mathf.FloorToInt(mult);
-            var upperMult = Mathf.CeilToInt(mult);
-            var lowerBoundary = lowerMult * unit;
-            var upperBoundary = upperMult * unit;
-
-            // figure out which is closest
-            var diffWithLower = value - lowerBoundary;
-            var diffWithHigher = upperBoundary - value;
-            return (diffWithLower < diffWithHigher) ? lowerBoundary : upperBoundary;
-        }
-
-        public static Vector3 SnapValuesToUnit(Vector3 values, float unit)
-        {
-            return new Vector3(SnapValueToUnit(values.x, unit),
-                SnapValueToUnit(values.y, unit),
-                SnapValueToUnit(values.z, unit));
-        }
-
-        // Like map in Processing.
-        // E1 and S1 must be different, else it will break
-        // val, in a, in b, out a, out b
-        public static float Map(float val, float ia, float ib, float oa, float ob)
-        {
-            return oa + (ob - oa) * ((val - ia) / (ib - ia));
-        }
-
-        // Like map, but eases in.
-        public static float MapInCubic(float val, float ia, float ib, float oa, float ob)
-        {
-            var t = (val - ia);
-            var d = (ib - ia);
-            t /= d;
-            return oa + (ob - oa) * (t) * t * t;
-        }
-
-        // Like map, but eases out.
-        public static float MapOutCubic(float val, float ia, float ib, float oa, float ob)
-        {
-            var t = (val - ia);
-            var d = (ib - ia);
-            t = (t / d) - 1;
-            return oa + (ob - oa) * (t * t * t + 1);
-        }
-
-        // Like map, but eases in.
-        public static float MapInSin(float val, float ia, float ib, float oa, float ob)
-        {
-            return oa + (ob - oa) * (1.0f - Mathf.Cos(((val - ia) / (ib - ia)) * Mathf.PI / 2));
-        }
-
         // from http://wiki.unity3d.com/index.php/3d_Math_functions
         //create a vector of direction "vector" with length "size"
         public static Vector3 SetVectorLength(Vector3 vector, float size)
@@ -81,7 +24,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         // from http://wiki.unity3d.com/index.php/3d_Math_functions
         //Get the intersection between a line and a plane. 
         //If the line and plane are not parallel, the function outputs true, otherwise false.
-        public static bool LinePlaneIntersection(out Vector3 intersection, Vector3 linePoint, Vector3 lineVec, Vector3 planeNormal, Vector3 planePoint)
+        public static bool LinePlaneIntersection(out Vector3 intersection, Vector3 linePoint, Vector3 lineVec,
+            Vector3 planeNormal, Vector3 planePoint)
         {
             float length;
             float dotNumerator;
@@ -111,33 +55,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return false;
         }
 
-        public static Vector3 CalculateCubicBezierPoint(float t, Vector3[] points)
-        {
-            if (points.Length != 4)
-                return Vector3.zero;
-
-            var u = 1f - t;
-            var tt = t * t;
-            var uu = u * u;
-            var uuu = uu * u;
-            var ttt = tt * t;
-
-            //first term
-            var p = uuu * points[0];
-
-            //second term
-            p += 3f * uu * t * points[1];
-
-            //third term
-            p += 3f * u * tt * points[2];
-
-            //fourth term
-            p += ttt * points[3];
-
-            return p;
-        }
-
-        public static float SmoothDamp(float current, float target, ref float currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+        public static float SmoothDamp(float current, float target, ref float currentVelocity, float smoothTime,
+            float maxSpeed, float deltaTime)
         {
             // This will have us converge on 98% of our target value within the smooth time
             // Reference: http://devblog.aliasinggames.com/smoothdamp/
@@ -145,7 +64,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return Mathf.SmoothDamp(current, target, ref currentVelocity, correctSmoothTime, maxSpeed, deltaTime);
         }
 
-        public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime, float maxSpeed, float deltaTime)
+        public static Vector3 SmoothDamp(Vector3 current, Vector3 target, ref Vector3 currentVelocity, float smoothTime,
+            float maxSpeed, float deltaTime)
         {
             // This will have us converge on 98% of our target value within the smooth time
             // Reference: http://devblog.aliasinggames.com/smoothdamp/
@@ -172,7 +92,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="to">The object whose position will be updated (child)</param>
         /// <param name="positionOffset">The position vector from "from" to "to"</param>
         /// <param name="rotationOffset">The rotation which will rotate "from" to "to"</param>
-        public static void GetTransformOffset(Transform from, Transform to, out Vector3 positionOffset, out Quaternion rotationOffset)
+        public static void GetTransformOffset(Transform from, Transform to, out Vector3 positionOffset,
+            out Quaternion rotationOffset)
         {
             var inverseRotation = Quaternion.Inverse(from.rotation);
             positionOffset = inverseRotation * (to.position - from.position);
@@ -186,7 +107,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="child">The transform whose position we are setting</param>
         /// <param name="positionOffset">The position offset (local position)</param>
         /// <param name="rotationOffset">The rotation offset (local rotation)</param>
-        public static void SetTransformOffset(Transform parent, Transform child, Vector3 positionOffset, Quaternion rotationOffset)
+        public static void SetTransformOffset(Transform parent, Transform child, Vector3 positionOffset,
+            Quaternion rotationOffset)
         {
             child.position = parent.position + parent.rotation * positionOffset;
             child.rotation = parent.rotation * rotationOffset;
@@ -199,7 +121,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="targetPosition">The target position</param>
         /// <param name="targetRotation">The target rotation</param>
         /// <param name="t">Interpolation parameter for smooth transitions (Optional)</param>
-        public static void LerpTransform(Transform source, Vector3 targetPosition, Quaternion targetRotation, float t = 1f)
+        public static void LerpTransform(Transform source, Vector3 targetPosition, Quaternion targetRotation,
+            float t = 1f)
         {
             source.position = Vector3.Lerp(source.position, targetPosition, t);
             source.rotation = Quaternion.Slerp(source.rotation, targetRotation, t);

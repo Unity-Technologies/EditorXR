@@ -25,8 +25,10 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
             {
                 // Place the plane handles in a good location that is accessible to the user
                 var viewerPosition = CameraUtils.GetMainCamera().transform.position;
-                foreach (Transform t in m_PlaneHandlesParent)
+                var childCount = m_PlaneHandlesParent.childCount;
+                for (var i = 0; i < childCount; i++)
                 {
+                    var t = m_PlaneHandlesParent.GetChild(i);
                     var localPos = t.localPosition;
                     localPos.x = Mathf.Abs(localPos.x) * (transform.position.x < viewerPosition.x ? 1 : -1);
                     localPos.y = Mathf.Abs(localPos.y) * (transform.position.y < viewerPosition.y ? 1 : -1);

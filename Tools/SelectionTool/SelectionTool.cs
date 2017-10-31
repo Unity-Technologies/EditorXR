@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +14,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
         ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
         IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
-        IUsesProxyType, IMenuIcon, IRequestFeedback
+        IUsesDeviceType, IMenuIcon, IRequestFeedback
     {
         const float k_MultiselectHueShift = 0.5f;
         static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
         static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
+
+        // Local method use only -- created here to reduce garbage collection
+        static readonly Dictionary<Transform, GameObject> k_TempHovers = new Dictionary<Transform, GameObject>();
 
         [SerializeField]
         Sprite m_Icon;
@@ -55,7 +58,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public event Action<GameObject, Transform> hovered;
 
         public List<ILinkedObject> linkedObjects { get; set; }
-        public Type proxyType { get; set; }
 
         public string tooltipText { get { return m_MultiSelect ? "Multi-Select Enabled" : ""; } }
         public Transform tooltipTarget { get; private set; }
@@ -88,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_SelectionInput = (SelectionInput)input;
 
             var multiSelectControl = m_SelectionInput.multiSelect;
-            if (proxyType == typeof(ViveProxy))
+            if (this.GetDeviceType() == DeviceType.Vive)
                 multiSelectControl = m_SelectionInput.multiSelectAlt;
 
             if (multiSelectControl.wasJustPressed)
@@ -145,8 +147,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 var directSelection = this.GetDirectSelection();
 
                 // Unset highlight old hovers
-                var hovers = new Dictionary<Transform, GameObject>(m_HoverGameObjects);
-                foreach (var kvp in hovers)
+                k_TempHovers.Clear();
+                foreach (var kvp in m_HoverGameObjects)
+                {
+                    k_TempHovers[kvp.Key] = kvp.Value;
+                }
+
+                foreach (var kvp in k_TempHovers)
                 {
                     var directRayOrigin = kvp.Key;
                     var hover = kvp.Value;

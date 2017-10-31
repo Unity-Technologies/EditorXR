@@ -39,6 +39,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
+        Action<AssetGridItem> m_OnRecyleComplete;
+
         public Func<string, bool> matchesFilter { private get; set; }
 
         protected override float listHeight
@@ -69,6 +71,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 base.size = value;
                 m_LastHiddenItemOffset = Mathf.Infinity;
             }
+        }
+
+        void Awake()
+        {
+            m_OnRecyleComplete = OnRecycleComplete;
         }
 
         protected override void Setup()
@@ -153,11 +160,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_ListItems.Remove(index);
 
-            item.SetVisibility(false, gridItem =>
-            {
-                item.gameObject.SetActive(false);
-                m_TemplateDictionary[data.template].pool.Add(item);
-            });
+            item.SetVisibility(false, m_OnRecyleComplete);
+        }
+
+        void OnRecycleComplete(AssetGridItem gridItem)
+        {
+            gridItem.gameObject.SetActive(false);
+            m_TemplateDictionary[gridItem.data.template].pool.Add(gridItem);
         }
 
         protected override void UpdateVisibleItem(AssetData data, int order, float offset, ref bool doneSettling)
