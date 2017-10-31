@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    [CreateAssetMenu(menuName = "EditorVR/EXR Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
+    [CreateAssetMenu(menuName = "EditorVR/Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
     public class ProxyAffordanceMap : ScriptableObject
     {
         public enum VisibilityControlType
