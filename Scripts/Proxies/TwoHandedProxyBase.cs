@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -43,6 +44,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         protected PlayerInput m_PlayerInput;
 
+        [SerializeField]
+        [Tooltip("How much strength the controllers must be shaken with before fading in")]
+        protected float m_ShakeThreshhold = 0.5f;
+
+        [SerializeField]
+        [Tooltip("Controls the smoothing and how long of a history detection of left controller shake has")]
+        protected ShakeVelocityTracker m_LeftShakeTracker = new ShakeVelocityTracker();
+
+        [SerializeField]
+        [Tooltip("Controls the smoothing and how long of a history detection of right controller shake has")]
+        protected ShakeVelocityTracker m_RightShakeTracker = new ShakeVelocityTracker();
+
         protected IInputToEvents m_InputToEvents;
 
         protected Transform m_LeftHand;
@@ -57,9 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
         ProxyFeedbackRequest m_SemitransparentLockRequest;
-        float m_ShakeFrequency;
-        Vector3 m_PreviousLeftHandPosition;
-        Vector3 m_PreviousRightHandPosition;
+        ProxyFeedbackRequest m_ShakeFeedbackRequest;
 
         readonly AffordanceDictionary m_Affordances = new AffordanceDictionary();
 
@@ -146,6 +157,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.fieldGrabOrigin },
                 { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.fieldGrabOrigin }
             };
+
+            m_ShakeFeedbackRequest = new ProxyFeedbackRequest
+            {
+                control = VRInputDevice.VRControl.LocalPosition,
+                node = Node.None,
+                tooltipText = null,
+                suppressExisting = true,
+                proxyShaken = true
+            };
         }
 
         static Dictionary<VRInputDevice.VRControl, List<Affordance>> GetAffordanceDictionary(ProxyHelper helper)
@@ -174,8 +194,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (trackedObjectInput == null && m_PlayerInput)
                 trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 
-            m_PreviousLeftHandPosition = trackedObjectInput.leftPosition.vector3;
-            m_PreviousRightHandPosition = trackedObjectInput.rightPosition.vector3;
+            m_LeftShakeTracker.Initialize(trackedObjectInput.leftPosition.vector3);
+            m_RightShakeTracker.Initialize(trackedObjectInput.rightPosition.vector3);
         }
 
         public virtual void Update()
@@ -190,35 +210,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_RightHand.localPosition = rightLocalPosition;
                 m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 
+                m_LeftShakeTracker.Update(leftLocalPosition, Time.deltaTime);
+                m_RightShakeTracker.Update(rightLocalPosition, Time.deltaTime);
+
                 if (m_SemitransparentLockRequest == null)
                 {
-                    const float minShakeMovementThreshold = 0.001f;
-                    const int movementDetectionIncreaseScalar = 125;
-                    var movementDelta = Vector3.SqrMagnitude(leftLocalPosition - m_PreviousLeftHandPosition);
-                    movementDelta += Vector3.SqrMagnitude(rightLocalPosition - m_PreviousRightHandPosition);
-                    movementDelta *= Time.unscaledDeltaTime * movementDetectionIncreaseScalar;
-                    if (movementDelta > minShakeMovementThreshold)
+                    if (Mathf.Max(m_LeftShakeTracker.shakeStrength, m_RightShakeTracker.shakeStrength) > m_ShakeThreshhold)
                     {
-                        m_ShakeFrequency += movementDelta;
-                        if (m_ShakeFrequency > 0.1f)
-                        {
-                            var shakeRequest = new ProxyFeedbackRequest
-                            {
-                                control = VRInputDevice.VRControl.LocalPosition,
-                                node = Node.None,
-                                tooltipText = null,
-                                suppressExisting = true,
-                                proxyShaken = true
-                            };
-
-                            AddFeedbackRequest(shakeRequest);
-                        }
+                        AddFeedbackRequest(m_ShakeFeedbackRequest);
                     }
-
                 }
-
-                m_PreviousLeftHandPosition = leftLocalPosition;
-                m_PreviousRightHandPosition = rightLocalPosition;
             }
         }
 
@@ -412,7 +413,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (m_SemitransparentLockRequest == request)
             {
                 m_SemitransparentLockRequest = null;
-                m_ShakeFrequency = 0;
             }
 
             UpdateVisibility();
