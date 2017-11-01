@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 namespace  UnityEditor.Experimental.EditorVR.Helpers
@@ -9,7 +8,7 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
     /// Helper class that tracks an object's shaking velocity over a period of time
     /// This is calculated by distance traveled vs. total range of motion
     /// </summary>
-    [System.Serializable]
+    [Serializable]
     public class ShakeVelocityTracker
     {
         [SerializeField]
@@ -50,8 +49,8 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
         /// <param name="startPoint"></param>
         public void Initialize(Vector3 startPoint)
         {
-            // Since this is not a monobehavior we don't have OnValidate - which means we need to do input validation here
-            m_Period = Mathf.Max(m_Period, .01f);
+            // Since this is not a monobehaviour we don't have OnValidate - which means we need to do input validation here
+            m_Period = Mathf.Max(m_Period, 0.01f);
             m_Steps = Mathf.Max(m_Steps, 1);
 
             m_ChunkPeriod = m_Period / m_Steps;
@@ -148,3 +147,4 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
         }
     }
 }
+#endif

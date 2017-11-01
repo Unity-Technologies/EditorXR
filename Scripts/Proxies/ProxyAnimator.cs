@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -160,3 +161,4 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
             postAnimate(m_Affordances, m_AffordanceDefinitions, m_TransformInfos, input);
     }
 }
+#endif
