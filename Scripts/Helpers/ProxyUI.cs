@@ -692,6 +692,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 if (request != null && request.caller == caller)
                     RemoveFeedbackRequest(request);
             }
+
+            var requests = caller == null
+                ? new List<FeedbackRequestTuple>(m_FeedbackRequests)
+                : m_FeedbackRequests.Where(feedbackRequest => feedbackRequest.firstElement.caller == caller).ToList();
+
+            foreach (var feedbackRequest in requests)
+            {
+                RemoveFeedbackRequest(feedbackRequest.firstElement);
+            }
         }
 
         public void UpdateVisibility()
