@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// <summary>
     /// Reference container for additional content origins on a device
     /// </summary>
-    sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
+    public sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
     {
         [SerializeField]
         Transform m_RayOrigin;
@@ -24,9 +24,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         [SerializeField]
         Transform m_FieldGrabOrigin;
-
-        [SerializeField]
-        Transform m_MeshRoot;
 
         [SerializeField]
         ProxyUI m_ProxyUI;
@@ -67,11 +64,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
 
         /// <summary>
-        /// The root transform of the device/controller mesh-renderers/geometry
-        /// </summary>
-        public Transform meshRoot { get { return m_MeshRoot; } }
-
-        /// <summary>
         /// Affordance objects that store transform, renderer, and tooltip references
         /// </summary>
         public Affordance[] affordances { get { return m_Affordances; } }
@@ -98,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             origins.Add(fieldGrabOrigin);
 
             if (m_ProxyUI)
-                m_ProxyUI.Setup(m_AffordanceMap, m_Affordances, origins);
+                m_ProxyUI.Setup(this, m_AffordanceMap, m_Affordances, origins);
 
             if (m_ProxyAnimator)
             {

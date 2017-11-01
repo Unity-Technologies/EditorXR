@@ -157,7 +157,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     this.ConnectInterfaces(proxy);
                     proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
                     proxy.activeChanged += () => OnProxyActiveChanged(proxy);
-                    proxy.hidden = true;
 
                     m_Proxies.Add(proxy);
                 }
