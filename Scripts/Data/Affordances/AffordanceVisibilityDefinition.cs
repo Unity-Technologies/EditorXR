@@ -5,17 +5,20 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
+    /// <summary>
+    /// Definition containing data utilized to change the visual appearance of an affordance for various actions
+    /// </summary>
     [Serializable]
     public class AffordanceVisibilityDefinition
     {
         [SerializeField]
         ProxyAffordanceMap.VisibilityControlType m_VisibilityType;
 
-        [SerializeField] // colorProperty field
-        string m_ColorProperty = "_Color"; // Consider custom inspector that only displays this if this visibility type is chosen
+        [SerializeField] // shader color property name field
+        string m_ColorProperty = "_Color";
 
-        [SerializeField] // alphaProperty field
-        string m_AlphaProperty = "_Alpha"; // Consider custom inspector that only displays this if this visibility type is chosen
+        [SerializeField] // shader alpha property name field
+        string m_AlphaProperty = "_Alpha";
 
         [SerializeField]
         Color m_HiddenColor = new Color(1f, 1f, 1f, 0f);
@@ -83,9 +86,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// </summary>
         public Material hiddenMaterial { get { return m_HiddenMaterial; } set { m_HiddenMaterial = value; } }
 
+        /// <summary>
+        /// The coroutine that performs animated visibility changes for this affordance
+        /// </summary>
         public Coroutine affordanceVisibilityCoroutine;
+
+        /// <summary>
+        /// The type of visibility changes that will be performed on this affordance (color change, alpha change, material swap, etc)
+        /// </summary>
         public ProxyAffordanceMap.VisibilityControlType visibilityType { get { return m_VisibilityType; } set { m_VisibilityType = value; } }
+
+        /// <summary>
+        /// The name of the shader parameter utilized to animate color changes to this affordance, if the visibility type is set to COLOR
+        /// </summary>
         public string colorProperty { get { return m_ColorProperty; } set { m_ColorProperty = value; } }
+
+        /// <summary>
+        /// The name of the shader parameter utilized to animate alpha changes to this affordance, if the visibility type is set to ALPHA
+        /// </summary>
         public string alphaProperty { get { return m_AlphaProperty; } set { m_AlphaProperty = value; } }
 
         public AffordanceVisibilityDefinition(AffordanceVisibilityDefinition definitionToCopy)
