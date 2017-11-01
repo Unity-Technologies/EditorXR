@@ -47,11 +47,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         ProxyUI m_RightProxyUI;
         List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
-        bool leftAffordanceRenderersVisible { set { m_LeftProxyHelper.affordanceRenderersVisible = value; } }
-        bool rightAffordanceRenderersVisible { set { m_RightProxyHelper.affordanceRenderersVisible = value; } }
-        bool leftBodyRenderersVisible { set { m_LeftProxyHelper.bodyRenderersVisible = value; } }
-        bool rightBodyRenderersVisible { set { m_RightProxyHelper.bodyRenderersVisible = value; } }
-
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
 
@@ -100,9 +95,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_RightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
             m_ProxyMeshRoots.Add(m_LeftProxyHelper.meshRoot);
             m_ProxyMeshRoots.Add(m_RightProxyHelper.meshRoot);
-
-            //m_Affordances[Node.LeftHand] = GetAffordanceDictionary(m_LeftProxyHelper);
-            //m_Affordances[Node.RightHand] = GetAffordanceDictionary(m_RightProxyHelper);
 
             m_LeftProxyUI = m_LeftHand.GetComponent<ProxyUI>();
             m_RightProxyUI = m_RightHand.GetComponent<ProxyUI>();
@@ -153,12 +145,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public virtual void Update()
         {
-            if (m_LeftProxyUI && m_RightProxyUI)
-            {
-                m_LeftProxyUI.active = active;
-                m_RightProxyUI.active = active;
-            }
-
             if (active)
             {
                 var leftLocalPosition = trackedObjectInput.leftPosition.vector3;
@@ -183,7 +169,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public void AddFeedbackRequest(FeedbackRequest request)
         {
             var proxyRequest = request as ProxyFeedbackRequest;
-            if (proxyRequest != null && m_LeftProxyUI && m_RightProxyUI)
+            if (proxyRequest != null)
             {
                 if (proxyRequest.node == Node.LeftHand)
                     m_LeftProxyUI.AddFeedbackRequest(proxyRequest);
@@ -195,20 +181,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public void RemoveFeedbackRequest(FeedbackRequest request)
         {
             var proxyRequest = request as ProxyFeedbackRequest;
-            if (proxyRequest != null && m_LeftProxyUI && m_RightProxyUI)
+            if (proxyRequest != null)
             {
                 if (proxyRequest.node == Node.LeftHand)
                     m_LeftProxyUI.RemoveFeedbackRequest(proxyRequest);
                 else if (proxyRequest.node == Node.RightHand)
                     m_RightProxyUI.RemoveFeedbackRequest(proxyRequest);
-
-                //RemoveFeedbackRequest(proxyRequest);
             }
         }
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            // Clear requests for each hand's ProxyUI, in order to prevent out-of-sync errors when exiting EXR
+            // Check for null in order to prevent out-of-sync errors when exiting EXR
             if (m_LeftProxyUI && m_RightProxyUI)
             {
                 m_LeftProxyUI.ClearFeedbackRequests(caller);

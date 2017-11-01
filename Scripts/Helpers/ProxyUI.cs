@@ -4,15 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using VisibilityControlType = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.VisibilityControlType;
-using AffordanceVisualStateData = UnityEditor.Experimental.EditorVR.Core.AffordanceVisibilityDefinition.AffordanceVisualStateData;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
+    using AffordanceVisualStateData = AffordanceVisibilityDefinition.AffordanceVisualStateData;
+    using VisibilityControlType = ProxyAffordanceMap.VisibilityControlType;
+    using FeedbackRequestTuple = Tuple<ProxyFeedbackRequest, Coroutine>;
+
     /// <summary>
     /// ProxyFeedbackRequests reside in feedbackRequest collection until the action associated with an affordance changes
     /// Some are removed immediately after being added; others exist for the duration of an action/tool's lifespan
@@ -59,17 +60,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        class FeedbackRequests : List<FeedbackRequestAndCoroutineTuple>
-        {
-        }
-
-        class FeedbackRequestAndCoroutineTuple : Tuple<ProxyFeedbackRequest, Coroutine>
-        {
-            public FeedbackRequestAndCoroutineTuple(ProxyFeedbackRequest proxyFeedbackRequest, Coroutine coroutine) : base(proxyFeedbackRequest, coroutine)
-            {
-            }
-        }
-
         [SerializeField]
         float m_FadeInSpeedScalar = 4f;
 
@@ -107,7 +97,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly Dictionary<Material, AffordancePropertyTuple<Color>> m_BodyMaterialOriginalColorMap = new Dictionary<Material, AffordancePropertyTuple<Color>>();
         readonly Dictionary<Material, AffordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, AffordancePropertyTuple<float>>();
 
-        readonly FeedbackRequests m_FeedbackRequests = new FeedbackRequests();
+        readonly List<FeedbackRequestTuple> m_FeedbackRequests = new List<FeedbackRequestTuple>();
         //ControlToAffordanceDictionary m_ControlToAffordances;
 
         bool affordanceRenderersVisible { set { m_ProxyHelper.affordanceRenderersVisible = value; } }
@@ -169,8 +159,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 }
             }
         }
-
-        public bool active { private get; set; }
 
         void Awake()
         {
@@ -619,26 +607,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void AddFeedbackRequest(ProxyFeedbackRequest proxyRequest)
         {
-            FeedbackRequestAndCoroutineTuple existingRequestCoroutineTuple = null;
-            foreach (var requestCoroutineTuple in m_FeedbackRequests)
-            {
-                if (requestCoroutineTuple.firstElement == proxyRequest)
-                {
-                    existingRequestCoroutineTuple = requestCoroutineTuple;
-                    break;
-                }
-            }
-
-            if (existingRequestCoroutineTuple != null) // Update existing request/coroutine pair
-            {
-                var lifespanMonitoringCoroutine = existingRequestCoroutineTuple.secondElement;
-                this.RestartCoroutine(ref lifespanMonitoringCoroutine, MonitorFeedbackRequestLifespan(proxyRequest));
-                existingRequestCoroutineTuple.secondElement = lifespanMonitoringCoroutine;
-            }
-            else // Add a new request/coroutine pair
+            if (isActiveAndEnabled)
             {
                 var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
-                m_FeedbackRequests.Add(new FeedbackRequestAndCoroutineTuple(proxyRequest, newMonitoringCoroutine));
+                m_FeedbackRequests.Add(new FeedbackRequestTuple(proxyRequest, newMonitoringCoroutine));
             }
 
             ExecuteFeedback(proxyRequest);
@@ -646,7 +618,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void ExecuteFeedback(ProxyFeedbackRequest changedRequest)
         {
-            if (!active)
+            if (!isActiveAndEnabled)
                 return;
 
             /*
@@ -741,6 +713,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     foreach (var kvp in affordanceDictionary)
                     {
             */
+            
                         foreach (var affordance in m_Affordances)
                         {
                             if (affordance.control != request.control)
