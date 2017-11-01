@@ -45,7 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         ProxyHelper m_RightProxyHelper;
         ProxyUI m_LeftProxyUI;
         ProxyUI m_RightProxyUI;
-        List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
@@ -93,8 +92,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             m_LeftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
             m_RightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
-            m_ProxyMeshRoots.Add(m_LeftProxyHelper.meshRoot);
-            m_ProxyMeshRoots.Add(m_RightProxyHelper.meshRoot);
 
             m_LeftProxyUI = m_LeftHand.GetComponent<ProxyUI>();
             m_RightProxyUI = m_RightHand.GetComponent<ProxyUI>();
@@ -192,7 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            // Check for null in order to prevent out-of-sync errors when exiting EXR
+            // Check for null in order to prevent MissingReferenceException when exiting EXR
             if (m_LeftProxyUI && m_RightProxyUI)
             {
                 m_LeftProxyUI.ClearFeedbackRequests(caller);
