@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         float m_Min;
 
         [SerializeField]
-        float m_Max = 5f;
+        float m_Max;
 
         [SerializeField]
         bool m_ReverseForRightHand;
