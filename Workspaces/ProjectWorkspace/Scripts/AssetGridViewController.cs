@@ -8,255 +8,264 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, string>
-	{
-		const float k_PositionFollow = 0.4f;
+    sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, string>
+    {
+        const float k_PositionFollow = 0.4f;
 
-		Transform m_GrabbedObject;
+        Transform m_GrabbedObject;
 
-		int m_NumPerRow;
+        int m_NumPerRow;
 
-		public float scaleFactor
-		{
-			get { return m_ScaleFactor; }
-			set
-			{
-				m_LastHiddenItemOffset = Mathf.Infinity; // Allow any change in scale to change visibility states
-				m_ScaleFactor = value;
-			}
-		}
+        public float scaleFactor
+        {
+            get { return m_ScaleFactor; }
+            set
+            {
+                m_LastHiddenItemOffset = Mathf.Infinity; // Allow any change in scale to change visibility states
+                m_ScaleFactor = value;
+            }
+        }
 
-		[SerializeField]
-		float m_ScaleFactor = 0.05f;
+        [SerializeField]
+        float m_ScaleFactor = 0.05f;
 
-		[SerializeField]
-		string[] m_IconTypes;
+        [SerializeField]
+        string[] m_IconTypes;
 
-		[SerializeField]
-		GameObject[] m_Icons;
+        [SerializeField]
+        GameObject[] m_Icons;
 
-		float m_LastHiddenItemOffset;
+        float m_LastHiddenItemOffset;
 
-		readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
+        readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
-		public Func<string, bool> matchesFilter { private get; set; }
+        Action<AssetGridItem> m_OnRecyleComplete;
 
-		protected override float listHeight
-		{
-			get
-			{
-				if (m_NumPerRow == 0)
-					return 0;
+        public Func<string, bool> matchesFilter { private get; set; }
 
-				return Mathf.CeilToInt(m_Data.Count / m_NumPerRow) * itemSize.z;
-			}
-		}
+        protected override float listHeight
+        {
+            get
+            {
+                if (m_NumPerRow == 0)
+                    return 0;
 
-		public override List<AssetData> data
-		{
-			set
-			{
-				base.data = value;
+                return Mathf.CeilToInt(m_Data.Count / m_NumPerRow) * itemSize.z;
+            }
+        }
 
-				m_LastHiddenItemOffset = Mathf.Infinity;
-			}
-		}
+        public override List<AssetData> data
+        {
+            set
+            {
+                base.data = value;
 
-		public override Vector3 size
-		{
-			set
-			{
-				base.size = value; 
-				m_LastHiddenItemOffset = Mathf.Infinity;
-			}
-		}
+                m_LastHiddenItemOffset = Mathf.Infinity;
+            }
+        }
 
-		protected override void Setup()
-		{
-			base.Setup();
+        public override Vector3 size
+        {
+            set
+            {
+                base.size = value;
+                m_LastHiddenItemOffset = Mathf.Infinity;
+            }
+        }
 
-			m_ScrollOffset = itemSize.z * 0.5f;
+        void Awake()
+        {
+            m_OnRecyleComplete = OnRecycleComplete;
+        }
 
-			for (int i = 0; i < m_IconTypes.Length; i++)
-			{
-				if (!string.IsNullOrEmpty(m_IconTypes[i]) && m_Icons[i] != null)
-					m_IconDictionary[m_IconTypes[i]] = m_Icons[i];
-			}
-		}
+        protected override void Setup()
+        {
+            base.Setup();
 
-		protected override void ComputeConditions()
-		{
-			base.ComputeConditions();
+            m_ScrollOffset = itemSize.z * 0.5f;
 
-			var itemSize = m_ItemSize.Value;
-			m_NumPerRow = (int)(m_Size.x / itemSize.x);
-			if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
-				return;
+            for (int i = 0; i < m_IconTypes.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(m_IconTypes[i]) && m_Icons[i] != null)
+                    m_IconDictionary[m_IconTypes[i]] = m_Icons[i];
+            }
+        }
 
-			m_StartPosition = m_Extents.z * Vector3.forward + (m_Extents.x - itemSize.x * 0.5f) * Vector3.left;
+        protected override void ComputeConditions()
+        {
+            base.ComputeConditions();
 
-			// Snap back if list scrolled too far
-			m_ScrollReturn = float.MaxValue;
-			if (listHeight > 0 && -m_ScrollOffset >= listHeight)
-			{
-				m_ScrollReturn = -listHeight + m_ScaleFactor;
+            var itemSize = m_ItemSize.Value;
+            m_NumPerRow = (int)(m_Size.x / itemSize.x);
+            if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
+                return;
 
-				if (m_Data.Count % m_NumPerRow == 0)
-					m_ScrollReturn += itemSize.z;
-			}
-		}
+            m_StartPosition = m_Extents.z * Vector3.forward + (m_Extents.x - itemSize.x * 0.5f) * Vector3.left;
 
-		protected override Vector3 GetObjectSize(GameObject g)
-		{
-			return g.GetComponent<BoxCollider>().size * m_ScaleFactor + Vector3.one * m_Padding * m_ScaleFactor;
-		}
+            // Snap back if list scrolled too far
+            m_ScrollReturn = float.MaxValue;
+            if (listHeight > 0 && -m_ScrollOffset >= listHeight)
+            {
+                m_ScrollReturn = -listHeight + m_ScaleFactor;
 
-		protected override void UpdateItems()
-		{
-			var count = 0;
-			var order = 0;
-			foreach (var data in m_Data)
-			{
-				if (m_NumPerRow == 0) // If the list is too narrow, display nothing
-				{
-					RecycleGridItem(data);
-					continue;
-				}
+                if (m_Data.Count % m_NumPerRow == 0)
+                    m_ScrollReturn += itemSize.z;
+            }
+        }
 
-				if (!matchesFilter(data.type)) // If this item doesn't match the filter, move on to the next item; do not count
-				{
-					RecycleGridItem(data);
-					continue;
-				}
+        protected override Vector3 GetObjectSize(GameObject g)
+        {
+            return g.GetComponent<BoxCollider>().size * m_ScaleFactor + Vector3.one * m_Padding * m_ScaleFactor;
+        }
 
-				var offset = count / m_NumPerRow * itemSize.z;
-				if (offset + scrollOffset < 0 || offset + scrollOffset > m_Size.z)
-					RecycleGridItem(data);
-				else
-				{
-					var ignored = true;
-					UpdateVisibleItem(data, order++, count, ref ignored);
-				}
+        protected override void UpdateItems()
+        {
+            var count = 0;
+            var order = 0;
+            foreach (var data in m_Data)
+            {
+                if (m_NumPerRow == 0) // If the list is too narrow, display nothing
+                {
+                    RecycleGridItem(data);
+                    continue;
+                }
 
-				count++;
-			}
-		}
+                if (!matchesFilter(data.type)) // If this item doesn't match the filter, move on to the next item; do not count
+                {
+                    RecycleGridItem(data);
+                    continue;
+                }
 
-		void RecycleGridItem(AssetData data)
-		{
-			var index = data.index;
-			AssetGridItem item;
-			if (!m_ListItems.TryGetValue(index, out item))
-				return;
+                var offset = count / m_NumPerRow * itemSize.z;
+                if (offset + scrollOffset < 0 || offset + scrollOffset > m_Size.z)
+                    RecycleGridItem(data);
+                else
+                {
+                    var ignored = true;
+                    UpdateVisibleItem(data, order++, count, ref ignored);
+                }
 
-			m_LastHiddenItemOffset = scrollOffset;
+                count++;
+            }
+        }
 
-			m_ListItems.Remove(index);
+        void RecycleGridItem(AssetData data)
+        {
+            var index = data.index;
+            AssetGridItem item;
+            if (!m_ListItems.TryGetValue(index, out item))
+                return;
 
-			item.SetVisibility(false, gridItem =>
-			{
-				item.gameObject.SetActive(false);
-				m_TemplateDictionary[data.template].pool.Add(item);
-			});
-		}
+            m_LastHiddenItemOffset = scrollOffset;
 
-		protected override void UpdateVisibleItem(AssetData data, int order, float offset, ref bool doneSettling)
-		{
-			AssetGridItem item;
-			if (!m_ListItems.TryGetValue(data.index, out item))
-				item = GetItem(data);
+            m_ListItems.Remove(index);
 
-			if (item)
-				UpdateGridItem(item, order, (int)offset);
-		}
+            item.SetVisibility(false, m_OnRecyleComplete);
+        }
 
-		public override void OnScrollEnded()
-		{
-			m_Scrolling = false;
-			if (m_ScrollOffset > m_ScaleFactor)
-			{
-				m_ScrollOffset = m_ScaleFactor;
-				m_ScrollDelta = 0;
-			}
-			if (m_ScrollReturn < float.MaxValue)
-			{
-				m_ScrollOffset = m_ScrollReturn;
-				m_ScrollReturn = float.MaxValue;
-				m_ScrollDelta = 0;
-			}
-		}
+        void OnRecycleComplete(AssetGridItem gridItem)
+        {
+            gridItem.gameObject.SetActive(false);
+            m_TemplateDictionary[gridItem.data.template].pool.Add(gridItem);
+        }
 
-		void UpdateGridItem(AssetGridItem item, int order, int count)
-		{
-			item.UpdateTransforms(m_ScaleFactor);
+        protected override void UpdateVisibleItem(AssetData data, int order, float offset, ref bool doneSettling)
+        {
+            AssetGridItem item;
+            if (!m_ListItems.TryGetValue(data.index, out item))
+                item = GetItem(data);
 
-			var itemSize = m_ItemSize.Value;
-			var t = item.transform;
-			var zOffset = itemSize.z * (count / m_NumPerRow) + m_ScrollOffset;
-			var xOffset = itemSize.x * (count % m_NumPerRow);
+            if (item)
+                UpdateGridItem(item, order, (int)offset);
+        }
 
-			t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, k_PositionFollow);
-			t.localRotation = Quaternion.identity;
+        public override void OnScrollEnded()
+        {
+            m_Scrolling = false;
+            if (m_ScrollOffset > m_ScaleFactor)
+            {
+                m_ScrollOffset = m_ScaleFactor;
+                m_ScrollDelta = 0;
+            }
+            if (m_ScrollReturn < float.MaxValue)
+            {
+                m_ScrollOffset = m_ScrollReturn;
+                m_ScrollReturn = float.MaxValue;
+                m_ScrollDelta = 0;
+            }
+        }
 
-			t.SetSiblingIndex(order);
-		}
+        void UpdateGridItem(AssetGridItem item, int order, int count)
+        {
+            item.UpdateTransforms(m_ScaleFactor);
 
-		protected override AssetGridItem GetItem(AssetData data)
-		{
-			const float kJitterMargin = 0.125f;
-			if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * kJitterMargin) // Avoid jitter while scrolling rows in and out of view
-				return null;
+            var itemSize = m_ItemSize.Value;
+            var t = item.transform;
+            var zOffset = itemSize.z * (count / m_NumPerRow) + m_ScrollOffset;
+            var xOffset = itemSize.x * (count % m_NumPerRow);
 
-			// If this AssetData hasn't fetched its asset yet, do so now
-			if (data.asset == null)
-			{
-				data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index));
-				data.preview = data.asset as GameObject;
-			}
+            t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, k_PositionFollow);
+            t.localRotation = Quaternion.identity;
 
-			var item = base.GetItem(data);
+            t.SetSiblingIndex(order);
+        }
 
-			item.transform.localPosition = m_StartPosition;
+        protected override AssetGridItem GetItem(AssetData data)
+        {
+            const float kJitterMargin = 0.125f;
+            if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * kJitterMargin) // Avoid jitter while scrolling rows in and out of view
+                return null;
 
-			item.scaleFactor = m_ScaleFactor;
-			item.SetVisibility(true);
+            // If this AssetData hasn't fetched its asset yet, do so now
+            if (data.asset == null)
+            {
+                data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index));
+                data.preview = data.asset as GameObject;
+            }
 
-			switch (data.type)
-			{
-				case "Material":
-					var material = data.asset as Material;
-					if (material)
-						item.material = material;
-					else
-						LoadFallbackTexture(item, data);
-					break;
-				case "Texture2D":
-					goto case "Texture";
-				case "Texture":
-					var texture = data.asset as Texture;
-					if (texture)
-						item.texture = texture;
-					else
-						LoadFallbackTexture(item, data);
-					break;
-				default:
-					GameObject icon;
-					if (m_IconDictionary.TryGetValue(data.type, out icon))
-						item.icon = icon;
-					else
-						LoadFallbackTexture(item, data);
-					break;
-			}
-			return item;
-		}
+            var item = base.GetItem(data);
 
-		static void LoadFallbackTexture(AssetGridItem item, AssetData data)
-		{
-			item.fallbackTexture = null;
-			item.StartCoroutine(ObjectUtils.GetAssetPreview(
-				AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index)),
-				texture => item.fallbackTexture = texture));
-		}
-	}
+            item.transform.localPosition = m_StartPosition;
+
+            item.scaleFactor = m_ScaleFactor;
+            item.SetVisibility(true);
+
+            switch (data.type)
+            {
+                case "Material":
+                    var material = data.asset as Material;
+                    if (material)
+                        item.material = material;
+                    else
+                        LoadFallbackTexture(item, data);
+                    break;
+                case "Texture2D":
+                    goto case "Texture";
+                case "Texture":
+                    var texture = data.asset as Texture;
+                    if (texture)
+                        item.texture = texture;
+                    else
+                        LoadFallbackTexture(item, data);
+                    break;
+                default:
+                    GameObject icon;
+                    if (m_IconDictionary.TryGetValue(data.type, out icon))
+                        item.icon = icon;
+                    else
+                        LoadFallbackTexture(item, data);
+                    break;
+            }
+            return item;
+        }
+
+        static void LoadFallbackTexture(AssetGridItem item, AssetData data)
+        {
+            item.fallbackTexture = null;
+            item.StartCoroutine(ObjectUtils.GetAssetPreview(
+                AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index)),
+                texture => item.fallbackTexture = texture));
+        }
+    }
 }
 #endif

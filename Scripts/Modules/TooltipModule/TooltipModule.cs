@@ -6,294 +6,353 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class TooltipModule : MonoBehaviour, IUsesViewerScale
-	{
-		const float k_Delay = 0; // In case we want to bring back a delay
-		const float k_TransitionDuration = 0.1f;
-		const float k_UVScale = 100f;
-		const float k_UVScrollSpeed = 1.5f;
-		const float k_Offset = 0.05f;
+    sealed class TooltipModule : MonoBehaviour, IUsesViewerScale
+    {
+        const float k_Delay = 0; // In case we want to bring back a delay
+        const float k_TransitionDuration = 0.1f;
+        const float k_UVScale = 100f;
+        const float k_UVScrollSpeed = 1.5f;
+        const float k_Offset = 0.05f;
 
-		const string k_MaterialColorTopProperty = "_ColorTop";
-		const string k_MaterialColorBottomProperty = "_ColorBottom";
+        const int k_PoolInitialCapacity = 16;
 
-		[SerializeField]
-		GameObject m_TooltipPrefab;
+        const string k_MaterialColorTopProperty = "_ColorTop";
+        const string k_MaterialColorBottomProperty = "_ColorBottom";
 
-		[SerializeField]
-		GameObject m_TooltipCanvasPrefab;
+        [SerializeField]
+        GameObject m_TooltipPrefab;
 
-		[SerializeField]
-		Material m_HighlightMaterial;
+        [SerializeField]
+        GameObject m_TooltipCanvasPrefab;
 
-		[SerializeField]
-		Material m_TooltipBackgroundMaterial;
+        [SerializeField]
+        Material m_HighlightMaterial;
 
-		class TooltipData
-		{
-			public float startTime;
-			public TooltipUI tooltipUI;
-			public Material customHighlightMaterial;
-		}
+        [SerializeField]
+        Material m_TooltipBackgroundMaterial;
 
-		readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
+        class TooltipData
+        {
+            public float startTime;
+            public float lastModifiedTime;
+            public TooltipUI tooltipUI;
+            public Material customHighlightMaterial;
+            public bool persistent;
+            public float duration;
+        }
 
-		Transform m_TooltipCanvas;
-		Vector3 m_TooltipScale;
-		Color m_OriginalBackgroundColor;
+        readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
+        readonly Queue<TooltipUI> m_TooltipPool = new Queue<TooltipUI>(k_PoolInitialCapacity);
 
-		// Local method use only -- created here to reduce garbage collection
-		readonly List<ITooltip> m_TooltipsToHide = new List<ITooltip>();
+        Transform m_TooltipCanvas;
+        Vector3 m_TooltipScale;
+        Color m_OriginalBackgroundColor;
 
-		void Start()
-		{
-			m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
-			m_TooltipCanvas.SetParent(transform);
-			m_TooltipScale = m_TooltipPrefab.transform.localScale;
-			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
-			m_TooltipBackgroundMaterial = Instantiate(m_TooltipBackgroundMaterial);
-			m_OriginalBackgroundColor = m_TooltipBackgroundMaterial.color;
-			var sessionGradient = UnityBrandColorScheme.sessionGradient;
-			m_HighlightMaterial.SetColor(k_MaterialColorTopProperty, sessionGradient.a);
-			m_HighlightMaterial.SetColor(k_MaterialColorBottomProperty, sessionGradient.b);
-		}
+        // Local method use only -- created here to reduce garbage collection
+        static readonly List<ITooltip> k_TooltipsToRemove = new List<ITooltip>();
+        static readonly List<ITooltip> k_TooltipList = new List<ITooltip>();
+        static readonly List<TooltipUI> k_TooltipUIs = new List<TooltipUI>();
 
-		void Update()
-		{
-			m_TooltipsToHide.Clear();
-			foreach (var kvp in m_Tooltips)
-			{
-				var tooltip = kvp.Key;
-				var tooltipData = kvp.Value;
-				var hoverTime = Time.realtimeSinceStartup - tooltipData.startTime;
-				if (hoverTime > k_Delay)
-				{
-					var placement = tooltip as ITooltipPlacement;
-					var target = GetTooltipTarget(tooltip);
+        void Start()
+        {
+            m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
+            m_TooltipCanvas.SetParent(transform);
+            m_TooltipScale = m_TooltipPrefab.transform.localScale;
+            m_HighlightMaterial = Instantiate(m_HighlightMaterial);
+            m_TooltipBackgroundMaterial = Instantiate(m_TooltipBackgroundMaterial);
+            m_OriginalBackgroundColor = m_TooltipBackgroundMaterial.color;
+            var sessionGradient = UnityBrandColorScheme.sessionGradient;
+            m_HighlightMaterial.SetColor(k_MaterialColorTopProperty, sessionGradient.a);
+            m_HighlightMaterial.SetColor(k_MaterialColorBottomProperty, sessionGradient.b);
+        }
 
-					var tooltipUI = tooltipData.tooltipUI;
-					if (!tooltipUI)
-					{
-						var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
-						tooltipUI = tooltipObject.GetComponent<TooltipUI>();
-						tooltipData.tooltipUI = tooltipUI;
-						tooltipUI.highlight.material = m_HighlightMaterial;
-						tooltipUI.background.material = m_TooltipBackgroundMaterial;
-						var tooltipTransform = tooltipObject.transform;
-						MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
-						tooltipTransform.localScale = Vector3.zero;
+        void Update()
+        {
+            k_TooltipsToRemove.Clear();
+            foreach (var kvp in m_Tooltips)
+            {
+                var tooltip = kvp.Key;
+                var tooltipData = kvp.Value;
+                var hoverTime = Time.time - tooltipData.startTime;
+                if (hoverTime > k_Delay)
+                {
+                    var placement = tooltip as ITooltipPlacement;
+                    var target = GetTooltipTarget(tooltip);
 
-						if (placement == null)
-						{
-							ObjectUtils.Destroy(tooltipUI.dottedLine.gameObject);
-							foreach (var sphere in tooltipUI.spheres)
-							{
-								ObjectUtils.Destroy(sphere.gameObject);
-							}
-						}
-					}
+                    if (target == null)
+                        k_TooltipsToRemove.Add(tooltip);
 
-					var lerp = Mathf.Clamp01((hoverTime - k_Delay) / k_TransitionDuration);
-					UpdateVisuals(tooltip, tooltipUI, target, lerp);
-				}
+                    var tooltipUI = tooltipData.tooltipUI;
+                    if (!tooltipUI)
+                    {
+                        tooltipUI = CreateTooltipObject();
+                        tooltipData.tooltipUI = tooltipUI;
+                        tooltipUI.highlight.material = tooltipData.customHighlightMaterial ?? m_HighlightMaterial;
+                        tooltipUI.background.material = m_TooltipBackgroundMaterial;
+                        var tooltipTransform = tooltipUI.transform;
+                        MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
+                        tooltipTransform.localScale = Vector3.zero;
 
-				if (!IsValidTooltip(tooltip))
-					m_TooltipsToHide.Add(tooltip);
-			}
+                        var hasLine = placement != null;
+                        tooltipUI.dottedLine.gameObject.SetActive(hasLine);
+                        foreach (var sphere in tooltipUI.spheres)
+                        {
+                            sphere.gameObject.SetActive(hasLine);
+                        }
+                    }
 
-			foreach (var tooltip in m_TooltipsToHide)
-			{
-				HideTooltip(tooltip);
-			}
-		}
+                    var lerp = Mathf.Clamp01((hoverTime - k_Delay) / k_TransitionDuration);
+                    UpdateVisuals(tooltip, tooltipUI, target, lerp);
+                }
 
-		static Transform GetTooltipTarget(ITooltip tooltip)
-		{
-			var placement = tooltip as ITooltipPlacement;
-			var target = ((MonoBehaviour)tooltip).transform;
-			if (placement != null)
-				target = placement.tooltipTarget;
-			return target;
-		}
+                if (!IsValidTooltip(tooltip))
+                    k_TooltipsToRemove.Add(tooltip);
 
-		void UpdateVisuals(ITooltip tooltip, TooltipUI tooltipUI, Transform target, float lerp)
-		{
-			var tooltipTransform = tooltipUI.transform;
+                if (tooltipData.persistent)
+                {
+                    var duration = tooltipData.duration;
+                    if (duration > 0 && Time.time - tooltipData.lastModifiedTime + k_Delay > duration)
+                        k_TooltipsToRemove.Add(tooltip);
+                }
+            }
 
-			lerp = MathUtilsExt.SmoothInOutLerpFloat(lerp); // shape the lerp for better presentation
+            foreach (var tooltip in k_TooltipsToRemove)
+            {
+                HideTooltip(tooltip, true);
+            }
+        }
 
-			var tooltipText = tooltipUI.text;
-			if (tooltipText)
-			{
-				tooltipText.text = tooltip.tooltipText;
-				tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
-			}
+        TooltipUI CreateTooltipObject()
+        {
+            if (m_TooltipPool.Count > 0)
+            {
+                var pooledTooltip = m_TooltipPool.Dequeue();
+                pooledTooltip.gameObject.SetActive(true);
+                return pooledTooltip;
+            }
 
-			var viewerScale = this.GetViewerScale();
-			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
+            var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
+            tooltipObject.GetComponents(k_TooltipUIs);
 
-			TooltipData toolTipData;
-			m_Tooltips.TryGetValue(tooltip, out toolTipData);
-			var highlightMaterial = toolTipData != null ? toolTipData.customHighlightMaterial : m_HighlightMaterial;
-			tooltipUI.highlight.material= highlightMaterial;
+            var tooltipUI = k_TooltipUIs[0]; // We expect exactly one TooltipUI on the prefab root
+            m_TooltipPool.Enqueue(tooltipUI);
 
-			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
+            return tooltipUI;
+        }
 
-			var placement = tooltip as ITooltipPlacement;
+        static Transform GetTooltipTarget(ITooltip tooltip)
+        {
+            var placement = tooltip as ITooltipPlacement;
+            if (placement != null)
+                return placement.tooltipTarget;
 
-			// Adjust for alignment
-			var offset = Vector3.zero;
-			if (placement != null)
-			{
-				switch (placement.tooltipAlignment)
-				{
-					case TextAlignment.Right:
-						offset = Vector3.left;
-						break;
-					case TextAlignment.Left:
-						offset = Vector3.right;
-						break;
-				}
-			}
+            return ((MonoBehaviour)tooltip).transform;
+        }
 
-			var rectTransform = tooltipUI.GetComponent<RectTransform>();
-			var rect = rectTransform.rect;
-			var halfWidth = rect.width * 0.5f;
-			var halfHeight = rect.height * 0.5f;
+        void UpdateVisuals(ITooltip tooltip, TooltipUI tooltipUI, Transform target, float lerp)
+        {
+            var tooltipTransform = tooltipUI.transform;
 
-			if (placement != null)
-				offset *= halfWidth * rectTransform.lossyScale.x;
-			else
-				offset = Vector3.back * k_Offset * this.GetViewerScale();
+            lerp = MathUtilsExt.SmoothInOutLerpFloat(lerp); // shape the lerp for better presentation
 
-			MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, Quaternion.identity);
+            var tooltipText = tooltipUI.text;
+            if (tooltipText)
+            {
+                tooltipText.text = tooltip.tooltipText;
+                tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
+            }
 
-			if (placement != null)
-			{
-				var source = placement.tooltipSource;
-				var toSource = tooltipTransform.InverseTransformPoint(source.position);
+            var viewerScale = this.GetViewerScale();
+            tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
-				// Position spheres: one at source, one on the closest edge of the tooltip
-				var spheres = tooltipUI.spheres;
-				spheres[0].position = source.position;
+            m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
 
-				var attachedSphere = spheres[1];
-				var boxSlope = halfHeight / halfWidth;
-				var toSourceSlope = Mathf.Abs(toSource.y / toSource.x);
+            var placement = tooltip as ITooltipPlacement;
 
-				halfHeight *= Mathf.Sign(toSource.y);
-				halfWidth *= Mathf.Sign(toSource.x);
-				attachedSphere.localPosition = toSourceSlope > boxSlope
-					? new Vector3(0, halfHeight)
-					: new Vector3(halfWidth, 0);
+            // Adjust for alignment
+            var offset = Vector3.zero;
+            if (placement != null)
+            {
+                switch (placement.tooltipAlignment)
+                {
+                    case TextAlignment.Right:
+                        offset = Vector3.left;
+                        break;
+                    case TextAlignment.Left:
+                        offset = Vector3.right;
+                        break;
+                }
+            }
 
-				// Align dotted line
-				var attachedSpherePosition = attachedSphere.position;
-				toSource = source.position - attachedSpherePosition;
-				var midPoint = attachedSpherePosition + toSource * 0.5f;
-				var dottedLine = tooltipUI.dottedLine;
-				var length = toSource.magnitude;
-				var uvRect = dottedLine.uvRect;
-				var worldScale = 1 / viewerScale;
-				uvRect.width = length * k_UVScale * worldScale;
-				uvRect.xMin += k_UVScrollSpeed * Time.deltaTime;
-				dottedLine.uvRect = uvRect;
+            var rectTransform = tooltipUI.GetComponent<RectTransform>();
+            var rect = rectTransform.rect;
+            var halfWidth = rect.width * 0.5f;
+            var halfHeight = rect.height * 0.5f;
 
-				var dottedLineTransform = dottedLine.transform.parent.GetComponent<RectTransform>();
-				dottedLineTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, length / tooltipTransform.lossyScale.x);
-				dottedLineTransform.position = midPoint;
-				dottedLineTransform.rotation = Quaternion.LookRotation(toSource, -tooltipTransform.forward);
-			}
-		}
+            if (placement != null)
+                offset *= halfWidth * rectTransform.lossyScale.x;
+            else
+                offset = Vector3.back * k_Offset * this.GetViewerScale();
 
-		public void OnRayEntered(GameObject gameObject, RayEventData eventData)
-		{
-			if (gameObject == this.gameObject)
-				return;
+            MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, Quaternion.identity);
 
-			var tooltip = gameObject.GetComponent<ITooltip>();
-			if (tooltip != null)
-				ShowTooltip(tooltip);
-		}
+            if (placement != null)
+            {
+                var source = placement.tooltipSource;
+                var toSource = tooltipTransform.InverseTransformPoint(source.position);
 
-		public void OnRayHovering(GameObject gameObject, RayEventData eventData)
-		{
-			if (gameObject == this.gameObject)
-				return;
+                // Position spheres: one at source, one on the closest edge of the tooltip
+                var spheres = tooltipUI.spheres;
+                spheres[0].position = source.position;
 
-			var tooltip = gameObject.GetComponent<ITooltip>();
-			if (tooltip != null)
-				ShowTooltip(tooltip);
-		}
+                var attachedSphere = spheres[1];
+                var boxSlope = halfHeight / halfWidth;
+                var toSourceSlope = Mathf.Abs(toSource.y / toSource.x);
 
-		public void OnRayExited(GameObject gameObject, RayEventData eventData)
-		{
-			if (gameObject && gameObject != this.gameObject)
-			{
-				var tooltip = gameObject.GetComponent<ITooltip>();
-				if (tooltip != null)
-					HideTooltip(tooltip);
-			}
-		}
+                halfHeight *= Mathf.Sign(toSource.y);
+                halfWidth *= Mathf.Sign(toSource.x);
+                attachedSphere.localPosition = toSourceSlope > boxSlope
+                    ? new Vector3(0, halfHeight)
+                    : new Vector3(halfWidth, 0);
 
-		public void ShowTooltip(ITooltip tooltip)
-		{
-			if (!IsValidTooltip(tooltip))
-				return;
+                // Align dotted line
+                var attachedSpherePosition = attachedSphere.position;
+                toSource = source.position - attachedSpherePosition;
+                var midPoint = attachedSpherePosition + toSource * 0.5f;
+                var dottedLine = tooltipUI.dottedLine;
+                var length = toSource.magnitude;
+                var uvRect = dottedLine.uvRect;
+                var worldScale = 1 / viewerScale;
+                uvRect.width = length * k_UVScale * worldScale;
+                uvRect.xMin += k_UVScrollSpeed * Time.deltaTime;
+                dottedLine.uvRect = uvRect;
 
-			if (m_Tooltips.ContainsKey(tooltip))
-				return;
+                var dottedLineTransform = dottedLine.transform.parent.GetComponent<RectTransform>();
+                dottedLineTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, length / tooltipTransform.lossyScale.x);
+                dottedLineTransform.position = midPoint;
+                dottedLineTransform.rotation = Quaternion.LookRotation(toSource, -tooltipTransform.forward);
+            }
+        }
 
-			Material highlightMaterial = null;
-			var customToolTipColor = tooltip as ISetCustomTooltipColor;
-			if (customToolTipColor != null)
-			{
-				highlightMaterial = Instantiate(m_HighlightMaterial);
-				var customToolTipHighlightColor = customToolTipColor.customToolTipHighlightColor;
-				highlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipHighlightColor.a);
-				highlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipHighlightColor.b);
-			}
+        public void OnRayEntered(GameObject gameObject, RayEventData eventData)
+        {
+            if (gameObject == this.gameObject)
+                return;
 
-			m_Tooltips[tooltip] = new TooltipData
-			{
-				startTime = Time.realtimeSinceStartup,
-				customHighlightMaterial = highlightMaterial
-			};
-		}
+            k_TooltipList.Clear();
+            gameObject.GetComponents(k_TooltipList);
+            foreach (var tooltip in k_TooltipList)
+            {
+                ShowTooltip(tooltip);
+            }
+        }
 
-		static bool IsValidTooltip(ITooltip tooltip)
-		{
-			return !string.IsNullOrEmpty(tooltip.tooltipText);
-		}
+        public void OnRayHovering(GameObject gameObject, RayEventData eventData)
+        {
+            if (gameObject == this.gameObject)
+                return;
 
-		public void HideTooltip(ITooltip tooltip)
-		{
-			TooltipData tooltipData;
-			if (m_Tooltips.TryGetValue(tooltip, out tooltipData))
-			{
-				m_Tooltips.Remove(tooltip);
+            k_TooltipList.Clear();
+            gameObject.GetComponents(k_TooltipList);
+            foreach (var tooltip in k_TooltipList)
+            {
+                ShowTooltip(tooltip);
+            }
+        }
 
-				if (tooltipData.tooltipUI)
-					StartCoroutine(AnimateHide(tooltip, tooltipData.tooltipUI));
-			}
-		}
+        public void OnRayExited(GameObject gameObject, RayEventData eventData)
+        {
+            if (gameObject && gameObject != this.gameObject)
+            {
+                k_TooltipList.Clear();
+                gameObject.GetComponents(k_TooltipList);
+                foreach (var tooltip in k_TooltipList)
+                {
+                    HideTooltip(tooltip);
+                }
+            }
+        }
 
-		IEnumerator AnimateHide(ITooltip tooltip, TooltipUI tooltipUI)
-		{
-			var target = GetTooltipTarget(tooltip);
-			var startTime = Time.realtimeSinceStartup;
-			while (Time.realtimeSinceStartup - startTime < k_TransitionDuration)
-			{
-				if (!target)
-					break;
+        public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f)
+        {
+            if (!IsValidTooltip(tooltip))
+                return;
 
-				UpdateVisuals(tooltip, tooltipUI, target,
-					1 - (Time.realtimeSinceStartup - startTime) / k_TransitionDuration);
-				yield return null;
-			}
+            TooltipData data;
+            if (m_Tooltips.TryGetValue(tooltip, out data))
+            {
+                data.persistent |= persistent;
+                if (duration > 0)
+                {
+                    data.duration = duration;
+                    data.lastModifiedTime = Time.time;
+                }
 
-			ObjectUtils.Destroy(tooltipUI.gameObject);
-		}
-	}
+                return;
+            }
+
+            Material highlightMaterial = null;
+            var customTooltipColor = tooltip as ISetCustomTooltipColor;
+            if (customTooltipColor != null)
+            {
+                highlightMaterial = Instantiate(m_HighlightMaterial);
+                var customTooltipHighlightColor = customTooltipColor.customTooltipHighlightColor;
+                highlightMaterial.SetColor(k_MaterialColorTopProperty, customTooltipHighlightColor.a);
+                highlightMaterial.SetColor(k_MaterialColorBottomProperty, customTooltipHighlightColor.b);
+            }
+
+            m_Tooltips[tooltip] = new TooltipData
+            {
+                customHighlightMaterial = highlightMaterial,
+                startTime = Time.time,
+                lastModifiedTime = Time.time,
+                persistent = persistent,
+                duration = duration
+            };
+        }
+
+        static bool IsValidTooltip(ITooltip tooltip)
+        {
+            return !string.IsNullOrEmpty(tooltip.tooltipText);
+        }
+
+        public void HideTooltip(ITooltip tooltip, bool persistent = false)
+        {
+            TooltipData tooltipData;
+            if (m_Tooltips.TryGetValue(tooltip, out tooltipData))
+            {
+                if (!persistent && tooltipData.persistent)
+                    return;
+
+                m_Tooltips.Remove(tooltip);
+
+                if (tooltipData.tooltipUI)
+                    StartCoroutine(AnimateHide(tooltip, tooltipData.tooltipUI));
+            }
+        }
+
+        IEnumerator AnimateHide(ITooltip tooltip, TooltipUI tooltipUI)
+        {
+            var target = GetTooltipTarget(tooltip);
+            var startTime = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - startTime < k_TransitionDuration)
+            {
+                if (!target)
+                    break;
+
+                UpdateVisuals(tooltip, tooltipUI, target,
+                    1 - (Time.realtimeSinceStartup - startTime) / k_TransitionDuration);
+                yield return null;
+            }
+
+            RecycleTooltip(tooltipUI);
+        }
+
+        void RecycleTooltip(TooltipUI tooltipUI)
+        {
+            tooltipUI.gameObject.SetActive(false);
+            m_TooltipPool.Enqueue(tooltipUI);
+        }
+    }
 }
 #endif
