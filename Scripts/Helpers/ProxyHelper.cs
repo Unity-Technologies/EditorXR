@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// <summary>
     /// Reference container for additional content origins on a device
     /// </summary>
-    sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
+    public sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
     {
         [SerializeField]
         Transform m_RayOrigin;
@@ -97,7 +97,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             origins.Add(fieldGrabOrigin);
 
             if (m_ProxyUI)
-                m_ProxyUI.Setup(m_AffordanceMap, m_Affordances, origins);
+                m_ProxyUI.Setup(this, m_AffordanceMap, m_Affordances, origins);
 
             if (m_ProxyAnimator)
             {

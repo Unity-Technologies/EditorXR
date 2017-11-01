@@ -4,16 +4,71 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 using VisibilityControlType = UnityEditor.Experimental.EditorVR.Core.ProxyAffordanceMap.VisibilityControlType;
 using AffordanceVisualStateData = UnityEditor.Experimental.EditorVR.Core.AffordanceVisibilityDefinition.AffordanceVisualStateData;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    public class ProxyUI : MonoBehaviour
+    /// <summary>
+    /// ProxyFeedbackRequests reside in feedbackRequest collection until the action associated with an affordance changes
+    /// Some are removed immediately after being added; others exist for the duration of an action/tool's lifespan
+    /// </summary>
+    public class ProxyFeedbackRequest : FeedbackRequest
+    {
+        public int priority;
+        public VRInputDevice.VRControl control;
+        public Node node;
+        public string tooltipText;
+        public bool suppressExisting;
+        public bool visible;
+        public bool proxyShaken;
+    }
+
+    public class ProxyUI : MonoBehaviour, ISetTooltipVisibility, ISetHighlight
     {
         const string k_ZWritePropertyName = "_ZWrite";
+        const float k_DefaultFeedbackDuration = 5f;
+
+        //class AffordanceDictionary : Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>>
+        //{
+        //}
+
+        class ControlToAffordanceDictionary : Dictionary<VRInputDevice.VRControl, List<Affordance>>
+        {
+        }
+
+        /// <summary>
+        /// Model containing original value, and values to "animate from", unique to each body MeshRenderer material.
+        /// Visibility of all objects in the proxy body are driven by a single AffordanceVisibilityDefinition,
+        /// as opposed to individual interactable affordances, which each have their own AffordanceVisibilityDefinition, which contains their unique value data.
+        /// This is a lightweight class to store that data, alleviating the need to duplicate an affordance definition for each body renderer as well.
+        /// </summary>
+        class AffordancePropertyTuple<T>
+        {
+            public T originalValue { get; private set; }
+            public T animateFromValue { get; set; }
+
+            public AffordancePropertyTuple(T originalValue, T animateFromValue)
+            {
+                this.originalValue = originalValue;
+                this.animateFromValue = animateFromValue;
+            }
+        }
+
+        class FeedbackRequests : List<FeedbackRequestAndCoroutineTuple>
+        {
+        }
+
+        class FeedbackRequestAndCoroutineTuple : Tuple<ProxyFeedbackRequest, Coroutine>
+        {
+            public FeedbackRequestAndCoroutineTuple(ProxyFeedbackRequest proxyFeedbackRequest, Coroutine coroutine) : base(proxyFeedbackRequest, coroutine)
+            {
+            }
+        }
 
         [SerializeField]
         float m_FadeInSpeedScalar = 4f;
@@ -33,6 +88,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         Affordance[] m_Affordances;
         Coroutine m_BodyVisibilityCoroutine;
 
+        ProxyHelper m_ProxyHelper;
+        ProxyFeedbackRequest m_SemitransparentLockRequest;
+        ProxyFeedbackRequest m_ShakeFeedbackRequest;
+
         /// <summary>
         /// Bool that denotes the ProxyUI has been setup
         /// </summary>
@@ -48,23 +107,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly Dictionary<Material, AffordancePropertyTuple<Color>> m_BodyMaterialOriginalColorMap = new Dictionary<Material, AffordancePropertyTuple<Color>>();
         readonly Dictionary<Material, AffordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, AffordancePropertyTuple<float>>();
 
-        /// <summary>
-        /// Model containing original value, and values to "animate from", unique to each body MeshRenderer material.
-        /// Visibility of all objects in the proxy body are driven by a single AffordanceVisibilityDefinition,
-        /// as opposed to individual interactable affordances, which each have their own AffordanceVisibilityDefinition, which contains their unique value data.
-        /// This is a lightweight class to store that data, alleviating the need to duplicate an affordance definition for each body renderer as well.
-        /// </summary>
-        class AffordancePropertyTuple<T>
-        {
-            public T originalValue { get; private set; }
-            public T animateFromValue { get; set; }
+        readonly FeedbackRequests m_FeedbackRequests = new FeedbackRequests();
+        //ControlToAffordanceDictionary m_ControlToAffordances;
 
-            public AffordancePropertyTuple(T originalValue, T animateFromValue)
-            {
-                this.originalValue = originalValue;
-                this.animateFromValue = animateFromValue;
-            }
-        }
+        bool affordanceRenderersVisible { set { m_ProxyHelper.affordanceRenderersVisible = value; } }
+        bool bodyRenderersVisible { set { m_ProxyHelper.bodyRenderersVisible = value; } }
 
         /// <summary>
         /// Set the visibility of the affordance renderers that are associated with controls/input
@@ -123,6 +170,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
+        public bool active { private get; set; }
+
+        void Awake()
+        {
+            m_ShakeFeedbackRequest = new ProxyFeedbackRequest
+            {
+                control = VRInputDevice.VRControl.LocalPosition,
+                node = Node.None,
+                tooltipText = null,
+                suppressExisting = true,
+                proxyShaken = true
+            };
+        }
+
         void OnDestroy()
         {
             this.StopAllCoroutines();
@@ -176,7 +237,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// </summary>
         /// <param name="affordances">The ProxyHelper affordances that drive visual changes in the ProxyUI</param>
         /// <param name="proxyOrigins">ProxyOrigins whose child renderers will not be controlled by the PRoxyUI</param>
-        public void Setup(ProxyAffordanceMap affordanceMap, Affordance[] affordances, List<Transform> proxyOrigins)
+        public void Setup(ProxyHelper proxyHelper, ProxyAffordanceMap affordanceMap, Affordance[] affordances, List<Transform> proxyOrigins)
         {
             // Prevent multiple setups
             if (m_ProxyUISetup)
@@ -210,6 +271,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 // Assign the ProxyHelper's default AffordanceMap, if no override map was assigned to this ProxyUI
                 m_AffordanceMapOverride = affordanceMap;
             }
+
+            m_ProxyHelper = proxyHelper;
+            //m_ControlToAffordances = SetupControlToAffordanceDictionary(proxyHelper);
 
             // Set affordances AFTER setting origins, as the origins are referenced when setting up affordances
             m_ProxyOrigins = proxyOrigins;
@@ -543,6 +607,268 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
             return isChild;
+        }
+
+        public void AddShakeRequest()
+        {
+            if (m_SemitransparentLockRequest == null)
+            {
+                AddFeedbackRequest(m_ShakeFeedbackRequest);
+            }
+        }
+
+        public void AddFeedbackRequest(ProxyFeedbackRequest proxyRequest)
+        {
+            FeedbackRequestAndCoroutineTuple existingRequestCoroutineTuple = null;
+            foreach (var requestCoroutineTuple in m_FeedbackRequests)
+            {
+                if (requestCoroutineTuple.firstElement == proxyRequest)
+                {
+                    existingRequestCoroutineTuple = requestCoroutineTuple;
+                    break;
+                }
+            }
+
+            if (existingRequestCoroutineTuple != null) // Update existing request/coroutine pair
+            {
+                var lifespanMonitoringCoroutine = existingRequestCoroutineTuple.secondElement;
+                this.RestartCoroutine(ref lifespanMonitoringCoroutine, MonitorFeedbackRequestLifespan(proxyRequest));
+                existingRequestCoroutineTuple.secondElement = lifespanMonitoringCoroutine;
+            }
+            else // Add a new request/coroutine pair
+            {
+                var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
+                m_FeedbackRequests.Add(new FeedbackRequestAndCoroutineTuple(proxyRequest, newMonitoringCoroutine));
+            }
+
+            ExecuteFeedback(proxyRequest);
+        }
+
+        void ExecuteFeedback(ProxyFeedbackRequest changedRequest)
+        {
+            if (!active)
+                return;
+
+            /*
+            foreach (var proxyNode in m_Affordances)
+            {
+                if (proxyNode.Key != changedRequest.node)
+                    continue;
+            */
+                //foreach (var kvp in proxyNode.Value)
+                //{
+                foreach (var affordance in m_Affordances)
+                {
+                    if (affordance.control != changedRequest.control)
+                        continue;
+
+                    ProxyFeedbackRequest request = null;
+                    foreach (var requestCoroutineTuple in m_FeedbackRequests)
+                    {
+                        var feedbackRequest = requestCoroutineTuple.firstElement;
+                        if (feedbackRequest.control != affordance.control)
+                            continue;
+
+                        if (request == null || feedbackRequest.priority >= request.priority)
+                            request = feedbackRequest;
+                    }
+
+                    if (request == null)
+                        continue;
+
+                    if (affordance.renderer)
+                        this.SetHighlight(affordance.renderer.gameObject, !request.suppressExisting, duration: k_DefaultFeedbackDuration);
+
+                    var tooltipText = request.tooltipText;
+                    if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
+                    {
+                        foreach (var tooltip in affordance.tooltips)
+                        {
+                            if (tooltip)
+                            {
+                                tooltip.tooltipText = tooltipText;
+                                this.ShowTooltip(tooltip, true, k_DefaultFeedbackDuration);
+                            }
+                        }
+                    }
+
+                /*
+                foreach (var button in affordance.Value)
+                {
+                    if (button.renderer)
+                        this.SetHighlight(button.renderer.gameObject, !request.suppressExisting, duration: k_DefaultFeedbackDuration);
+
+                    var tooltipText = request.tooltipText;
+                    if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
+                    {
+                        foreach (var tooltip in button.tooltips)
+                        {
+                            if (tooltip)
+                            {
+                                tooltip.tooltipText = tooltipText;
+                                this.ShowTooltip(tooltip, true, k_DefaultFeedbackDuration);
+                            }
+                        }
+                    }
+                }
+                */
+            }
+                /*
+            }
+            */
+
+            UpdateVisibility();
+        }
+
+        /*
+        public void RemoveFeedbackRequest(FeedbackRequest request)
+        {
+            var proxyRequest = request as ProxyFeedbackRequest;
+            if (proxyRequest != null)
+                RemoveFeedbackRequest(proxyRequest);
+        }
+        */
+
+        public void RemoveFeedbackRequest(ProxyFeedbackRequest request)
+        {
+            /*
+            Dictionary<VRInputDevice.VRControl, List<Affordance>> affordanceDictionary;
+            if (m_Affordances.TryGetValue(request.node, out affordanceDictionary))
+            {
+                List<Affordance> affordances;
+                if (affordanceDictionary.TryGetValue(request.control, out affordances))
+                {
+                    foreach (var kvp in affordanceDictionary)
+                    {
+            */
+                        foreach (var affordance in m_Affordances)
+                        {
+                            if (affordance.control != request.control)
+                                continue;
+
+                            if (affordance.renderer)
+                                this.SetHighlight(affordance.renderer.gameObject, false);
+
+                            foreach (var tooltip in affordance.tooltips)
+                            {
+                                if (tooltip)
+                                {
+                                    tooltip.tooltipText = string.Empty;
+                                    this.HideTooltip(tooltip, true);
+                                }
+                            }
+                        }
+                        /*
+                    }
+                }
+            }
+*/
+
+            foreach (var requestCoroutineTuple in m_FeedbackRequests)
+            {
+                if (requestCoroutineTuple.firstElement == request)
+                {
+                    m_FeedbackRequests.Remove(requestCoroutineTuple);
+                    ExecuteFeedback(request);
+                    break;
+                }
+            }
+        }
+
+        public void ClearFeedbackRequests(IRequestFeedback caller)
+        {
+            // Interate over keys instead of pairs in the dictionary, in order to prevent out-of-sync errors when exiting EXR
+            foreach (var requestCoroutineTuple in m_FeedbackRequests)
+            {
+                var request = requestCoroutineTuple.firstElement;
+                if (request != null && request.caller == caller)
+                    RemoveFeedbackRequest(request);
+            }
+        }
+
+        public void UpdateVisibility()
+        {
+            if (!m_ProxyUISetup)
+                return;
+
+            var proxyRequestsExist = false;
+            var shakenVisibility = m_SemitransparentLockRequest != null;
+            if (shakenVisibility)
+            {
+                // Proxy affordances should be visible when the input-device is shaken
+                proxyRequestsExist = true;
+            }
+            else if (m_FeedbackRequests.Count > 0)
+            {
+                // Find any visible feedback requests for each hand
+                foreach (var requestCoroutineTuple in m_FeedbackRequests)
+                {
+                    var request = requestCoroutineTuple.firstElement;
+                    var node = request.node;
+                    var visible = request.visible;
+
+                    if (!proxyRequestsExist)
+                        proxyRequestsExist = node == Node.RightHand && visible;
+
+                    if (proxyRequestsExist)
+                        break;
+                }
+            }
+
+            affordanceRenderersVisible = proxyRequestsExist;
+            bodyRenderersVisible = shakenVisibility;
+        }
+
+        IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
+        {
+            if (request.proxyShaken)
+            {
+                if (m_SemitransparentLockRequest != null)
+                    yield break;
+
+                m_SemitransparentLockRequest = request;
+            }
+
+            request.visible = true;
+
+            const float kShakenVisibilityDuration = 5f;
+            const float kShorterOpaqueDurationScalar = 0.125f;
+            float duration = request.proxyShaken ? kShakenVisibilityDuration : k_DefaultFeedbackDuration * kShorterOpaqueDurationScalar;
+            var currentDuration = 0f;
+            while (request != null && currentDuration < duration)
+            {
+                currentDuration += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            if (request != null)
+                request.visible = false;
+
+            // Unlock shaken body visibility if this was the most recent request the trigger the full body visibility
+            if (m_SemitransparentLockRequest == request)
+            {
+                m_SemitransparentLockRequest = null;
+            }
+
+            UpdateVisibility();
+        }
+
+        static ControlToAffordanceDictionary SetupControlToAffordanceDictionary(ProxyHelper helper)
+        {
+            var buttonDictionary = new ControlToAffordanceDictionary();
+            foreach (var button in helper.affordances)
+            {
+                List<Affordance> affordances;
+                if (!buttonDictionary.TryGetValue(button.control, out affordances))
+                {
+                    affordances = new List<Affordance>();
+                    buttonDictionary[button.control] = affordances;
+                }
+
+                affordances.Add(button);
+            }
+
+            return buttonDictionary;
         }
     }
 }
