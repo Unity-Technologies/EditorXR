@@ -37,6 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         ProxyAffordanceMap m_AffordanceMap;
 
+        [Tooltip("Affordance objects that store transform, renderer, and tooltip references")]
         [SerializeField]
         Affordance[] m_Affordances;
 
@@ -71,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Transform meshRoot { get { return m_MeshRoot; } }
 
         /// <summary>
-        /// Affordance objects to store transform and renderer references
+        /// Affordance objects that store transform, renderer, and tooltip references
         /// </summary>
         public Affordance[] affordances { get { return m_Affordances; } }
 
@@ -102,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (m_ProxyAnimator)
             {
                 m_ProxyAnimator.Setup(m_AffordanceMap, m_Affordances);
-                this.ConnectInterfaces(m_ProxyAnimator, this.rayOrigin);
+                this.ConnectInterfaces(m_ProxyAnimator, rayOrigin);
             }
         }
     }
