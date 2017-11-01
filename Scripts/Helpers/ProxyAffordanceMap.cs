@@ -6,6 +6,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [CreateAssetMenu(menuName = "EditorVR/Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
     public class ProxyAffordanceMap : ScriptableObject
     {
+        /// <summary>
+        /// The type of visibility changes that will be performed on this affordance (color change, alpha change, material swap, etc)
+        /// </summary>
         public enum VisibilityControlType
         {
             colorProperty,
@@ -28,10 +31,33 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         AffordanceDefinition[] m_AffordanceDefinitions;
 
-        public AffordanceDefinition[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } set { m_AffordanceDefinitions = value; } }
+        /// <summary>
+        /// Collection of affordance definitions representing a proxy
+        /// </summary>
+        public AffordanceDefinition[] AffordanceDefinitions
+        {
+            get { return m_AffordanceDefinitions; }
+            set { m_AffordanceDefinitions = value; }
+        }
+
+        /// <summary>
+        /// Default visibility definition/data used to drive the visual changes of (non-affordance) body visual elements
+        /// </summary>
         public AffordanceVisibilityDefinition bodyVisibilityDefinition { get { return m_BodyVisibilityDefinition; } }
+
+        /// <summary>
+        /// Default visibility definition/data used to drive the visual changes of affordances lacking a custom/override visibility definition
+        /// </summary>
         public AffordanceVisibilityDefinition defaultAffordanceVisibilityDefinition { get { return m_DefaultAffordanceVisibilityDefinition; } }
-        public AffordanceAnimationDefinition defaultAnimationDefinition { get { return m_DefaultAffordanceAnimationDefinition; } set { m_DefaultAffordanceAnimationDefinition = value; } }
+
+        /// <summary>
+        /// Default animation definition/data used to drive the translation/rotation of affordances lacking a custom/override animation definition
+        /// </summary>
+        public AffordanceAnimationDefinition defaultAnimationDefinition
+        {
+            get { return m_DefaultAffordanceAnimationDefinition; }
+            set { m_DefaultAffordanceAnimationDefinition = value; }
+        }
     }
 }
 #endif
