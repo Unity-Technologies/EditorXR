@@ -35,6 +35,17 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
         }
 
+        class FeedbackRequests : List<FeedbackRequestAndCoroutineTuple>
+        {
+        }
+
+        class FeedbackRequestAndCoroutineTuple : Tuple<ProxyFeedbackRequest, Coroutine>
+        {
+            public FeedbackRequestAndCoroutineTuple(ProxyFeedbackRequest proxyFeedbackRequest, Coroutine coroutine) : base(proxyFeedbackRequest, coroutine)
+            {
+            }
+        }
+
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
 
@@ -60,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
-        readonly Dictionary<ProxyFeedbackRequest, Coroutine> m_FeedbackRequests = new Dictionary<ProxyFeedbackRequest, Coroutine>();
+        readonly FeedbackRequests m_FeedbackRequests = new FeedbackRequests();
 
         protected Dictionary<Node, Transform> m_RayOrigins;
 
@@ -228,17 +239,26 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var proxyRequest = request as ProxyFeedbackRequest;
             if (proxyRequest != null)
             {
-                var hasKey = m_FeedbackRequests.ContainsKey(proxyRequest);
-                if (hasKey) // Update existing request/coroutine pair
+                FeedbackRequestAndCoroutineTuple existingRequestCoroutineTuple = null;
+                foreach (var requestCoroutineTuple in m_FeedbackRequests)
                 {
-                    var lifespanMonitoringCoroutine = m_FeedbackRequests[proxyRequest];
+                    if (requestCoroutineTuple.firstElement == proxyRequest)
+                    {
+                        existingRequestCoroutineTuple = requestCoroutineTuple;
+                        break;
+                    }
+                }
+
+                if (existingRequestCoroutineTuple != null) // Update existing request/coroutine pair
+                {
+                    var lifespanMonitoringCoroutine = existingRequestCoroutineTuple.secondElement;
                     this.RestartCoroutine(ref lifespanMonitoringCoroutine, MonitorFeedbackRequestLifespan(proxyRequest));
-                    m_FeedbackRequests[proxyRequest] = lifespanMonitoringCoroutine;
+                    existingRequestCoroutineTuple.secondElement = lifespanMonitoringCoroutine;
                 }
                 else // Add a new request/coroutine pair
                 {
                     var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
-                    m_FeedbackRequests.Add(proxyRequest, newMonitoringCoroutine);
+                    m_FeedbackRequests.Add(new FeedbackRequestAndCoroutineTuple(proxyRequest, newMonitoringCoroutine));
                 }
 
                 ExecuteFeedback(proxyRequest);
@@ -261,14 +281,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         continue;
 
                     ProxyFeedbackRequest request = null;
-                    foreach (var req in m_FeedbackRequests)
+                    foreach (var requestCoroutineTuple in m_FeedbackRequests)
                     {
-                        var key = req.Key;
-                        if (key.node != proxyNode.Key || key.control != kvp.Key)
+                        var feedbackRequest = requestCoroutineTuple.firstElement;
+                        if (feedbackRequest.node != proxyNode.Key || feedbackRequest.control != kvp.Key)
                             continue;
 
-                        if (request == null || key.priority >= request.priority)
-                            request = key;
+                        if (request == null || feedbackRequest.priority >= request.priority)
+                            request = feedbackRequest;
                     }
 
                     if (request == null)
@@ -333,17 +353,25 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 }
             }
 
-            if (m_FeedbackRequests.Remove(request))
-                ExecuteFeedback(request);
+            foreach (var requestCoroutineTuple in m_FeedbackRequests)
+            {
+                if (requestCoroutineTuple.firstElement == request)
+                {
+                    m_FeedbackRequests.Remove(requestCoroutineTuple);
+                    ExecuteFeedback(request);
+                    break;
+                }
+            }
         }
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
             // Interate over keys instead of pairs in the dictionary, in order to prevent out-of-sync errors when exiting EXR
-            foreach (var key in m_FeedbackRequests.Keys.ToList())
+            foreach (var requestCoroutineTuple in m_FeedbackRequests)
             {
-                if (key != null && key.caller == caller)
-                    RemoveFeedbackRequest(key);
+                var request = requestCoroutineTuple.firstElement;
+                if (request != null && request.caller == caller)
+                    RemoveFeedbackRequest(request);
             }
         }
 
@@ -361,10 +389,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             else if (m_FeedbackRequests.Count > 0)
             {
                 // Find any visible feedback requests for each hand
-                foreach (var request in m_FeedbackRequests)
+                foreach (var requestCoroutineTuple in m_FeedbackRequests)
                 {
-                    var node = request.Key.node;
-                    var visible = request.Key.visible;
+                    var request = requestCoroutineTuple.firstElement;
+                    var node = request.node;
+                    var visible = request.visible;
 
                     if (!leftProxyRequestsExist)
                         leftProxyRequestsExist = node == Node.LeftHand && visible;
