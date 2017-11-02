@@ -12,6 +12,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
     {
+        enum FacingDirection
+        {
+            FRONT,
+            BACK,
+            LEFT,
+            RIGHT,
+            TOP,
+            BOTTOM
+        }
+
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
 
@@ -37,6 +47,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
+
+        FacingDirection m_LastLeftFacingDirection;
+        FacingDirection m_LastRightFacingDirection;
+
 
         protected Dictionary<Node, Transform> m_RayOrigins;
 
@@ -164,6 +178,21 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_RightHand.localPosition = rightLocalPosition;
                 m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 
+                var cameraPosition = CameraUtils.GetMainCamera().transform.position;
+                var leftFacingDirection = GetFacingDirection(m_LeftHand, cameraPosition);
+                if (m_LastLeftFacingDirection != leftFacingDirection)
+                {
+                    Debug.Log("Left hand facing " + leftFacingDirection);
+                    m_LastLeftFacingDirection = leftFacingDirection;
+                }
+
+                var rightFacingDirection = GetFacingDirection(m_RightHand, cameraPosition);
+                if (m_LastRightFacingDirection != rightFacingDirection)
+                {
+                    Debug.Log("Right hand facing " + rightFacingDirection);
+                    m_LastRightFacingDirection = rightFacingDirection;
+                }
+
                 m_LeftShakeTracker.Update(leftLocalPosition, Time.deltaTime);
                 m_RightShakeTracker.Update(rightLocalPosition, Time.deltaTime);
 
@@ -173,6 +202,44 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     m_RightProxyUI.AddShakeRequest();
                 }
             }
+        }
+
+        static FacingDirection GetFacingDirection(Transform transform, Vector3 cameraPosition)
+        {
+            var toCamera = Vector3.Normalize(cameraPosition - transform.position);
+
+            var xDot = Vector3.Dot(toCamera, transform.right);
+            var yDot = Vector3.Dot(toCamera, transform.up);
+            var zDot = Vector3.Dot(toCamera, transform.forward);
+
+            if (Mathf.Abs(xDot) > Mathf.Abs(yDot))
+            {
+                if (Mathf.Abs(zDot) > Mathf.Abs(xDot))
+                {
+                    if (zDot > 0)
+                        return FacingDirection.FRONT;
+
+                    return FacingDirection.BACK;
+                }
+
+                if (xDot > 0)
+                    return FacingDirection.RIGHT;
+
+                return FacingDirection.LEFT;
+            }
+
+            if (Mathf.Abs(zDot) > Mathf.Abs(yDot))
+            {
+                if (zDot > 0)
+                    return FacingDirection.FRONT;
+
+                return FacingDirection.BACK;
+            }
+
+            if (yDot > 0)
+                return FacingDirection.TOP;
+
+            return FacingDirection.BOTTOM;
         }
 
         public void AddFeedbackRequest(FeedbackRequest request)
