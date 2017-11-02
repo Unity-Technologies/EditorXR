@@ -63,6 +63,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         ProxyAffordanceMap m_AffordanceMapOverride;
 
+        [HideInInspector]
+        [SerializeField]
+        Material m_ProxyBackgroundMaterial;
+
         List<Renderer> m_BodyRenderers; // Renderers not associated with affordances/controls, & will be HIDDEN when displaying feedback/tooltips
         List<Material> m_BodySwapOriginalMaterials; // Material collection used when swapping materials
         List<Renderer> m_AffordanceRenderers; // Renderers associated with affordances/controls, & will be SHOWN when displaying feedback/tooltips
