@@ -26,7 +26,7 @@ Shader "EditorVR/Utilities/Semitransparent Proxy Background"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            uniform float4 _Color;
+            uniform half4 _Color;
  
             struct vertexInput
             {
