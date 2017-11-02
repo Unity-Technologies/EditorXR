@@ -93,8 +93,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_LeftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
             m_RightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
+            var setupCount = 0;
+            const int numNodes = 2;
             m_LeftProxyUI = m_LeftHand.GetComponent<ProxyUI>();
+            m_LeftProxyUI.setupComplete += () =>
+            {
+                if (++setupCount == numNodes)
+                    hidden = true;
+            };
             m_RightProxyUI = m_RightHand.GetComponent<ProxyUI>();
+            m_RightProxyUI.setupComplete += () =>
+            {
+                if (++setupCount == numNodes)
+                    hidden = true;
+            };
 
             m_RayOrigins = new Dictionary<Node, Transform>
             {

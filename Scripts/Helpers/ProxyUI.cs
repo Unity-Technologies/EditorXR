@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,8 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     using AffordanceVisualStateData = AffordanceVisibilityDefinition.AffordanceVisualStateData;
-    using VisibilityControlType = ProxyAffordanceMap.VisibilityControlType;
     using FeedbackRequestTuple = Tuple<ProxyFeedbackRequest, Coroutine>;
+    using VisibilityControlType = ProxyAffordanceMap.VisibilityControlType;
 
     /// <summary>
     /// ProxyFeedbackRequests reside in feedbackRequest collection until the action associated with an affordance changes
@@ -94,6 +95,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         bool affordanceRenderersVisible { set { m_ProxyHelper.affordanceRenderersVisible = value; } }
         bool bodyRenderersVisible { set { m_ProxyHelper.bodyRenderersVisible = value; } }
+
+        public event Action setupComplete;
 
         /// <summary>
         /// Set the visibility of the affordance renderers that are associated with controls/input
@@ -406,6 +409,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             // Allow setting of affordance & body visibility after affordance+body setup is performed in the "affordances" property
             m_ProxyUISetup = true;
+
+            if (setupComplete != null)
+                setupComplete();
         }
 
         static IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition, float fadeInSpeedScalar, float fadeOutSpeedScalar)
