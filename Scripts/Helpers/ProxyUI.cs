@@ -29,7 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public bool proxyShaken;
     }
 
-    public class ProxyUI : MonoBehaviour, ISetTooltipVisibility, ISetHighlight
+    internal class ProxyUI : MonoBehaviour, ISetTooltipVisibility, ISetHighlight
     {
         const string k_ZWritePropertyName = "_ZWrite";
         const float k_DefaultFeedbackDuration = 5f;
@@ -254,7 +254,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
             m_ProxyHelper = proxyHelper;
-            //m_ControlToAffordances = SetupControlToAffordanceDictionary(proxyHelper);
 
             // Set affordances AFTER setting origins, as the origins are referenced when setting up affordances
             m_ProxyOrigins = proxyOrigins;

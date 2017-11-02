@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// Affordance model; data defining a proxy affordance (button/analog/etc)
     /// </summary>
     [Serializable]
-    public class Affordance
+    internal class Affordance
     {
         [SerializeField]
         VRInputDevice.VRControl m_Control;

@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// <summary>
     /// Reference container for additional content origins on a device
     /// </summary>
-    public sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
+    internal sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
     {
         [SerializeField]
         Transform m_RayOrigin;
