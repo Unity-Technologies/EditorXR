@@ -246,7 +246,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 Debug.LogError("A valid Affordance Map must be present when setting up ProxyUI on : " + gameObject.name);
                 return;
             }
-            else if (m_AffordanceMapOverride == null)
+
+            if (m_AffordanceMapOverride == null)
             {
                 // Assign the ProxyHelper's default AffordanceMap, if no override map was assigned to this ProxyUI
                 m_AffordanceMapOverride = affordanceMap;
@@ -270,7 +271,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var affordancesDefinedInMap = affordanceMapDefinitions != null && affordanceMapDefinitions.Length > 0 && affordanceMapDefinitions[0] != null;
 
             // If affordanceMapDefinitions is null, set the list below into the map after setup
-            List<AffordanceDefinition> generatedAffordanceDefinitions = new List<AffordanceDefinition>();
+            var generatedAffordanceDefinitions = new List<AffordanceDefinition>();
             var defaultAffordanceVisibilityDefinition = m_AffordanceMapOverride.defaultAffordanceVisibilityDefinition;
             var defaultAffordanceAnimationDefinition = m_AffordanceMapOverride.defaultAnimationDefinition;
             foreach (var proxyAffordance in affordances)
