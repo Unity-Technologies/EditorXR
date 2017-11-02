@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -9,7 +10,7 @@ using UnityEngine.InputNew;
 
 [ProcessInput(1)]
 [RequireComponent(typeof(ProxyHelper))]
-public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
+internal class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
 {
     public class TransformInfo
     {
@@ -39,23 +40,11 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
     readonly Dictionary<Transform, TransformInfo> m_TransformInfos = new Dictionary<Transform, TransformInfo>();
 
     bool m_RightHandedProxy;
-    Node m_Node;
 
     public ActionMap actionMap { get { return m_ProxyActionMap; } }
     public bool ignoreLocking { get { return true; } }
 
-    public Node node
-    {
-        get
-        {
-            return m_Node;
-        }
-
-        set
-        {
-            m_Node = value; m_RightHandedProxy = m_Node == Node.RightHand;
-        }
-    }
+    public Node node { set { m_RightHandedProxy = value == Node.RightHand; } }
 
     internal event Action<Affordance[], AffordanceDefinition[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
@@ -160,3 +149,4 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
             postAnimate(m_Affordances, m_AffordanceDefinitions, m_TransformInfos, input);
     }
 }
+#endif

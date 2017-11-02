@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// <summary>
     /// Reference container for additional content origins on a device
     /// </summary>
-    sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
+    internal sealed class ProxyHelper : MonoBehaviour, IConnectInterfaces
     {
         [SerializeField]
         Transform m_RayOrigin;
@@ -26,9 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         Transform m_FieldGrabOrigin;
 
         [SerializeField]
-        Transform m_MeshRoot;
-
-        [SerializeField]
         ProxyUI m_ProxyUI;
 
         [SerializeField]
@@ -37,6 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         ProxyAffordanceMap m_AffordanceMap;
 
+        [Tooltip("Affordance objects that store transform, renderer, and tooltip references")]
         [SerializeField]
         Affordance[] m_Affordances;
 
@@ -66,12 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
 
         /// <summary>
-        /// The root transform of the device/controller mesh-renderers/geometry
-        /// </summary>
-        public Transform meshRoot { get { return m_MeshRoot; } }
-
-        /// <summary>
-        /// Affordance objects to store transform and renderer references
+        /// Affordance objects that store transform, renderer, and tooltip references
         /// </summary>
         public Affordance[] affordances { get { return m_Affordances; } }
 
@@ -97,12 +90,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             origins.Add(fieldGrabOrigin);
 
             if (m_ProxyUI)
-                m_ProxyUI.Setup(m_AffordanceMap, m_Affordances, origins);
+                m_ProxyUI.Setup(this, m_AffordanceMap, m_Affordances, origins);
 
             if (m_ProxyAnimator)
             {
                 m_ProxyAnimator.Setup(m_AffordanceMap, m_Affordances);
-                this.ConnectInterfaces(m_ProxyAnimator, this.rayOrigin);
+                this.ConnectInterfaces(m_ProxyAnimator, rayOrigin);
             }
         }
     }

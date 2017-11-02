@@ -2,8 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -12,29 +10,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    /// <summary>
-    /// ProxyFeedbackRequests reside in feedbackRequest collection until the action associated with an affordance changes
-    /// Some are removed immediately after being added; others exist for the duration of an action/tool's lifespan
-    /// </summary>
-    public class ProxyFeedbackRequest : FeedbackRequest
-    {
-        public int priority;
-        public VRInputDevice.VRControl control;
-        public Node node;
-        public string tooltipText;
-        public bool suppressExisting;
-        public bool visible;
-        public bool proxyShaken;
-    }
-
     abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
     {
-        const float k_DefaultFeedbackDuration = 5f;
-
-        class AffordanceDictionary : Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>>
-        {
-        }
-
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
 
@@ -60,24 +37,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
-        readonly Dictionary<ProxyFeedbackRequest, Coroutine> m_FeedbackRequests = new Dictionary<ProxyFeedbackRequest, Coroutine>();
 
         protected Dictionary<Node, Transform> m_RayOrigins;
 
         bool m_Hidden;
         ProxyHelper m_LeftProxyHelper;
         ProxyHelper m_RightProxyHelper;
-        List<Transform> m_ProxyMeshRoots = new List<Transform>();
-
-        ProxyFeedbackRequest m_SemitransparentLockRequest;
-        ProxyFeedbackRequest m_ShakeFeedbackRequest;
-
-        readonly AffordanceDictionary m_Affordances = new AffordanceDictionary();
-
-        bool leftAffordanceRenderersVisible { set { m_LeftProxyHelper.affordanceRenderersVisible = value; } }
-        bool rightAffordanceRenderersVisible { set { m_RightProxyHelper.affordanceRenderersVisible = value; } }
-        bool leftBodyRenderersVisible { set { m_LeftProxyHelper.bodyRenderersVisible = value; } }
-        bool rightBodyRenderersVisible { set { m_RightProxyHelper.bodyRenderersVisible = value; } }
+        ProxyUI m_LeftProxyUI;
+        ProxyUI m_RightProxyUI;
 
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
@@ -104,7 +71,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     m_LeftHand.gameObject.SetActive(!value);
                     m_RightHand.gameObject.SetActive(!value);
 
-                    UpdateVisibility();
+                    if (m_LeftProxyUI && m_RightProxyUI)
+                    {
+                        m_LeftProxyUI.UpdateVisibility();
+                        m_RightProxyUI.UpdateVisibility();
+                    }
                 }
             }
         }
@@ -122,11 +93,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_LeftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
             m_RightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
 
-            m_ProxyMeshRoots.Add(m_LeftProxyHelper.meshRoot);
-            m_ProxyMeshRoots.Add(m_RightProxyHelper.meshRoot);
-
-            m_Affordances[Node.LeftHand] = GetAffordanceDictionary(m_LeftProxyHelper);
-            m_Affordances[Node.RightHand] = GetAffordanceDictionary(m_RightProxyHelper);
+            m_LeftProxyUI = m_LeftHand.GetComponent<ProxyUI>();
+            m_RightProxyUI = m_RightHand.GetComponent<ProxyUI>();
 
             m_RayOrigins = new Dictionary<Node, Transform>
             {
@@ -157,32 +125,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.fieldGrabOrigin },
                 { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.fieldGrabOrigin }
             };
-
-            m_ShakeFeedbackRequest = new ProxyFeedbackRequest
-            {
-                control = VRInputDevice.VRControl.LocalPosition,
-                node = Node.None,
-                tooltipText = null,
-                suppressExisting = true,
-                proxyShaken = true
-            };
-        }
-
-        static Dictionary<VRInputDevice.VRControl, List<Affordance>> GetAffordanceDictionary(ProxyHelper helper)
-        {
-            var buttonDictionary = new Dictionary<VRInputDevice.VRControl, List<Affordance>>();
-            foreach (var button in helper.affordances)
-            {
-                List<Affordance> affordances;
-                if (!buttonDictionary.TryGetValue(button.control, out affordances))
-                {
-                    affordances = new List<Affordance>();
-                    buttonDictionary[button.control] = affordances;
-                }
-
-                affordances.Add(button);
-            }
-            return buttonDictionary;
         }
 
         public virtual IEnumerator Start()
@@ -213,12 +155,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_LeftShakeTracker.Update(leftLocalPosition, Time.deltaTime);
                 m_RightShakeTracker.Update(rightLocalPosition, Time.deltaTime);
 
-                if (m_SemitransparentLockRequest == null)
+                if (Mathf.Max(m_LeftShakeTracker.shakeStrength, m_RightShakeTracker.shakeStrength) > m_ShakeThreshhold)
                 {
-                    if (Mathf.Max(m_LeftShakeTracker.shakeStrength, m_RightShakeTracker.shakeStrength) > m_ShakeThreshhold)
-                    {
-                        AddFeedbackRequest(m_ShakeFeedbackRequest);
-                    }
+                    m_LeftProxyUI.AddShakeRequest();
+                    m_RightProxyUI.AddShakeRequest();
                 }
             }
         }
@@ -228,194 +168,33 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var proxyRequest = request as ProxyFeedbackRequest;
             if (proxyRequest != null)
             {
-                var hasKey = m_FeedbackRequests.ContainsKey(proxyRequest);
-                if (hasKey) // Update existing request/coroutine pair
-                {
-                    var lifespanMonitoringCoroutine = m_FeedbackRequests[proxyRequest];
-                    this.RestartCoroutine(ref lifespanMonitoringCoroutine, MonitorFeedbackRequestLifespan(proxyRequest));
-                    m_FeedbackRequests[proxyRequest] = lifespanMonitoringCoroutine;
-                }
-                else // Add a new request/coroutine pair
-                {
-                    var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
-                    m_FeedbackRequests.Add(proxyRequest, newMonitoringCoroutine);
-                }
-
-                ExecuteFeedback(proxyRequest);
+                if (proxyRequest.node == Node.LeftHand)
+                    m_LeftProxyUI.AddFeedbackRequest(proxyRequest);
+                else if (proxyRequest.node == Node.RightHand)
+                    m_RightProxyUI.AddFeedbackRequest(proxyRequest);
             }
-        }
-
-        void ExecuteFeedback(ProxyFeedbackRequest changedRequest)
-        {
-            if (!active)
-                return;
-
-            foreach (var proxyNode in m_Affordances)
-            {
-                if (proxyNode.Key != changedRequest.node)
-                    continue;
-
-                foreach (var kvp in proxyNode.Value)
-                {
-                    if (kvp.Key != changedRequest.control)
-                        continue;
-
-                    ProxyFeedbackRequest request = null;
-                    foreach (var req in m_FeedbackRequests)
-                    {
-                        var key = req.Key;
-                        if (key.node != proxyNode.Key || key.control != kvp.Key)
-                            continue;
-
-                        if (request == null || key.priority >= request.priority)
-                            request = key;
-                    }
-
-                    if (request == null)
-                        continue;
-
-                    foreach (var button in kvp.Value)
-                    {
-                        if (button.renderer)
-                            this.SetHighlight(button.renderer.gameObject, !request.suppressExisting, duration: k_DefaultFeedbackDuration);
-
-                        var tooltipText = request.tooltipText;
-                        if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
-                        {
-                            foreach (var tooltip in button.tooltips)
-                            {
-                                if (tooltip)
-                                {
-                                    tooltip.tooltipText = tooltipText;
-                                    this.ShowTooltip(tooltip, true, k_DefaultFeedbackDuration);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            UpdateVisibility();
         }
 
         public void RemoveFeedbackRequest(FeedbackRequest request)
         {
             var proxyRequest = request as ProxyFeedbackRequest;
             if (proxyRequest != null)
-                RemoveFeedbackRequest(proxyRequest);
-        }
-
-        void RemoveFeedbackRequest(ProxyFeedbackRequest request)
-        {
-            Dictionary<VRInputDevice.VRControl, List<Affordance>> affordanceDictionary;
-            if (m_Affordances.TryGetValue(request.node, out affordanceDictionary))
             {
-                List<Affordance> affordances;
-                if (affordanceDictionary.TryGetValue(request.control, out affordances))
-                {
-                    foreach (var kvp in affordanceDictionary)
-                    {
-                        foreach (var affordance in kvp.Value)
-                        {
-                            if (affordance.renderer)
-                                this.SetHighlight(affordance.renderer.gameObject, false);
-
-                            foreach (var tooltip in affordance.tooltips)
-                            {
-                                if (tooltip)
-                                {
-                                    tooltip.tooltipText = string.Empty;
-                                    this.HideTooltip(tooltip, true);
-                                }
-                            }
-                        }
-                    }
-                }
+                if (proxyRequest.node == Node.LeftHand)
+                    m_LeftProxyUI.RemoveFeedbackRequest(proxyRequest);
+                else if (proxyRequest.node == Node.RightHand)
+                    m_RightProxyUI.RemoveFeedbackRequest(proxyRequest);
             }
-
-            if (m_FeedbackRequests.Remove(request))
-                ExecuteFeedback(request);
         }
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            // Interate over keys instead of pairs in the dictionary, in order to prevent out-of-sync errors when exiting EXR
-            foreach (var key in m_FeedbackRequests.Keys.ToList())
+            // Check for null in order to prevent MissingReferenceException when exiting EXR
+            if (m_LeftProxyUI && m_RightProxyUI)
             {
-                if (key != null && key.caller == caller)
-                    RemoveFeedbackRequest(key);
+                m_LeftProxyUI.ClearFeedbackRequests(caller);
+                m_RightProxyUI.ClearFeedbackRequests(caller);
             }
-        }
-
-        void UpdateVisibility()
-        {
-            var rightProxyRequestsExist = false;
-            var leftProxyRequestsExist = false;
-            var shakenVisibility = m_SemitransparentLockRequest != null;
-            if (shakenVisibility)
-            {
-                // Left & right device affordances should be visible when the input-device is shaken
-                rightProxyRequestsExist = true;
-                leftProxyRequestsExist = true;
-            }
-            else if (m_FeedbackRequests.Count > 0)
-            {
-                // Find any visible feedback requests for each hand
-                foreach (var request in m_FeedbackRequests)
-                {
-                    var node = request.Key.node;
-                    var visible = request.Key.visible;
-
-                    if (!leftProxyRequestsExist)
-                        leftProxyRequestsExist = node == Node.LeftHand && visible;
-
-                    if (!rightProxyRequestsExist)
-                        rightProxyRequestsExist = node == Node.RightHand && visible;
-
-                    if (rightProxyRequestsExist && leftProxyRequestsExist)
-                        break;
-                }
-            }
-
-            rightAffordanceRenderersVisible = rightProxyRequestsExist;
-            leftAffordanceRenderersVisible = leftProxyRequestsExist;
-
-            rightBodyRenderersVisible = shakenVisibility;
-            leftBodyRenderersVisible = shakenVisibility;
-        }
-
-        IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
-        {
-            if (request.proxyShaken)
-            {
-                if (m_SemitransparentLockRequest != null)
-                    yield break;
-
-                m_SemitransparentLockRequest = request;
-            }
-
-            request.visible = true;
-
-            const float kShakenVisibilityDuration = 5f;
-            const float kShorterOpaqueDurationScalar = 0.125f;
-            float duration = request.proxyShaken ? kShakenVisibilityDuration : k_DefaultFeedbackDuration * kShorterOpaqueDurationScalar;
-            var currentDuration = 0f;
-            while (request != null && currentDuration < duration)
-            {
-                currentDuration += Time.unscaledDeltaTime;
-                yield return null;
-            }
-
-            if (request != null)
-                request.visible = false;
-
-            // Unlock shaken body visibility if this was the most recent request the trigger the full body visibility
-            if (m_SemitransparentLockRequest == request)
-            {
-                m_SemitransparentLockRequest = null;
-            }
-
-            UpdateVisibility();
         }
     }
 }
