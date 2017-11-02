@@ -28,7 +28,7 @@ MonoBehaviour:
     m_VisibilityType: 0
     m_ColorProperty: _Color
     m_AlphaProperty: 
-    m_HiddenColor: {r: 1, g: 1, b: 1, a: 0.116}
+    m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
     m_HiddenAlpha: 0
     m_HiddenMaterial: {fileID: 0}
   m_AffordanceDefinitions:
@@ -43,7 +43,7 @@ MonoBehaviour:
       m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
-      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0.172}
+      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 3
@@ -57,7 +57,7 @@ MonoBehaviour:
       m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
-      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0.172}
+      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 17
@@ -85,7 +85,7 @@ MonoBehaviour:
       m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
-      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0.172}
+      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 22
@@ -99,7 +99,7 @@ MonoBehaviour:
       m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
-      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0.172}
+      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 0
@@ -113,7 +113,7 @@ MonoBehaviour:
       m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
-      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0.172}
+      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 1
@@ -127,6 +127,6 @@ MonoBehaviour:
       m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
-      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0.172}
+      m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
