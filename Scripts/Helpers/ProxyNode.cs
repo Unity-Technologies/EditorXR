@@ -11,7 +11,6 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     using AffordanceVisualStateData = AffordanceVisibilityDefinition.AffordanceVisualStateData;
-    using FeedbackRequestTuple = Tuple<ProxyFeedbackRequest, Coroutine>;
     using VisibilityControlType = ProxyAffordanceMap.VisibilityControlType;
 
     /// <summary>
@@ -25,8 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Node node;
         public string tooltipText;
         public bool suppressExisting;
-        public bool visible;
-        public bool proxyShaken;
+        public bool showBody;
     }
 
     class ProxyNode : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
@@ -50,6 +48,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 this.originalValue = originalValue;
                 this.animateFromValue = animateFromValue;
             }
+        }
+
+        class RequestData
+        {
+            public ProxyFeedbackRequest request;
+            public bool visible;
+            public Coroutine monitoringCoroutine;
         }
 
         [SerializeField]
@@ -101,10 +106,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly Dictionary<Material, AffordancePropertyTuple<Color>> m_BodyMaterialOriginalColorMap = new Dictionary<Material, AffordancePropertyTuple<Color>>();
         readonly Dictionary<Material, AffordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, AffordancePropertyTuple<float>>();
 
-        readonly List<FeedbackRequestTuple> m_FeedbackRequests = new List<FeedbackRequestTuple>();
+        readonly List<RequestData> m_FeedbackRequests = new List<RequestData>();
 
         // Local method use only -- created here to reduce garbage collection
-        static readonly List<FeedbackRequestTuple> k_FeedbackRequestsCopy = new List<FeedbackRequestTuple>();
+        static readonly List<RequestData> k_FeedbackRequestsCopy = new List<RequestData>();
 
         /// <summary>
         /// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
@@ -193,10 +198,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_ShakeFeedbackRequest = new ProxyFeedbackRequest
             {
                 control = VRInputDevice.VRControl.LocalPosition,
-                node = Node.None,
                 tooltipText = null,
                 suppressExisting = true,
-                proxyShaken = true
+                showBody = true
             };
 
             // Don't allow setup if affordances are invalid
@@ -449,7 +453,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             foreach (var feedbackRequest in m_FeedbackRequests)
             {
-                var request = feedbackRequest.firstElement;
+                var request = feedbackRequest.request;
                 foreach (var affordance in m_Affordances)
                 {
                     if (affordance.control != request.control)
@@ -654,11 +658,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void AddFeedbackRequest(ProxyFeedbackRequest proxyRequest)
         {
-            Coroutine monitoringCoroutine = null;
+            var requestData = new RequestData { request = proxyRequest };
             if (isActiveAndEnabled)
-                monitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
+                requestData.monitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(requestData));
 
-            m_FeedbackRequests.Add(new FeedbackRequestTuple(proxyRequest, monitoringCoroutine));
+            m_FeedbackRequests.Add(requestData);
 
             ExecuteFeedback(proxyRequest);
         }
@@ -674,9 +678,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     continue;
 
                 ProxyFeedbackRequest request = null;
-                foreach (var requestCoroutineTuple in m_FeedbackRequests)
+                foreach (var requestData in m_FeedbackRequests)
                 {
-                    var feedbackRequest = requestCoroutineTuple.firstElement;
+                    var feedbackRequest = requestData.request;
                     if (feedbackRequest.control != affordance.control)
                         continue;
 
@@ -728,11 +732,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 }
             }
 
-            foreach (var tuple in m_FeedbackRequests)
+            foreach (var requestData in m_FeedbackRequests)
             {
-                if (tuple.firstElement == request)
+                if (requestData.request == request)
                 {
-                    m_FeedbackRequests.Remove(tuple);
+                    m_FeedbackRequests.Remove(requestData);
                     ExecuteFeedback(request);
                     break;
                 }
@@ -744,13 +748,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             k_FeedbackRequestsCopy.Clear();
             foreach (var request in m_FeedbackRequests)
             {
-                if (request.firstElement.caller == caller)
+                if (request.request.caller == caller)
                     k_FeedbackRequestsCopy.Add(request);
             }
 
             foreach (var request in k_FeedbackRequestsCopy)
             {
-                RemoveFeedbackRequest(request.firstElement);
+                RemoveFeedbackRequest(request.request);
             }
         }
 
@@ -763,10 +767,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (!shakenVisibility)
             {
                 // Find any visible feedback requests for each hand
-                foreach (var requestCoroutineTuple in m_FeedbackRequests)
+                foreach (var requestData in m_FeedbackRequests)
                 {
-                    var request = requestCoroutineTuple.firstElement;
-                    proxyRequestsExist = request.visible && request.node == Node.RightHand;
+                    proxyRequestsExist = requestData.visible;
 
                     if (proxyRequestsExist)
                         break;
@@ -777,9 +780,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             bodyVisible = shakenVisibility;
         }
 
-        IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
+        IEnumerator MonitorFeedbackRequestLifespan(RequestData requestData)
         {
-            if (request.proxyShaken)
+            var request = requestData.request;
+            if (request.showBody)
             {
                 if (m_SemitransparentLockRequest != null)
                     yield break;
@@ -787,11 +791,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_SemitransparentLockRequest = request;
             }
 
-            request.visible = true;
+            requestData.visible = true;
 
             const float kShakenVisibilityDuration = 5f;
             const float kShorterOpaqueDurationScalar = 0.125f;
-            float duration = request.proxyShaken ? kShakenVisibilityDuration : k_DefaultFeedbackDuration * kShorterOpaqueDurationScalar;
+            float duration = request.showBody ? kShakenVisibilityDuration : k_DefaultFeedbackDuration * kShorterOpaqueDurationScalar;
             var currentDuration = 0f;
             while (currentDuration < duration)
             {
@@ -799,7 +803,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 yield return null;
             }
 
-            request.visible = false;
+            requestData.visible = false;
 
             // Unlock shaken body visibility if this was the most recent request the trigger the full body visibility
             if (m_SemitransparentLockRequest == request)
