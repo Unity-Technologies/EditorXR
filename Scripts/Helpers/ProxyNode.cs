@@ -29,7 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public bool proxyShaken;
     }
 
-    class ProxyUI : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
+    class ProxyNode : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
     {
         const string k_ZWritePropertyName = "_ZWrite";
         const float k_DefaultFeedbackDuration = 5f;
@@ -72,9 +72,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         [SerializeField]
         Transform m_FieldGrabOrigin;
-
-        [SerializeField]
-        ProxyUI m_ProxyUI;
 
         [SerializeField]
         ProxyAnimator m_ProxyAnimator;
