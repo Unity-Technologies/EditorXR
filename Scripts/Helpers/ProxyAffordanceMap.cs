@@ -11,9 +11,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// </summary>
         public enum VisibilityControlType
         {
-            colorProperty,
-            alphaProperty,
-            materialSwap
+            ColorProperty,
+            AlphaProperty,
+            MaterialSwap
         }
 
         [Header("Non-Interactive Input-Device Body Elements")]

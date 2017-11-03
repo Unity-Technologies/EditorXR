@@ -11,6 +11,34 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [Serializable]
     public class AffordanceVisibilityDefinition
     {
+        public class AffordanceVisualStateData
+        {
+            /// <summary>
+            /// The renderer for this visual state
+            /// </summary>
+            public Renderer renderer { get; set; }
+
+            /// <summary>
+            /// The material for this visual state
+            /// </summary>
+            public Material material { get; set; }
+
+            /// <summary>
+            /// Original color, Color.a is used for alpha-only animation
+            /// </summary>
+            public Color originalColor { get; set; }
+
+            /// <summary>
+            /// Hidden color, Color.a is used for alpha-only animation
+            /// </summary>
+            public Color hiddenColor { get; set; }
+
+            /// <summary>
+            /// Current color of the material at runtime
+            /// </summary>
+            public Color currentColor { get; set; }
+        }
+
         [SerializeField]
         ProxyAffordanceMap.VisibilityControlType m_VisibilityType;
 
@@ -29,47 +57,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         Material m_HiddenMaterial;
 
-        public class AffordanceVisualStateData
-        {
-            /// <summary>
-            /// Original material
-            /// </summary>
-            public Material originalMaterial { get; set; }
-
-            /// <summary>
-            /// Original color, Color.a is used for alpha-only animation
-            /// </summary>
-            public Color originalColor { get; set; }
-
-            /// <summary>
-            /// Hidden color, Color.a is used for alpha-only animation
-            /// </summary>
-            public Color hiddenColor { get; set; }
-
-            /// <summary>
-            /// Animate FROM color (used in animated coroutines), color.a is used for alpha-only animation
-            /// </summary>
-            public Color animateFromColor { get; set; }
-
-            /// <summary>
-            /// Animate TO color (used in animated coroutines), color.a is used for alpha-only animation
-            /// </summary>
-            public Color animateToColor { get; set; }
-
-            public AffordanceVisualStateData(Material originalMaterial, Color originalColor, Color hiddenColor, Color animateFromColor, Color animateToColor)
-            {
-                this.originalMaterial = originalMaterial;
-                this.originalColor = originalColor;
-                this.hiddenColor = hiddenColor;
-                this.animateFromColor = animateFromColor;
-                this.animateToColor = animateToColor;
-            }
-        }
+        readonly List<AffordanceVisualStateData> m_VisualStateData = new List<AffordanceVisualStateData>();
 
         /// <summary>
         /// Data defining the original, and current visual state of an affordance
         /// </summary>
-        public List<AffordanceVisualStateData> visualStateData { get; set; }
+        public List<AffordanceVisualStateData> visualStateData { get { return m_VisualStateData; } }
 
         /// <summary>
         /// The hidden color of the material
@@ -130,8 +123,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set { m_AlphaProperty = value; }
         }
 
+        /// <summary>
+        /// Whether this affordance is visible (at runtime)
+        /// </summary>
+        public bool visible { get; set; }
+
+        // HACK: if empty constructor is missing, m_VisualStateData is not initialized
+        AffordanceVisibilityDefinition()
+        {
+        }
+
         public AffordanceVisibilityDefinition(AffordanceVisibilityDefinition definitionToCopy)
         {
+            Debug.Log(m_VisualStateData);
             visibilityType = definitionToCopy.visibilityType;
             colorProperty = definitionToCopy.colorProperty;
             alphaProperty = definitionToCopy.alphaProperty;
