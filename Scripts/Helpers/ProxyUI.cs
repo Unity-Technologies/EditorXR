@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     class ProxyUI : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
     {
         const string k_ZWritePropertyName = "_ZWrite";
-        const float k_DefaultFeedbackDuration = 500f;
+        const float k_DefaultFeedbackDuration = 5f;
 
         /// <summary>
         /// Model containing original value, and values to "animate from", unique to each body MeshRenderer material.
@@ -462,8 +462,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                     foreach (var tooltip in affordance.tooltips)
                     {
-                        this.HideTooltip(tooltip, true);
-                        this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(direction));
+                        // Only update placement, do not affect duration
+                        this.ShowTooltip(tooltip, true, -1, tooltip.GetPlacement(direction));
                     }
                 }
             }
@@ -624,9 +624,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
             for (var i = 0; i < m_BodyRenderers.Count; ++i)
             {
-                var renderer = m_BodyRenderers[i];
                 var swapMaterial = swapToHiddenMaterial ? bodyVisibilityDefinition.hiddenMaterial : m_BodySwapOriginalMaterials[i];
-                renderer.material = swapMaterial;
+                m_BodyRenderers[i].material = swapMaterial;
             }
         }
 

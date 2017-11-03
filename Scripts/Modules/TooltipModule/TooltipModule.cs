@@ -290,6 +290,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (m_Tooltips.TryGetValue(tooltip, out data))
             {
                 data.persistent |= persistent;
+                data.placement = placement ?? tooltip as ITooltipPlacement;
+                data.customHighlightMaterial = GetHighlightMaterial(tooltip);
+
                 if (duration > 0)
                 {
                     data.duration = duration;
@@ -299,6 +302,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return;
             }
 
+            // Negative durations only affect existing tooltips
+            if (duration < 0)
+                return;
+
+            m_Tooltips[tooltip] = new TooltipData
+            {
+                customHighlightMaterial = GetHighlightMaterial(tooltip),
+                startTime = Time.time,
+                lastModifiedTime = Time.time,
+                persistent = persistent,
+                duration = duration,
+                placement = placement ?? tooltip as ITooltipPlacement
+            };
+        }
+
+        Material GetHighlightMaterial(ITooltip tooltip)
+        {
             Material highlightMaterial = null;
             var customTooltipColor = tooltip as ISetCustomTooltipColor;
             if (customTooltipColor != null)
@@ -309,15 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 highlightMaterial.SetColor(k_MaterialColorBottomProperty, customTooltipHighlightColor.b);
             }
 
-            m_Tooltips[tooltip] = new TooltipData
-            {
-                customHighlightMaterial = highlightMaterial,
-                startTime = Time.time,
-                lastModifiedTime = Time.time,
-                persistent = persistent,
-                duration = duration,
-                placement = placement ?? tooltip as ITooltipPlacement
-            };
+            return highlightMaterial;
         }
 
         static bool IsValidTooltip(ITooltip tooltip)
