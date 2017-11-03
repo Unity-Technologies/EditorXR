@@ -30,10 +30,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public bool proxyShaken;
     }
 
-    internal class ProxyUI : MonoBehaviour, ISetTooltipVisibility, ISetHighlight
+    class ProxyUI : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
     {
         const string k_ZWritePropertyName = "_ZWrite";
-        const float k_DefaultFeedbackDuration = 5f;
+        const float k_DefaultFeedbackDuration = 500f;
 
         /// <summary>
         /// Model containing original value, and values to "animate from", unique to each body MeshRenderer material.
@@ -59,31 +59,47 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         float m_FadeOutSpeedScalar = 0.5f;
 
-        [Header("Optional")]
         [SerializeField]
-        ProxyAffordanceMap m_AffordanceMapOverride;
+        Transform m_RayOrigin;
 
+        [SerializeField]
+        Transform m_MenuOrigin;
+
+        [SerializeField]
+        Transform m_AlternateMenuOrigin;
+
+        [SerializeField]
+        Transform m_PreviewOrigin;
+
+        [SerializeField]
+        Transform m_FieldGrabOrigin;
+
+        [SerializeField]
+        ProxyUI m_ProxyUI;
+
+        [SerializeField]
+        ProxyAnimator m_ProxyAnimator;
+
+        [SerializeField]
+        ProxyAffordanceMap m_AffordanceMap;
+
+        [Tooltip("Affordance objects that store transform, renderer, and tooltip references")]
+        [SerializeField]
+        Affordance[] m_Affordances;
+
+        // Renderers associated with affordances/controls, & will be SHOWN when displaying feedback/tooltips
+        readonly List<Renderer> m_AffordanceRenderers = new List<Renderer>();
         List<Renderer> m_BodyRenderers; // Renderers not associated with affordances/controls, & will be HIDDEN when displaying feedback/tooltips
         List<Material> m_BodySwapOriginalMaterials; // Material collection used when swapping materials
-        List<Renderer> m_AffordanceRenderers; // Renderers associated with affordances/controls, & will be SHOWN when displaying feedback/tooltips
         bool m_BodyRenderersVisible = true; // Body renderers default to visible/true
         bool m_AffordanceRenderersVisible = true; // Affordance renderers default to visible/true
-        Affordance[] m_Affordances;
         Coroutine m_BodyVisibilityCoroutine;
 
-        ProxyHelper m_ProxyHelper;
         ProxyFeedbackRequest m_SemitransparentLockRequest;
         ProxyFeedbackRequest m_ShakeFeedbackRequest;
 
-        /// <summary>
-        /// Bool that denotes the ProxyUI has been setup
-        /// </summary>
-        bool m_ProxyUISetup;
-
-        /// <summary>
-        /// Collection of proxy origins under which not to perform any affordance/body visibility changes
-        /// </summary>
-        List<Transform> m_ProxyOrigins;
+        FacingDirection m_FacingDirection;
+        FacingDirection m_LastRightFacingDirection;
 
         // Map of unique body materials to their original Colors (used for affordances with the "color" visibility control type)
         // The second param, ColorPair, houses the original cached color, and a value, representing the color to lerp FROM when animating visibility
@@ -91,10 +107,31 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly Dictionary<Material, AffordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, AffordancePropertyTuple<float>>();
 
         readonly List<FeedbackRequestTuple> m_FeedbackRequests = new List<FeedbackRequestTuple>();
-        //ControlToAffordanceDictionary m_ControlToAffordances;
 
-        bool affordanceRenderersVisible { set { m_ProxyHelper.affordanceRenderersVisible = value; } }
-        bool bodyRenderersVisible { set { m_ProxyHelper.bodyRenderersVisible = value; } }
+        /// <summary>
+        /// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
+        /// </summary>
+        public Transform rayOrigin { get { return m_RayOrigin; } }
+
+        /// <summary>
+        /// The transform that the menu content will be parented under
+        /// </summary>
+        public Transform menuOrigin { get { return m_MenuOrigin; } }
+
+        /// <summary>
+        /// The transform that the alternate-menu content will be parented under
+        /// </summary>
+        public Transform alternateMenuOrigin { get { return m_AlternateMenuOrigin; } }
+
+        /// <summary>
+        /// The transform that the display/preview objects will be parented under
+        /// </summary>
+        public Transform previewOrigin { get { return m_PreviewOrigin; } }
+
+        /// <summary>
+        /// The transform that the display/preview objects will be parented under
+        /// </summary>
+        public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
 
         public event Action setupComplete;
 
@@ -105,11 +142,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             set
             {
-                if (!m_ProxyUISetup || m_ProxyOrigins == null || !gameObject.activeInHierarchy || m_AffordanceRenderersVisible == value)
+                if (!gameObject.activeInHierarchy || m_AffordanceRenderersVisible == value)
                     return;
 
                 m_AffordanceRenderersVisible = value;
-                foreach (var affordanceDefinition in m_AffordanceMapOverride.AffordanceDefinitions)
+                foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)
                 {
                     var visibilityDefinition = affordanceDefinition.visibilityDefinition;
                     switch (visibilityDefinition.visibilityType)
@@ -118,7 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceColorVisibility(value, affordanceDefinition, m_FadeInSpeedScalar, m_FadeOutSpeedScalar));
                             break;
                         case VisibilityControlType.alphaProperty:
-                            this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceAlphaVisibility(value, m_FadeInSpeedScalar, m_FadeOutSpeedScalar, m_AffordanceMapOverride.bodyVisibilityDefinition));
+                            this.RestartCoroutine(ref visibilityDefinition.affordanceVisibilityCoroutine, AnimateAffordanceAlphaVisibility(value, m_FadeInSpeedScalar, m_FadeOutSpeedScalar, m_AffordanceMap.bodyVisibilityDefinition));
                             break;
                         case VisibilityControlType.materialSwap:
                             SwapAffordanceToHiddenMaterial(value, affordanceDefinition);
@@ -135,11 +172,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             set
             {
-                if (!m_ProxyUISetup || m_ProxyOrigins == null || !gameObject.activeInHierarchy || m_BodyRenderersVisible == value)
+                if (!gameObject.activeInHierarchy || m_BodyRenderersVisible == value)
                     return;
 
                 m_BodyRenderersVisible = value;
-                var visibilityDefinition = m_AffordanceMapOverride.bodyVisibilityDefinition;
+                var visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
                 switch (visibilityDefinition.visibilityType)
                 {
                     case VisibilityControlType.colorProperty:
@@ -169,13 +206,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void OnDestroy()
         {
-            this.StopAllCoroutines();
+            StopAllCoroutines();
 
-            // Cleanup cloned materials
-            if (m_AffordanceMapOverride == null)
-                return;
-
-            foreach (var affordanceDefinition in m_AffordanceMapOverride.AffordanceDefinitions)
+            foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)
             {
                 var visibilityDefinition = affordanceDefinition.visibilityDefinition;
                 var visibilityType = visibilityDefinition.visibilityType;
@@ -194,7 +227,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 }
             }
 
-            var bodyVisibilityDefinition = m_AffordanceMapOverride.bodyVisibilityDefinition;
+            var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
             var bodyVisibilityType = bodyVisibilityDefinition.visibilityType;
             if (bodyVisibilityType == VisibilityControlType.colorProperty || bodyVisibilityType == VisibilityControlType.alphaProperty)
             {
@@ -215,68 +248,41 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        /// <summary>
-        /// Setup this ProxyUI
-        /// </summary>
-        /// <param name="affordances">The ProxyHelper affordances that drive visual changes in the ProxyUI</param>
-        /// <param name="proxyOrigins">ProxyOrigins whose child renderers will not be controlled by the PRoxyUI</param>
-        public void Setup(ProxyHelper proxyHelper, ProxyAffordanceMap affordanceMap, Affordance[] affordances, List<Transform> proxyOrigins)
+        void Start()
         {
-            // Prevent multiple setups
-            if (m_ProxyUISetup)
+            if (m_ProxyAnimator)
             {
-                Debug.LogError("ProxyUI can only be setup once on : " + gameObject.name);
-                return;
-            }
-
-            // Don't allow setup if affordances are already set
-            if (m_Affordances != null)
-            {
-                Debug.LogError("Affordances are already set on : " + gameObject.name);
-                return;
+                m_ProxyAnimator.Setup(m_AffordanceMap, m_Affordances);
+                this.ConnectInterfaces(m_ProxyAnimator, rayOrigin);
             }
 
             // Don't allow setup if affordances are invalid
-            if (affordances == null || affordances.Length == 0)
+            if (m_Affordances == null || m_Affordances.Length == 0)
             {
                 Debug.LogError("Affordances invalid when attempting to setup ProxyUI on : " + gameObject.name);
                 return;
             }
 
             // Prevent further setup if affordance map isn't assigned
-            if (m_AffordanceMapOverride == null && affordanceMap == null)
+            if (m_AffordanceMap == null)
             {
                 Debug.LogError("A valid Affordance Map must be present when setting up ProxyUI on : " + gameObject.name);
                 return;
             }
 
-            if (m_AffordanceMapOverride == null)
-            {
-                // Assign the ProxyHelper's default AffordanceMap, if no override map was assigned to this ProxyUI
-                m_AffordanceMapOverride = affordanceMap;
-            }
-
-            m_ProxyHelper = proxyHelper;
-
-            // Set affordances AFTER setting origins, as the origins are referenced when setting up affordances
-            m_ProxyOrigins = proxyOrigins;
-
             // Clone the affordance map, in order to allow a single map to drive the visuals of many duplicate
             // This also allows coroutine sets in the ProxyAffordanceMap to be performed simultaneously for n-number of devices in a proxy
-            m_AffordanceMapOverride = Instantiate(m_AffordanceMapOverride);
-
-            m_Affordances = affordances;
-            m_AffordanceRenderers = new List<Renderer>();
+            m_AffordanceMap = Instantiate(m_AffordanceMap);
 
             // If no custom affordance definitions are defined in the affordance map, they will be populated by new generated definitions below
-            var affordanceMapDefinitions = m_AffordanceMapOverride.AffordanceDefinitions;
+            var affordanceMapDefinitions = m_AffordanceMap.AffordanceDefinitions;
             var affordancesDefinedInMap = affordanceMapDefinitions != null && affordanceMapDefinitions.Length > 0 && affordanceMapDefinitions[0] != null;
 
             // If affordanceMapDefinitions is null, set the list below into the map after setup
             var generatedAffordanceDefinitions = new List<AffordanceDefinition>();
-            var defaultAffordanceVisibilityDefinition = m_AffordanceMapOverride.defaultAffordanceVisibilityDefinition;
-            var defaultAffordanceAnimationDefinition = m_AffordanceMapOverride.defaultAnimationDefinition;
-            foreach (var proxyAffordance in affordances)
+            var defaultAffordanceVisibilityDefinition = m_AffordanceMap.defaultAffordanceVisibilityDefinition;
+            var defaultAffordanceAnimationDefinition = m_AffordanceMap.defaultAnimationDefinition;
+            foreach (var proxyAffordance in m_Affordances)
             {
                 var renderers = proxyAffordance.renderer.GetComponentsInChildren<Renderer>(true);
                 if (renderers != null)
@@ -357,11 +363,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
             if (!affordancesDefinedInMap)
-                m_AffordanceMapOverride.AffordanceDefinitions = generatedAffordanceDefinitions.ToArray();
+                m_AffordanceMap.AffordanceDefinitions = generatedAffordanceDefinitions.ToArray();
 
             // Collect renderers not associated with affordances
             // Material swaps don't need to cache original values, only alpha & color
-            var bodyVisibilityDefinition = m_AffordanceMapOverride.bodyVisibilityDefinition;
+            var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
             m_BodyRenderers = GetComponentsInChildren<Renderer>(true).Where(x => !m_AffordanceRenderers.Contains(x) && !IsChildOfProxyOrigin(x.transform)).ToList();
             switch (bodyVisibilityDefinition.visibilityType)
             {
@@ -407,11 +413,60 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             affordancesVisible = false;
             bodyVisible = false;
 
-            // Allow setting of affordance & body visibility after affordance+body setup is performed in the "affordances" property
-            m_ProxyUISetup = true;
-
             if (setupComplete != null)
                 setupComplete();
+        }
+
+        void Update()
+        {
+            var cameraPosition = CameraUtils.GetMainCamera().transform.position;
+            var direction = GetFacingDirection(cameraPosition);
+            if (m_FacingDirection != direction)
+            {
+                m_FacingDirection = direction;
+                UpdateFacingDirection(direction);
+            }
+        }
+
+        FacingDirection GetFacingDirection(Vector3 cameraPosition)
+        {
+            var toCamera = Vector3.Normalize(cameraPosition - transform.position);
+
+            var xDot = Vector3.Dot(toCamera, transform.right);
+            var yDot = Vector3.Dot(toCamera, transform.up);
+            var zDot = Vector3.Dot(toCamera, transform.forward);
+
+            if (Mathf.Abs(xDot) > Mathf.Abs(yDot))
+            {
+                if (Mathf.Abs(zDot) > Mathf.Abs(xDot))
+                    return zDot > 0 ? FacingDirection.Front : FacingDirection.Back;
+
+                return xDot > 0 ? FacingDirection.Right : FacingDirection.Left;
+            }
+
+            if (Mathf.Abs(zDot) > Mathf.Abs(yDot))
+                return zDot > 0 ? FacingDirection.Front : FacingDirection.Back;
+
+            return yDot > 0 ? FacingDirection.Top : FacingDirection.Bottom;
+        }
+
+        void UpdateFacingDirection(FacingDirection direction)
+        {
+            foreach (var feedbackRequest in m_FeedbackRequests)
+            {
+                var request = feedbackRequest.firstElement;
+                foreach (var affordance in m_Affordances)
+                {
+                    if (affordance.control != request.control)
+                        continue;
+
+                    foreach (var tooltip in affordance.tooltips)
+                    {
+                        this.HideTooltip(tooltip, true);
+                        this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(direction));
+                    }
+                }
+            }
         }
 
         static IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition, float fadeInSpeedScalar, float fadeOutSpeedScalar)
@@ -482,7 +537,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         IEnumerator AnimateBodyColorVisibility(bool isVisible)
         {
-            var bodyVisibilityDefinition = m_AffordanceMapOverride.bodyVisibilityDefinition;
+            var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
             foreach (var kvp in m_BodyMaterialOriginalColorMap)
             {
                 kvp.Value.animateFromValue = kvp.Key.GetColor(bodyVisibilityDefinition.colorProperty);
@@ -519,7 +574,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         IEnumerator AnimateBodyAlphaVisibility(bool isVisible)
         {
-            var bodyVisibilityDefinition = m_AffordanceMapOverride.bodyVisibilityDefinition;
+            var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
             foreach (var kvp in m_BodyMaterialOriginalAlphaMap)
             {
                 kvp.Value.animateFromValue = kvp.Key.GetFloat(bodyVisibilityDefinition.alphaProperty);
@@ -566,7 +621,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void SwapBodyToHiddenMaterial(bool swapToHiddenMaterial)
         {
-            var bodyVisibilityDefinition = m_AffordanceMapOverride.bodyVisibilityDefinition;
+            var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
             for (var i = 0; i < m_BodyRenderers.Count; ++i)
             {
                 var renderer = m_BodyRenderers[i];
@@ -577,22 +632,22 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         bool IsChildOfProxyOrigin(Transform transform)
         {
-            // Prevent any menu/origin content from having its visibility changed
-            var isChild = false;
-            foreach (var origin in m_ProxyOrigins)
-            {
-                // m_ProxyOrgins is populated by ProxyHelper
-                // Validate that the transform param is not a child of any proxy origins
-                // Those objects shouldn't have their visibility changed by the ProxyUI
-                // Their individual controllers should handle their visibility
-                if (transform.IsChildOf(origin))
-                {
-                    isChild = true;
-                    break;
-                }
-            }
+            if (transform.IsChildOf(rayOrigin))
+                return true;
 
-            return isChild;
+            if (transform.IsChildOf(menuOrigin))
+                return true;
+
+            if (transform.IsChildOf(alternateMenuOrigin))
+                return true;
+
+            if (transform.IsChildOf(previewOrigin))
+                return true;
+
+            if (transform.IsChildOf(fieldGrabOrigin))
+                return true;
+
+            return false;
         }
 
         public void AddShakeRequest()
@@ -605,11 +660,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void AddFeedbackRequest(ProxyFeedbackRequest proxyRequest)
         {
-            if (isActiveAndEnabled)
-            {
-                var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
-                m_FeedbackRequests.Add(new FeedbackRequestTuple(proxyRequest, newMonitoringCoroutine));
-            }
+            if (!isActiveAndEnabled)
+                return;
+
+            var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
+            m_FeedbackRequests.Add(new FeedbackRequestTuple(proxyRequest, newMonitoringCoroutine));
 
             ExecuteFeedback(proxyRequest);
         }
@@ -649,7 +704,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         if (tooltip)
                         {
                             tooltip.tooltipText = tooltipText;
-                            this.ShowTooltip(tooltip, true, k_DefaultFeedbackDuration);
+                            this.ShowTooltip(tooltip, true, k_DefaultFeedbackDuration,
+                                tooltip.GetPlacement(m_FacingDirection));
                         }
                     }
                 }
@@ -711,35 +767,25 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void UpdateVisibility()
         {
-            if (!m_ProxyUISetup)
-                return;
-
-            var proxyRequestsExist = false;
             var shakenVisibility = m_SemitransparentLockRequest != null;
-            if (shakenVisibility)
-            {
-                // Proxy affordances should be visible when the input-device is shaken
-                proxyRequestsExist = true;
-            }
-            else if (m_FeedbackRequests.Count > 0)
+            // Proxy affordances should be visible when the input-device is shaken
+            var proxyRequestsExist = shakenVisibility;
+
+            if (!shakenVisibility)
             {
                 // Find any visible feedback requests for each hand
                 foreach (var requestCoroutineTuple in m_FeedbackRequests)
                 {
                     var request = requestCoroutineTuple.firstElement;
-                    var node = request.node;
-                    var visible = request.visible;
-
-                    if (!proxyRequestsExist)
-                        proxyRequestsExist = node == Node.RightHand && visible;
+                    proxyRequestsExist = request.visible && request.node == Node.RightHand;
 
                     if (proxyRequestsExist)
                         break;
                 }
             }
 
-            affordanceRenderersVisible = proxyRequestsExist;
-            bodyRenderersVisible = shakenVisibility;
+            affordancesVisible = proxyRequestsExist;
+            bodyVisible = shakenVisibility;
         }
 
         IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)

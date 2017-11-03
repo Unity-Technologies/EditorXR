@@ -65,7 +65,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4397591939547504}
-  - component: {fileID: 114752989612263042}
   - component: {fileID: 114926072655415978}
   - component: {fileID: 114831531447913008}
   m_Layer: 0
@@ -1026,7 +1025,7 @@ Animator:
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
-  m_WarningMessage: 
+  m_WarningMessage:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
 --- !u!114 &114125306406013188
@@ -1037,13 +1036,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1226206133097882}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TooltipText: 
-  m_TooltipTarget: {fileID: 4749739265137154}
-  m_TooltipSource: {fileID: 4490380767236794}
-  m_TooltipAlignment: 1
+  m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_TooltipText:
+  m_Placements: []
 --- !u!114 &114178244051393772
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1052,13 +1049,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1312015401150000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TooltipText: 
-  m_TooltipTarget: {fileID: 4856563909459678}
-  m_TooltipSource: {fileID: 4739757693524634}
-  m_TooltipAlignment: 1
+  m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_TooltipText:
+  m_Placements: []
 --- !u!114 &114208349049674382
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1067,13 +1062,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1201644712411802}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TooltipText: 
-  m_TooltipTarget: {fileID: 4053280757573756}
-  m_TooltipSource: {fileID: 4520968933053068}
-  m_TooltipAlignment: 0
+  m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_TooltipText:
+  m_Placements: []
 --- !u!114 &114229362539100848
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1083,8 +1076,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_SelectionFlags: 3
 --- !u!114 &114263728491513428
 MonoBehaviour:
@@ -1095,8 +1088,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_SelectionFlags: 3
 --- !u!114 &114337431156793536
 MonoBehaviour:
@@ -1106,13 +1099,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1226206133097882}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TooltipText: 
-  m_TooltipTarget: {fileID: 4749739265137154}
-  m_TooltipSource: {fileID: 4490380767236794}
-  m_TooltipAlignment: 1
+  m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_TooltipText:
+  m_Placements: []
 --- !u!114 &114395863652273138
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1122,8 +1113,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_SelectionFlags: 3
 --- !u!114 &114474480701569528
 MonoBehaviour:
@@ -1133,14 +1124,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 1803401048987102}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TooltipText: 
-  m_TooltipTarget: {fileID: 4474642415084100}
-  m_TooltipSource: {fileID: 4822934406098802}
-  m_TooltipAlignment: 1
---- !u!114 &114752989612263042
+  m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_TooltipText:
+  m_Placements: []
+--- !u!114 &114807140885831364
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1226206133097882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_TooltipText:
+  m_Placements: []
+--- !u!114 &114831531447913008
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -1148,15 +1150,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 1121674342063006}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88cb44c52683f6648b7d436e9aa51bcc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Script: {fileID: 11500000, guid: 460af9702a1fe674a932ad1a15f33bfa, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
+  m_AffordanceMapOverride: {fileID: 0}
+--- !u!114 &114868536840748390
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1226206133097882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_SelectionFlags: 3
+--- !u!114 &114926072655415978
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1121674342063006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_FadeInSpeedScalar: 4
+  m_FadeOutSpeedScalar: 0.5
   m_RayOrigin: {fileID: 4066961127535540}
   m_MenuOrigin: {fileID: 4298354039062494}
   m_AlternateMenuOrigin: {fileID: 4263165527348130}
   m_PreviewOrigin: {fileID: 4601081929867384}
   m_FieldGrabOrigin: {fileID: 4694679444484640}
-  m_MeshRoot: {fileID: 4725754007993800}
   m_ProxyUI: {fileID: 114926072655415978}
   m_ProxyAnimator: {fileID: 114831531447913008}
   m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
@@ -1196,60 +1224,6 @@ MonoBehaviour:
     m_Renderer: {fileID: 137862233404870076}
     m_Tooltips:
     - {fileID: 114807140885831364}
---- !u!114 &114807140885831364
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1226206133097882}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TooltipText: 
-  m_TooltipTarget: {fileID: 4749739265137154}
-  m_TooltipSource: {fileID: 4490380767236794}
-  m_TooltipAlignment: 1
---- !u!114 &114831531447913008
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1121674342063006}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 460af9702a1fe674a932ad1a15f33bfa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
-  m_AffordanceMapOverride: {fileID: 0}
---- !u!114 &114868536840748390
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1226206133097882}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SelectionFlags: 3
---- !u!114 &114926072655415978
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1121674342063006}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_FadeInSpeedScalar: 4
-  m_FadeOutSpeedScalar: 0.5
-  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114933204733924580
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1258,13 +1232,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1658267023927624}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 121a9b94e41e9e444af3e8069a887154, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TooltipText: 
-  m_TooltipTarget: {fileID: 4951772808299216}
-  m_TooltipSource: {fileID: 4987518757343592}
-  m_TooltipAlignment: 1
+  m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  m_TooltipText:
+  m_Placements: []
 --- !u!114 &114935678038053448
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1274,8 +1246,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_Name:
+  m_EditorClassIdentifier:
   m_SelectionFlags: 3
 --- !u!136 &136527854278805382
 CapsuleCollider:

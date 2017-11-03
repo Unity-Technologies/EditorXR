@@ -10,18 +10,22 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
+    /// <summary>
+    /// Which cardinal direction a proxy node is facing
+    /// </summary>
+    [Flags]
+    public enum FacingDirection
+    {
+        Front = 1 << 0,
+        Back = 1 << 1,
+        Left = 1 << 2,
+        Right = 1 << 3,
+        Top = 1 << 4,
+        Bottom = 1 << 5
+    }
+
     abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
     {
-        enum FacingDirection
-        {
-            FRONT,
-            BACK,
-            LEFT,
-            RIGHT,
-            TOP,
-            BOTTOM
-        }
-
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
 
@@ -48,15 +52,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
 
-        FacingDirection m_LastLeftFacingDirection;
-        FacingDirection m_LastRightFacingDirection;
-
-
         protected Dictionary<Node, Transform> m_RayOrigins;
 
         bool m_Hidden;
-        ProxyHelper m_LeftProxyHelper;
-        ProxyHelper m_RightProxyHelper;
         ProxyUI m_LeftProxyUI;
         ProxyUI m_RightProxyUI;
 
@@ -104,9 +102,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
             m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
 
-            m_LeftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
-            m_RightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
-
             var setupCount = 0;
             const int numNodes = 2;
             m_LeftProxyUI = m_LeftHand.GetComponent<ProxyUI>();
@@ -124,32 +119,32 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             m_RayOrigins = new Dictionary<Node, Transform>
             {
-                { Node.LeftHand, m_LeftProxyHelper.rayOrigin },
-                { Node.RightHand, m_RightProxyHelper.rayOrigin }
+                { Node.LeftHand, m_LeftProxyUI.rayOrigin },
+                { Node.RightHand, m_RightProxyUI.rayOrigin }
             };
 
             menuOrigins = new Dictionary<Transform, Transform>()
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.menuOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.menuOrigin },
+                { m_LeftProxyUI.rayOrigin, m_LeftProxyUI.menuOrigin },
+                { m_RightProxyUI.rayOrigin, m_RightProxyUI.menuOrigin },
             };
 
             alternateMenuOrigins = new Dictionary<Transform, Transform>()
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.alternateMenuOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.alternateMenuOrigin },
+                { m_LeftProxyUI.rayOrigin, m_LeftProxyUI.alternateMenuOrigin },
+                { m_RightProxyUI.rayOrigin, m_RightProxyUI.alternateMenuOrigin },
             };
 
             previewOrigins = new Dictionary<Transform, Transform>
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.previewOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.previewOrigin }
+                { m_LeftProxyUI.rayOrigin, m_LeftProxyUI.previewOrigin },
+                { m_RightProxyUI.rayOrigin, m_RightProxyUI.previewOrigin }
             };
 
             fieldGrabOrigins = new Dictionary<Transform, Transform>
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.fieldGrabOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.fieldGrabOrigin }
+                { m_LeftProxyUI.rayOrigin, m_LeftProxyUI.fieldGrabOrigin },
+                { m_RightProxyUI.rayOrigin, m_RightProxyUI.fieldGrabOrigin }
             };
         }
 
@@ -178,21 +173,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_RightHand.localPosition = rightLocalPosition;
                 m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 
-                var cameraPosition = CameraUtils.GetMainCamera().transform.position;
-                var leftFacingDirection = GetFacingDirection(m_LeftHand, cameraPosition);
-                if (m_LastLeftFacingDirection != leftFacingDirection)
-                {
-                    Debug.Log("Left hand facing " + leftFacingDirection);
-                    m_LastLeftFacingDirection = leftFacingDirection;
-                }
-
-                var rightFacingDirection = GetFacingDirection(m_RightHand, cameraPosition);
-                if (m_LastRightFacingDirection != rightFacingDirection)
-                {
-                    Debug.Log("Right hand facing " + rightFacingDirection);
-                    m_LastRightFacingDirection = rightFacingDirection;
-                }
-
                 m_LeftShakeTracker.Update(leftLocalPosition, Time.deltaTime);
                 m_RightShakeTracker.Update(rightLocalPosition, Time.deltaTime);
 
@@ -202,44 +182,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     m_RightProxyUI.AddShakeRequest();
                 }
             }
-        }
-
-        static FacingDirection GetFacingDirection(Transform transform, Vector3 cameraPosition)
-        {
-            var toCamera = Vector3.Normalize(cameraPosition - transform.position);
-
-            var xDot = Vector3.Dot(toCamera, transform.right);
-            var yDot = Vector3.Dot(toCamera, transform.up);
-            var zDot = Vector3.Dot(toCamera, transform.forward);
-
-            if (Mathf.Abs(xDot) > Mathf.Abs(yDot))
-            {
-                if (Mathf.Abs(zDot) > Mathf.Abs(xDot))
-                {
-                    if (zDot > 0)
-                        return FacingDirection.FRONT;
-
-                    return FacingDirection.BACK;
-                }
-
-                if (xDot > 0)
-                    return FacingDirection.RIGHT;
-
-                return FacingDirection.LEFT;
-            }
-
-            if (Mathf.Abs(zDot) > Mathf.Abs(yDot))
-            {
-                if (zDot > 0)
-                    return FacingDirection.FRONT;
-
-                return FacingDirection.BACK;
-            }
-
-            if (yDot > 0)
-                return FacingDirection.TOP;
-
-            return FacingDirection.BOTTOM;
         }
 
         public void AddFeedbackRequest(FeedbackRequest request)

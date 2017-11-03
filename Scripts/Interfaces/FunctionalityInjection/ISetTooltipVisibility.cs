@@ -1,20 +1,19 @@
 #if UNITY_EDITOR
+using System;
+
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to the ability to show or hide a Tooltip
-    /// </summary>    public interface ISetTooltipVisibility
+    /// </summary>
+    public interface ISetTooltipVisibility
     {
     }
 
     public static class ISetTooltipVisibilityMethods
     {
-        public delegate void ShowTooltipDelegate(ITooltip tooltip, bool persistent = false, float duration = 0f);
-
-        public delegate void HideTooltipDelegate(ITooltip tooltip, bool persistent = false);
-
-        internal static ShowTooltipDelegate showTooltip { get; set; }
-        internal static HideTooltipDelegate hideTooltip { get; set; }
+        internal static Action<ITooltip, bool, float, ITooltipPlacement> showTooltip { get; set; }
+        internal static Action<ITooltip, bool> hideTooltip { get; set; }
 
         /// <summary>
         /// Show the given Tooltip
@@ -22,9 +21,11 @@ namespace UnityEditor.Experimental.EditorVR
         /// <param name="tooltip">The tooltip to show</param>
         /// <param name="persistent">Whether the tooltip should stay visible regardless of raycasts</param>
         /// <param name="duration">If the tooltip is shown persistently, and duration is > 0, hide after the duration, in seconds</param>
-        public static void ShowTooltip(this ISetTooltipVisibility obj, ITooltip tooltip, bool persistent = false, float duration = 0f)
+        /// <param name="placement">If the tooltip is shown persistently, and duration is > 0, hide after the duration, in seconds</param>
+        public static void ShowTooltip(this ISetTooltipVisibility obj, ITooltip tooltip, bool persistent = false,
+            float duration = 0f, ITooltipPlacement placement = null)
         {
-            showTooltip(tooltip, persistent, duration);
+            showTooltip(tooltip, persistent, duration, placement);
         }
 
         /// <summary>

@@ -19,6 +19,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         const string k_MaterialColorTopProperty = "_ColorTop";
         const string k_MaterialColorBottomProperty = "_ColorBottom";
 
+        static readonly Quaternion k_FlipYRotation = Quaternion.AngleAxis(180f, Vector3.up);
+        static readonly Quaternion k_FlipZRotation = Quaternion.AngleAxis(180f, Vector3.forward);
+
         [SerializeField]
         GameObject m_TooltipPrefab;
 
@@ -39,6 +42,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public Material customHighlightMaterial;
             public bool persistent;
             public float duration;
+            public ITooltipPlacement placement;
+
+            public Transform GetTooltipTarget(ITooltip tooltip)
+            {
+                if (placement != null)
+                    return placement.tooltipTarget;
+
+                return ((MonoBehaviour)tooltip).transform;
+            }
         }
 
         readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
@@ -76,8 +88,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var hoverTime = Time.time - tooltipData.startTime;
                 if (hoverTime > k_Delay)
                 {
-                    var placement = tooltip as ITooltipPlacement;
-                    var target = GetTooltipTarget(tooltip);
+                    var placement = tooltipData.placement;
+                    var target = tooltipData.GetTooltipTarget(tooltip);
 
                     if (target == null)
                         k_TooltipsToRemove.Add(tooltip);
@@ -102,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     }
 
                     var lerp = Mathf.Clamp01((hoverTime - k_Delay) / k_TransitionDuration);
-                    UpdateVisuals(tooltip, tooltipUI, target, lerp);
+                    UpdateVisuals(tooltip, tooltipUI, placement, target, lerp);
                 }
 
                 if (!IsValidTooltip(tooltip))
@@ -135,21 +147,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             tooltipObject.GetComponents(k_TooltipUIs);
 
             var tooltipUI = k_TooltipUIs[0]; // We expect exactly one TooltipUI on the prefab root
-            m_TooltipPool.Enqueue(tooltipUI);
 
             return tooltipUI;
         }
 
-        static Transform GetTooltipTarget(ITooltip tooltip)
-        {
-            var placement = tooltip as ITooltipPlacement;
-            if (placement != null)
-                return placement.tooltipTarget;
-
-            return ((MonoBehaviour)tooltip).transform;
-        }
-
-        void UpdateVisuals(ITooltip tooltip, TooltipUI tooltipUI, Transform target, float lerp)
+        void UpdateVisuals(ITooltip tooltip, TooltipUI tooltipUI, ITooltipPlacement placement, Transform target, float lerp)
         {
             var tooltipTransform = tooltipUI.transform;
 
@@ -166,8 +168,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
             m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
-
-            var placement = tooltip as ITooltipPlacement;
 
             // Adjust for alignment
             var offset = Vector3.zero;
@@ -194,7 +194,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             else
                 offset = Vector3.back * k_Offset * this.GetViewerScale();
 
-            MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, Quaternion.identity);
+            var rotationOffset = Quaternion.identity;
+            var cameraForward = CameraUtils.GetMainCamera().transform.forward;
+            if (Vector3.Dot(cameraForward, target.forward) < 0)
+                rotationOffset *= k_FlipYRotation;
+
+            if (Vector3.Dot(Vector3.up, target.up) < 0)
+                rotationOffset *= k_FlipZRotation;
+
+            MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, rotationOffset);
 
             if (placement != null)
             {
@@ -273,7 +281,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f)
+        public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f, ITooltipPlacement placement = null)
         {
             if (!IsValidTooltip(tooltip))
                 return;
@@ -307,7 +315,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 startTime = Time.time,
                 lastModifiedTime = Time.time,
                 persistent = persistent,
-                duration = duration
+                duration = duration,
+                placement = placement ?? tooltip as ITooltipPlacement
             };
         }
 
@@ -327,20 +336,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_Tooltips.Remove(tooltip);
 
                 if (tooltipData.tooltipUI)
-                    StartCoroutine(AnimateHide(tooltip, tooltipData.tooltipUI));
+                    StartCoroutine(AnimateHide(tooltip, tooltipData));
             }
         }
 
-        IEnumerator AnimateHide(ITooltip tooltip, TooltipUI tooltipUI)
+        IEnumerator AnimateHide(ITooltip tooltip, TooltipData data)
         {
-            var target = GetTooltipTarget(tooltip);
+            var placement = data.placement;
+            var target = data.GetTooltipTarget(tooltip);
+            var tooltipUI = data.tooltipUI;
             var startTime = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup - startTime < k_TransitionDuration)
             {
                 if (!target)
                     break;
 
-                UpdateVisuals(tooltip, tooltipUI, target,
+                UpdateVisuals(tooltip, tooltipUI, placement, target,
                     1 - (Time.realtimeSinceStartup - startTime) / k_TransitionDuration);
                 yield return null;
             }

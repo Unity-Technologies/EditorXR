@@ -9,8 +9,8 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [ProcessInput(1)]
-[RequireComponent(typeof(ProxyHelper))]
-internal class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
+[RequireComponent(typeof(ProxyUI))]
+class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
 {
     public class TransformInfo
     {
