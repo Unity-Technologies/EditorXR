@@ -308,8 +308,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4617753192742486}
   - component: {fileID: 114700073176764548}
-  - component: {fileID: 114331393344479226}
   - component: {fileID: 114374282034907428}
+  - component: {fileID: 114895118259902768}
   m_Layer: 0
   m_Name: RightTouchOpenVR
   m_TagString: Untagged
@@ -1075,20 +1075,6 @@ MonoBehaviour:
   m_TooltipTarget: {fileID: 4020309191218892}
   m_TooltipSource: {fileID: 4662592250246964}
   m_TooltipAlignment: 1
---- !u!114 &114331393344479226
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1523256443734892}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_FadeInSpeedScalar: 4
-  m_FadeOutSpeedScalar: 0.5
-  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114374282034907428
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1175,8 +1161,7 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4799468984284310}
   m_PreviewOrigin: {fileID: 4286406122114976}
   m_FieldGrabOrigin: {fileID: 4866118000331932}
-  m_MeshRoot: {fileID: 4802769266775244}
-  m_ProxyUI: {fileID: 114331393344479226}
+  m_ProxyUI: {fileID: 114895118259902768}
   m_ProxyAnimator: {fileID: 114374282034907428}
   m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
   m_Affordances:
@@ -1239,6 +1224,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
+--- !u!114 &114895118259902768
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1523256443734892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_FadeInSpeedScalar: 4
+  m_FadeOutSpeedScalar: 0.5
+  m_AffordanceMapOverride: {fileID: 0}
+  m_ProxyBackgroundMaterial: {fileID: 2100000, guid: 782cf64e6b630ac40b6a1e975ab25369,
+    type: 2}
 --- !u!114 &114904225304444658
 MonoBehaviour:
   m_ObjectHideFlags: 1

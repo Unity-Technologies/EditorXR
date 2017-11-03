@@ -66,8 +66,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4397591939547504}
   - component: {fileID: 114752989612263042}
-  - component: {fileID: 114926072655415978}
   - component: {fileID: 114831531447913008}
+  - component: {fileID: 114065768611362456}
   m_Layer: 0
   m_Name: LeftTouchOpenVR
   m_TagString: Untagged
@@ -1029,6 +1029,22 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &114065768611362456
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1121674342063006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_FadeInSpeedScalar: 4
+  m_FadeOutSpeedScalar: 0.5
+  m_AffordanceMapOverride: {fileID: 0}
+  m_ProxyBackgroundMaterial: {fileID: 2100000, guid: 782cf64e6b630ac40b6a1e975ab25369,
+    type: 2}
 --- !u!114 &114125306406013188
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1156,8 +1172,7 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4263165527348130}
   m_PreviewOrigin: {fileID: 4601081929867384}
   m_FieldGrabOrigin: {fileID: 4694679444484640}
-  m_MeshRoot: {fileID: 4725754007993800}
-  m_ProxyUI: {fileID: 114926072655415978}
+  m_ProxyUI: {fileID: 114065768611362456}
   m_ProxyAnimator: {fileID: 114831531447913008}
   m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
   m_Affordances:
@@ -1236,20 +1251,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
---- !u!114 &114926072655415978
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1121674342063006}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_FadeInSpeedScalar: 4
-  m_FadeOutSpeedScalar: 0.5
-  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114933204733924580
 MonoBehaviour:
   m_ObjectHideFlags: 1

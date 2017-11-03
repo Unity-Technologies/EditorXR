@@ -36,8 +36,8 @@ GameObject:
   - component: {fileID: 4000010742330424}
   - component: {fileID: 114000011293798520}
   - component: {fileID: 114673881177878536}
-  - component: {fileID: 114650204159954584}
   - component: {fileID: 114760536874177710}
+  - component: {fileID: 114754688090341634}
   m_Layer: 0
   m_Name: ViveController
   m_TagString: ShowInMiniWorld
@@ -1425,8 +1425,7 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4000012662092726}
   m_PreviewOrigin: {fileID: 4000013779846498}
   m_FieldGrabOrigin: {fileID: 4000011094092792}
-  m_MeshRoot: {fileID: 4469504124180788}
-  m_ProxyUI: {fileID: 114650204159954584}
+  m_ProxyUI: {fileID: 114754688090341634}
   m_ProxyAnimator: {fileID: 114760536874177710}
   m_AffordanceMap: {fileID: 11400000, guid: c067e5fde424eba4c883c573507d8a15, type: 2}
   m_Affordances:
@@ -1646,20 +1645,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
---- !u!114 &114650204159954584
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000010426338840}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_FadeInSpeedScalar: 4
-  m_FadeOutSpeedScalar: 0.5
-  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114665279328025710
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1691,6 +1676,22 @@ MonoBehaviour:
   - {fileID: 114558108786776402}
   - {fileID: 114195992931318178}
   - {fileID: 114306613819668780}
+--- !u!114 &114754688090341634
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000010426338840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_FadeInSpeedScalar: 4
+  m_FadeOutSpeedScalar: 0.5
+  m_AffordanceMapOverride: {fileID: 0}
+  m_ProxyBackgroundMaterial: {fileID: 2100000, guid: 782cf64e6b630ac40b6a1e975ab25369,
+    type: 2}
 --- !u!114 &114760536874177710
 MonoBehaviour:
   m_ObjectHideFlags: 1

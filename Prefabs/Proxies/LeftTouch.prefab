@@ -25,8 +25,8 @@ GameObject:
   m_Component:
   - component: {fileID: 436998}
   - component: {fileID: 114000013861093962}
-  - component: {fileID: 114942772046743868}
   - component: {fileID: 114309355936498838}
+  - component: {fileID: 114904592321636792}
   m_Layer: 0
   m_Name: LeftTouch
   m_TagString: ShowInMiniWorld
@@ -1401,8 +1401,7 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4000011559331518}
   m_PreviewOrigin: {fileID: 4000012123783760}
   m_FieldGrabOrigin: {fileID: 4000010810114962}
-  m_MeshRoot: {fileID: 485484}
-  m_ProxyUI: {fileID: 114942772046743868}
+  m_ProxyUI: {fileID: 114904592321636792}
   m_ProxyAnimator: {fileID: 114309355936498838}
   m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
   m_Affordances:
@@ -1577,6 +1576,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
+--- !u!114 &114904592321636792
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 118082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_FadeInSpeedScalar: 4
+  m_FadeOutSpeedScalar: 0.5
+  m_AffordanceMapOverride: {fileID: 0}
+  m_ProxyBackgroundMaterial: {fileID: 2100000, guid: 782cf64e6b630ac40b6a1e975ab25369,
+    type: 2}
 --- !u!114 &114937140451437304
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1592,20 +1607,6 @@ MonoBehaviour:
   m_TooltipTarget: {fileID: 4310256503251038}
   m_TooltipSource: {fileID: 407362}
   m_TooltipAlignment: 1
---- !u!114 &114942772046743868
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 118082}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_FadeInSpeedScalar: 4
-  m_FadeOutSpeedScalar: 0.5
-  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114957305131514852
 MonoBehaviour:
   m_ObjectHideFlags: 1
