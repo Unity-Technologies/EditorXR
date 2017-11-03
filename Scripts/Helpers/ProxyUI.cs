@@ -411,6 +411,26 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             affordancesVisible = false;
             bodyVisible = false;
 
+            foreach (var renderer in m_AffordanceRenderers)
+            {
+                AddProxyBackgroundMaterialToRenderer(renderer);
+                foreach (var material in renderer.sharedMaterials)
+                {
+                    if (material.HasProperty(k_ZWritePropertyName))
+                        material.SetFloat(k_ZWritePropertyName, 1);
+                }
+            }
+
+            foreach (var renderer in m_BodyRenderers)
+            {
+                AddProxyBackgroundMaterialToRenderer(renderer);
+                foreach (var material in renderer.sharedMaterials)
+                {
+                    if (material.HasProperty(k_ZWritePropertyName))
+                        material.SetFloat(k_ZWritePropertyName, 1);
+                }
+            }
+
             // Allow setting of affordance & body visibility after affordance+body setup is performed in the "affordances" property
             m_ProxyUISetup = true;
 
@@ -418,9 +438,37 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 setupComplete();
         }
 
+        void AddProxyBackgroundMaterialToRenderer(Renderer renderer)
+        {
+            if (m_ProxyBackgroundMaterial == null)
+                return;
+
+            var rendererSharedMaterials = renderer.sharedMaterials;
+            foreach (var material in rendererSharedMaterials)
+            {
+                // Prevent the Proxy Background material from being added multiple times to affordance renderers mapped to more than 1 control
+                if (material == m_ProxyBackgroundMaterial)
+                    return;
+            }
+
+            // Add Proxy Background shader
+            // Custom shader used to write depth behind semi-transparent proxy materials, fixing transparency sorting visual issues
+            var originalSharedMaterialCount = rendererSharedMaterials.Length;
+            var sharedMaterialsIncludingBackground = new Material[originalSharedMaterialCount + 1];
+            for (int i = 0; i < sharedMaterialsIncludingBackground.Length; ++i)
+            {
+                // Rebuild materials array, appending the ProxyBackground material
+                sharedMaterialsIncludingBackground[i] = i < originalSharedMaterialCount ? rendererSharedMaterials[i] : m_ProxyBackgroundMaterial;
+                if (sharedMaterialsIncludingBackground[i] == null)
+                    Debug.LogError("Proxy transparency does not support null material references.  Null material detected when setting up : " + gameObject.name);
+            }
+
+            renderer.sharedMaterials = sharedMaterialsIncludingBackground;
+        }
+
         static IEnumerator AnimateAffordanceColorVisibility(bool isVisible, AffordanceDefinition definition, float fadeInSpeedScalar, float fadeOutSpeedScalar)
         {
-            const float kTargetAmount = 1.1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
+            const float kTargetAmount = 1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
             var speedScalar = isVisible ? fadeInSpeedScalar : fadeOutSpeedScalar;
             var currentAmount = 0f;
             var visibilityDefinition = definition.visibilityDefinition;
@@ -434,7 +482,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             foreach (var materialAndAssociatedColors in materialsAndColors)
             {
                 var animateFromColor = materialAndAssociatedColors.originalMaterial.GetColor(shaderColorPropety); // Get current color from material
-                var animateToColor = isVisible ? materialAndAssociatedColors.originalColor : materialAndAssociatedColors.hiddenColor; // (second)original or (third)hidden color(alpha/color.a)
+                var animateToColor = isVisible ? materialAndAssociatedColors.originalColor : materialAndAssociatedColors.hiddenColor; // original or hidden color(alpha/color.a)
                 materialAndAssociatedColors.animateFromColor = animateFromColor;
                 materialAndAssociatedColors.animateToColor = animateToColor;
             }
@@ -455,7 +503,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         static IEnumerator AnimateAffordanceAlphaVisibility(bool isVisible, float fadeInSpeedScalar, float fadeOutSpeedScalar, AffordanceVisibilityDefinition visibilityDefinition)
         {
-            const float kTargetAmount = 1.1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
+            const float kTargetAmount = 1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
             var speedScalar = isVisible ? fadeInSpeedScalar : fadeOutSpeedScalar;
             var currentAmount = 0f;
             var materialsAndColors = visibilityDefinition.visualStateData;
@@ -465,7 +513,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             foreach (var materialAndAssociatedColors in materialsAndColors)
             {
                 var animateFromAlpha = materialAndAssociatedColors.originalMaterial.GetFloat(shaderAlphaPropety); // Get current alpha from material
-                var animateToAlpha = isVisible ? materialAndAssociatedColors.originalColor.a : materialAndAssociatedColors.hiddenColor.a; // (second)original or (third)hidden color(alpha/color.a)
+                var animateToAlpha = isVisible ? materialAndAssociatedColors.originalColor.a : materialAndAssociatedColors.hiddenColor.a; // original or hidden color(alpha/color.a)
                 materialAndAssociatedColors.animateFromColor = Color.white * animateFromAlpha; // Encode the alpha for the FROM color value, color.a
                 materialAndAssociatedColors.animateToColor = Color.white * animateToAlpha; // // Encode the alpha for the TO color value, color.a
             }
@@ -493,7 +541,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
             const float kTargetAmount = 1f;
-            const float kHiddenValue = 0.25f;
+            var hiddenColor = m_AffordanceMapOverride.bodyVisibilityDefinition.hiddenColor;
             var speedScalar = isVisible ? m_FadeInSpeedScalar : m_FadeOutSpeedScalar;
             var currentAmount = 0f;
             var shaderColorPropety = bodyVisibilityDefinition.colorProperty;
@@ -505,7 +553,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 {
                     // Set original cached color when visible, transparent when hidden
                     var valueFrom = kvp.Value.animateFromValue;
-                    var valueTo = isVisible ? kvp.Value.originalValue : new Color(valueFrom.r, valueFrom.g, valueFrom.b, kHiddenValue);
+                    var valueTo = isVisible ? kvp.Value.originalValue : hiddenColor;
                     var currentColor = Color.Lerp(valueFrom, valueTo, smoothedAmount);
                     kvp.Key.SetColor(shaderColorPropety, currentColor);
                 }
@@ -517,7 +565,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             foreach (var kvp in m_BodyMaterialOriginalColorMap)
             {
                 var originalColor = kvp.Value.originalValue;
-                kvp.Key.SetColor(shaderColorPropety, isVisible ? originalColor : new Color(originalColor.r, originalColor.g, originalColor.b, kHiddenValue));
+                kvp.Key.SetColor(shaderColorPropety, isVisible ? originalColor : hiddenColor);
             }
         }
 
@@ -530,7 +578,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
             const float kTargetAmount = 1f;
-            const float kHiddenValue = 0.25f;
+            var hiddenAlpha = m_AffordanceMapOverride.bodyVisibilityDefinition.hiddenAlpha;
             var speedScalar = isVisible ? m_FadeInSpeedScalar : m_FadeOutSpeedScalar;
             var shaderAlphaPropety = bodyVisibilityDefinition.alphaProperty;
             var currentAmount = 0f;
@@ -541,7 +589,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 foreach (var kvp in m_BodyMaterialOriginalAlphaMap)
                 {
                     var valueFrom = kvp.Value.animateFromValue;
-                    var valueTo = isVisible ? kvp.Value.originalValue : kHiddenValue;
+                    var valueTo = isVisible ? kvp.Value.originalValue : hiddenAlpha;
                     var currentAlpha = Mathf.Lerp(valueFrom, valueTo, smoothedAmount);
                     kvp.Key.SetFloat(shaderAlphaPropety, currentAlpha);
                 }
@@ -552,7 +600,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             // Mandate target values have been set
             foreach (var kvp in m_BodyMaterialOriginalAlphaMap)
             {
-                kvp.Key.SetFloat(shaderAlphaPropety, isVisible ? kvp.Value.originalValue : kHiddenValue);
+                kvp.Key.SetFloat(shaderAlphaPropety, isVisible ? kvp.Value.originalValue : hiddenAlpha);
             }
         }
 
@@ -695,7 +743,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            // Interate over keys instead of pairs in the dictionary, in order to prevent out-of-sync errors when exiting EXR
+            // Iterate over keys instead of pairs in the dictionary, in order to prevent out-of-sync errors when exiting EXR
             foreach (var requestCoroutineTuple in m_FeedbackRequests)
             {
                 var request = requestCoroutineTuple.firstElement;
