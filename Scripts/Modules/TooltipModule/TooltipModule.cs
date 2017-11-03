@@ -135,7 +135,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             tooltipObject.GetComponents(k_TooltipUIs);
 
             var tooltipUI = k_TooltipUIs[0]; // We expect exactly one TooltipUI on the prefab root
-            m_TooltipPool.Enqueue(tooltipUI);
 
             return tooltipUI;
         }

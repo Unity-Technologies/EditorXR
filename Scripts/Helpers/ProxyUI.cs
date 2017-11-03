@@ -95,7 +95,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly Dictionary<Material, AffordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, AffordancePropertyTuple<float>>();
 
         readonly List<FeedbackRequestTuple> m_FeedbackRequests = new List<FeedbackRequestTuple>();
-        //ControlToAffordanceDictionary m_ControlToAffordances;
+
+        // Local method use only -- created here to reduce garbage collection
+        static readonly List<FeedbackRequestTuple> k_FeedbackRequestsCopy = new List<FeedbackRequestTuple>();
 
         bool affordanceRenderersVisible { set { m_ProxyHelper.affordanceRenderersVisible = value; } }
         bool bodyRenderersVisible { set { m_ProxyHelper.bodyRenderersVisible = value; } }
@@ -743,21 +745,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            // Iterate over keys instead of pairs in the dictionary, in order to prevent out-of-sync errors when exiting EXR
-            foreach (var requestCoroutineTuple in m_FeedbackRequests)
+            k_FeedbackRequestsCopy.Clear();
+            foreach (var request in m_FeedbackRequests)
             {
-                var request = requestCoroutineTuple.firstElement;
-                if (request != null && request.caller == caller)
-                    RemoveFeedbackRequest(request);
+                if (request.firstElement.caller == caller)
+                    k_FeedbackRequestsCopy.Add(request);
             }
 
-            var requests = caller == null
-                ? new List<FeedbackRequestTuple>(m_FeedbackRequests)
-                : m_FeedbackRequests.Where(feedbackRequest => feedbackRequest.firstElement.caller == caller).ToList();
-
-            foreach (var feedbackRequest in requests)
+            foreach (var request in k_FeedbackRequestsCopy)
             {
-                RemoveFeedbackRequest(feedbackRequest.firstElement);
+                RemoveFeedbackRequest(request.firstElement);
             }
         }
 
