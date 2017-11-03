@@ -60,9 +60,6 @@ class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
 
     public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
     {
-        if (m_Affordances == null)
-            return;
-
         var length = m_Affordances.Length;
         if (m_Controls == null)
         {

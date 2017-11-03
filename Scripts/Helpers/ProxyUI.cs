@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -99,7 +98,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         ProxyFeedbackRequest m_ShakeFeedbackRequest;
 
         FacingDirection m_FacingDirection;
-        FacingDirection m_LastRightFacingDirection;
 
         // Map of unique body materials to their original Colors (used for affordances with the "color" visibility control type)
         // The second param, ColorPair, houses the original cached color, and a value, representing the color to lerp FROM when animating visibility
@@ -107,6 +105,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly Dictionary<Material, AffordancePropertyTuple<float>> m_BodyMaterialOriginalAlphaMap = new Dictionary<Material, AffordancePropertyTuple<float>>();
 
         readonly List<FeedbackRequestTuple> m_FeedbackRequests = new List<FeedbackRequestTuple>();
+
+        // Local method use only -- created here to reduce garbage collection
+        static readonly List<FeedbackRequestTuple> k_FeedbackRequestsCopy = new List<FeedbackRequestTuple>();
 
         /// <summary>
         /// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
@@ -132,8 +133,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// The transform that the display/preview objects will be parented under
         /// </summary>
         public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
-
-        public event Action setupComplete;
 
         /// <summary>
         /// Set the visibility of the affordance renderers that are associated with controls/input
@@ -202,59 +201,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 suppressExisting = true,
                 proxyShaken = true
             };
-        }
-
-        void OnDestroy()
-        {
-            StopAllCoroutines();
-
-            foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)
-            {
-                var visibilityDefinition = affordanceDefinition.visibilityDefinition;
-                var visibilityType = visibilityDefinition.visibilityType;
-                if (visibilityType == VisibilityControlType.colorProperty || visibilityType == VisibilityControlType.alphaProperty)
-                {
-                    var materialsAndAssociatedColors = visibilityDefinition.visualStateData;
-                    if (materialsAndAssociatedColors == null)
-                        continue;
-
-                    foreach (var materialToAssociatedColors in visibilityDefinition.visualStateData)
-                    {
-                        var material = materialToAssociatedColors.originalMaterial;
-                        if (material != null)
-                            ObjectUtils.Destroy(material);
-                    }
-                }
-            }
-
-            var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
-            var bodyVisibilityType = bodyVisibilityDefinition.visibilityType;
-            if (bodyVisibilityType == VisibilityControlType.colorProperty || bodyVisibilityType == VisibilityControlType.alphaProperty)
-            {
-                foreach (var kvp in m_BodyMaterialOriginalColorMap)
-                {
-                    var material = kvp.Key;
-                    if (material != null)
-                        ObjectUtils.Destroy(material);
-                }
-            }
-            else if (bodyVisibilityType == VisibilityControlType.materialSwap)
-            {
-                foreach (var material in m_BodySwapOriginalMaterials)
-                {
-                    if (material != null)
-                        ObjectUtils.Destroy(material);
-                }
-            }
-        }
-
-        void Start()
-        {
-            if (m_ProxyAnimator)
-            {
-                m_ProxyAnimator.Setup(m_AffordanceMap, m_Affordances);
-                this.ConnectInterfaces(m_ProxyAnimator, rayOrigin);
-            }
 
             // Don't allow setup if affordances are invalid
             if (m_Affordances == null || m_Affordances.Length == 0)
@@ -365,10 +311,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (!affordancesDefinedInMap)
                 m_AffordanceMap.AffordanceDefinitions = generatedAffordanceDefinitions.ToArray();
 
+            m_BodyRenderers = GetComponentsInChildren<Renderer>(true)
+                .Where(x => !m_AffordanceRenderers.Contains(x) && !IsChildOfProxyOrigin(x.transform)).ToList();
+
             // Collect renderers not associated with affordances
             // Material swaps don't need to cache original values, only alpha & color
             var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
-            m_BodyRenderers = GetComponentsInChildren<Renderer>(true).Where(x => !m_AffordanceRenderers.Contains(x) && !IsChildOfProxyOrigin(x.transform)).ToList();
             switch (bodyVisibilityDefinition.visibilityType)
             {
                 case VisibilityControlType.colorProperty:
@@ -409,12 +357,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     }
                     break;
             }
+        }
 
+        void Start()
+        {
             affordancesVisible = false;
             bodyVisible = false;
 
-            if (setupComplete != null)
-                setupComplete();
+            if (m_ProxyAnimator)
+            {
+                m_ProxyAnimator.Setup(m_AffordanceMap, m_Affordances);
+                this.ConnectInterfaces(m_ProxyAnimator, rayOrigin);
+            }
         }
 
         void Update()
@@ -425,6 +379,50 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 m_FacingDirection = direction;
                 UpdateFacingDirection(direction);
+            }
+        }
+
+        void OnDestroy()
+        {
+            StopAllCoroutines();
+
+            foreach (var affordanceDefinition in m_AffordanceMap.AffordanceDefinitions)
+            {
+                var visibilityDefinition = affordanceDefinition.visibilityDefinition;
+                var visibilityType = visibilityDefinition.visibilityType;
+                if (visibilityType == VisibilityControlType.colorProperty || visibilityType == VisibilityControlType.alphaProperty)
+                {
+                    var materialsAndAssociatedColors = visibilityDefinition.visualStateData;
+                    if (materialsAndAssociatedColors == null)
+                        continue;
+
+                    foreach (var materialToAssociatedColors in visibilityDefinition.visualStateData)
+                    {
+                        var material = materialToAssociatedColors.originalMaterial;
+                        if (material != null)
+                            ObjectUtils.Destroy(material);
+                    }
+                }
+            }
+
+            var bodyVisibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition;
+            var bodyVisibilityType = bodyVisibilityDefinition.visibilityType;
+            if (bodyVisibilityType == VisibilityControlType.colorProperty || bodyVisibilityType == VisibilityControlType.alphaProperty)
+            {
+                foreach (var kvp in m_BodyMaterialOriginalColorMap)
+                {
+                    var material = kvp.Key;
+                    if (material != null)
+                        ObjectUtils.Destroy(material);
+                }
+            }
+            else if (bodyVisibilityType == VisibilityControlType.materialSwap)
+            {
+                foreach (var material in m_BodySwapOriginalMaterials)
+                {
+                    if (material != null)
+                        ObjectUtils.Destroy(material);
+                }
             }
         }
 
@@ -659,11 +657,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void AddFeedbackRequest(ProxyFeedbackRequest proxyRequest)
         {
-            if (!isActiveAndEnabled)
-                return;
+            Coroutine monitoringCoroutine = null;
+            if (isActiveAndEnabled)
+                monitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
 
-            var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
-            m_FeedbackRequests.Add(new FeedbackRequestTuple(proxyRequest, newMonitoringCoroutine));
+            m_FeedbackRequests.Add(new FeedbackRequestTuple(proxyRequest, monitoringCoroutine));
 
             ExecuteFeedback(proxyRequest);
         }
@@ -746,21 +744,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            // Interate over keys instead of pairs in the dictionary, in order to prevent out-of-sync errors when exiting EXR
-            foreach (var requestCoroutineTuple in m_FeedbackRequests)
+            k_FeedbackRequestsCopy.Clear();
+            foreach (var request in m_FeedbackRequests)
             {
-                var request = requestCoroutineTuple.firstElement;
-                if (request != null && request.caller == caller)
-                    RemoveFeedbackRequest(request);
+                if (request.firstElement.caller == caller)
+                    k_FeedbackRequestsCopy.Add(request);
             }
 
-            var requests = caller == null
-                ? new List<FeedbackRequestTuple>(m_FeedbackRequests)
-                : m_FeedbackRequests.Where(feedbackRequest => feedbackRequest.firstElement.caller == caller).ToList();
-
-            foreach (var feedbackRequest in requests)
+            foreach (var request in k_FeedbackRequestsCopy)
             {
-                RemoveFeedbackRequest(feedbackRequest.firstElement);
+                RemoveFeedbackRequest(request.firstElement);
             }
         }
 

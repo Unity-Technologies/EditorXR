@@ -102,20 +102,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
             m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
 
-            var setupCount = 0;
-            const int numNodes = 2;
             m_LeftProxyUI = m_LeftHand.GetComponent<ProxyUI>();
-            m_LeftProxyUI.setupComplete += () =>
-            {
-                if (++setupCount == numNodes)
-                    hidden = true;
-            };
             m_RightProxyUI = m_RightHand.GetComponent<ProxyUI>();
-            m_RightProxyUI.setupComplete += () =>
-            {
-                if (++setupCount == numNodes)
-                    hidden = true;
-            };
 
             m_RayOrigins = new Dictionary<Node, Transform>
             {
@@ -150,6 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public virtual IEnumerator Start()
         {
+            hidden = true;
             while (!active)
                 yield return null;
 

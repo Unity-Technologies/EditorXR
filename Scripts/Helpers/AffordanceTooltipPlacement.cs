@@ -1,8 +1,8 @@
 ﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.UI
+namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     public sealed class AffordanceTooltipPlacement : MonoBehaviour, ITooltipPlacement
     {
