@@ -1507,7 +1507,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1620801154991108}
   m_LocalRotation: {x: 0.5, y: 0.5, z: 0.5, w: 0.5}
-  m_LocalPosition: {x: -0.053, y: -0.0322, z: -0.0609}
+  m_LocalPosition: {x: -0.05306849, y: -0.03218288, z: -0.06090001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4220023546949684}
@@ -2047,7 +2047,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_TooltipTarget: {fileID: 0}
   m_TooltipSource: {fileID: 450394}
-  m_TooltipAlignment: 1
+  m_TooltipAlignment: 0
   m_FacingDirection: 4
 --- !u!114 &114504374717195836
 MonoBehaviour:
@@ -2268,7 +2268,6 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4000011559331518}
   m_PreviewOrigin: {fileID: 4000012123783760}
   m_FieldGrabOrigin: {fileID: 4000010810114962}
-  m_ProxyUI: {fileID: 114942772046743868}
   m_ProxyAnimator: {fileID: 114309355936498838}
   m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
   m_Affordances:
