@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 using System;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -10,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// Affordance model; data defining a proxy affordance (button/analog/etc)
     /// </summary>
     [Serializable]
-    internal class Affordance
+    class Affordance
     {
         [SerializeField]
         VRInputDevice.VRControl m_Control;

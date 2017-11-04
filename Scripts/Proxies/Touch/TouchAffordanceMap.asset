@@ -15,7 +15,7 @@ MonoBehaviour:
     m_VisibilityType: 0
     m_ColorProperty: _Color
     m_AlphaProperty: 
-    m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
+    m_HiddenColor: {r: 1, g: 1, b: 1, a: 0.116}
     m_HiddenAlpha: 0
     m_HiddenMaterial: {fileID: 0}
   m_DefaultAffordanceAnimationDefinition:

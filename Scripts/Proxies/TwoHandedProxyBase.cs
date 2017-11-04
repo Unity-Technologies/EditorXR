@@ -82,12 +82,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     m_Hidden = value;
                     m_LeftHand.gameObject.SetActive(!value);
                     m_RightHand.gameObject.SetActive(!value);
-
-                    if (m_LeftProxyNode && m_RightProxyNode)
-                    {
-                        m_LeftProxyNode.UpdateVisibility();
-                        m_RightProxyNode.UpdateVisibility();
-                    }
                 }
             }
         }

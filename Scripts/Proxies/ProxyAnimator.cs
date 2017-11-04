@@ -31,10 +31,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         ActionMap m_ProxyActionMap;
 
-        [Header("Optional")]
-        [SerializeField]
-        ProxyAffordanceMap m_AffordanceMapOverride;
-
         Affordance[] m_Affordances;
         AffordanceDefinition[] m_AffordanceDefinitions;
         InputControl[] m_Controls;
@@ -50,14 +46,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         internal event Action<Affordance[], AffordanceDefinition[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
-        public void Setup(ProxyAffordanceMap affordanceMap, Affordance[] affordances)
+        public void Setup(AffordanceDefinition[] affordanceDefinitions, Affordance[] affordances)
         {
-            // Assign the ProxyHelper's default AffordanceMap, if no override map was assigned to this ProxyAnimator
-            if (m_AffordanceMapOverride == null)
-                m_AffordanceMapOverride = affordanceMap;
-
             m_Affordances = affordances;
-            m_AffordanceDefinitions = m_AffordanceMapOverride.AffordanceDefinitions;
+            m_AffordanceDefinitions = affordanceDefinitions;
         }
 
         void OnDestroy()
@@ -175,7 +167,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             ProxyFeedbackRequest request;
             if (m_FeedbackRequests.TryGetValue(control, out request))
+            {
+                m_FeedbackRequests.Remove(control);
                 this.RemoveFeedbackRequest(request);
+            }
         }
     }
 }
