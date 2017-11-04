@@ -234,8 +234,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             AddModule<FeedbackModule>();
 
-            AddModule<GizmoModule>();
-
             viewer.AddPlayerModel();
 
             GetNestedModule<Rays>().CreateAllProxies();
