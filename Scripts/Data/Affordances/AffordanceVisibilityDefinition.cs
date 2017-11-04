@@ -62,18 +62,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// The name of the shader parameter utilized to animate alpha changes to this affordance, if the visibility type is set to ALPHA
         /// </summary>
         public string alphaProperty { get { return m_AlphaProperty; } }
-
-        public AffordanceVisibilityDefinition() { }
-
-        public AffordanceVisibilityDefinition(AffordanceVisibilityDefinition definitionToCopy)
-        {
-            m_VisibilityType = definitionToCopy.visibilityType;
-            m_ColorProperty = definitionToCopy.colorProperty;
-            m_AlphaProperty = definitionToCopy.alphaProperty;
-            m_HiddenColor = definitionToCopy.hiddenColor;
-            m_HiddenAlpha = definitionToCopy.hiddenAlpha;
-            m_HiddenMaterial = definitionToCopy.hiddenMaterial;
-        }
     }
 }
 #endif
