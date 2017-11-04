@@ -38,11 +38,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 public Color currentColor;
             }
 
-            VRControl m_Control;
-            Renderer m_Renderer;
-            AffordanceDefinition m_Definition;
-            AffordanceTooltip[] m_Tooltips;
-            ProxyNode m_Owner;
+            readonly VRControl m_Control;
+            readonly List<Renderer> m_Renderers;
+            readonly AffordanceDefinition m_Definition;
+            readonly AffordanceTooltip[] m_Tooltips;
+            readonly ProxyNode m_Owner;
 
             bool m_Visible;
             float m_VisibleDuration;
@@ -50,27 +50,30 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             bool m_WasVisible;
             float m_VisibleChangeTime;
 
+            readonly List<Tuple<Renderer, MaterialData[]>> m_MaterialData = new List<Tuple<Renderer, MaterialData[]>>();
+
             public VRControl control { get { return m_Control; } }
-            public Renderer renderer { get { return m_Renderer; } }
+            public List<Renderer> renderers { get { return m_Renderers; } }
             public AffordanceDefinition definition { get { return m_Definition; } }
             public AffordanceTooltip[] tooltips { get { return m_Tooltips; } }
 
-            readonly List<MaterialData> m_MaterialData = new List<MaterialData>();
-
-            public AffordanceData(VRControl control, Renderer renderer, AffordanceDefinition definition,
+            public AffordanceData(VRControl control, List<Renderer> renderers, AffordanceDefinition definition,
                 AffordanceTooltip[] tooltips, ProxyNode owner)
             {
                 m_Control = control;
-                m_Renderer = renderer;
+                m_Renderers = renderers;
                 m_Definition = definition;
                 m_Tooltips = tooltips;
                 m_Owner = owner;
 
-                var originalMaterials = renderer.sharedMaterials;
-                var materialClones = MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with the renderer
-                var visibilityDefinition = definition.visibilityDefinition;
-                if (materialClones != null)
+                foreach (var renderer in renderers)
                 {
+                    var originalMaterials = renderer.sharedMaterials;
+                    var materialClones = MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with the renderer
+                    var visibilityDefinition = definition.visibilityDefinition;
+                    var materialData = new MaterialData[originalMaterials.Length];
+                    var materials = new Tuple<Renderer, MaterialData[]>(renderer, materialData);
+                    m_MaterialData.Add(materials);
                     var visibilityType = visibilityDefinition.visibilityType;
 
                     // Material, original color, hidden color, animateFromColor(used by animating coroutines, not initialized here)
@@ -89,25 +92,25 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         {
                             case VisibilityControlType.ColorProperty:
                                 originalColor = material.GetColor(visibilityDefinition.colorProperty);
-                                m_MaterialData.Add(new MaterialData
+                                materialData[i] = new MaterialData
                                 {
                                     material = material,
                                     originalMaterial = originalMaterial,
                                     currentColor = originalColor,
                                     originalColor = originalColor
-                                });
+                                };
                                 break;
                             case VisibilityControlType.AlphaProperty:
 
                                 // When animating based on alpha, use the Color.a value of the original, hidden, and animateFrom colors set below
                                 originalColor = material.GetFloat(visibilityDefinition.alphaProperty) * Color.white;
-                                m_MaterialData.Add(new MaterialData
+                                materialData[i] = new MaterialData
                                 {
                                     material = material,
                                     originalMaterial = originalMaterial,
                                     currentColor = originalColor,
                                     originalColor = originalColor
-                                });
+                                };
                                 break;
                         }
                     }
@@ -118,101 +121,114 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 m_Visible = visible;
                 m_VisibleDuration = visibleDuration;
+                m_VisibleChangeTime = Time.time;
             }
 
-            public void Update(float fadeInAmount, float fadeOutAmount)
+            public void Update(float fadeInAmount, float fadeOutAmount, bool bodyVisible = false)
             {
-                if (m_Visible != m_WasVisible)
-                    m_VisibleChangeTime = Time.time;
-
+                var visible = m_Visible || bodyVisible;
                 var visibilityDefinition = definition.visibilityDefinition;
                 switch (visibilityDefinition.visibilityType)
                 {
                     case VisibilityControlType.AlphaProperty:
-                        foreach (var material in m_MaterialData)
+                        foreach (var materialData in m_MaterialData)
                         {
-                            var currentColor = material.currentColor;
-                            var current = currentColor.a;
-                            var target = m_Visible ? material.originalColor.a : visibilityDefinition.hiddenColor.a;
-                            if (!Mathf.Approximately(current, target))
+                            foreach (var material in materialData.secondElement)
                             {
-                                if (current > target)
+                                var currentColor = material.currentColor;
+                                var current = currentColor.a;
+                                var target = visible ? material.originalColor.a : visibilityDefinition.hiddenColor.a;
+                                if (!Mathf.Approximately(current, target))
                                 {
-                                    current -= fadeOutAmount;
-                                    if (current < target)
-                                        current = target;
-                                }
-                                else
-                                {
-                                    current += fadeInAmount;
                                     if (current > target)
-                                        current = target;
-                                }
+                                    {
+                                        current -= fadeOutAmount;
+                                        if (current < target)
+                                            current = target;
+                                    }
+                                    else
+                                    {
+                                        current += fadeInAmount;
+                                        if (current > target)
+                                            current = target;
+                                    }
 
-                                currentColor.a = current;
-                                material.material.SetFloat(visibilityDefinition.alphaProperty, current);
-                                material.currentColor = currentColor;
+                                    currentColor.a = current;
+                                    material.material.SetFloat(visibilityDefinition.alphaProperty, current);
+                                    material.currentColor = currentColor;
+                                }
                             }
                         }
                         break;
                     case VisibilityControlType.ColorProperty:
-                        foreach (var material in m_MaterialData)
+                        foreach (var materialData in m_MaterialData)
                         {
-                            var currentColor = material.currentColor;
-                            var targetColor = m_Visible ? material.originalColor : visibilityDefinition.hiddenColor;
-                            var change = false;
-                            for (var i = 0; i < 4; i++)
+                            foreach (var material in materialData.secondElement)
                             {
-                                var current = currentColor[i];
-                                var target = targetColor[i];
-
-                                if (Mathf.Approximately(current, target))
-                                    continue;
-
-                                if (current > target)
+                                var currentColor = material.currentColor;
+                                var targetColor = visible ? material.originalColor : visibilityDefinition.hiddenColor;
+                                var change = false;
+                                for (var i = 0; i < 4; i++)
                                 {
-                                    current -= fadeOutAmount;
-                                    if (current < target)
-                                        current = target;
-                                }
-                                else
-                                {
-                                    current += fadeInAmount;
+                                    var current = currentColor[i];
+                                    var target = targetColor[i];
+
+                                    if (Mathf.Approximately(current, target))
+                                        continue;
+
                                     if (current > target)
-                                        current = target;
+                                    {
+                                        current -= fadeOutAmount;
+                                        if (current < target)
+                                            current = target;
+                                    }
+                                    else
+                                    {
+                                        current += fadeInAmount;
+                                        if (current > target)
+                                            current = target;
+                                    }
+
+                                    currentColor[i] = current;
+                                    change = true;
                                 }
 
-                                currentColor[i] = current;
-                                change = true;
-                            }
-
-                            if (change)
-                            {
-                                material.material.SetColor(visibilityDefinition.colorProperty, currentColor);
-                                material.currentColor = currentColor;
+                                if (change)
+                                {
+                                    material.material.SetColor(visibilityDefinition.colorProperty, currentColor);
+                                    material.currentColor = currentColor;
+                                }
                             }
                         }
                         break;
                     case VisibilityControlType.MaterialSwap:
-                        if (m_Visible != m_WasVisible)
+                        if (visible != m_WasVisible)
                         {
-                            var materials = renderer.sharedMaterials;
-                            for (var i = 0; i < materials.Length; i++)
+                            foreach (var materialData in m_MaterialData)
                             {
-                                var data = m_MaterialData[i];
-                                materials[i] = m_Visible ? data.originalMaterial : data.material;
+                                var materials = materialData.firstElement.sharedMaterials;
+                                var materialDatas = materialData.secondElement;
+                                for (var i = 0; i < materialDatas.Length; i++)
+                                {
+                                    var data = materialDatas[i];
+                                    materials[i] = visible ? data.originalMaterial : data.material;
+                                }
                             }
                         }
                         break;
                 }
 
-                m_WasVisible = m_Visible;
+                m_WasVisible = visible;
 
                 if (m_Visible && Time.time - m_VisibleChangeTime > m_VisibleDuration)
                 {
                     m_Visible = false;
-                    if (renderer)
-                        m_Owner.SetHighlight(renderer.gameObject, false);
+                    foreach (var materialData in m_MaterialData)
+                    {
+                        var renderer = materialData.firstElement;
+                        if (renderer)
+                            m_Owner.SetHighlight(renderer.gameObject, false);
+                    }
 
                     if (tooltips != null)
                     {
@@ -227,9 +243,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             public void OnDestroy()
             {
-                foreach (var material in m_MaterialData)
+                foreach (var materialData in m_MaterialData)
                 {
-                    ObjectUtils.Destroy(material.material);
+                    foreach (var material in materialData.secondElement)
+                    {
+                        ObjectUtils.Destroy(material.material);
+                    }
                 }
             }
         }
@@ -268,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         Affordance[] m_Affordances;
 
         readonly List<AffordanceData> m_AffordanceData = new List<AffordanceData>();
-        readonly List<AffordanceData> m_BodyData = new List<AffordanceData>();
+        AffordanceData m_BodyData;
 
         static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
 
@@ -324,6 +343,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var affordanceRenderers = new List<Renderer>();
             var defaultAffordanceVisibilityDefinition = m_AffordanceMap.defaultAffordanceVisibilityDefinition;
             var defaultAffordanceAnimationDefinition = m_AffordanceMap.defaultAnimationDefinition;
+            var singleRendererList = new List<Renderer>();
             foreach (var affordance in m_Affordances)
             {
                 var control = affordance.control;
@@ -340,7 +360,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                 var renderer = affordance.renderer;
                 affordanceRenderers.Add(renderer);
-                m_AffordanceData.Add(new AffordanceData(control, renderer, affordanceDefinition, affordance.tooltips, this));
+                singleRendererList.Add(renderer);
+                m_AffordanceData.Add(new AffordanceData(control, singleRendererList, affordanceDefinition, affordance.tooltips, this));
+                singleRendererList.Clear();
             }
 
             var bodyRenderers = GetComponentsInChildren<Renderer>(true)
@@ -353,10 +375,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition
             };
 
-            foreach (var renderer in bodyRenderers)
-            {
-                m_BodyData.Add(new AffordanceData(0, renderer, bodyAffordanceDefinition, null, this));
-            }
+            m_BodyData = new AffordanceData(0, bodyRenderers, bodyAffordanceDefinition, null, this);
         }
 
         void Start()
@@ -386,10 +405,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 affordanceData.Update(fadeInAmount, fadeOutAmount);
             }
 
-            foreach (var bodyData in m_BodyData)
-            {
-                bodyData.Update(fadeInAmount, fadeOutAmount);
-            }
+            m_BodyData.Update(fadeInAmount, fadeOutAmount);
         }
 
         void OnDestroy()
@@ -401,10 +417,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 affordanceData.OnDestroy();
             }
 
-            foreach (var bodyData in m_BodyData)
-            {
-                bodyData.OnDestroy();
-            }
+            m_BodyData.OnDestroy();
         }
 
         FacingDirection GetFacingDirection(Vector3 cameraPosition)
@@ -492,10 +505,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     affordanceData.SetVisible(true, druation);
                 }
 
-                foreach (var bodyData in m_BodyData)
-                {
-                    bodyData.SetVisible(true, druation);
-                }
+                m_BodyData.SetVisible(true, druation);
             }
             else
             {
@@ -520,8 +530,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                     affordanceData.SetVisible(true, request.druation);
 
-                    if (affordanceData.renderer)
-                        this.SetHighlight(affordanceData.renderer.gameObject, !request.suppressExisting);
+                    foreach (var renderer in affordanceData.renderers)
+                    {
+                        if (renderer)
+                            this.SetHighlight(renderer.gameObject, !request.suppressExisting);
+                    }
 
                     var tooltipText = request.tooltipText;
                     if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
@@ -546,8 +559,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 if (affordanceData.control != request.control)
                     continue;
 
-                if (affordanceData.renderer)
-                    this.SetHighlight(affordanceData.renderer.gameObject, false);
+                foreach (var renderer in affordanceData.renderers)
+                {
+                    if (renderer)
+                        this.SetHighlight(renderer.gameObject, false);
+                }
 
                 affordanceData.SetVisible(false);
 
