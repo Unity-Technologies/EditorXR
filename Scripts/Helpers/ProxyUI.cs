@@ -317,7 +317,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     {
                         foreach (var renderer in renderers)
                         {
-                            var materialClones = MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with the renderer
+                            var materialClones = MaterialUtils.CloneMaterials(renderer, true); // Clone all materials associated with the renderer
                             if (materialClones != null)
                             {
                                 // Add to collection for later optimized comparison against body renderers
