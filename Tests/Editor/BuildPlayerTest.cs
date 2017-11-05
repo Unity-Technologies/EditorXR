@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
 {
@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 
         static void TestBuildPlayer(BuildTarget target)
         {
-            var output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.BuildScriptsOnly);
+            var output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.BuildScriptsOnly).ToString();
 
             if (output.Contains("target is not supported"))
                 Assert.Inconclusive("Target platform {0} not installed", target);
