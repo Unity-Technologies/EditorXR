@@ -73,6 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         bool m_BodyRenderersVisible = true; // Body renderers default to visible/true
         bool m_AffordanceRenderersVisible = true; // Affordance renderers default to visible/true
         Affordance[] m_Affordances;
+        List<AffordanceDefinition> m_AffordanceMapDefinitions;
         Coroutine m_BodyVisibilityCoroutine;
 
         ProxyHelper m_ProxyHelper;
@@ -115,7 +116,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     return;
 
                 m_AffordanceRenderersVisible = value;
-                foreach (var affordanceDefinition in m_AffordanceMapOverride.AffordanceDefinitions)
+                foreach (var affordanceDefinition in m_AffordanceMapDefinitions)
                 {
                     var visibilityDefinition = affordanceDefinition.visibilityDefinition;
                     switch (visibilityDefinition.visibilityType)
@@ -181,7 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (m_AffordanceMapOverride == null)
                 return;
 
-            foreach (var affordanceDefinition in m_AffordanceMapOverride.AffordanceDefinitions)
+            foreach (var affordanceDefinition in m_AffordanceMapDefinitions)
             {
                 var visibilityDefinition = affordanceDefinition.visibilityDefinition;
                 var visibilityType = visibilityDefinition.visibilityType;
@@ -274,15 +275,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_Affordances = affordances;
             m_AffordanceRenderers = new List<Renderer>();
 
-            // If no custom affordance definitions are defined in the affordance map, they will be populated by new generated definitions below
-            var affordanceMapDefinitions = m_AffordanceMapOverride.AffordanceDefinitions;
-            var affordancesDefinedInMap = affordanceMapDefinitions != null && affordanceMapDefinitions.Length > 0 && affordanceMapDefinitions[0] != null;
+            // If no custom affordance definitions are defined in the affordance map, they will be populated by new/generated definitions below
+            m_AffordanceMapDefinitions = m_AffordanceMapOverride.AffordanceDefinitions.ToList();
+            var affordancesDefinedInMap = m_AffordanceMapDefinitions != null && m_AffordanceMapDefinitions.Count > 0 && m_AffordanceMapDefinitions[0] != null;
 
             // If affordanceMapDefinitions is null, set the list below into the map after setup
             var generatedAffordanceDefinitions = new List<AffordanceDefinition>();
             var defaultAffordanceVisibilityDefinition = m_AffordanceMapOverride.defaultAffordanceVisibilityDefinition;
             var defaultAffordanceAnimationDefinition = m_AffordanceMapOverride.defaultAnimationDefinition;
-            foreach (var proxyAffordance in affordances)
+            var controlsAlreadySetup = new List<VRInputDevice.VRControl>();
+            foreach (var proxyAffordance in m_Affordances)
             {
                 var renderers = proxyAffordance.renderer.GetComponentsInChildren<Renderer>(true);
                 if (renderers != null)
@@ -291,12 +293,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     AffordanceVisibilityDefinition visibilityDefinition;
                     var control = proxyAffordance.control;
 
-                    // Assemble a new affordance definition and visibility definition for the affordance,
-                    // if a custom definition for the control was not defined in the AffordanceMap
-                    var matchingAffordanceDefinition = affordancesDefinedInMap ? affordanceMapDefinitions.FirstOrDefault(x => x.control == control) : null;
+                    var matchingAffordanceDefinition = affordancesDefinedInMap ? m_AffordanceMapDefinitions.FirstOrDefault(x => x.control == control) : null;
                     if (matchingAffordanceDefinition == null)
                     {
-                        // Deep copy the default visibility definition values into a new generated visibility defintion, to be set on a newly generated affordance
+                        // If a custom definition for the control was not defined in the AffordanceMap,
+                        // Assemble a new affordance definition and visibility definition for the affordance
+                        // Deep copy the default visibility definition values into a newly generated visibility definition
                         visibilityDefinition = new AffordanceVisibilityDefinition(defaultAffordanceVisibilityDefinition);
                         var animationDefinition = new AffordanceAnimationDefinition(defaultAffordanceAnimationDefinition);
                         var generatedAffordanceDefinition = new AffordanceDefinition
@@ -310,7 +312,30 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     }
                     else
                     {
-                        visibilityDefinition = matchingAffordanceDefinition.visibilityDefinition;
+                        // Verify the need to setup a cloned AffordanceDefinition,
+                        // due to existing AffordanceDefinition(s) with same control already setup
+                        if (controlsAlreadySetup.Any(x => x == control))
+                        {
+                            // The clone will allow for individual affordance visibility control via the cloned definition's AffordanceVisualStateData
+                            // The L+R Vive grips being mapped to Trigger2 is an example of the need for this support
+                            visibilityDefinition = new AffordanceVisibilityDefinition(matchingAffordanceDefinition.visibilityDefinition);
+                            var animationDefinition = new AffordanceAnimationDefinition(matchingAffordanceDefinition.animationDefinition);
+                            var duplicateAffordanceDefinition = new AffordanceDefinition
+                            {
+                                control = control,
+                                visibilityDefinition = visibilityDefinition,
+                                animationDefinition = animationDefinition
+                            };
+
+                            m_AffordanceMapDefinitions.Add(duplicateAffordanceDefinition);
+                        }
+                        else
+                        {
+                            // This is the first instance of an AffordanceDefinition with a given control
+                            visibilityDefinition = matchingAffordanceDefinition.visibilityDefinition;
+                        }
+
+                        controlsAlreadySetup.Add(matchingAffordanceDefinition.control);
                     }
 
                     if (visibilityDefinition != null)
@@ -363,7 +388,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
             if (!affordancesDefinedInMap)
-                m_AffordanceMapOverride.AffordanceDefinitions = generatedAffordanceDefinitions.ToArray();
+                m_AffordanceMapDefinitions = generatedAffordanceDefinitions;
 
             // Collect renderers not associated with affordances
             // Material swaps don't need to cache original values, only alpha & color
