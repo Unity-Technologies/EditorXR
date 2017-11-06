@@ -2018,7 +2018,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
-  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114327803461042234
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2268,6 +2267,7 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4000011559331518}
   m_PreviewOrigin: {fileID: 4000012123783760}
   m_FieldGrabOrigin: {fileID: 4000010810114962}
+  m_NaturalOrientation: {fileID: 436998}
   m_ProxyAnimator: {fileID: 114309355936498838}
   m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
   m_Affordances:

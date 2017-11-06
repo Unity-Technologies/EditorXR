@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public string tooltipText;
         public bool suppressExisting;
         public bool showBody;
-        public float druation = 5f;
+        public float druation = 500f;
     }
 
     class ProxyNode : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
@@ -277,6 +277,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         Transform m_FieldGrabOrigin;
 
         [SerializeField]
+        Transform m_NaturalOrientation;
+
+        [SerializeField]
         ProxyAnimator m_ProxyAnimator;
 
         [SerializeField]
@@ -394,6 +397,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (m_FacingDirection != direction)
             {
                 m_FacingDirection = direction;
+
+                //TODO: handle in AffordanceData.update
                 UpdateFacingDirection(direction);
             }
 
@@ -422,6 +427,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         FacingDirection GetFacingDirection(Vector3 cameraPosition)
         {
+            var transform = m_NaturalOrientation;
             var toCamera = Vector3.Normalize(cameraPosition - transform.position);
 
             var xDot = Vector3.Dot(toCamera, transform.right);

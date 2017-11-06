@@ -999,7 +999,7 @@ Animator:
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
-  m_WarningMessage:
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
 --- !u!114 &114041942050554804
@@ -1011,9 +1011,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  m_TooltipText:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TooltipText: 
   m_Placements: []
 --- !u!114 &114106225397066218
 MonoBehaviour:
@@ -1024,8 +1024,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_SelectionFlags: 3
 --- !u!114 &114106734160267480
 MonoBehaviour:
@@ -1036,9 +1036,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  m_TooltipText:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TooltipText: 
   m_Placements: []
 --- !u!114 &114178596385280704
 MonoBehaviour:
@@ -1049,9 +1049,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  m_TooltipText:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TooltipText: 
   m_Placements: []
 --- !u!114 &114195443192961852
 MonoBehaviour:
@@ -1062,9 +1062,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  m_TooltipText:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TooltipText: 
   m_Placements: []
 --- !u!114 &114331393344479226
 MonoBehaviour:
@@ -1075,8 +1075,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_FadeInSpeedScalar: 4
   m_FadeOutSpeedScalar: 0.5
   m_RayOrigin: {fileID: 4882697647327558}
@@ -1084,7 +1084,7 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4799468984284310}
   m_PreviewOrigin: {fileID: 4286406122114976}
   m_FieldGrabOrigin: {fileID: 4866118000331932}
-  m_ProxyUI: {fileID: 114331393344479226}
+  m_NaturalOrientation: {fileID: 4259604204601724}
   m_ProxyAnimator: {fileID: 114374282034907428}
   m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
   m_Affordances:
@@ -1132,10 +1132,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 460af9702a1fe674a932ad1a15f33bfa, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
-  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114427722552533374
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1145,9 +1144,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  m_TooltipText:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TooltipText: 
   m_Placements: []
 --- !u!114 &114437718840659960
 MonoBehaviour:
@@ -1158,8 +1157,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_SelectionFlags: 3
 --- !u!114 &114510401113800598
 MonoBehaviour:
@@ -1170,9 +1169,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  m_TooltipText:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TooltipText: 
   m_Placements: []
 --- !u!114 &114698121262855600
 MonoBehaviour:
@@ -1183,9 +1182,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ad66fdc11251de14abca66510af466b6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
-  m_TooltipText:
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_TooltipText: 
   m_Placements: []
 --- !u!114 &114743270976659912
 MonoBehaviour:
@@ -1196,8 +1195,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_SelectionFlags: 3
 --- !u!114 &114822292473482224
 MonoBehaviour:
@@ -1208,8 +1207,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_SelectionFlags: 3
 --- !u!114 &114904225304444658
 MonoBehaviour:
@@ -1220,8 +1219,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4fb8f7696afa96048aa938286d04f96c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_SelectionFlags: 3
 --- !u!136 &136497482760722588
 CapsuleCollider:

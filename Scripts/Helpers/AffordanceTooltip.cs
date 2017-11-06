@@ -17,6 +17,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             set { m_TooltipText = value; }
         }
 
+        internal AffordanceTooltipPlacement[] placements { set { m_Placements = value; } }
+
         public AffordanceTooltipPlacement GetPlacement(FacingDirection direction)
         {
             foreach (var placement in m_Placements)

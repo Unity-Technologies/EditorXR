@@ -6,7 +6,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     public sealed class AffordanceTooltipPlacement : MonoBehaviour, ITooltipPlacement
     {
-        const FacingDirection k_AllDirections = (FacingDirection)0x111111;
+        const FacingDirection k_AllDirections = (FacingDirection)0xFFF;
 
         [SerializeField]
         Transform m_TooltipTarget;
