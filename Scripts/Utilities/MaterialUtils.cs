@@ -38,12 +38,24 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// Clone all materials within a renderer; IMPORTANT: Make sure to call ObjectUtils.Destroy() on this material when done!
         /// </summary>
         /// <param name="renderer">Renderer that will have its materials cloned and replaced</param>
+        /// <param name="preventClonedMaterialDuplication">(Defaulted to false) If true, prevent duplication of already cloned materials</param>
         /// <returns>Cloned materials</returns>
-        public static UnityMaterial[] CloneMaterials(Renderer renderer)
+        public static UnityMaterial[] CloneMaterials(Renderer renderer, bool preventClonedMaterialDuplication = false)
         {
             var sharedMaterials = renderer.sharedMaterials;
             for (var i = 0; i < sharedMaterials.Length; i++)
             {
+                if (preventClonedMaterialDuplication)
+                {
+                    // Test for "(Clone)" in the material name.  Skip instantiation if material is a clone
+                    const string clonedMaterialSuffix = "(Clone)";
+                    const int cloneStringTestLength = 7;
+                    var materialName = sharedMaterials[i].name;
+                    var materialIsClone = materialName.Substring(materialName.Length - cloneStringTestLength) == clonedMaterialSuffix;
+                    if (materialIsClone)
+                        continue;
+                }
+
                 sharedMaterials[i] = UnityObject.Instantiate(sharedMaterials[i]);
             }
 
