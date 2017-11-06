@@ -1,6 +1,8 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -8,7 +10,7 @@ using UnityEngine.InputNew;
 
 [ProcessInput(1)]
 [RequireComponent(typeof(ProxyHelper))]
-public class ProxyAnimator : MonoBehaviour, ICustomActionMap
+internal class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode
 {
     public class TransformInfo
     {
@@ -27,26 +29,41 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
     [SerializeField]
     ActionMap m_ProxyActionMap;
 
-    ProxyHelper.ButtonObject[] m_Buttons;
+    [Header("Optional")]
+    [SerializeField]
+    ProxyAffordanceMap m_AffordanceMapOverride;
+
+    Affordance[] m_Affordances;
+    AffordanceDefinition[] m_AffordanceDefinitions;
     InputControl[] m_Controls;
 
     readonly Dictionary<Transform, TransformInfo> m_TransformInfos = new Dictionary<Transform, TransformInfo>();
 
+    bool m_RightHandedProxy;
+
     public ActionMap actionMap { get { return m_ProxyActionMap; } }
     public bool ignoreLocking { get { return true; } }
-    internal event Action<ProxyHelper.ButtonObject[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
-    void Start()
+    public Node node { set { m_RightHandedProxy = value == Node.RightHand; } }
+
+    internal event Action<Affordance[], AffordanceDefinition[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
+
+    public void Setup(ProxyAffordanceMap affordanceMap, Affordance[] affordances)
     {
-        m_Buttons = GetComponent<ProxyHelper>().buttons;
+        // Assign the ProxyHelper's default AffordanceMap, if no override map was assigned to this ProxyAnimator
+        if (m_AffordanceMapOverride == null)
+            m_AffordanceMapOverride = affordanceMap;
+
+        m_Affordances = affordances;
+        m_AffordanceDefinitions = m_AffordanceMapOverride.AffordanceDefinitions;
     }
 
     public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
     {
-        if (m_Buttons == null)
+        if (m_Affordances == null)
             return;
 
-        var length = m_Buttons.Length;
+        var length = m_Affordances.Length;
         if (m_Controls == null)
         {
             m_Controls = new InputControl[length];
@@ -58,10 +75,10 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
                 var binding = bindings[i];
                 for (var j = 0; j < length; j++)
                 {
-                    var button = m_Buttons[j];
+                    var affordance = m_Affordances[j];
                     foreach (var index in binding.sources)
                     {
-                        if (index.controlIndex == (int)button.control)
+                        if (index.controlIndex == (int)affordance.control)
                         {
                             m_Controls[j] = control;
                             break;
@@ -70,18 +87,18 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
                 }
             }
 
-            foreach (var button in m_Buttons)
+            foreach (var affordance in m_Affordances)
             {
-                var buttonTransform = button.transform;
+                var affordanceTransform = affordance.transform;
                 TransformInfo info;
-                if (!m_TransformInfos.TryGetValue(buttonTransform, out info))
+                if (!m_TransformInfos.TryGetValue(affordanceTransform, out info))
                 {
                     info = new TransformInfo();
-                    m_TransformInfos[buttonTransform] = info;
+                    m_TransformInfos[affordanceTransform] = info;
                 }
 
-                info.initialPosition = buttonTransform.localPosition;
-                info.initialRotation = buttonTransform.localRotation.eulerAngles;
+                info.initialPosition = affordanceTransform.localPosition;
+                info.initialRotation = affordanceTransform.localRotation.eulerAngles;
             }
         }
 
@@ -94,16 +111,33 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
 
         for (var i = 0; i < length; i++)
         {
-            var button = m_Buttons[i];
+            var affordance = m_Affordances[i];
             var control = m_Controls[i];
-            var info = m_TransformInfos[button.transform];
+            AffordanceDefinition affordanceDefinition = null;
+            foreach (var definition in m_AffordanceDefinitions)
+            {
+                if (definition.control == affordance.control)
+                {
+                    affordanceDefinition = definition;
+                    break;
+                }
+            }
 
+            var animationDefinition = affordanceDefinition != null ? affordanceDefinition.animationDefinition : null;
+            var info = m_TransformInfos[affordance.transform];
+            var handednessScalar = m_RightHandedProxy && animationDefinition.reverseForRightHand ? -1 : 1;
+
+            // Animate any values defined in the ProxyAffordanceMap's Affordance Definition
             //Assume control values are [-1, 1]
-            var min = button.min;
-            var offset = min + (control.rawValue + 1) * (button.max - min) * 0.5f;
+            if (animationDefinition != null)
+            {
+                var min = animationDefinition.min * handednessScalar;
+                var max = animationDefinition.max * handednessScalar;
+                var offset = min + (control.rawValue + 1) * (max - min) * 0.5f;
 
-            info.positionOffset += button.translateAxes.GetAxis() * offset;
-            info.rotationOffset += button.rotateAxes.GetAxis() * offset;
+                info.positionOffset += animationDefinition.translateAxes.GetAxis() * offset;
+                info.rotationOffset += animationDefinition.rotateAxes.GetAxis() * offset;
+            }
         }
 
         foreach (var kvp in m_TransformInfos)
@@ -112,6 +146,7 @@ public class ProxyAnimator : MonoBehaviour, ICustomActionMap
         }
 
         if (postAnimate != null)
-            postAnimate(m_Buttons, m_TransformInfos, input);
+            postAnimate(m_Affordances, m_AffordanceDefinitions, m_TransformInfos, input);
     }
 }
+#endif

@@ -260,8 +260,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 foreach (var control in controls)
                 {
                     var tooltipText = control.Key;
-                    var hideExisting = control.Key == "Vertical" || control.Key == "StickButton";
-                    if (hideExisting)
+                    var suppressExisting = control.Key == "Vertical" || control.Key == "StickButton";
+                    if (suppressExisting)
                         tooltipText = null;
 
                     foreach (var id in control.Value)
@@ -272,7 +272,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                             control = id,
                             priority = 1,
                             tooltipText = tooltipText,
-                            hideExisting = hideExisting
+                            suppressExisting = suppressExisting
                         });
                     }
                 }

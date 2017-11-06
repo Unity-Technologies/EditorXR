@@ -113,6 +113,8 @@ GameObject:
   m_Component:
   - component: {fileID: 401760}
   - component: {fileID: 114000011379258124}
+  - component: {fileID: 114430790308988334}
+  - component: {fileID: 114160634466103562}
   m_Layer: 0
   m_Name: RightTouch
   m_TagString: ShowInMiniWorld
@@ -1373,71 +1375,45 @@ MonoBehaviour:
   m_AlternateMenuOrigin: {fileID: 4000014173169826}
   m_PreviewOrigin: {fileID: 4000013824268610}
   m_FieldGrabOrigin: {fileID: 4000013218449236}
-  m_MeshRoot: {fileID: 484770}
-  m_Buttons:
+  m_ProxyUI: {fileID: 114160634466103562}
+  m_ProxyAnimator: {fileID: 114430790308988334}
+  m_AffordanceMap: {fileID: 11400000, guid: 129b6143c3275c34d8eb78fdc637e1bf, type: 2}
+  m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 482366}
     m_Renderer: {fileID: 13788364}
     m_Tooltips:
     - {fileID: 114431176106213124}
-    m_TranslateAxes: 0
-    m_RotateAxes: 1
-    m_Min: 20
-    m_Max: -20
   - m_Control: 3
     m_Transform: {fileID: 431526}
     m_Renderer: {fileID: 13791512}
     m_Tooltips:
     - {fileID: 114710602601813986}
-    m_TranslateAxes: 1
-    m_RotateAxes: 0
-    m_Min: 0.00455765
-    m_Max: -0.00455765
   - m_Control: 17
     m_Transform: {fileID: 412818}
     m_Renderer: {fileID: 13757144}
     m_Tooltips:
     - {fileID: 114587196572306994}
-    m_TranslateAxes: 4
-    m_RotateAxes: 0
-    m_Min: 0.001793736
-    m_Max: -0.001793736
   - m_Control: 18
     m_Transform: {fileID: 437054}
     m_Renderer: {fileID: 13724278}
     m_Tooltips:
     - {fileID: 114526162600788140}
-    m_TranslateAxes: 4
-    m_RotateAxes: 0
-    m_Min: 0.001793736
-    m_Max: -0.001793736
   - m_Control: 22
     m_Transform: {fileID: 451284}
     m_Renderer: {fileID: 13768278}
     m_Tooltips:
     - {fileID: 114564303215576146}
-    m_TranslateAxes: 1
-    m_RotateAxes: 0
-    m_Min: 0.0002774392
-    m_Max: -0.0002774392
   - m_Control: 0
     m_Transform: {fileID: 451284}
     m_Renderer: {fileID: 13768278}
     m_Tooltips:
     - {fileID: 114088248147605316}
-    m_TranslateAxes: 0
-    m_RotateAxes: 2
-    m_Min: 15
-    m_Max: -15
   - m_Control: 1
     m_Transform: {fileID: 451284}
     m_Renderer: {fileID: 13768278}
     m_Tooltips:
     - {fileID: 114382005819407472}
-    m_TranslateAxes: 0
-    m_RotateAxes: 4
-    m_Min: 15
-    m_Max: -15
 --- !u!114 &114088248147605316
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1465,6 +1441,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
+--- !u!114 &114160634466103562
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_FadeInSpeedScalar: 4
+  m_FadeOutSpeedScalar: 0.5
+  m_AffordanceMapOverride: {fileID: 0}
+  m_ProxyBackgroundMaterial: {fileID: 2100000, guid: 782cf64e6b630ac40b6a1e975ab25369,
+    type: 2}
 --- !u!114 &114382005819407472
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1480,6 +1472,19 @@ MonoBehaviour:
   m_TooltipTarget: {fileID: 4852355382428020}
   m_TooltipSource: {fileID: 451284}
   m_TooltipAlignment: 1
+--- !u!114 &114430790308988334
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141214}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 460af9702a1fe674a932ad1a15f33bfa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ProxyActionMap: {fileID: 11400000, guid: 9fba3ce585063484a937428d7ef14426, type: 2}
+  m_AffordanceMapOverride: {fileID: 0}
 --- !u!114 &114431176106213124
 MonoBehaviour:
   m_ObjectHideFlags: 1
