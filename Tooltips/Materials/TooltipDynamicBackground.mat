@@ -60,11 +60,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _Alpha: 0
-    - _Blur: 5.01
+    - _AlternateBlur: 0
+    - _Blur: 10
     - _BumpScale: 2
     - _Cutoff: 0.5
-    - _Desaturation: 1
-    - _DesaturationBlend: 0.312
+    - _Desaturation: -1
+    - _DesaturationBlend: -0.18
     - _DetailNormalMapScale: 1
     - _DstBlend: 10
     - _GlossMapScale: 0.414
@@ -86,11 +87,11 @@ Material:
     - _SubdivisionTransparency: 0.5
     - _Subdivisions: 8
     - _UVSec: 0
-    - _VerticalOffset: -1
+    - _VerticalOffset: 0
     - _ZWrite: 0
     m_Colors:
     - _ClipExtents: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 0.50735295, g: 0.50735295, b: 0.50735295, a: 0.22745098}
+    - _Color: {r: 0.5808823, g: 0.5808823, b: 0.5808823, a: 0.165}
     - _ColorBottom: {r: 1, g: 1, b: 1, a: 1}
     - _ColorTop: {r: 1, g: 0, b: 0, a: 1}
     - _EmisColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 0}

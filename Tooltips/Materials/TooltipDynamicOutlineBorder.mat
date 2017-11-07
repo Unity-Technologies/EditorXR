@@ -7,12 +7,12 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: TooltipDynamicOutlineBorder
-  m_Shader: {fileID: 4800000, guid: 68eb1b178e2b7f74eb314a539c948954, type: 3}
+  m_Shader: {fileID: 4800000, guid: 96279964233635c4d8687bdfae8fe58b, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _METALLICGLOSSMAP
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 3000
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
@@ -63,8 +63,8 @@ Material:
     - _Blur: 10
     - _BumpScale: 2
     - _Cutoff: 0.5
-    - _Desaturation: -0.04
-    - _DesaturationBlend: -1
+    - _Desaturation: -0.21
+    - _DesaturationBlend: -0.24
     - _DetailNormalMapScale: 1
     - _DstBlend: 10
     - _GlossMapScale: 0.414
@@ -90,7 +90,7 @@ Material:
     - _ZWrite: 0
     m_Colors:
     - _ClipExtents: {r: 1, g: 1, b: 1, a: 1}
-    - _Color: {r: 1, g: 1, b: 1, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 0.597}
     - _ColorBottom: {r: 0, g: 0, b: 0, a: 1}
     - _ColorTop: {r: 0, g: 0, b: 0, a: 0}
     - _EmisColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 0}
