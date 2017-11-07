@@ -202,8 +202,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (Vector3.Dot(cameraForward, target.forward) < 0)
                 rotationOffset *= k_FlipYRotation;
 
-            if (Vector3.Dot(Vector3.up, target.up) < 0)
-                rotationOffset *= k_FlipZRotation;
+            var upDot = Vector3.Dot(Vector3.up, target.up);
+            if (Mathf.Abs(Vector3.Dot(Vector3.forward, target.up)) > Mathf.Abs(upDot))
+            {
+                if (Vector3.Dot(cameraForward, target.up) < 0)
+                    rotationOffset *= k_FlipZRotation;
+            }
+            else
+            {
+                if (upDot < 0)
+                    rotationOffset *= k_FlipZRotation;
+            }
 
             MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, rotationOffset);
 
