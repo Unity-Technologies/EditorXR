@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/EXR Blur Dynamic"
+﻿Shader "EditorVR/Blur/Blur Dynamic"
 {
 	Properties{
 		_Color("Main Color", Color) = (1,1,1,1)
@@ -15,10 +15,13 @@
 
 		SubShader{
 
-			GrabPass{"_EXRBlurDynamicGrab1"}
+			GrabPass{"_SharedEXRBlurDynamicGrabBase"}
 
 			Pass
 			{
+				Name "BlurHorizontal"
+				BlendOp Min
+				Blend One One
 				CGPROGRAM
 				#pragma vertex vert
 				#pragma fragment frag
@@ -79,8 +82,8 @@
 					sum += GrabAndOffset(0.06, +4.0);
 					sum += GrabAndOffset(0.04, +5.0);
 					sum += GrabAndOffset(0.02, +6.0);
+					sum *= 1.5;
 					sum.a = _Color.a;
-					sum *= 2;
 					return sum;
 				}
 				ENDCG
@@ -90,6 +93,9 @@
 
 			Pass
 			{
+				Name "BlurVertical"
+				BlendOp Min
+				Blend One One
 				CGPROGRAM
 				#pragma vertex vert
 				#pragma fragment frag
@@ -136,12 +142,7 @@
 				half4 frag(v2f input) : COLOR
 				{
 					half4 sum = half4(0,0,0,0);
-					//input.grab.x = clamp(input.grab.x * 1.2, 0, 1);
 					#define GrabAndOffset(weight,kernelY) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (_Blur * input.yPos + _VerticalOffset), input.grab.z, input.grab.w))) * weight
-					//#define GrabAndOffset(weight,kernelY, yBlend) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (_Blur * input.grab.y), input.grab.z, input.grab.w))) * weight * saturate(0.02 * 3 / input.grab.y)
-					//#define GrabAndOffset(weight,kernelY, yBlend) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * _Blur / saturate(yBlend * 4), input.grab.z, input.grab.w))) * weight * yBlend
-					//#define GrabAndOffset(weight,kernelY, yBlend) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * saturate(kernelY - (-input.grab.y * 50)), input.grab.z, input.grab.w))) * weight * yBlend
-					//saturate(0.02 * 3 / input.grab.y)
 
 					sum += GrabAndOffset(0.02, -6.0);
 					sum += GrabAndOffset(0.04, -5.0);
@@ -157,7 +158,7 @@
 					sum += GrabAndOffset(0.04, +5.0);
 					sum += GrabAndOffset(0.02, +6.0);
 					sum.a = _Color.a;
-					sum *= 2;
+					sum *= 1.5;
 					return sum;
 				}
 				ENDCG
@@ -213,11 +214,11 @@
 					i.grab.xy = _GrabTexture_TexelSize.xy * i.grab.z + i.grab.xy;
 					half4 col = tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(i.grab));
 					half4 desatCol = dot(col, col * _Desaturation); // Lighten darker luma
-					//col = lerp(col * col, desatCol, _DesaturationBlend); // Blend by desaturation amount
-					//col.a = _Color.a;
+					col = lerp(col, desatCol, _DesaturationBlend); // Blend by desaturation amount
+					col.a = _Color.a;
 					return col * _Color;
 				}
-			ENDCG
+				ENDCG
 			}
 		}
 	}
