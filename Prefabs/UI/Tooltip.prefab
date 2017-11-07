@@ -40,7 +40,6 @@ GameObject:
   - component: {fileID: 33000011070868286}
   - component: {fileID: 135000013226140878}
   - component: {fileID: 23000012656825868}
-  - component: {fileID: 114053323411222518}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -415,7 +414,6 @@ MonoBehaviour:
   - {fileID: 4000013086257722}
   m_Highlight: {fileID: 114000011868131886}
   m_Background: {fileID: 114000012161072266}
-  m_VisibilityListener: {fileID: 114053323411222518}
 --- !u!114 &114000013855091962
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -449,17 +447,6 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: A tooltip
---- !u!114 &114053323411222518
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1000011696208486}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c8b4394938d8744f9a4e2f86fa6db23, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!135 &135000010391264812
 SphereCollider:
   m_ObjectHideFlags: 1
