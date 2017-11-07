@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -39,10 +38,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 public Color currentColor;
             }
 
-            readonly VRControl m_Control;
-            readonly List<Renderer> m_Renderers;
+            readonly List<Renderer> m_Renderers = new List<Renderer>();
             readonly AffordanceDefinition m_Definition;
-            readonly AffordanceTooltip[] m_Tooltips;
+            readonly List<AffordanceTooltip> m_Tooltips = new List<AffordanceTooltip>();
             readonly ProxyNode m_Owner;
 
             bool m_Visible;
@@ -53,72 +51,58 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             readonly List<Tuple<Renderer, MaterialData[]>> m_MaterialData = new List<Tuple<Renderer, MaterialData[]>>();
 
-            static readonly HashSet<Renderer> k_ProcessedRenderers = new HashSet<Renderer>();
-
-            public VRControl control { get { return m_Control; } }
             public List<Renderer> renderers { get { return m_Renderers; } }
             public AffordanceDefinition definition { get { return m_Definition; } }
-            public AffordanceTooltip[] tooltips { get { return m_Tooltips; } }
+            public List<AffordanceTooltip> tooltips { get { return m_Tooltips; } }
 
-            public AffordanceData(VRControl control, List<Renderer> renderers, AffordanceDefinition definition,
-                AffordanceTooltip[] tooltips, ProxyNode owner)
+            public AffordanceData(AffordanceDefinition definition, ProxyNode owner)
             {
-                m_Control = control;
-                m_Renderers = renderers;
                 m_Definition = definition;
-                m_Tooltips = tooltips;
                 m_Owner = owner;
+            }
 
-                foreach (var renderer in renderers)
+            public void AddAffordance(Renderer renderer, AffordanceTooltip[] tooltips)
+            {
+                if (tooltips != null)
+                    m_Tooltips.AddRange(tooltips);
+
+                m_Renderers.Add(renderer);
+                var originalMaterials = renderer.sharedMaterials;
+                var materials = originalMaterials;
+                var visibilityDefinition = definition.visibilityDefinition;
+                var materialData = new MaterialData[originalMaterials.Length];
+                var materialPairs = new Tuple<Renderer, MaterialData[]>(renderer, materialData);
+                m_MaterialData.Add(materialPairs);
+                var visibilityType = visibilityDefinition.visibilityType;
+
+                for (var i = 0; i < materials.Length; i++)
                 {
-                    var originalMaterials = renderer.sharedMaterials;
-                    var materialClones = renderer.sharedMaterials;
-                    if (!k_ProcessedRenderers.Add(renderer))
-                        materialClones = MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with the renderer
+                    var material = materials[i];
+                    var originalMaterial = originalMaterials[i];
 
-                    var visibilityDefinition = definition.visibilityDefinition;
-                    var materialData = new MaterialData[originalMaterials.Length];
-                    var materials = new Tuple<Renderer, MaterialData[]>(renderer, materialData);
-                    m_MaterialData.Add(materials);
-                    var visibilityType = visibilityDefinition.visibilityType;
-
-                    // Material, original color, hidden color, animateFromColor(used by animating coroutines, not initialized here)
-                    for (var i = 0; i < materialClones.Length; i++)
+                    Color originalColor;
+                    switch (visibilityType)
                     {
-                        var material = materialClones[i];
-                        var originalMaterial = originalMaterials[i];
-
-                        // Clones that utilize the standard shader can be cloned and lose their enabled ZWrite value (1), if it was enabled on the material
-                        // Set it again, to avoid ZWrite + transparency visual issues
-                        if (visibilityType != VisibilityControlType.MaterialSwap && material.HasProperty(k_ZWritePropertyName))
-                            material.SetFloat(k_ZWritePropertyName, 1);
-
-                        Color originalColor;
-                        switch (visibilityDefinition.visibilityType)
-                        {
-                            case VisibilityControlType.ColorProperty:
-                                originalColor = material.GetColor(visibilityDefinition.colorProperty);
-                                materialData[i] = new MaterialData
-                                {
-                                    material = material,
-                                    originalMaterial = originalMaterial,
-                                    currentColor = originalColor,
-                                    originalColor = originalColor
-                                };
-                                break;
-                            case VisibilityControlType.AlphaProperty:
-
-                                // When animating based on alpha, use the Color.a value of the original, hidden, and animateFrom colors set below
-                                originalColor = material.GetFloat(visibilityDefinition.alphaProperty) * Color.white;
-                                materialData[i] = new MaterialData
-                                {
-                                    material = material,
-                                    originalMaterial = originalMaterial,
-                                    currentColor = originalColor,
-                                    originalColor = originalColor
-                                };
-                                break;
-                        }
+                        case VisibilityControlType.ColorProperty:
+                            originalColor = material.GetColor(visibilityDefinition.colorProperty);
+                            materialData[i] = new MaterialData
+                            {
+                                material = material,
+                                originalMaterial = originalMaterial,
+                                currentColor = originalColor,
+                                originalColor = originalColor
+                            };
+                            break;
+                        case VisibilityControlType.AlphaProperty:
+                            originalColor = material.GetFloat(visibilityDefinition.alphaProperty) * Color.white;
+                            materialData[i] = new MaterialData
+                            {
+                                material = material,
+                                originalMaterial = originalMaterial,
+                                currentColor = originalColor,
+                                originalColor = originalColor
+                            };
+                            break;
                     }
                 }
             }
@@ -134,6 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 var visible = m_Visible || bodyVisible;
                 var visibilityDefinition = definition.visibilityDefinition;
+
                 switch (visibilityDefinition.visibilityType)
                 {
                     case VisibilityControlType.AlphaProperty:
@@ -299,7 +284,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         Affordance[] m_Affordances;
 
-        readonly List<AffordanceData> m_AffordanceData = new List<AffordanceData>();
+        readonly Dictionary<VRControl, AffordanceData> m_AffordanceData = new Dictionary<VRControl, AffordanceData>();
         AffordanceData m_BodyData;
 
         static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
@@ -338,7 +323,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void Awake()
         {
-            Debug.Log("setup " + this);
             // Don't allow setup if affordances are invalid
             if (m_Affordances == null || m_Affordances.Length == 0)
             {
@@ -354,46 +338,63 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
             var affordanceMapDefinitions = m_AffordanceMap.AffordanceDefinitions;
-            var affordanceRenderers = new List<Renderer>();
+            var affordanceRenderers = new HashSet<Renderer>();
             var defaultAffordanceVisibilityDefinition = m_AffordanceMap.defaultAffordanceVisibilityDefinition;
             var defaultAffordanceAnimationDefinition = m_AffordanceMap.defaultAnimationDefinition;
-            var singleRendererList = new List<Renderer>();
             foreach (var affordance in m_Affordances)
             {
                 var control = affordance.control;
-                var affordanceDefinition = affordanceMapDefinitions.FirstOrDefault(x => x.control == control);
-                if (affordanceDefinition == null)
+                AffordanceData affordanceData;
+                if (!m_AffordanceData.TryGetValue(control, out affordanceData))
                 {
-                    affordanceDefinition = new AffordanceDefinition
+                    var affordanceDefinition = affordanceMapDefinitions.FirstOrDefault(x => x.control == control);
+                    if (affordanceDefinition == null)
                     {
-                        control = control,
-                        visibilityDefinition = defaultAffordanceVisibilityDefinition,
-                        animationDefinition = defaultAffordanceAnimationDefinition
-                    };
+                        affordanceDefinition = new AffordanceDefinition
+                        {
+                            control = control,
+                            visibilityDefinition = defaultAffordanceVisibilityDefinition,
+                            animationDefinition = defaultAffordanceAnimationDefinition
+                        };
+                    }
+
+                    affordanceData = new AffordanceData(affordanceDefinition, this);
+                    m_AffordanceData[control] = affordanceData;
                 }
 
                 var renderer = affordance.renderer;
-                affordanceRenderers.Add(renderer);
-                singleRendererList.Add(renderer);
-                m_AffordanceData.Add(new AffordanceData(control, singleRendererList, affordanceDefinition, affordance.tooltips, this));
-                singleRendererList.Clear();
+                if (affordanceRenderers.Add(renderer))
+                {
+                    MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with each renderer once
+
+                    // Clones that utilize the standard shader can lose their enabled ZWrite value (1), if it was enabled on the material
+                    foreach (var material in renderer.sharedMaterials)
+                    {
+                        material.SetFloat(k_ZWritePropertyName, 1);
+                    }
+                }
+
+                affordanceData.AddAffordance(renderer, affordance.tooltips);
+            }
+
+            foreach (var renderer in affordanceRenderers)
+            {
                 renderer.AddMaterial(m_ProxyBackgroundMaterial);
             }
 
             var bodyRenderers = GetComponentsInChildren<Renderer>(true)
                 .Where(x => !affordanceRenderers.Contains(x) && !IsChildOfProxyOrigin(x.transform)).ToList();
 
-            // Collect renderers not associated with affordances
-            // Material swaps don't need to cache original values, only alpha & color
             var bodyAffordanceDefinition = new AffordanceDefinition
             {
                 visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition
             };
 
-            m_BodyData = new AffordanceData(0, bodyRenderers, bodyAffordanceDefinition, null, this);
-
+            m_BodyData = new AffordanceData(bodyAffordanceDefinition, this);
             foreach (var renderer in bodyRenderers)
             {
+                MaterialUtils.CloneMaterials(renderer);
+                m_BodyData.AddAffordance(renderer, null);
                 renderer.AddMaterial(m_ProxyBackgroundMaterial);
             }
         }
@@ -402,7 +403,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             if (m_ProxyAnimator)
             {
-                m_ProxyAnimator.Setup(m_AffordanceData.Select(data => data.definition).ToArray(), m_Affordances);
+                m_ProxyAnimator.Setup(m_AffordanceData.Select(data => data.Value.definition).ToArray(), m_Affordances);
                 this.ConnectInterfaces(m_ProxyAnimator, rayOrigin);
             }
         }
@@ -420,9 +421,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var fadeInAmount = m_FadeInSpeedScalar * Time.deltaTime;
             var fadeOutAmount = m_FadeOutSpeedScalar * Time.deltaTime;
 
-            foreach (var affordanceData in m_AffordanceData)
+            foreach (var kvp in m_AffordanceData)
             {
-                affordanceData.Update(fadeInAmount, fadeOutAmount);
+                kvp.Value.Update(fadeInAmount, fadeOutAmount);
             }
 
             m_BodyData.Update(fadeInAmount, fadeOutAmount);
@@ -432,9 +433,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             StopAllCoroutines();
 
-            foreach (var affordanceData in m_AffordanceData)
+            foreach (var kvp in m_AffordanceData)
             {
-                affordanceData.OnDestroy();
+                kvp.Value.OnDestroy();
             }
 
             m_BodyData.OnDestroy();
@@ -467,12 +468,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             foreach (var request in m_FeedbackRequests)
             {
-                foreach (var affordance in m_AffordanceData)
+                AffordanceData affordanceData;
+                if (m_AffordanceData.TryGetValue(request.control, out affordanceData))
                 {
-                    if (affordance.control != request.control)
-                        continue;
-
-                    foreach (var tooltip in affordance.tooltips)
+                    foreach (var tooltip in affordanceData.tooltips)
                     {
                         // Only update placement, do not affect duration
                         this.ShowTooltip(tooltip, true, -1, tooltip.GetPlacement(direction));
@@ -521,52 +520,48 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (changedRequest.showBody)
             {
                 var druation = changedRequest.druation;
-                foreach (var affordanceData in m_AffordanceData)
+                foreach (var kvp in m_AffordanceData)
                 {
-                    affordanceData.SetVisible(true, druation);
+                    kvp.Value.SetVisible(true, druation);
                 }
 
                 m_BodyData.SetVisible(true, druation);
+                return;
             }
-            else
+
+            AffordanceData affordanceData;
+            if (m_AffordanceData.TryGetValue(changedRequest.control, out affordanceData))
             {
-
-                foreach (var affordanceData in m_AffordanceData)
+                ProxyFeedbackRequest request = null;
+                foreach (var feedbackRequest in m_FeedbackRequests)
                 {
-                    if (affordanceData.control != changedRequest.control)
+                    if (feedbackRequest.control != changedRequest.control)
                         continue;
 
-                    ProxyFeedbackRequest request = null;
-                    foreach (var feedbackRequest in m_FeedbackRequests)
+                    if (request == null || feedbackRequest.priority >= request.priority)
+                        request = feedbackRequest;
+                }
+
+                if (request == null)
+                    return;
+
+                affordanceData.SetVisible(true, request.druation);
+
+                foreach (var renderer in affordanceData.renderers)
+                {
+                    if (renderer)
+                        this.SetHighlight(renderer.gameObject, !request.suppressExisting);
+                }
+
+                var tooltipText = request.tooltipText;
+                if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
+                {
+                    foreach (var tooltip in affordanceData.tooltips)
                     {
-                        if (feedbackRequest.control != affordanceData.control)
-                            continue;
-
-                        if (request == null || feedbackRequest.priority >= request.priority)
-                            request = feedbackRequest;
-                    }
-
-                    if (request == null)
-                        continue;
-
-                    affordanceData.SetVisible(true, request.druation);
-
-                    foreach (var renderer in affordanceData.renderers)
-                    {
-                        if (renderer)
-                            this.SetHighlight(renderer.gameObject, !request.suppressExisting);
-                    }
-
-                    var tooltipText = request.tooltipText;
-                    if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
-                    {
-                        foreach (var tooltip in affordanceData.tooltips)
+                        if (tooltip)
                         {
-                            if (tooltip)
-                            {
-                                tooltip.tooltipText = tooltipText;
-                                this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection));
-                            }
+                            tooltip.tooltipText = tooltipText;
+                            this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection));
                         }
                     }
                 }
@@ -575,11 +570,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void RemoveFeedbackRequest(ProxyFeedbackRequest request)
         {
-            foreach (var affordanceData in m_AffordanceData)
+            AffordanceData affordanceData;
+            if (m_AffordanceData.TryGetValue(request.control, out affordanceData))
             {
-                if (affordanceData.control != request.control)
-                    continue;
-
                 foreach (var renderer in affordanceData.renderers)
                 {
                     if (renderer)
