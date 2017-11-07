@@ -489,7 +489,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             base.OnDestroy();
         }
 
-        void ShowFeedback(List<ProxyFeedbackRequest> requests, Node node, string controlName, string tooltipText, bool hideExisting = false)
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, Node node, string controlName, string tooltipText, bool suppressExisting = false)
         {
             List<VRInputDevice.VRControl> ids;
             if (m_Controls.TryGetValue(controlName, out ids))
@@ -502,7 +502,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         control = id,
                         priority = 1,
                         tooltipText = tooltipText,
-                        hideExisting = hideExisting
+                        suppressExisting = suppressExisting
                     };
 
                     this.AddFeedbackRequest(request);

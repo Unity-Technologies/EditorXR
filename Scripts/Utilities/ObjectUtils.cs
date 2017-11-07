@@ -26,7 +26,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         // Local method use only -- created here to reduce garbage collection
         static readonly List<Renderer> k_Renderers = new List<Renderer>();
 
-        public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
+        public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true,
+            bool runInEditMode = true, bool active = true)
         {
             var go = UnityObject.Instantiate(prefab, parent, worldPositionStays);
             if (worldPositionStays)
@@ -45,21 +46,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
 
             return go;
-        }
-
-        public static void RemoveAllChildren(GameObject obj)
-        {
-            var children = new List<GameObject>();
-            foreach (Transform child in obj.transform)
-                children.Add(child.gameObject);
-
-            foreach (var child in children)
-                UnityObject.Destroy(child);
-        }
-
-        public static bool IsInLayer(GameObject o, string s)
-        {
-            return o.layer == LayerMask.NameToLayer(s);
         }
 
         /// <summary>
@@ -86,12 +72,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return empty;
         }
 
-        public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true) where T : Component
+        public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true)
+            where T : Component
         {
             return (T)CreateGameObjectWithComponent(typeof(T), parent, worldPositionStays);
         }
 
-        public static Component CreateGameObjectWithComponent(Type type, Transform parent = null, bool worldPositionStays = true)
+        public static Component CreateGameObjectWithComponent(Type type, Transform parent = null,
+            bool worldPositionStays = true)
         {
 #if UNITY_EDITOR
             var component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type).GetComponent(type);
@@ -103,13 +91,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             component.transform.SetParent(parent, worldPositionStays);
 
             return component;
-        }
-
-        public static void SetLayerRecursively(GameObject root, int layer)
-        {
-            var transforms = root.GetComponentsInChildren<Transform>();
-            for (var i = 0; i < transforms.Length; i++)
-                transforms[i].gameObject.layer = layer;
         }
 
         public static Bounds GetBounds(Transform[] transforms)
@@ -205,8 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 }
                 catch (ReflectionTypeLoadException)
                 {
-                    // Skip any assemblies that don't load properly
-                    continue;
+                    // Skip any assemblies that don't load properly -- suppress errors
                 }
             }
         }
