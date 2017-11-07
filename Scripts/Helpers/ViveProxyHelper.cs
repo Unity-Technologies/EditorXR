@@ -9,8 +9,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [Serializable]
         public class AffordanceTooltipPlacementOverride
         {
-            public AffordanceTooltip tooltip;
-            public AffordanceTooltipPlacement[] placements;
+            [SerializeField]
+            AffordanceTooltip m_Tooltip;
+
+            [SerializeField]
+            AffordanceTooltipPlacement[] m_Placements;
+
+            public AffordanceTooltip tooltip { get { return m_Tooltip; } }
+            public AffordanceTooltipPlacement[] placements { get { return m_Placements; } }
         }
 
         [SerializeField]
