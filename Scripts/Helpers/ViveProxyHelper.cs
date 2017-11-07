@@ -13,7 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             public AffordanceTooltipPlacement[] placements;
         }
 
-        [FormerlySerializedAs("m_RightPlacementOverrides")]
         [SerializeField]
         AffordanceTooltipPlacementOverride[] m_LeftPlacementOverrides;
 

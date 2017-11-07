@@ -27,11 +27,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
 #endif
 
-            if (m_IsOculus)
-            {
-                m_LeftHandProxyPrefab = m_LeftHandTouchProxyPrefab;
-                m_RightHandProxyPrefab = m_RightHandTouchProxyPrefab;
-            }
+            //if (m_IsOculus)
+            //{
+            //    m_LeftHandProxyPrefab = m_LeftHandTouchProxyPrefab;
+            //    m_RightHandProxyPrefab = m_RightHandTouchProxyPrefab;
+            //}
 
             base.Awake();
             m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);

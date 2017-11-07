@@ -53,6 +53,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             readonly List<Tuple<Renderer, MaterialData[]>> m_MaterialData = new List<Tuple<Renderer, MaterialData[]>>();
 
+            static readonly HashSet<Renderer> k_ProcessedRenderers = new HashSet<Renderer>();
+
             public VRControl control { get { return m_Control; } }
             public List<Renderer> renderers { get { return m_Renderers; } }
             public AffordanceDefinition definition { get { return m_Definition; } }
@@ -70,7 +72,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 foreach (var renderer in renderers)
                 {
                     var originalMaterials = renderer.sharedMaterials;
-                    var materialClones = MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with the renderer
+                    var materialClones = renderer.sharedMaterials;
+                    if (!k_ProcessedRenderers.Add(renderer))
+                        materialClones = MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with the renderer
+
                     var visibilityDefinition = definition.visibilityDefinition;
                     var materialData = new MaterialData[originalMaterials.Length];
                     var materials = new Tuple<Renderer, MaterialData[]>(renderer, materialData);
@@ -333,6 +338,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void Awake()
         {
+            Debug.Log("setup " + this);
             // Don't allow setup if affordances are invalid
             if (m_Affordances == null || m_Affordances.Length == 0)
             {
@@ -408,8 +414,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (m_FacingDirection != direction)
             {
                 m_FacingDirection = direction;
-
-                //TODO: handle in AffordanceData.update
                 UpdateFacingDirection(direction);
             }
 
