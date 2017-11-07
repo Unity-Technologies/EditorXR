@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
@@ -106,6 +107,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             Color.RGBToHSV(color, out hsv.x, out hsv.y, out hsv.z);
             hsv.x = Mathf.Repeat(hsv.x + shift, 1f);
             return Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
+        }
+
+        public static void AddMaterial(this Renderer @this, UnityMaterial material)
+        {
+            var materials = @this.sharedMaterials;
+            var length = materials.Length;
+            var newMaterials = new UnityMaterial[length + 1];
+            Array.Copy(materials, newMaterials, length);
+            newMaterials[length] = material;
+            @this.sharedMaterials = newMaterials;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -23,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public string tooltipText;
         public bool suppressExisting;
         public bool showBody;
-        public float druation = 500f;
+        public float druation = 5f;
     }
 
     class ProxyNode : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
@@ -285,6 +286,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         ProxyAffordanceMap m_AffordanceMap;
 
+        [HideInInspector]
+        [SerializeField]
+        Material m_ProxyBackgroundMaterial;
+
         [Tooltip("Affordance objects that store transform, renderer, and tooltip references")]
         [SerializeField]
         Affordance[] m_Affordances;
@@ -366,6 +371,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 singleRendererList.Add(renderer);
                 m_AffordanceData.Add(new AffordanceData(control, singleRendererList, affordanceDefinition, affordance.tooltips, this));
                 singleRendererList.Clear();
+                renderer.AddMaterial(m_ProxyBackgroundMaterial);
             }
 
             var bodyRenderers = GetComponentsInChildren<Renderer>(true)
@@ -379,6 +385,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             };
 
             m_BodyData = new AffordanceData(0, bodyRenderers, bodyAffordanceDefinition, null, this);
+
+            foreach (var renderer in bodyRenderers)
+            {
+                renderer.AddMaterial(m_ProxyBackgroundMaterial);
+            }
         }
 
         void Start()
