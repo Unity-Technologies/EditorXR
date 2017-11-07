@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     return placement.tooltipTarget;
 
                 return ((MonoBehaviour)tooltip).transform;
-        }
+            }
         }
 
         readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
@@ -110,11 +110,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                         var hasLine = placement != null;
                         tooltipUI.dottedLine.gameObject.SetActive(hasLine);
-                            foreach (var sphere in tooltipUI.spheres)
-                            {
+                        foreach (var sphere in tooltipUI.spheres)
+                        {
                             sphere.gameObject.SetActive(hasLine);
-                            }
                         }
+                    }
 
                     var lerp = Mathf.Clamp01((hoverTime - k_Delay) / k_TransitionDuration);
                     UpdateVisuals(tooltip, tooltipUI, placement, target, lerp);
@@ -388,7 +388,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             tooltipUI.gameObject.SetActive(false);
             m_TooltipPool.Enqueue(tooltipUI);
+        }
     }
-}
 }
 #endif
