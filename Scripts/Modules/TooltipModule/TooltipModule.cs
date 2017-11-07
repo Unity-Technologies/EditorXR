@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : MonoBehaviour, IUsesViewerScale, IInstantiateUI
+    sealed class TooltipModule : MonoBehaviour, IUsesViewerScale
     {
         const float k_Delay = 0; // In case we want to bring back a delay
         const float k_TransitionDuration = 0.1f;
@@ -381,11 +381,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 yield return null;
             }
 
-            RecycleTooltip(tooltipUI);
+            RecycleTooltip(data);
         }
 
-        void RecycleTooltip(TooltipUI tooltipUI)
+        void RecycleTooltip(TooltipData tooltipData)
         {
+            var tooltipUI = tooltipData.tooltipUI;
+            tooltipUI.becameVisible -= tooltipData.becameVisible;
             tooltipUI.gameObject.SetActive(false);
             m_TooltipPool.Enqueue(tooltipUI);
         }
