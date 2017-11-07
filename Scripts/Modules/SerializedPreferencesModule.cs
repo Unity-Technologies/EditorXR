@@ -128,7 +128,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 };
             }
 
-            Debug.Log(JsonUtility.ToJson(m_Preferences));
             return JsonUtility.ToJson(m_Preferences);
         }
 

@@ -282,8 +282,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [Serializable]
         internal class RequestData
         {
-            public int presentations;
-            public bool visibleThisPresentation;
+            [SerializeField]
+            int m_Presentations;
+
+            public int presentations
+            {
+                get { return m_Presentations; }
+                set { m_Presentations = value; }
+            }
+
+            public bool visibleThisPresentation { get; set; }
         }
 
         [Serializable]
