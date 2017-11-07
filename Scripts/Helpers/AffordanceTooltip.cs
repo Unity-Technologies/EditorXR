@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    public sealed class AffordanceTooltip : MonoBehaviour, ITooltip
+    sealed class AffordanceTooltip : MonoBehaviour, ITooltip
     {
         [SerializeField]
         string m_TooltipText;

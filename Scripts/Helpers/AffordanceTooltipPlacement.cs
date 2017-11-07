@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    public sealed class AffordanceTooltipPlacement : MonoBehaviour, ITooltipPlacement
+    sealed class AffordanceTooltipPlacement : MonoBehaviour, ITooltipPlacement
     {
         const FacingDirection k_AllDirections = (FacingDirection)0xFFF;
 

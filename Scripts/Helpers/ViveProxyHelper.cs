@@ -1,10 +1,10 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    public class ViveProxyHelper : MonoBehaviour
+    class ViveProxyHelper : MonoBehaviour
     {
         [Serializable]
         public class AffordanceTooltipPlacementOverride
@@ -22,3 +22,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         internal AffordanceTooltipPlacementOverride[] leftPlacementOverrides { get { return m_LeftPlacementOverrides; } }
     }
 }
+#endif

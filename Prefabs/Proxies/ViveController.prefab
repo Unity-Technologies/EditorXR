@@ -2281,7 +2281,7 @@ MonoBehaviour:
   m_ProxyAnimator: {fileID: 114760536874177710}
   m_AffordanceMap: {fileID: 11400000, guid: c067e5fde424eba4c883c573507d8a15, type: 2}
   m_ProxyBackgroundMaterial: {fileID: 2100000, guid: 782cf64e6b630ac40b6a1e975ab25369,
-      type: 2}
+    type: 2}
   m_Affordances:
   - m_Control: 2
     m_Transform: {fileID: 4539810040550546}
@@ -2366,7 +2366,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdd11671dcb67934493cc2ccea551eef, type: 3}
   m_Name:
   m_EditorClassIdentifier:
-  m_RightPlacementOverrides:
+  m_LeftPlacementOverrides:
   - tooltip: {fileID: 114116332399531262}
     placements:
     - {fileID: 114254691474537804}
