@@ -98,6 +98,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return Color.HSVToRGB(hsv.x, hsv.y, hsv.z);
         }
 
+        /// <summary>
+        /// Add a material to this renderer's shared materials
+        /// </summary>
+        /// <param name="material">The material to be added</param>
         public static void AddMaterial(this Renderer @this, UnityMaterial material)
         {
             var materials = @this.sharedMaterials;
