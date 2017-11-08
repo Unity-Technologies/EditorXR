@@ -39,7 +39,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// Clone all materials within a renderer; IMPORTANT: Make sure to call ObjectUtils.Destroy() on this material when done!
         /// </summary>
         /// <param name="renderer">Renderer that will have its materials cloned and replaced</param>
-        /// <param name="preventClonedMaterialDuplication">(Defaulted to false) If true, prevent duplication of already cloned materials</param>
         /// <returns>Cloned materials</returns>
         public static UnityMaterial[] CloneMaterials(Renderer renderer)
         {
