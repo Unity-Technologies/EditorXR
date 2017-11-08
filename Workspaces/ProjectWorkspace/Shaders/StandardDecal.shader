@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/Standard Decal"
+Shader "EditorVR/Standard Decal"
 {
 	Properties
 	{
@@ -32,9 +32,14 @@
 
 		void surf (Input IN, inout SurfaceOutputStandard o)
 		{
-			fixed4 c = tex2D(_MainTex, IN.uv_MainTex);
-			c *= _Color * c.a;
-			o.Emission = c.rgb;
+            if (IN.uv_MainTex.x > 1 || IN.uv_MainTex.x < 0
+                || IN.uv_MainTex.y > 1 || IN.uv_MainTex.y < 0)
+                o.Emission = 0;
+            else {
+			    fixed4 c = tex2D(_MainTex, IN.uv_MainTex);
+			    c *= _Color * c.a;
+			    o.Emission = c.rgb;
+            }
 		}
 		ENDCG
 	}
