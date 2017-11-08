@@ -67,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (!m_Requests.TryGetValue(url, out request))
             {
                 var webRequest = UnityWebRequest.Get(url);
-                webRequest.Send();
+                webRequest.SendWebRequest();
                 request = new DownloadRequest { key = url, request = webRequest };
                 if (m_Requests.Count < k_MaxSimultaneousRequests)
                     m_Requests.Add(url, request);
@@ -85,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 var webRequest = UnityWebRequest.Get(url);
                 webRequest.downloadHandler = new DownloadHandlerTexture();
-                webRequest.Send();
+                webRequest.SendWebRequest();
                 request = new TextureRequest { key = url, request = webRequest };
                 if (m_Requests.Count < k_MaxSimultaneousRequests)
                     m_TextureRequests.Add(url, request);
