@@ -2,6 +2,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -14,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Sprite m_Icon;
 
         [SerializeField]
-        Text m_NameText;
+        TextMeshProUGUI m_NameText;
 
         public Func<Action, bool> buttonPressed { get; set; }
     }

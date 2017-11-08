@@ -1,19 +1,20 @@
 ﻿#if UNITY_EDITOR
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenuActionToggle : MainMenuActionButton
     {
         [SerializeField]
-        private Button m_Button2;
+        Button m_Button2;
 
         [SerializeField]
-        private Sprite m_Icon02;
+        Sprite m_Icon02;
 
         [SerializeField]
-        private Text m_NameText2;
+        TextMeshProUGUI m_NameText2;
     }
 }
 #endif
