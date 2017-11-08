@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 public Material originalMaterial;
                 public Material material;
                 public Color originalColor;
-                public Color currentColor;
+                public Color startColor;
             }
 
             readonly List<Renderer> m_Renderers = new List<Renderer>();
@@ -43,14 +43,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             readonly List<AffordanceTooltip> m_Tooltips = new List<AffordanceTooltip>();
             readonly ProxyNode m_Owner;
 
-            bool m_Visible;
-            float m_VisibleDuration;
-
             bool m_WasVisible;
             float m_VisibleChangeTime;
 
             readonly List<Tuple<Renderer, MaterialData[]>> m_MaterialData = new List<Tuple<Renderer, MaterialData[]>>();
 
+            public bool visible { get; set; }
+            public float visibleDuration { get; set; }
             public List<Renderer> renderers { get { return m_Renderers; } }
             public AffordanceDefinition definition { get { return m_Definition; } }
             public List<AffordanceTooltip> tooltips { get { return m_Tooltips; } }
@@ -83,11 +82,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     var originalColor = default(Color);
                     switch (visibilityType)
                     {
-                        case VisibilityControlType.ColorProperty:
-                            originalColor = material.GetColor(visibilityDefinition.colorProperty);
-                            break;
                         case VisibilityControlType.AlphaProperty:
                             originalColor = material.GetFloat(visibilityDefinition.alphaProperty) * Color.white;
+                            break;
+                        case VisibilityControlType.ColorProperty:
+                            originalColor = material.GetColor(visibilityDefinition.colorProperty);
                             break;
                     }
 
@@ -95,93 +94,84 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     {
                         material = material,
                         originalMaterial = originalMaterial,
-                        currentColor = originalColor,
+                        startColor = originalColor,
                         originalColor = originalColor
                     };
                 }
             }
 
-            public void SetVisible(bool visible, float visibleDuration = 0f)
+            public void Update(float fadeInDuration, float fadeOutDuration, bool visibilityOverride = false)
             {
-                m_Visible = visible;
-                m_VisibleDuration = visibleDuration;
-                m_VisibleChangeTime = Time.time;
-            }
+                var time = Time.time;
+                var visible = this.visible || visibilityOverride;
+                if (visible != m_WasVisible)
+                    m_VisibleChangeTime = time;
 
-            public void Update(float fadeInAmount, float fadeOutAmount, bool bodyVisible = false)
-            {
-                var visible = m_Visible || bodyVisible;
+                var timeDiff = time - m_VisibleChangeTime;
+
                 var visibilityDefinition = definition.visibilityDefinition;
-
                 switch (visibilityDefinition.visibilityType)
                 {
                     case VisibilityControlType.AlphaProperty:
-                        foreach (var materialData in m_MaterialData)
+                        foreach (var materialPair in m_MaterialData)
                         {
-                            foreach (var material in materialData.secondElement)
+                            foreach (var materialData in materialPair.secondElement)
                             {
-                                var currentColor = material.currentColor;
-                                var current = currentColor.a;
-                                var target = visible ? material.originalColor.a : visibilityDefinition.hiddenColor.a;
+                                var material = materialData.material;
+                                var alphaProperty = visibilityDefinition.alphaProperty;
+                                if (visible != m_WasVisible)
+                                    materialData.startColor = material.GetFloat(alphaProperty) * Color.white;
+
+                                var startColor = materialData.startColor;
+                                var current = startColor.a;
+                                var target = visible ? materialData.originalColor.a : visibilityDefinition.hiddenColor.a;
                                 if (!Mathf.Approximately(current, target))
                                 {
-                                    if (current > target)
+                                    var duration = current / target * (visible ? fadeOutDuration : fadeInDuration);
+                                    var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
+                                    if (smoothedAmount > 1)
                                     {
-                                        current -= fadeOutAmount;
-                                        if (current < target)
-                                            current = target;
+                                        current = target;
+                                        startColor.a = current;
+                                        materialData.startColor = startColor;
                                     }
                                     else
                                     {
-                                        current += fadeInAmount;
-                                        if (current > target)
-                                            current = target;
+                                        current = Mathf.Lerp(current, target, smoothedAmount);
                                     }
 
-                                    currentColor.a = current;
-                                    material.material.SetFloat(visibilityDefinition.alphaProperty, current);
-                                    material.currentColor = currentColor;
+                                    material.SetFloat(alphaProperty, current);
                                 }
                             }
                         }
                         break;
                     case VisibilityControlType.ColorProperty:
-                        foreach (var materialData in m_MaterialData)
+                        foreach (var materialPair in m_MaterialData)
                         {
-                            foreach (var material in materialData.secondElement)
+                            foreach (var materialData in materialPair.secondElement)
                             {
-                                var currentColor = material.currentColor;
-                                var targetColor = visible ? material.originalColor : visibilityDefinition.hiddenColor;
-                                var change = false;
-                                for (var i = 0; i < 4; i++)
+                                var material = materialData.material;
+                                var colorProperty = visibilityDefinition.colorProperty;
+                                if (visible != m_WasVisible)
+                                    materialData.startColor = material.GetColor(colorProperty);
+
+                                var startColor = materialData.startColor;
+                                var targetColor = visible ? materialData.originalColor : visibilityDefinition.hiddenColor;
+                                if (startColor != targetColor)
                                 {
-                                    var current = currentColor[i];
-                                    var target = targetColor[i];
-
-                                    if (Mathf.Approximately(current, target))
-                                        continue;
-
-                                    if (current > target)
+                                    var duration = startColor.grayscale / targetColor.grayscale * (visible ? fadeOutDuration : fadeInDuration);
+                                    var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
+                                    if (smoothedAmount > 1)
                                     {
-                                        current -= fadeOutAmount;
-                                        if (current < target)
-                                            current = target;
+                                        startColor = targetColor;
+                                        materialData.startColor = startColor;
                                     }
                                     else
                                     {
-                                        current += fadeInAmount;
-                                        if (current > target)
-                                            current = target;
+                                        startColor = Color.Lerp(startColor, targetColor, smoothedAmount);
                                     }
 
-                                    currentColor[i] = current;
-                                    change = true;
-                                }
-
-                                if (change)
-                                {
-                                    material.material.SetColor(visibilityDefinition.colorProperty, currentColor);
-                                    material.currentColor = currentColor;
+                                    material.SetColor(colorProperty, startColor);
                                 }
                             }
                         }
@@ -205,9 +195,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                 m_WasVisible = visible;
 
-                if (m_Visible && Time.time - m_VisibleChangeTime > m_VisibleDuration)
+                if (visible && !visibilityOverride && timeDiff > visibleDuration)
                 {
-                    m_Visible = false;
+                    this.visible = false;
                     foreach (var materialData in m_MaterialData)
                     {
                         var renderer = materialData.firstElement;
@@ -243,10 +233,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
 
         [SerializeField]
-        float m_FadeInSpeedScalar = 4f;
+        float m_FadeInDuration = 1f;
 
         [SerializeField]
-        float m_FadeOutSpeedScalar = 0.5f;
+        float m_FadeOutDuration = 4f;
 
         [SerializeField]
         Transform m_RayOrigin;
@@ -400,6 +390,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_ProxyAnimator.Setup(m_AffordanceData.Select(data => data.Value.definition).ToArray(), m_Affordances);
                 this.ConnectInterfaces(m_ProxyAnimator, rayOrigin);
             }
+
+            AddFeedbackRequest(k_ShakeFeedbackRequest);
         }
 
         void Update()
@@ -412,15 +404,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 UpdateFacingDirection(direction);
             }
 
-            var fadeInAmount = m_FadeInSpeedScalar * Time.deltaTime;
-            var fadeOutAmount = m_FadeOutSpeedScalar * Time.deltaTime;
-
+            var bodyVisible = m_BodyData.visible;
             foreach (var kvp in m_AffordanceData)
             {
-                kvp.Value.Update(fadeInAmount, fadeOutAmount);
+                kvp.Value.Update(m_FadeInDuration, m_FadeOutDuration, bodyVisible);
             }
 
-            m_BodyData.Update(fadeInAmount, fadeOutAmount);
+            m_BodyData.Update(m_FadeInDuration, m_FadeOutDuration);
         }
 
         void OnDestroy()
@@ -512,13 +502,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             if (changedRequest.showBody)
             {
-                var druation = changedRequest.duration;
-                foreach (var kvp in m_AffordanceData)
-                {
-                    kvp.Value.SetVisible(true, druation);
-                }
-
-                m_BodyData.SetVisible(true, druation);
+                m_BodyData.visible = true;
+                m_BodyData.visibleDuration = changedRequest.duration;
                 return;
             }
 
@@ -538,7 +523,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 if (request == null)
                     return;
 
-                affordanceData.SetVisible(true, request.duration);
+                affordanceData.visible = true;
+                affordanceData.visibleDuration = request.duration;
 
                 foreach (var renderer in affordanceData.renderers)
                 {
@@ -572,7 +558,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         this.SetHighlight(renderer.gameObject, false);
                 }
 
-                affordanceData.SetVisible(false);
+                affordanceData.visible = false;
 
                 if (!string.IsNullOrEmpty(request.tooltipText))
                 {
