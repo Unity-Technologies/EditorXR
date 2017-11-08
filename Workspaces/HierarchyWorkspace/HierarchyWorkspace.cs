@@ -10,8 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
     class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
     {
-        protected const string k_LockedQuery = "t:" + k_Locked;
-        const string k_Locked = "Locked";
+        protected const string k_Locked = "Locked";
 
         [SerializeField]
         GameObject m_ContentPrefab;
@@ -72,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
             m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
-            m_HierarchyUI.listView.lockedQueryString = k_LockedQuery;
+            m_HierarchyUI.listView.lockedQueryString = k_Locked;
             hierarchyData = m_HierarchyData;
 
             if (m_FilterPrefab)

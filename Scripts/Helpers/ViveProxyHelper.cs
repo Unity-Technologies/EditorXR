@@ -1,24 +1,31 @@
-﻿using UnityEditor.Experimental.EditorVR.UI;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	public class ViveProxyHelper : MonoBehaviour
-	{
-		[SerializeField]
-		Tooltip[] m_LeftTooltips;
+    class ViveProxyHelper : MonoBehaviour
+    {
+        [Serializable]
+        public class AffordanceTooltipPlacementOverride
+        {
+            [SerializeField]
+            AffordanceTooltip m_Tooltip;
 
-		[SerializeField]
-		Tooltip[] m_RightTooltips;
+            [SerializeField]
+            AffordanceTooltipPlacement[] m_Placements;
 
-		/// <summary>
-		/// Tooltip components to be removed from a right-handed controller
-		/// </summary>
-		internal Tooltip[] leftTooltips { get { return m_LeftTooltips; } }
+            public AffordanceTooltip tooltip { get { return m_Tooltip; } }
+            public AffordanceTooltipPlacement[] placements { get { return m_Placements; } }
+        }
 
-		/// <summary>
-		/// Tooltip components to be removed from a left-handed controller
-		/// </summary>
-		internal Tooltip[] rightTooltips { get { return m_RightTooltips; } }
-	}
+        [SerializeField]
+        AffordanceTooltipPlacementOverride[] m_LeftPlacementOverrides;
+
+        /// <summary>
+        /// Tooltip placement arrays to be replaced on the right hand controller
+        /// </summary>
+        internal AffordanceTooltipPlacementOverride[] leftPlacementOverrides { get { return m_LeftPlacementOverrides; } }
+    }
 }
+#endif

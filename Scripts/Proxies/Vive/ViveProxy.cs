@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -22,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         bool m_IsOculus;
 
-        public override void Awake()
+        protected override void Awake()
         {
 #if UNITY_2017_2_OR_NEWER
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -40,18 +39,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var proxyHelper = m_LeftHand.GetComponent<ViveProxyHelper>();
             if (proxyHelper)
             {
-                foreach (var tooltip in proxyHelper.leftTooltips)
+                foreach (var @override in proxyHelper.leftPlacementOverrides)
                 {
-                    ObjectUtils.Destroy(tooltip);
-                }
-            }
-
-            proxyHelper = m_RightHand.GetComponent<ViveProxyHelper>();
-            if (proxyHelper)
-            {
-                foreach (var tooltip in proxyHelper.rightTooltips)
-                {
-                    ObjectUtils.Destroy(tooltip);
+                    @override.tooltip.placements = @override.placements;
                 }
             }
 
@@ -60,12 +50,21 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #endif
         }
 
-        static void PostAnimate(Affordance[] affordances, ProxyAffordanceMap.AffordanceDefinition[] affordanceDefinitions, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
+        static void PostAnimate(Affordance[] affordances, AffordanceDefinition[] affordanceDefinitions, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
         {
             var proxyInput = (ProxyAnimatorInput)input;
             foreach (var button in affordances)
             {
-                var affordanceDefinition = affordanceDefinitions.Where(x => x.control == button.control).FirstOrDefault().animationDefinition;
+                AffordanceAnimationDefinition affordanceAnimationDefinition = null;
+                foreach (var definition in affordanceDefinitions)
+                {
+                    if (definition.control == button.control)
+                    {
+                        affordanceAnimationDefinition = definition.animationDefinition;
+                        break;
+                    }
+                }
+
                 switch (button.control)
                 {
                     case VRInputDevice.VRControl.LeftStickButton:
@@ -79,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         break;
                     case VRInputDevice.VRControl.Analog0:
                         // Trackpad touch sphere
-                        if (affordanceDefinition.translateAxes != 0)
+                        if (affordanceAnimationDefinition.translateAxes != 0)
                             button.renderer.enabled = !Mathf.Approximately(proxyInput.stickX.value, 0) || !Mathf.Approximately(proxyInput.stickY.value, 0);
                         break;
                 }
@@ -87,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
 
 #if ENABLE_STEAMVR_INPUT
-        public override IEnumerator Start()
+        protected override IEnumerator Start()
         {
             yield return base.Start();
 

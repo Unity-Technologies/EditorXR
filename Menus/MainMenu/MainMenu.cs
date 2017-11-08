@@ -12,7 +12,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace,
-        ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
+        ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
         IRequestFeedback
     {
         const string k_SettingsMenuSectionName = "Settings";
@@ -55,7 +55,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
         public List<ActionMenuData> menuActions { get; set; }
         public Transform targetRayOrigin { private get; set; }
-        public Type proxyType { private get; set; }
         public Node node { get; set; }
 
         public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
@@ -147,8 +146,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             consumeControl(mainMenuInput.blockY);
 
             const float kFlickDeltaThreshold = 0.5f;
-            if ((proxyType != typeof(ViveProxy) && Mathf.Abs(rotationInput) >= kFlickDeltaThreshold && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
-                || mainMenuInput.flickFace.wasJustReleased)
+            if ((this.GetDeviceType() != DeviceType.Vive && Mathf.Abs(rotationInput) >= kFlickDeltaThreshold
+                && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold) || mainMenuInput.flickFace.wasJustReleased)
             {
                 m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
                 this.Pulse(node, m_FaceRotationPulse);
@@ -377,7 +376,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void ShowFeedback()
         {
-            var tooltipText = proxyType == typeof(ViveProxy) ? "Press to Rotate Menu" : "Rotate Menu";
+            var tooltipText = this.GetDeviceType() == DeviceType.Vive ? "Press to Rotate Menu" : "Rotate Menu";
             List<VRInputDevice.VRControl> controls;
             if (m_Controls.TryGetValue("FlickFace", out controls))
             {

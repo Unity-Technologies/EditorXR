@@ -2,8 +2,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -12,23 +12,27 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     /// <summary>
-    /// ProxyFeedbackRequests reside in feedbackRequest collection until the action associated with an affordance changes
-    /// Some are removed immediately after being added; others exist for the duration of an action/tool's lifespan
+    /// Which cardinal direction a proxy node is facing
     /// </summary>
-    public class ProxyFeedbackRequest : FeedbackRequest
+    [Flags]
+    public enum FacingDirection
     {
-        public int priority;
-        public VRInputDevice.VRControl control;
-        public Node node;
-        public string tooltipText;
-        public bool suppressExisting;
-        public bool visible;
-        public bool proxyShaken;
+        Front = 1 << 0,
+        Back = 1 << 1,
+        Left = 1 << 2,
+        Right = 1 << 3,
+        Top = 1 << 4,
+        Bottom = 1 << 5
     }
 
-    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
+    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, ISerializePreferences
     {
-        const float k_DefaultFeedbackDuration = 5f;
+        [Serializable]
+        class SerializedFeedback
+        {
+            public ProxyNode.SerializedFeedback leftNode;
+            public ProxyNode.SerializedFeedback rightNode;
+        }
 
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
@@ -39,31 +43,28 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         protected PlayerInput m_PlayerInput;
 
+        [SerializeField]
+        [Tooltip("How much strength the controllers must be shaken with before fading in")]
+        protected float m_ShakeThreshhold = 0.5f;
+
+        [SerializeField]
+        [Tooltip("Controls the smoothing and how long of a history detection of left controller shake has")]
+        protected ShakeVelocityTracker m_LeftShakeTracker = new ShakeVelocityTracker();
+
+        [SerializeField]
+        [Tooltip("Controls the smoothing and how long of a history detection of right controller shake has")]
+        protected ShakeVelocityTracker m_RightShakeTracker = new ShakeVelocityTracker();
+
         protected IInputToEvents m_InputToEvents;
 
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
-        readonly Dictionary<ProxyFeedbackRequest, Coroutine> m_FeedbackRequests = new Dictionary<ProxyFeedbackRequest, Coroutine>();
 
         protected Dictionary<Node, Transform> m_RayOrigins;
 
         bool m_Hidden;
-        ProxyHelper m_LeftProxyHelper;
-        ProxyHelper m_RightProxyHelper;
-        List<Transform> m_ProxyMeshRoots = new List<Transform>();
-
-        ProxyFeedbackRequest m_SemitransparentLockRequest;
-        float m_ShakeFrequency;
-        Vector3 m_PreviousLeftHandPosition;
-        Vector3 m_PreviousRightHandPosition;
-
-        readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>> m_Affordances =
-            new Dictionary<Node, Dictionary<VRInputDevice.VRControl, List<Affordance>>>();
-
-        bool leftAffordanceRenderersVisible { set { m_LeftProxyHelper.affordanceRenderersVisible = value; } }
-        bool rightAffordanceRenderersVisible { set { m_RightProxyHelper.affordanceRenderersVisible = value; } }
-        bool leftBodyRenderersVisible { set { m_LeftProxyHelper.bodyRenderersVisible = value; } }
-        bool rightBodyRenderersVisible { set { m_RightProxyHelper.bodyRenderersVisible = value; } }
+        ProxyNode m_LeftProxyNode;
+        ProxyNode m_RightProxyNode;
 
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
@@ -89,8 +90,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     m_Hidden = value;
                     m_LeftHand.gameObject.SetActive(!value);
                     m_RightHand.gameObject.SetActive(!value);
-
-                    UpdateVisibility();
                 }
             }
         }
@@ -100,70 +99,48 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
-        public virtual void Awake()
+        protected virtual void Awake()
         {
             m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
             m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
 
-            m_LeftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
-            m_RightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
-
-            m_ProxyMeshRoots.Add(m_LeftProxyHelper.meshRoot);
-            m_ProxyMeshRoots.Add(m_RightProxyHelper.meshRoot);
-
-            m_Affordances[Node.LeftHand] = GetAffordanceDictionary(m_LeftProxyHelper);
-            m_Affordances[Node.RightHand] = GetAffordanceDictionary(m_RightProxyHelper);
+            m_LeftProxyNode = m_LeftHand.GetComponent<ProxyNode>();
+            m_RightProxyNode = m_RightHand.GetComponent<ProxyNode>();
 
             m_RayOrigins = new Dictionary<Node, Transform>
             {
-                { Node.LeftHand, m_LeftProxyHelper.rayOrigin },
-                { Node.RightHand, m_RightProxyHelper.rayOrigin }
+                { Node.LeftHand, m_LeftProxyNode.rayOrigin },
+                { Node.RightHand, m_RightProxyNode.rayOrigin }
             };
 
             menuOrigins = new Dictionary<Transform, Transform>()
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.menuOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.menuOrigin },
+                { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.menuOrigin },
+                { m_RightProxyNode.rayOrigin, m_RightProxyNode.menuOrigin },
             };
 
             alternateMenuOrigins = new Dictionary<Transform, Transform>()
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.alternateMenuOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.alternateMenuOrigin },
+                { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.alternateMenuOrigin },
+                { m_RightProxyNode.rayOrigin, m_RightProxyNode.alternateMenuOrigin },
             };
 
             previewOrigins = new Dictionary<Transform, Transform>
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.previewOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.previewOrigin }
+                { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.previewOrigin },
+                { m_RightProxyNode.rayOrigin, m_RightProxyNode.previewOrigin }
             };
 
             fieldGrabOrigins = new Dictionary<Transform, Transform>
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.fieldGrabOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.fieldGrabOrigin }
+                { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.fieldGrabOrigin },
+                { m_RightProxyNode.rayOrigin, m_RightProxyNode.fieldGrabOrigin }
             };
         }
 
-        static Dictionary<VRInputDevice.VRControl, List<Affordance>> GetAffordanceDictionary(ProxyHelper helper)
+        protected virtual IEnumerator Start()
         {
-            var buttonDictionary = new Dictionary<VRInputDevice.VRControl, List<Affordance>>();
-            foreach (var button in helper.affordances)
-            {
-                List<Affordance> affordances;
-                if (!buttonDictionary.TryGetValue(button.control, out affordances))
-                {
-                    affordances = new List<Affordance>();
-                    buttonDictionary[button.control] = affordances;
-                }
-
-                affordances.Add(button);
-            }
-            return buttonDictionary;
-        }
-
-        public virtual IEnumerator Start()
-        {
+            hidden = true;
             while (!active)
                 yield return null;
 
@@ -171,15 +148,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (trackedObjectInput == null && m_PlayerInput)
                 trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 
-            m_PreviousLeftHandPosition = trackedObjectInput.leftPosition.vector3;
-            m_PreviousRightHandPosition = trackedObjectInput.rightPosition.vector3;
+            m_LeftShakeTracker.Initialize(trackedObjectInput.leftPosition.vector3);
+            m_RightShakeTracker.Initialize(trackedObjectInput.rightPosition.vector3);
         }
 
-        public virtual void Update()
+        protected virtual void Update()
         {
             if (active)
             {
-                var movementDelta = -Time.unscaledDeltaTime * 4;
                 var leftLocalPosition = trackedObjectInput.leftPosition.vector3;
                 m_LeftHand.localPosition = leftLocalPosition;
                 m_LeftHand.localRotation = trackedObjectInput.leftRotation.quaternion;
@@ -188,33 +164,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_RightHand.localPosition = rightLocalPosition;
                 m_RightHand.localRotation = trackedObjectInput.rightRotation.quaternion;
 
-                if (m_SemitransparentLockRequest == null)
+                m_LeftShakeTracker.Update(leftLocalPosition, Time.deltaTime);
+                m_RightShakeTracker.Update(rightLocalPosition, Time.deltaTime);
+
+                if (Mathf.Max(m_LeftShakeTracker.shakeStrength, m_RightShakeTracker.shakeStrength) > m_ShakeThreshhold)
                 {
-                    movementDelta = Vector3.SqrMagnitude(leftLocalPosition - m_PreviousLeftHandPosition);
-                    movementDelta += Vector3.SqrMagnitude(rightLocalPosition - m_PreviousRightHandPosition);
-                    movementDelta *= Time.unscaledDeltaTime * 20;
-                    if (movementDelta > 0.001f)
-                    {
-                        m_ShakeFrequency += movementDelta;
-                        if (m_ShakeFrequency > 0.1f)
-                        {
-                            var shakeRequest = new ProxyFeedbackRequest
-                            {
-                                control = VRInputDevice.VRControl.LocalRotation,
-                                node = Node.None,
-                                tooltipText = null,
-                                suppressExisting = true,
-                                proxyShaken = true
-                            };
-
-                            AddFeedbackRequest(shakeRequest);
-                        }
-                    }
-
+                    m_LeftProxyNode.AddShakeRequest();
+                    m_RightProxyNode.AddShakeRequest();
                 }
-
-                m_PreviousLeftHandPosition = leftLocalPosition;
-                m_PreviousRightHandPosition = rightLocalPosition;
             }
         }
 
@@ -223,183 +180,53 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var proxyRequest = request as ProxyFeedbackRequest;
             if (proxyRequest != null)
             {
-                var hasKey = m_FeedbackRequests.ContainsKey(proxyRequest);
-                if (hasKey) // Update existing request/coroutine pair
-                {
-                    var lifespanMonitoringCoroutine = m_FeedbackRequests[proxyRequest];
-                    this.RestartCoroutine(ref lifespanMonitoringCoroutine, MonitorFeedbackRequestLifespan(proxyRequest));
-                    m_FeedbackRequests[proxyRequest] = lifespanMonitoringCoroutine;
-                }
-                else // Add a new request/coroutine pair
-                {
-                    var newMonitoringCoroutine = StartCoroutine(MonitorFeedbackRequestLifespan(proxyRequest));
-                    m_FeedbackRequests.Add(proxyRequest, newMonitoringCoroutine);
-                }
-
-                ExecuteFeedback(proxyRequest);
+                if (proxyRequest.node == Node.LeftHand)
+                    m_LeftProxyNode.AddFeedbackRequest(proxyRequest);
+                else if (proxyRequest.node == Node.RightHand)
+                    m_RightProxyNode.AddFeedbackRequest(proxyRequest);
             }
-        }
-
-        void ExecuteFeedback(ProxyFeedbackRequest changedRequest)
-        {
-            if (!active)
-                return;
-
-            foreach (var proxyNode in m_Affordances)
-            {
-                if (proxyNode.Key != changedRequest.node)
-                    continue;
-
-                foreach (var kvp in proxyNode.Value)
-                {
-                    if (kvp.Key != changedRequest.control)
-                        continue;
-
-                    ProxyFeedbackRequest request = null;
-                    foreach (var req in m_FeedbackRequests)
-                    {
-                        var key = req.Key;
-                        if (key.node != proxyNode.Key || key.control != kvp.Key)
-                            continue;
-
-                        if (request == null || key.priority >= request.priority)
-                            request = key;
-                    }
-
-                    if (request == null)
-                        continue;
-
-                    foreach (var button in kvp.Value)
-                    {
-                        if (button.renderer)
-                            this.SetHighlight(button.renderer.gameObject, !request.suppressExisting, duration: k_DefaultFeedbackDuration);
-
-                        var tooltipText = request.tooltipText;
-                        if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
-                        {
-                            foreach (var tooltip in button.tooltips)
-                            {
-                                if (tooltip)
-                                {
-                                    tooltip.tooltipText = tooltipText;
-                                    this.ShowTooltip(tooltip, true, k_DefaultFeedbackDuration);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            UpdateVisibility();
         }
 
         public void RemoveFeedbackRequest(FeedbackRequest request)
         {
             var proxyRequest = request as ProxyFeedbackRequest;
             if (proxyRequest != null)
-                RemoveFeedbackRequest(proxyRequest);
-        }
-
-        void RemoveFeedbackRequest(ProxyFeedbackRequest request)
-        {
-            Dictionary<VRInputDevice.VRControl, List<Affordance>> affordanceDictionary;
-            if (m_Affordances.TryGetValue(request.node, out affordanceDictionary))
             {
-                List<Affordance> affordances;
-                if (affordanceDictionary.TryGetValue(request.control, out affordances))
-                {
-                    foreach (var kvp in affordanceDictionary)
-                    {
-                        foreach (var affordance in kvp.Value)
-                        {
-                            if (affordance.renderer)
-                                this.SetHighlight(affordance.renderer.gameObject, false);
-
-                            foreach (var tooltip in affordance.tooltips)
-                            {
-                                if (tooltip)
-                                {
-                                    tooltip.tooltipText = string.Empty;
-                                    this.HideTooltip(tooltip, true);
-                                }
-                            }
-                        }
-                    }
-                }
+                if (proxyRequest.node == Node.LeftHand)
+                    m_LeftProxyNode.RemoveFeedbackRequest(proxyRequest);
+                else if (proxyRequest.node == Node.RightHand)
+                    m_RightProxyNode.RemoveFeedbackRequest(proxyRequest);
             }
-
-            if (m_FeedbackRequests.Remove(request))
-                ExecuteFeedback(request);
         }
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
-            // Interate over keys instead of pairs in the dictionary, in order to prevent out-of-sync errors when exiting EXR
-            foreach (var key in m_FeedbackRequests.Keys.ToList())
+            // Check for null in order to prevent MissingReferenceException when exiting EXR
+            if (m_LeftProxyNode && m_RightProxyNode)
             {
-                if (key != null && key.caller == caller)
-                    RemoveFeedbackRequest(key);
+                m_LeftProxyNode.ClearFeedbackRequests(caller);
+                m_RightProxyNode.ClearFeedbackRequests(caller);
             }
         }
 
-        void UpdateVisibility()
+        public object OnSerializePreferences()
         {
-            var rightProxyRequestsExist = false;
-            var leftProxyRequestsExist = false;
-            var shakenVisibility = m_SemitransparentLockRequest != null;
-            if (shakenVisibility)
-            {
-                // Left & right device affordances should be visible when the input-device is shaken
-                rightProxyRequestsExist = true;
-                leftProxyRequestsExist = true;
-            }
-            else if (m_FeedbackRequests.Count > 0)
-            {
-                // Find any visible feedback requests for each hand
-                rightProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.RightHand && x.Key.visible);
-                leftProxyRequestsExist = m_FeedbackRequests.Any(x => x.Key.node == Node.LeftHand && x.Key.visible);
-            }
+            if (!active)
+                return null;
 
-            rightAffordanceRenderersVisible = rightProxyRequestsExist;
-            leftAffordanceRenderersVisible = leftProxyRequestsExist;
-
-            rightBodyRenderersVisible = shakenVisibility;
-            leftBodyRenderersVisible = shakenVisibility;
+            return new SerializedFeedback
+            {
+                leftNode = m_LeftProxyNode.OnSerializePreferences(),
+                rightNode = m_RightProxyNode.OnSerializePreferences()
+            };
         }
 
-        IEnumerator MonitorFeedbackRequestLifespan(ProxyFeedbackRequest request)
+        public void OnDeserializePreferences(object obj)
         {
-            if (request.proxyShaken)
-            {
-                if (m_SemitransparentLockRequest != null)
-                    yield break;
+            var serializedFeedback = (SerializedFeedback)obj;
 
-                m_SemitransparentLockRequest = request;
-            }
-
-            request.visible = true;
-
-            const float kShakenVisibilityDuration = 5f;
-            const float kShorterOpaqueDurationScalar = 0.125f;
-            float duration = request.proxyShaken ? kShakenVisibilityDuration : k_DefaultFeedbackDuration * kShorterOpaqueDurationScalar;
-            var currentDuration = 0f;
-            while (request != null && currentDuration < duration)
-            {
-                currentDuration += Time.unscaledDeltaTime;
-                yield return null;
-            }
-
-            if (request != null)
-                request.visible = false;
-
-            // Unlock shaken body visibility if this was the most recent request the trigger the full body visibility
-            if (m_SemitransparentLockRequest == request)
-            {
-                m_SemitransparentLockRequest = null;
-                m_ShakeFrequency = 0;
-            }
-
-            UpdateVisibility();
+            m_LeftProxyNode.OnDeserializePreferences(serializedFeedback.leftNode);
+            m_RightProxyNode.OnDeserializePreferences(serializedFeedback.rightNode);
         }
     }
 }

@@ -8,13 +8,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     sealed class TouchProxy : TwoHandedProxyBase
     {
-        public override void Awake()
+        protected override void Awake()
         {
             base.Awake();
             m_InputToEvents = ObjectUtils.AddComponent<OVRTouchInputToEvents>(gameObject);
         }
 
-        public override IEnumerator Start()
+        protected override IEnumerator Start()
         {
             // Touch controllers should be spawned under a root that corresponds to the head with no offsets, since the
             // local positions of the controllers will be provided that way.

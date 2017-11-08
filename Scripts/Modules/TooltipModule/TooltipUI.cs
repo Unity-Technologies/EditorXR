@@ -2,12 +2,13 @@
 using System.Collections;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipUI : MonoBehaviour
+    sealed class TooltipUI : MonoBehaviour, IWillRender
     {
         public enum Alignment
         {
@@ -21,22 +22,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         Text m_Text;
 
-        public RawImage dottedLine { get { return m_DottedLine; } }
-
         [SerializeField]
         RawImage m_DottedLine;
-
-        public Transform[] spheres { get { return m_Spheres; } }
 
         [SerializeField]
         Transform[] m_Spheres;
 
-        public Image highlight { get { return m_Highlight; } }
-
         [SerializeField]
         Image m_Highlight;
 
+        [SerializeField]
+        Image m_Background;
+
+        public Text text { get { return m_Text; } }
+        public RawImage dottedLine { get { return m_DottedLine; } }
+        public Transform[] spheres { get { return m_Spheres; } }
+        public Image highlight { get { return m_Highlight; } }
         public Image background { get { return m_Background; } }
+        public event Action becameVisible;
 
         [SerializeField]
         Image m_Background;
@@ -46,6 +49,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         TMP_Text m_TMPTextRight;
+
+        public RectTransform rectTransform
+        {
+            get { return m_Background.rectTransform; }
+        }
 
         [SerializeField]
         CanvasGroup m_RightTextCanvasGroup;
@@ -156,6 +164,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             this.RestartCoroutine(ref m_AnimateShowTextCoroutine, AnimateHideText());
+        }
+
+        public void OnBecameVisible()
+        {
+            if (becameVisible != null)
+                becameVisible();
+        }
+
+        public void OnBecameInvisible()
+        {
         }
     }
 }
