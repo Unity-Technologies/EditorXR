@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -21,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         CanvasGroup m_CanvasGroup;
 
         [SerializeField]
-        Text m_FaceTitle;
+        TextMeshProUGUI m_FaceTitle;
 
         [SerializeField]
         Transform m_GridTransform;
