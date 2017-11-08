@@ -87,10 +87,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var handedRay = target as IUsesNode;
                     if (handedRay != null && deviceData != null)
                         handedRay.node = deviceData.node;
-
-                    var usesProxy = target as IUsesProxyType;
-                    if (usesProxy != null && deviceData != null)
-                        usesProxy.proxyType = deviceData.proxy.GetType();
                 }
 
                 var selectionModule = target as SelectionModule;
@@ -157,7 +153,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     this.ConnectInterfaces(proxy);
                     proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
                     proxy.activeChanged += () => OnProxyActiveChanged(proxy);
-                    proxy.hidden = true;
 
                     m_Proxies.Add(proxy);
                 }

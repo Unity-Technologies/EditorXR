@@ -55,6 +55,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public static bool assetRefresh { private get; set; }
 
+        Rect m_ToggleDeviceViewRect = new Rect(0, 0, 0, 20); // Width will be set based on window size
+        Rect m_PresentationCameraRect = new Rect(0, 0, 0, 20); // Y position and width will be set based on window size
+
         public static Transform cameraRig
         {
             get
@@ -255,11 +258,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (beforeOnGUI != null)
                 beforeOnGUI(this);
 
+            var height = position.height;
+            var width = position.width;
             var rect = guiRect;
             rect.x = 0;
             rect.y = 0;
-            rect.width = position.width;
-            rect.height = position.height;
+            rect.width = width;
+            rect.height = height;
             guiRect = rect;
             var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
             PrepareCameraTargetTexture(cameraRect);
@@ -275,30 +280,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 {
                     GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
-                    GUI.BeginGroup(guiRect);
                     GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
-                    GUI.EndGroup();
                     GL.sRGBWrite = false;
                 }
             }
 
-            GUILayout.BeginArea(guiRect);
-            {
-                if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))
-                    m_ShowDeviceView = !m_ShowDeviceView;
+            m_ToggleDeviceViewRect.width = width;
+            m_PresentationCameraRect.y = height - m_PresentationCameraRect.height;
+            m_PresentationCameraRect.width = width;
 
-                if (m_CustomPreviewCamera)
-                {
-                    GUILayout.FlexibleSpace();
-                    GUILayout.BeginHorizontal();
-                    {
-                        GUILayout.FlexibleSpace();
-                        m_UseCustomPreviewCamera = GUILayout.Toggle(m_UseCustomPreviewCamera, "Use Presentation Camera");
-                    }
-                    GUILayout.EndHorizontal();
-                }
-            }
-            GUILayout.EndArea();
+            if (GUI.Button(m_ToggleDeviceViewRect, "Toggle Device View", EditorStyles.toolbarButton))
+                m_ShowDeviceView = !m_ShowDeviceView;
+
+            if (m_CustomPreviewCamera)
+                m_UseCustomPreviewCamera = GUI.Toggle(m_PresentationCameraRect, m_UseCustomPreviewCamera, "Use Presentation Camera");
 
             if (afterOnGUI != null)
                 afterOnGUI(this);
