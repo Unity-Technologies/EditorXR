@@ -34,26 +34,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         Image m_Background;
 
-        public Text text { get { return m_Text; } }
-        public RawImage dottedLine { get { return m_DottedLine; } }
-        public Transform[] spheres { get { return m_Spheres; } }
-        public Image highlight { get { return m_Highlight; } }
-        public Image background { get { return m_Background; } }
-        public event Action becameVisible;
-
-        [SerializeField]
-        Image m_Background;
-
         [SerializeField]
         TMP_Text m_TMPTextLeft;
 
         [SerializeField]
         TMP_Text m_TMPTextRight;
-
-        public RectTransform rectTransform
-        {
-            get { return m_Background.rectTransform; }
-        }
 
         [SerializeField]
         CanvasGroup m_RightTextCanvasGroup;
@@ -69,6 +54,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         LayoutElement m_RightSpacer;
+
+        public RawImage dottedLine { get { return m_DottedLine; } }
+        public Transform[] spheres { get { return m_Spheres; } }
+        public Image highlight { get { return m_Highlight; } }
+        public Image background { get { return m_Background; } }
+        public event Action becameVisible;
+
+        public RectTransform rectTransform
+        {
+            get { return m_Background.rectTransform; }
+        }
 
         Alignment m_Alignment;
 
@@ -89,8 +85,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // start anim with horiz layout group right padding inverse of m_originalHorizontalLAyoutPreferredWidth
 
             Vector3 targetDemoStartPosition = transform.localPosition;
-            Vector3 currentDemoStartPosition = transform.localPosition
+            Vector3 currentDemoStartPosition = transform.localPosition;
 
+            /*
             const float kTargetAmount = 1.1f; // Overshoot in order to force the lerp to blend to maximum value, with needing to set again after while loop
             var speedScalar = 3f;// isVisible ? k_FadeInSpeedScalar : k_FadeOutSpeedScalar;
             var currentAmount = 0f;
@@ -164,6 +161,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             this.RestartCoroutine(ref m_AnimateShowTextCoroutine, AnimateHideText());
+            */
         }
 
         public void OnBecameVisible()
