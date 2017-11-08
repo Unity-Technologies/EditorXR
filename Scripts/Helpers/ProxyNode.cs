@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public string tooltipText;
         public bool suppressExisting;
         public bool showBody;
-        public float druation = 5f;
+        public float duration = 5f;
         public int maxPresentations = 2;
 
         public Func<bool> suppressPresentation;
@@ -84,30 +84,24 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     var material = materials[i];
                     var originalMaterial = originalMaterials[i];
 
-                    Color originalColor;
+                    var originalColor = default(Color);
                     switch (visibilityType)
                     {
                         case VisibilityControlType.ColorProperty:
                             originalColor = material.GetColor(visibilityDefinition.colorProperty);
-                            materialData[i] = new MaterialData
-                            {
-                                material = material,
-                                originalMaterial = originalMaterial,
-                                currentColor = originalColor,
-                                originalColor = originalColor
-                            };
                             break;
                         case VisibilityControlType.AlphaProperty:
                             originalColor = material.GetFloat(visibilityDefinition.alphaProperty) * Color.white;
-                            materialData[i] = new MaterialData
-                            {
-                                material = material,
-                                originalMaterial = originalMaterial,
-                                currentColor = originalColor,
-                                originalColor = originalColor
-                            };
                             break;
                     }
+
+                    materialData[i] = new MaterialData
+                    {
+                        material = material,
+                        originalMaterial = originalMaterial,
+                        currentColor = originalColor,
+                        originalColor = originalColor
+                    };
                 }
             }
 
@@ -303,6 +297,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         const string k_ZWritePropertyName = "_ZWrite";
 
+        static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
+
         [SerializeField]
         float m_FadeInSpeedScalar = 4f;
 
@@ -343,8 +339,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         readonly Dictionary<VRControl, AffordanceData> m_AffordanceData = new Dictionary<VRControl, AffordanceData>();
         AffordanceData m_BodyData;
-
-        static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
 
         FacingDirection m_FacingDirection = FacingDirection.Back;
 
@@ -505,12 +499,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         FacingDirection GetFacingDirection(Vector3 cameraPosition)
         {
-            var transform = m_NaturalOrientation;
-            var toCamera = Vector3.Normalize(cameraPosition - transform.position);
+            var toCamera = Vector3.Normalize(cameraPosition - m_NaturalOrientation.position);
 
-            var xDot = Vector3.Dot(toCamera, transform.right);
-            var yDot = Vector3.Dot(toCamera, transform.up);
-            var zDot = Vector3.Dot(toCamera, transform.forward);
+            var xDot = Vector3.Dot(toCamera, m_NaturalOrientation.right);
+            var yDot = Vector3.Dot(toCamera, m_NaturalOrientation.up);
+            var zDot = Vector3.Dot(toCamera, m_NaturalOrientation.forward);
 
             if (Mathf.Abs(xDot) > Mathf.Abs(yDot))
             {
@@ -581,7 +574,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             if (changedRequest.showBody)
             {
-                var druation = changedRequest.druation;
+                var druation = changedRequest.duration;
                 foreach (var kvp in m_AffordanceData)
                 {
                     kvp.Value.SetVisible(true, druation);
@@ -623,7 +616,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 if (suppress)
                     return;
 
-                affordanceData.SetVisible(true, request.druation);
+                affordanceData.SetVisible(true, request.duration);
 
                 foreach (var renderer in affordanceData.renderers)
                 {
