@@ -4,6 +4,7 @@ using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -13,10 +14,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Button m_Button;
 
         [SerializeField]
-        Text m_ButtonDescription;
+        TextMeshProUGUI m_ButtonDescription;
 
         [SerializeField]
-        Text m_ButtonTitle;
+        TextMeshProUGUI m_ButtonTitle;
 
         Color m_OriginalColor;
 
