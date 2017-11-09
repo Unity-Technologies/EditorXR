@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections;
 using TMPro;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -35,10 +34,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Image m_Background;
 
         [SerializeField]
-        TMP_Text m_TMPTextLeft;
+        TMP_Text m_TextLeft;
 
         [SerializeField]
-        TMP_Text m_TMPTextRight;
+        TMP_Text m_TextRight;
 
         [SerializeField]
         CanvasGroup m_RightTextCanvasGroup;
@@ -55,6 +54,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         LayoutElement m_RightSpacer;
 
+        int m_OriginalRightPaddingAmount;
+        int m_OriginalTopPaddingAmount;
+        int m_OriginalBottomPaddingAmount;
+        int m_OriginalLeftPaddingAmount;
+
+        Alignment m_Alignment;
+
+        Coroutine m_AnimateShowLeftSideTextCoroutine;
+        Coroutine m_AnimateShowRightSideTextCoroutine;
+
         public RawImage dottedLine { get { return m_DottedLine; } }
         public Transform[] spheres { get { return m_Spheres; } }
         public Image highlight { get { return m_Highlight; } }
@@ -66,15 +75,37 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             get { return m_Background.rectTransform; }
         }
 
-        Alignment m_Alignment;
+        void Awake()
+        {
+            PlayerPrefs.DeleteAll();
+        }
 
-        Coroutine m_AnimateShowLeftSideTextCoroutine;
-        Coroutine m_AnimateShowRightSideTextCoroutine;
-
-        public void Show(string text, Alignment alignment)
+        public void Show(string text, Alignment alignment, Sprite icon = null)
         {
             //m_TMPText.text = text;
             //this.RestartCoroutine(ref m_AnimateShowTextCoroutine, AnimateShowText());
+
+            // if Icon null, fade out opacity of cuttent icon
+            // if icon is not null, fade out current, fade in new icon
+            switch (alignment)
+            {
+                case Alignment.Center:
+                case Alignment.Left:
+                    // Treat center as left justified, aside from horizontal offset placement
+                    m_TextLeft.text = text;
+                    m_TextRight.gameObject.SetActive(false);
+                    m_TextLeft.gameObject.SetActive(true);
+                    m_RightSpacer.minWidth = m_IconTextSpacing;
+                    m_LeftSpacer.minWidth = 0;
+                    break;
+                case Alignment.Right:
+                    m_TextRight.text = text;
+                    m_TextRight.gameObject.SetActive(true);
+                    m_TextLeft.gameObject.SetActive(false);
+                    m_RightSpacer.minWidth = 0;
+                    m_LeftSpacer.minWidth = m_IconTextSpacing;
+                    break;
+            }
         }
 
         IEnumerator AnimateShowText(TMP_Text text, CanvasGroup textCanvasGroup)
