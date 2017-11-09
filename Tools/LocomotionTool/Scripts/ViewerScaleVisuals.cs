@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Transform m_IconsContainer;
 
         [SerializeField]
-        Text m_ScaleText;
+        TextMeshProUGUI m_ScaleText;
 
         [SerializeField]
         Sprite[] m_Icons;
@@ -42,6 +43,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
 
             m_LineWidth = m_Line.widthStart;
+            var onTopMaterial = m_ScaleText.materialForRendering;
+            onTopMaterial.SetInt("unity_GUIZTestMode", (int)UnityEngine.Rendering.CompareFunction.Always);
         }
 
         void OnEnable()
