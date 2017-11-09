@@ -100,6 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (!tooltipUI)
                     {
                         tooltipUI = CreateTooltipObject();
+                        tooltipUI.Show(tooltip.tooltipText, tooltipData.placement.tooltipAlignment, null); // TODO: push icon sprite
                         tooltipUI.becameVisible += tooltipData.becameVisible;
                         tooltipData.tooltipUI = tooltipUI;
                         tooltipUI.highlight.material = tooltipData.customHighlightMaterial ?? m_HighlightMaterial;
@@ -163,8 +164,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var tooltipText = tooltipUI.text;
             if (tooltipText)
             {
-                tooltipText.text = tooltip.tooltipText;
-                tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
+                //tooltipText.text = tooltip.tooltipText;
+                //tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
             }
 
             var viewerScale = this.GetViewerScale();
@@ -187,7 +188,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
 
-            var rectTransform = tooltipUI.GetComponent<RectTransform>();
+            // The rectTransform expansion is handled in the Tooltip dynamically, based on alignment & text length
+            var rectTransform = tooltipUI.rectTransform;
             var rect = rectTransform.rect;
             var halfWidth = rect.width * 0.5f;
             var halfHeight = rect.height * 0.5f;
