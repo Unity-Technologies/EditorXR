@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: Roboto-Light SDF
+  m_Name: Roboto-Regular SDF
   m_Shader: {fileID: 4800000, guid: dca26082f9cb439469295791d9f76fe5, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -31,7 +31,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 28857180472865852, guid: 76ff077e92eb4fe41aa26173a3d98fb6,
+        m_Texture: {fileID: 28443932399481954, guid: ea721564999c75441b5b3aa01ae88f76,
           type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}

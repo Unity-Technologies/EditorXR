@@ -7,6 +7,7 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
@@ -43,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         bool m_MultiSelect;
 
         [SerializeField]
-        Text m_Label;
+        TextMeshProUGUI m_Label;
 
         [SerializeField]
         RectTransform m_OptionsPanel;
@@ -162,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
                     // Zero out Z local position
                     optionObject.transform.localPosition = new Vector3(optionObject.transform.localPosition.x, optionObject.transform.localPosition.y, 0f);
 
-                    var optionText = optionObject.GetComponentInChildren<Text>();
+                    var optionText = optionObject.GetComponentInChildren<TextMeshProUGUI>();
                     if (optionText)
                         optionText.text = m_Options[i];
 
