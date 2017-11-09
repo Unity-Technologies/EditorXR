@@ -11,21 +11,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     using VisibilityControlType = ProxyAffordanceMap.VisibilityControlType;
     using VRControl = VRInputDevice.VRControl;
 
-    /// <summary>
-    /// ProxyFeedbackRequests reside in feedbackRequest collection until the action associated with an affordance changes
-    /// Some are removed immediately after being added; others exist for the duration of an action/tool's lifespan
-    /// </summary>
-    public class ProxyFeedbackRequest : FeedbackRequest
-    {
-        public int priority;
-        public VRControl control;
-        public Node node;
-        public string tooltipText;
-        public bool suppressExisting;
-        public bool showBody;
-        public float duration = 5f;
-    }
-
     class ProxyNode : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
     {
         class AffordanceData
@@ -108,6 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     m_VisibleChangeTime = time;
 
                 var timeDiff = time - m_VisibleChangeTime;
+                var fadeDuration = visible ? fadeInDuration : fadeOutDuration;
 
                 var visibilityDefinition = definition.visibilityDefinition;
                 switch (visibilityDefinition.visibilityType)
@@ -127,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                                 var target = visible ? materialData.originalColor.a : visibilityDefinition.hiddenColor.a;
                                 if (!Mathf.Approximately(current, target))
                                 {
-                                    var duration = current / target * (visible ? fadeOutDuration : fadeInDuration);
+                                    var duration = current / target * fadeDuration;
                                     var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
                                     if (smoothedAmount > 1)
                                     {
@@ -159,7 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                                 var targetColor = visible ? materialData.originalColor : visibilityDefinition.hiddenColor;
                                 if (startColor != targetColor)
                                 {
-                                    var duration = startColor.grayscale / targetColor.grayscale * (visible ? fadeOutDuration : fadeInDuration);
+                                    var duration = startColor.grayscale / targetColor.grayscale * fadeDuration;
                                     var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
                                     if (smoothedAmount > 1)
                                     {
@@ -195,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                 m_WasVisible = visible;
 
-                if (visible && !visibilityOverride && timeDiff > visibleDuration)
+                if (this.visible && visibleDuration >= 0 && timeDiff > visibleDuration)
                 {
                     this.visible = false;
                     foreach (var materialData in m_MaterialData)
@@ -233,10 +219,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
 
         [SerializeField]
-        float m_FadeInDuration = 1f;
+        float m_FadeInDuration = 0.5f;
 
         [SerializeField]
-        float m_FadeOutDuration = 4f;
+        float m_FadeOutDuration = 2f;
 
         [SerializeField]
         Transform m_RayOrigin;
@@ -513,7 +499,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 ProxyFeedbackRequest request = null;
                 foreach (var feedbackRequest in m_FeedbackRequests)
                 {
-                    if (feedbackRequest.control != changedRequest.control)
+                    if (feedbackRequest.control != changedRequest.control || feedbackRequest.showBody != changedRequest.showBody)
                         continue;
 
                     if (request == null || feedbackRequest.priority >= request.priority)
@@ -523,7 +509,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 if (request == null)
                     return;
 
-                affordanceData.visible = true;
+                affordanceData.visible = !request.suppressExisting;
                 affordanceData.visibleDuration = request.duration;
 
                 foreach (var renderer in affordanceData.renderers)

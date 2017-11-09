@@ -157,7 +157,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var request = new ProxyFeedbackRequest
             {
                 control = control,
-                node = node
+                node = node,
+                duration = -1
             };
             m_FeedbackRequests[control] = request;
             this.AddFeedbackRequest(request);
