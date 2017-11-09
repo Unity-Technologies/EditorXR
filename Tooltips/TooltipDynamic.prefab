@@ -195,7 +195,6 @@ GameObject:
   - component: {fileID: 114688324918225248}
   - component: {fileID: 114796201341470480}
   - component: {fileID: 114905645965262680}
-  - component: {fileID: 114480415584099930}
   m_Layer: 5
   m_Name: TextContainer
   m_TagString: Untagged
@@ -1073,7 +1072,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1939040125293750}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.03}
+  m_LocalPosition: {x: 0, y: 0, z: 0.0037500004}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4824105394546004}
@@ -1881,7 +1880,7 @@ MonoBehaviour:
   m_SourceTransform: {fileID: 224717353957201456}
   m_XPositionPadding: 0
   m_YPositionPadding: 0
-  m_ZPositionPadding: 0.003
+  m_ZPositionPadding: 0.000375
   m_XScalePadding: 0
   m_YScalePadding: 0
   m_ParentUnderSource: 0
@@ -2535,31 +2534,6 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 1
---- !u!114 &114480415584099930
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1207085457621136}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9754f72e18b7c544a8c5e9fc9a069900, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_DottedLine: {fileID: 114840070150073410}
-  m_Spheres:
-  - {fileID: 4152863940840614}
-  - {fileID: 4090256496563014}
-  m_Background: {fileID: 114688324918225248}
-  m_TextLeft: {fileID: 0}
-  m_TextRight: {fileID: 0}
-  m_LeftTextCanvasGroup: {fileID: 0}
-  m_RightTextCanvasGroup: {fileID: 0}
-  m_IconTextSpacing: 14
-  m_LeftSpacer: {fileID: 0}
-  m_RightSpacer: {fileID: 0}
-  m_DEMOTEXT: 
-  m_DEMOTEXTALIGNMENT: 0
 --- !u!114 &114514446507674304
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3366,7 +3340,7 @@ MonoBehaviour:
   m_SourceTransform: {fileID: 224490208160287242}
   m_XPositionPadding: 0
   m_YPositionPadding: 0
-  m_ZPositionPadding: 0.003
+  m_ZPositionPadding: 0.000375
   m_XScalePadding: 0
   m_YScalePadding: 0
   m_ParentUnderSource: 0
@@ -4203,7 +4177,7 @@ RectTransform:
   m_GameObject: {fileID: 1289408881966436}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.125, y: 0.125, z: 1}
   m_Children:
   - {fileID: 4949905976782304}
   - {fileID: 224299404165971608}

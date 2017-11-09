@@ -103,7 +103,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         tooltipUI.Show(tooltip.tooltipText, tooltipData.placement.tooltipAlignment, null); // TODO: push icon sprite
                         tooltipUI.becameVisible += tooltipData.becameVisible;
                         tooltipData.tooltipUI = tooltipUI;
-                        tooltipUI.highlight.material = tooltipData.customHighlightMaterial ?? m_HighlightMaterial;
                         tooltipUI.background.material = m_TooltipBackgroundMaterial;
                         var tooltipTransform = tooltipUI.transform;
                         MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
@@ -147,7 +146,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return pooledTooltip;
             }
 
-            var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
+            var tooltipObject = ObjectUtils.Instantiate(m_TooltipPrefab, m_TooltipCanvas);
             tooltipObject.GetComponents(k_TooltipUIs);
 
             var tooltipUI = k_TooltipUIs[0]; // We expect exactly one TooltipUI on the prefab root
@@ -160,13 +159,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var tooltipTransform = tooltipUI.transform;
 
             lerp = MathUtilsExt.SmoothInOutLerpFloat(lerp); // shape the lerp for better presentation
-
-            var tooltipText = tooltipUI.text;
-            if (tooltipText)
-            {
-                //tooltipText.text = tooltip.tooltipText;
-                //tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
-            }
 
             var viewerScale = this.GetViewerScale();
             tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
