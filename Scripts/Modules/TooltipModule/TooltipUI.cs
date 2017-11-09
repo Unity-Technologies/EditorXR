@@ -4,18 +4,12 @@ using TMPro;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEditor;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class TooltipUI : MonoBehaviour, IWillRender
     {
-        public enum Alignment
-        {
-            Center,
-            Left,
-            Right
-        }
-
         public Text text { get { return m_Text; } }
 
         [SerializeField]
@@ -59,7 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         int m_OriginalBottomPaddingAmount;
         int m_OriginalLeftPaddingAmount;
 
-        Alignment m_Alignment;
+        TextAlignment m_Alignment;
 
         Coroutine m_AnimateShowLeftSideTextCoroutine;
         Coroutine m_AnimateShowRightSideTextCoroutine;
@@ -75,12 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             get { return m_Background.rectTransform; }
         }
 
-        void Awake()
-        {
-            PlayerPrefs.DeleteAll();
-        }
-
-        public void Show(string text, Alignment alignment, Sprite icon = null)
+        public void Show(string text, TextAlignment alignment, Sprite icon = null)
         {
             //m_TMPText.text = text;
             //this.RestartCoroutine(ref m_AnimateShowTextCoroutine, AnimateShowText());
@@ -89,8 +78,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // if icon is not null, fade out current, fade in new icon
             switch (alignment)
             {
-                case Alignment.Center:
-                case Alignment.Left:
+                case TextAlignment.Center:
+                case TextAlignment.Left:
                     // Treat center as left justified, aside from horizontal offset placement
                     m_TextLeft.text = text;
                     m_TextRight.gameObject.SetActive(false);
@@ -98,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     m_RightSpacer.minWidth = m_IconTextSpacing;
                     m_LeftSpacer.minWidth = 0;
                     break;
-                case Alignment.Right:
+                case TextAlignment.Right:
                     m_TextRight.text = text;
                     m_TextRight.gameObject.SetActive(true);
                     m_TextLeft.gameObject.SetActive(false);
