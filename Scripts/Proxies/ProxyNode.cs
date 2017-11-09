@@ -686,7 +686,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_RequestData[feedbackKey] = data;
             }
 
-            var suppress = data.presentations > request.maxPresentations;
+            var suppress = data.presentations > request.maxPresentations - 1;
             var suppressPresentation = request.suppressPresentation;
             if (suppressPresentation != null)
                 suppress = suppressPresentation();
@@ -711,7 +711,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         if (tooltip)
                         {
                             tooltip.tooltipText = tooltipText;
-                            this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection));
+                            this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection),
+                                becameVisible: () =>
+                                {
+                                    if (!data.visibleThisPresentation)
+                                        data.presentations++;
+
+                                    data.visibleThisPresentation = true;
+                                });
                         }
                     }
                 }
@@ -724,6 +731,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 if (affordance.control != request.control)
                     continue;
+
+                var feedbackKey = new RequestKey(request);
+                RequestData data;
+                if (m_RequestData.TryGetValue(feedbackKey, out data))
+                    data.visibleThisPresentation = false;
 
                 m_AffordanceData[affordance.renderer].SetVisibility(false, request.duration, request.control);
 

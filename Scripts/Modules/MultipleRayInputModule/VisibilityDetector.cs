@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class VisibilityDetector : MonoBehaviour
+    class VisibilityDetector : MonoBehaviour
     {
         [SerializeField]
         float m_FOVReduction = 0.5f;
