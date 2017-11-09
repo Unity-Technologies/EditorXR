@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -867,7 +868,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void SetupUI()
         {
             var snappingEnabledUI = m_SnappingModuleSettingsUI.snappingEnabled;
-            var text = snappingEnabledUI.GetComponentInChildren<Text>();
+            var text = snappingEnabledUI.GetComponentInChildren<TextMeshProUGUI>();
             snappingEnabledUI.isOn = !m_Preferences.disableAll;
             snappingEnabledUI.onValueChanged.AddListener(b =>
             {
