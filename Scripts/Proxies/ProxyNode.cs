@@ -310,12 +310,22 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
+        /// <summary>
+        /// Used as globally unique identifiers for feedback requests
+        /// They are used to relate feedback requests to the persistent count of visible presentations used to suppress feedback
+        /// </summary>
         [Serializable]
         internal struct RequestKey
         {
+            /// <summary>
+            /// The control index used to identify the related affordance
+            /// </summary>
             [SerializeField]
             VRControl m_Control;
 
+            /// <summary>
+            /// The tooltip text that was presented
+            /// </summary>
             [SerializeField]
             string m_TooltipText;
 
@@ -334,19 +344,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                 return hashCode;
             }
-
-            public override string ToString()
-            {
-                return m_Control + ", " + m_TooltipText;
-            }
         }
 
+        /// <summary>
+        /// Contains per-request persistent data
+        /// </summary>
         [Serializable]
         internal class RequestData
         {
             [SerializeField]
             int m_Presentations;
 
+            /// <summary>
+            /// How many times the user viewed the presentation of this type of request
+            /// </summary>
             public int presentations
             {
                 get { return m_Presentations; }
@@ -356,6 +367,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             public bool visibleThisPresentation { get; set; }
         }
 
+        /// <summary>
+        /// Used to store persistent data about feedback requests
+        /// </summary>
         [Serializable]
         internal class SerializedFeedback
         {
@@ -710,6 +724,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     {
                         if (tooltip)
                         {
+                            data.visibleThisPresentation = false;
                             tooltip.tooltipText = tooltipText;
                             this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection),
                                 becameVisible: () =>
@@ -731,11 +746,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 if (affordance.control != request.control)
                     continue;
-
-                var feedbackKey = new RequestKey(request);
-                RequestData data;
-                if (m_RequestData.TryGetValue(feedbackKey, out data))
-                    data.visibleThisPresentation = false;
 
                 m_AffordanceData[affordance.renderer].SetVisibility(false, request.duration, request.control);
 

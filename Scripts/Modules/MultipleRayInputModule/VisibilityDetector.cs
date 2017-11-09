@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     class VisibilityDetector : MonoBehaviour
     {
         [SerializeField]
-        float m_FOVReduction = 0.5f;
+        float m_FOVReduction = 0.75f;
 
         readonly Vector3[] m_Corners = new Vector3[4];
         // Should be readonly, but needs to be set by CalculateFrustumPlanes in 2017.2
@@ -47,14 +47,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (GeometryUtility.TestPlanesAABB(m_Planes, GeometryUtility.CalculateBounds(m_Corners, rectTransform.localToWorldMatrix)))
                 {
                     if (m_Visibles.Add(willRender))
+                    {
                         willRender.OnBecameVisible();
+                        willRender.removeSelf = Remove;
+                    }
                 }
                 else
                 {
-                    if (m_Visibles.Remove(willRender))
-                        willRender.OnBecameInvisible();
+                    Remove(willRender);
                 }
             }
+        }
+
+        void Remove(IWillRender willRender)
+        {
+            if (m_Visibles.Remove(willRender))
+                willRender.OnBecameInvisible();
         }
     }
 }

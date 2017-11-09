@@ -389,6 +389,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var tooltipUI = tooltipData.tooltipUI;
             tooltipUI.becameVisible -= tooltipData.becameVisible;
             tooltipUI.gameObject.SetActive(false);
+            if (tooltipUI.removeSelf != null)
+                tooltipUI.removeSelf(tooltipUI);
+
             m_TooltipPool.Enqueue(tooltipUI);
         }
     }
