@@ -10,19 +10,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class TooltipUI : MonoBehaviour, IWillRender
     {
-        public Text text { get { return m_Text; } }
-
-        [SerializeField]
-        Text m_Text;
+        const float k_IconTextMinSpacing = 4;
 
         [SerializeField]
         RawImage m_DottedLine;
 
         [SerializeField]
         Transform[] m_Spheres;
-
-        [SerializeField]
-        Image m_Highlight;
 
         [SerializeField]
         Image m_Background;
@@ -34,10 +28,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         TMP_Text m_TextRight;
 
         [SerializeField]
-        CanvasGroup m_RightTextCanvasGroup;
+        CanvasGroup m_LeftTextCanvasGroup;
 
         [SerializeField]
-        CanvasGroup m_LeftTextCanvasGroup;
+        CanvasGroup m_RightTextCanvasGroup;
 
         [SerializeField]
         float m_IconTextSpacing = 14;
@@ -47,6 +41,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         LayoutElement m_RightSpacer;
+
+        [SerializeField] private string m_DEMOTEXT;
+        [SerializeField] private TextAlignment m_DEMOTEXTALIGNMENT;
 
         int m_OriginalRightPaddingAmount;
         int m_OriginalTopPaddingAmount;
@@ -60,13 +57,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public RawImage dottedLine { get { return m_DottedLine; } }
         public Transform[] spheres { get { return m_Spheres; } }
-        public Image highlight { get { return m_Highlight; } }
         public Image background { get { return m_Background; } }
         public event Action becameVisible;
 
         public RectTransform rectTransform
         {
             get { return m_Background.rectTransform; }
+        }
+
+        void Start()
+        {
+            Show(m_DEMOTEXT, m_DEMOTEXTALIGNMENT);
         }
 
         public void Show(string text, TextAlignment alignment, Sprite icon = null)
@@ -81,17 +82,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 case TextAlignment.Center:
                 case TextAlignment.Left:
                     // Treat center as left justified, aside from horizontal offset placement
-                    m_TextLeft.text = text;
-                    m_TextRight.gameObject.SetActive(false);
-                    m_TextLeft.gameObject.SetActive(true);
-                    m_RightSpacer.minWidth = m_IconTextSpacing;
-                    m_LeftSpacer.minWidth = 0;
-                    break;
-                case TextAlignment.Right:
                     m_TextRight.text = text;
                     m_TextRight.gameObject.SetActive(true);
                     m_TextLeft.gameObject.SetActive(false);
-                    m_RightSpacer.minWidth = 0;
+                    m_RightSpacer.minWidth = m_IconTextSpacing;
+                    m_LeftSpacer.minWidth = k_IconTextMinSpacing;
+                    break;
+                case TextAlignment.Right:
+                    m_TextLeft.text = text;
+                    m_TextRight.gameObject.SetActive(false);
+                    m_TextLeft.gameObject.SetActive(true);
+                    m_RightSpacer.minWidth = k_IconTextMinSpacing;
                     m_LeftSpacer.minWidth = m_IconTextSpacing;
                     break;
             }

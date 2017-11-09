@@ -282,11 +282,10 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 224397886886446594}
-  - component: {fileID: 114606956232965130}
   - component: {fileID: 222551462008783746}
+  - component: {fileID: 114953895570044904}
   - component: {fileID: 114713857860044686}
   - component: {fileID: 114317885835328996}
-  - component: {fileID: 114953895570044904}
   - component: {fileID: 114867753547490740}
   - component: {fileID: 114032104119482736}
   - component: {fileID: 95383114811750934}
@@ -1074,7 +1073,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1939040125293750}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.01000063}
+  m_LocalPosition: {x: 0, y: 0, z: 0.03}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4824105394546004}
@@ -1386,20 +1385,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9754f72e18b7c544a8c5e9fc9a069900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Text: {fileID: 0}
   m_DottedLine: {fileID: 0}
   m_Spheres:
   - {fileID: 0}
   - {fileID: 0}
-  m_Highlight: {fileID: 0}
   m_Background: {fileID: 0}
-  m_TMPTextLeft: {fileID: 0}
-  m_TMPTextRight: {fileID: 0}
-  m_RightTextCanvasGroup: {fileID: 0}
+  m_TextLeft: {fileID: 0}
+  m_TextRight: {fileID: 0}
   m_LeftTextCanvasGroup: {fileID: 0}
+  m_RightTextCanvasGroup: {fileID: 0}
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_DEMOTEXT: 
+  m_DEMOTEXTALIGNMENT: 0
 --- !u!114 &114017929685068450
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1768,20 +1767,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9754f72e18b7c544a8c5e9fc9a069900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Text: {fileID: 0}
   m_DottedLine: {fileID: 0}
   m_Spheres:
   - {fileID: 0}
   - {fileID: 0}
-  m_Highlight: {fileID: 0}
   m_Background: {fileID: 0}
-  m_TMPTextLeft: {fileID: 0}
-  m_TMPTextRight: {fileID: 0}
-  m_RightTextCanvasGroup: {fileID: 0}
+  m_TextLeft: {fileID: 0}
+  m_TextRight: {fileID: 0}
   m_LeftTextCanvasGroup: {fileID: 0}
+  m_RightTextCanvasGroup: {fileID: 0}
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_DEMOTEXT: 
+  m_DEMOTEXTALIGNMENT: 0
 --- !u!114 &114237950154565926
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1882,7 +1881,7 @@ MonoBehaviour:
   m_SourceTransform: {fileID: 224717353957201456}
   m_XPositionPadding: 0
   m_YPositionPadding: 0
-  m_ZPositionPadding: 0
+  m_ZPositionPadding: 0.003
   m_XScalePadding: 0
   m_YScalePadding: 0
   m_ParentUnderSource: 0
@@ -2045,20 +2044,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9754f72e18b7c544a8c5e9fc9a069900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Text: {fileID: 114911122151015134}
   m_DottedLine: {fileID: 114746306694735848}
   m_Spheres:
   - {fileID: 4479159577974054}
   - {fileID: 4611877033633536}
-  m_Highlight: {fileID: 114320614608249906}
   m_Background: {fileID: 114473460640725914}
-  m_TMPTextLeft: {fileID: 0}
-  m_TMPTextRight: {fileID: 0}
-  m_RightTextCanvasGroup: {fileID: 0}
+  m_TextLeft: {fileID: 0}
+  m_TextRight: {fileID: 0}
   m_LeftTextCanvasGroup: {fileID: 0}
+  m_RightTextCanvasGroup: {fileID: 0}
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_DEMOTEXT: 
+  m_DEMOTEXTALIGNMENT: 0
 --- !u!114 &114364821917872404
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2547,20 +2546,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9754f72e18b7c544a8c5e9fc9a069900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Text: {fileID: 114539787895544042}
   m_DottedLine: {fileID: 114840070150073410}
   m_Spheres:
   - {fileID: 4152863940840614}
   - {fileID: 4090256496563014}
-  m_Highlight: {fileID: 114963077222134854}
   m_Background: {fileID: 114688324918225248}
-  m_TMPTextLeft: {fileID: 0}
-  m_TMPTextRight: {fileID: 0}
-  m_RightTextCanvasGroup: {fileID: 0}
+  m_TextLeft: {fileID: 0}
+  m_TextRight: {fileID: 0}
   m_LeftTextCanvasGroup: {fileID: 0}
+  m_RightTextCanvasGroup: {fileID: 0}
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_DEMOTEXT: 
+  m_DEMOTEXTALIGNMENT: 0
 --- !u!114 &114514446507674304
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2621,28 +2620,6 @@ MonoBehaviour:
     m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: 'Tooltip Text goes here the more you type '
---- !u!114 &114606956232965130
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1289408881966436}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ecc5d979dddb404bae57668ce55b2b7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_MiniBackgroundMask: {fileID: 224195634160715534}
-  m_TextContainerHorizontalLayoutGroup: {fileID: 114905645965262680}
-  m_TextContainerCanvasGroup: {fileID: 225765744744748564}
-  m_RightTextCanvasGroup: {fileID: 225219564760203228}
-  m_LeftTextCanvasGroup: {fileID: 225544856368927844}
-  m_TMPText: {fileID: 114375026217660380}
-  m_StartDelay: 0
-  m_IconTextSpacing: 14
-  m_LeftSpacer: {fileID: 114928741247118704}
-  m_RightSpacer: {fileID: 114430931216941352}
-  m_heightDemoTarget: {fileID: 0}
 --- !u!114 &114617308567401874
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2832,20 +2809,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9754f72e18b7c544a8c5e9fc9a069900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Text: {fileID: 0}
   m_DottedLine: {fileID: 0}
   m_Spheres:
   - {fileID: 0}
   - {fileID: 0}
-  m_Highlight: {fileID: 0}
   m_Background: {fileID: 0}
-  m_TMPTextLeft: {fileID: 0}
-  m_TMPTextRight: {fileID: 0}
-  m_RightTextCanvasGroup: {fileID: 0}
+  m_TextLeft: {fileID: 0}
+  m_TextRight: {fileID: 0}
   m_LeftTextCanvasGroup: {fileID: 0}
+  m_RightTextCanvasGroup: {fileID: 0}
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_DEMOTEXT: 
+  m_DEMOTEXTALIGNMENT: 0
 --- !u!114 &114725225090637544
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2943,20 +2920,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9754f72e18b7c544a8c5e9fc9a069900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Text: {fileID: 0}
   m_DottedLine: {fileID: 0}
   m_Spheres:
   - {fileID: 0}
   - {fileID: 0}
-  m_Highlight: {fileID: 0}
   m_Background: {fileID: 0}
-  m_TMPTextLeft: {fileID: 0}
-  m_TMPTextRight: {fileID: 0}
-  m_RightTextCanvasGroup: {fileID: 0}
+  m_TextLeft: {fileID: 0}
+  m_TextRight: {fileID: 0}
   m_LeftTextCanvasGroup: {fileID: 0}
+  m_RightTextCanvasGroup: {fileID: 0}
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_DEMOTEXT: 
+  m_DEMOTEXTALIGNMENT: 0
 --- !u!114 &114796201341470480
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3001,20 +2978,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9754f72e18b7c544a8c5e9fc9a069900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Text: {fileID: 0}
   m_DottedLine: {fileID: 0}
   m_Spheres:
   - {fileID: 0}
   - {fileID: 0}
-  m_Highlight: {fileID: 0}
   m_Background: {fileID: 0}
-  m_TMPTextLeft: {fileID: 0}
-  m_TMPTextRight: {fileID: 0}
-  m_RightTextCanvasGroup: {fileID: 0}
+  m_TextLeft: {fileID: 0}
+  m_TextRight: {fileID: 0}
   m_LeftTextCanvasGroup: {fileID: 0}
+  m_RightTextCanvasGroup: {fileID: 0}
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_DEMOTEXT: 
+  m_DEMOTEXTALIGNMENT: 0
 --- !u!114 &114840070150073410
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3389,7 +3366,7 @@ MonoBehaviour:
   m_SourceTransform: {fileID: 224490208160287242}
   m_XPositionPadding: 0
   m_YPositionPadding: 0
-  m_ZPositionPadding: 0
+  m_ZPositionPadding: 0.003
   m_XScalePadding: 0
   m_YScalePadding: 0
   m_ParentUnderSource: 0
@@ -3452,20 +3429,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9754f72e18b7c544a8c5e9fc9a069900, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Text: {fileID: 0}
   m_DottedLine: {fileID: 114840070150073410}
   m_Spheres:
   - {fileID: 4152863940840614}
   - {fileID: 4090256496563014}
-  m_Highlight: {fileID: 0}
   m_Background: {fileID: 114688324918225248}
-  m_TMPTextLeft: {fileID: 114455645438760546}
-  m_TMPTextRight: {fileID: 114375026217660380}
-  m_RightTextCanvasGroup: {fileID: 225219564760203228}
+  m_TextLeft: {fileID: 114455645438760546}
+  m_TextRight: {fileID: 114375026217660380}
   m_LeftTextCanvasGroup: {fileID: 225544856368927844}
+  m_RightTextCanvasGroup: {fileID: 225219564760203228}
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 114928741247118704}
   m_RightSpacer: {fileID: 114430931216941352}
+  m_DEMOTEXT: more test text here to test
+  m_DEMOTEXTALIGNMENT: 0
 --- !u!114 &114958365742882080
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -4566,7 +4543,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1982019783839298}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.009175772}
   m_LocalScale: {x: 1.0002842, y: 1.0002835, z: 1.0000001}
   m_Children: []
   m_Father: {fileID: 224668721364817670}
