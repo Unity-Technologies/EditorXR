@@ -22,6 +22,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Image m_Background;
 
         [SerializeField]
+        Image m_Icon;
+
+        [SerializeField]
         TMP_Text m_TextLeft;
 
         [SerializeField]
@@ -44,6 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField] private string m_DEMOTEXT;
         [SerializeField] private TextAlignment m_DEMOTEXTALIGNMENT;
+        [SerializeField] private Sprite m_DEMOSPRITE;
 
         int m_OriginalRightPaddingAmount;
         int m_OriginalTopPaddingAmount;
@@ -70,13 +74,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Show(m_DEMOTEXT, m_DEMOTEXTALIGNMENT);
         }
 
-        public void Show(string text, TextAlignment alignment, Sprite icon = null)
+        public void Show(string text, TextAlignment alignment, Sprite iconSprite = null)
         {
             //m_TMPText.text = text;
             //this.RestartCoroutine(ref m_AnimateShowTextCoroutine, AnimateShowText());
 
-            // if Icon null, fade out opacity of cuttent icon
+            iconSprite = Mathf.Sin(Time.realtimeSinceStartup) > 0.5f ? m_DEMOSPRITE : null; // TODO REMOVE
+
+            // if Icon null, fade out opacity of current icon
             // if icon is not null, fade out current, fade in new icon
+            m_Icon.sprite = iconSprite;
+            var iconVisible = m_Icon.sprite != null;
+            m_Icon.enabled = iconVisible; // TODO convert to scale up/down then fade in/out
             switch (alignment)
             {
                 case TextAlignment.Center:
@@ -85,15 +94,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     m_TextRight.text = text;
                     m_TextRight.gameObject.SetActive(true);
                     m_TextLeft.gameObject.SetActive(false);
-                    m_RightSpacer.minWidth = m_IconTextSpacing;
-                    m_LeftSpacer.minWidth = k_IconTextMinSpacing;
+                    m_RightSpacer.minWidth = iconVisible ? m_IconTextSpacing : 0;
+                    m_LeftSpacer.minWidth = iconVisible ? k_IconTextMinSpacing : 8; ;
                     break;
                 case TextAlignment.Right:
                     m_TextLeft.text = text;
                     m_TextRight.gameObject.SetActive(false);
                     m_TextLeft.gameObject.SetActive(true);
-                    m_RightSpacer.minWidth = k_IconTextMinSpacing;
-                    m_LeftSpacer.minWidth = m_IconTextSpacing;
+                    m_RightSpacer.minWidth = iconVisible ? k_IconTextMinSpacing : 8;
+                    m_LeftSpacer.minWidth = iconVisible ? m_IconTextSpacing : 0;
                     break;
             }
         }
