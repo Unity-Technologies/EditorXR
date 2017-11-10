@@ -5,6 +5,7 @@ using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor;
+using Random = UnityEngine.Random;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -45,6 +46,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         LayoutElement m_RightSpacer;
 
+        [SerializeField]
+        SkinnedMeshRenderer m_BackgroundRenderer;
+
+        [SerializeField]
+        SkinnedMeshRenderer m_BackgroundOutlineRenderer;
+
         [SerializeField] private string m_DEMOTEXT;
         [SerializeField] private TextAlignment m_DEMOTEXTALIGNMENT;
         [SerializeField] private Sprite m_DEMOSPRITE;
@@ -76,10 +83,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Show(string text, TextAlignment alignment, Sprite iconSprite = null)
         {
+            text = Random.Range(0, 10) > 4f ? text : null;
+            var validText = !string.IsNullOrEmpty(text);
+
             //m_TMPText.text = text;
             //this.RestartCoroutine(ref m_AnimateShowTextCoroutine, AnimateShowText());
 
-            iconSprite = Mathf.Sin(Time.realtimeSinceStartup) > 0.5f ? m_DEMOSPRITE : null; // TODO REMOVE
+            iconSprite = Random.Range(0, 10) > 4f ? m_DEMOSPRITE : (validText ? null : m_DEMOSPRITE); // TODO REMOVE
 
             // if Icon null, fade out opacity of current icon
             // if icon is not null, fade out current, fade in new icon
@@ -92,18 +102,29 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 case TextAlignment.Left:
                     // Treat center as left justified, aside from horizontal offset placement
                     m_TextRight.text = text;
-                    m_TextRight.gameObject.SetActive(true);
+                    m_TextRight.gameObject.SetActive(validText);
                     m_TextLeft.gameObject.SetActive(false);
-                    m_RightSpacer.minWidth = iconVisible ? m_IconTextSpacing : 0;
-                    m_LeftSpacer.minWidth = iconVisible ? k_IconTextMinSpacing : 8; ;
+                    m_RightSpacer.minWidth = validText ? iconVisible ? m_IconTextSpacing : 0 : 0;
+                    m_LeftSpacer.minWidth = validText ? iconVisible ? k_IconTextMinSpacing : 8 : 0; ;
                     break;
                 case TextAlignment.Right:
                     m_TextLeft.text = text;
                     m_TextRight.gameObject.SetActive(false);
-                    m_TextLeft.gameObject.SetActive(true);
-                    m_RightSpacer.minWidth = iconVisible ? k_IconTextMinSpacing : 8;
-                    m_LeftSpacer.minWidth = iconVisible ? m_IconTextSpacing : 0;
+                    m_TextLeft.gameObject.SetActive(validText);
+                    m_RightSpacer.minWidth = validText ? iconVisible ? k_IconTextMinSpacing : 8 : 0;
+                    m_LeftSpacer.minWidth = validText ? iconVisible ? m_IconTextSpacing : 0 : 0;
                     break;
+            }
+
+            if (!validText && iconVisible)
+            {
+                m_BackgroundRenderer.SetBlendShapeWeight(0, 0);
+                m_BackgroundOutlineRenderer.SetBlendShapeWeight(0, 0);
+            }
+            else
+            {
+                m_BackgroundRenderer.SetBlendShapeWeight(0, 90);
+                m_BackgroundOutlineRenderer.SetBlendShapeWeight(0, 90);
             }
         }
 

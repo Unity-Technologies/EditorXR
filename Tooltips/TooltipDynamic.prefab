@@ -1075,7 +1075,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1065102289386456}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.9199997, y: 0, z: 0.00000062957406}
+  m_LocalPosition: {x: 1.9200073, y: 0, z: 0.00000063097104}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4355496383071026}
@@ -1530,6 +1530,8 @@ MonoBehaviour:
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_BackgroundRenderer: {fileID: 0}
+  m_BackgroundOutlineRenderer: {fileID: 0}
   m_DEMOTEXT: 
   m_DEMOTEXTALIGNMENT: 0
   m_DEMOSPRITE: {fileID: 0}
@@ -2106,6 +2108,8 @@ MonoBehaviour:
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_BackgroundRenderer: {fileID: 0}
+  m_BackgroundOutlineRenderer: {fileID: 0}
   m_DEMOTEXT: 
   m_DEMOTEXTALIGNMENT: 0
   m_DEMOSPRITE: {fileID: 0}
@@ -2296,6 +2300,8 @@ MonoBehaviour:
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_BackgroundRenderer: {fileID: 0}
+  m_BackgroundOutlineRenderer: {fileID: 0}
   m_DEMOTEXT: 
   m_DEMOTEXTALIGNMENT: 0
   m_DEMOSPRITE: {fileID: 0}
@@ -2714,6 +2720,8 @@ MonoBehaviour:
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_BackgroundRenderer: {fileID: 0}
+  m_BackgroundOutlineRenderer: {fileID: 0}
   m_DEMOTEXT: 
   m_DEMOTEXTALIGNMENT: 0
   m_DEMOSPRITE: {fileID: 0}
@@ -2971,6 +2979,8 @@ MonoBehaviour:
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_BackgroundRenderer: {fileID: 0}
+  m_BackgroundOutlineRenderer: {fileID: 0}
   m_DEMOTEXT: 
   m_DEMOTEXTALIGNMENT: 0
   m_DEMOSPRITE: {fileID: 0}
@@ -3435,6 +3445,8 @@ MonoBehaviour:
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 114928741247118704}
   m_RightSpacer: {fileID: 114430931216941352}
+  m_BackgroundRenderer: {fileID: 137914221374875326}
+  m_BackgroundOutlineRenderer: {fileID: 137777325763627380}
   m_DEMOTEXT: 
   m_DEMOTEXTALIGNMENT: 0
   m_DEMOSPRITE: {fileID: 21300000, guid: da814481343af934cbba146529e1ab19, type: 3}
@@ -3489,6 +3501,8 @@ MonoBehaviour:
   m_IconTextSpacing: 14
   m_LeftSpacer: {fileID: 0}
   m_RightSpacer: {fileID: 0}
+  m_BackgroundRenderer: {fileID: 0}
+  m_BackgroundOutlineRenderer: {fileID: 0}
   m_DEMOTEXT: 
   m_DEMOTEXTALIGNMENT: 0
   m_DEMOSPRITE: {fileID: 0}
