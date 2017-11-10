@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-    sealed class TransformCopy : MonoBehaviour, IUsesViewerScale
+    sealed class TransformCopy : MonoBehaviour
     {
         enum Space
         {
@@ -15,13 +15,13 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         Transform m_SourceTransform;
 
         [SerializeField]
-        float m_XPositionPadding = 0.005f;
+        float m_XPositionPadding = 0f;
 
         [SerializeField]
         float m_YPositionPadding = 0f;
 
         [SerializeField]
-        float m_ZPositionPadding = 0.00055f;
+        float m_ZPositionPadding = 0f;
 
         [SerializeField]
         bool m_ParentUnderSource = true;
@@ -32,36 +32,30 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         [SerializeField]
         bool m_ForceAlwaysUpdate = false;
 
+        Vector3 m_Padding;
+
         void Awake()
         {
+            m_Padding = new Vector3(m_XPositionPadding, m_YPositionPadding, m_ZPositionPadding);
             m_SourceTransform = m_SourceTransform ?? transform.parent;
             if (m_ParentUnderSource)
                 transform.SetParent(m_SourceTransform, false);
 
-            DriveTransformWithRectTransform();
+            DriveTransform();
         }
 
         void Update()
         {
             if (gameObject.activeInHierarchy && (m_ForceAlwaysUpdate || m_SourceTransform.hasChanged))
-                DriveTransformWithRectTransform();
+                DriveTransform();
         }
 
-        void DriveTransformWithRectTransform()
+        void DriveTransform()
         {
-            var viewerScale = this.GetViewerScale();
             if (m_Space == Space.World)
-            {
-                var sourceWorldPosition = m_SourceTransform.position;
-                sourceWorldPosition = new Vector3(sourceWorldPosition.x + m_XPositionPadding * viewerScale, sourceWorldPosition.y + m_YPositionPadding * viewerScale, sourceWorldPosition.z + m_ZPositionPadding * viewerScale);
-                transform.position = sourceWorldPosition;
-            }
+                transform.position = m_SourceTransform.TransformPoint(m_Padding);
             else
-            {
-                var localPosition = m_SourceTransform.localPosition;
-                localPosition = new Vector3(localPosition.x + m_XPositionPadding * viewerScale, localPosition.y + m_YPositionPadding * viewerScale, localPosition.z + m_ZPositionPadding * viewerScale);
-                transform.position = localPosition;
-            }
+                transform.localPosition = m_SourceTransform.localPosition + m_Padding;
         }
     }
 }
