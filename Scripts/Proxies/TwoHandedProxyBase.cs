@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -24,8 +25,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         Bottom = 1 << 5
     }
 
-    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
+    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, ISerializePreferences
     {
+        [Serializable]
+        class SerializedFeedback
+        {
+            public ProxyNode.SerializedFeedback leftNode;
+            public ProxyNode.SerializedFeedback rightNode;
+        }
+
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
 
@@ -91,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
-        public virtual void Awake()
+        protected virtual void Awake()
         {
             m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
             m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
@@ -130,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             };
         }
 
-        public virtual IEnumerator Start()
+        protected virtual IEnumerator Start()
         {
             hidden = true;
             while (!active)
@@ -144,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_RightShakeTracker.Initialize(trackedObjectInput.rightPosition.vector3);
         }
 
-        public virtual void Update()
+        protected virtual void Update()
         {
             if (active)
             {
@@ -199,6 +207,26 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_LeftProxyNode.ClearFeedbackRequests(caller);
                 m_RightProxyNode.ClearFeedbackRequests(caller);
             }
+        }
+
+        public object OnSerializePreferences()
+        {
+            if (!active)
+                return null;
+
+            return new SerializedFeedback
+            {
+                leftNode = m_LeftProxyNode.OnSerializePreferences(),
+                rightNode = m_RightProxyNode.OnSerializePreferences()
+            };
+        }
+
+        public void OnDeserializePreferences(object obj)
+        {
+            var serializedFeedback = (SerializedFeedback)obj;
+
+            m_LeftProxyNode.OnDeserializePreferences(serializedFeedback.leftNode);
+            m_RightProxyNode.OnDeserializePreferences(serializedFeedback.rightNode);
         }
     }
 }

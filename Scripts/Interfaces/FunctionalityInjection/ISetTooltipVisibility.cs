@@ -12,7 +12,10 @@ namespace UnityEditor.Experimental.EditorVR
 
     public static class ISetTooltipVisibilityMethods
     {
-        internal static Action<ITooltip, bool, float, ITooltipPlacement> showTooltip { get; set; }
+        internal delegate void ShowTooltipDelegate(ITooltip tooltip, bool persistent = false, float duration = 0f,
+            ITooltipPlacement placement = null, Action becameVisible = null);
+
+        internal static ShowTooltipDelegate showTooltip { get; set; }
         internal static Action<ITooltip, bool> hideTooltip { get; set; }
 
         /// <summary>
@@ -25,10 +28,11 @@ namespace UnityEditor.Experimental.EditorVR
         /// duration is exactly 0, tooltip stays visible until explicitly hidden</param>
         /// <param name="placement">(Optional) The ITooltipPlacement object used to place the tooltip. If no placement
         /// is specified, we assume the ITooltip is a component and use its own Transform</param>
+        /// <param name="becameVisible">(Optional) Called as soon as the tooltip becomes visible</param>
         public static void ShowTooltip(this ISetTooltipVisibility obj, ITooltip tooltip, bool persistent = false,
-            float duration = 0f, ITooltipPlacement placement = null)
+            float duration = 0f, ITooltipPlacement placement = null, Action becameVisible = null)
         {
-            showTooltip(tooltip, persistent, duration, placement);
+            showTooltip(tooltip, persistent, duration, placement, becameVisible);
         }
 
         /// <summary>

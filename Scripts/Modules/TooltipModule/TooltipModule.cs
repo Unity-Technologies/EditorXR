@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -42,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public Material customHighlightMaterial;
             public bool persistent;
             public float duration;
+            public Action becameVisible;
             public ITooltipPlacement placement;
 
             public Transform GetTooltipTarget(ITooltip tooltip)
@@ -98,6 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (!tooltipUI)
                     {
                         tooltipUI = CreateTooltipObject();
+                        tooltipUI.becameVisible += tooltipData.becameVisible;
                         tooltipData.tooltipUI = tooltipUI;
                         tooltipUI.highlight.material = tooltipData.customHighlightMaterial ?? m_HighlightMaterial;
                         tooltipUI.background.material = m_TooltipBackgroundMaterial;
@@ -290,7 +293,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f, ITooltipPlacement placement = null)
+        public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f, ITooltipPlacement placement = null, Action becameVisible = null)
         {
             if (!IsValidTooltip(tooltip))
                 return;
@@ -322,6 +325,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 lastModifiedTime = Time.time,
                 persistent = persistent,
                 duration = duration,
+                becameVisible = becameVisible,
                 placement = placement ?? tooltip as ITooltipPlacement
             };
         }
@@ -377,12 +381,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 yield return null;
             }
 
-            RecycleTooltip(tooltipUI);
+            RecycleTooltip(data);
         }
 
-        void RecycleTooltip(TooltipUI tooltipUI)
+        void RecycleTooltip(TooltipData tooltipData)
         {
+            var tooltipUI = tooltipData.tooltipUI;
+            tooltipUI.becameVisible -= tooltipData.becameVisible;
             tooltipUI.gameObject.SetActive(false);
+            if (tooltipUI.removeSelf != null)
+                tooltipUI.removeSelf(tooltipUI);
+
             m_TooltipPool.Enqueue(tooltipUI);
         }
     }

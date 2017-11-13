@@ -310,6 +310,73 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
+        /// <summary>
+        /// Used as globally unique identifiers for feedback requests
+        /// They are used to relate feedback requests to the persistent count of visible presentations used to suppress feedback
+        /// </summary>
+        [Serializable]
+        internal struct RequestKey
+        {
+            /// <summary>
+            /// The control index used to identify the related affordance
+            /// </summary>
+            [SerializeField]
+            VRControl m_Control;
+
+            /// <summary>
+            /// The tooltip text that was presented
+            /// </summary>
+            [SerializeField]
+            string m_TooltipText;
+
+            public RequestKey(ProxyFeedbackRequest request)
+            {
+                m_Control = request.control;
+                m_TooltipText = request.tooltipText;
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = (int)m_Control;
+
+                if (m_TooltipText != null)
+                    hashCode ^= m_TooltipText.GetHashCode();
+
+                return hashCode;
+            }
+        }
+
+        /// <summary>
+        /// Contains per-request persistent data
+        /// </summary>
+        [Serializable]
+        internal class RequestData
+        {
+            [SerializeField]
+            int m_Presentations;
+
+            /// <summary>
+            /// How many times the user viewed the presentation of this type of request
+            /// </summary>
+            public int presentations
+            {
+                get { return m_Presentations; }
+                set { m_Presentations = value; }
+            }
+
+            public bool visibleThisPresentation { get; set; }
+        }
+
+        /// <summary>
+        /// Used to store persistent data about feedback requests
+        /// </summary>
+        [Serializable]
+        internal class SerializedFeedback
+        {
+            public RequestKey[] keys;
+            public RequestData[] values;
+        }
+
         const string k_ZWritePropertyName = "_ZWrite";
 
         static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
@@ -357,7 +424,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         FacingDirection m_FacingDirection = FacingDirection.Back;
 
+        SerializedFeedback m_SerializedFeedback;
         readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
+        readonly Dictionary<RequestKey, RequestData> m_RequestData = new Dictionary<RequestKey, RequestData>();
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<ProxyFeedbackRequest> k_FeedbackRequestsCopy = new List<ProxyFeedbackRequest>();
@@ -623,6 +692,22 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (request == null)
                 return;
 
+            var feedbackKey = new RequestKey(request);
+            RequestData data;
+            if (!m_RequestData.TryGetValue(feedbackKey, out data))
+            {
+                data = new RequestData();
+                m_RequestData[feedbackKey] = data;
+            }
+
+            var suppress = data.presentations > request.maxPresentations - 1;
+            var suppressPresentation = request.suppressPresentation;
+            if (suppressPresentation != null)
+                suppress = suppressPresentation();
+
+            if (suppress)
+                return;
+
             foreach (var affordance in m_Affordances)
             {
                 if (affordance.control != request.control)
@@ -639,8 +724,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     {
                         if (tooltip)
                         {
+                            data.visibleThisPresentation = false;
                             tooltip.tooltipText = tooltipText;
-                            this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection));
+                            this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection),
+                                becameVisible: () =>
+                                {
+                                    if (!data.visibleThisPresentation)
+                                        data.presentations++;
+
+                                    data.visibleThisPresentation = true;
+                                });
                         }
                     }
                 }
@@ -696,6 +789,46 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             foreach (var request in k_FeedbackRequestsCopy)
             {
                 RemoveFeedbackRequest(request);
+            }
+        }
+
+        public SerializedFeedback OnSerializePreferences()
+        {
+            if (m_SerializedFeedback != null)
+            {
+                var count = m_RequestData.Count;
+                var keys = new RequestKey[count];
+                var values = new RequestData[count];
+                count = 0;
+                foreach (var kvp in m_RequestData)
+                {
+                    keys[count] = kvp.Key;
+                    values[count] = kvp.Value;
+                    count++;
+                }
+
+                m_SerializedFeedback.keys = keys;
+                m_SerializedFeedback.values = values;
+            }
+
+            return m_SerializedFeedback;
+        }
+
+        public void OnDeserializePreferences(object obj)
+        {
+            if (obj == null)
+                return;
+
+            m_SerializedFeedback = (SerializedFeedback)obj;
+            if (m_SerializedFeedback.keys == null)
+                return;
+
+            var length = m_SerializedFeedback.keys.Length;
+            var keys = m_SerializedFeedback.keys;
+            var values = m_SerializedFeedback.values;
+            for (var i = 0; i < length; i++)
+            {
+                m_RequestData[keys[i]] = values[i];
             }
         }
     }

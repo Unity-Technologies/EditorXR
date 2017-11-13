@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         bool m_IsOculus;
 
-        public override void Awake()
+        protected override void Awake()
         {
 #if UNITY_2017_2_OR_NEWER
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
 
 #if ENABLE_STEAMVR_INPUT
-        public override IEnumerator Start()
+        protected override IEnumerator Start()
         {
             yield return base.Start();
 

@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -47,6 +48,17 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// The duration of the presentation
         /// </summary>
         public float duration = 5f;
+
+        /// <summary>
+        /// The maximum number times to present this feedback
+        /// </summary>
+        public int maxPresentations = 3;
+
+        /// <summary>
+        /// (Optional) A delegate which returns true if presentation should be suppressed
+        /// If the delegate is not null, feedback will be suppressed after it becomes visible a number of times (specified by maxPresentations)
+        /// </summary>
+        public Func<bool> suppressPresentation;
     }
 }
 #endif

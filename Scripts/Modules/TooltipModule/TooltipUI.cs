@@ -1,35 +1,50 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipUI : MonoBehaviour
+    sealed class TooltipUI : MonoBehaviour, IWillRender
     {
-        public Text text { get { return m_Text; } }
-
         [SerializeField]
         Text m_Text;
-
-        public RawImage dottedLine { get { return m_DottedLine; } }
 
         [SerializeField]
         RawImage m_DottedLine;
 
-        public Transform[] spheres { get { return m_Spheres; } }
-
         [SerializeField]
         Transform[] m_Spheres;
-
-        public Image highlight { get { return m_Highlight; } }
 
         [SerializeField]
         Image m_Highlight;
 
-        public Image background { get { return m_Background; } }
-
         [SerializeField]
         Image m_Background;
+
+        public Text text { get { return m_Text; } }
+        public RawImage dottedLine { get { return m_DottedLine; } }
+        public Transform[] spheres { get { return m_Spheres; } }
+        public Image highlight { get { return m_Highlight; } }
+        public Image background { get { return m_Background; } }
+        public event Action becameVisible;
+
+        public Action<IWillRender> removeSelf { get; set; }
+
+        public RectTransform rectTransform
+        {
+            get { return m_Background.rectTransform; }
+        }
+
+        public void OnBecameVisible()
+        {
+            if (becameVisible != null)
+                becameVisible();
+        }
+
+        public void OnBecameInvisible()
+        {
+        }
     }
 }
 #endif
