@@ -39,18 +39,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var proxyHelper = m_LeftHand.GetComponent<ViveProxyHelper>();
             if (proxyHelper)
             {
-                foreach (var tooltip in proxyHelper.leftTooltips)
+                foreach (var placementOverride in proxyHelper.leftPlacementOverrides)
                 {
-                    ObjectUtils.Destroy(tooltip);
-                }
-            }
-
-            proxyHelper = m_RightHand.GetComponent<ViveProxyHelper>();
-            if (proxyHelper)
-            {
-                foreach (var tooltip in proxyHelper.rightTooltips)
-                {
-                    ObjectUtils.Destroy(tooltip);
+                    placementOverride.tooltip.placements = placementOverride.placements;
                 }
             }
 
