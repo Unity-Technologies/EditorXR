@@ -1,4 +1,4 @@
-# EditorVR
+﻿# EditorVR
 Author VR in VR - Initial public release was on December 15, 2016 via [blogpost](https://blogs.unity3d.com/2016/12/15/editorvr-experimental-build-available-today/)
 
 ## Experimental Status
@@ -26,6 +26,9 @@ If you're a developer, we recommend that you take a look at the [Getting Started
 ### Git Dependencies
 - [git-lfs](https://git-lfs.github.com/)
 - [git-submodule](https://git-scm.com/docs/git-submodule)
+
+### Project Asset Dependencies
+- [Textmesh Pro](https://assetstore.unity.com/packages/essentials/beta-projects/textmesh-pro-84126)
 
 ### Cloning
 1. Create a new Unity project or use an existing one

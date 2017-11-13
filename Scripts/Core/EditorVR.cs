@@ -13,6 +13,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 #if UNITY_2017_2_OR_NEWER
+    [InitializeOnLoad]
     [RequiresTag(k_VRPlayerTag)]
     sealed partial class EditorVR : MonoBehaviour, IConnectInterfaces
     {
@@ -509,6 +510,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             EditorGUILayout.EndVertical();
         }
+
+#if !INCLUDE_TEXT_MESH_PRO
+        static EditorVR()
+        {
+            Debug.LogWarning("EditorVR requires TextMesh Pro. Please go to the Asset Store and download/import Text Mesh Pro.");
+        }
+#endif
     }
 #else
     internal class NoEditorVR
