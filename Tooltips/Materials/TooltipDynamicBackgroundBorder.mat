@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: TooltipDynamicOutlineBorder
+  m_Name: TooltipDynamicBackgroundBorder
   m_Shader: {fileID: 4800000, guid: 96279964233635c4d8687bdfae8fe58b, type: 3}
   m_ShaderKeywords: _ALPHAPREMULTIPLY_ON _EMISSION _METALLICGLOSSMAP
   m_LightmapFlags: 1
