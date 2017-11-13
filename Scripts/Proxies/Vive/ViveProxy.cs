@@ -46,6 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
 #if !ENABLE_STEAMVR_INPUT
+            hidden = true;
             enabled = false;
 #endif
         }
