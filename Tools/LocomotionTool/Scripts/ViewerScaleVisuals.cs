@@ -1,8 +1,14 @@
 ﻿#if UNITY_EDITOR
-using TMPro;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
@@ -20,8 +26,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         [SerializeField]
         Transform m_IconsContainer;
 
+#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_ScaleText;
+#endif
 
         [SerializeField]
         Sprite[] m_Icons;
@@ -43,8 +51,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
 
             m_LineWidth = m_Line.widthStart;
+#if INCLUDE_TEXT_MESH_PRO
             var onTopMaterial = m_ScaleText.materialForRendering;
             onTopMaterial.SetInt("unity_GUIZTestMode", (int)UnityEngine.Rendering.CompareFunction.Always);
+#endif
         }
 
         void OnEnable()
@@ -87,7 +97,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var lineWidth = m_LineWidth * viewerScale;
             m_Line.SetWidth(lineWidth, lineWidth);
 
+#if INCLUDE_TEXT_MESH_PRO
             m_ScaleText.text = string.Format("Viewer Scale: {0:f2}", viewerScale);
+#endif
         }
     }
 }

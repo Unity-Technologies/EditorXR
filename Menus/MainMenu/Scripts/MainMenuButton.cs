@@ -1,10 +1,16 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
 using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -13,11 +19,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         Button m_Button;
 
+#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_ButtonDescription;
+#endif
 
+#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_ButtonTitle;
+#endif
 
         Color m_OriginalColor;
 
@@ -56,14 +66,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void SetData(string name, string description)
         {
+#if INCLUDE_TEXT_MESH_PRO
             m_ButtonTitle.text = name;
             m_ButtonDescription.text = description;
+#endif
         }
 
         public void OnRayEnter(RayEventData eventData)
         {
+#if INCLUDE_TEXT_MESH_PRO
             if (hovered != null)
                 hovered(eventData.rayOrigin, toolType, m_ButtonDescription.text);
+#endif
         }
 
         public void OnRayExit(RayEventData eventData)
