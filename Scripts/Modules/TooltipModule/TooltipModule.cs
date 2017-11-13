@@ -17,9 +17,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         const int k_PoolInitialCapacity = 16;
 
-        const string k_MaterialColorTopProperty = "_ColorTop";
-        const string k_MaterialColorBottomProperty = "_ColorBottom";
-
         static readonly Quaternion k_FlipYRotation = Quaternion.AngleAxis(180f, Vector3.up);
         static readonly Quaternion k_FlipZRotation = Quaternion.AngleAxis(180f, Vector3.forward);
 
@@ -28,9 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         GameObject m_TooltipCanvasPrefab;
-
-        [SerializeField]
-        Material m_TooltipBackgroundMaterial;
 
         class TooltipData
         {
@@ -56,7 +50,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         Transform m_TooltipCanvas;
         Vector3 m_TooltipScale;
-        Color m_OriginalBackgroundColor;
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<ITooltip> k_TooltipsToRemove = new List<ITooltip>();
@@ -68,9 +61,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
             m_TooltipCanvas.SetParent(transform);
             m_TooltipScale = m_TooltipPrefab.transform.localScale;
-            m_TooltipBackgroundMaterial = Instantiate(m_TooltipBackgroundMaterial);
-            m_OriginalBackgroundColor = m_TooltipBackgroundMaterial.color;
-            var sessionGradient = UnityBrandColorScheme.sessionGradient;
         }
 
         void Update()
@@ -96,7 +86,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         tooltipUI.Show(tooltip.tooltipText, placement.tooltipAlignment, null);
                         tooltipUI.becameVisible += tooltipData.becameVisible;
                         tooltipData.tooltipUI = tooltipUI;
-                        tooltipUI.background.material = m_TooltipBackgroundMaterial;
                         var tooltipTransform = tooltipUI.transform;
                         MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
                         tooltipTransform.localScale = Vector3.zero;
@@ -155,8 +144,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             var viewerScale = this.GetViewerScale();
             tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
-
-            m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
 
             // Adjust for alignment
             var offset = Vector3.zero;
