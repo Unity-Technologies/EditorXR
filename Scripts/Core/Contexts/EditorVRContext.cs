@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [CreateAssetMenu(menuName = "EditorVR/EditorVR Context")]
     class EditorVRContext : ScriptableObject, IEditingContext
     {
+        [SerializeField]
+        float m_RenderScale = 1f;
+
         [SerializeField]
         internal List<MonoScript> m_DefaultToolStack;
 
@@ -18,6 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             EditorVR.defaultTools = m_DefaultToolStack.Select(ms => ms.GetClass()).ToArray();
             m_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
+
+            XRSettings.eyeTextureResolutionScale = m_RenderScale;
         }
 
         public void Dispose()

@@ -11,8 +11,6 @@ namespace UnityEditor.Experimental.EditorVR
     public abstract class FeedbackRequest
     {
         public IRequestFeedback caller;
-        public GameObject settingsMenuItemPrefab { get; private set; }
-        public GameObject settingsMenuItemInstance { get; set; }
     }
 
     public class FeedbackModule : MonoBehaviour, ISettingsMenuItemProvider, ISerializePreferences

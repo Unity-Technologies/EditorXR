@@ -11,9 +11,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// </summary>
         public enum VisibilityControlType
         {
-            colorProperty,
-            alphaProperty,
-            materialSwap
+            ColorProperty,
+            AlphaProperty,
+            MaterialSwap
         }
 
         [Header("Non-Interactive Input-Device Body Elements")]
@@ -34,11 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// <summary>
         /// Collection of affordance definitions representing a proxy
         /// </summary>
-        public AffordanceDefinition[] AffordanceDefinitions
-        {
-            get { return m_AffordanceDefinitions; }
-            set { m_AffordanceDefinitions = value; }
-        }
+        public AffordanceDefinition[] AffordanceDefinitions { get { return m_AffordanceDefinitions; } }
 
         /// <summary>
         /// Default visibility definition/data used to drive the visual changes of (non-affordance) body visual elements
@@ -53,11 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// <summary>
         /// Default animation definition/data used to drive the translation/rotation of affordances lacking a custom/override animation definition
         /// </summary>
-        public AffordanceAnimationDefinition defaultAnimationDefinition
-        {
-            get { return m_DefaultAffordanceAnimationDefinition; }
-            set { m_DefaultAffordanceAnimationDefinition = value; }
-        }
+        public AffordanceAnimationDefinition defaultAnimationDefinition { get { return m_DefaultAffordanceAnimationDefinition; } }
     }
 }
 #endif

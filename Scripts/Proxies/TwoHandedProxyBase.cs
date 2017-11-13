@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -10,8 +11,29 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
+    /// <summary>
+    /// Which cardinal direction a proxy node is facing
+    /// </summary>
+    [Flags]
+    public enum FacingDirection
     {
+        Front = 1 << 0,
+        Back = 1 << 1,
+        Left = 1 << 2,
+        Right = 1 << 3,
+        Top = 1 << 4,
+        Bottom = 1 << 5
+    }
+
+    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, ISerializePreferences
+    {
+        [Serializable]
+        class SerializedFeedback
+        {
+            public ProxyNode.SerializedFeedback leftNode;
+            public ProxyNode.SerializedFeedback rightNode;
+        }
+
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
 
@@ -41,10 +63,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         protected Dictionary<Node, Transform> m_RayOrigins;
 
         bool m_Hidden;
-        ProxyHelper m_LeftProxyHelper;
-        ProxyHelper m_RightProxyHelper;
-        ProxyUI m_LeftProxyUI;
-        ProxyUI m_RightProxyUI;
+        ProxyNode m_LeftProxyNode;
+        ProxyNode m_RightProxyNode;
 
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
@@ -70,12 +90,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     m_Hidden = value;
                     m_LeftHand.gameObject.SetActive(!value);
                     m_RightHand.gameObject.SetActive(!value);
-
-                    if (m_LeftProxyUI && m_RightProxyUI)
-                    {
-                        m_LeftProxyUI.UpdateVisibility();
-                        m_RightProxyUI.UpdateVisibility();
-                    }
                 }
             }
         }
@@ -85,62 +99,48 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
-        public virtual void Awake()
+        protected virtual void Awake()
         {
             m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
             m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
 
-            m_LeftProxyHelper = m_LeftHand.GetComponent<ProxyHelper>();
-            m_RightProxyHelper = m_RightHand.GetComponent<ProxyHelper>();
-
-            var setupCount = 0;
-            const int numNodes = 2;
-            m_LeftProxyUI = m_LeftHand.GetComponent<ProxyUI>();
-            m_LeftProxyUI.setupComplete += () =>
-            {
-                if (++setupCount == numNodes)
-                    hidden = true;
-            };
-            m_RightProxyUI = m_RightHand.GetComponent<ProxyUI>();
-            m_RightProxyUI.setupComplete += () =>
-            {
-                if (++setupCount == numNodes)
-                    hidden = true;
-            };
+            m_LeftProxyNode = m_LeftHand.GetComponent<ProxyNode>();
+            m_RightProxyNode = m_RightHand.GetComponent<ProxyNode>();
 
             m_RayOrigins = new Dictionary<Node, Transform>
             {
-                { Node.LeftHand, m_LeftProxyHelper.rayOrigin },
-                { Node.RightHand, m_RightProxyHelper.rayOrigin }
+                { Node.LeftHand, m_LeftProxyNode.rayOrigin },
+                { Node.RightHand, m_RightProxyNode.rayOrigin }
             };
 
             menuOrigins = new Dictionary<Transform, Transform>()
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.menuOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.menuOrigin },
+                { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.menuOrigin },
+                { m_RightProxyNode.rayOrigin, m_RightProxyNode.menuOrigin },
             };
 
             alternateMenuOrigins = new Dictionary<Transform, Transform>()
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.alternateMenuOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.alternateMenuOrigin },
+                { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.alternateMenuOrigin },
+                { m_RightProxyNode.rayOrigin, m_RightProxyNode.alternateMenuOrigin },
             };
 
             previewOrigins = new Dictionary<Transform, Transform>
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.previewOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.previewOrigin }
+                { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.previewOrigin },
+                { m_RightProxyNode.rayOrigin, m_RightProxyNode.previewOrigin }
             };
 
             fieldGrabOrigins = new Dictionary<Transform, Transform>
             {
-                { m_LeftProxyHelper.rayOrigin, m_LeftProxyHelper.fieldGrabOrigin },
-                { m_RightProxyHelper.rayOrigin, m_RightProxyHelper.fieldGrabOrigin }
+                { m_LeftProxyNode.rayOrigin, m_LeftProxyNode.fieldGrabOrigin },
+                { m_RightProxyNode.rayOrigin, m_RightProxyNode.fieldGrabOrigin }
             };
         }
 
-        public virtual IEnumerator Start()
+        protected virtual IEnumerator Start()
         {
+            hidden = true;
             while (!active)
                 yield return null;
 
@@ -152,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_RightShakeTracker.Initialize(trackedObjectInput.rightPosition.vector3);
         }
 
-        public virtual void Update()
+        protected virtual void Update()
         {
             if (active)
             {
@@ -169,8 +169,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                 if (Mathf.Max(m_LeftShakeTracker.shakeStrength, m_RightShakeTracker.shakeStrength) > m_ShakeThreshhold)
                 {
-                    m_LeftProxyUI.AddShakeRequest();
-                    m_RightProxyUI.AddShakeRequest();
+                    m_LeftProxyNode.AddShakeRequest();
+                    m_RightProxyNode.AddShakeRequest();
                 }
             }
         }
@@ -181,9 +181,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (proxyRequest != null)
             {
                 if (proxyRequest.node == Node.LeftHand)
-                    m_LeftProxyUI.AddFeedbackRequest(proxyRequest);
+                    m_LeftProxyNode.AddFeedbackRequest(proxyRequest);
                 else if (proxyRequest.node == Node.RightHand)
-                    m_RightProxyUI.AddFeedbackRequest(proxyRequest);
+                    m_RightProxyNode.AddFeedbackRequest(proxyRequest);
             }
         }
 
@@ -193,20 +193,40 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (proxyRequest != null)
             {
                 if (proxyRequest.node == Node.LeftHand)
-                    m_LeftProxyUI.RemoveFeedbackRequest(proxyRequest);
+                    m_LeftProxyNode.RemoveFeedbackRequest(proxyRequest);
                 else if (proxyRequest.node == Node.RightHand)
-                    m_RightProxyUI.RemoveFeedbackRequest(proxyRequest);
+                    m_RightProxyNode.RemoveFeedbackRequest(proxyRequest);
             }
         }
 
         public void ClearFeedbackRequests(IRequestFeedback caller)
         {
             // Check for null in order to prevent MissingReferenceException when exiting EXR
-            if (m_LeftProxyUI && m_RightProxyUI)
+            if (m_LeftProxyNode && m_RightProxyNode)
             {
-                m_LeftProxyUI.ClearFeedbackRequests(caller);
-                m_RightProxyUI.ClearFeedbackRequests(caller);
+                m_LeftProxyNode.ClearFeedbackRequests(caller);
+                m_RightProxyNode.ClearFeedbackRequests(caller);
             }
+        }
+
+        public object OnSerializePreferences()
+        {
+            if (!active)
+                return null;
+
+            return new SerializedFeedback
+            {
+                leftNode = m_LeftProxyNode.OnSerializePreferences(),
+                rightNode = m_RightProxyNode.OnSerializePreferences()
+            };
+        }
+
+        public void OnDeserializePreferences(object obj)
+        {
+            var serializedFeedback = (SerializedFeedback)obj;
+
+            m_LeftProxyNode.OnDeserializePreferences(serializedFeedback.leftNode);
+            m_RightProxyNode.OnDeserializePreferences(serializedFeedback.rightNode);
         }
     }
 }

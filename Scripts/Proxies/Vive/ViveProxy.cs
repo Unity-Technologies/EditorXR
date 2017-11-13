@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         bool m_IsOculus;
 
-        public override void Awake()
+        protected override void Awake()
         {
 #if UNITY_2017_2_OR_NEWER
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -39,18 +39,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var proxyHelper = m_LeftHand.GetComponent<ViveProxyHelper>();
             if (proxyHelper)
             {
-                foreach (var tooltip in proxyHelper.leftTooltips)
+                foreach (var placementOverride in proxyHelper.leftPlacementOverrides)
                 {
-                    ObjectUtils.Destroy(tooltip);
-                }
-            }
-
-            proxyHelper = m_RightHand.GetComponent<ViveProxyHelper>();
-            if (proxyHelper)
-            {
-                foreach (var tooltip in proxyHelper.rightTooltips)
-                {
-                    ObjectUtils.Destroy(tooltip);
+                    placementOverride.tooltip.placements = placementOverride.placements;
                 }
             }
 
@@ -95,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
 
 #if ENABLE_STEAMVR_INPUT
-        public override IEnumerator Start()
+        protected override IEnumerator Start()
         {
             yield return base.Start();
 
