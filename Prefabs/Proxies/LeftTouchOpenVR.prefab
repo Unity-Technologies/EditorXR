@@ -1871,8 +1871,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ee80ff6078a6344b26cc7dfb8dc8b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_FadeInSpeedScalar: 4
-  m_FadeOutSpeedScalar: 0.5
+  m_FadeInDuration: 0.5
+  m_FadeOutDuration: 2
   m_RayOrigin: {fileID: 4066961127535540}
   m_MenuOrigin: {fileID: 4298354039062494}
   m_AlternateMenuOrigin: {fileID: 4263165527348130}

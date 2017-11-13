@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -12,6 +13,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// The RectTransform that represents this object
         /// </summary>
         RectTransform rectTransform { get; }
+
+        /// <summary>
+        /// An action supplied to implementors which allows them to remove themselves from the visible list in case they are pooled
+        /// </summary>
+        Action<IWillRender> removeSelf { set; }
 
         /// <summary>
         /// Called when the object becomes visible
