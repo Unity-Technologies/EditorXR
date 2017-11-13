@@ -21,6 +21,13 @@ namespace UnityEditor.Experimental.EditorVR.Input
         Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
         Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
 
+        static readonly OVRInput.Button[] k_Buttons;
+
+        static OVRTouchInputToEvents()
+        {
+            k_Buttons = (OVRInput.Button[])Enum.GetValues(typeof(OVRInput.Button));
+        }
+
         public void Update()
         {
             // Manually update the Touch input
@@ -115,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
         private void SendButtonEvents(OVRInput.Controller ovrController, int deviceIndex)
         {
-            foreach (OVRInput.Button button in Enum.GetValues(typeof(OVRInput.Button)))
+            foreach (OVRInput.Button button in k_Buttons)
             {
                 int buttonIndex = GetButtonIndex(button);
                 if (buttonIndex >= 0)

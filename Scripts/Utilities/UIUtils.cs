@@ -8,13 +8,22 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
     /// <summary>
-    /// Object related EditorVR utilities
+    /// UI related utilities
     /// </summary>
     static class UIUtils
     {
+        /// <summary>
+        /// Maximum interval between clicks that count as a double-click
+        /// </summary>
         public const float DoubleClickIntervalMax = 0.3f;
+
         const float k_DoubleClickIntervalMin = 0.15f;
 
+        /// <summary>
+        /// Returns whether the given time interval qualifies as a double-click
+        /// </summary>
+        /// <param name="timeSinceLastClick">Time interval between clicks</param>
+        /// <returns></returns>
         public static bool IsDoubleClick(float timeSinceLastClick)
         {
             return timeSinceLastClick <= DoubleClickIntervalMax && timeSinceLastClick >= k_DoubleClickIntervalMin;
