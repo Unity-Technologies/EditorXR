@@ -211,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             if (otherDeviceData == deviceData)
                                 continue;
 
-                            SetAlternateMenuVisibility(otherDeviceData.rayOrigin, true);
+                            SetAlternateMenuVisibility(otherDeviceData.rayOrigin);
                             break;
                         }
                     }
@@ -322,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                         var otherRayOrigin = otherDeviceData.rayOrigin;
                         if (alternateMenuVisible && otherDeviceData.alternateMenu != null)
-                            SetAlternateMenuVisibility(otherRayOrigin, true);
+                            SetAlternateMenuVisibility(otherRayOrigin);
 
                         // If other hand is within range to do a two-handed scale, hide its menu as well
                         if (directSelection.IsHovering(otherRayOrigin) || directSelection.IsScaling(otherRayOrigin)
@@ -430,10 +430,27 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (rayOrigin == null)
                     return;
 
-                SetAlternateMenuVisibility(rayOrigin, Selection.gameObjects.Length > 0);
+                UpdateAlternateMenuActions();
+                SetAlternateMenuVisibility(rayOrigin);
             }
 
-            internal static void SetAlternateMenuVisibility(Transform rayOrigin, bool visible)
+            internal static void UpdateAlternateMenuActions(Transform rayOrigin, List<ActionMenuData> actions)
+            {
+                var actionsModule = evr.GetModule<ActionsModule>();
+                foreach (var deviceData in evr.m_DeviceData)
+                {
+                    if (deviceData.rayOrigin != rayOrigin)
+                        continue;
+
+                    var menuActions = actionsModule.menuActions;
+                    if (actions != null)
+                        menuActions.AddRange(actions);
+
+                    deviceData.alternateMenu.menuActions = menuActions;
+                }
+            }
+
+            static void SetAlternateMenuVisibility(Transform rayOrigin)
             {
                 Rays.ForEachProxyDevice(deviceData =>
                 {
@@ -441,12 +458,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var alternateMenu = deviceData.alternateMenu;
                     if (alternateMenu != null)
                     {
-                        // Set alternate menu visible on this rayOrigin and hide it on all others
                         var alternateMenuData = menuHideFlags[alternateMenu];
-                        if (deviceData.rayOrigin == rayOrigin && visible)
-                            alternateMenuData.hideFlags &= ~MenuHideFlags.Hidden;
+                        if (Selection.gameObjects.Length > 0)
+                        {
+                            // Set alternate menu visible on this rayOrigin and hide it on all others
+                            if (deviceData.rayOrigin == rayOrigin)
+                                alternateMenuData.hideFlags &= ~MenuHideFlags.Hidden;
+                            else
+                                alternateMenuData.hideFlags |= MenuHideFlags.Hidden;
+                        }
                         else
-                            alternateMenuData.hideFlags |= MenuHideFlags.Hidden;
+                        {
+                            alternateMenuData.hideFlags &= ~MenuHideFlags.Hidden;
+                        }
                     }
                 });
             }
@@ -490,7 +514,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                         continue;
 
                                     if (otherDeviceData.alternateMenu != null)
-                                        SetAlternateMenuVisibility(rayOrigin, true);
+                                        SetAlternateMenuVisibility(rayOrigin);
                                 }
                             }
                         }

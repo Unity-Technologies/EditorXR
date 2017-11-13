@@ -88,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_Highlighted = value;
                 if (m_Highlighted)
                 {
-                    // Only start the highlight coroutine if the highlight coroutine isnt already playing. Otherwise allow it to gracefully finish.
+                    // Only start the highlight coroutine if the highlight coroutine isn't already playing. Otherwise allow it to gracefully finish.
                     if (m_HighlightCoroutine == null)
                         m_HighlightCoroutine = StartCoroutine(Highlight());
 
@@ -105,7 +105,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 else
                     this.HideTooltip(this);
             }
-
             get { return m_Highlighted; }
         }
 
@@ -121,7 +120,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 m_SemiTransparent = value;
 
-                this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateSemiTransparent(value));
+                this.RestartCoroutine(ref m_SemiTransparentCoroutine, AnimateSemiTransparent(value));
                 PostReveal();
             }
         }
@@ -130,6 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public bool visible
         {
+            get { return m_Visible; }
             set
             {
                 if (value && m_Visible == value) // Allow false to fall through and perform hiding regardless of visibility
@@ -147,8 +147,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                     this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
                 }
-                else if (gameObject.activeSelf)
-                    this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
+                else
+                {
+                    m_SemiTransparent = false;
+                    if (gameObject.activeSelf)
+                        this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
+                }
             }
         }
 
@@ -193,35 +197,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Color m_SemiTransparentFrameColor;
 
         Coroutine m_VisibilityCoroutine;
+        Coroutine m_SemiTransparentCoroutine;
         Coroutine m_HighlightCoroutine;
         Coroutine m_IconHighlightCoroutine;
         Coroutine m_InsetRevealCoroutine;
-        Coroutine m_RayExitDelayCoroutine;
 
-        public string tooltipText
-        {
-            get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; }
-            set { m_TooltipText = value; }
-        }
+        public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; } set { m_TooltipText = value; } }
 
         string m_TooltipText;
 
-        public Sprite icon
-        {
-            set { m_Icon.sprite = value; }
-            get { return m_Icon.sprite; }
-        }
+        public Sprite icon { set { m_Icon.sprite = value; } get { return m_Icon.sprite; } }
 
         public Button button { get { return m_Button; } }
 
         public int orderIndex { get; set; }
 
-        public static Quaternion hiddenLocalRotation { get; set; } // All menu slots share the same hidden location
-
         public Quaternion visibleLocalRotation { get; set; }
 
         // For overriding text (i.e. TransformActions)
         public ITooltip tooltip { private get; set; }
+        public bool wasVisible { get; set; }
 
         public event Action hovered;
 
@@ -230,7 +225,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
             m_IconMaterial = MaterialUtils.GetMaterialClone(m_Icon);
             m_OriginalInsetGradientPair = new GradientPair(m_InsetMaterial.GetColor(k_MaterialColorTopProperty), m_InsetMaterial.GetColor(k_MaterialColorBottomProperty));
-            hiddenLocalRotation = transform.localRotation;
             m_VisibleInsetLocalScale = m_MenuInset.localScale;
             m_HighlightedInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_VisibleInsetLocalScale.y * 1.2f, m_VisibleInsetLocalScale.z);
             m_VisibleInsetLocalScale = new Vector3(m_VisibleInsetLocalScale.x, m_MenuInset.localScale.y * 0.35f, m_VisibleInsetLocalScale.z);
@@ -476,7 +470,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var transitionAmount = Time.deltaTime;
             var positionWait = (orderIndex + 4) * 0.25f; // pad the order index for a faster start to the transition
             var currentScale = transform.localScale;
-            var targetScale = Vector3.one;
+            var semiTransparentTargetScale = new Vector3(0.9f, 0.15f, 0.9f);
+            var targetScale = makeSemiTransparent ? semiTransparentTargetScale : Vector3.one;
             var currentFrameColor = m_FrameMaterial.color;
             var transparentFrameColor = new Color(s_FrameOpaqueColor.r, s_FrameOpaqueColor.g, s_FrameOpaqueColor.b, 0f);
             var targetFrameColor = m_CanvasGroup.interactable ? (makeSemiTransparent ? m_SemiTransparentFrameColor : s_FrameOpaqueColor) : transparentFrameColor;
@@ -503,11 +498,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 yield return null;
             }
 
+            // Wait until show is done because semi-transparent and show sometimes happen simultaneously
+            while (m_VisibilityCoroutine != null)
+            {
+                yield return null;
+            }
+
             transform.localScale = targetScale;
             m_FrameMaterial.SetColor(k_MaterialColorProperty, targetFrameColor);
             m_InsetMaterial.SetFloat(k_MaterialAlphaProperty, targetInsetAlpha);
             m_IconMaterial.SetColor(k_MaterialColorProperty, targetIconColor);
             m_MenuInset.localScale = targetInsetScale;
+            m_MenuInset.gameObject.SetActive(!semiTransparent);
             m_IconContainer.localScale = targetIconScale;
         }
 

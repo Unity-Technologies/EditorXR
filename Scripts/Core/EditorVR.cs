@@ -179,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             AddModule<HighlightModule>();
 
             var lockModule = AddModule<LockModule>();
-            lockModule.updateAlternateMenu = (rayOrigin, o) => Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
+            lockModule.updateAlternateMenu = Menus.UpdateAlternateMenuActions;
 
             AddModule<SelectionModule>();
 

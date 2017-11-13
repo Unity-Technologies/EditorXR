@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -59,7 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_MenuActions = value;
 
                 if (m_RadialMenuUI)
-                    m_RadialMenuUI.actions = value;
+                    m_RadialMenuUI.actions = m_MenuActions;
             }
         }
 
@@ -100,6 +101,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
             m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
             m_RadialMenuUI.actions = menuActions;
+            m_RadialMenuUI.node = node;
             this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
             m_RadialMenuUI.Setup();
             m_RadialMenuUI.buttonHovered += OnButtonHovered;

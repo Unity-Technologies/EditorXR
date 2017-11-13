@@ -9,10 +9,27 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class ActionsModule : MonoBehaviour, IConnectInterfaces
     {
-        public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
+        public List<ActionMenuData> menuActions
+        {
+            get
+            {
+                if (Selection.gameObjects.Length > 0)
+                {
+                    // Show only default actions
+                    return m_MenuActions
+                        .Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
+                        .OrderBy(a => a.priority)
+                        .ToList();
+                }
 
-        List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
-        List<IAction> m_Actions;
+                return m_MenuActions
+                    .Where(a => a.action is Actions.Undo || a.action is Actions.Redo)
+                    .OrderBy(a => a.priority)
+                    .ToList();
+            }
+        }
+
+        readonly List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
 
         public void RemoveActions(List<IAction> actions)
         {
@@ -28,7 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void SpawnActions()
         {
             IEnumerable<Type> actionTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IAction));
-            m_Actions = new List<IAction>();
             foreach (Type actionType in actionTypes)
             {
                 // Don't treat vanilla actions or tool actions as first class actions
@@ -52,11 +68,35 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                     m_MenuActions.Add(actionMenuData);
                 }
-
-                m_Actions.Add(action);
             }
 
             m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
+        }
+
+        public void ConnectActions(IActions target, Action completed)
+        {
+            // Delay connecting actions to allow tool / module to initialize first
+            EditorApplication.delayCall += () =>
+            {
+                var actions = target.actions;
+                if (actions != null)
+                {
+                    foreach (var action in actions)
+                    {
+                        var actionMenuData = new ActionMenuData
+                        {
+                            name = action.GetType().Name,
+                            sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
+                            priority = int.MaxValue,
+                            action = action,
+                        };
+                        m_MenuActions.Add(actionMenuData);
+                    }
+
+                    if (completed != null)
+                        completed();
+                }
+            };
         }
     }
 }

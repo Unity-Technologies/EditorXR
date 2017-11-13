@@ -25,7 +25,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         List<RadialMenuSlot> m_RadialMenuSlots;
         Coroutine m_VisibilityCoroutine;
         RadialMenuSlot m_HighlightedButton;
-        float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
+        float m_PhaseOffset; // Starting rotation for slots
+        bool m_SemiTransparent;
+        Transform m_AlternateMenuOrigin;
+        bool m_Visible;
+        List<ActionMenuData> m_Actions;
+        bool m_PressedDown;
+        Vector2 m_ButtonInputDirection;
 
         public Transform alternateMenuOrigin
         {
@@ -42,8 +48,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        Transform m_AlternateMenuOrigin;
-
         public bool visible
         {
             get { return m_Visible; }
@@ -59,14 +63,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 gameObject.SetActive(true);
                 if (value && actions.Count > 0)
                     m_VisibilityCoroutine = StartCoroutine(AnimateShow());
-                else if (!value && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
+                else if (!value && m_RadialMenuSlots != null) // Only perform hiding if slots have been initialized
                     m_VisibilityCoroutine = StartCoroutine(AnimateHide());
                 else if (!value)
                     gameObject.SetActive(false);
             }
         }
-
-        bool m_Visible;
 
         public List<ActionMenuData> actions
         {
@@ -75,23 +77,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 if (value != null)
                 {
-                    m_Actions = value
-                        .Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
-                        .OrderBy(a => a.priority)
-                        .ToList();
+                    m_Actions = value;
 
                     if (visible && actions.Count > 0)
-                    {
-                        this.StopCoroutine(ref m_VisibilityCoroutine);
-                        m_VisibilityCoroutine = StartCoroutine(AnimateShow());
-                    }
+                        this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
                 }
                 else if (visible && m_RadialMenuSlots != null) // only perform hiding if slots have been initialized
                     visible = false;
             }
         }
-
-        List<ActionMenuData> m_Actions;
 
         public bool pressedDown
         {
@@ -120,8 +114,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        bool m_PressedDown;
-
         public Vector2 buttonInputDirection
         {
             set
@@ -133,6 +125,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 }
                 else if (value.magnitude > 0)
                 {
+                    if (node == Node.RightHand)
+                        value.y *= -1;
+
                     var angle = Mathf.Atan2(value.y, value.x) * Mathf.Rad2Deg;
                     angle -= m_PhaseOffset;
 
@@ -150,14 +145,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     {
                         m_HighlightedButton = m_RadialMenuSlots[(int)index];
                         foreach (var slot in m_RadialMenuSlots)
+                        {
                             slot.highlighted = slot == m_HighlightedButton;
+                        }
                     }
                 }
+
                 m_ButtonInputDirection = value;
             }
         }
-
-        Vector2 m_ButtonInputDirection;
 
         bool semiTransparent
         {
@@ -176,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        bool m_SemiTransparent;
+        public Node node { private get; set; }
 
         public event Action buttonHovered;
         public event Action buttonClicked;
@@ -203,12 +199,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             m_RadialMenuSlots = new List<RadialMenuSlot>();
             Material slotBorderMaterial = null;
+            gameObject.name = node + " Radial Menu";
 
             for (int i = 0; i < k_SlotCount; ++i)
             {
-                var menuSlot = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
+                var menuSlotGO = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false);
+                menuSlotGO.name = node + " Radial Menu Slot " + i;
+                var menuSlot = menuSlotGO.GetComponent<RadialMenuSlot>();
                 this.ConnectInterfaces(menuSlot);
-                menuSlot.orderIndex = i;
+                menuSlot.orderIndex = k_SlotCount - i - 1;
                 m_RadialMenuSlots.Add(menuSlot);
                 menuSlot.hovered += OnButtonHovered;
 
@@ -224,25 +223,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void SetupRadialSlotPositions()
         {
-            const float kRotationSpacing = 360f / k_SlotCount;
+            const float rotationSpacing = 360f / k_SlotCount;
             for (int i = 0; i < k_SlotCount; ++i)
             {
                 var slot = m_RadialMenuSlots[i];
 
                 // We move in counter-clockwise direction
                 // Account for the input & position phase offset, based on the number of actions, rotating the menu content to be bottom-centered
-                m_PhaseOffset = 270 - (m_Actions.Count * 0.5f) * kRotationSpacing;
-                slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + kRotationSpacing * i, Vector3.down);
+                m_PhaseOffset = node == Node.LeftHand ? -90f - rotationSpacing : 90f;
+                slot.visibleLocalRotation = Quaternion.AngleAxis(m_PhaseOffset + rotationSpacing * i, node == Node.LeftHand ? Vector3.down : Vector3.up);
                 slot.visible = false;
             }
 
-            this.StopCoroutine(ref m_VisibilityCoroutine);
-            m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+            this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
         }
 
         void UpdateRadialSlots()
         {
-            var gradientPair = UnityBrandColorScheme.saturatedSessionGradient;
+            var gradientPair = UnityBrandColorScheme.sessionGradient;
 
             for (int i = 0; i < m_Actions.Count; ++i)
             {
@@ -281,40 +279,52 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
             {
+                var slot = m_RadialMenuSlots[i];
+
+                slot.wasVisible = slot.visible;
                 if (i < m_Actions.Count)
-                    m_RadialMenuSlots[i].visible = true;
+                    slot.visible = true;
                 else
-                    m_RadialMenuSlots[i].visible = false;
+                    slot.visible = false;
             }
 
-            semiTransparent = false;
-            semiTransparent = true;
-
-            const float kSpeedScalar = 8f;
             var revealAmount = 0f;
-            var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
+            var hiddenSlotRotation = node == Node.LeftHand ? 90f + 360f / k_SlotCount : 90f;
             while (revealAmount < 1)
             {
-                revealAmount += Time.unscaledDeltaTime * kSpeedScalar;
-                var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(revealAmount);
+                revealAmount += Time.deltaTime * 8;
 
                 for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
                 {
                     if (i < m_Actions.Count)
                     {
-                        m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, shapedAmount);
-                        m_RadialMenuSlots[i].CorrectIconRotation();
+                        var slot = m_RadialMenuSlots[i];
+                        if (slot.wasVisible)
+                            continue;
+
+                        var transform = slot.transform;
+                        var localRotation = transform.localRotation.eulerAngles;
+                        var destRotation = slot.visibleLocalRotation.eulerAngles.y;
+                        if (node == Node.LeftHand && destRotation > 180f)
+                            destRotation -= 360f;
+
+                        localRotation.y = Mathf.Lerp(hiddenSlotRotation, destRotation, revealAmount * revealAmount);
+                        transform.localRotation = Quaternion.Euler(localRotation);
+                        slot.CorrectIconRotation();
                     }
                 }
 
                 yield return null;
             }
 
-            revealAmount = 0;
-            while (revealAmount < 1)
+            for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
             {
-                revealAmount += Time.deltaTime;
-                yield return null;
+                if (i < m_Actions.Count)
+                {
+                    var slot = m_RadialMenuSlots[i];
+                    slot.transform.localRotation = slot.visibleLocalRotation;
+                    slot.CorrectIconRotation();
+                }
             }
 
             m_VisibilityCoroutine = null;
@@ -322,24 +332,28 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         IEnumerator AnimateHide()
         {
-            var revealAmount = 0f;
-            var hiddenSlotRotation = RadialMenuSlot.hiddenLocalRotation;
+            const float hiddenSlotRotation = 360f / k_SlotCount;
 
-            for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
+            for (var i = 0; i < m_RadialMenuSlots.Count; ++i)
                 m_RadialMenuSlots[i].visible = false;
 
-            revealAmount = 1;
+            var revealAmount = 1f;
             while (revealAmount > 0)
             {
                 revealAmount -= Time.deltaTime * 8;
 
                 for (int i = 0; i < m_RadialMenuSlots.Count; ++i)
-                    m_RadialMenuSlots[i].transform.localRotation = Quaternion.Lerp(hiddenSlotRotation, m_RadialMenuSlots[i].visibleLocalRotation, revealAmount);
+                {
+                    var slot = m_RadialMenuSlots[i];
+                    var transform = slot.transform;
+                    var localRotation = slot.transform.localRotation.eulerAngles;
+                    localRotation.y = Mathf.Lerp(hiddenSlotRotation, slot.visibleLocalRotation.eulerAngles.y, revealAmount);
+                    transform.localRotation = Quaternion.Euler(localRotation);
+                }
 
                 yield return null;
             }
 
-            semiTransparent = false;
             gameObject.SetActive(false);
             m_VisibilityCoroutine = null;
         }
