@@ -9,6 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     sealed class TooltipUI : MonoBehaviour, IWillRender
     {
         const float k_IconTextMinSpacing = 4;
+        const float k_IconTextSpacing = 14;
 
         [SerializeField]
         RawImage m_DottedLine;
@@ -33,9 +34,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         CanvasGroup m_RightTextCanvasGroup;
-
-        [SerializeField]
-        float m_IconTextSpacing = 14;
 
         [SerializeField]
         LayoutElement m_LeftSpacer;
@@ -82,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     m_TextRight.text = text;
                     m_TextRight.gameObject.SetActive(validText);
                     m_TextLeft.gameObject.SetActive(false);
-                    m_RightSpacer.minWidth = validText ? iconVisible ? m_IconTextSpacing : 0 : 0;
+                    m_RightSpacer.minWidth = validText ? iconVisible ? k_IconTextSpacing : 0 : 0;
                     m_LeftSpacer.minWidth = validText ? iconVisible ? k_IconTextMinSpacing : 8 : 0; ;
                     break;
                 case TextAlignment.Right:
@@ -90,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     m_TextRight.gameObject.SetActive(false);
                     m_TextLeft.gameObject.SetActive(validText);
                     m_RightSpacer.minWidth = validText ? iconVisible ? k_IconTextMinSpacing : 8 : 0;
-                    m_LeftSpacer.minWidth = validText ? iconVisible ? m_IconTextSpacing : 0 : 0;
+                    m_LeftSpacer.minWidth = validText ? iconVisible ? k_IconTextSpacing : 0 : 0;
                     break;
             }
 
