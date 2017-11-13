@@ -93,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (!tooltipUI)
                     {
                         tooltipUI = CreateTooltipObject();
-                        tooltipUI.Show(tooltip.tooltipText, tooltipData.placement.tooltipAlignment, null); // TODO: push icon sprite
+                        tooltipUI.Show(tooltip.tooltipText, placement.tooltipAlignment, null);
                         tooltipUI.becameVisible += tooltipData.becameVisible;
                         tooltipData.tooltipUI = tooltipUI;
                         tooltipUI.background.material = m_TooltipBackgroundMaterial;

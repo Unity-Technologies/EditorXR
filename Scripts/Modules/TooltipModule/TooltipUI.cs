@@ -66,11 +66,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public Action<IWillRender> removeSelf { get; set; }
 
-        public RectTransform rectTransform
-        {
-            get { return m_Background.rectTransform; }
-        }
-
         public void Show(string text, TextAlignment alignment, Sprite iconSprite = null)
         {
             // if Icon null, fade out opacity of current icon
