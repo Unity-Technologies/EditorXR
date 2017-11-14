@@ -62,6 +62,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public const float TipDistance = 0.05f;
         public const float MinBrushSize = 0.0025f;
         public const float MaxBrushSize = 0.05f;
+    
+        public delegate void AnnotationUpdatedCallback(MeshFilter meshFilter);
+        public static AnnotationUpdatedCallback AnnotationUpdated;
+        public delegate void AnnotationFinishedCallback(MeshFilter meshFilter);
+        public static AnnotationFinishedCallback AnnotationFinished;
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -478,6 +483,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Widths.Add(brushSize);
 
             PointsToMesh();
+
+            if (AnnotationUpdated != null)
+            {
+                AnnotationUpdated(m_CurrentMeshFilter);
+            }
         }
 
         void InterpolatePointsIfNeeded(Vector3 localPoint, Vector3 upVector, float brushSize)
@@ -596,6 +606,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             Undo.IncrementCurrentGroup();
             Undo.RegisterCreatedObjectUndo(go, "Create Annotation");
+
+            if (AnnotationFinished != null)
+            {
+                AnnotationFinished(m_CurrentMeshFilter);
+            }
         }
 
         void CenterMesh()
