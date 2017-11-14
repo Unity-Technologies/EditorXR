@@ -53,8 +53,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         bool m_HMDReady;
         bool m_UseCustomPreviewCamera;
 
-        public static bool assetRefresh { private get; set; }
-
         Rect m_ToggleDeviceViewRect = new Rect(0, 0, 0, 20); // Width will be set based on window size
         Rect m_PresentationCameraRect = new Rect(0, 0, 0, 20); // Y position and width will be set based on window size
 
@@ -188,12 +186,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             Assert.IsNotNull(s_ActiveView, "EditorVR should have an active view");
             s_ActiveView = null;
-
-            //TODO: Functionality Inection for close event
-            if (assetRefresh && EditorUtility.DisplayDialog("Refresh assets?",
-                "Would you like to refresh the AssetDatabase? This will import any assets you downloaded during this session.",
-                "Refresh", "Skip"))
-                AssetDatabase.Refresh();
         }
 
         void UpdateCameraTransform()
