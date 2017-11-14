@@ -863,6 +863,7 @@ MonoBehaviour:
   m_IconContainer: {fileID: 4000012079080268}
   m_ContentContainer: {fileID: 4000012079080268}
   m_CanvasGroup: {fileID: 225000012815828682}
+  m_Text: {fileID: 114107835723089898}
   m_Icon: {fileID: 114000012344975988}
   m_AlternateIconSprite: {fileID: 0}
   m_NormalContentColor: {r: 1, g: 1, b: 1, a: 1}
@@ -983,6 +984,7 @@ MonoBehaviour:
   m_IconContainer: {fileID: 4000011872301252}
   m_ContentContainer: {fileID: 4000011872301252}
   m_CanvasGroup: {fileID: 225000010727404378}
+  m_Text: {fileID: 114809216055667092}
   m_Icon: {fileID: 114000011650556854}
   m_AlternateIconSprite: {fileID: 0}
   m_NormalContentColor: {r: 1, g: 1, b: 1, a: 1}
