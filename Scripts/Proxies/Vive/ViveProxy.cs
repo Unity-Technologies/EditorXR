@@ -44,11 +44,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     placementOverride.tooltip.placements = placementOverride.placements;
                 }
             }
-
-#if !ENABLE_STEAMVR_INPUT
-            hidden = true;
-            enabled = false;
-#endif
         }
 
         static void PostAnimate(Affordance[] affordances, AffordanceDefinition[] affordanceDefinitions, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
@@ -86,18 +81,17 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-#if ENABLE_STEAMVR_INPUT
         protected override IEnumerator Start()
         {
             yield return base.Start();
 
+            // No oculus proxy uses postAnimate
             if (!m_IsOculus)
             {
                 m_LeftHand.GetComponent<ProxyAnimator>().postAnimate += PostAnimate;
                 m_RightHand.GetComponent<ProxyAnimator>().postAnimate += PostAnimate;
             }
         }
-#endif
     }
 }
 #endif
