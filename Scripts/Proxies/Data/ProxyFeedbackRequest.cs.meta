@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 872e9ee9181a701489f37965943a95b6
+timeCreated: 1509666030
+licenseType: Pro
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_AffordanceMapOverride: {instanceID: 0}
+  - m_ProxyBackgroundMaterial: {fileID: 2100000, guid: 782cf64e6b630ac40b6a1e975ab25369,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

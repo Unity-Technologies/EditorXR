@@ -29,6 +29,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public Image background { get { return m_Background; } }
         public event Action becameVisible;
 
+        public Action<IWillRender> removeSelf { get; set; }
+
         public RectTransform rectTransform
         {
             get { return m_Background.rectTransform; }
