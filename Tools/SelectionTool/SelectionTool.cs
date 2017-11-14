@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IUsesDeviceType, IMenuIcon, IRequestFeedback
     {
         const float k_MultiselectHueShift = 0.5f;
-        static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
+        static readonly Vector3 k_TooltipPosition = new Vector3(0, -0.15f, -0.13f);
         static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
 
         // Local method use only -- created here to reduce garbage collection
