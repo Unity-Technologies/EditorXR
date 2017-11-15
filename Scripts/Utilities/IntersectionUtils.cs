@@ -173,7 +173,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="hit">Info about the raycast hit</param>
         /// <param name="maxDistance">Maximum distance at which a hit can occur</param>
         /// <returns>The result of whether the ray intersects with the object</returns>
-        public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
+        public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray, out RaycastHit hit,
+            float maxDistance = Mathf.Infinity)
         {
             ray.origin = obj.InverseTransformPoint(ray.origin);
             ray.direction = obj.InverseTransformVector(ray.direction);

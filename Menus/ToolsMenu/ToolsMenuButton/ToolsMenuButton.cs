@@ -44,23 +44,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Collider[] m_PrimaryButtonColliders;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseButton")]
         GradientButton m_CloseButton;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseButtonContainerCanvasGroup")]
         CanvasGroup m_CloseButtonContainerCanvasGroup;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseInsetMeshRenderer")]
         SkinnedMeshRenderer m_CloseInsetMeshRenderer;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseInsetMaskMeshRenderer")]
         SkinnedMeshRenderer m_CloseInsetMaskMeshRenderer;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseButtonColliders")]
         Collider[] m_CloseButtonColliders; // disable for the main menu button & solitary primary tool button
 
         [SerializeField]

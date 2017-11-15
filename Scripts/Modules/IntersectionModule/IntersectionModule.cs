@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         SpatialHash<Renderer> m_SpatialHash;
         MeshCollider m_CollisionTester;
 
-        class RayIntersection
+        struct RayIntersection
         {
             public GameObject go;
             public float distance;

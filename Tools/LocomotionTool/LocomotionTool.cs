@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,11 +12,9 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
-
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-        IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
+        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
     {
         const float k_FastMoveSpeed = 20f;
         const float k_SlowMoveSpeed = 1f;
@@ -29,6 +27,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_MaxScale = 1000f;
 
         const string k_WorldScaleProperty = "_WorldScale";
+
+        const string k_Crawl = "Crawl";
+        const string k_Rotate = "Rotate";
+        const string k_Blink = "Blink";
+        const string k_Fly = "Fly";
 
         const int k_RotationSegments = 32;
 
@@ -108,15 +111,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<ProxyFeedbackRequest> m_RotateFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
 
-
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
-
         public Transform rayOrigin { get; set; }
-
         public Transform cameraRig { private get; set; }
-
         public List<ILinkedObject> linkedObjects { private get; set; }
+        public Node node { private get; set; }
 
         public GameObject settingsMenuItemPrefab
         {
@@ -170,10 +170,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
         }
-
-        public Type proxyType { get; set; }
-
-        public Node node { private get; set; }
 
         void Start()
         {
@@ -816,27 +812,42 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowCrawlFeedback()
         {
-            ShowFeedback(m_CrawlFeedback, "Crawl");
+            ShowFeedback(m_CrawlFeedback, k_Crawl);
         }
 
         void ShowMainButtonFeedback()
         {
-            ShowFeedback(m_MainButtonFeedback, "Blink", m_Preferences.blinkMode ? "Blink" : "Fly");
+            ShowFeedback(m_MainButtonFeedback, k_Blink, m_Preferences.blinkMode ? k_Blink : k_Fly);
         }
 
         void ShowRotateFeedback()
         {
-            ShowFeedback(m_RotateFeedback, "Rotate");
+            ShowFeedback(m_RotateFeedback, k_Rotate);
         }
 
         void ShowAltRotateFeedback()
         {
-            ShowFeedback(m_RotateFeedback, "Blink", "Rotate");
+            ShowFeedback(m_RotateFeedback, k_Blink, k_Rotate);
         }
 
         void ShowScaleFeedback()
         {
-            ShowFeedback(m_ScaleFeedback, "Crawl", "Scale");
+            List<VRInputDevice.VRControl> ids;
+            if (m_Controls.TryGetValue(k_Crawl, out ids))
+            {
+                foreach (var id in ids)
+                {
+                    var request = new ProxyFeedbackRequest
+                    {
+                        control = id,
+                        node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand,
+                        tooltipText = "Scale"
+                    };
+
+                    this.AddFeedbackRequest(request);
+                    m_ScaleFeedback.Add(request);
+                }
+            }
         }
 
         void ShowResetScaleFeedback()

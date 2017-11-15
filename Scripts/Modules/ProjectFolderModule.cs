@@ -144,27 +144,31 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
         {
-            var type = string.Empty;
+            var typeName = string.Empty;
             if (assetTypes != null)
             {
-                type = AssetDatabase.GetMainAssetTypeAtPath(AssetDatabase.GUIDToAssetPath(hp.guid)).Name;
-                switch (type)
+                var type = AssetDatabase.GetMainAssetTypeAtPath(AssetDatabase.GUIDToAssetPath(hp.guid));
+                if (type != null)
                 {
-                    case "MonoScript":
-                        type = "Script";
-                        break;
-                    case "SceneAsset":
-                        type = "Scene";
-                        break;
-                    case "AudioMixerController":
-                        type = "AudioMixer";
-                        break;
+                    typeName = type.Name;
+                    switch (typeName)
+                    {
+                        case "MonoScript":
+                            typeName = "Script";
+                            break;
+                        case "SceneAsset":
+                            typeName = "Scene";
+                            break;
+                        case "AudioMixerController":
+                            typeName = "AudioMixer";
+                            break;
+                    }
                 }
 
-                assetTypes.Add(type);
+                assetTypes.Add(typeName);
             }
 
-            return new AssetData(hp.name, hp.guid, type);
+            return new AssetData(hp.name, hp.guid, typeName);
         }
     }
 }

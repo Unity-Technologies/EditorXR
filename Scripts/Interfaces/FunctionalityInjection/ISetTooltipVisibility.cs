@@ -1,30 +1,38 @@
 #if UNITY_EDITOR
+using System;
+
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to the ability to show or hide a Tooltip
-    /// </summary>    public interface ISetTooltipVisibility
+    /// </summary>
+    public interface ISetTooltipVisibility
     {
     }
 
     public static class ISetTooltipVisibilityMethods
     {
-        public delegate void ShowTooltipDelegate(ITooltip tooltip, bool persistent = false, float duration = 0f);
-
-        public delegate void HideTooltipDelegate(ITooltip tooltip, bool persistent = false);
+        internal delegate void ShowTooltipDelegate(ITooltip tooltip, bool persistent = false, float duration = 0f,
+            ITooltipPlacement placement = null, Action becameVisible = null);
 
         internal static ShowTooltipDelegate showTooltip { get; set; }
-        internal static HideTooltipDelegate hideTooltip { get; set; }
+        internal static Action<ITooltip, bool> hideTooltip { get; set; }
 
         /// <summary>
-        /// Show the given Tooltip
+        /// Show a Tooltip. Calling ShowTooltip on an ITooltip that was just shown will update its placement and timing
         /// </summary>
         /// <param name="tooltip">The tooltip to show</param>
         /// <param name="persistent">Whether the tooltip should stay visible regardless of raycasts</param>
-        /// <param name="duration">If the tooltip is shown persistently, and duration is > 0, hide after the duration, in seconds</param>
-        public static void ShowTooltip(this ISetTooltipVisibility obj, ITooltip tooltip, bool persistent = false, float duration = 0f)
+        /// <param name="duration">If the tooltip is shown persistently, and duration is less than 0, hide after the
+        /// duration, in seconds. If duration greater than 0, placement is updated but timing is not affected. If
+        /// duration is exactly 0, tooltip stays visible until explicitly hidden</param>
+        /// <param name="placement">(Optional) The ITooltipPlacement object used to place the tooltip. If no placement
+        /// is specified, we assume the ITooltip is a component and use its own Transform</param>
+        /// <param name="becameVisible">(Optional) Called as soon as the tooltip becomes visible</param>
+        public static void ShowTooltip(this ISetTooltipVisibility obj, ITooltip tooltip, bool persistent = false,
+            float duration = 0f, ITooltipPlacement placement = null, Action becameVisible = null)
         {
-            showTooltip(tooltip, persistent, duration);
+            showTooltip(tooltip, persistent, duration, placement, becameVisible);
         }
 
         /// <summary>

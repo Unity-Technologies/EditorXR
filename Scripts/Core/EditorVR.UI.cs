@@ -1,6 +1,5 @@
 #if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -130,7 +129,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             bool GetManipulatorDragState()
             {
-                return m_ManipulatorControllers.Any(controller => controller.manipulatorDragging);
+                foreach (var currentController in m_ManipulatorControllers)
+                {
+                    if (currentController.manipulatorDragging)
+                        return true;
+                }
+
+                return false;
             }
 
             internal void UpdateManipulatorVisibilites()
