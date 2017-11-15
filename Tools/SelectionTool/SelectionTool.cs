@@ -19,13 +19,23 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IUsesDeviceType, IMenuIcon, IUsesPointer, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
         ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IRequestFeedback
     {
+        [Serializable]
+        class Preferences
+        {
+            [SerializeField]
+            bool m_SphereMode;
+
+            public bool sphereMode
+            {
+                get { return m_SphereMode; }
+                set { m_SphereMode = value; }
+            }
+        }
+
         const float k_MultiselectHueShift = 0.5f;
         const float k_BLockSelectDragThreshold = 0.01f;
         static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
         static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
-
-        // Local method use only -- created here to reduce garbage collection
-        static readonly Dictionary<Transform, GameObject> k_TempHovers = new Dictionary<Transform, GameObject>();
 
         [SerializeField]
         Sprite m_Icon;
@@ -41,19 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         GameObject m_SettingsMenuItemPrefab;
-
-        [Serializable]
-        class Preferences
-        {
-            [SerializeField]
-            bool m_SphereMode;
-
-            public bool sphereMode
-            {
-                get { return m_SphereMode; }
-                set { m_SphereMode = value; }
-            }
-        }
 
         Preferences m_Preferences;
 
@@ -101,10 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform tooltipSource { get { return rayOrigin; } }
         public TextAlignment tooltipAlignment { get { return TextAlignment.Center; } }
 
-        public GameObject settingsMenuItemPrefab
-        {
-            get { return m_SettingsMenuItemPrefab; }
-        }
+        public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 
         public GameObject settingsMenuItemInstance
         {
@@ -146,6 +140,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
         }
+
+        // Local method use only -- created here to reduce garbage collection
+        static readonly Dictionary<Transform, GameObject> k_TempHovers = new Dictionary<Transform, GameObject>();
 
         void Start()
         {

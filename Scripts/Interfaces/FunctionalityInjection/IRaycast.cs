@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class access to IntersectionModule.Raycast
-    /// </summary>    public interface IRaycast
+    /// </summary>
+    public interface IRaycast
     {
     }
 

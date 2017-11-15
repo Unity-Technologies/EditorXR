@@ -7,7 +7,8 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Gives decorated class access to IntersectionModule.CheckSphere
     /// </summary>
-    public interface ICheckSphere {
+    public interface ICheckSphere
+    {
     }
 
     public static class ICheckSphereMethods

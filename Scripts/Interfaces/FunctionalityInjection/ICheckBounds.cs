@@ -7,7 +7,8 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Gives decorated class access to IntersectionModule.CheckBounds
     /// </summary>
-    public interface ICheckBounds {
+    public interface ICheckBounds
+    {
     }
 
     public static class ICheckBoundsMethods
