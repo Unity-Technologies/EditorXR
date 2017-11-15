@@ -7,7 +7,9 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Provides access to the Web Module
     /// </summary>
-    public interface IWeb { }
+    public interface IWeb
+    {
+    }
 
     public static class IWebMethods
     {
