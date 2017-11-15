@@ -378,6 +378,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
 
         const string k_ZWritePropertyName = "_ZWrite";
+        const float k_LastFacingAngleWeight = 0.1f;         // How much extra emphasis to give the last facing angle to prevent 'jitter' when looking at a controller on a boundary
 
         static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
 
@@ -427,6 +428,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         SerializedFeedback m_SerializedFeedback;
         readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
         readonly Dictionary<RequestKey, RequestData> m_RequestData = new Dictionary<RequestKey, RequestData>();
+
+        Vector3 m_FacingAngleWeights = Vector3.one;
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<ProxyFeedbackRequest> k_FeedbackRequestsCopy = new List<ProxyFeedbackRequest>();
@@ -597,21 +600,30 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             var toCamera = Vector3.Normalize(cameraPosition - m_NaturalOrientation.position);
 
-            var xDot = Vector3.Dot(toCamera, m_NaturalOrientation.right);
-            var yDot = Vector3.Dot(toCamera, m_NaturalOrientation.up);
-            var zDot = Vector3.Dot(toCamera, m_NaturalOrientation.forward);
+            var xDot = Vector3.Dot(toCamera, m_NaturalOrientation.right)*m_FacingAngleWeights.x;
+            var yDot = Vector3.Dot(toCamera, m_NaturalOrientation.up)*m_FacingAngleWeights.y;
+            var zDot = Vector3.Dot(toCamera, m_NaturalOrientation.forward)*m_FacingAngleWeights.z;
+            m_FacingAngleWeights = Vector3.one;
 
             if (Mathf.Abs(xDot) > Mathf.Abs(yDot))
             {
                 if (Mathf.Abs(zDot) > Mathf.Abs(xDot))
+                {
+                    m_FacingAngleWeights.z += k_LastFacingAngleWeight;
                     return zDot > 0 ? FacingDirection.Front : FacingDirection.Back;
+                }
 
+                m_FacingAngleWeights.x += k_LastFacingAngleWeight;
                 return xDot > 0 ? FacingDirection.Right : FacingDirection.Left;
             }
 
             if (Mathf.Abs(zDot) > Mathf.Abs(yDot))
+            {
+                m_FacingAngleWeights.z += k_LastFacingAngleWeight;
                 return zDot > 0 ? FacingDirection.Front : FacingDirection.Back;
-
+            }
+                
+            m_FacingAngleWeights.y += k_LastFacingAngleWeight;
             return yDot > 0 ? FacingDirection.Top : FacingDirection.Bottom;
         }
 
@@ -700,7 +712,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_RequestData[feedbackKey] = data;
             }
 
-            var suppress = data.presentations > request.maxPresentations - 1;
+            var suppress = false;//data.presentations > request.maxPresentations - 1;
             var suppressPresentation = request.suppressPresentation;
             if (suppressPresentation != null)
                 suppress = suppressPresentation();
