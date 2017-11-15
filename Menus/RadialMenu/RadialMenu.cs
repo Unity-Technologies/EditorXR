@@ -13,6 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback
     {
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
+        const float k_UndoRedoThreshold = 0.5f;
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -33,6 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         List<ActionMenuData> m_MenuActions;
         Transform m_AlternateMenuOrigin;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
+        float m_PrevNavigateX;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
 
@@ -113,6 +115,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var radialMenuInput = (RadialMenuInput)input;
             if (radialMenuInput == null || m_MenuHideFlags != 0)
             {
+                if (radialMenuInput != null)
+                {
+                    var navigateX = radialMenuInput.navigateX.value;
+                    if (navigateX < -k_UndoRedoThreshold && m_PrevNavigateX > -k_UndoRedoThreshold)
+                    {
+                        Undo.PerformUndo();
+                        consumeControl(radialMenuInput.navigateX);
+                    }
+                    else if (navigateX > k_UndoRedoThreshold && m_PrevNavigateX < k_UndoRedoThreshold)
+                    {
+                        Undo.PerformRedo();
+                        consumeControl(radialMenuInput.navigateX);
+                    }
+                    m_PrevNavigateX = navigateX;
+                }
                 this.ClearFeedbackRequests();
                 return;
             }
