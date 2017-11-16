@@ -420,10 +420,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         Selection.activeGameObject = null;
                     }
 
+                    this.SelectObjects(m_BlockSelectHoverGameObjects, rayOrigin, m_MultiSelect);
+
                     foreach (var hover in m_BlockSelectHoverGameObjects)
                     {
-                        this.SelectObject(hover, rayOrigin, true);
-
                         if (hover != null)
                             this.SetHighlight(hover, false, rayOrigin);
                     }

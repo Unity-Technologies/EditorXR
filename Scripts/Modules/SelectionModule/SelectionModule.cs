@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -13,12 +14,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         HapticPulse m_HoverPulse;
 
         GameObject m_CurrentGroupRoot;
-        readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
 
         public Func<GameObject, GameObject> getGroupRoot { private get; set; }
         public Func<GameObject, bool> overrideSelectObject { private get; set; }
 
         public event Action<Transform> selected;
+
+        // Local method use only -- created here to reduce garbage collection
+        static readonly HashSet<Object> m_SelectedObjects = new HashSet<Object>();
+        static readonly List<GameObject> k_SingleObjectList = new List<GameObject>();
 
         public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
         {
@@ -57,37 +61,52 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
         {
-            if (overrideSelectObject(hoveredObject))
+            k_SingleObjectList.Clear();
+            k_SingleObjectList.Add(hoveredObject);
+            SelectObjects(k_SingleObjectList, rayOrigin, multiSelect, useGrouping);
+        }
+
+        public void SelectObjects(List<GameObject> hoveredObjects, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
+        {
+            if (hoveredObjects == null || hoveredObjects.Count == 0)
+            {
+                if (!multiSelect)
+                    Selection.activeObject = null;
+
                 return;
-
-            var selection = GetSelectionCandidate(hoveredObject, useGrouping);
-
-            var groupRoot = getGroupRoot(hoveredObject);
-            if (useGrouping && groupRoot != m_CurrentGroupRoot)
-                m_CurrentGroupRoot = groupRoot;
+            }
 
             m_SelectedObjects.Clear();
 
-            if (hoveredObject)
+            if (multiSelect)
+                m_SelectedObjects.UnionWith(Selection.objects);
+
+            Selection.activeGameObject = hoveredObjects[0];
+
+            if (Selection.activeGameObject)
                 this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_HoverPulse);
 
-            // Multi-Select
-            if (multiSelect)
+            foreach (var hoveredObject in hoveredObjects)
             {
-                m_SelectedObjects.AddRange(Selection.objects);
+                if (overrideSelectObject(hoveredObject))
+                    continue;
 
-                // Re-selecting an object removes it from selection
-                if (!m_SelectedObjects.Remove(selection))
+                var selection = GetSelectionCandidate(hoveredObject, useGrouping);
+
+                var groupRoot = getGroupRoot(hoveredObject);
+                if (useGrouping && groupRoot != m_CurrentGroupRoot)
+                    m_CurrentGroupRoot = groupRoot;
+
+                if (multiSelect)
+                {
+                    // Re-selecting an object removes it from selection, otherwise add it
+                    if (!m_SelectedObjects.Remove(selection))
+                        m_SelectedObjects.Add(selection);
+                }
+                else
                 {
                     m_SelectedObjects.Add(selection);
-                    Selection.activeObject = selection;
                 }
-            }
-            else
-            {
-                m_SelectedObjects.Clear();
-                Selection.activeObject = selection;
-                m_SelectedObjects.Add(selection);
             }
 
             Selection.objects = m_SelectedObjects.ToArray();
