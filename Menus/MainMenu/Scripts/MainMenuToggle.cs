@@ -14,32 +14,20 @@ using TMPro;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class MainMenuButton : MainMenuSelectable, ITooltip
+    sealed class MainMenuToggle : MainMenuSelectable
     {
         [SerializeField]
-        Button m_Button;
+        Toggle m_Toggle;
 
-        public Button button { get { return m_Button; } }
-
-        public string tooltipText { get { return tooltip != null ? tooltip.tooltipText : null; } }
-
-        public ITooltip tooltip { private get; set; }
+        public Toggle toggle { get { return m_Toggle; } }
 
         public event Action<Transform, Type, string> hovered;
         public event Action<Transform> clicked;
 
         new void Awake()
         {
-            m_Selectable = m_Button;
-            m_OriginalColor = m_Button.targetGraphic.color;
-        }
-
-        public void SetData(string name, string description)
-        {
-#if INCLUDE_TEXT_MESH_PRO
-            m_Title.text = name;
-            m_Description.text = description;
-#endif
+            m_Selectable = m_Toggle;
+            m_OriginalColor = m_Toggle.targetGraphic.color;
         }
 
         public void OnRayEnter(RayEventData eventData)
