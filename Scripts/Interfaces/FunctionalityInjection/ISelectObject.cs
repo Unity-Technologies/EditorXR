@@ -1,4 +1,6 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -12,12 +14,9 @@ namespace UnityEditor.Experimental.EditorVR
 
     public static class ISelectObjectMethods
     {
-        internal delegate GameObject GetSelectionCandidateDelegate(GameObject hoveredObject, bool useGrouping = false);
-
-        internal delegate void SelectObjectDelegate(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false);
-
-        internal static GetSelectionCandidateDelegate getSelectionCandidate { get; set; }
-        internal static SelectObjectDelegate selectObject { get; set; }
+        internal static Func<GameObject, bool, GameObject> getSelectionCandidate { get; set; }
+        internal static Action<GameObject, Transform, bool, bool> selectObject { get; set; }
+        internal static Action<List<GameObject>, Transform, bool, bool> selectObjects { get; set; }
 
         /// <summary>
         /// Given a hovered object, find what object would actually be selected
@@ -41,6 +40,18 @@ namespace UnityEditor.Experimental.EditorVR
         {
             selectObject(hoveredObject, rayOrigin, multiSelect, useGrouping);
         }
+
+        /// <summary>
+        /// Select the given objects using the given rayOrigin
+        /// </summary>
+        /// <param name="hoveredObjects">The hovered objects</param>
+        /// <param name="rayOrigin">The rayOrigin used for selection</param>
+        /// <param name="multiSelect">Whether to add the hovered object to the selection, or override the current selection</param>
+        /// <param name="useGrouping">Use group selection</param>
+        public static void SelectObjects(this ISelectObject obj, List<GameObject> hoveredObjects, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
+        {
+            selectObjects(hoveredObjects, rayOrigin, multiSelect, useGrouping);
     }
+}
 }
 #endif
