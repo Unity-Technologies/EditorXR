@@ -5,6 +5,7 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -66,6 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         int m_TargetFaceIndex;
 
         readonly Dictionary<string, MainMenuFace> m_Faces = new Dictionary<string, MainMenuFace>();
+        readonly  List<Material> m_MaterialsToCleanup = new List<Material>();
 
         VisibilityState m_VisibilityState = VisibilityState.Hidden;
         RotationState m_RotationState;
@@ -201,7 +203,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnDestroy()
         {
             foreach (var kvp in m_Faces)
+            {
                 ObjectUtils.Destroy(kvp.Value.gameObject);
+            }
+
+            foreach (var material in m_MaterialsToCleanup)
+            {
+                ObjectUtils.Destroy(material);
+            }
         }
 
         public MainMenuButton CreateFaceButton(ButtonData buttonData)
@@ -243,7 +252,37 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             face.AddButton(button.transform);
 
+            var buttonGraphics = button.GetComponentsInChildren<Graphic>();
+            if (buttonGraphics != null && buttonGraphics.Length > 0)
+                SetupCustomButtonMaterials(buttonGraphics, face);
+
             return button;
+        }
+
+        void SetupCustomButtonMaterials(Graphic[] graphics, MainMenuFace face)
+        {
+            const string topGradientProperty = "_ColorTop";
+            const string bottomGradientProperty = "_ColorBottom";
+            Material materialClone = null;
+            foreach (var graphic in graphics)
+            {
+                // Assign face gradient to custom buttons on a given face (Settings face: locomotion, snapping, etc)
+                var material = graphic.material;
+                if (material.HasProperty(topGradientProperty))
+                {
+                    if (materialClone == null)
+                    {
+                        // Only clone the material if a material with a matching property is found in this custom-button/sub-menu
+                        materialClone = MaterialUtils.GetMaterialClone(graphic);
+                        m_MaterialsToCleanup.Add(materialClone);
+                        materialClone.SetColor(topGradientProperty, face.gradientPair.a);
+                        if (materialClone.HasProperty(bottomGradientProperty))
+                            materialClone.SetColor(bottomGradientProperty, face.gradientPair.b);
+                    }
+
+                    graphic.material = materialClone;
+                }
+            }
         }
 
         MainMenuFace CreateFace(string sectionName)
@@ -286,6 +325,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 submenuFace.SetupBackButton(face.RemoveSubmenu);
                 submenuFace.gradientPair = face.gradientPair;
+
+                var submenuGraphics = submenu.GetComponentsInChildren<Graphic>();
+                if (submenuGraphics != null && submenuGraphics.Length > 0)
+                    SetupCustomButtonMaterials(submenuGraphics, face);
             }
 
             return submenu;

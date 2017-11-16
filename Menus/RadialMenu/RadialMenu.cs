@@ -128,8 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
             else
             {
-                m_RadialMenuUI.buttonInputDirection = Vector3.zero;
-                return;
+                m_RadialMenuUI.buttonInputDirection = Vector2.zero;
             }
 
             var selectControl = radialMenuInput.selectItem;
