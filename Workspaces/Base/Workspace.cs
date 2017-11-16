@@ -51,6 +51,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected Vector3? m_CustomStartingBounds;
 
+        protected Transform m_LeftRayOrigin;
+        protected Transform m_RightRayOrigin;
+
         public Vector3 minBounds
         {
             get { return m_MinBounds; }
@@ -132,8 +135,28 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
 
-        public Transform leftRayOrigin { protected get; set; }
-        public Transform rightRayOrigin { protected get; set; }
+        public Transform leftRayOrigin
+        {
+            protected get { return m_LeftRayOrigin; }
+            set
+            {
+                m_LeftRayOrigin = value;
+                leftNode = this.RequestNodeFromRayOrigin(m_LeftRayOrigin);
+            }
+        }
+
+        public Transform rightRayOrigin
+        {
+            protected get { return m_RightRayOrigin; }
+            set
+            {
+                m_RightRayOrigin = value;
+                rightNode = this.RequestNodeFromRayOrigin(m_RightRayOrigin);
+            }
+        }
+
+        protected Node leftNode { get; set; }
+        protected Node rightNode { get; set; }
 
         public virtual void Setup()
         {
