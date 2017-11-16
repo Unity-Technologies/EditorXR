@@ -102,7 +102,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnThumbnailImportCompleted(PolyAsset asset, Texture2D thumbnail)
         {
-            UpdateVisuals();
+            if (m_Icon) // Prevent MissingReferenceException if shutdown occurs while fetching thumbnails
+                UpdateVisuals();
         }
 
         void UpdateVisuals()
