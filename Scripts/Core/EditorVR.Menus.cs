@@ -183,10 +183,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 {
                     var alternateMenu = deviceData.alternateMenu;
                     var mainMenu = deviceData.mainMenu;
+                    var undoMenu = deviceData.undoMenu;
                     var customMenu = deviceData.customMenu;
                     var menuHideData = deviceData.menuHideData;
                     MenuHideData customMenuHideData = null;
                     MenuHideData alternateMenuData = null;
+                    MenuHideData undoMenuHideData = null;
 
                     var mainMenuVisible = mainMenu != null && menuHideData[mainMenu].hideFlags == 0;
                     var alternateMenuVisible = false;
@@ -201,6 +203,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     {
                         customMenuHideData = menuHideData[customMenu];
                         customMenuVisible = customMenuHideData.hideFlags == 0;
+                    }
+
+                    var undoMenuVisible = false;
+                    if (undoMenu != null)
+                    {
+                        undoMenuHideData = menuHideData[undoMenu];
+                        undoMenuVisible = undoMenuHideData.hideFlags == 0;
                     }
 
                     // Kick the alternate menu to the other hand if a main menu or custom menu is visible
@@ -223,6 +232,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Temporarily hide alternateMenu if other menus are visible
                     if (alternateMenuVisible && (customMenuVisible || mainMenuVisible))
                         alternateMenuData.hideFlags |= MenuHideFlags.OtherMenu;
+
+                    // Temporarily hide undoMenu if other menus are visible
+                    if (undoMenuVisible && (customMenuVisible || mainMenuVisible || alternateMenuVisible))
+                        undoMenuHideData.hideFlags |= MenuHideFlags.OtherMenu;
+                    else if (!undoMenuVisible && undoMenuHideData != null)
+                        undoMenuHideData.hideFlags = 0;
 
                     // Check if menu bounds overlap with any workspace colliders
                     foreach (var kvp in menuHideData)
@@ -280,6 +295,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var customMenu = deviceData.customMenu;
                     if (customMenu != null)
                         customMenu.menuHideFlags = deviceData.menuHideData[customMenu].hideFlags;
+
+                    var undoMenu = deviceData.undoMenu;
+                    if (undoMenu != null)
+                        undoMenu.menuHideFlags = deviceData.menuHideData[undoMenu].hideFlags;
 
                     UpdateAlternateMenuForDevice(deviceData);
                     Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);

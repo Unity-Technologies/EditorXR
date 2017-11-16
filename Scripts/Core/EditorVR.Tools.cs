@@ -136,6 +136,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     menuHideData[alternateMenu] = new Menus.MenuHideData();
                     alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
 
+                    var undoMenu = menus.SpawnAlternateMenu(typeof(UndoMenu), rayOrigin);
+                    deviceData.undoMenu = undoMenu;
+                    menuHideData[undoMenu] = new Menus.MenuHideData();
+
                     // Setup ToolsMenu
                     var toolsMenu = menus.SpawnToolsMenu(typeof(Experimental.EditorVR.Menus.ToolsMenu), rayOrigin);
                     deviceData.toolsMenu = toolsMenu;

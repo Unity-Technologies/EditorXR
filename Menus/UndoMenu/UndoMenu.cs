@@ -9,43 +9,37 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
+    sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
         IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback
     {
-        const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
+        const float k_UndoRedoThreshold = 0.5f;
 
         [SerializeField]
         ActionMap m_ActionMap;
 
         [SerializeField]
-        RadialMenuUI m_RadialMenuPrefab;
+        UndoMenuUI m_UndoMenuPrefab;
 
         [SerializeField]
-        HapticPulse m_ReleasePulse;
+        HapticPulse m_UndoPulse;
 
-        [SerializeField]
-        HapticPulse m_ButtonHoverPulse;
-
-        [SerializeField]
-        HapticPulse m_ButtonClickedPulse;
-
-        RadialMenuUI m_RadialMenuUI;
+        UndoMenuUI m_UndoMenuUI;
         List<ActionMenuData> m_MenuActions;
         Transform m_AlternateMenuOrigin;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
         float m_PrevNavigateX;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
-
-        public event Action<Transform> itemWasSelected;
-
+        
         public Transform rayOrigin { private get; set; }
 
         public Transform menuOrigin { get; set; }
 
-        public GameObject menuContent { get { return m_RadialMenuUI.gameObject; } }
+        public GameObject menuContent { get { return m_UndoMenuUI.gameObject; } }
 
         public Node node { get; set; }
+
+        public event Action<Transform> itemWasSelected;
 
         public Bounds localBounds { get { return default(Bounds); } }
 
@@ -59,8 +53,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 m_MenuActions = value;
 
-                if (m_RadialMenuUI)
-                    m_RadialMenuUI.actions = value;
+                if (m_UndoMenuUI)
+                    m_UndoMenuUI.actions = value;
             }
         }
 
@@ -71,8 +65,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 m_AlternateMenuOrigin = value;
 
-                if (m_RadialMenuUI != null)
-                    m_RadialMenuUI.alternateMenuOrigin = value;
+                if (m_UndoMenuUI != null)
+                    m_UndoMenuUI.alternateMenuOrigin = value;
             }
         }
 
@@ -85,8 +79,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 {
                     m_MenuHideFlags = value;
                     var visible = value == 0;
-                    if (m_RadialMenuUI)
-                        m_RadialMenuUI.visible = visible;
+                    if (m_UndoMenuUI)
+                        m_UndoMenuUI.visible = visible;
 
                     if (visible)
                         ShowFeedback();
@@ -98,66 +92,41 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void Start()
         {
-            m_RadialMenuUI = this.InstantiateUI(m_RadialMenuPrefab.gameObject).GetComponent<RadialMenuUI>();
-            m_RadialMenuUI.alternateMenuOrigin = alternateMenuOrigin;
-            m_RadialMenuUI.actions = menuActions;
-            this.ConnectInterfaces(m_RadialMenuUI); // Connect interfaces before performing setup on the UI
-            m_RadialMenuUI.Setup();
-            m_RadialMenuUI.buttonHovered += OnButtonHovered;
-            m_RadialMenuUI.buttonClicked += OnButtonClicked;
-
+            m_UndoMenuUI = this.InstantiateUI(m_UndoMenuPrefab.gameObject).GetComponent<UndoMenuUI>();
+            m_UndoMenuUI.alternateMenuOrigin = alternateMenuOrigin;
+            m_UndoMenuUI.actions = menuActions;
+            this.ConnectInterfaces(m_UndoMenuUI); // Connect interfaces before performing setup on the UI
+            m_UndoMenuUI.Setup();
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
-            var radialMenuInput = (RadialMenuInput)input;
-            if (radialMenuInput == null || m_MenuHideFlags != 0)
+            var undoMenuInput = (UndoMenuInput)input;
+            if (undoMenuInput == null)
             {
                 this.ClearFeedbackRequests();
                 return;
             }
 
-            var inputDirection = radialMenuInput.navigate.vector2;
-
-            if (inputDirection.magnitude > k_ActivationThreshold)
+            var navigateX = undoMenuInput.navigateX.value;
+            var undoRedoEngaged = false;
+            if (navigateX < -k_UndoRedoThreshold && m_PrevNavigateX > -k_UndoRedoThreshold)
             {
-                // Composite controls need to be consumed separately
-                consumeControl(radialMenuInput.navigateX);
-                consumeControl(radialMenuInput.navigateY);
-                m_RadialMenuUI.buttonInputDirection = inputDirection;
+                Undo.PerformUndo();
+                undoRedoEngaged = true;
             }
-            else
+            else if (navigateX > k_UndoRedoThreshold && m_PrevNavigateX < k_UndoRedoThreshold)
             {
-                m_RadialMenuUI.buttonInputDirection = Vector2.zero;
+                Undo.PerformRedo();
+                undoRedoEngaged = true;
             }
-
-            var selectControl = radialMenuInput.selectItem;
-            m_RadialMenuUI.pressedDown = selectControl.wasJustPressed;
-            if (m_RadialMenuUI.pressedDown)
-                consumeControl(selectControl);
-
-            if (selectControl.wasJustReleased)
+            m_PrevNavigateX = navigateX;
+            if (undoRedoEngaged)
             {
-                this.Pulse(node, m_ReleasePulse);
-
-                m_RadialMenuUI.SelectionOccurred();
-
-                if (itemWasSelected != null)
-                    itemWasSelected(rayOrigin);
-
-                consumeControl(selectControl);
+                consumeControl(undoMenuInput.navigateX);
+                this.Pulse(node, m_UndoPulse);
             }
-        }
-
-        void OnButtonClicked()
-        {
-            this.Pulse(node, m_ButtonClickedPulse);
-        }
-
-        void OnButtonHovered()
-        {
-            this.Pulse(node, m_ButtonHoverPulse);
         }
 
         void ShowFeedback()

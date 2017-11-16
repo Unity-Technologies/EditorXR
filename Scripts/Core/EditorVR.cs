@@ -72,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
             public IMainMenu mainMenu;
             public IAlternateMenu alternateMenu;
+            public IAlternateMenu undoMenu;
             public ITool currentTool;
             public IMenu customMenu;
             public IToolsMenu toolsMenu;

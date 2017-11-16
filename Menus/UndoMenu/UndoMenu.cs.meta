@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: c99359ddbc777c54b8bbcb77f816dec5
+timeCreated: 1510794469
+licenseType: Pro
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_ActionMap: {fileID: 11400000, guid: cda0a686e569b574b97504a76b497815, type: 2}
+  - m_UndoMenuPrefab: {fileID: 114635161630974218, guid: ef4e3be7ea1e33b48b3359b2073bb0f3,
+      type: 2}
+  - m_UndoPulse: {fileID: 11400000, guid: bd782c338d41a7946959279464013d86, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
