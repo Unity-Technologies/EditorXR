@@ -1,9 +1,14 @@
 #if UNITY_EDITOR
-
-using ListView;
-using PolyToolkit;
 using System;
+using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
+using ListView;
+
+#if INCLUDE_POLY_TOOLKIT
+using PolyToolkit;
+#endif
+
+[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -11,7 +16,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     {
         const int k_MaxPreviewComplexity = 2500;
 
+#if INCLUDE_POLY_TOOLKIT
         static PolyImportOptions s_Options;
+#else
+#pragma warning disable 649
+#endif
 
         readonly PolyAsset m_Asset;
         readonly Transform m_Container; // Parent object under which to store imported prefabs--should be cleared on reset
@@ -33,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public event Action<BlocksAsset, GameObject> modelImportCompleted;
         public event Action<BlocksAsset, Texture2D> thumbnailImportCompleted;
 
+#if INCLUDE_POLY_TOOLKIT
         static BlocksAsset()
         {
             s_Options = PolyImportOptions.Default();
@@ -40,9 +50,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             s_Options.desiredSize = 1.0f;
             s_Options.recenter = true;
         }
+#endif
 
         public BlocksAsset(PolyAsset asset, Transform container)
         {
+#if INCLUDE_POLY_TOOLKIT
             m_Asset = asset;
             m_Container = container;
             m_Complexity = 0L;
@@ -50,28 +62,34 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 m_Complexity = Math.Max(m_Complexity, format.formatComplexity.triangleCount);
             }
+#endif
 
             template = "BlocksGridItem";
         }
 
         public void Initialize()
         {
+#if INCLUDE_POLY_TOOLKIT
             m_Initialized = true;
 
             GetThumbnail(asset);
 
             if (m_Complexity < k_MaxPreviewComplexity)
                 ImportModel();
+#endif
         }
 
         public void ImportModel()
         {
+#if INCLUDE_POLY_TOOLKIT
             if (m_Prefab == null && !m_Importing)
                 PolyApi.Import(asset, s_Options, ImportAssetCallback);
 
             m_Importing = true;
+#endif
         }
 
+#if INCLUDE_POLY_TOOLKIT
         // Callback invoked when an asset has just been imported.
         void ImportAssetCallback(PolyAsset asset, PolyStatusOr<PolyImportResult> result)
         {
@@ -103,6 +121,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     thumbnailImportCompleted(this, m_Thumbnail);
             });
         }
+#endif
     }
+
+#if !INCLUDE_POLY_TOOLKIT
+    // Stub classes to avoid too many #ifs
+    public class PolyAsset
+    {
+        public string name;
+        public string displayName;
+        public PolyThumbnail thumbnail;
+    }
+
+    public class PolyThumbnail
+    {
+        public string url;
+    }
+#else
+    #pragma warning restore 618
+#endif
 }
 #endif

@@ -1,11 +1,18 @@
 #if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR;
+using UnityEngine;
+
+#if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
-using UnityEngine;
+#endif
 
+[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+
+#if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public class BlocksModule : MonoBehaviour, IWeb
@@ -77,4 +84,5 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
+#endif
 #endif

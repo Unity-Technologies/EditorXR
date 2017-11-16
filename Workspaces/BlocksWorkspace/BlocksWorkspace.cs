@@ -8,8 +8,16 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
+#if !INCLUDE_POLY_TOOLKIT
+using UnityEditor.Experimental.EditorVR.Core;
+using UnityEngine.InputNew;
+#endif
+
+[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+
 namespace BlocksImporter
 {
+#if INCLUDE_POLY_TOOLKIT
     [MainMenuItem("Blocks", "Workspaces", "Import models from Google Blocks")]
     sealed class BlocksWorkspace : Workspace, ISerializeWorkspace
     {
@@ -172,5 +180,37 @@ namespace BlocksImporter
             m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(m_BlocksUI.gridView.scaleFactor);
         }
     }
+#else
+    // Non-Workspace stub to protect serialization
+    sealed class BlocksWorkspace : MonoBehaviour
+    {
+        [SerializeField]
+        Vector3 m_MinBounds;
+
+        [SerializeField]
+        GameObject m_BasePrefab;
+
+        [SerializeField]
+        ActionMap m_ActionMap;
+
+        [SerializeField]
+        HapticPulse m_ButtonClickPulse;
+
+        [SerializeField]
+        HapticPulse m_ButtonHoverPulse;
+
+        [SerializeField]
+        HapticPulse m_ResizePulse;
+
+        [SerializeField]
+        HapticPulse m_MovePulse;
+
+        [SerializeField]
+        GameObject m_ContentPrefab;
+
+        [SerializeField]
+        GameObject m_SliderPrefab;
+    }
+#endif
 }
 #endif
