@@ -13,6 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
         readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
         readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
+        readonly List<Renderer> m_StandardIgnoreList = new List<Renderer>();
 
         SpatialHash<Renderer> m_SpatialHash;
         MeshCollider m_CollisionTester;
@@ -30,6 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
 
         public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
+        public List<Renderer> standardIgnoreList { get { return m_StandardIgnoreList; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly List<Renderer> m_Intersections = new List<Renderer>();
@@ -44,8 +46,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void Awake()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
-
-            IRaycastMethods.raycast = Raycast;
         }
 
         internal void Setup(SpatialHash<Renderer> hash)
@@ -245,6 +245,61 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                             hit.normal = transform.TransformDirection(tmp.normal);
                             obj = renderer.gameObject;
                         }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        internal bool CheckBounds(Bounds bounds, List<GameObject> objects, List<Renderer> ignoreList = null)
+        {
+            var result = false;
+            m_Intersections.Clear();
+            if (m_SpatialHash.GetIntersections(m_Intersections, bounds))
+            {
+                for (var i = 0; i < m_Intersections.Count; i++)
+                {
+                    var renderer = m_Intersections[i];
+                    if (ignoreList != null && ignoreList.Contains(renderer))
+                        continue;
+
+                    var transform = renderer.transform;
+
+                    IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
+
+                    if (IntersectionUtils.TestBox(m_CollisionTester, transform, bounds.center, bounds.extents, Quaternion.identity))
+                    {
+                        objects.Add(renderer.gameObject);
+                        result = true;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        internal bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<Renderer> ignoreList = null)
+        {
+            var result = false;
+            m_Intersections.Clear();
+            var bounds = new Bounds(center, Vector3.one * radius * 2);
+            if (m_SpatialHash.GetIntersections(m_Intersections, bounds))
+            {
+                for (var i = 0; i < m_Intersections.Count; i++)
+                {
+                    var renderer = m_Intersections[i];
+                    if (ignoreList != null && ignoreList.Contains(renderer))
+                        continue;
+
+                    var transform = renderer.transform;
+
+                    IntersectionUtils.SetupCollisionTester(m_CollisionTester, transform);
+
+                    if (IntersectionUtils.TestSphere(m_CollisionTester, transform, center, radius))
+                    {
+                        objects.Add(renderer.gameObject);
+                        result = true;
                     }
                 }
             }

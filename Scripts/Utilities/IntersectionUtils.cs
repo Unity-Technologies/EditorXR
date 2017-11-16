@@ -183,6 +183,94 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return collisionTester.Raycast(ray, out hit, maxDistance);
         }
 
+        /// <summary>
+        /// Tests a box against a collider
+        /// </summary>
+        /// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+        /// <param name="obj">The object to test collision on</param>
+        /// <param name="center">The center of the box</param>
+        /// <param name="halfExtents">Half the size of the box in each dimension</param>
+        /// <param name="orientation">The rotation of the box</param>
+        /// <returns>The result of whether the box intersects with the object</returns>
+        public static bool TestBox(MeshCollider collisionTester, Transform obj, Vector3 center, Vector3 halfExtents, Quaternion orientation)
+        {
+            center = obj.InverseTransformPoint(center);
+            halfExtents = Vector3.Scale(halfExtents, obj.lossyScale.Inverse());
+            orientation = Quaternion.Inverse(obj.rotation) * orientation;
+
+            foreach (var intersection in Physics.OverlapBox(center, halfExtents, orientation))
+            {
+                if (intersection.gameObject == collisionTester.gameObject)
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tests a sphere against a collider
+        /// </summary>
+        /// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+        /// <param name="obj">The object to test collision on</param>
+        /// <param name="center">The center of the sphere</param>
+        /// <param name="radius">The radius of the sphere</param>
+        /// <returns>The result of whether the sphere intersects with the object</returns>
+        public static bool TestSphere(MeshCollider collisionTester, Transform obj, Vector3 center, float radius)
+        {
+            if (obj.lossyScale == Vector3.zero)
+                return false;
+
+            //Because our sphere check cannot be non-uniformly scaled, transform the test object instead
+            var testerTransform = collisionTester.transform;
+            testerTransform.position = obj.position;
+            testerTransform.rotation = obj.rotation;
+
+            //Negative scales cause mesh read errors
+            var objScale = obj.lossyScale;
+            UndoInverseScale(ref objScale.x, ref center, obj);
+            UndoInverseScale(ref objScale.y, ref center, obj);
+            UndoInverseScale(ref objScale.z, ref center, obj);
+
+            //Zero scales cause mesh read errors
+            PadZeroScale(ref objScale.x);
+            PadZeroScale(ref objScale.y);
+            PadZeroScale(ref objScale.z);
+
+            testerTransform.localScale = objScale;
+
+            var overlaps = Physics.OverlapSphere(center, radius);
+
+            testerTransform.position = Vector3.zero;
+            testerTransform.localScale = Vector3.one;
+            testerTransform.rotation = Quaternion.identity;
+
+            foreach (var intersection in overlaps)
+            {
+                if (intersection.gameObject == collisionTester.gameObject)
+                    return true;
+            }
+
+            return false;
+        }
+
+        static void UndoInverseScale(ref float scale, ref Vector3 center, Transform obj)
+        {
+            if (scale < 0)
+            {
+                scale *= -1;
+                var offset = center - obj.position;
+                offset = Quaternion.AngleAxis(180, obj.up) * offset;
+                center = obj.position + offset;
+            }
+        }
+
+        static void PadZeroScale(ref float scale)
+        {
+            const float epsilon = 1e-5f;
+            if (Mathf.Approximately(scale, 0))
+                scale = epsilon;
+        }
+
         public static void SetupCollisionTester(MeshCollider collisionTester, Transform obj)
         {
             var mf = obj.GetComponent<MeshFilter>();
