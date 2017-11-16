@@ -8,5 +8,6 @@ namespace UnityEngine.InputNew
 		public UndoMenuInput (ActionMap actionMap) : base (actionMap) { }
 		
 		public AxisInputControl @navigateX { get { return (AxisInputControl)this[0]; } }
+		public ButtonInputControl @engage { get { return (ButtonInputControl)this[1]; } }
 	}
 }

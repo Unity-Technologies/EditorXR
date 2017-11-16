@@ -1,7 +1,9 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -13,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback
     {
         const float k_UndoRedoThreshold = 0.5f;
+        const float k_EngageUndoAfterStickReleasedDuration = 0.1f; // Duration after releasing the joystick to still accept a left/right flick to undo/redo.
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -28,6 +31,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Transform m_AlternateMenuOrigin;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
         float m_PrevNavigateX;
+        bool m_StillEngagedAfterStickRelease;
+        Coroutine m_StillEngagedAfterStickReleasedCoroutine;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
         
@@ -108,6 +113,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 this.ClearFeedbackRequests();
                 return;
             }
+            if (undoMenuInput.engage.wasJustReleased)
+                this.RestartCoroutine(ref m_StillEngagedAfterStickReleasedCoroutine, AcceptInputAfterStickReleased());
+            if (!(undoMenuInput.engage.isHeld || m_StillEngagedAfterStickRelease))
+                return;
+            consumeControl(undoMenuInput.engage);
 
             var navigateX = undoMenuInput.navigateX.value;
             var undoRedoEngaged = false;
@@ -127,6 +137,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 consumeControl(undoMenuInput.navigateX);
                 this.Pulse(node, m_UndoPulse);
             }
+        }
+
+        IEnumerator AcceptInputAfterStickReleased()
+        {
+            m_StillEngagedAfterStickRelease = true;
+            var currentDuration = 0f;
+            while (currentDuration < k_EngageUndoAfterStickReleasedDuration)
+            {
+                currentDuration += Time.deltaTime;
+                yield return null;
+            }
+            m_StillEngagedAfterStickRelease = false;
         }
 
         void ShowFeedback()
