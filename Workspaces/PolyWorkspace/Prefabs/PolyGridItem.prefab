@@ -176,6 +176,7 @@ MonoBehaviour:
   m_Handle: {fileID: 114952149326489544}
   m_TextPanel: {fileID: 114417040511043732}
   m_Icon: {fileID: 1797739298096832}
+  m_ImportingTargetColor: {r: 0.011764706, g: 0.6627451, b: 0.95686275, a: 1}
   m_PreviewObjectTransform: {fileID: 0}
 --- !u!114 &114417040511043732
 MonoBehaviour:

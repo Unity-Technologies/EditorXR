@@ -24,8 +24,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_IconPreviewScale = 0.1f;
         const float k_MaxPreviewScale = 0.2f;
         const float k_TransitionDuration = 0.1f;
-        const float k_ScaleBump = 1.1f;
-        const float k_ThumbnailScaleBump = 0.9f;
+        const float k_ScaleBump = 0.1f;
+        const float k_ThumbnailScaleBump = -0.1f;
+        const float k_ThumbnailOffsetBump = k_ThumbnailScaleBump * -0.5f;
+        const float k_ImportingScaleBump = 0.375f;
 
         const float k_InitializeDelay = 0.5f; // Delay initialization for fast scrolling
 
@@ -43,6 +45,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         GameObject m_Icon;
 
+        [SerializeField]
+        Color m_ImportingTargetColor;
+
         [HideInInspector]
         [SerializeField] // Serialized so that this remains set after cloning
         Transform m_PreviewObjectTransform;
@@ -56,13 +61,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Transform m_PreviewObjectClone;
         Material m_IconMaterial;
         Vector3 m_IconScale;
+
         bool m_Hovered;
         bool m_WasHovered;
-        float m_ThumbnailStartScale = 1f;
-        float m_ThumbnailScale = 1f;
         float m_HoverTime;
+        float m_HoverLerpStart;
+        float m_HoverLerp;
 
-        Coroutine m_PreviewCoroutine;
+        bool m_Importing;
+        bool m_WasImporting;
+        float m_ImportingTime;
+        float m_ImportingStartScale;
+        float m_ImportingScale;
+
+        Color m_ImportingDefaultColor;
+        Color m_ImportingStartColor;
+        Color m_ImportingColor;
+
         Coroutine m_VisibilityCoroutine;
 
         float m_SetupTime = float.MaxValue;
@@ -78,6 +93,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 m_IconScale = m_Icon.transform.localScale;
 
+                m_ImportingDefaultColor = m_TextPanel.color;
+
                 m_Handle.dragStarted += OnDragStarted;
                 m_Handle.dragging += OnDragging;
                 m_Handle.dragEnded += OnDragEnded;
@@ -90,6 +107,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_Setup = true;
             }
 
+            m_Hovered = false;
+            m_WasHovered = false;
+            m_HoverLerpStart = 1f;
+            m_HoverLerp = 1f;
+
+            m_Importing = false;
+            m_WasImporting = false;
+            m_ImportingStartScale = m_IconScale.y;
+            m_ImportingScale = m_ImportingStartScale;
+
+            m_ImportingStartColor = m_ImportingDefaultColor;
+            m_ImportingColor = m_ImportingStartColor;
+
             m_VisibilityCoroutine = null;
             m_Icon.transform.localScale = m_IconScale;
             m_IconMaterial.mainTexture = null;
@@ -98,21 +128,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
 
             m_SetupTime = Time.time;
-            UpdateVisuals();
+            UpdateRepresentation();
         }
 
         void OnModelImportCompleted(PolyAsset asset, GameObject prefab)
         {
-            UpdateVisuals();
+            m_Importing = false;
+            UpdateRepresentation();
         }
 
         void OnThumbnailImportCompleted(PolyAsset asset, Texture2D thumbnail)
         {
             if (m_Icon) // Prevent MissingReferenceException if shutdown occurs while fetching thumbnails
-                UpdateVisuals();
+                UpdateRepresentation();
         }
 
-        void UpdateVisuals()
+        void UpdateRepresentation()
         {
             m_Text.text = data.asset.displayName;
 
@@ -122,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 InstantiatePreview();
             }
 
-            m_Icon.SetActive(!data.prefab);
+            m_Icon.SetActive(!m_PreviewObjectTransform || m_AutoHidePreview);
 
             if (m_IconMaterial.mainTexture == null && data.thumbnail)
                 m_IconMaterial.mainTexture = data.thumbnail;
@@ -142,45 +173,126 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 data.thumbnailImportCompleted += OnThumbnailImportCompleted;
             }
 
-            var time = Time.time;
-            if (m_Hovered != m_WasHovered)
-            {
-                m_HoverTime = time;
-                m_ThumbnailStartScale = m_ThumbnailScale;
-            }
-
-            const float defaultScale = 1f;
-            var timeDiff = time - m_HoverTime;
-            var target = m_Hovered ? k_ThumbnailScaleBump : defaultScale;
-            if (!Mathf.Approximately(m_ThumbnailScale, target))
-            {
-                var duration = m_ThumbnailScale / target * k_PreviewDuration;
-                var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
-                if (smoothedAmount > 1)
-                {
-                    m_ThumbnailScale = target;
-                    m_ThumbnailStartScale = m_ThumbnailScale;
-                }
-                else
-                {
-                    m_ThumbnailScale = Mathf.Lerp(m_ThumbnailStartScale, target, smoothedAmount);
-                }
-
-                m_IconMaterial.mainTextureOffset = (defaultScale - m_ThumbnailScale) * Vector3.one * 0.5f;
-                m_IconMaterial.mainTextureScale = m_ThumbnailScale * Vector3.one;
-            }
-
-            m_WasHovered = m_Hovered;
-
-            scaleFactor = scale;
-
             // Don't scale the item while changing visibility because this would conflict with AnimateVisibility
             if (m_VisibilityCoroutine != null)
                 return;
 
+            var time = Time.time;
+
+            AnimateProperty(time, m_Hovered, ref m_WasHovered, ref m_HoverTime, ref m_HoverLerp, ref m_HoverLerpStart,
+                0f, 1f, Mathf.Approximately, GetPercentage, Mathf.Lerp, SetThumbnailScale, true, CompleteHoverTransition);
+
+            AnimateProperty(time, m_Importing, ref m_WasImporting, ref m_ImportingTime, ref m_ImportingScale,
+                ref m_ImportingStartScale, m_IconScale.y, k_ImportingScaleBump, Mathf.Approximately, GetPercentage, Mathf.Lerp,
+                SetImportingScale, false);
+
+            AnimateProperty(time, m_Importing, ref m_WasImporting, ref m_ImportingTime, ref m_ImportingColor,
+                ref m_ImportingStartColor, m_ImportingDefaultColor, m_ImportingTargetColor, Approximately, GetPercentage, Color.Lerp,
+                SetImportingColor);
+
+            scaleFactor = scale;
+
             transform.localScale = Vector3.one * scale;
 
             m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent);
+        }
+
+        static float GetPercentage(float current, float target, float source)
+        {
+            return (current - source) / (target - source);
+        }
+
+        static float GetPercentage(Color currentColor, Color targetColor, Color sourceColor)
+        {
+            var current = currentColor.grayscale;
+            var target = targetColor.grayscale;
+            var source = sourceColor.grayscale;
+            return (current - source) / (target - source);
+        }
+
+        static bool Approximately(Color a, Color b)
+        {
+            return a == b;
+        }
+
+        static void AnimateProperty<T>(float time, bool state, ref bool lastState, ref float changeTime,
+            ref T property, ref T propertyStart,T startValue, T endValue, Func<T, T, bool> approximately,
+            Func<T, T, T, float> getPercentage, Func<T, T, float, T> lerp, Action<T> setProperty,
+            bool setState = true, Action<T> complete = null) where T : struct
+        {
+            if (state != lastState)
+            {
+                changeTime = time;
+                propertyStart = property;
+            }
+
+            var timeDiff = time - changeTime;
+            var source = state ? startValue : endValue;
+            var target = state ? endValue : startValue;
+            if (!approximately(property, target))
+            {
+                var duration =  (1 - getPercentage(propertyStart, target, source)) * k_PreviewDuration;
+                var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
+                if (smoothedAmount > 1)
+                {
+                    property = target;
+                    propertyStart = property;
+                    if (complete != null)
+                        complete(target);
+                }
+                else
+                {
+                    property = lerp(propertyStart, target, smoothedAmount);
+                }
+
+                setProperty(property);
+            }
+
+            if (setState)
+                lastState = state;
+        }
+
+        void SetThumbnailScale(float lerp)
+        {
+            if (m_PreviewObjectTransform)
+            {
+                if (m_AutoHidePreview)
+                {
+                    m_PreviewObjectTransform.localScale = lerp * Vector3.one;
+                    m_Icon.transform.localScale = (1 - lerp) * m_IconScale;
+                }
+                else
+                {
+                    m_PreviewObjectTransform.localScale = Vector3.one + lerp * Vector3.one * k_ScaleBump;
+                }
+
+                return;
+            }
+
+            m_IconMaterial.mainTextureOffset = lerp * Vector3.one * k_ThumbnailOffsetBump;
+            m_IconMaterial.mainTextureScale = Vector3.one + lerp * Vector3.one * k_ThumbnailScaleBump;
+        }
+
+        void CompleteHoverTransition(float lerp)
+        {
+            if (m_PreviewObjectTransform && m_AutoHidePreview)
+            {
+                m_PreviewObjectTransform.gameObject.SetActive(lerp != 0);
+                m_Icon.SetActive(lerp == 0);
+            }
+        }
+
+        void SetImportingScale(float scale)
+        {
+            var transform = m_Icon.transform;
+            var localScale = transform.localScale;
+            localScale.y = scale;
+            transform.localScale = localScale;
+        }
+
+        void SetImportingColor(Color color)
+        {
+            m_TextPanel.color = color;
         }
 
         void InstantiatePreview()
@@ -289,72 +401,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 data.ImportModel();
                 m_Text.text = "Importing...";
+                m_Importing = true;
             }
         }
 
         void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
         {
-            if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
-            {
-                if (m_AutoHidePreview)
-                    this.RestartCoroutine(ref m_PreviewCoroutine, AnimatePreview(false));
-                else
-                    m_PreviewObjectTransform.localScale = m_PreviewTargetScale * k_ScaleBump;
-            }
-            else
-            {
-                m_Hovered = true;
-            }
+            m_Hovered = true;
 
             ShowGrabFeedback(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
         void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
         {
-            if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
-            {
-                if (m_AutoHidePreview)
-                    this.RestartCoroutine(ref m_PreviewCoroutine, AnimatePreview(true));
-                else
-                    m_PreviewObjectTransform.localScale = m_PreviewTargetScale;
-            }
-            else
-            {
-                m_Hovered = false;
-            }
+            m_Hovered = false;
 
             HideGrabFeedback();
-        }
-
-        IEnumerator AnimatePreview(bool @out)
-        {
-            m_Icon.SetActive(true);
-            m_PreviewObjectTransform.gameObject.SetActive(true);
-
-            var iconTransform = m_Icon.transform;
-            var currentIconScale = iconTransform.localScale;
-            var targetIconScale = @out ? m_IconScale : Vector3.zero;
-
-            var currentPreviewScale = m_PreviewObjectTransform.localScale;
-            var targetPreviewScale = @out ? Vector3.zero : m_PreviewTargetScale;
-
-            var startTime = Time.realtimeSinceStartup;
-            while (Time.realtimeSinceStartup - startTime < k_PreviewDuration)
-            {
-                var t = (Time.realtimeSinceStartup - startTime) / k_PreviewDuration;
-
-                m_Icon.transform.localScale = Vector3.Lerp(currentIconScale, targetIconScale, t);
-                m_PreviewObjectTransform.transform.localScale = Vector3.Lerp(currentPreviewScale, targetPreviewScale, t);
-                yield return null;
-            }
-
-            m_PreviewObjectTransform.transform.localScale = targetPreviewScale;
-            m_Icon.transform.localScale = targetIconScale;
-
-            m_PreviewObjectTransform.gameObject.SetActive(!@out);
-            m_Icon.SetActive(@out);
-
-            m_PreviewCoroutine = null;
         }
 
         public void SetVisibility(bool visible, Action<PolyGridItem> callback = null)
