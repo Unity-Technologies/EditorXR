@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/UI/Vertical Gradient UI Clip"
+﻿Shader "EditorVR/UI/Angled Vertical Gradient UI Clip"
 {
     Properties
     {
@@ -23,6 +23,7 @@
         ZTest Less
         Cull Back
         Blend SrcAlpha OneMinusSrcAlpha
+        Fog { Mode Off }
 
         Stencil
         {
@@ -55,7 +56,10 @@
             {
                 v2f output;
                 output.position = UnityObjectToClipPos(v.vertex);
-                output.color = lerp(_ColorBottom, _ColorTop, v.texcoord.y);
+                // Custom-weighted upper-left to lower-right angled lerp the blends between the two gradient colors.
+                // Add bias to the upper-left color.
+                half lerpAmount = clamp((v.texcoord.y + 0.5) * (1.35 - v.texcoord.x), 0, 1);
+                output.color = lerp(_ColorBottom, _ColorTop, lerpAmount);
                 return output;
             }
 

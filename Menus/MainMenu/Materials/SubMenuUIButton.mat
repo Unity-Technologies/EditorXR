@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: SubMenuUIButton
-  m_Shader: {fileID: 4800000, guid: 48722d8497b74454d916fd0c3a0147cc, type: 3}
+  m_Shader: {fileID: 4800000, guid: 1fc92914994b34c4daa2bde16764ba94, type: 3}
   m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
@@ -86,6 +86,7 @@ Material:
     - _UseUIAlphaClip: 0
     - _ZWrite: 1
     m_Colors:
+    - _AdditiveColor: {r: 0.321, g: 0.321, b: 0.321, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _ColorBottom: {r: 0.19607843, g: 0.2, b: 0.2, a: 1}
     - _ColorLeft: {r: 1, g: 1, b: 1, a: 1}
