@@ -4,15 +4,15 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class BlocksUI : MonoBehaviour
+    sealed class PolyUI : MonoBehaviour
     {
         [SerializeField]
-        BlocksGridViewController m_GridView;
+        PolyGridViewController m_GridView;
 
         [SerializeField]
         LinearHandle m_ScrollHandle;
 
-        public BlocksGridViewController gridView { get { return m_GridView; } }
+        public PolyGridViewController gridView { get { return m_GridView; } }
         public LinearHandle scrollHandle { get { return m_ScrollHandle; } }
     }
 }

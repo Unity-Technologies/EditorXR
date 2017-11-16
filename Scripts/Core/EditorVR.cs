@@ -242,7 +242,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             //TODO: External module support (removes need for CCU in this instance)
 #if INCLUDE_POLY_TOOLKIT
-            AddModule<BlocksModule>();
+            AddModule<PolyModule>();
 #endif
 
             viewer.AddPlayerModel();

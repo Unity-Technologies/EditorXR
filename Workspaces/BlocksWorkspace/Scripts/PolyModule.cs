@@ -2,12 +2,11 @@
 using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
-
+using PolyAsset = UnityEditor.Experimental.EditorVR.Workspaces.PolyAsset;
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 #endif
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
@@ -15,15 +14,15 @@ using UnityEditor.Experimental.EditorVR.Workspaces;
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class BlocksModule : MonoBehaviour, IWeb
+    public class PolyModule : MonoBehaviour, IWeb
     {
         class RequestHandler
         {
-            List<BlocksAsset> m_Assets;
+            List<PolyAsset> m_Assets;
             Transform m_Container;
             Action<string> m_ListCallback;
 
-            public RequestHandler(List<BlocksAsset> assets, Transform container, Action<string> listCallback, string nextPageToken = null)
+            public RequestHandler(List<PolyAsset> assets, Transform container, Action<string> listCallback, string nextPageToken = null)
             {
                 m_Assets = assets;
                 m_Container = container;
@@ -49,20 +48,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 foreach (var asset in result.Value.assets)
                 {
-                    BlocksAsset blocksAsset;
+                    PolyAsset polyAsset;
                     var name = asset.name;
-                    if (!k_AssetCache.TryGetValue(name, out blocksAsset))
+                    if (!k_AssetCache.TryGetValue(name, out polyAsset))
                     {
-                        blocksAsset = new BlocksAsset(asset, m_Container);
-                        k_AssetCache[name] = blocksAsset;
+                        polyAsset = new PolyAsset(asset, m_Container);
+                        k_AssetCache[name] = polyAsset;
                     }
 
-                    m_Assets.Add(blocksAsset);
+                    m_Assets.Add(polyAsset);
                 }
             }
         }
 
-        static readonly Dictionary<string, BlocksAsset> k_AssetCache = new Dictionary<string, BlocksAsset>();
+        static readonly Dictionary<string, PolyAsset> k_AssetCache = new Dictionary<string, PolyAsset>();
 
         Transform m_Container;
 
@@ -78,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             PolyApi.Shutdown();
         }
 
-        public void GetFeaturedModels(List<BlocksAsset> assets, Action<string> listCallback, string nextPageToken = null)
+        public void GetFeaturedModels(List<PolyAsset> assets, Action<string> listCallback, string nextPageToken = null)
         {
             new RequestHandler(assets, m_Container, listCallback, nextPageToken);
         }

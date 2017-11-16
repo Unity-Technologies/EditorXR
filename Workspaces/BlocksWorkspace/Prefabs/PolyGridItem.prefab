@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 65849786678441232}
   - component: {fileID: 114952149326489544}
   m_Layer: 0
-  m_Name: BlocksGridItem
+  m_Name: PolyGridItem
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

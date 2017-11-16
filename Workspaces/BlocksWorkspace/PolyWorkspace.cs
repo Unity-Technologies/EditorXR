@@ -5,7 +5,6 @@ using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
 #if !INCLUDE_POLY_TOOLKIT
@@ -15,11 +14,11 @@ using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 
-namespace BlocksImporter
+namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 #if INCLUDE_POLY_TOOLKIT
-    [MainMenuItem("Blocks", "Workspaces", "Import models from Google Blocks")]
-    sealed class BlocksWorkspace : Workspace, ISerializeWorkspace
+    [MainMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
+    sealed class PolyWorkspace : Workspace, ISerializeWorkspace
     {
         const float k_YBounds = 0.2f;
 
@@ -47,15 +46,15 @@ namespace BlocksImporter
         [SerializeField]
         GameObject m_SliderPrefab;
 
-        BlocksUI m_BlocksUI;
+        PolyUI m_PolyUI;
         ZoomSliderUI m_ZoomSliderUI;
 
-        public List<BlocksAsset> assetData
+        public List<PolyAsset> assetData
         {
             set
             {
-                if (m_BlocksUI)
-                    m_BlocksUI.gridView.data = value;
+                if (m_PolyUI)
+                    m_PolyUI.gridView.data = value;
             }
         }
 
@@ -67,12 +66,12 @@ namespace BlocksImporter
             base.Setup();
 
             var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
-            m_BlocksUI = contentPrefab.GetComponent<BlocksUI>();
+            m_PolyUI = contentPrefab.GetComponent<PolyUI>();
 
-            var gridView = m_BlocksUI.gridView;
+            var gridView = m_PolyUI.gridView;
             this.ConnectInterfaces(gridView);
             gridView.matchesFilter = s => true;
-            assetData = new List<BlocksAsset>();
+            assetData = new List<PolyAsset>();
 
             var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
             m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
@@ -89,7 +88,7 @@ namespace BlocksImporter
             if (zoomTooltip)
                 zoomTooltip.tooltipText = "Drag the Handle to Zoom the Asset Grid";
 
-            var scrollHandle = m_BlocksUI.scrollHandle;
+            var scrollHandle = m_PolyUI.scrollHandle;
             var scrollHandleTransform = scrollHandle.transform;
             scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
             scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
@@ -98,8 +97,8 @@ namespace BlocksImporter
             scrollHandle.dragStarted += OnScrollDragStarted;
             scrollHandle.dragging += OnScrollDragging;
             scrollHandle.dragEnded += OnScrollDragEnded;
-            m_BlocksUI.scrollHandle.hoverStarted += OnScrollHoverStarted;
-            m_BlocksUI.scrollHandle.hoverEnded += OnScrollHoverEnded;
+            m_PolyUI.scrollHandle.hoverStarted += OnScrollHoverStarted;
+            m_PolyUI.scrollHandle.hoverEnded += OnScrollHoverEnded;
 
             // Propagate initial bounds
             OnBoundsChanged();
@@ -108,21 +107,21 @@ namespace BlocksImporter
         public object OnSerializeWorkspace()
         {
             var preferences = new Preferences();
-            preferences.scaleFactor = m_BlocksUI.gridView.scaleFactor;
+            preferences.scaleFactor = m_PolyUI.gridView.scaleFactor;
             return preferences;
         }
 
         public void OnDeserializeWorkspace(object obj)
         {
             var preferences = (Preferences)obj;
-            m_BlocksUI.gridView.scaleFactor = preferences.scaleFactor;
+            m_PolyUI.gridView.scaleFactor = preferences.scaleFactor;
             UpdateZoomSliderValue();
         }
 
         protected override void OnBoundsChanged()
         {
             var size = contentBounds.size;
-            var gridView = m_BlocksUI.gridView;
+            var gridView = m_PolyUI.gridView;
             size.x -= FaceMargin * 2; // Shrink the content width, so that there is space allowed to grab and scroll
             size.z -= FaceMargin * 2; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             gridView.size = size;
@@ -135,12 +134,12 @@ namespace BlocksImporter
             m_WorkspaceUI.topHighlight.visible = true;
             m_WorkspaceUI.amplifyTopHighlight = false;
 
-            m_BlocksUI.gridView.OnBeginScrolling();
+            m_PolyUI.gridView.OnBeginScrolling();
         }
 
         void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
         {
-            m_BlocksUI.gridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
+            m_PolyUI.gridView.scrollOffset -= Vector3.Dot(eventData.deltaPosition, handle.transform.forward) / this.GetViewerScale();
         }
 
         void OnScrollDragEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -149,7 +148,7 @@ namespace BlocksImporter
 
             m_WorkspaceUI.topHighlight.visible = false;
 
-            m_BlocksUI.gridView.OnScrollEnded();
+            m_PolyUI.gridView.OnScrollEnded();
         }
 
         void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
@@ -172,17 +171,17 @@ namespace BlocksImporter
 
         void Scale(float value)
         {
-            m_BlocksUI.gridView.scaleFactor = Mathf.Pow(10, value);
+            m_PolyUI.gridView.scaleFactor = Mathf.Pow(10, value);
         }
 
         void UpdateZoomSliderValue()
         {
-            m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(m_BlocksUI.gridView.scaleFactor);
+            m_ZoomSliderUI.zoomSlider.value = Mathf.Log10(m_PolyUI.gridView.scaleFactor);
         }
     }
 #else
     // Non-Workspace stub to protect serialization
-    sealed class BlocksWorkspace : MonoBehaviour
+    sealed class PolyWorkspace : MonoBehaviour
     {
         [SerializeField]
         Vector3 m_MinBounds;

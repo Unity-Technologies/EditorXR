@@ -16,7 +16,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class BlocksGridItem : DraggableListItem<BlocksAsset, string>, IPlaceSceneObject, IUsesSpatialHash,
+    class PolyGridItem : DraggableListItem<PolyAsset, string>, IPlaceSceneObject, IUsesSpatialHash,
         IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IRayToNode, IUsesGrouping
     {
         const float k_PreviewDuration = 0.1f;
@@ -29,7 +29,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_InitializeDelay = 0.5f; // Delay initialization for fast scrolling
 
         const int k_AutoHidePreviewComplexity = 10000;
-        const int k_HidePreviewComplexity = 100000;
 
         [SerializeField]
         Text m_Text;
@@ -64,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public float scaleFactor { private get; set; }
 
-        public override void Setup(BlocksAsset listData)
+        public override void Setup(PolyAsset listData)
         {
             base.Setup(listData);
 
@@ -96,12 +95,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             UpdateVisuals();
         }
 
-        void OnModelImportCompleted(BlocksAsset asset, GameObject prefab)
+        void OnModelImportCompleted(PolyAsset asset, GameObject prefab)
         {
             UpdateVisuals();
         }
 
-        void OnThumbnailImportCompleted(BlocksAsset asset, Texture2D thumbnail)
+        void OnThumbnailImportCompleted(PolyAsset asset, Texture2D thumbnail)
         {
             UpdateVisuals();
         }
@@ -203,7 +202,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 this.AddRayVisibilitySettings(rayOrigin, this, false, true);
 
                 var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
-                var cloneItem = clone.GetComponent<BlocksGridItem>();
+                var cloneItem = clone.GetComponent<PolyGridItem>();
 
                 if (cloneItem.m_PreviewObjectTransform)
                 {
@@ -232,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             if (data.prefab)
             {
-                var gridItem = m_DragObject.GetComponent<BlocksGridItem>();
+                var gridItem = m_DragObject.GetComponent<PolyGridItem>();
 
                 var rayOrigin = eventData.rayOrigin;
                 this.RemoveRayVisibilitySettings(rayOrigin, this);
@@ -323,13 +322,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_PreviewCoroutine = null;
         }
 
-        public void SetVisibility(bool visible, Action<BlocksGridItem> callback = null)
+        public void SetVisibility(bool visible, Action<PolyGridItem> callback = null)
         {
             this.StopCoroutine(ref m_VisibilityCoroutine);
             m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(visible, callback));
         }
 
-        IEnumerator AnimateVisibility(bool visible, Action<BlocksGridItem> callback)
+        IEnumerator AnimateVisibility(bool visible, Action<PolyGridItem> callback)
         {
             var currentTime = 0f;
 

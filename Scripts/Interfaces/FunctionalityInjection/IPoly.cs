@@ -8,15 +8,15 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Provides access to the Web Module
     /// </summary>
-    public interface IBlocks
+    public interface IPoly
     {
     }
 
-    public static class IBlocksMethods
+    public static class IPolyMethods
     {
-        internal static Action<List<BlocksAsset>, Action<string>, string> getFeaturedModels;
+        internal static Action<List<PolyAsset>, Action<string>, string> getFeaturedModels;
 
-        public static void GetFeaturedModels(this IBlocks obj, List<BlocksAsset> assets, Action<string> listCallback, string nextPageToken = null)
+        public static void GetFeaturedModels(this IPoly obj, List<PolyAsset> assets, Action<string> listCallback, string nextPageToken = null)
         {
             getFeaturedModels(assets, listCallback, nextPageToken);
         }

@@ -12,7 +12,7 @@ using PolyToolkit;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    public class BlocksAsset : ListViewItemData<string>, IWeb
+    public class PolyAsset : ListViewItemData<string>, IWeb
     {
         const int k_MaxPreviewComplexity = 2500;
 
@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #pragma warning disable 649
 #endif
 
-        readonly PolyAsset m_Asset;
+        readonly PolyToolkit.PolyAsset m_Asset;
         readonly Transform m_Container; // Parent object under which to store imported prefabs--should be cleared on reset
         readonly long m_Complexity; // Cached to avoid loop lookup
 
@@ -31,7 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         bool m_Initialized; // Whether the download/import process has started
         bool m_Importing;
 
-        public PolyAsset asset { get { return m_Asset; } }
+        public PolyToolkit.PolyAsset asset { get { return m_Asset; } }
         public GameObject prefab { get { return m_Prefab; } }
         public Texture2D thumbnail { get { return m_Thumbnail; } }
         public bool initialized { get { return m_Initialized; } }
@@ -39,11 +39,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public long complexity { get { return m_Complexity; } }
         public override string index { get { return m_Asset.name; } }
 
-        public event Action<BlocksAsset, GameObject> modelImportCompleted;
-        public event Action<BlocksAsset, Texture2D> thumbnailImportCompleted;
+        public event Action<PolyAsset, GameObject> modelImportCompleted;
+        public event Action<PolyAsset, Texture2D> thumbnailImportCompleted;
 
 #if INCLUDE_POLY_TOOLKIT
-        static BlocksAsset()
+        static PolyAsset()
         {
             s_Options = PolyImportOptions.Default();
             s_Options.rescalingMode = PolyImportOptions.RescalingMode.FIT;
@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
 #endif
 
-        public BlocksAsset(PolyAsset asset, Transform container)
+        public PolyAsset(PolyToolkit.PolyAsset asset, Transform container)
         {
 #if INCLUDE_POLY_TOOLKIT
             m_Asset = asset;
@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 #endif
 
-            template = "BlocksGridItem";
+            template = "PolyGridItem";
         }
 
         public void Initialize()
@@ -91,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 #if INCLUDE_POLY_TOOLKIT
         // Callback invoked when an asset has just been imported.
-        void ImportAssetCallback(PolyAsset asset, PolyStatusOr<PolyImportResult> result)
+        void ImportAssetCallback(PolyToolkit.PolyAsset asset, PolyStatusOr<PolyImportResult> result)
         {
             m_Importing = false;
             if (!result.Ok)
@@ -110,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 modelImportCompleted(this, m_Prefab);
         }
 
-        void GetThumbnail(PolyAsset asset)
+        void GetThumbnail(PolyToolkit.PolyAsset asset)
         {
             this.DownloadTexture(asset.thumbnail.url, handler =>
             {

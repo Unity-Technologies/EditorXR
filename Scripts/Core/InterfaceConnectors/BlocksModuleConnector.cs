@@ -9,11 +9,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR
     {
-        class BlocksModuleConnector : Nested, ILateBindInterfaceMethods<BlocksModule>
+        class PolyModuleConnector : Nested, ILateBindInterfaceMethods<PolyModule>
         {
-            public void LateBindInterfaceMethods(BlocksModule provider)
+            public void LateBindInterfaceMethods(PolyModule provider)
             {
-                IBlocksMethods.getFeaturedModels = provider.GetFeaturedModels;
+                IPolyMethods.getFeaturedModels = provider.GetFeaturedModels;
             }
         }
     }

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class BlocksGridViewController : ListViewController<BlocksAsset, BlocksGridItem, string>, IBlocks
+    class PolyGridViewController : ListViewController<PolyAsset, PolyGridItem, string>, IPoly
     {
         const float k_PositionFollow = 0.4f;
 
@@ -163,10 +163,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        void RecycleGridItem(BlocksAsset data)
+        void RecycleGridItem(PolyAsset data)
         {
             var index = data.index;
-            BlocksGridItem item;
+            PolyGridItem item;
             if (!m_ListItems.TryGetValue(index, out item))
                 return;
 
@@ -181,9 +181,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             });
         }
 
-        protected override void UpdateVisibleItem(BlocksAsset data, int order, float offset, ref bool doneSettling)
+        protected override void UpdateVisibleItem(PolyAsset data, int order, float offset, ref bool doneSettling)
         {
-            BlocksGridItem item;
+            PolyGridItem item;
             if (!m_ListItems.TryGetValue(data.index, out item))
                 item = GetItem(data);
 
@@ -207,7 +207,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        void UpdateGridItem(BlocksGridItem item, int order, int count)
+        void UpdateGridItem(PolyGridItem item, int order, int count)
         {
             item.UpdateTransforms(m_ScaleFactor);
 
@@ -222,7 +222,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             t.SetSiblingIndex(order);
         }
 
-        protected override BlocksGridItem GetItem(BlocksAsset data)
+        protected override PolyGridItem GetItem(PolyAsset data)
         {
             const float kJitterMargin = 0.125f;
             if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * kJitterMargin) // Avoid jitter while scrolling rows in and out of view
