@@ -33,8 +33,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
 
         const float k_MultiselectHueShift = 0.5f;
+        static readonly Vector3 k_TooltipPosition = new Vector3(0, -0.15f, -0.13f);
         const float k_BLockSelectDragThreshold = 0.01f;
-        static readonly Vector3 k_TooltipPosition = new Vector3(0, 0.05f, -0.03f);
         static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
 
         [SerializeField]
