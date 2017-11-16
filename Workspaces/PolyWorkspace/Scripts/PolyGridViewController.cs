@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using ListView;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -9,20 +8,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     class PolyGridViewController : ListViewController<PolyAsset, PolyGridItem, string>, IPoly
     {
         const float k_PositionFollow = 0.4f;
-
-        Transform m_GrabbedObject;
-
-        int m_NumPerRow;
-
-        public float scaleFactor
-        {
-            get { return m_ScaleFactor; }
-            set
-            {
-                m_LastHiddenItemOffset = Mathf.Infinity; // Allow any change in scale to change visibility states
-                m_ScaleFactor = value;
-            }
-        }
 
         [SerializeField]
         float m_ScaleFactor = 0.05f;
@@ -42,11 +27,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         GameObject[] m_Icons;
 
+        Transform m_GrabbedObject;
+
+        int m_NumPerRow;
+
         float m_LastHiddenItemOffset;
         int m_LastDataCount;
         string m_NextPageToken;
 
-        readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
+        public float scaleFactor
+        {
+            get { return m_ScaleFactor; }
+            set
+            {
+                m_LastHiddenItemOffset = Mathf.Infinity; // Allow any change in scale to change visibility states
+                m_ScaleFactor = value;
+            }
+        }
 
         public Func<string, bool> matchesFilter { private get; set; }
 
@@ -66,12 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             base.Setup();
 
             m_ScrollOffset = itemSize.z * 0.5f;
-
-            for (int i = 0; i < m_IconTypes.Length; i++)
-            {
-                if (!string.IsNullOrEmpty(m_IconTypes[i]) && m_Icons[i] != null)
-                    m_IconDictionary[m_IconTypes[i]] = m_Icons[i];
-            }
 
             GetFeaturedModels();
         }
@@ -235,7 +226,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             item.scaleFactor = m_ScaleFactor;
             item.SetVisibility(true);
 
-            //TODO: Fallback texture
             return item;
         }
     }

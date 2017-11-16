@@ -25,6 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_MaxPreviewScale = 0.2f;
         const float k_TransitionDuration = 0.1f;
         const float k_ScaleBump = 1.1f;
+        const float k_ThumbnailScaleBump = 0.9f;
 
         const float k_InitializeDelay = 0.5f; // Delay initialization for fast scrolling
 
@@ -55,6 +56,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Transform m_PreviewObjectClone;
         Material m_IconMaterial;
         Vector3 m_IconScale;
+        bool m_Hovered;
+        bool m_WasHovered;
+        float m_ThumbnailStartScale = 1f;
+        float m_ThumbnailScale = 1f;
+        float m_HoverTime;
 
         Coroutine m_PreviewCoroutine;
         Coroutine m_VisibilityCoroutine;
@@ -135,6 +141,36 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 data.modelImportCompleted += OnModelImportCompleted;
                 data.thumbnailImportCompleted += OnThumbnailImportCompleted;
             }
+
+            var time = Time.time;
+            if (m_Hovered != m_WasHovered)
+            {
+                m_HoverTime = time;
+                m_ThumbnailStartScale = m_ThumbnailScale;
+            }
+
+            const float defaultScale = 1f;
+            var timeDiff = time - m_HoverTime;
+            var target = m_Hovered ? k_ThumbnailScaleBump : defaultScale;
+            if (!Mathf.Approximately(m_ThumbnailScale, target))
+            {
+                var duration = m_ThumbnailScale / target * k_PreviewDuration;
+                var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
+                if (smoothedAmount > 1)
+                {
+                    m_ThumbnailScale = target;
+                    m_ThumbnailStartScale = m_ThumbnailScale;
+                }
+                else
+                {
+                    m_ThumbnailScale = Mathf.Lerp(m_ThumbnailStartScale, target, smoothedAmount);
+                }
+
+                m_IconMaterial.mainTextureOffset = (defaultScale - m_ThumbnailScale) * Vector3.one * 0.5f;
+                m_IconMaterial.mainTextureScale = m_ThumbnailScale * Vector3.one;
+            }
+
+            m_WasHovered = m_Hovered;
 
             scaleFactor = scale;
 
@@ -261,14 +297,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
             {
                 if (m_AutoHidePreview)
-                {
-                    this.StopCoroutine(ref m_PreviewCoroutine);
-                    m_PreviewCoroutine = StartCoroutine(AnimatePreview(false));
-                }
+                    this.RestartCoroutine(ref m_PreviewCoroutine, AnimatePreview(false));
                 else
-                {
                     m_PreviewObjectTransform.localScale = m_PreviewTargetScale * k_ScaleBump;
-                }
+            }
+            else
+            {
+                m_Hovered = true;
             }
 
             ShowGrabFeedback(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
@@ -279,14 +314,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
             {
                 if (m_AutoHidePreview)
-                {
-                    this.StopCoroutine(ref m_PreviewCoroutine);
-                    m_PreviewCoroutine = StartCoroutine(AnimatePreview(true));
-                }
+                    this.RestartCoroutine(ref m_PreviewCoroutine, AnimatePreview(true));
                 else
-                {
                     m_PreviewObjectTransform.localScale = m_PreviewTargetScale;
-                }
+            }
+            else
+            {
+                m_Hovered = false;
             }
 
             HideGrabFeedback();
@@ -299,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var iconTransform = m_Icon.transform;
             var currentIconScale = iconTransform.localScale;
-            var targetIconScale = @out ? Vector3.one : Vector3.zero;
+            var targetIconScale = @out ? m_IconScale : Vector3.zero;
 
             var currentPreviewScale = m_PreviewObjectTransform.localScale;
             var targetPreviewScale = @out ? Vector3.zero : m_PreviewTargetScale;
@@ -325,8 +359,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void SetVisibility(bool visible, Action<PolyGridItem> callback = null)
         {
-            this.StopCoroutine(ref m_VisibilityCoroutine);
-            m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(visible, callback));
+            this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(visible, callback));
         }
 
         IEnumerator AnimateVisibility(bool visible, Action<PolyGridItem> callback)
@@ -345,7 +378,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 
             var currentScale = transform.localScale;
-            var targetScale = visible ? Vector3.one * scaleFactor : Vector3.zero;
+            var targetScale = visible ? m_IconScale * scaleFactor : Vector3.zero;
 
             while (currentTime < k_TransitionDuration)
             {
