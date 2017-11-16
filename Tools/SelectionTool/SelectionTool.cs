@@ -279,7 +279,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     // Can't select this object (it might be locked or static)
                     if (directHoveredObject && !directSelectionCandidate)
+                    {
+                        if (directHoveredObject != null)
+                            this.SetHighlight(directHoveredObject, false);
+
                         continue;
+                    }
 
                     if (directSelectionCandidate)
                         directHoveredObject = directSelectionCandidate;
@@ -295,6 +300,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     if (selectionTool.m_BlockSelect)
                         continue;
 
+                    GameObject lastHover;
+                    if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
+                        this.SetHighlight(lastHover, false, directRayOrigin);
+
                     if (!selectionTool.IsDirectActive())
                     {
                         m_HoverGameObjects.Remove(directRayOrigin);
@@ -306,10 +315,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     // In the case of multi-select, only add, do not remove
                     if (selectionTool.m_SelectionInput.select.wasJustPressed && !Selection.objects.Contains(directHoveredObject))
                         this.SelectObject(directHoveredObject, directRayOrigin, m_MultiSelect);
-
-                    GameObject lastHover;
-                    if (m_HoverGameObjects.TryGetValue(directRayOrigin, out lastHover) && lastHover != directHoveredObject)
-                        this.SetHighlight(lastHover, false, directRayOrigin);
 
                     m_HoverGameObjects[directRayOrigin] = directHoveredObject;
                     selectionTool.m_HasDirectHover = true;
@@ -338,10 +343,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     hovered(hoveredObject, rayOrigin);
 
                 if (!GetSelectionCandidate(ref hoveredObject))
-                {
                     HideSelectFeedback();
-                    return;
-                }
             }
 
             if (!hoveredObject)
@@ -459,7 +461,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             // Can't select this object (it might be locked or static)
             if (hoveredObject && !selectionCandidate)
+            {
+                if (hoveredObject != null)
+                    this.SetHighlight(hoveredObject, false);
+
                 return false;
+            }
 
             if (selectionCandidate)
                 hoveredObject = selectionCandidate;

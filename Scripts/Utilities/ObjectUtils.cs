@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -114,14 +114,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         public static Bounds GetBounds(Transform transform)
         {
-            var b = new Bounds(transform.position, Vector3.zero);
             k_Renderers.Clear();
             transform.GetComponentsInChildren(k_Renderers);
-            foreach (var r in k_Renderers)
-            {
-                if (r.bounds.size != Vector3.zero)
-                    b.Encapsulate(r.bounds);
-            }
+            var b = GetBounds(k_Renderers);
 
             // As a fallback when there are no bounds, collect all transform positions
             if (b.size == Vector3.zero)
@@ -132,6 +127,24 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
 
             return b;
+        }
+
+        public static Bounds GetBounds(List<Renderer> renderers)
+        {
+            if (renderers.Count > 0)
+            {
+                var first = renderers[0];
+                var b = new Bounds(first.transform.position, Vector3.zero);
+                foreach (var r in renderers)
+                {
+                    if (r.bounds.size != Vector3.zero)
+                        b.Encapsulate(r.bounds);
+                }
+
+                return b;
+            }
+
+            return default(Bounds);
         }
 
         public static void SetRunInEditModeRecursively(GameObject go, bool enabled)

@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics, IRayToNode
+    sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics, IRayToNode, IContainsVRPlayerCompletely
     {
         [SerializeField]
         HapticPulse m_HoverPulse;
@@ -49,6 +49,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (hoveredObject != null)
             {
                 if (!hoveredObject.activeInHierarchy)
+                    return false;
+
+                if (this.ContainsVRPlayerCompletely(hoveredObject))
                     return false;
 
                 if (useGrouping)
