@@ -60,6 +60,7 @@
                     v2f vert(appdata_t v)
                     {
                         v2f output;
+                        UNITY_INITIALIZE_OUTPUT(v2f, output);
                         output.position = UnityObjectToClipPos(v.position);
 #if UNITY_UV_STARTS_AT_TOP
                         float sign = -1.0;
@@ -129,6 +130,7 @@
                 v2f vert(appdata_t v)
                 {
                     v2f output;
+                    UNITY_INITIALIZE_OUTPUT(v2f, output);
                     output.position = UnityObjectToClipPos(v.position);
     #if UNITY_UV_STARTS_AT_TOP
                     float sign = -1.0;
@@ -199,6 +201,7 @@
                 v2f vert(appdata_t v)
                 {
                     v2f output;
+                    UNITY_INITIALIZE_OUTPUT(v2f, output);
                     output.position = UnityObjectToClipPos(v.position);
 #if UNITY_UV_STARTS_AT_TOP
                     float scale = -1.0;
