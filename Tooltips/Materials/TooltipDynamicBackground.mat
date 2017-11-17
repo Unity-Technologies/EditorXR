@@ -61,7 +61,7 @@ Material:
     m_Floats:
     - _Alpha: 0
     - _AlternateBlur: 0
-    - _Blur: 10
+    - _Blur: 5.5
     - _BumpScale: 2
     - _Cutoff: 0.5
     - _Desaturation: -1

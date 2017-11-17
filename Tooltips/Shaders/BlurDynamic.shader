@@ -94,7 +94,6 @@
                     sum += GrabAndOffset(0.06, +4.0);
                     sum += GrabAndOffset(0.04, +5.0);
                     sum += GrabAndOffset(0.02, +6.0);
-                    sum *= 1.5;
                     sum.a = _Color.a;
                     return sum;
                 }
@@ -171,7 +170,6 @@
                     sum += GrabAndOffset(0.04, +5.0);
                     sum += GrabAndOffset(0.02, +6.0);
                     sum.a = _Color.a;
-                    sum *= 1.5;
                     return sum;
                 }
                 ENDCG
