@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -14,7 +15,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
-    sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRequestFeedback
+    sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRequestFeedback, IControlHaptics, IRayToNode
     {
         class MiniWorldTooltip : ITooltip
         {
@@ -65,6 +66,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         GameObject m_ZoomSliderPrefab;
 
+        [SerializeField]
+        HapticPulse m_EnterExitPulse;
+
         [Serializable]
         class Preferences
         {
@@ -111,6 +115,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Vector3 m_StartMidPoint;
         Vector3 m_StartDirection;
         float m_StartYaw;
+
+        // Bools denoting that a given proxy/rayOrigin is contained/inside of the workpace bounds.  Used for haptis.
+        bool m_LeftRayOriginContained;
+        bool m_RightRayOriginContained;
 
         Coroutine m_UpdateLocationCoroutine;
 
@@ -264,6 +272,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var leftContained = miniWorld.Contains(leftRayOrigin.position);
             var rightControl = workspaceInput.miniWorldPanZoomRight;
             var rightContained = miniWorld.Contains(rightRayOrigin.position);
+
+            if (leftContained && !m_LeftRayOriginContained)
+                this.Pulse(leftNode, m_EnterExitPulse);
+            else if (!leftContained && m_LeftRayOriginContained)
+                this.Pulse(leftNode, m_EnterExitPulse);
+
+            if (rightContained && !m_RightRayOriginContained)
+                this.Pulse(rightNode, m_EnterExitPulse);
+            else if (!rightContained && m_RightRayOriginContained)
+                this.Pulse(rightNode, m_EnterExitPulse);
+
+            m_LeftRayOriginContained = leftContained;
+            m_RightRayOriginContained = rightContained;
 
             if (leftControl.isHeld && rightControl.isHeld)
                 ShowSuppressFeedback();
