@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         HapticPulse m_ResizePulse;
 
         [SerializeField]
-        HapticPulse m_MovePulse;
+        protected HapticPulse m_MovePulse;
 
         Bounds m_ContentBounds;
         BoxCollider m_OuterCollider;
