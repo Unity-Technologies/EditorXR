@@ -225,3 +225,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8ebdbcab31646f4da31c5a9a3f2ce5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_UndoButtonMeshRenderer: {fileID: 23859873210418424}
+  m_RedoButtonMeshRenderer: {fileID: 23850276268091638}
