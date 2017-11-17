@@ -159,7 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (Vector3.Dot(camTransform.forward, target.forward) < 0)
                 rotationOffset *= k_FlipYRotation;
 
-            if ((Vector3.Dot(camTransform.up, target.up) + orientationWeight) < 0)
+            if (Vector3.Dot(camTransform.up, target.up) + orientationWeight < 0)
             {
                 rotationOffset *= k_FlipZRotation;
                 tooltipData.orientationWeight = -k_TextOrientationWeight;
