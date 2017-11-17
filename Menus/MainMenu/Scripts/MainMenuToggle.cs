@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public Toggle toggle { get { return m_Toggle; } }
 
-        public event Action<Transform, Type, string> hovered;
+        public event Action<Transform> hovered;
         public event Action<Transform> clicked;
 
         new void Awake()
@@ -34,14 +34,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
 #if INCLUDE_TEXT_MESH_PRO
             if (hovered != null)
-                hovered(eventData.rayOrigin, toolType, null);
+                hovered(eventData.rayOrigin);
 #endif
         }
 
         public void OnRayExit(RayEventData eventData)
         {
             if (hovered != null)
-                hovered(eventData.rayOrigin, null, null);
+                hovered(eventData.rayOrigin);
         }
 
         public void OnPointerClick(PointerEventData eventData)
