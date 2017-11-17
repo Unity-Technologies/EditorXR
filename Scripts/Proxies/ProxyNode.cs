@@ -712,7 +712,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_RequestData[feedbackKey] = data;
             }
 
-            var suppress = false;//data.presentations > request.maxPresentations - 1;
+            var suppress = data.presentations > request.maxPresentations - 1;
             var suppressPresentation = request.suppressPresentation;
             if (suppressPresentation != null)
                 suppress = suppressPresentation();
