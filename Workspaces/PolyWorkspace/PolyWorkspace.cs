@@ -1,5 +1,7 @@
 #if UNITY_EDITOR
 using System;
+using System.Globalization;
+using System.Threading;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 
@@ -95,10 +97,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             this.ConnectInterfaces(gridView);
             assetData = new List<PolyGridAsset>();
 
-            SetupCategoryFilterUI();
-            SetupComplextyFilterUI();
-            SetupFormatFilterUI();
-            SetupSortingUI();
 
             var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
             m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
@@ -110,6 +108,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 this.ConnectInterfaces(mb);
             }
+
+            SetupCategoryFilterUI();
+            SetupComplextyFilterUI();
+            SetupFormatFilterUI();
+            SetupSortingUI();
 
             var zoomTooltip = sliderObject.GetComponentInChildren<Tooltip>();
             if (zoomTooltip)
@@ -147,13 +150,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (string.IsNullOrEmpty(searchQuery))
                     gridView.category = PolyCategory.UNSPECIFIED;
                 else
-                    gridView.category = (PolyCategory)Enum.Parse(typeof(PolyCategory), searchQuery);
+                    gridView.category = (PolyCategory)Enum.Parse(typeof(PolyCategory), searchQuery.ToUpper());
 
                 gridView.RequestAssetList();
                 UpdateComplexityFilterUI();
             };
 
-            m_CategoryFilterUI.filterList = Enum.GetNames(typeof(PolyCategory)).ToList();
+            var categoryList = new List<string>();
+            var textInfo = Thread.CurrentThread.CurrentCulture.TextInfo;
+            foreach (var category in Enum.GetNames(typeof(PolyCategory)))
+            {
+                if (category == "UNSPECIFIED")
+                    continue;
+
+                categoryList.Add(textInfo.ToTitleCase(category.ToLower()));
+            }
+            m_CategoryFilterUI.filterList = categoryList;
+
             UpdateCategoryFilterUI();
         }
 
