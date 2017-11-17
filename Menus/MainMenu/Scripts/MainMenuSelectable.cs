@@ -17,7 +17,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     abstract class MainMenuSelectable : MonoBehaviour
     {
-        [SerializeField]
         protected Selectable m_Selectable;
 
         [SerializeField]
