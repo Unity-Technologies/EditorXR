@@ -4,7 +4,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.UI
 {
     /// <summary>
-    /// Place on an object that recieves UI events to set a tooltip on it
+    /// Place on an object that receives UI events to set a tooltip on it
     /// </summary>
     class TooltipData : MonoBehaviour, ITooltip, ITooltipPlacement
     {
