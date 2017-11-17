@@ -1,10 +1,10 @@
-Shader "EditorVR/RadialMenu/RadialFrame"
+Shader "EditorVR/Standard Fog Disabled"
 {
 	Properties
 	{
 		_Color("Color", Color) = (1,1,1,1)
 		_MainTex("Albedo", 2D) = "white" {}
-		
+
 		_Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
 		_Glossiness("Smoothness", Range(0.0, 1.0)) = 0.5
@@ -28,7 +28,7 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 
 		_EmissionColor("Color", Color) = (0,0,0)
 		_EmissionMap("Emission", 2D) = "white" {}
-		
+
 		_DetailMask("Detail Mask", 2D) = "white" {}
 
 		_DetailAlbedoMap("Detail Albedo x2", 2D) = "grey" {}
@@ -36,7 +36,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 		_DetailNormalMap("Normal Map", 2D) = "bump" {}
 
 		[Enum(UV0,0,UV1,1)] _UVSec ("UV Set for secondary textures", Float) = 0
-
 
 		// Blending state
 		[HideInInspector] _Mode ("__mode", Float) = 0.0
@@ -51,24 +50,20 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 
 	SubShader
 	{
-		Tags { "Queue" = "Overlay+5503" "RenderType"="Opaque" "PerformanceChecks"="False" }
+		Tags { "Queue" = "Overlay+5001" "RenderType"="Opaque" "PerformanceChecks"="False" }
 		LOD 300
 
-		Stencil
-		{
-			Ref 1
-			Comp NotEqual
-		}
 
 		// ------------------------------------------------------------------
 		//  Base forward pass (directional light, emission, lightmaps, ...)
 		Pass
 		{
-			Name "FORWARD" 
+			Name "FORWARD"
 			Tags { "LightMode" = "ForwardBase" }
 
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
+			ZTest Off
 			Offset 0, -1
 
 			CGPROGRAM
@@ -110,7 +105,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 
 			// -------------------------------------
 
-
 			#pragma shader_feature _NORMALMAP
 			#pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature _METALLICGLOSSMAP
@@ -120,7 +114,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 			#pragma shader_feature _PARALLAXMAP
 
 			#pragma multi_compile_fwdadd_fullshadows
-
 
 			#pragma vertex vertAdd
 			#pragma fragment fragAdd
@@ -142,7 +135,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 
 			// -------------------------------------
 
-
 			#pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma multi_compile_shadowcaster
 
@@ -163,7 +155,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 			CGPROGRAM
 			#pragma target 3.0
 			#pragma exclude_renderers nomrt
-
 
 			// -------------------------------------
 
@@ -194,7 +185,7 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 		// This pass it not used during regular rendering.
 		Pass
 		{
-			Name "META" 
+			Name "META"
 			Tags { "LightMode"="Meta" }
 
 			Cull Off
