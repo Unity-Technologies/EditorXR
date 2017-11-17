@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class PolyGridViewController : ListViewController<PolyAsset, PolyGridItem, string>, IPoly
+    class PolyGridViewController : ListViewController<PolyGridAsset, PolyGridItem, string>, IPoly
     {
         const float k_PositionFollow = 0.4f;
 
@@ -36,8 +36,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         float m_LastHiddenItemOffset;
         int m_LastDataCount;
         string m_NextPageToken;
-
         PolyOrderBy m_Sorting;
+
         PolyMaxComplexityFilter m_Complexity;
         PolyFormatFilter? m_Format;
         PolyCategory m_Category;
@@ -180,7 +180,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        void RecycleGridItem(PolyAsset data)
+        void RecycleGridItem(PolyGridAsset data)
         {
             var index = data.index;
             PolyGridItem item;
@@ -198,7 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             });
         }
 
-        protected override void UpdateVisibleItem(PolyAsset data, int order, float offset, ref bool doneSettling)
+        protected override void UpdateVisibleItem(PolyGridAsset data, int order, float offset, ref bool doneSettling)
         {
             PolyGridItem item;
             if (!m_ListItems.TryGetValue(data.index, out item))
@@ -239,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             t.SetSiblingIndex(order);
         }
 
-        protected override PolyGridItem GetItem(PolyAsset data)
+        protected override PolyGridItem GetItem(PolyGridAsset data)
         {
             const float kJitterMargin = 0.125f;
             if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * kJitterMargin) // Avoid jitter while scrolling rows in and out of view

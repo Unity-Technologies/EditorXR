@@ -12,7 +12,7 @@ using PolyToolkit;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    public class PolyAsset : ListViewItemData<string>, IWeb
+    public class PolyGridAsset : ListViewItemData<string>, IWeb
     {
         const int k_MaxPreviewComplexity = 2500;
 
@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #pragma warning disable 649
 #endif
 
-        readonly PolyToolkit.PolyAsset m_Asset;
+        readonly PolyAsset m_Asset;
         readonly Transform m_Container; // Parent object under which to store imported prefabs--should be cleared on reset
         readonly long m_Complexity; // Cached to avoid loop lookup
 
@@ -31,7 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         bool m_Initialized; // Whether the download/import process has started
         bool m_Importing;
 
-        public PolyToolkit.PolyAsset asset { get { return m_Asset; } }
+        public PolyAsset asset { get { return m_Asset; } }
         public GameObject prefab { get { return m_Prefab; } }
         public Texture2D thumbnail { get { return m_Thumbnail; } }
         public bool initialized { get { return m_Initialized; } }
@@ -39,11 +39,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public long complexity { get { return m_Complexity; } }
         public override string index { get { return m_Asset.name; } }
 
-        public event Action<PolyAsset, GameObject> modelImportCompleted;
-        public event Action<PolyAsset, Texture2D> thumbnailImportCompleted;
+        public event Action<PolyGridAsset, GameObject> modelImportCompleted;
+        public event Action<PolyGridAsset, Texture2D> thumbnailImportCompleted;
 
 #if INCLUDE_POLY_TOOLKIT
-        static PolyAsset()
+        static PolyGridAsset()
         {
             s_Options = PolyImportOptions.Default();
             s_Options.rescalingMode = PolyImportOptions.RescalingMode.FIT;
@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
 #endif
 
-        public PolyAsset(PolyToolkit.PolyAsset asset, Transform container)
+        public PolyGridAsset(PolyToolkit.PolyAsset asset, Transform container)
         {
 #if INCLUDE_POLY_TOOLKIT
             m_Asset = asset;

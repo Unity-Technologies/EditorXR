@@ -1,9 +1,8 @@
 #if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
-using PolyAsset = UnityEditor.Experimental.EditorVR.Workspaces.PolyAsset;
-
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System.Collections.Generic;
@@ -21,12 +20,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         class RequestHandler
         {
-            List<PolyAsset> m_Assets;
+            List<PolyGridAsset> m_Assets;
             Transform m_Container;
             Action<string> m_ListCallback;
 
             public RequestHandler(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,
-                PolyCategory category, List<PolyAsset> assets, Transform container, Action<string> listCallback,
+                PolyCategory category, List<PolyGridAsset> assets, Transform container, Action<string> listCallback,
                 string nextPageToken = null)
             {
                 m_Assets = assets;
@@ -60,20 +59,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 foreach (var asset in result.Value.assets)
                 {
-                    PolyAsset polyAsset;
+                    PolyGridAsset polyGridAsset;
                     var name = asset.name;
-                    if (!k_AssetCache.TryGetValue(name, out polyAsset))
+                    if (!k_AssetCache.TryGetValue(name, out polyGridAsset))
                     {
-                        polyAsset = new PolyAsset(asset, m_Container);
-                        k_AssetCache[name] = polyAsset;
+                        polyGridAsset = new PolyGridAsset(asset, m_Container);
+                        k_AssetCache[name] = polyGridAsset;
                     }
 
-                    m_Assets.Add(polyAsset);
+                    m_Assets.Add(polyGridAsset);
                 }
             }
         }
 
-        static readonly Dictionary<string, PolyAsset> k_AssetCache = new Dictionary<string, PolyAsset>();
+        static readonly Dictionary<string, PolyGridAsset> k_AssetCache = new Dictionary<string, PolyGridAsset>();
 
         Transform m_Container;
 
@@ -90,7 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void GetFeaturedModels(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,
-            PolyCategory category, List<PolyAsset> assets, Action<string> listCallback, string nextPageToken = null)
+            PolyCategory category, List<PolyGridAsset> assets, Action<string> listCallback, string nextPageToken = null)
         {
             new RequestHandler(orderBy, complexity, format,category, assets, m_Container, listCallback, nextPageToken);
         }

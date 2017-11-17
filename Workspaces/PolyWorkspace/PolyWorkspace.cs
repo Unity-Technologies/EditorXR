@@ -70,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         FilterUI m_CategoryFilterUI;
         ZoomSliderUI m_ZoomSliderUI;
 
-        public List<PolyAsset> assetData
+        public List<PolyGridAsset> assetData
         {
             set
             {
@@ -92,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var gridView = m_PolyUI.gridView;
             this.ConnectInterfaces(gridView);
-            assetData = new List<PolyAsset>();
+            assetData = new List<PolyGridAsset>();
 
             SetupCategoryFilterUI();
             SetupComplextyFilterUI();

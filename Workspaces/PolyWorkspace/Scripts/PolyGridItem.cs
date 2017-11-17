@@ -16,7 +16,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class PolyGridItem : DraggableListItem<PolyAsset, string>, IPlaceSceneObject, IUsesSpatialHash,
+    class PolyGridItem : DraggableListItem<PolyGridAsset, string>, IPlaceSceneObject, IUsesSpatialHash,
         IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IRayToNode, IUsesGrouping
     {
         const float k_PreviewDuration = 0.1f;
@@ -84,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public float scaleFactor { private get; set; }
 
-        public override void Setup(PolyAsset listData)
+        public override void Setup(PolyGridAsset listData)
         {
             base.Setup(listData);
 
@@ -131,13 +131,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             UpdateRepresentation();
         }
 
-        void OnModelImportCompleted(PolyAsset asset, GameObject prefab)
+        void OnModelImportCompleted(PolyGridAsset gridAsset, GameObject prefab)
         {
             m_Importing = false;
             UpdateRepresentation();
         }
 
-        void OnThumbnailImportCompleted(PolyAsset asset, Texture2D thumbnail)
+        void OnThumbnailImportCompleted(PolyGridAsset gridAsset, Texture2D thumbnail)
         {
             if (m_Icon) // Prevent MissingReferenceException if shutdown occurs while fetching thumbnails
                 UpdateRepresentation();
