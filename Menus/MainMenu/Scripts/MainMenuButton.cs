@@ -14,7 +14,7 @@ using TMPro;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class MainMenuButton : MainMenuSelectable, ITooltip
+    sealed class MainMenuButton : MainMenuSelectable, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
     {
         [SerializeField]
         Button m_Button;

@@ -14,7 +14,7 @@ using TMPro;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class MainMenuToggle : MainMenuSelectable
+    sealed class MainMenuToggle : MainMenuSelectable, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
     {
         [SerializeField]
         Toggle m_Toggle;
@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
 #if INCLUDE_TEXT_MESH_PRO
             if (hovered != null)
-                hovered(eventData.rayOrigin, toolType, m_Description.text);
+                hovered(eventData.rayOrigin, toolType, null);
 #endif
         }
 
