@@ -1,6 +1,8 @@
 #if UNITY_EDITOR
 using ListView;
 using System;
+using PolyToolkit;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -35,6 +37,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         int m_LastDataCount;
         string m_NextPageToken;
 
+        PolyOrderBy m_Sorting;
+        PolyMaxComplexityFilter m_Complexity;
+        PolyFormatFilter? m_Format;
+        PolyCategory m_Category;
+
         public float scaleFactor
         {
             get { return m_ScaleFactor; }
@@ -45,7 +52,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        public Func<string, bool> matchesFilter { private get; set; }
+        public PolyOrderBy sorting { get; set; }
+        public PolyMaxComplexityFilter complexity { get; set; }
+        public PolyFormatFilter? format { get; set; }
+        public PolyCategory category { get; set; }
 
         protected override float listHeight
         {
@@ -64,14 +74,30 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_ScrollOffset = itemSize.z * 0.5f;
 
-            GetFeaturedModels();
+            RequestAssetList();
         }
 
-        void GetFeaturedModels()
+        public void RequestAssetList()
         {
             var nextPageToken = m_NextPageToken;
             m_NextPageToken = null;
-            this.GetFeaturedModels(data, SetNextPageToken, nextPageToken);
+
+            if (m_Sorting != sorting || m_Complexity != complexity || m_Format != format || m_Category != category)
+            {
+                nextPageToken = null;
+                foreach (var asset in data)
+                {
+                    RecycleGridItem(asset);
+                }
+                data.Clear();
+                m_LastHiddenItemOffset = Mathf.Infinity;
+            }
+
+            m_Sorting = sorting;
+            m_Complexity = complexity;
+            m_Format = format;
+            m_Category = category;
+            this.GetFeaturedModels(sorting, complexity, format, category, data, SetNextPageToken, nextPageToken);
         }
 
         void SetNextPageToken(string nextPageToken)
@@ -146,8 +172,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     var ignored = true;
                     UpdateVisibleItem(data, order++, count, ref ignored);
 
-                    if (m_NextPageToken != null && count == m_Data.Count - 1)
-                        GetFeaturedModels();
+                    if (m_NextPageToken != null && count == m_Data.Count - PolyModule.RequestSize / 2)
+                        RequestAssetList();
                 }
 
                 count++;

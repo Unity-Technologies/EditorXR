@@ -87,7 +87,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4724973473163676}
   m_Layer: 0
-  m_Name: Scene
+  m_Name: Spinner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -264,7 +264,7 @@ MonoBehaviour:
   m_ScaleFactor: 0.056
   m_Spinner: {fileID: 4724973473163676}
   m_SpinnerSpeed: 25
-  m_SpinnerOffset: {x: 0.08, y: -0.0125, z: -0.023}
+  m_SpinnerOffset: {x: 0.065, y: -0.0125, z: -0.023}
   m_IconTypes: []
   m_Icons: []
 --- !u!114 &114000013168122432

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,18 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     {
         const string k_AllText = "All";
 
-        public Text summaryText
-        {
-            get { return m_SummaryText; }
-        }
-
         [SerializeField]
         Text m_SummaryText;
-
-        public Text descriptionText
-        {
-            get { return m_DescriptionText; }
-        }
 
         [SerializeField]
         Text m_DescriptionText;
@@ -85,7 +75,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         ObjectUtils.Destroy(button.gameObject);
 
                 m_FilterTypes = value;
-                m_FilterTypes.Insert(0, k_AllText);
+
+                if (addDefaultOption)
+                    m_FilterTypes.Insert(0, k_AllText);
 
                 // Generate new button list
                 m_VisibilityButtons = new FilterButtonUI[m_FilterTypes.Count];
@@ -94,8 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     var button = ObjectUtils.Instantiate(m_ButtonPrefab, m_ButtonList, false).GetComponent<FilterButtonUI>();
                     m_VisibilityButtons[i] = button;
 
-                    button.button.onClick.AddListener(() => { OnFilterClick(button); });
-
+                    button.clicked += rayOrigin => { OnFilterClick(button); };
                     button.clicked += OnClicked;
                     button.hovered += OnHovered;
                     button.text.text = m_FilterTypes[i];
@@ -105,11 +96,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public byte stencilRef { get; set; }
 
+        public Text summaryText { get { return m_SummaryText; } }
+        public Text descriptionText { get { return m_DescriptionText; } }
+
+        public bool addDefaultOption { private get; set; }
+
         public event Action<Transform> buttonHovered;
         public event Action<Transform> buttonClicked;
+        public event Action filterChanged;
 
         void Awake()
         {
+            addDefaultOption = true;
             m_HiddenButtonListYSpacing = -m_ButtonListGrid.cellSize.y;
         }
 
@@ -118,8 +116,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_BackgroundMaterial = MaterialUtils.GetMaterialClone(m_Background);
             m_BackgroundMaterial.SetInt("_StencilRef", stencilRef);
 
-            m_VisibilityButton.clicked += OnVisibilityButtonClicked;
-            m_VisibilityButton.hovered += OnHovered;
+            if (m_VisibilityButton)
+            {
+                m_VisibilityButton.clicked += OnVisibilityButtonClicked;
+                m_VisibilityButton.hovered += OnHovered;
+            }
+
             m_SummaryButton.clicked += OnVisibilityButtonClicked;
             m_SummaryButton.hovered += OnHovered;
         }
@@ -151,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        public void OnFilterClick(FilterButtonUI clickedButton)
+        void OnFilterClick(FilterButtonUI clickedButton)
         {
             for (int i = 0; i < m_VisibilityButtons.Length; i++)
                 if (clickedButton == m_VisibilityButtons[i])
@@ -168,6 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             switch (clickedButton.text.text)
             {
                 case k_AllText:
+
                     m_SummaryText.text = clickedButton.text.text;
                     m_DescriptionText.text = "All objects are visible";
                     break;
@@ -177,6 +180,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     m_DescriptionText.text = "Only " + m_SummaryText.text + " are visible";
                     break;
             }
+
+            if (filterChanged != null)
+                filterChanged();
         }
 
         IEnumerator ShowUIContent()

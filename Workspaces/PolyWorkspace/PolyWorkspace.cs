@@ -1,6 +1,8 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using PolyToolkit;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -20,10 +22,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     [MainMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
     sealed class PolyWorkspace : Workspace, ISerializeWorkspace
     {
+        const float k_XBounds = 1.4f;
         const float k_YBounds = 0.2f;
 
         const float k_MinScale = 0.05f;
         const float k_MaxScale = 0.2f;
+
+        const float k_FilterUIWidth = 0.23f;
+
+        const string k_Featured = "Featured";
+        const string k_Newest = "Newest";
+
+        const string k_Blocks = "Blocks";
+        const string k_TiltBrush = "Tilt Brush";
+
+        const string k_Medium = "Medium";
+        const string k_Simple = "Simple";
 
         [Serializable]
         class Preferences
@@ -44,9 +58,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         GameObject m_ContentPrefab;
 
         [SerializeField]
+        GameObject m_FilterUIPrefab;
+
+        [SerializeField]
         GameObject m_SliderPrefab;
 
         PolyUI m_PolyUI;
+        FilterUI m_SortingUI;
+        FilterUI m_FormatFilterUI;
+        FilterUI m_ComplexityFilterUI;
+        FilterUI m_CategoryFilterUI;
         ZoomSliderUI m_ZoomSliderUI;
 
         public List<PolyAsset> assetData
@@ -61,7 +82,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public override void Setup()
         {
             // Initial bounds must be set before the base.Setup() is called
-            minBounds = new Vector3(MinBounds.x, k_YBounds, 0.5f);
+            minBounds = new Vector3(k_XBounds, k_YBounds, 0.5f);
+            m_CustomStartingBounds = minBounds;
 
             base.Setup();
 
@@ -70,8 +92,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var gridView = m_PolyUI.gridView;
             this.ConnectInterfaces(gridView);
-            gridView.matchesFilter = s => true;
             assetData = new List<PolyAsset>();
+
+            SetupCategoryFilterUI();
+            SetupComplextyFilterUI();
+            SetupFormatFilterUI();
+            SetupSortingUI();
 
             var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
             m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
@@ -102,6 +128,210 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             // Propagate initial bounds
             OnBoundsChanged();
+        }
+
+        void SetupCategoryFilterUI()
+        {
+            m_CategoryFilterUI = ObjectUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+            m_CategoryFilterUI.transform.localPosition += Vector3.right * k_FilterUIWidth * 3;
+            foreach (var mb in m_CategoryFilterUI.GetComponentsInChildren<MonoBehaviour>())
+            {
+                this.ConnectInterfaces(mb);
+            }
+
+            m_CategoryFilterUI.filterChanged += () =>
+            {
+                var gridView = m_PolyUI.gridView;
+                var searchQuery = m_CategoryFilterUI.searchQuery;
+                if (string.IsNullOrEmpty(searchQuery))
+                    gridView.category = PolyCategory.UNSPECIFIED;
+                else
+                    gridView.category = (PolyCategory)Enum.Parse(typeof(PolyCategory), searchQuery);
+
+                gridView.RequestAssetList();
+                UpdateComplexityFilterUI();
+            };
+
+            m_CategoryFilterUI.filterList = Enum.GetNames(typeof(PolyCategory)).ToList();
+            UpdateCategoryFilterUI();
+        }
+
+        void UpdateCategoryFilterUI()
+        {
+            var searchQuery = m_CategoryFilterUI.searchQuery;
+            if (string.IsNullOrEmpty(searchQuery))
+            {
+                m_CategoryFilterUI.summaryText.text = "All";
+                m_CategoryFilterUI.descriptionText.text = "Showing all categories";
+            }
+            else
+            {
+                m_CategoryFilterUI.summaryText.text = searchQuery;
+                m_CategoryFilterUI.descriptionText.text = "Showing " + searchQuery;
+            }
+        }
+
+        void SetupComplextyFilterUI()
+        {
+            m_ComplexityFilterUI = ObjectUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+            m_ComplexityFilterUI.transform.localPosition += Vector3.right * k_FilterUIWidth * 2;
+            foreach (var mb in m_ComplexityFilterUI.GetComponentsInChildren<MonoBehaviour>())
+            {
+                this.ConnectInterfaces(mb);
+            }
+
+            m_ComplexityFilterUI.filterChanged += () =>
+            {
+                var gridView = m_PolyUI.gridView;
+                switch (m_ComplexityFilterUI.searchQuery)
+                {
+                    case k_Medium:
+                        gridView.complexity = PolyMaxComplexityFilter.MEDIUM;
+                        break;
+                    case k_Simple:
+                        gridView.complexity = PolyMaxComplexityFilter.SIMPLE;
+                        break;
+                    default:
+                        gridView.complexity = PolyMaxComplexityFilter.UNSPECIFIED;
+                        break;
+                }
+
+                gridView.RequestAssetList();
+                UpdateComplexityFilterUI();
+            };
+
+            m_ComplexityFilterUI.filterList = new List<string>
+            {
+                k_Medium,
+                k_Simple
+            };
+
+            UpdateComplexityFilterUI();
+        }
+
+        void UpdateComplexityFilterUI()
+        {
+            switch (m_ComplexityFilterUI.searchQuery)
+            {
+                case k_Medium:
+                    m_ComplexityFilterUI.summaryText.text = k_Featured;
+                    m_ComplexityFilterUI.descriptionText.text = "Showing simple and medium models";
+                    break;
+                case k_Simple:
+                    m_ComplexityFilterUI.summaryText.text = k_Simple;
+                    m_ComplexityFilterUI.descriptionText.text = "Showing simple models";
+                    break;
+                default:
+                    m_ComplexityFilterUI.summaryText.text = "All";
+                    m_ComplexityFilterUI.descriptionText.text = "Showing all complexities";
+                    break;
+            }
+        }
+
+        void SetupFormatFilterUI()
+        {
+            m_FormatFilterUI = ObjectUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+            m_FormatFilterUI.transform.localPosition += Vector3.right * k_FilterUIWidth;
+            foreach (var mb in m_FormatFilterUI.GetComponentsInChildren<MonoBehaviour>())
+            {
+                this.ConnectInterfaces(mb);
+            }
+
+            m_FormatFilterUI.filterChanged += () =>
+            {
+                var gridView = m_PolyUI.gridView;
+                switch (m_FormatFilterUI.searchQuery)
+                {
+                    case k_Blocks:
+                        gridView.format = PolyFormatFilter.BLOCKS;
+                        break;
+                    case k_TiltBrush:
+                        gridView.format = PolyFormatFilter.TILT;
+                        break;
+                    default:
+                        gridView.format = null;
+                        break;
+                }
+
+                gridView.RequestAssetList();
+                UpdateFormatFilterUI();
+            };
+
+            m_FormatFilterUI.filterList = new List<string>
+            {
+                k_Blocks,
+                k_TiltBrush
+            };
+
+            UpdateFormatFilterUI();
+        }
+
+        void UpdateFormatFilterUI()
+        {
+            switch (m_FormatFilterUI.searchQuery)
+            {
+                case k_Blocks:
+                    m_FormatFilterUI.summaryText.text = k_Blocks;
+                    m_FormatFilterUI.descriptionText.text = "Showing Blocks models";
+                    break;
+                case k_TiltBrush:
+                    m_FormatFilterUI.summaryText.text = k_TiltBrush;
+                    m_FormatFilterUI.descriptionText.text = "Showing Tiltbrush models";
+                    break;
+                default:
+                    m_FormatFilterUI.summaryText.text = "All";
+                    m_FormatFilterUI.descriptionText.text = "Showing all formats";
+                    break;
+            }
+        }
+
+        void SetupSortingUI()
+        {
+            m_SortingUI = ObjectUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+            foreach (var mb in m_SortingUI.GetComponentsInChildren<MonoBehaviour>())
+            {
+                this.ConnectInterfaces(mb);
+            }
+            m_SortingUI.filterChanged += () =>
+            {
+                var gridView = m_PolyUI.gridView;
+                switch (m_SortingUI.searchQuery)
+                {
+                    case k_Featured:
+                        gridView.sorting = PolyOrderBy.BEST;
+                        break;
+                    case k_Newest:
+                        gridView.sorting = PolyOrderBy.NEWEST;
+                        break;
+                }
+
+                gridView.RequestAssetList();
+                UpdateSortingUI();
+            };
+
+            m_SortingUI.addDefaultOption = false;
+            m_SortingUI.filterList = new List<string>
+            {
+                k_Featured,
+                k_Newest
+            };
+
+            UpdateSortingUI();
+        }
+
+        void UpdateSortingUI()
+        {
+            switch (m_SortingUI.searchQuery)
+            {
+                case k_Featured:
+                    m_SortingUI.summaryText.text = k_Featured;
+                    m_SortingUI.descriptionText.text = "Sorted by popularity";
+                    break;
+                case k_Newest:
+                    m_SortingUI.summaryText.text = k_Newest;
+                    m_SortingUI.descriptionText.text = "Sorted by date";
+                    break;
+            }
         }
 
         public object OnSerializeWorkspace()

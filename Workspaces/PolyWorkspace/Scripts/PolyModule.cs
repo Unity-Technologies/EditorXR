@@ -3,6 +3,7 @@ using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using PolyAsset = UnityEditor.Experimental.EditorVR.Workspaces.PolyAsset;
+
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System.Collections.Generic;
@@ -16,21 +17,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public class PolyModule : MonoBehaviour, IWeb
     {
+        public const int RequestSize = 100;
+
         class RequestHandler
         {
             List<PolyAsset> m_Assets;
             Transform m_Container;
             Action<string> m_ListCallback;
 
-            public RequestHandler(List<PolyAsset> assets, Transform container, Action<string> listCallback, string nextPageToken = null)
+            public RequestHandler(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,
+                PolyCategory category, List<PolyAsset> assets, Transform container, Action<string> listCallback,
+                string nextPageToken = null)
             {
                 m_Assets = assets;
                 m_Container = container;
                 m_ListCallback = listCallback;
-                var request = PolyListAssetsRequest.Featured();
+
+                var request = new PolyListAssetsRequest
+                {
+                    orderBy = orderBy,
+                    maxComplexity = complexity,
+                    formatFilter = format,
+                    category = category
+                };
 
                 request.pageToken = nextPageToken;
-                request.pageSize = 50;
+                request.pageSize = RequestSize;
                 PolyApi.ListAssets(request, ListAssetsCallback);
             }
 
@@ -77,9 +89,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             PolyApi.Shutdown();
         }
 
-        public void GetFeaturedModels(List<PolyAsset> assets, Action<string> listCallback, string nextPageToken = null)
+        public void GetFeaturedModels(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,
+            PolyCategory category, List<PolyAsset> assets, Action<string> listCallback, string nextPageToken = null)
         {
-            new RequestHandler(assets, m_Container, listCallback, nextPageToken);
+            new RequestHandler(orderBy, complexity, format,category, assets, m_Container, listCallback, nextPageToken);
         }
     }
 }
