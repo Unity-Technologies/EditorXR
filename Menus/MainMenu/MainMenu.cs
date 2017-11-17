@@ -141,10 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             var mainMenuInput = (MainMenuInput)input;
             var rotationInput = -mainMenuInput.rotate.rawValue;
-
-            consumeControl(mainMenuInput.rotate);
-            consumeControl(mainMenuInput.blockY);
-
+            
             const float kFlickDeltaThreshold = 0.5f;
             if ((this.GetDeviceType() != DeviceType.Vive && Mathf.Abs(rotationInput) >= kFlickDeltaThreshold
                 && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold) || mainMenuInput.flickFace.wasJustReleased)
@@ -152,9 +149,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
                 this.Pulse(node, m_FaceRotationPulse);
             }
-
-            if (m_MenuHideFlags == 0)
-                consumeControl(mainMenuInput.flickFace);
 
             m_LastRotationInput = rotationInput;
         }

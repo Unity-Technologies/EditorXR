@@ -233,12 +233,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (alternateMenuVisible && (customMenuVisible || mainMenuVisible))
                         alternateMenuData.hideFlags |= MenuHideFlags.OtherMenu;
 
-                    // Temporarily hide undoMenu if other menus are visible
-                    if (undoMenuVisible && (customMenuVisible || mainMenuVisible || alternateMenuVisible))
-                        undoMenuHideData.hideFlags |= MenuHideFlags.OtherMenu;
-                    else if (!undoMenuVisible && undoMenuHideData != null)
+                    if (!undoMenuVisible && undoMenuHideData != null)
                         undoMenuHideData.hideFlags = 0;
-
                     // Check if menu bounds overlap with any workspace colliders
                     foreach (var kvp in menuHideData)
                     {

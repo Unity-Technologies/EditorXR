@@ -115,9 +115,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
             if (undoMenuInput.engage.wasJustReleased)
                 this.RestartCoroutine(ref m_StillEngagedAfterStickReleasedCoroutine, AcceptInputAfterStickReleased());
-            if (!(undoMenuInput.engage.isHeld || m_StillEngagedAfterStickRelease))
+            if (!(undoMenuInput.engage.wasJustPressed || undoMenuInput.engage.isHeld || m_StillEngagedAfterStickRelease))
                 return;
             consumeControl(undoMenuInput.engage);
+            m_UndoMenuUI.engaged = true;
 
             var navigateX = undoMenuInput.navigateX.value;
             var undoRedoEngaged = false;
@@ -142,13 +143,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IEnumerator AcceptInputAfterStickReleased()
         {
             m_StillEngagedAfterStickRelease = true;
-            var currentDuration = 0f;
-            while (currentDuration < k_EngageUndoAfterStickReleasedDuration)
-            {
-                currentDuration += Time.deltaTime;
-                yield return null;
-            }
+            yield return new WaitForSeconds(k_EngageUndoAfterStickReleasedDuration);
             m_StillEngagedAfterStickRelease = false;
+            m_UndoMenuUI.engaged = false;
         }
 
         void ShowFeedback()
