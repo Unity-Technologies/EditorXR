@@ -1,9 +1,12 @@
 #if UNITY_EDITOR
 using ListView;
+using UnityEngine;
+
+#if INCLUDE_POLY_TOOLKIT
 using System;
 using PolyToolkit;
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -36,11 +39,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         float m_LastHiddenItemOffset;
         int m_LastDataCount;
         string m_NextPageToken;
-        PolyOrderBy m_Sorting;
 
+#if INCLUDE_POLY_TOOLKIT
+        PolyOrderBy m_Sorting;
         PolyMaxComplexityFilter m_Complexity;
         PolyFormatFilter? m_Format;
         PolyCategory m_Category;
+
+
+        public PolyOrderBy sorting { get; set; }
+        public PolyMaxComplexityFilter complexity { get; set; }
+        public PolyFormatFilter? format { get; set; }
+        public PolyCategory category { get; set; }
+#endif
 
         public float scaleFactor
         {
@@ -51,11 +62,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_ScaleFactor = value;
             }
         }
-
-        public PolyOrderBy sorting { get; set; }
-        public PolyMaxComplexityFilter complexity { get; set; }
-        public PolyFormatFilter? format { get; set; }
-        public PolyCategory category { get; set; }
 
         protected override float listHeight
         {
@@ -79,6 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void RequestAssetList()
         {
+#if INCLUDE_POLY_TOOLKIT
             var nextPageToken = m_NextPageToken;
             m_NextPageToken = null;
 
@@ -98,6 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_Format = format;
             m_Category = category;
             this.GetFeaturedModels(sorting, complexity, format, category, data, SetNextPageToken, nextPageToken);
+#endif
         }
 
         void SetNextPageToken(string nextPageToken)
@@ -172,8 +180,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     var ignored = true;
                     UpdateVisibleItem(data, order++, count, ref ignored);
 
+#if INCLUDE_POLY_TOOLKIT
                     if (m_NextPageToken != null && count == m_Data.Count - PolyModule.RequestSize / 2)
                         RequestAssetList();
+#endif
                 }
 
                 count++;

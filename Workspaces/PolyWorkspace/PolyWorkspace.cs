@@ -1,15 +1,16 @@
 #if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR;
+using UnityEngine;
+
+#if INCLUDE_POLY_TOOLKIT
 using System.Collections.Generic;
 using System.Linq;
 using PolyToolkit;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEngine;
-
-#if !INCLUDE_POLY_TOOLKIT
+#else
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine.InputNew;
 #endif

@@ -1,16 +1,15 @@
 #if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
-using UnityEditor.Experimental.EditorVR.Workspaces;
-#if INCLUDE_POLY_TOOLKIT
-using PolyToolkit;
 
+#if INCLUDE_POLY_TOOLKIT
+using System.Collections.Generic;
+using PolyToolkit;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 #endif
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 
-#if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
@@ -20,6 +19,7 @@ namespace UnityEditor.Experimental.EditorVR
     {
     }
 
+#if INCLUDE_POLY_TOOLKIT
     public static class IPolyMethods
     {
         internal delegate void GetFeaturedModelsDelegate(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity,
@@ -35,6 +35,6 @@ namespace UnityEditor.Experimental.EditorVR
             getFeaturedModels(orderBy, complexity, format, category, assets, listCallback, nextPageToken);
         }
     }
-}
 #endif
+}
 #endif

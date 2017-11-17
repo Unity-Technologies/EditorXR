@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
 #endif
 
-        public PolyGridAsset(PolyToolkit.PolyAsset asset, Transform container)
+        public PolyGridAsset(PolyAsset asset, Transform container)
         {
 #if INCLUDE_POLY_TOOLKIT
             m_Asset = asset;
