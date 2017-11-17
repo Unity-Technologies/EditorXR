@@ -34,14 +34,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_OriginalColor = m_Button.targetGraphic.color;
         }
 
-        public void SetData(string name, string description)
-        {
-#if INCLUDE_TEXT_MESH_PRO
-            m_Title.text = name;
-            m_Description.text = description;
-#endif
-        }
-
         public void OnRayEnter(RayEventData eventData)
         {
 #if INCLUDE_TEXT_MESH_PRO
