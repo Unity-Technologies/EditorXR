@@ -126,12 +126,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 Undo.PerformUndo();
                 m_UndoMenuUI.StartPerformedAnimation(true);
+                ShowUndoPerformedFeedback(true);
                 undoRedoPerformed = true;
             }
             else if (navigateX > k_UndoRedoThreshold && m_PrevNavigateX < k_UndoRedoThreshold)
             {
                 Undo.PerformRedo();
                 m_UndoMenuUI.StartPerformedAnimation(false);
+                ShowUndoPerformedFeedback(false);
                 undoRedoPerformed = true;
             }
             m_PrevNavigateX = navigateX;
@@ -153,7 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void ShowFeedback()
         {
             List<VRInputDevice.VRControl> controls;
-            if (m_Controls.TryGetValue("SelectItem", out controls))
+            if (m_Controls.TryGetValue("Engage", out controls))
             {
                 foreach (var id in controls)
                 {
@@ -161,7 +163,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     {
                         control = id,
                         node = node,
-                        tooltipText = "Select Action (Press to Execute)"
+                        tooltipText = "Click + flick left/right to undo/redo"
+                    });
+                }
+            }
+        }
+
+        void ShowUndoPerformedFeedback(bool undo)
+        {
+            List<VRInputDevice.VRControl> controls;
+            if (m_Controls.TryGetValue("Engage", out controls))
+            {
+                foreach (var id in controls)
+                {
+                    this.AddFeedbackRequest(new ProxyFeedbackRequest
+                    {
+                        control = id,
+                        node = node,
+                        tooltipText = string.Format("{0} performed", undo ? "Undo" : "Redo")
                     });
                 }
             }
