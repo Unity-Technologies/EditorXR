@@ -1,10 +1,14 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR;
+using UnityEngine;
+using UnityEngine.UI;
+
 #if INCLUDE_TEXT_MESH_PRO
 using TMPro;
 #endif
-using UnityEngine;
-using UnityEngine.UI;
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
