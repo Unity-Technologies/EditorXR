@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 64453517736190084}
   - component: {fileID: 23859873210418424}
   m_Layer: 0
-  m_Name: Undo
+  m_Name: Redo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -57,7 +57,7 @@ GameObject:
   - component: {fileID: 64290476127420130}
   - component: {fileID: 23850276268091638}
   m_Layer: 0
-  m_Name: Redo
+  m_Name: Undo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -74,7 +74,7 @@ Transform:
   m_LocalScale: {x: 0.02, y: 0.02, z: 0.02}
   m_Children: []
   m_Father: {fileID: 4579274395351022}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 90, y: 180, z: 0}
 --- !u!4 &4579274395351022
 Transform:
@@ -86,8 +86,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 4386191342587820}
   - {fileID: 4809501880196944}
+  - {fileID: 4386191342587820}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -102,7 +102,7 @@ Transform:
   m_LocalScale: {x: 0.02, y: 0.02, z: 0.02}
   m_Children: []
   m_Father: {fileID: 4579274395351022}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
 --- !u!23 &23850276268091638
 MeshRenderer:
@@ -225,5 +225,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8ebdbcab31646f4da31c5a9a3f2ce5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UndoButtonMeshRenderer: {fileID: 23859873210418424}
-  m_RedoButtonMeshRenderer: {fileID: 23850276268091638}
+  m_UndoButtonMeshRenderer: {fileID: 23850276268091638}
+  m_RedoButtonMeshRenderer: {fileID: 23859873210418424}

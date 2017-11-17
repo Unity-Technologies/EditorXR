@@ -121,19 +121,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_UndoMenuUI.engaged = true;
 
             var navigateX = undoMenuInput.navigateX.value;
-            var undoRedoEngaged = false;
+            var undoRedoPerformed = false;
             if (navigateX < -k_UndoRedoThreshold && m_PrevNavigateX > -k_UndoRedoThreshold)
             {
                 Undo.PerformUndo();
-                undoRedoEngaged = true;
+                m_UndoMenuUI.StartPerformedAnimation(true);
+                undoRedoPerformed = true;
             }
             else if (navigateX > k_UndoRedoThreshold && m_PrevNavigateX < k_UndoRedoThreshold)
             {
                 Undo.PerformRedo();
-                undoRedoEngaged = true;
+                m_UndoMenuUI.StartPerformedAnimation(false);
+                undoRedoPerformed = true;
             }
             m_PrevNavigateX = navigateX;
-            if (undoRedoEngaged)
+            if (undoRedoPerformed)
             {
                 consumeControl(undoMenuInput.navigateX);
                 this.Pulse(node, m_UndoPulse);
