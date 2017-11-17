@@ -63,7 +63,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
 #if INCLUDE_TEXT_MESH_PRO
             m_Title.text = name;
-            m_Description.text = description;
+            if (m_Description != null)
+                m_Description.text = description;
 #endif
         }
     }
