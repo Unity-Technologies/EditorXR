@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
-    /// Provides access to the Web Module
+    /// Provides access to grouping
     /// </summary>
     public interface IUsesGrouping
     {
@@ -15,9 +15,13 @@ namespace UnityEditor.Experimental.EditorVR
     {
         internal static Action<GameObject> makeGroup;
 
-        public static void MakeGroup(this IUsesGrouping obj, GameObject parent)
+        /// <summary>
+        /// Make this object, and its children into a group
+        /// </summary>
+        /// <param name="root">The root of the group</param>
+        public static void MakeGroup(this IUsesGrouping obj, GameObject root)
         {
-            makeGroup(parent);
+            makeGroup(root);
         }
     }
 }
