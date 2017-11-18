@@ -3,13 +3,19 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    sealed class AffordanceTooltip : MonoBehaviour, ITooltip
+    sealed class AffordanceTooltip : MonoBehaviour, ITooltip, ITooltipPlacement
     {
         [SerializeField]
         string m_TooltipText;
 
         [SerializeField]
         AffordanceTooltipPlacement[] m_Placements;
+
+        FacingDirection m_LastFacingDirection;
+
+        public Transform tooltipTarget { get { return GetPlacement(m_LastFacingDirection).tooltipTarget; } }
+        public Transform tooltipSource { get { return GetPlacement(m_LastFacingDirection).tooltipSource; } }
+        public TextAlignment tooltipAlignment { get { return GetPlacement(m_LastFacingDirection).tooltipAlignment; } }
 
         public string tooltipText
         {
@@ -21,6 +27,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public AffordanceTooltipPlacement GetPlacement(FacingDirection direction)
         {
+            m_LastFacingDirection = direction;
+
             foreach (var placement in m_Placements)
             {
                 if ((placement.facingDirection & direction) != 0)
