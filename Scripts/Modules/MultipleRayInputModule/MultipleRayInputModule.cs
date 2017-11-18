@@ -83,16 +83,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_Owner.HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
 
                 var hasScrollHandler = false;
-                input.active = hasObject && ShouldActivateInput(eventData, currentObject, out hasScrollHandler);
+                var hasInteractable = hasObject && HoveringInteractable(eventData, currentObject, out hasScrollHandler);
 
                 // Proceed only if pointer is interacting with something
-                if (!input.active)
+                if (!hasInteractable)
                 {
                     // If we have an object, the ray is blocked--input should not bleed through
                     if (hasObject && select.wasJustPressed)
                         consumeControl(select);
 
                     HideScrollFeedback();
+
+                    if (select.wasJustReleased)
+                        m_Owner.OnSelectReleased(this);
 
                     return;
                 }
@@ -257,7 +260,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_EventCamera.farClipPlane = camera.farClipPlane;
         }
 
-        static bool ShouldActivateInput(RayEventData eventData, GameObject currentObject, out bool hasScrollHandler)
+        static bool HoveringInteractable(RayEventData eventData, GameObject currentObject, out bool hasScrollHandler)
         {
             hasScrollHandler = false;
 
