@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
-    [ActionMenuItem("Clone", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
-    sealed class Clone : BaseAction, IUsesSpatialHash, IUsesViewerScale
+    [ActionMenuItem("Duplicate", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
+    sealed class Duplicate : BaseAction, IUsesSpatialHash, IUsesViewerScale
     {
         public override void ExecuteAction()
         {
