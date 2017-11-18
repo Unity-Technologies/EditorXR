@@ -95,22 +95,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (overrideSelectObject(hoveredObject))
                     continue;
 
-            var selection = GetSelectionCandidate(hoveredObject, useGrouping);
+                var selection = GetSelectionCandidate(hoveredObject, useGrouping);
 
-            var groupRoot = GetGroupRoot(hoveredObject);
-            if (useGrouping && groupRoot != m_CurrentGroupRoot)
-                m_CurrentGroupRoot = groupRoot;
+                var groupRoot = GetGroupRoot(hoveredObject);
+                if (useGrouping && groupRoot != m_CurrentGroupRoot)
+                    m_CurrentGroupRoot = groupRoot;
 
-            if (multiSelect)
-            {
+                if (multiSelect)
+                {
                     // Re-selecting an object removes it from selection, otherwise add it
                     if (!k_SelectedObjects.Remove(selection))
                         k_SelectedObjects.Add(selection);
                 }
-            else
-            {
+                else
+                {
                     k_SelectedObjects.Add(selection);
-            }
+                }
             }
 
             Selection.objects = k_SelectedObjects.ToArray();
