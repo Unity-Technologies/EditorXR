@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR
         public static void SelectObjects(this ISelectObject obj, List<GameObject> hoveredObjects, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
         {
             selectObjects(hoveredObjects, rayOrigin, multiSelect, useGrouping);
+        }
     }
-}
 }
 #endif
