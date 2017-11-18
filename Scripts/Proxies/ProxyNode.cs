@@ -21,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 class VisibilityState
                 {
                     readonly int m_MaterialIndex;
+                    readonly Material m_Material;
                     readonly AffordanceTooltip[] m_Tooltips;
                     readonly AffordanceVisibilityDefinition m_Definition;
 
@@ -48,7 +49,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     {
                         m_Tooltips = tooltips;
                         m_Definition = definition;
+                        m_Material = material;
                         m_MaterialIndex = Array.IndexOf(renderer.sharedMaterials, material);
+                    }
+
+                    public void SetFloat(float value)
+                    {
+                        m_Material.SetFloat(m_Definition.alphaProperty, value);
+                    }
+
+                    public void SetColor(Color value)
+                    {
+                        m_Material.SetColor(m_Definition.colorProperty, value);
                     }
                 }
 
@@ -56,8 +68,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 float m_VisibleChangeTime;
                 Color m_OriginalColor;
                 Color m_StartColor;
+                Color m_CurrentColor;
 
                 readonly Dictionary<VRControl, VisibilityState> m_Visibilities = new Dictionary<VRControl, VisibilityState>();
+                readonly Dictionary<KeyValuePair<Material, string>, Action<float>> m_SetFloats = new Dictionary<KeyValuePair<Material, string>, Action<float>>();
+                readonly Dictionary<KeyValuePair<Material, string>, Action<Color>> m_SetColors = new Dictionary<KeyValuePair<Material, string>, Action<Color>>();
 
                 public void AddAffordance(Material material, VRControl control, Renderer renderer,
                     AffordanceTooltip[] tooltips, AffordanceVisibilityDefinition definition)
@@ -78,24 +93,27 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     }
 
                     m_StartColor = m_OriginalColor;
+                    m_CurrentColor = m_StartColor;
                 }
 
                 public void Update(Renderer renderer, Material material, float time, float fadeInDuration, float fadeOutDuration,
                     ProxyNode proxyNode, AffordanceVisibilityDefinition visibilityOverride)
                 {
+                    VisibilityState visibilityState = null;
                     var definition = visibilityOverride;
                     var hideTime = 0f;
                     if (definition == null)
                     {
                         foreach (var kvp in m_Visibilities)
                         {
-                            var visibilityState = kvp.Value;
-                            if (visibilityState.visible)
+                            var state = kvp.Value;
+                            if (state.visible)
                             {
-                                if (visibilityState.hideTime > hideTime)
+                                if (state.hideTime > hideTime)
                                 {
-                                    definition = visibilityState.definition;
-                                    hideTime = visibilityState.visibleDuration > 0 ? visibilityState.hideTime : 0;
+                                    definition = state.definition;
+                                    hideTime = state.visibleDuration > 0 ? state.hideTime : 0;
+                                    visibilityState = state;
                                 }
                             }
                         }
@@ -106,68 +124,50 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     {
                         foreach (var kvp in m_Visibilities)
                         {
-                            definition = kvp.Value.definition;
+                            visibilityState = kvp.Value;
+                            definition = visibilityState.definition;
                             break;
                         }
                     }
 
-                    if (visible != m_WasVisible)
-                        m_VisibleChangeTime = time;
-
-                    var timeDiff = time - m_VisibleChangeTime;
                     var fadeDuration = visible ? fadeInDuration : fadeOutDuration;
-
                     switch (definition.visibilityType)
                     {
                         case VisibilityControlType.AlphaProperty:
-                            var alphaProperty = definition.alphaProperty;
-                            if (visible != m_WasVisible)
-                                m_StartColor = material.GetFloat(alphaProperty) * Color.white;
+                            Action<float> setFloat = null;
+                            if (visibilityState != null)
+                                setFloat = visibilityState.SetFloat;
 
-                            var current = m_StartColor.a;
-                            var target = visible ? m_OriginalColor.a : definition.hiddenColor.a;
-                            if (!Mathf.Approximately(current, target))
+                            if (setFloat == null)
                             {
-                                var duration = current / target * fadeDuration;
-                                var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
-                                if (smoothedAmount > 1)
+                                var kvp = new KeyValuePair<Material, string>(material, definition.alphaProperty);
+                                if (!m_SetFloats.TryGetValue(kvp, out setFloat))
                                 {
-                                    current = target;
-                                    var color = m_StartColor;
-                                    color.a = current;
-                                    m_StartColor = color;
+                                    setFloat = value => { material.SetFloat(definition.alphaProperty, value); };
+                                    m_SetFloats[kvp] = setFloat;
                                 }
-                                else
-                                {
-                                    current = Mathf.Lerp(current, target, smoothedAmount);
-                                }
-
-                                material.SetFloat(alphaProperty, current);
                             }
+
+                            TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime, ref m_CurrentColor.a, ref m_StartColor.a,
+                                definition.hiddenColor.a, m_OriginalColor.a, fadeDuration, Mathf.Approximately, TransitionUtils.GetPercentage, Mathf.Lerp, setFloat, false);
                             break;
                         case VisibilityControlType.ColorProperty:
-                            var colorProperty = definition.colorProperty;
-                            if (visible != m_WasVisible)
-                                m_StartColor = material.GetColor(colorProperty);
+                            Action<Color> setColor = null;
+                            if (visibilityState != null)
+                                setColor = visibilityState.SetColor;
 
-                            var targetColor = visible ? m_OriginalColor : definition.hiddenColor;
-                            if (m_StartColor != targetColor)
+                            if (setColor == null)
                             {
-                                Color currentColor;
-                                var duration = m_StartColor.grayscale / targetColor.grayscale * fadeDuration;
-                                var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
-                                if (smoothedAmount > 1)
+                                var kvp = new KeyValuePair<Material, string>(material, definition.alphaProperty);
+                                if (!m_SetColors.TryGetValue(kvp, out setColor))
                                 {
-                                    m_StartColor = targetColor;
-                                    currentColor = targetColor;
+                                    setColor = value => { material.SetColor(definition.colorProperty, value); };
+                                    m_SetColors[kvp] = setColor;
                                 }
-                                else
-                                {
-                                    currentColor = Color.Lerp(m_StartColor, targetColor, smoothedAmount);
-                                }
-
-                                material.SetColor(colorProperty, currentColor);
                             }
+
+                            TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime, ref m_CurrentColor, ref m_StartColor,
+                                definition.hiddenColor, m_OriginalColor, fadeDuration, TransitionUtils.Approximately, TransitionUtils.GetPercentage, Color.Lerp, setColor, false);
                             break;
                     }
 
@@ -175,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     {
                         foreach (var kvp in m_Visibilities)
                         {
-                            var visibilityState = kvp.Value;
+                            visibilityState = kvp.Value;
                             if (visibilityState.definition.visibilityType == VisibilityControlType.MaterialSwap)
                                 renderer.sharedMaterials[visibilityState.materialIndex] =
                                     visible ? material : visibilityState.definition.hiddenMaterial;
@@ -188,7 +188,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     {
                         foreach (var kvp in m_Visibilities)
                         {
-                            var visibilityState = kvp.Value;
+                            visibilityState = kvp.Value;
                             var tooltips = visibilityState.tooltips;
                             if (tooltips != null)
                             {
