@@ -529,7 +529,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
     }
 #else
-        internal class NoEditorVR
+    internal class NoEditorVR
     {
         const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 

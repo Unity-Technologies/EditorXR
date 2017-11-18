@@ -23,16 +23,27 @@ namespace UnityEditor.Experimental.EditorVR
     public static class IPolyMethods
     {
         internal delegate void GetFeaturedModelsDelegate(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity,
-            PolyFormatFilter? format, PolyCategory category, List<PolyGridAsset> assets, Action<string> listCallback,
-            string nextPageToken = null);
+            PolyFormatFilter? format, PolyCategory category, int requestSize, List<PolyGridAsset> assets,
+            Action<string> listCallback, string nextPageToken = null);
 
-        internal static GetFeaturedModelsDelegate getFeaturedModels;
+        internal static GetFeaturedModelsDelegate getAssetList;
 
-        public static void GetFeaturedModels(this IPoly obj, PolyOrderBy orderBy, PolyMaxComplexityFilter complexity,
-            PolyFormatFilter? format, PolyCategory category, List<PolyGridAsset> assets, Action<string> listCallback,
-            string nextPageToken = null)
+        /// <summary>
+        /// Get a list of assets
+        /// </summary>
+        /// <param name="orderBy">The sorting order of the results</param>
+        /// <param name="complexity">The max complexity of assets to request</param>
+        /// <param name="format">The format of assets to request</param>
+        /// <param name="category">The category of assets to request</param>
+        /// <param name="requestSize">The number of assets to request</param>
+        /// <param name="assets">The list of poly assets to add the results to</param>
+        /// <param name="listCallback">A method which is called when the list is returned</param>
+        /// <param name="nextPageToken">(optional) The next page token to pick up on an existing list</param>
+        public static void GetAssetList(this IPoly obj, PolyOrderBy orderBy, PolyMaxComplexityFilter complexity,
+            PolyFormatFilter? format, PolyCategory category, int requestSize, List<PolyGridAsset>
+            assets, Action<string> listCallback, string nextPageToken = null)
         {
-            getFeaturedModels(orderBy, complexity, format, category, assets, listCallback, nextPageToken);
+            getAssetList(orderBy, complexity, format, category, requestSize, assets, listCallback, nextPageToken);
         }
     }
 #endif

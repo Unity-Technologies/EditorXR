@@ -16,8 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public class PolyModule : MonoBehaviour, IWeb
     {
-        public const int RequestSize = 100;
-
         class RequestHandler
         {
             List<PolyGridAsset> m_Assets;
@@ -25,8 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Action<string> m_ListCallback;
 
             public RequestHandler(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,
-                PolyCategory category, List<PolyGridAsset> assets, Transform container, Action<string> listCallback,
-                string nextPageToken = null)
+                PolyCategory category, int requestSize, List<PolyGridAsset> assets, Transform container,
+                Action<string> listCallback, string nextPageToken = null)
             {
                 m_Assets = assets;
                 m_Container = container;
@@ -41,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 };
 
                 request.pageToken = nextPageToken;
-                request.pageSize = RequestSize;
+                request.pageSize = requestSize;
                 PolyApi.ListAssets(request, ListAssetsCallback);
             }
 
@@ -88,10 +86,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             PolyApi.Shutdown();
         }
 
-        public void GetFeaturedModels(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,
-            PolyCategory category, List<PolyGridAsset> assets, Action<string> listCallback, string nextPageToken = null)
+        public void GetAssetList(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,
+            PolyCategory category, int requestSize, List<PolyGridAsset> assets, Action<string> listCallback,
+            string nextPageToken = null)
         {
-            new RequestHandler(orderBy, complexity, format,category, assets, m_Container, listCallback, nextPageToken);
+            new RequestHandler(orderBy, complexity, format,category, requestSize, assets, m_Container, listCallback, nextPageToken);
         }
     }
 }

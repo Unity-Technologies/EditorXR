@@ -12,6 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     class PolyGridViewController : ListViewController<PolyGridAsset, PolyGridItem, string>, IPoly
     {
+        const int k_RequestSize = 100;
+
         const float k_PositionFollow = 0.4f;
 
         [SerializeField]
@@ -104,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_Complexity = complexity;
             m_Format = format;
             m_Category = category;
-            this.GetFeaturedModels(sorting, complexity, format, category, data, SetNextPageToken, nextPageToken);
+            this.GetAssetList(sorting, complexity, format, category, k_RequestSize, data, SetNextPageToken, nextPageToken);
 #endif
         }
 
@@ -181,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     UpdateVisibleItem(data, order++, count, ref ignored);
 
 #if INCLUDE_POLY_TOOLKIT
-                    if (m_NextPageToken != null && count == m_Data.Count - PolyModule.RequestSize / 2)
+                    if (m_NextPageToken != null && count == m_Data.Count - k_RequestSize / 2)
                         RequestAssetList();
 #endif
                 }

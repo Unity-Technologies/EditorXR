@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             public void LateBindInterfaceMethods(PolyModule provider)
             {
-                IPolyMethods.getFeaturedModels = provider.GetFeaturedModels;
+                IPolyMethods.getAssetList = provider.GetAssetList;
             }
         }
     }
