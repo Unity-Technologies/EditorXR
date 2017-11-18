@@ -1,7 +1,8 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
@@ -147,21 +148,29 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var typeName = string.Empty;
             if (assetTypes != null)
             {
-                var type = AssetDatabase.GetMainAssetTypeAtPath(AssetDatabase.GUIDToAssetPath(hp.guid));
-                if (type != null)
+                var path = AssetDatabase.GUIDToAssetPath(hp.guid);
+                if (Path.GetExtension(path) == ".asset") // Some .assets cause a hitch when getting their type
                 {
-                    typeName = type.Name;
-                    switch (typeName)
+                    typeName = "Asset";
+                }
+                else
+                {
+                    var type = AssetDatabase.GetMainAssetTypeAtPath(path);
+                    if (type != null)
                     {
-                        case "MonoScript":
-                            typeName = "Script";
-                            break;
-                        case "SceneAsset":
-                            typeName = "Scene";
-                            break;
-                        case "AudioMixerController":
-                            typeName = "AudioMixer";
-                            break;
+                        typeName = type.Name;
+                        switch (typeName)
+                        {
+                            case "MonoScript":
+                                typeName = "Script";
+                                break;
+                            case "SceneAsset":
+                                typeName = "Scene";
+                                break;
+                            case "AudioMixerController":
+                                typeName = "AudioMixer";
+                                break;
+                        }
                     }
                 }
 
