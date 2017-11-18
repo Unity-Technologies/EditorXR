@@ -87,6 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (m_MenuHideFlags != value)
                 {
                     m_MenuHideFlags = value;
+
                     var visible = value == 0;
                     if (m_UndoMenuUI)
                         m_UndoMenuUI.visible = visible;
@@ -121,10 +122,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 this.ClearFeedbackRequests();
                 return;
             }
+
             if (undoMenuInput.engage.wasJustReleased && !m_TrackpadController)
                 this.RestartCoroutine(ref m_StillEngagedAfterStickReleasedCoroutine, AcceptInputAfterStickReleased());
+
             if (!(undoMenuInput.engage.wasJustPressed || !m_TrackpadController && (undoMenuInput.engage.isHeld || m_StillEngagedAfterStickRelease)))
                 return;
+
             consumeControl(undoMenuInput.engage);
             m_UndoMenuUI.engaged = true;
 
@@ -144,7 +148,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 ShowUndoPerformedFeedback(false);
                 undoRedoPerformed = true;
             }
+
             m_PrevNavigateX = navigateX;
+
             if (undoRedoPerformed)
             {
                 consumeControl(undoMenuInput.navigateX);

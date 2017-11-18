@@ -21,6 +21,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         MeshRenderer m_RedoButtonMeshRenderer;
+        
+        Material m_UndoButtonMaterial;
+        Material m_RedoButtonMaterial;
+        Coroutine m_EngageCoroutine;
+        Coroutine m_UndoPerformedCoroutine;
 
         public Transform alternateMenuOrigin
         {
@@ -88,11 +93,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         List<ActionMenuData> m_Actions;
 
-        Material m_UndoButtonMaterial;
-        Material m_RedoButtonMaterial;
-        Coroutine m_EngageCoroutine;
-        Coroutine m_UndoPerformedCoroutine;
-
         void Awake()
         {
             m_UndoButtonMaterial = MaterialUtils.GetMaterialClone(m_UndoButtonMeshRenderer);
@@ -126,6 +126,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 transitionAmount = currentDuration / k_EngageAnimationDuration;
                 yield return null;
             }
+
             m_UndoButtonMaterial.SetColor(k_MaterialColorProperty, targetColor);
             m_RedoButtonMaterial.SetColor(k_MaterialColorProperty, targetColor);
         }
@@ -154,6 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 transitionAmount = currentDuration / k_EngageAnimationDuration;
                 yield return null;
             }
+
             transitionAmount = currentDuration = 0f;
             startingColor = targetColor;
             targetColor.a = k_DisengagedAlpha;
@@ -165,6 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 transitionAmount = currentDuration / k_EngageAnimationDuration;
                 yield return null;
             }
+
             targetMaterial.SetColor(k_MaterialColorProperty, targetColor);
         }
     }

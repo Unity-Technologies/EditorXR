@@ -235,6 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     if (!undoMenuVisible && undoMenuHideData != null)
                         undoMenuHideData.hideFlags = 0;
+
                     // Check if menu bounds overlap with any workspace colliders
                     foreach (var kvp in menuHideData)
                     {
