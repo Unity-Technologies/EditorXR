@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEngine;
 
-#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
