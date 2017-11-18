@@ -12,10 +12,12 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
-        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback
+        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IUsesDeviceType
     {
         const float k_UndoRedoThreshold = 0.5f;
         const float k_EngageUndoAfterStickReleasedDuration = 0.1f; // Duration after releasing the joystick to still accept a left/right flick to undo/redo.
+        const string k_FeedbackHintForJoystickController = "Click + flick left/right to undo/redo";
+        const string k_FeedbackHintForTrackpadController = "Click left/right side to undo/redo";
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -33,6 +35,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         float m_PrevNavigateX;
         bool m_StillEngagedAfterStickRelease;
         Coroutine m_StillEngagedAfterStickReleasedCoroutine;
+        bool m_TrackpadController;
+        string m_FeedbackHintForCurrentController;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
         
@@ -103,6 +107,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             this.ConnectInterfaces(m_UndoMenuUI); // Connect interfaces before performing setup on the UI
             m_UndoMenuUI.Setup();
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+            m_TrackpadController = this.GetDeviceType() == DeviceType.Vive;
+            m_FeedbackHintForCurrentController = m_TrackpadController
+                ? k_FeedbackHintForTrackpadController
+                : k_FeedbackHintForJoystickController;
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -113,23 +121,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 this.ClearFeedbackRequests();
                 return;
             }
-            if (undoMenuInput.engage.wasJustReleased)
+            if (undoMenuInput.engage.wasJustReleased && !m_TrackpadController)
                 this.RestartCoroutine(ref m_StillEngagedAfterStickReleasedCoroutine, AcceptInputAfterStickReleased());
-            if (!(undoMenuInput.engage.wasJustPressed || undoMenuInput.engage.isHeld || m_StillEngagedAfterStickRelease))
+            if (!(undoMenuInput.engage.wasJustPressed || !m_TrackpadController && (undoMenuInput.engage.isHeld || m_StillEngagedAfterStickRelease)))
                 return;
             consumeControl(undoMenuInput.engage);
             m_UndoMenuUI.engaged = true;
 
             var navigateX = undoMenuInput.navigateX.value;
             var undoRedoPerformed = false;
-            if (navigateX < -k_UndoRedoThreshold && m_PrevNavigateX > -k_UndoRedoThreshold)
+            if (navigateX < -k_UndoRedoThreshold && (m_TrackpadController || m_PrevNavigateX > -k_UndoRedoThreshold))
             {
                 Undo.PerformUndo();
                 m_UndoMenuUI.StartPerformedAnimation(true);
                 ShowUndoPerformedFeedback(true);
                 undoRedoPerformed = true;
             }
-            else if (navigateX > k_UndoRedoThreshold && m_PrevNavigateX < k_UndoRedoThreshold)
+            else if (navigateX > k_UndoRedoThreshold && (m_TrackpadController || m_PrevNavigateX < k_UndoRedoThreshold))
             {
                 Undo.PerformRedo();
                 m_UndoMenuUI.StartPerformedAnimation(false);
@@ -163,7 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     {
                         control = id,
                         node = node,
-                        tooltipText = "Click + flick left/right to undo/redo"
+                        tooltipText = m_FeedbackHintForCurrentController
                     });
                 }
             }
