@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public event Action<Transform> selected;
 
         // Local method use only -- created here to reduce garbage collection
-        static readonly HashSet<Object> m_SelectedObjects = new HashSet<Object>();
+        static readonly HashSet<Object> k_SelectedObjects = new HashSet<Object>();
         static readonly List<GameObject> k_SingleObjectList = new List<GameObject>();
 
         public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
@@ -76,10 +76,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return;
             }
 
-            m_SelectedObjects.Clear();
+            k_SelectedObjects.Clear();
 
             if (multiSelect)
-                m_SelectedObjects.UnionWith(Selection.objects);
+                k_SelectedObjects.UnionWith(Selection.objects);
 
             Selection.activeGameObject = hoveredObjects[0];
 
@@ -100,16 +100,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (multiSelect)
                 {
                     // Re-selecting an object removes it from selection, otherwise add it
-                    if (!m_SelectedObjects.Remove(selection))
-                        m_SelectedObjects.Add(selection);
+                    if (!k_SelectedObjects.Remove(selection))
+                        k_SelectedObjects.Add(selection);
                 }
                 else
                 {
-                    m_SelectedObjects.Add(selection);
+                    k_SelectedObjects.Add(selection);
                 }
             }
 
-            Selection.objects = m_SelectedObjects.ToArray();
+            Selection.objects = k_SelectedObjects.ToArray();
             if (selected != null)
                 selected(rayOrigin);
         }
