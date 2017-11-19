@@ -50,7 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (m_NumPerRow == 0)
                     return 0;
 
-                return Mathf.CeilToInt(m_Data.Count / m_NumPerRow) * itemSize.z;
+                var numRows = Mathf.CeilToInt(m_Data.Count / m_NumPerRow);
+                return Mathf.Clamp(numRows, 1, Int32.MaxValue) * itemSize.z;
             }
         }
 
@@ -110,6 +111,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 if (m_Data.Count % m_NumPerRow == 0)
                     m_ScrollReturn += itemSize.z;
+            }
+            // if we only have one row, snap back as soon as that row would be hidden
+            else if (listHeight == itemSize.z && -m_ScrollOffset > 0)
+            {
+                m_ScrollReturn = itemSize.z / 2;
             }
         }
 
