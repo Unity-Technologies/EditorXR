@@ -216,22 +216,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             m_ButtonList.gameObject.SetActive(true);
 
-            const float kTargetDuration = 0.5f;
+            const float targetDuration = 0.5f;
+            const float targetMinSpacing = 0.0015f;
             var currentAlpha = m_ButtonListCanvasGroup.alpha;
             var kTargetAlpha = 1f;
             var transitionAmount = 0f;
             var velocity = 0f;
             var currentDuration = 0f;
-            while (currentDuration < kTargetDuration)
+            while (currentDuration < targetDuration)
             {
                 currentDuration += Time.deltaTime;
-                transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
-                m_ButtonListGrid.spacing = new Vector2(0f, Mathf.Lerp(m_HiddenButtonListYSpacing, 0f, transitionAmount));
+                transitionAmount = MathUtilsExt.SmoothDamp(transitionAmount, 1f, ref velocity, targetDuration, Mathf.Infinity, Time.deltaTime);
+                m_ButtonListGrid.spacing = new Vector2(0f, Mathf.Lerp(m_HiddenButtonListYSpacing, targetMinSpacing, transitionAmount));
                 m_ButtonListCanvasGroup.alpha = Mathf.Lerp(currentAlpha, kTargetAlpha, transitionAmount);
                 yield return null;
             }
 
-            m_ButtonListGrid.spacing = new Vector2(0f, 0f);
+            m_ButtonListGrid.spacing = Vector2.one * targetMinSpacing;
             m_ButtonListCanvasGroup.alpha = 1f;
             m_ShowButtonListCoroutine = null;
         }
