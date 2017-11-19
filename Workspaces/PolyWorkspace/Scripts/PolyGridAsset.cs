@@ -72,7 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #if INCLUDE_POLY_TOOLKIT
             m_Initialized = true;
 
-            GetThumbnail(asset);
+            GetThumbnail();
 
             if (m_Complexity < k_MaxPreviewComplexity)
                 ImportModel();
@@ -91,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 #if INCLUDE_POLY_TOOLKIT
         // Callback invoked when an asset has just been imported.
-        void ImportAssetCallback(PolyToolkit.PolyAsset asset, PolyStatusOr<PolyImportResult> result)
+        void ImportAssetCallback(PolyAsset asset, PolyStatusOr<PolyImportResult> result)
         {
             m_Importing = false;
             if (!result.Ok)
@@ -110,9 +110,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 modelImportCompleted(this, m_Prefab);
         }
 
-        void GetThumbnail(PolyToolkit.PolyAsset asset)
+        void GetThumbnail()
         {
-            this.DownloadTexture(asset.thumbnail.url, handler =>
+            var thumbnail = m_Asset.thumbnail;
+            if (thumbnail == null)
+                return;
+
+            this.DownloadTexture(thumbnail.url, handler =>
             {
                 m_Thumbnail = handler.texture;
                 m_Thumbnail.wrapMode = TextureWrapMode.Clamp;

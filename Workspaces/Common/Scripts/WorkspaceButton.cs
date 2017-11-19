@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -192,7 +192,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void Awake()
         {
-            m_OriginalColor = m_Icon.color;
             m_ButtonMaterial = Instantiate(m_ButtonMeshRenderer.sharedMaterials[0]);
             m_ButtonMaskMaterial = Instantiate(m_ButtonMeshRenderer.sharedMaterials[1]);
             m_ButtonMeshRenderer.materials = new Material[] { m_ButtonMaterial, m_ButtonMaskMaterial };
@@ -200,13 +199,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_HiddenLocalScale = new Vector3(transform.localScale.x, transform.localScale.y, 0f);
             m_VisibleLocalZScale = transform.localScale.z;
 
+            if (m_Icon)
+            {
+                m_OriginalColor = m_Icon.color;
+                m_OriginalIconSprite = m_Icon.sprite;
+            }
+
             m_OriginalIconLocalPosition = m_IconContainer.localPosition;
             m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * k_IconHighlightedLocalZOffset;
             m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * k_IconHighlightedLocalZOffset;
 
             m_HighlightGradientPair = m_GrayscaleGradient ? UnityBrandColorScheme.grayscaleSessionGradient : UnityBrandColorScheme.sessionGradient;
-
-            m_OriginalIconSprite = m_Icon.sprite;
 
             if (m_Button)
             {

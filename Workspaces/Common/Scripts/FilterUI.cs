@@ -7,17 +7,23 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class FilterUI : MonoBehaviour, IUsesStencilRef
     {
         const string k_AllText = "All";
 
+#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
-        Text m_SummaryText;
+        TextMeshProUGUI m_SummaryText;
 
         [SerializeField]
-        Text m_DescriptionText;
+        TextMeshProUGUI m_DescriptionText;
+#endif
 
         [SerializeField]
         RectTransform m_ButtonList;
@@ -100,8 +106,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public byte stencilRef { get; set; }
 
-        public Text summaryText { get { return m_SummaryText; } }
-        public Text descriptionText { get { return m_DescriptionText; } }
+#if INCLUDE_TEXT_MESH_PRO
+        public TextMeshProUGUI summaryText { get { return m_SummaryText; } }
+        public TextMeshProUGUI descriptionText { get { return m_DescriptionText; } }
+#else
+        public Text summaryText { get; set; }
+        public Text descriptionText { get; set; }
+#endif
 
         public bool addDefaultOption { private get; set; }
 
@@ -161,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             for (int i = 0; i < m_VisibilityButtons.Length; i++)
                 if (clickedButton == m_VisibilityButtons[i])
-                    m_SearchQuery = i == 0 ? string.Empty : m_FilterTypes[i];
+                    m_SearchQuery = i == 0 && addDefaultOption ? string.Empty : m_FilterTypes[i];
 
             foreach (FilterButtonUI button in m_VisibilityButtons)
             {

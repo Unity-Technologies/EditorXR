@@ -6,6 +6,10 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Button = UnityEditor.Experimental.EditorVR.UI.Button;
 
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class FilterButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IRayEnterHandler
@@ -30,15 +34,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         Image m_TextPanel;
 
+#if INCLUDE_TEXT_MESH_PRO
+        [SerializeField]
+        TextMeshProUGUI m_Text;
+#endif
+
         Transform m_InteractingRayOrigin;
 
-        public Text text
-        {
-            get { return m_Text; }
-        }
-
-        [SerializeField]
-        Text m_Text;
+#if INCLUDE_TEXT_MESH_PRO
+        public TextMeshProUGUI text { get { return m_Text; } }
+#else
+        public Text text { get; set; }
+#endif
 
         public Color color
         {

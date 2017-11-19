@@ -311,6 +311,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 this.ConnectInterfaces(mb);
             }
+
             m_SortingUI.filterChanged += () =>
             {
                 var gridView = m_PolyUI.gridView;

@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -30,8 +31,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const int k_AutoHidePreviewComplexity = 10000;
 
+#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
-        Text m_Text;
+        TextMeshProUGUI m_Text;
+#endif
 
         [SerializeField]
         BaseHandle m_Handle;
