@@ -31,7 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_MinScale = 0.05f;
         const float k_MaxScale = 0.2f;
 
-        const float k_FilterUIWidth = 0.23f;
+        const float k_FilterUIWidth = 0.2f;
 
         const string k_Featured = "Featured";
         const string k_Newest = "Newest";

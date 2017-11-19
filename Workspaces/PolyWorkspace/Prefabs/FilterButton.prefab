@@ -60,7 +60,7 @@ GameObject:
   - component: {fileID: 114000012094917522}
   - component: {fileID: 114336130626859894}
   m_Layer: 5
-  m_Name: FilterButton
+  m_Name: FilterButton 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
