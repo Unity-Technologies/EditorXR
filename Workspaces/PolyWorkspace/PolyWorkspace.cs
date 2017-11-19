@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using System;
-using System.Globalization;
 using System.Threading;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
@@ -167,6 +166,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
             m_CategoryFilterUI.filterList = categoryList;
 
+            m_CategoryFilterUI.GetComponentInChildren<Tooltip>().tooltipText = "Filter by Category";
+
             UpdateCategoryFilterUI();
         }
 
@@ -219,6 +220,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 k_Medium,
                 k_Simple
             };
+
+            m_ComplexityFilterUI.GetComponentInChildren<Tooltip>().tooltipText = "Filter by Complexity";
 
             UpdateComplexityFilterUI();
         }
@@ -277,6 +280,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 k_TiltBrush
             };
 
+            m_FormatFilterUI.GetComponentInChildren<Tooltip>().tooltipText = "Filter by Format";
+
             UpdateFormatFilterUI();
         }
 
@@ -329,6 +334,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 k_Featured,
                 k_Newest
             };
+
+            m_SortingUI.GetComponentInChildren<Tooltip>().tooltipText = "Change sorting";
 
             UpdateSortingUI();
         }
