@@ -81,8 +81,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 // Clean up old buttons
                 if (m_VisibilityButtons != null)
+                {
                     foreach (var button in m_VisibilityButtons)
+                    {
                         ObjectUtils.Destroy(button.gameObject);
+                    }
+                }
 
                 m_FilterTypes = value;
                 m_FilterTypes.Insert(0, k_AllText);
@@ -118,8 +122,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_BackgroundMaterial = MaterialUtils.GetMaterialClone(m_Background);
             m_BackgroundMaterial.SetInt("_StencilRef", stencilRef);
 
-            m_VisibilityButton.clicked += OnVisibilityButtonClicked;
-            m_VisibilityButton.hovered += OnHovered;
+            if (m_VisibilityButton)
+            {
+                m_VisibilityButton.clicked += OnVisibilityButtonClicked;
+                m_VisibilityButton.hovered += OnHovered;
+            }
+
             m_SummaryButton.clicked += OnVisibilityButtonClicked;
             m_SummaryButton.hovered += OnHovered;
         }

@@ -44,8 +44,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             set
             {
-                m_Eye.color = value;
                 m_Text.color = value;
+
+                if (m_Eye)
+                    m_Eye.color = value;
             }
         }
 
@@ -64,18 +66,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            var c = m_EyePanel.color;
-            c.a = k_HoverAlpha;
-            m_EyePanel.color = c;
-            m_TextPanel.color = c;
+            var color = m_TextPanel.color;
+            color.a = k_HoverAlpha;
+            m_TextPanel.color = color;
+
+            if (m_EyePanel)
+                m_EyePanel.color = color;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            var c = m_EyePanel.color;
-            c.a = k_NormalAlpha;
-            m_EyePanel.color = c;
-            m_TextPanel.color = c;
+            var color = m_TextPanel.color;
+            color.a = k_NormalAlpha;
+            m_TextPanel.color = color;
+
+            if (m_EyePanel)
+                m_EyePanel.color = color;
         }
 
         public void OnRayEnter(RayEventData eventData)
