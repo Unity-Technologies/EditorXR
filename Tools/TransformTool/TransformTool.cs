@@ -97,8 +97,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 for (int i = 0; i < grabbedObjects.Length; i++)
                 {
                     var grabbedObject = grabbedObjects[i];
-                    grabbedObject.position = rayOrigin.position + m_PositionOffsets[i] * scaleFactor;
-                    grabbedObject.localScale = m_InitialScales[i] * scaleFactor;
+
+                    var targetPosition = rayOrigin.position + m_PositionOffsets[i] * scaleFactor;
+                    if (grabbedObject.position != targetPosition)
+                        grabbedObject.position = targetPosition;
+
+                    var targetScale = m_InitialScales[i] * scaleFactor;
+                    if (grabbedObject.localScale != targetScale)
+                        grabbedObject.localScale = targetScale;
                 }
             }
 
@@ -533,19 +539,27 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 foreach (var t in selectionTransforms)
                 {
-                    t.rotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], k_LazyFollowRotate * deltaTime);
+                    var targetRotation = Quaternion.Slerp(t.rotation, m_TargetRotation * m_RotationOffsets[t], k_LazyFollowRotate * deltaTime);
+                    if (t.rotation != targetRotation)
+                        t.rotation = targetRotation;
 
+                    Vector3 targetPosition;
                     if (m_PivotMode == PivotMode.Center) // Rotate the position offset from the manipulator when rotating around center
                     {
                         m_PositionOffsetRotation = Quaternion.Slerp(m_PositionOffsetRotation, m_TargetRotation * Quaternion.Inverse(m_StartRotation), k_LazyFollowRotate * deltaTime);
-                        t.position = manipulatorTransform.position + m_PositionOffsetRotation * m_PositionOffsets[t];
+                        targetPosition = manipulatorTransform.position + m_PositionOffsetRotation * m_PositionOffsets[t];
                     }
                     else
                     {
-                        t.position = manipulatorTransform.position + m_PositionOffsets[t];
+                        targetPosition = manipulatorTransform.position + m_PositionOffsets[t];
                     }
 
-                    t.localScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]), k_LazyFollowTranslate * deltaTime);
+                    if (t.position != targetPosition)
+                        t.position = targetPosition;
+
+                    var targetScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]), k_LazyFollowTranslate * deltaTime);
+                    if (t.localScale != targetScale)
+                        t.localScale = targetScale;
                 }
             }
         }

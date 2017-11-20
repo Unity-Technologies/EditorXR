@@ -93,7 +93,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (selectionModule)
                 {
                     selectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
-                    selectionModule.getGroupRoot = GetGroupRoot;
                     selectionModule.overrideSelectObject = OverrideSelectObject;
                 }
             }
@@ -118,16 +117,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             void SetLastSelectionRayOrigin(Transform rayOrigin)
             {
                 lastSelectionRayOrigin = rayOrigin;
-            }
-
-            static GameObject GetGroupRoot(GameObject hoveredObject)
-            {
-                if (!hoveredObject)
-                    return null;
-
-                var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
-
-                return groupRoot;
             }
 
             static bool OverrideSelectObject(GameObject hoveredObject)
