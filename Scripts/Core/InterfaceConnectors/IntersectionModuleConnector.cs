@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using UnityEditor.Experimental.EditorVR.Modules;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -12,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IRaycastMethods.raycast = provider.Raycast;
                 ICheckBoundsMethods.checkBounds = provider.CheckBounds;
                 ICheckSphereMethods.checkSphere = provider.CheckSphere;
+                IContainsVRPlayerCompletelyMethods.containsVRPlayerCompletely = provider.ContainsVRPlayerCompletely;
             }
 
             public void ConnectInterface(object target, object userData = null)

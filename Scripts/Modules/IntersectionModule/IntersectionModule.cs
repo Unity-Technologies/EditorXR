@@ -1,14 +1,18 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
+    sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking, IGetVRPlayerObjects
     {
         const int k_MaxTestsPerTester = 250;
+
+        [SerializeField]
+        Vector3 m_PlayerBoundsMargin = new Vector3(0.25f, 0.25f, 0.25f);
 
         readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
         readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
@@ -95,15 +99,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                                 continue;
 
                             // Ignore inactive objects
-                            if (!obj.gameObject.activeInHierarchy)
+                            var go = obj.gameObject;
+                            if (!go.activeInHierarchy)
                                 continue;
 
                             // Ignore locked objects
-                            if (this.IsLocked(obj.gameObject))
+                            if (this.IsLocked(go))
                                 continue;
 
                             // Bounds check
                             if (!obj.bounds.Intersects(testerBounds))
+                                continue;
+
+                            // Check if the object is larger than the player, and the player is inside it
+                            if (ContainsVRPlayerCompletely(go))
                                 continue;
 
                             m_SortedIntersections.Add(new SortableRenderer
@@ -305,6 +314,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             return result;
+        }
+
+        internal bool ContainsVRPlayerCompletely(GameObject obj)
+        {
+            var objectBounds = ObjectUtils.GetBounds(obj.transform);
+            var playerBounds = ObjectUtils.GetBounds(this.GetVRPlayerObjects());
+            playerBounds.extents += m_PlayerBoundsMargin;
+            return objectBounds.ContainsCompletely(playerBounds);
         }
     }
 }
