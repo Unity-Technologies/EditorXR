@@ -85,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static void ShowEditorVR()
         {
             // Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
-            EditorWindow.GetWindow<VRView>(true, "EditorVR", true);
+            EditorWindow.GetWindow<VRView>(true, "EditorXR", true);
         }
 
         [MenuItem("Window/EditorXR %e", true)]
@@ -142,7 +142,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_ContextNames = availableContexts.Select(c => c.name).ToArray();
 
             if (m_AvailableContexts.Count == 0)
-                throw new Exception("You can't start EditorVR without at least one context. Try re-importing the package or use version control to restore the default context asset");
+                throw new Exception("You can't start EditorXR without at least one context. Try re-importing the package or use version control to restore the default context asset");
 
             SetEditingContext(defaultContext);
 
