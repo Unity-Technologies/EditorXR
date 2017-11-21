@@ -81,20 +81,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
             ObjectUtils.Destroy(s_InputManager.gameObject);
         }
 
-        [MenuItem("Window/EditorVR %e", false)]
+        [MenuItem("Window/EditorXR %e", false)]
         internal static void ShowEditorVR()
         {
             // Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
             EditorWindow.GetWindow<VRView>(true, "EditorVR", true);
         }
 
-        [MenuItem("Window/EditorVR %e", true)]
+        [MenuItem("Window/EditorXR %e", true)]
         static bool ShouldShowEditorVR()
         {
             return PlayerSettings.virtualRealitySupported;
         }
 
-        [MenuItem("Edit/Project Settings/EditorVR/Default Editing Context")]
+        [MenuItem("Edit/Project Settings/EditorXR/Default Editing Context")]
         static void EditProjectSettings()
         {
             var settings = LoadProjectSettings();
