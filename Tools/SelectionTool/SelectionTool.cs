@@ -90,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public event Action<GameObject, Transform> hovered;
 
-        public List<Renderer> ignoreList { private get; set; }
+        public List<GameObject> ignoreList { private get; set; }
         public List<ILinkedObject> linkedObjects { get; set; }
 
         public string tooltipText { get { return m_MultiSelect ? "Multi-Select Enabled" : ""; } }

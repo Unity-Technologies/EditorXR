@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using UnityEngine.InputNew;
 
@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// <summary>
         /// The maximum number times to present this feedback
         /// </summary>
-        public int maxPresentations = 20;
+        public int maxPresentations = 2000000;
 
         /// <summary>
         /// (Optional) A delegate which returns true if presentation should be suppressed
