@@ -73,9 +73,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         }
                         break;
                     case VRInputDevice.VRControl.Analog0:
+                        // TODO: Support multiple transforms per control
                         // Trackpad touch sphere
-                        if (affordanceAnimationDefinition.translateAxes != 0)
-                            button.renderer.enabled = !Mathf.Approximately(proxyInput.stickX.value, 0) || !Mathf.Approximately(proxyInput.stickY.value, 0);
+                        //if (affordanceAnimationDefinition.translateAxes != 0)
+                        //    button.renderer.enabled = !Mathf.Approximately(proxyInput.stickX.value, 0) || !Mathf.Approximately(proxyInput.stickY.value, 0);
                         break;
                 }
             }
