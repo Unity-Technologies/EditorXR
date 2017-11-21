@@ -198,7 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var renderer = m_PlayerBody.GetComponent<Renderer>();
                 evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
                 renderer.GetComponentsInChildren(true, m_VRPlayerObjects);
-                evr.GetModule<SnappingModule>().ignoreList = m_VRPlayerObjects;
+                evr.GetModule<IntersectionModule>().standardIgnoreList.AddRange(m_VRPlayerObjects);
             }
 
             internal bool IsOverShoulder(Transform rayOrigin)

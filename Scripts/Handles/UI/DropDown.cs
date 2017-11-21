@@ -49,10 +49,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
         [SerializeField]
         bool m_MultiSelect;
 
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
-        TextMeshProUGUI m_Label;
-#endif
+        Text m_Label;
 
         [SerializeField]
         RectTransform m_OptionsPanel;

@@ -11,6 +11,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 ISelectObjectMethods.getSelectionCandidate = provider.GetSelectionCandidate;
                 ISelectObjectMethods.selectObject = provider.SelectObject;
+                ISelectObjectMethods.selectObjects = provider.SelectObjects;
+                IUsesGroupingMethods.makeGroup = provider.MakeGroup;
             }
 
             public void ConnectInterface(object target, object userData = null)
