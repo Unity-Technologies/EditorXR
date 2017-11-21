@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,17 +70,16 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 Color m_StartColor;
                 Color m_CurrentColor;
 
-                readonly Dictionary<VRControl, VisibilityState> m_Visibilities = new Dictionary<VRControl, VisibilityState>();
-                readonly Dictionary<KeyValuePair<Material, string>, Action<float>> m_SetFloats = new Dictionary<KeyValuePair<Material, string>, Action<float>>();
-                readonly Dictionary<KeyValuePair<Material, string>, Action<Color>> m_SetColors = new Dictionary<KeyValuePair<Material, string>, Action<Color>>();
+                readonly Dictionary<VRControl, VisibilityState> m_AffordanceVisibilityStates = new Dictionary<VRControl, VisibilityState>();
+                readonly Dictionary<KeyValuePair<Material, string>, VisibilityState> m_VisibilityStates = new Dictionary<KeyValuePair<Material, string>, VisibilityState>();
 
                 public void AddAffordance(Material material, VRControl control, Renderer renderer,
                     AffordanceTooltip[] tooltips, AffordanceVisibilityDefinition definition)
                 {
-                    if (m_Visibilities.ContainsKey(control))
-                        Debug.LogWarning("multiple");
+                    if (m_AffordanceVisibilityStates.ContainsKey(control))
+                        Debug.LogWarning("Multiple affordaces added to " + this + " for " + control);
 
-                    m_Visibilities[control] = new VisibilityState(renderer, tooltips, definition, material);
+                    m_AffordanceVisibilityStates[control] = new VisibilityState(renderer, tooltips, definition, material);
 
                     switch (definition.visibilityType)
                     {
@@ -104,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     var hideTime = 0f;
                     if (definition == null)
                     {
-                        foreach (var kvp in m_Visibilities)
+                        foreach (var kvp in m_AffordanceVisibilityStates)
                         {
                             var state = kvp.Value;
                             if (state.visible)
@@ -122,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     var visible = definition != null;
                     if (!visible)
                     {
-                        foreach (var kvp in m_Visibilities)
+                        foreach (var kvp in m_AffordanceVisibilityStates)
                         {
                             visibilityState = kvp.Value;
                             definition = visibilityState.definition;
@@ -134,46 +133,42 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     switch (definition.visibilityType)
                     {
                         case VisibilityControlType.AlphaProperty:
-                            Action<float> setFloat = null;
-                            if (visibilityState != null)
-                                setFloat = visibilityState.SetFloat;
-
-                            if (setFloat == null)
+                            if (visibilityState == null)
                             {
                                 var kvp = new KeyValuePair<Material, string>(material, definition.alphaProperty);
-                                if (!m_SetFloats.TryGetValue(kvp, out setFloat))
+                                if (!m_VisibilityStates.TryGetValue(kvp, out visibilityState))
                                 {
-                                    setFloat = value => { material.SetFloat(definition.alphaProperty, value); };
-                                    m_SetFloats[kvp] = setFloat;
+                                    visibilityState = new VisibilityState(renderer, null, definition, material);
+                                    m_VisibilityStates[kvp] = visibilityState;
                                 }
                             }
 
-                            TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime, ref m_CurrentColor.a, ref m_StartColor.a,
-                                definition.hiddenColor.a, m_OriginalColor.a, fadeDuration, Mathf.Approximately, TransitionUtils.GetPercentage, Mathf.Lerp, setFloat, false);
+                            TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime,
+                                ref m_CurrentColor.a, ref m_StartColor.a, definition.hiddenColor.a, m_OriginalColor.a,
+                                fadeDuration, Mathf.Approximately, TransitionUtils.GetPercentage, Mathf.Lerp,
+                                visibilityState.SetFloat, false);
                             break;
                         case VisibilityControlType.ColorProperty:
-                            Action<Color> setColor = null;
-                            if (visibilityState != null)
-                                setColor = visibilityState.SetColor;
-
-                            if (setColor == null)
+                            if (visibilityState == null)
                             {
                                 var kvp = new KeyValuePair<Material, string>(material, definition.alphaProperty);
-                                if (!m_SetColors.TryGetValue(kvp, out setColor))
+                                if (!m_VisibilityStates.TryGetValue(kvp, out visibilityState))
                                 {
-                                    setColor = value => { material.SetColor(definition.colorProperty, value); };
-                                    m_SetColors[kvp] = setColor;
+                                    visibilityState = new VisibilityState(renderer, null, definition, material);
+                                    m_VisibilityStates[kvp] = visibilityState;
                                 }
                             }
 
-                            TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime, ref m_CurrentColor, ref m_StartColor,
-                                definition.hiddenColor, m_OriginalColor, fadeDuration, TransitionUtils.Approximately, TransitionUtils.GetPercentage, Color.Lerp, setColor, false);
+                            TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime,
+                                ref m_CurrentColor, ref m_StartColor, definition.hiddenColor, m_OriginalColor,
+                                fadeDuration, TransitionUtils.Approximately, TransitionUtils.GetPercentage, Color.Lerp,
+                                visibilityState.SetColor, false);
                             break;
                     }
 
                     if (visible != m_WasVisible)
                     {
-                        foreach (var kvp in m_Visibilities)
+                        foreach (var kvp in m_AffordanceVisibilityStates)
                         {
                             visibilityState = kvp.Value;
                             if (visibilityState.definition.visibilityType == VisibilityControlType.MaterialSwap)
@@ -186,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                     if (visible && hideTime > 0 && Time.time > hideTime)
                     {
-                        foreach (var kvp in m_Visibilities)
+                        foreach (var kvp in m_AffordanceVisibilityStates)
                         {
                             visibilityState = kvp.Value;
                             var tooltips = visibilityState.tooltips;
@@ -208,7 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                 public bool GetVisibility(VRControl control)
                 {
-                    foreach (var kvp in m_Visibilities)
+                    foreach (var kvp in m_AffordanceVisibilityStates)
                     {
                         if (kvp.Key != control)
                             continue;
@@ -223,7 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 public void SetVisibility(bool visible, float duration, VRControl control)
                 {
                     VisibilityState visibilityState;
-                    if (m_Visibilities.TryGetValue(control, out visibilityState))
+                    if (m_AffordanceVisibilityStates.TryGetValue(control, out visibilityState))
                     {
                         visibilityState.visible = visible;
                         visibilityState.visibleDuration = duration;
