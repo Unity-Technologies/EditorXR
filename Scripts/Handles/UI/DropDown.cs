@@ -50,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         bool m_MultiSelect;
 
         [SerializeField]
-        Text m_Label;
+        TextMeshProUGUI m_Label;
 
         [SerializeField]
         RectTransform m_OptionsPanel;
