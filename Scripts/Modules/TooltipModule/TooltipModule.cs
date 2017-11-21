@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -88,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (!tooltipUI)
                     {
                         tooltipUI = CreateTooltipObject();
-                        tooltipUI.Show(tooltip.tooltipText, placement.tooltipAlignment, null);
+                        tooltipUI.Show(tooltip.tooltipText, placement.tooltipAlignment);
                         tooltipUI.becameVisible += tooltipData.becameVisible;
                         tooltipData.tooltipUI = tooltipUI;
                         tooltipUI.dottedLine.gameObject.SetActive(true);
@@ -145,13 +145,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var tooltipTransform = tooltipUI.transform;
 
             lerp = MathUtilsExt.SmoothInOutLerpFloat(lerp); // shape the lerp for better presentation
-            var transitionLerp = MathUtilsExt.SmoothInOutLerpFloat(1.0f - Mathf.Clamp01((Time.time - tooltipData.transitionTime)/k_ChangeTransitionDuration));
+            var transitionLerp = MathUtilsExt.SmoothInOutLerpFloat(1.0f - Mathf.Clamp01((Time.time - tooltipData.transitionTime) / k_ChangeTransitionDuration));
 
             var viewerScale = this.GetViewerScale();
             tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
             // Adjust for alignment
-            var offset = GetTooltipOffset(tooltipUI, placement, (tooltipData.transitionOffset * transitionLerp));
+            var offset = GetTooltipOffset(tooltipUI, placement, tooltipData.transitionOffset * transitionLerp);
 
             // The rectTransform expansion is handled in the Tooltip dynamically, based on alignment & text length
             var rotationOffset = Quaternion.identity;
@@ -169,7 +169,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 tooltipData.orientationWeight = k_TextOrientationWeight;
             }
 
-            MathUtilsExt.SetTransformOffset(target, tooltipTransform, (offset * lerp), rotationOffset);
+            MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, rotationOffset);
 
             if (placement != null)
             {
@@ -272,8 +272,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (currentTarget != newTarget)
                 {
                     // Get the different between the 'old' tooltip position and 'new' tooltip position, even taking alignment into account
-                    var transitionLerp = 1.0f - Mathf.Clamp01((Time.time - data.transitionTime)/k_ChangeTransitionDuration);
-                    var currentPosition = currentTarget.TransformPoint(GetTooltipOffset(data.tooltipUI, currentPlacement, (data.transitionOffset * transitionLerp)));
+                    var transitionLerp = 1.0f - Mathf.Clamp01((Time.time - data.transitionTime) / k_ChangeTransitionDuration);
+                    var currentPosition = currentTarget.TransformPoint(GetTooltipOffset(data.tooltipUI, currentPlacement, data.transitionOffset * transitionLerp));
                     var newPosition = newTarget.TransformPoint(GetTooltipOffset(data.tooltipUI, data.placement, Vector3.zero));
 
                     // Store it as an additional offset that we'll quickly lerp from

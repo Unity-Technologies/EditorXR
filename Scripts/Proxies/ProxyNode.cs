@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -600,9 +600,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
             var toCamera = Vector3.Normalize(cameraPosition - m_NaturalOrientation.position);
 
-            var xDot = Vector3.Dot(toCamera, m_NaturalOrientation.right)*m_FacingAngleWeights.x;
-            var yDot = Vector3.Dot(toCamera, m_NaturalOrientation.up)*m_FacingAngleWeights.y;
-            var zDot = Vector3.Dot(toCamera, m_NaturalOrientation.forward)*m_FacingAngleWeights.z;
+            var xDot = Vector3.Dot(toCamera, m_NaturalOrientation.right) * m_FacingAngleWeights.x;
+            var yDot = Vector3.Dot(toCamera, m_NaturalOrientation.up) * m_FacingAngleWeights.y;
+            var zDot = Vector3.Dot(toCamera, m_NaturalOrientation.forward) * m_FacingAngleWeights.z;
             m_FacingAngleWeights = Vector3.one;
 
             if (Mathf.Abs(xDot) > Mathf.Abs(yDot))
