@@ -17,7 +17,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
         IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, ISetTooltipVisibility,
         IUsesDeviceType, IMenuIcon, IUsesPointer, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
-        ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IRequestFeedback
+        ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IRequestFeedback,
+        IGetVRPlayerObjects
     {
         [Serializable]
         class Preferences
@@ -342,8 +343,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (hovered != null)
                     hovered(hoveredObject, rayOrigin);
 
-                if (!GetSelectionCandidate(ref hoveredObject))
-                    HideSelectFeedback();
+                GetSelectionCandidate(ref hoveredObject);
+
+                if (hoveredObject && this.GetVRPlayerObjects().Contains(hoveredObject))
+                    hoveredObject = null;
             }
 
             if (!hoveredObject)
