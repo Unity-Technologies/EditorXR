@@ -1,4 +1,4 @@
-Shader "EditorVR/StandardOverlay"
+Shader "EditorVR/Standard Fog Disabled"
 {
 	Properties
 	{
@@ -37,7 +37,6 @@ Shader "EditorVR/StandardOverlay"
 
 		[Enum(UV0,0,UV1,1)] _UVSec ("UV Set for secondary textures", Float) = 0
 
-
 		// Blending state
 		[HideInInspector] _Mode ("__mode", Float) = 0.0
 		[HideInInspector] _SrcBlend ("__src", Float) = 1.0
@@ -51,7 +50,7 @@ Shader "EditorVR/StandardOverlay"
 
 	SubShader
 	{
-		Tags { "Queue" = "Overlay+5000" "RenderType"="Opaque" "PerformanceChecks"="False" }
+		Tags { "Queue" = "Overlay+5001" "RenderType"="Opaque" "PerformanceChecks"="False" }
 		LOD 300
 
 
@@ -106,7 +105,6 @@ Shader "EditorVR/StandardOverlay"
 
 			// -------------------------------------
 
-
 			#pragma shader_feature _NORMALMAP
 			#pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature _METALLICGLOSSMAP
@@ -116,7 +114,6 @@ Shader "EditorVR/StandardOverlay"
 			#pragma shader_feature _PARALLAXMAP
 
 			#pragma multi_compile_fwdadd_fullshadows
-
 
 			#pragma vertex vertAdd
 			#pragma fragment fragAdd
@@ -138,7 +135,6 @@ Shader "EditorVR/StandardOverlay"
 
 			// -------------------------------------
 
-
 			#pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma multi_compile_shadowcaster
 
@@ -159,7 +155,6 @@ Shader "EditorVR/StandardOverlay"
 			CGPROGRAM
 			#pragma target 3.0
 			#pragma exclude_renderers nomrt
-
 
 			// -------------------------------------
 
