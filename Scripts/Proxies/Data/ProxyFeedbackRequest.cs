@@ -52,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// <summary>
         /// The maximum number times to present this feedback
         /// </summary>
-        public int maxPresentations = 8;
+        public int maxPresentations = 20;
 
         /// <summary>
         /// (Optional) A delegate which returns true if presentation should be suppressed
