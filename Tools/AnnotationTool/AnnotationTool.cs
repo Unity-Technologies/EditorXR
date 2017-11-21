@@ -751,9 +751,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                 Undo.PerformUndo();
                         }
                     }
-
-                    consumeControl(annotationInput.changeBrushSize);
-                    consumeControl(annotationInput.vertical);
                 }
             }
 
