@@ -189,6 +189,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     MenuHideData alternateMenuData = null;
 
                     var mainMenuVisible = mainMenu != null && menuHideData[mainMenu].hideFlags == 0;
+                    var mainMenuSupressed = mainMenu != null && ((menuHideData[mainMenu].hideFlags & MenuHideFlags.Occluded) != 0);
+
                     var alternateMenuVisible = false;
                     if (alternateMenu != null)
                     {
@@ -216,8 +218,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         }
                     }
 
-                    // Temporarily hide customMenu if other menus are visible
-                    if (customMenuVisible && mainMenuVisible)
+                    // Temporarily hide customMenu if other menus are visible or should be
+                    if (customMenuVisible && (mainMenuVisible || mainMenuSupressed))
                         customMenuHideData.hideFlags |= MenuHideFlags.OtherMenu;
 
                     // Temporarily hide alternateMenu if other menus are visible

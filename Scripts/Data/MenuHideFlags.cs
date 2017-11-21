@@ -15,7 +15,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         OverWorkspace = 1 << 3,
         HasDirectSelection = 1 << 4,
 
-        Temporary = OtherMenu | OverUI | OverWorkspace | HasDirectSelection
+        Temporary = OtherMenu | OverUI | OverWorkspace | HasDirectSelection,
+        Occluded = OverUI | OverWorkspace | HasDirectSelection
     }
 }
 #endif
