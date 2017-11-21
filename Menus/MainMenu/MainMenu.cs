@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -16,6 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IRequestFeedback
     {
         const string k_SettingsMenuSectionName = "Settings";
+        const float k_MaxFlickDuration = 0.3f;
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -43,6 +45,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         MainMenuUI m_MainMenuUI;
         float m_LastRotationInput;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
+        float m_RotationInputStartValue;
+        DateTime m_RotationInputStartTime;
         readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
         readonly Dictionary<ISettingsMenuProvider, GameObject> m_SettingsMenus = new Dictionary<ISettingsMenuProvider, GameObject>();
         readonly Dictionary<ISettingsMenuItemProvider, GameObject> m_SettingsMenuItems = new Dictionary<ISettingsMenuItemProvider, GameObject>();
@@ -141,16 +145,51 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             var mainMenuInput = (MainMenuInput)input;
             var rotationInput = -mainMenuInput.rotate.rawValue;
-            
+
             const float kFlickDeltaThreshold = 0.5f;
-            if ((this.GetDeviceType() != DeviceType.Vive && Mathf.Abs(rotationInput) >= kFlickDeltaThreshold
-                && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold) || mainMenuInput.flickFace.wasJustReleased)
+
+            if (this.GetDeviceType() == DeviceType.Vive)
             {
-                m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
-                this.Pulse(node, m_FaceRotationPulse);
+                if (rotationInput != 0f)
+                {
+                    if (m_LastRotationInput == 0f)
+                    {
+                        // Touch began
+                        m_RotationInputStartValue = rotationInput;
+                        m_RotationInputStartTime = DateTime.Now;
+                    }
+                    else
+                    {
+                        // Touch held
+                        var distance = rotationInput - m_RotationInputStartValue;
+                        var lastDistance = m_LastRotationInput - m_RotationInputStartValue;
+                        if (Mathf.Abs(distance) >= kFlickDeltaThreshold
+                            && Mathf.Abs(lastDistance) < kFlickDeltaThreshold
+                            && (float)(DateTime.Now - m_RotationInputStartTime).TotalSeconds < k_MaxFlickDuration)
+                        {
+                            m_RotationInputStartValue = rotationInput;
+                            m_RotationInputStartTime = DateTime.Now;
+                            if (!m_MainMenuUI.rotating)
+                            {
+                                FlickMenu(distance);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (Mathf.Abs(rotationInput) >= kFlickDeltaThreshold 
+                && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
+            {
+                FlickMenu(rotationInput);
             }
 
             m_LastRotationInput = rotationInput;
+        }
+
+        void FlickMenu(float rotationInput)
+        {
+            m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
+            this.Pulse(node, m_FaceRotationPulse);
         }
 
         void OnDestroy()
@@ -370,7 +409,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void ShowFeedback()
         {
-            var tooltipText = this.GetDeviceType() == DeviceType.Vive ? "Press to Rotate Menu" : "Rotate Menu";
+            var tooltipText = this.GetDeviceType() == DeviceType.Vive ? "Swipe to Rotate Menu" : "Rotate Menu";
             List<VRInputDevice.VRControl> controls;
             if (m_Controls.TryGetValue("FlickFace", out controls))
             {
