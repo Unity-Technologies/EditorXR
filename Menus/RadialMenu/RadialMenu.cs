@@ -33,7 +33,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         List<ActionMenuData> m_MenuActions;
         Transform m_AlternateMenuOrigin;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
-        float m_PrevNavigateX;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
 

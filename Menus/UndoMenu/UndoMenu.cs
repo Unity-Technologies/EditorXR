@@ -15,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IUsesDeviceType
     {
         const float k_UndoRedoThreshold = 0.5f;
+        const string k_EngageControlName = "Engage";
         const float k_EngageUndoAfterStickReleasedDuration = 0.1f; // Duration after releasing the joystick to still accept a left/right flick to undo/redo.
         const string k_FeedbackHintForJoystickController = "Click + flick left/right to undo/redo";
         const string k_FeedbackHintForTrackpadController = "Click left/right side to undo/redo";
@@ -39,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         string m_FeedbackHintForCurrentController;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
-        
+
         public Transform rayOrigin { private get; set; }
 
         public Transform menuOrigin { get; set; }
@@ -94,8 +95,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                     if (visible)
                         ShowFeedback();
-                    else
-                        this.ClearFeedbackRequests();
                 }
             }
         }
@@ -106,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_UndoMenuUI.alternateMenuOrigin = alternateMenuOrigin;
             m_UndoMenuUI.actions = menuActions;
             this.ConnectInterfaces(m_UndoMenuUI); // Connect interfaces before performing setup on the UI
-            m_UndoMenuUI.Setup();
+            m_UndoMenuUI.gameObject.SetActive(false);
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
             m_TrackpadController = this.GetDeviceType() == DeviceType.Vive;
             m_FeedbackHintForCurrentController = m_TrackpadController
@@ -154,6 +153,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (undoRedoPerformed)
             {
                 consumeControl(undoMenuInput.navigateX);
+                if (m_StillEngagedAfterStickReleasedCoroutine != null)
+                    StopCoroutine(m_StillEngagedAfterStickReleasedCoroutine);
                 this.Pulse(node, m_UndoPulse);
             }
         }
@@ -169,7 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void ShowFeedback()
         {
             List<VRInputDevice.VRControl> controls;
-            if (m_Controls.TryGetValue("Engage", out controls))
+            if (m_Controls.TryGetValue(k_EngageControlName, out controls))
             {
                 foreach (var id in controls)
                 {
@@ -186,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void ShowUndoPerformedFeedback(bool undo)
         {
             List<VRInputDevice.VRControl> controls;
-            if (m_Controls.TryGetValue("Engage", out controls))
+            if (m_Controls.TryGetValue(k_EngageControlName, out controls))
             {
                 foreach (var id in controls)
                 {

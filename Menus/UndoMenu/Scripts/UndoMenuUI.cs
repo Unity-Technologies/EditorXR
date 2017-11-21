@@ -51,6 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 if (m_Engaged == value)
                     return;
+
                 m_Engaged = value;
                 this.RestartCoroutine(ref m_EngageCoroutine, AnimateEngage(m_Engaged));
             }
@@ -68,6 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 m_Visible = value;
 
+                StopAllCoroutines();
                 gameObject.SetActive(value);
             }
         }
@@ -105,11 +107,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             ObjectUtils.Destroy(m_RedoButtonMaterial);
         }
 
-        public void Setup()
-        {
-            gameObject.SetActive(false);
-        }
-
         IEnumerator AnimateEngage(bool engaging)
         {
             var undoStartingColor = m_UndoButtonMaterial.GetColor(k_MaterialColorProperty);
@@ -120,8 +117,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var currentDuration = 0f;
             while (transitionAmount < 1f)
             {
-                m_UndoButtonMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(undoStartingColor, targetColor, transitionAmount));
-                m_RedoButtonMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(redoStartingColor, targetColor, transitionAmount));
+                var smoothAmont = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+                m_UndoButtonMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(undoStartingColor, targetColor, smoothAmont));
+                m_RedoButtonMaterial.SetColor(k_MaterialColorProperty, Color.Lerp(redoStartingColor, targetColor, smoothAmont));
                 currentDuration += Time.deltaTime;
                 transitionAmount = currentDuration / k_EngageAnimationDuration;
                 yield return null;
@@ -149,7 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var currentDuration = 0f;
             while (transitionAmount < 1f)
             {
-                var currentColor = Color.Lerp(startingColor, targetColor, transitionAmount);
+                var currentColor = Color.Lerp(startingColor, targetColor, MathUtilsExt.SmoothInOutLerpFloat(transitionAmount));
                 targetMaterial.SetColor(k_MaterialColorProperty, currentColor);
                 currentDuration += Time.deltaTime;
                 transitionAmount = currentDuration / k_EngageAnimationDuration;
@@ -161,7 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             targetColor.a = k_DisengagedAlpha;
             while (transitionAmount < 1f)
             {
-                var currentColor = Color.Lerp(startingColor, targetColor, transitionAmount);
+                var currentColor = Color.Lerp(startingColor, targetColor, MathUtilsExt.SmoothInOutLerpFloat(transitionAmount));
                 targetMaterial.SetColor(k_MaterialColorProperty, currentColor);
                 currentDuration += Time.deltaTime;
                 transitionAmount = currentDuration / k_EngageAnimationDuration;

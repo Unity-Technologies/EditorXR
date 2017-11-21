@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -150,9 +149,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             if (this.GetDeviceType() == DeviceType.Vive)
             {
-                if (rotationInput != 0f)
+                if (!Mathf.Approximately(rotationInput, 0f))
                 {
-                    if (m_LastRotationInput == 0f)
+                    if (Mathf.Approximately(m_LastRotationInput, 0f))
                     {
                         // Touch began
                         m_RotationInputStartValue = rotationInput;
