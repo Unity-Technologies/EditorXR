@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
         readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
         readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
-        readonly List<Renderer> m_StandardIgnoreList = new List<Renderer>();
+        readonly List<GameObject> m_StandardIgnoreList = new List<GameObject>();
 
         SpatialHash<Renderer> m_SpatialHash;
         MeshCollider m_CollisionTester;
@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
 
         public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
-        public List<Renderer> standardIgnoreList { get { return m_StandardIgnoreList; } }
+        public List<GameObject> standardIgnoreList { get { return m_StandardIgnoreList; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly List<Renderer> m_Intersections = new List<Renderer>();
@@ -221,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
         }
 
-        internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<Renderer> ignoreList = null)
+        internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
         {
             obj = null;
             hit = new RaycastHit();
@@ -233,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 for (int i = 0; i < m_Intersections.Count; i++)
                 {
                     var renderer = m_Intersections[i];
-                    if (ignoreList != null && ignoreList.Contains(renderer))
+                    if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 
                     var transform = renderer.transform;
@@ -261,7 +261,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return result;
         }
 
-        internal bool CheckBounds(Bounds bounds, List<GameObject> objects, List<Renderer> ignoreList = null)
+        internal bool CheckBounds(Bounds bounds, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
             m_Intersections.Clear();
@@ -270,7 +270,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 for (var i = 0; i < m_Intersections.Count; i++)
                 {
                     var renderer = m_Intersections[i];
-                    if (ignoreList != null && ignoreList.Contains(renderer))
+                    if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 
                     var transform = renderer.transform;
@@ -288,7 +288,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return result;
         }
 
-        internal bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<Renderer> ignoreList = null)
+        internal bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
             m_Intersections.Clear();
@@ -298,7 +298,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 for (var i = 0; i < m_Intersections.Count; i++)
                 {
                     var renderer = m_Intersections[i];
-                    if (ignoreList != null && ignoreList.Contains(renderer))
+                    if (ignoreList != null && ignoreList.Contains(renderer.gameObject))
                         continue;
 
                     var transform = renderer.transform;

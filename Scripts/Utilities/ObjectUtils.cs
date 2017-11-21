@@ -93,12 +93,32 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return component;
         }
 
+        public static Bounds GetBounds(List<GameObject> gameObjects)
+        {
+            Bounds? bounds = null;
+            foreach (var gameObject in gameObjects)
+            {
+                var goBounds = GetBounds(gameObject.transform);
+                if (!bounds.HasValue)
+                {
+                    bounds = goBounds;
+                }
+                else
+                {
+                    goBounds.Encapsulate(bounds.Value);
+                    bounds = goBounds;
+                }
+            }
+
+            return bounds ?? new Bounds();
+        }
+
         public static Bounds GetBounds(Transform[] transforms)
         {
             Bounds? bounds = null;
-            foreach (var go in transforms)
+            foreach (var t in transforms)
             {
-                var goBounds = GetBounds(go);
+                var goBounds = GetBounds(t);
                 if (!bounds.HasValue)
                 {
                     bounds = goBounds;
