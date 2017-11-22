@@ -132,6 +132,7 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
@@ -148,6 +149,7 @@ MeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -187,8 +189,6 @@ MonoBehaviour:
   m_GrayscaleGradient: 0
   m_AnimatedReveal: 0
   m_DelayBeforeReveal: 0.25
-  m_ClickPulse: {fileID: 11400000, guid: 43f6d76e312f45145bc1ef9af446edfe, type: 2}
-  m_HighlightPulse: {fileID: 11400000, guid: bf8c18d5dc5c90f4aa0782421bbaaf0e, type: 2}
 --- !u!114 &114000011110648212
 MonoBehaviour:
   m_ObjectHideFlags: 1
