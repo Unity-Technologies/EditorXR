@@ -76,25 +76,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         bool m_Visible;
 
-        public List<ActionMenuData> actions
-        {
-            get { return m_Actions; }
-            set
-            {
-                if (value != null)
-                {
-                    m_Actions = value
-                        .Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
-                        .OrderBy(a => a.priority)
-                        .ToList();
-                }
-                else if (visible)
-                    visible = false;
-            }
-        }
-
-        List<ActionMenuData> m_Actions;
-
         void Awake()
         {
             m_UndoButtonMaterial = MaterialUtils.GetMaterialClone(m_UndoButtonMeshRenderer);

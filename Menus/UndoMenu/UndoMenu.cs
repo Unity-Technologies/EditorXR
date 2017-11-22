@@ -52,18 +52,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
 
-        public List<ActionMenuData> menuActions
-        {
-            get { return m_MenuActions; }
-            set
-            {
-                m_MenuActions = value;
-
-                if (m_UndoMenuUI)
-                    m_UndoMenuUI.actions = value;
-            }
-        }
-
         public Transform alternateMenuOrigin
         {
             get { return m_AlternateMenuOrigin; }
@@ -99,7 +87,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             m_UndoMenuUI = this.InstantiateUI(m_UndoMenuPrefab.gameObject).GetComponent<UndoMenuUI>();
             m_UndoMenuUI.alternateMenuOrigin = alternateMenuOrigin;
-            m_UndoMenuUI.actions = menuActions;
             this.ConnectInterfaces(m_UndoMenuUI); // Connect interfaces before performing setup on the UI
             m_UndoMenuUI.gameObject.SetActive(false);
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
