@@ -45,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         float m_LastRotationInput;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
         float m_RotationInputStartValue;
-        DateTime m_RotationInputStartTime;
+        float m_RotationInputStartTime;
         readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
         readonly Dictionary<ISettingsMenuProvider, GameObject> m_SettingsMenus = new Dictionary<ISettingsMenuProvider, GameObject>();
         readonly Dictionary<ISettingsMenuItemProvider, GameObject> m_SettingsMenuItems = new Dictionary<ISettingsMenuItemProvider, GameObject>();
@@ -151,11 +151,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 if (!Mathf.Approximately(rotationInput, 0f))
                 {
+                    var time = Time.time;
                     if (Mathf.Approximately(m_LastRotationInput, 0f))
                     {
                         // Touch began
                         m_RotationInputStartValue = rotationInput;
-                        m_RotationInputStartTime = DateTime.Now;
+                        m_RotationInputStartTime = time;
                     }
                     else
                     {
@@ -164,10 +165,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         var lastDistance = m_LastRotationInput - m_RotationInputStartValue;
                         if (Mathf.Abs(distance) >= kFlickDeltaThreshold
                             && Mathf.Abs(lastDistance) < kFlickDeltaThreshold
-                            && (float)(DateTime.Now - m_RotationInputStartTime).TotalSeconds < k_MaxFlickDuration)
+                            && time - m_RotationInputStartTime < k_MaxFlickDuration)
                         {
                             m_RotationInputStartValue = rotationInput;
-                            m_RotationInputStartTime = DateTime.Now;
+                            m_RotationInputStartTime = time;
                             if (!m_MainMenuUI.rotating)
                             {
                                 FlickMenu(distance);
