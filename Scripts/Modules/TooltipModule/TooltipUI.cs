@@ -28,6 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         Image m_Icon;
+
 #if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TMP_Text m_TextLeft;
@@ -76,10 +77,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             // if Icon null, fade out opacity of current icon
             // if icon is not null, fade out current, fade in new icon
-            var validText = !string.IsNullOrEmpty(text);
             var iconVisible = iconSprite != null;
             m_Icon.sprite = iconSprite;
             m_Icon.enabled = iconVisible;
+            var validText = !string.IsNullOrEmpty(text);
             switch (alignment)
             {
                 case TextAlignment.Center:

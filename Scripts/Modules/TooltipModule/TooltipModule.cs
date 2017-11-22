@@ -268,23 +268,30 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 data.persistent |= persistent;
                 data.placement = placement ?? tooltip as ITooltipPlacement;
 
-                var newTarget = data.GetTooltipTarget(tooltip);
-                if (currentTarget != newTarget)
+                // Set the text to new text
+                var tooltipUI = data.tooltipUI;
+                if (tooltipUI)
                 {
-                    // Get the different between the 'old' tooltip position and 'new' tooltip position, even taking alignment into account
-                    var transitionLerp = 1.0f - Mathf.Clamp01((Time.time - data.transitionTime) / k_ChangeTransitionDuration);
-                    var currentPosition = currentTarget.TransformPoint(GetTooltipOffset(data.tooltipUI, currentPlacement, data.transitionOffset * transitionLerp));
-                    var newPosition = newTarget.TransformPoint(GetTooltipOffset(data.tooltipUI, data.placement, Vector3.zero));
+                    tooltipUI.Show(tooltip.tooltipText, data.placement.tooltipAlignment);
 
-                    // Store it as an additional offset that we'll quickly lerp from
-                    data.transitionOffset = newTarget.InverseTransformVector(currentPosition - newPosition);
-                    data.transitionTime = Time.time;
-                }
+                    var newTarget = data.GetTooltipTarget(tooltip);
+                    if (currentTarget != newTarget)
+                    {
+                        // Get the different between the 'old' tooltip position and 'new' tooltip position, even taking alignment into account
+                        var transitionLerp = 1.0f - Mathf.Clamp01((Time.time - data.transitionTime) / k_ChangeTransitionDuration);
+                        var currentPosition = currentTarget.TransformPoint(GetTooltipOffset(tooltipUI, currentPlacement, data.transitionOffset * transitionLerp));
+                        var newPosition = newTarget.TransformPoint(GetTooltipOffset(tooltipUI, data.placement, Vector3.zero));
 
-                if (duration > 0)
-                {
-                    data.duration = duration;
-                    data.lastModifiedTime = Time.time;
+                        // Store it as an additional offset that we'll quickly lerp from
+                        data.transitionOffset = newTarget.InverseTransformVector(currentPosition - newPosition);
+                        data.transitionTime = Time.time;
+                    }
+
+                    if (duration > 0)
+                    {
+                        data.duration = duration;
+                        data.lastModifiedTime = Time.time;
+                    }
                 }
 
                 return;
