@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 1dd05fa08947fc34392a98bded9b0ae0
+timeCreated: 1507252419
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_LeftHandProxyPrefab: {fileID: 1000010426338840, guid: fbcfdb50f5e2d7a45bebae9a3a90b3fa,
+      type: 2}
+  - m_RightHandProxyPrefab: {fileID: 1000010426338840, guid: fbcfdb50f5e2d7a45bebae9a3a90b3fa,
+      type: 2}
+  - m_PlayerInput: {instanceID: 0}
+  - m_LeftHandTouchProxyPrefab: {fileID: 1121674342063006, guid: 6d5643096de04ca41802e2f0dd4652d8,
+      type: 2}
+  - m_RightHandTouchProxyPrefab: {fileID: 1523256443734892, guid: ab57bd440a8be844eb9d12bbfafe308f,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
