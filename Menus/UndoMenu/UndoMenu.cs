@@ -136,8 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (undoRedoPerformed)
             {
                 consumeControl(undoMenuInput.navigateX);
-                if (m_StillEngagedAfterStickReleasedCoroutine != null)
-                    StopCoroutine(m_StillEngagedAfterStickReleasedCoroutine);
+                this.StopCoroutine(ref m_StillEngagedAfterStickReleasedCoroutine);
                 this.Pulse(node, m_UndoPulse);
             }
         }
