@@ -69,6 +69,8 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
         }
         else
         {
+            consumeControl(action);
+
             var throwDownTriggered = false;
             if (ThrowingDown() && action.wasJustReleased)
             {
