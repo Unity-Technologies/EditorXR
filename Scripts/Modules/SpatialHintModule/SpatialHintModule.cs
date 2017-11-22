@@ -1,137 +1,131 @@
 ﻿#if UNITY_EDITOR
-using System;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, INodeToRay, IRayVisibilitySettings
-	{
-		public enum SpatialHintStateFlags
-		{
-			Hidden,
-			PreDragReveal,
-			Scrolling,
-			CenteredScrolling,
-		}
+    public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, INodeToRay, IRayVisibilitySettings
+    {
+        public enum SpatialHintStateFlags
+        {
+            Hidden,
+            PreDragReveal,
+            Scrolling,
+            CenteredScrolling,
+        }
 
-		[SerializeField]
-		SpatialHintUI m_SpatialHintUI;
+        [SerializeField]
+        SpatialHintUI m_SpatialHintUI;
 
-		SpatialHintStateFlags m_State;
-		Node? m_ControllingNode;
+        SpatialHintStateFlags m_State;
+        Node m_ControllingNode;
 
-		public SpatialHintStateFlags state
-		{
-			get { return m_State; }
-			set
-			{
-				m_State = value;
-				switch (m_State)
-				{
-					case SpatialHintStateFlags.Hidden:
-						m_SpatialHintUI.centeredScrolling = false;
-						m_SpatialHintUI.preScrollArrowsVisible = false;
-						m_SpatialHintUI.secondaryArrowsVisible = false;
-						this.RemoveRayVisibilitySettings(this.RequestRayOriginFromNode(m_ControllingNode), this);
-						controllingNode = null;
-						break;
-					case SpatialHintStateFlags.PreDragReveal:
-						m_SpatialHintUI.centeredScrolling = false;
-						m_SpatialHintUI.preScrollArrowsVisible = true;
-						m_SpatialHintUI.secondaryArrowsVisible = true;
-						break;
-					case SpatialHintStateFlags.Scrolling:
-						m_SpatialHintUI.centeredScrolling = false;
-						m_SpatialHintUI.preScrollArrowsVisible = false;
-						m_SpatialHintUI.scrollVisualsVisible = true;
-						break;
-					case SpatialHintStateFlags.CenteredScrolling:
-						m_SpatialHintUI.centeredScrolling = true;
-						m_SpatialHintUI.preScrollArrowsVisible = false;
-						m_SpatialHintUI.scrollVisualsVisible = true;
-						break;
-				}
-			}
-		}
+        public SpatialHintStateFlags state
+        {
+            get { return m_State; }
+            set
+            {
+                m_State = value;
+                switch (m_State)
+                {
+                    case SpatialHintStateFlags.Hidden:
+                        m_SpatialHintUI.centeredScrolling = false;
+                        m_SpatialHintUI.preScrollArrowsVisible = false;
+                        m_SpatialHintUI.secondaryArrowsVisible = false;
+                        this.RemoveRayVisibilitySettings(this.RequestRayOriginFromNode(m_ControllingNode), this);
+                        controllingNode = Node.None;
+                        break;
+                    case SpatialHintStateFlags.PreDragReveal:
+                        m_SpatialHintUI.centeredScrolling = false;
+                        m_SpatialHintUI.preScrollArrowsVisible = true;
+                        m_SpatialHintUI.secondaryArrowsVisible = true;
+                        break;
+                    case SpatialHintStateFlags.Scrolling:
+                        m_SpatialHintUI.centeredScrolling = false;
+                        m_SpatialHintUI.preScrollArrowsVisible = false;
+                        m_SpatialHintUI.scrollVisualsVisible = true;
+                        break;
+                    case SpatialHintStateFlags.CenteredScrolling:
+                        m_SpatialHintUI.centeredScrolling = true;
+                        m_SpatialHintUI.preScrollArrowsVisible = false;
+                        m_SpatialHintUI.scrollVisualsVisible = true;
+                        break;
+                }
+            }
+        }
 
-		private Node? controllingNode
-		{
-			set
-			{
-				var controllingNode = m_SpatialHintUI.controllingNode;
-				if (value == controllingNode)
-					return;
+        Node controllingNode
+        {
+            set
+            {
+                var controllingNode = m_SpatialHintUI.controllingNode;
+                if (value == controllingNode)
+                    return;
 
-				m_ControllingNode = value;
-				if (m_ControllingNode == null)
-				{
-					m_SpatialHintUI.controllingNode = null;
-				}
-				else
-				{
-					state = SpatialHintStateFlags.PreDragReveal;
-					m_SpatialHintUI.controllingNode = value;
-				}
-			}
-		}
+                m_ControllingNode = value;
+                if (m_ControllingNode != Node.None)
+                    state = SpatialHintStateFlags.PreDragReveal;
 
-		Vector3 spatialHintScrollVisualsRotation { set { m_SpatialHintUI.scrollVisualsRotation = value; } }
+                m_SpatialHintUI.controllingNode = value;
+            }
+        }
 
-		Transform spatialHintContentContainer { get { return m_SpatialHintUI.contentContainer; } }
+        Vector3 spatialHintScrollVisualsRotation { set { m_SpatialHintUI.scrollVisualsRotation = value; } }
 
-		void Awake()
-		{
-			m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
-			this.ConnectInterfaces(m_SpatialHintUI);
-		}
+        Transform spatialHintContentContainer { get { return m_SpatialHintUI.contentContainer; } }
 
-		internal void PulseScrollArrows()
-		{
-			m_SpatialHintUI.PulseScrollArrows();
-		}
+        void Awake()
+        {
+            m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
+            this.ConnectInterfaces(m_SpatialHintUI);
+        }
 
-		internal void SetState(SpatialHintStateFlags newState)
-		{
-			state = newState;
-		}
+        internal void PulseScrollArrows()
+        {
+            m_SpatialHintUI.PulseScrollArrows();
+        }
 
-		internal void SetPosition(Vector3 newPosition)
-		{
-			spatialHintContentContainer.position = newPosition;
-		}
+        internal void SetState(SpatialHintStateFlags newState)
+        {
+            state = newState;
+        }
 
-		internal void SetContainerRotation(Quaternion newRotation)
-		{
-			m_SpatialHintUI.transform.rotation = newRotation;
-		}
+        internal void SetPosition(Vector3 newPosition)
+        {
+            spatialHintContentContainer.position = newPosition;
+        }
 
-		internal void SetShowHideRotationTarget(Vector3 target)
-		{
-			spatialHintScrollVisualsRotation = target;
-		}
+        internal void SetContainerRotation(Quaternion newRotation)
+        {
+            m_SpatialHintUI.transform.rotation = newRotation;
+        }
 
-		internal void LookAt(Vector3 position)
-		{
-			var orig = spatialHintContentContainer.rotation;
-			spatialHintContentContainer.LookAt(position);
-			spatialHintContentContainer.rotation = orig;
-		}
+        internal void SetShowHideRotationTarget(Vector3 target)
+        {
+            spatialHintScrollVisualsRotation = target;
+        }
 
-		internal void SetDragThresholdTriggerPosition (Vector3 position)
-		{
-			if (state == SpatialHintStateFlags.Hidden || position == m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition)
-				return;
+        internal void LookAt(Vector3 position)
+        {
+            var orig = spatialHintContentContainer.rotation;
+            spatialHintContentContainer.LookAt(position);
+            spatialHintContentContainer.rotation = orig;
+        }
 
-			m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition = position;
-		}
+        internal void SetDragThresholdTriggerPosition(Vector3 position)
+        {
+            if (state == SpatialHintStateFlags.Hidden || position == m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition)
+                return;
 
-		internal void SetSpatialHintControlNode(Node? controlNode)
-		{
-			controllingNode = controlNode;
-			this.AddRayVisibilitySettings(this.RequestRayOriginFromNode(m_ControllingNode), this, false, false);
-		}
-	}
+            m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition = position;
+        }
+
+        internal void SetSpatialHintControlNode(Node controlNode)
+        {
+            controllingNode = controlNode;
+            this.AddRayVisibilitySettings(this.RequestRayOriginFromNode(m_ControllingNode), this, false, false);
+        }
+    }
 }
 #endif

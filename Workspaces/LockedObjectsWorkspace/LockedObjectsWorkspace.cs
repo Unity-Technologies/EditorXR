@@ -7,78 +7,78 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	[MainMenuItem("Locked Objects", "Workspaces", "View all locked objects in your scene(s)")]
-	class LockedObjectsWorkspace : HierarchyWorkspace, IUsesGameObjectLocking
-	{
-		[SerializeField]
-		GameObject m_UnlockAllPrefab;
+    [MainMenuItem("Locked Objects", "Workspaces", "View all locked objects in your scene(s)")]
+    class LockedObjectsWorkspace : HierarchyWorkspace, IUsesGameObjectLocking
+    {
+        [SerializeField]
+        GameObject m_UnlockAllPrefab;
 
-		string m_BaseSearchQuery;
-		string m_CachedSearchQuery;
+        string m_BaseSearchQuery;
+        string m_CachedSearchQuery;
 
-		public override string searchQuery
-		{
-			get
-			{
-				var query = base.searchQuery;
-				if (m_BaseSearchQuery != query)
-				{
-					m_BaseSearchQuery = query;
-					m_CachedSearchQuery = string.Format("{0} {1}", m_BaseSearchQuery, k_LockedQuery);
-				}
+        public override string searchQuery
+        {
+            get
+            {
+                var query = base.searchQuery;
+                if (m_BaseSearchQuery != query)
+                {
+                    m_BaseSearchQuery = query;
+                    m_CachedSearchQuery = string.Format("{0} {1}", m_BaseSearchQuery, k_Locked);
+                }
 
-				return m_CachedSearchQuery;
-			}
-		}
+                return m_CachedSearchQuery;
+            }
+        }
 
-		public override List<string> filterList
-		{
-			set
-			{
-				m_FilterList = value;
-				m_FilterList.Sort();
-				
-				if (m_FilterUI)
-					m_FilterUI.filterList = value;
-			}
-		}
+        public override List<string> filterList
+        {
+            set
+            {
+                m_FilterList = value;
+                m_FilterList.Sort();
 
-		public Action<GameObject, bool> setLocked { get; set; }
-		public Func<GameObject, bool> isLocked { get; set; }
+                if (m_FilterUI)
+                    m_FilterUI.filterList = value;
+            }
+        }
 
-		public override void Setup()
-		{
-			base.Setup();
+        public Action<GameObject, bool> setLocked { get; set; }
+        public Func<GameObject, bool> isLocked { get; set; }
 
-			if (m_UnlockAllPrefab)
-			{
-				var unlockAllUI = ObjectUtils.Instantiate(m_UnlockAllPrefab, m_WorkspaceUI.frontPanel, false);
-				foreach (var mb in unlockAllUI.GetComponentsInChildren<MonoBehaviour>())
-				{
-					this.ConnectInterfaces(mb);
-				}
+        public override void Setup()
+        {
+            base.Setup();
 
-				unlockAllUI.GetComponentInChildren<Button>(true).onClick.AddListener(UnlockAll);
-			}
-		}
+            if (m_UnlockAllPrefab)
+            {
+                var unlockAllUI = ObjectUtils.Instantiate(m_UnlockAllPrefab, m_WorkspaceUI.frontPanel, false);
+                foreach (var mb in unlockAllUI.GetComponentsInChildren<MonoBehaviour>())
+                {
+                    this.ConnectInterfaces(mb);
+                }
 
-		void UnlockAll()
-		{
-			UnlockAll(m_HierarchyData);
-		}
+                unlockAllUI.GetComponentInChildren<Button>(true).onClick.AddListener(UnlockAll);
+            }
+        }
 
-		void UnlockAll(List<HierarchyData> hierarchyData)
-		{
-			if (hierarchyData == null)
-				return;
+        void UnlockAll()
+        {
+            UnlockAll(m_HierarchyData);
+        }
 
-			foreach (var hd in hierarchyData)
-			{
-				setLocked(hd.gameObject, false);
+        void UnlockAll(List<HierarchyData> hierarchyData)
+        {
+            if (hierarchyData == null)
+                return;
 
-				UnlockAll(hd.children);
-			}
-		}
-	}
+            foreach (var hd in hierarchyData)
+            {
+                setLocked(hd.gameObject, false);
+
+                UnlockAll(hd.children);
+            }
+        }
+    }
 }
 #endif

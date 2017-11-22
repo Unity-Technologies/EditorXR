@@ -84,7 +84,6 @@ Shader "EditorVR/Standard-Cone"
 			#pragma shader_feature _PARALLAXMAP
 
 			#pragma multi_compile_fwdbase
-			#pragma multi_compile_fog
 
 			#pragma vertex vertBase
 			#pragma fragment fragBase
@@ -99,7 +98,6 @@ Shader "EditorVR/Standard-Cone"
 			Name "FORWARD_DELTA"
 			Tags { "LightMode" = "ForwardAdd" }
 			Blend [_SrcBlend] One
-			Fog { Color (0,0,0,0) } // in additive pass fog should be black
 			ZWrite Off
 			ZTest LEqual
 			Offset 0, -1
@@ -119,7 +117,6 @@ Shader "EditorVR/Standard-Cone"
 			#pragma shader_feature _PARALLAXMAP
 
 			#pragma multi_compile_fwdadd_fullshadows
-			#pragma multi_compile_fog
 
 
 			#pragma vertex vertAdd

@@ -18,14 +18,17 @@ Experimental means this:
 - As such, there is no guarantee that this will remain an actively supported project.
 
 ## Getting Started
-If you've made it here, but aren't accustomed to using GitHub, cloning repositories, etc. and are simply looking to give EditorVR a spin, then take a look at the [Getting Started Guide](https://docs.google.com/document/d/13Md9Z5sXNy96qyivpLOakFU-CJ5Uhpm1bS-WJp2SkWE). Once you're up and running we recommend you join the discussion on the [EditorVR forum](https://forum.unity3d.com/forums/editorvr.126/).
+If you've made it here, but aren't accustomed to using GitHub, cloning repositories, etc. and are simply looking to give EditorVR a spin, then take a look at the [Getting Started Guide](https://docs.google.com/document/d/1xWunGC3NJoDRBBz44gxpMUAh3SmedtNK12LqACyy2L0). Once you're up and running we recommend you join the discussion on the [EditorVR forum](https://forum.unity3d.com/forums/editorvr.126/).
 
 ## For Software Developers
-If you're a developer, we recommend that you take a look at the [Getting Started Guide](https://docs.google.com/document/d/13Md9Z5sXNy96qyivpLOakFU-CJ5Uhpm1bS-WJp2SkWE) *and* the companion document [Extending EditorVR](https://docs.google.com/document/d/1EGi9hKXAujfBMI2spErojdqRc0giqEnOu0NpwgBxtpg). You'll need to clone the repository into an existing project using the instructions below.
+If you're a developer, we recommend that you take a look at the [Getting Started Guide](https://docs.google.com/document/d/1xWunGC3NJoDRBBz44gxpMUAh3SmedtNK12LqACyy2L0) *and* the companion document [Extending EditorVR](https://docs.google.com/document/d/1EGi9hKXAujfBMI2spErojdqRc0giqEnOu0NpwgBxtpg). You'll need to clone the repository into an existing project using the instructions below.
 
 ### Git Dependencies
 - [git-lfs](https://git-lfs.github.com/)
 - [git-submodule](https://git-scm.com/docs/git-submodule)
+
+### Project Asset Dependencies
+- [Textmesh Pro](https://assetstore.unity.com/packages/essentials/beta-projects/textmesh-pro-84126)
 
 ### Cloning
 1. Create a new Unity project or use an existing one

@@ -7,89 +7,98 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
-	/// <summary>
-	/// Object related EditorVR utilities
-	/// </summary>
-	static class UIUtils
-	{
-		public const float DoubleClickIntervalMax = 0.3f;
-		const float k_DoubleClickIntervalMin = 0.15f;
+    /// <summary>
+    /// UI related utilities
+    /// </summary>
+    static class UIUtils
+    {
+        /// <summary>
+        /// Maximum interval between clicks that count as a double-click
+        /// </summary>
+        public const float DoubleClickIntervalMax = 0.3f;
 
-		public static bool IsDoubleClick(float timeSinceLastClick)
-		{
-			return timeSinceLastClick <= DoubleClickIntervalMax && timeSinceLastClick >= k_DoubleClickIntervalMin;
-		}
+        const float k_DoubleClickIntervalMin = 0.15f;
 
-		public static bool IsDirectEvent(RayEventData eventData)
-		{
-			return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength || eventData.dragging;
-		}
+        /// <summary>
+        /// Returns whether the given time interval qualifies as a double-click
+        /// </summary>
+        /// <param name="timeSinceLastClick">Time interval between clicks</param>
+        /// <returns></returns>
+        public static bool IsDoubleClick(float timeSinceLastClick)
+        {
+            return timeSinceLastClick <= DoubleClickIntervalMax && timeSinceLastClick >= k_DoubleClickIntervalMin;
+        }
 
-		public static bool IsValidEvent(RayEventData eventData, SelectionFlags selectionFlags)
-		{
-			if ((selectionFlags & SelectionFlags.Direct) != 0 && IsDirectEvent(eventData))
-				return true;
+        public static bool IsDirectEvent(RayEventData eventData)
+        {
+            return eventData.pointerCurrentRaycast.isValid && eventData.pointerCurrentRaycast.distance <= eventData.pointerLength || eventData.dragging;
+        }
 
-			if ((selectionFlags & SelectionFlags.Ray) != 0)
-				return true;
+        public static bool IsValidEvent(RayEventData eventData, SelectionFlags selectionFlags)
+        {
+            if ((selectionFlags & SelectionFlags.Direct) != 0 && IsDirectEvent(eventData))
+                return true;
 
-			return false;
-		}
+            if ((selectionFlags & SelectionFlags.Ray) != 0)
+                return true;
 
-		/// <summary>
-		/// Special version of EditorGUI.MaskField which ensures that only the chosen bits are set. We need this version of the
-		/// function to check explicitly whether only a single bit was set.
-		/// </summary>
-		/// <returns></returns>
-		public static int MaskField(Rect position, GUIContent label, int mask, string[] displayedOptions, Type propertyType)
-		{
-			mask = EditorGUI.MaskField(position, label, mask, displayedOptions);
-			return ActualEnumFlags(mask, propertyType);
-		}
+            return false;
+        }
 
-		public static int ActualEnumFlags(int value, Type t)
-		{
-			if (value < 0)
-			{
-				int bits = 0;
-				foreach (var enumValue in System.Enum.GetValues(t))
-				{
-					int checkBit = value & (int)enumValue;
-					if (checkBit != 0)
-					{
-						bits |= (int)enumValue;
-					}
-				}
-				value = bits;
-			}
-			return value;
-		}
+        /// <summary>
+        /// Special version of EditorGUI.MaskField which ensures that only the chosen bits are set. We need this version of the
+        /// function to check explicitly whether only a single bit was set.
+        /// </summary>
+        /// <returns></returns>
+        public static int MaskField(Rect position, GUIContent label, int mask, string[] displayedOptions, Type propertyType)
+        {
+            mask = EditorGUI.MaskField(position, label, mask, displayedOptions);
+            return ActualEnumFlags(mask, propertyType);
+        }
 
-		public static Type SerializedPropertyToType(SerializedProperty property)
-		{
-			var parts = property.propertyPath.Split('.');
+        public static int ActualEnumFlags(int value, Type t)
+        {
+            if (value < 0)
+            {
+                int bits = 0;
+                foreach (var enumValue in System.Enum.GetValues(t))
+                {
+                    int checkBit = value & (int)enumValue;
+                    if (checkBit != 0)
+                    {
+                        bits |= (int)enumValue;
+                    }
+                }
+                value = bits;
+            }
+            return value;
+        }
 
-			var currentType = property.serializedObject.targetObject.GetType();
+        public static Type SerializedPropertyToType(SerializedProperty property)
+        {
+            var parts = property.propertyPath.Split('.');
 
-			if (parts.Length == 0)
-				return null;
+            var currentType = property.serializedObject.targetObject.GetType();
 
-			var field = GetFieldInTypeOrParent(currentType, parts[parts.Length - 1]);
+            if (parts.Length == 0)
+                return null;
 
-			return field != null ? field.FieldType : null;
-		}
+            var field = GetFieldInTypeOrParent(currentType, parts[parts.Length - 1]);
 
-		public static FieldInfo GetFieldInTypeOrParent(Type type, string fieldName)
-		{
-			while (true)
-			{
-				if (type == null)
-					return null;
-				var field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
-				if (field != null) return field;
-				type = type.BaseType;
-			}
-		}
-	}
+            return field != null ? field.FieldType : null;
+        }
+
+        public static FieldInfo GetFieldInTypeOrParent(Type type, string fieldName)
+        {
+            while (true)
+            {
+                if (type == null)
+                    return null;
+                var field = type.GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy | BindingFlags.Instance);
+                if (field != null) return field;
+                type = type.BaseType;
+            }
+        }
+    }
 }
 #endif
