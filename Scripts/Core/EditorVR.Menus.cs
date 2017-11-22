@@ -360,7 +360,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            void CheckMenuColliderOverlaps(IMenu menu, MenuHideData menuHideData)
+            static void CheckMenuColliderOverlaps(IMenu menu, MenuHideData menuHideData)
             {
                 var menuBounds = menu.localBounds;
                 if (menuBounds.extents == Vector3.zero)
@@ -547,37 +547,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return go;
             }
 
-            internal IMainMenu SpawnMainMenu(Type type, Transform rayOrigin)
+            internal T SpawnMenu<T>(Transform rayOrigin) where T : Component, IMenu
             {
-                if (!typeof(IMainMenu).IsAssignableFrom(type))
-                    return null;
-
-                var mainMenu = (IMainMenu)ObjectUtils.AddComponent(type, evr.gameObject);
+                var mainMenu = ObjectUtils.AddComponent<T>(evr.gameObject);
                 this.ConnectInterfaces(mainMenu, rayOrigin);
 
                 return mainMenu;
-            }
-
-            internal IAlternateMenu SpawnAlternateMenu(Type type, Transform rayOrigin)
-            {
-                if (!typeof(IAlternateMenu).IsAssignableFrom(type))
-                    return null;
-
-                var alternateMenu = (IAlternateMenu)ObjectUtils.AddComponent(type, evr.gameObject);
-                this.ConnectInterfaces(alternateMenu, rayOrigin);
-
-                return alternateMenu;
-            }
-
-            internal IToolsMenu SpawnToolsMenu(Type type, Transform rayOrigin)
-            {
-                if (!typeof(IToolsMenu).IsAssignableFrom(type))
-                    return null;
-
-                var menu = (IToolsMenu)ObjectUtils.AddComponent(type, evr.gameObject);
-                this.ConnectInterfaces(menu, rayOrigin);
-
-                return menu;
             }
 
             internal static void UpdateAlternateMenuActions()

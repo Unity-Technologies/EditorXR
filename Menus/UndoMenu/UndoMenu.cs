@@ -11,7 +11,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
+    sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IMenu, IUsesMenuOrigins, ICustomActionMap,
         IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IUsesDeviceType
     {
         const float k_UndoRedoThreshold = 0.5f;
@@ -41,15 +41,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
 
-        public Transform rayOrigin { private get; set; }
-
         public Transform menuOrigin { get; set; }
 
         public GameObject menuContent { get { return m_UndoMenuUI.gameObject; } }
 
         public Node node { get; set; }
-
-        public event Action<Transform> itemWasSelected;
 
         public Bounds localBounds { get { return default(Bounds); } }
 
