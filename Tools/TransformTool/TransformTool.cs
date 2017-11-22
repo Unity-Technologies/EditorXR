@@ -419,10 +419,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     consumeControl(leftInput.cancel);
                     if (leftInput.cancel.wasJustPressed)
                     {
-                        DropHeldObjects(Node.LeftHand);
                         if (m_Scaling)
+                        {
+                            m_Scaling = false;
+                            DropHeldObjects(Node.LeftHand);
                             DropHeldObjects(Node.RightHand);
-
+                            hasRight = false;
+                        }
+                        else
+                        {
+                            DropHeldObjects(Node.LeftHand);
+                        }
                         hasLeft = false;
                         Undo.PerformUndo();
                     }
@@ -440,10 +447,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     consumeControl(rightInput.cancel);
                     if (rightInput.cancel.wasJustPressed)
                     {
-                        DropHeldObjects(Node.RightHand);
+                       
                         if (m_Scaling)
+                        {
+                            m_Scaling = false;
+                            DropHeldObjects(Node.RightHand);
                             DropHeldObjects(Node.LeftHand);
-
+                            hasLeft = false;
+                        }
+                        else
+                        {
+                             DropHeldObjects(Node.RightHand);
+                        }
                         hasRight = false;
                         Undo.PerformUndo();
                     }
