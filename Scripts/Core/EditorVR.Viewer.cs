@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             PlayerBody m_PlayerBody;
             float m_OriginalNearClipPlane;
             float m_OriginalFarClipPlane;
-            readonly List<Renderer> m_VRPlayerObjects = new List<Renderer>();
+            readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
 
             readonly Preferences m_Preferences = new Preferences();
 
@@ -197,8 +197,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_PlayerBody = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
                 var renderer = m_PlayerBody.GetComponent<Renderer>();
                 evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
-                renderer.GetComponentsInChildren(true, m_VRPlayerObjects);
-                evr.GetModule<SnappingModule>().ignoreList = m_VRPlayerObjects;
+                var playerObjects = m_PlayerBody.GetComponentsInChildren<Renderer>(true);
+                foreach (var playerObject in playerObjects)
+                {
+                    m_VRPlayerObjects.Add(playerObject.gameObject);
+                }
+
+                evr.GetModule<IntersectionModule>().standardIgnoreList.AddRange(m_VRPlayerObjects);
             }
 
             internal bool IsOverShoulder(Transform rayOrigin)

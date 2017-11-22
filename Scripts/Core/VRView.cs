@@ -130,7 +130,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void OnEnable()
         {
-            Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
+            Assert.IsNull(s_ActiveView, "Only one EditorXR should be active");
 
             autoRepaintOnSceneChange = true;
             s_ActiveView = this;
@@ -184,7 +184,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_CameraRig)
                 DestroyImmediate(m_CameraRig.gameObject, true);
 
-            Assert.IsNotNull(s_ActiveView, "EditorVR should have an active view");
+            Assert.IsNotNull(s_ActiveView, "EditorXR should have an active view");
             s_ActiveView = null;
         }
 

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,11 +14,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         const float k_UVScale = 100f;
         const float k_UVScrollSpeed = 1.5f;
         const float k_Offset = 0.05f;
+        const float k_TextOrientationWeight = 0.1f;
+        const float k_ChangeTransitionDuration = 0.1f;
 
         const int k_PoolInitialCapacity = 16;
-
-        const string k_MaterialColorTopProperty = "_ColorTop";
-        const string k_MaterialColorBottomProperty = "_ColorBottom";
 
         static readonly Quaternion k_FlipYRotation = Quaternion.AngleAxis(180f, Vector3.up);
         static readonly Quaternion k_FlipZRotation = Quaternion.AngleAxis(180f, Vector3.forward);
@@ -29,22 +28,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         GameObject m_TooltipCanvasPrefab;
 
-        [SerializeField]
-        Material m_HighlightMaterial;
-
-        [SerializeField]
-        Material m_TooltipBackgroundMaterial;
-
         class TooltipData
         {
             public float startTime;
             public float lastModifiedTime;
             public TooltipUI tooltipUI;
-            public Material customHighlightMaterial;
             public bool persistent;
             public float duration;
             public Action becameVisible;
             public ITooltipPlacement placement;
+            public float orientationWeight;
+            public Vector3 transitionOffset;
+            public float transitionTime;
 
             public Transform GetTooltipTarget(ITooltip tooltip)
             {
@@ -60,7 +55,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         Transform m_TooltipCanvas;
         Vector3 m_TooltipScale;
-        Color m_OriginalBackgroundColor;
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<ITooltip> k_TooltipsToRemove = new List<ITooltip>();
@@ -72,12 +66,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
             m_TooltipCanvas.SetParent(transform);
             m_TooltipScale = m_TooltipPrefab.transform.localScale;
-            m_HighlightMaterial = Instantiate(m_HighlightMaterial);
-            m_TooltipBackgroundMaterial = Instantiate(m_TooltipBackgroundMaterial);
-            m_OriginalBackgroundColor = m_TooltipBackgroundMaterial.color;
-            var sessionGradient = UnityBrandColorScheme.sessionGradient;
-            m_HighlightMaterial.SetColor(k_MaterialColorTopProperty, sessionGradient.a);
-            m_HighlightMaterial.SetColor(k_MaterialColorBottomProperty, sessionGradient.b);
         }
 
         void Update()
@@ -100,24 +88,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (!tooltipUI)
                     {
                         tooltipUI = CreateTooltipObject();
+                        tooltipUI.Show(tooltip.tooltipText, placement.tooltipAlignment);
                         tooltipUI.becameVisible += tooltipData.becameVisible;
                         tooltipData.tooltipUI = tooltipUI;
-                        tooltipUI.highlight.material = tooltipData.customHighlightMaterial ?? m_HighlightMaterial;
-                        tooltipUI.background.material = m_TooltipBackgroundMaterial;
-                        var tooltipTransform = tooltipUI.transform;
-                        MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
-                        tooltipTransform.localScale = Vector3.zero;
-
-                        var hasLine = placement != null;
-                        tooltipUI.dottedLine.gameObject.SetActive(hasLine);
+                        tooltipUI.dottedLine.gameObject.SetActive(true);
                         foreach (var sphere in tooltipUI.spheres)
                         {
-                            sphere.gameObject.SetActive(hasLine);
+                            sphere.gameObject.SetActive(true);
                         }
                     }
 
                     var lerp = Mathf.Clamp01((hoverTime - k_Delay) / k_TransitionDuration);
-                    UpdateVisuals(tooltip, tooltipUI, placement, target, lerp);
+                    UpdateVisuals(tooltip, tooltipData, lerp);
                 }
 
                 if (!IsValidTooltip(tooltip))
@@ -146,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return pooledTooltip;
             }
 
-            var tooltipObject = Instantiate(m_TooltipPrefab, m_TooltipCanvas);
+            var tooltipObject = ObjectUtils.Instantiate(m_TooltipPrefab, m_TooltipCanvas);
             tooltipObject.GetComponents(k_TooltipUIs);
 
             var tooltipUI = k_TooltipUIs[0]; // We expect exactly one TooltipUI on the prefab root
@@ -154,70 +136,48 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return tooltipUI;
         }
 
-        void UpdateVisuals(ITooltip tooltip, TooltipUI tooltipUI, ITooltipPlacement placement, Transform target, float lerp)
+        void UpdateVisuals(ITooltip tooltip, TooltipData tooltipData, float lerp)
         {
+            var target = tooltipData.GetTooltipTarget(tooltip);
+            var tooltipUI = tooltipData.tooltipUI;
+            var placement = tooltipData.placement;
+            var orientationWeight = tooltipData.orientationWeight;
             var tooltipTransform = tooltipUI.transform;
 
             lerp = MathUtilsExt.SmoothInOutLerpFloat(lerp); // shape the lerp for better presentation
-
-            var tooltipText = tooltipUI.text;
-            if (tooltipText)
-            {
-                tooltipText.text = tooltip.tooltipText;
-                tooltipText.color = Color.Lerp(Color.clear, Color.white, lerp);
-            }
+            var transitionLerp = MathUtilsExt.SmoothInOutLerpFloat(1.0f - Mathf.Clamp01((Time.time - tooltipData.transitionTime) / k_ChangeTransitionDuration));
 
             var viewerScale = this.GetViewerScale();
             tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
-            m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
-
             // Adjust for alignment
-            var offset = Vector3.zero;
-            if (placement != null)
-            {
-                switch (placement.tooltipAlignment)
-                {
-                    case TextAlignment.Right:
-                        offset = Vector3.left;
-                        break;
-                    case TextAlignment.Left:
-                        offset = Vector3.right;
-                        break;
-                }
-            }
+            var offset = GetTooltipOffset(tooltipUI, placement, tooltipData.transitionOffset * transitionLerp);
 
-            var rectTransform = tooltipUI.GetComponent<RectTransform>();
-            var rect = rectTransform.rect;
-            var halfWidth = rect.width * 0.5f;
-            var halfHeight = rect.height * 0.5f;
-
-            if (placement != null)
-                offset *= halfWidth * rectTransform.lossyScale.x;
-            else
-                offset = Vector3.back * k_Offset * this.GetViewerScale();
-
+            // The rectTransform expansion is handled in the Tooltip dynamically, based on alignment & text length
             var rotationOffset = Quaternion.identity;
-            var cameraForward = CameraUtils.GetMainCamera().transform.forward;
-            if (Vector3.Dot(cameraForward, target.forward) < 0)
+            var camTransform = CameraUtils.GetMainCamera().transform;
+            if (Vector3.Dot(camTransform.forward, target.forward) < 0)
                 rotationOffset *= k_FlipYRotation;
 
-            var upDot = Vector3.Dot(Vector3.up, target.up);
-            if (Mathf.Abs(Vector3.Dot(Vector3.forward, target.up)) > Mathf.Abs(upDot))
+            if (Vector3.Dot(camTransform.up, target.up) + orientationWeight < 0)
             {
-                if (Vector3.Dot(cameraForward, target.up) < 0)
-                    rotationOffset *= k_FlipZRotation;
+                rotationOffset *= k_FlipZRotation;
+                tooltipData.orientationWeight = -k_TextOrientationWeight;
             }
             else
             {
-                if (upDot < 0)
-                    rotationOffset *= k_FlipZRotation;
+                tooltipData.orientationWeight = k_TextOrientationWeight;
             }
 
             MathUtilsExt.SetTransformOffset(target, tooltipTransform, offset * lerp, rotationOffset);
 
             if (placement != null)
             {
+                var rectTransform = tooltipUI.rectTransform;
+                var rect = rectTransform.rect;
+                var halfWidth = rect.width * 0.5f;
+                var halfHeight = rect.height * 0.5f;
+
                 var source = placement.tooltipSource;
                 var toSource = tooltipTransform.InverseTransformPoint(source.position);
 
@@ -301,9 +261,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             TooltipData data;
             if (m_Tooltips.TryGetValue(tooltip, out data))
             {
+                // Compare the targets to see if they changed
+                var currentTarget = data.GetTooltipTarget(tooltip);
+                var currentPlacement = data.placement;
+
                 data.persistent |= persistent;
                 data.placement = placement ?? tooltip as ITooltipPlacement;
-                data.customHighlightMaterial = GetHighlightMaterial(tooltip);
+
+                var newTarget = data.GetTooltipTarget(tooltip);
+                if (currentTarget != newTarget)
+                {
+                    // Get the different between the 'old' tooltip position and 'new' tooltip position, even taking alignment into account
+                    var transitionLerp = 1.0f - Mathf.Clamp01((Time.time - data.transitionTime) / k_ChangeTransitionDuration);
+                    var currentPosition = currentTarget.TransformPoint(GetTooltipOffset(data.tooltipUI, currentPlacement, data.transitionOffset * transitionLerp));
+                    var newPosition = newTarget.TransformPoint(GetTooltipOffset(data.tooltipUI, data.placement, Vector3.zero));
+
+                    // Store it as an additional offset that we'll quickly lerp from
+                    data.transitionOffset = newTarget.InverseTransformVector(currentPosition - newPosition);
+                    data.transitionTime = Time.time;
+                }
 
                 if (duration > 0)
                 {
@@ -320,29 +296,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             m_Tooltips[tooltip] = new TooltipData
             {
-                customHighlightMaterial = GetHighlightMaterial(tooltip),
                 startTime = Time.time,
                 lastModifiedTime = Time.time,
                 persistent = persistent,
                 duration = duration,
                 becameVisible = becameVisible,
-                placement = placement ?? tooltip as ITooltipPlacement
+                placement = placement ?? tooltip as ITooltipPlacement,
+                orientationWeight = 0.0f,
+                transitionOffset = Vector3.zero,
+                transitionTime =  0.0f,
             };
-        }
-
-        Material GetHighlightMaterial(ITooltip tooltip)
-        {
-            Material highlightMaterial = null;
-            var customTooltipColor = tooltip as ISetCustomTooltipColor;
-            if (customTooltipColor != null)
-            {
-                highlightMaterial = Instantiate(m_HighlightMaterial);
-                var customTooltipHighlightColor = customTooltipColor.customTooltipHighlightColor;
-                highlightMaterial.SetColor(k_MaterialColorTopProperty, customTooltipHighlightColor.a);
-                highlightMaterial.SetColor(k_MaterialColorBottomProperty, customTooltipHighlightColor.b);
-            }
-
-            return highlightMaterial;
         }
 
         static bool IsValidTooltip(ITooltip tooltip)
@@ -367,21 +330,54 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         IEnumerator AnimateHide(ITooltip tooltip, TooltipData data)
         {
-            var placement = data.placement;
             var target = data.GetTooltipTarget(tooltip);
-            var tooltipUI = data.tooltipUI;
             var startTime = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup - startTime < k_TransitionDuration)
             {
                 if (!target)
                     break;
 
-                UpdateVisuals(tooltip, tooltipUI, placement, target,
-                    1 - (Time.realtimeSinceStartup - startTime) / k_TransitionDuration);
+                UpdateVisuals(tooltip, data, 1 - (Time.realtimeSinceStartup - startTime) / k_TransitionDuration);
                 yield return null;
             }
 
             RecycleTooltip(data);
+        }
+
+        Vector3 GetTooltipOffset(TooltipUI tooltipUI, ITooltipPlacement placement, Vector3 transitionOffset)
+        {
+            if (tooltipUI == null)
+            {
+                return Vector3.zero;
+            }
+
+            var offset = Vector3.zero;
+            if (placement != null)
+            {
+                switch (placement.tooltipAlignment)
+                {
+                    case TextAlignment.Right:
+                        offset = Vector3.left;
+                        break;
+                    case TextAlignment.Left:
+                        offset = Vector3.right;
+                        break;
+                }
+            }
+
+            // The rectTransform expansion is handled in the Tooltip dynamically, based on alignment & text length
+            var rectTransform = tooltipUI.rectTransform;
+            var rect = rectTransform.rect;
+            var halfWidth = rect.width * 0.5f;
+
+            if (placement != null)
+                offset *= halfWidth * rectTransform.lossyScale.x;
+            else
+                offset = Vector3.back * k_Offset * this.GetViewerScale();
+
+            offset += transitionOffset;
+
+            return offset;
         }
 
         void RecycleTooltip(TooltipData tooltipData)

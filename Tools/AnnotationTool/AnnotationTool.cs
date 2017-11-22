@@ -256,9 +256,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 activator.showColorPicker = ShowColorPicker;
                 activator.hideColorPicker = HideColorPicker;
 
-                activator.undoButtonClick += Undo.PerformUndo;
-                activator.redoButtonClick += Undo.PerformRedo;
-
                 var controls = new BindingDictionary();
                 InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, controls);
 
@@ -751,9 +748,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                 Undo.PerformUndo();
                         }
                     }
-
-                    consumeControl(annotationInput.changeBrushSize);
-                    consumeControl(annotationInput.vertical);
                 }
             }
 

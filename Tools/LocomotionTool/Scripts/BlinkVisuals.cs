@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
@@ -63,7 +63,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 
     public float extraSpeed { private get; set; }
 
-    public List<Renderer> ignoreList { private get; set; }
+    public List<GameObject> ignoreList { private get; set; }
 
     public bool visible
     {
