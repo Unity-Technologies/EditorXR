@@ -61,6 +61,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly List<FileTransfer> m_Transfers = new List<FileTransfer>();
         readonly Queue<FileTransfer> m_QueuedTransfers = new Queue<FileTransfer>();
 
+        List<string> m_CompletedRequests = new List<string>(20);
+        List<FileTransfer> m_CompletedTransfers = new List<FileTransfer>(20);
+
         public void Download(string url, Action<DownloadHandler> completed)
         {
             DownloadRequest request;
@@ -114,7 +117,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void Update()
         {
-            var completedRequests = new List<string>();
             foreach (var kvp in m_Requests)
             {
                 var request = kvp.Value;
@@ -128,11 +130,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                     request.Complete();
 
-                    completedRequests.Add(kvp.Key);
+                    m_CompletedRequests.Add(kvp.Key);
                 }
             }
 
-            foreach (var request in completedRequests)
+            foreach (var request in m_CompletedRequests)
             {
                 m_Requests.Remove(request);
             }
@@ -144,7 +146,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             //TODO: Generalize Request class
-            completedRequests.Clear();
+            m_CompletedRequests.Clear();
             foreach (var kvp in m_TextureRequests)
             {
                 var request = kvp.Value;
@@ -158,11 +160,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                     request.Complete();
 
-                    completedRequests.Add(kvp.Key);
+                    m_CompletedRequests.Add(kvp.Key);
                 }
             }
 
-            foreach (var request in completedRequests)
+            foreach (var request in m_CompletedRequests)
             {
                 m_TextureRequests.Remove(request);
             }
@@ -173,17 +175,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_TextureRequests.Add(first.key, first);
             }
 
-            var completedTransfers = new List<FileTransfer>();
             foreach (var transfer in m_Transfers)
             {
                 if (transfer.isDone)
                 {
                     transfer.Complete();
-                    completedTransfers.Add(transfer);
+                    m_CompletedTransfers.Add(transfer);
                 }
             }
 
-            foreach (var transfer in completedTransfers)
+            foreach (var transfer in m_CompletedTransfers)
             {
                 m_Transfers.Remove(transfer);
             }
@@ -193,6 +194,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var first = m_QueuedTransfers.Dequeue();
                 m_Transfers.Add(first);
             }
+
+            m_CompletedRequests.Clear();
+            m_CompletedTransfers.Clear();
         }
     }
 }
