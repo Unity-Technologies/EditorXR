@@ -7,6 +7,16 @@ using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
+    public struct ContextSettings
+    {
+        public bool copySceneCameraSettings;
+
+        public ContextSettings(bool copySceneCameraSettings)
+        {
+            this.copySceneCameraSettings = copySceneCameraSettings;
+        }
+    }
+
     [CreateAssetMenu(menuName = "EditorVR/EditorVR Context")]
     class EditorVRContext : ScriptableObject, IEditingContext
     {
@@ -14,23 +24,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
         float m_RenderScale = 1f;
 
         [SerializeField]
+        bool m_CopySceneCameraSettings = true;
+
+        [SerializeField]
         internal List<MonoScript> m_DefaultToolStack;
 
         EditorVR m_Instance;
+
+        public ContextSettings contextSettings { get { return new ContextSettings(m_CopySceneCameraSettings); } }
 
         public void Setup()
         {
             EditorVR.defaultTools = m_DefaultToolStack.Select(ms => ms.GetClass()).ToArray();
             m_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
-
             XRSettings.eyeTextureResolutionScale = m_RenderScale;
         }
 
         public void Dispose()
         {
-            m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
-            ObjectUtils.Destroy(m_Instance.gameObject);
-            m_Instance = null;
+            if (m_Instance)
+            {
+                m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
+                ObjectUtils.Destroy(m_Instance.gameObject);
+                m_Instance = null;
+            }
         }
     }
 }

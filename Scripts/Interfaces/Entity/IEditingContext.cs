@@ -1,4 +1,6 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Core;
+
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
@@ -11,6 +13,11 @@ namespace UnityEditor.Experimental.EditorVR
         /// Name for this specific instance of an editing context
         /// </summary>
         string name { get; }
+
+        /// <summary>
+        /// Settings denoting that the scene camera's (component_ values should be cloned on the XR runtime camera
+        /// </summary>
+        ContextSettings contextSettings { get; }
 
         /// <summary>
         /// Perform one-time setup for the context when pushed to the stack.
