@@ -159,7 +159,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             if (s_ExistingSceneMainCamera)
+            {
+                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
                 s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
+            }
 
             m_Camera.enabled = false;
             m_Camera.cameraType = CameraType.VR;
