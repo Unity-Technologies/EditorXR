@@ -148,7 +148,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             s_ExistingSceneMainCamera = Camera.main;
             if (contextSettings.copySceneCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
             {
-                s_ExistingSceneMainCameraEnabledState = true;
                 GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
                 m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
             }
