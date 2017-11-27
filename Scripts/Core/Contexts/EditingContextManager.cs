@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             ContextSettings settings = new ContextSettings();
             if (s_CurrentContext != null)
-                settings = s_CurrentContext != null ? s_CurrentContext.contextSettings : defaultContext.contextSettings;
+                settings = s_CurrentContext.contextSettings;
 
             return settings;
         }
