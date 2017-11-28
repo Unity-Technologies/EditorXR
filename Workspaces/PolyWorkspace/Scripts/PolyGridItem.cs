@@ -15,7 +15,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     class PolyGridItem : DraggableListItem<PolyGridAsset, string>, IPlaceSceneObject, IUsesSpatialHash,
-        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IRayToNode, IUsesGrouping
+        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesGrouping, IControlHaptics
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -403,10 +403,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_Text.text = "Importing...";
                 m_Importing = true;
             }
+
+            base.OnDragEnded(handle, eventData);
         }
 
         void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
         {
+            base.OnHoverStart(handle, eventData);
+
             m_Hovered = true;
 
             ShowGrabFeedback(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
@@ -414,6 +418,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
         {
+            base.OnHoverEnd(handle, eventData);
+
             m_Hovered = false;
 
             HideGrabFeedback();
