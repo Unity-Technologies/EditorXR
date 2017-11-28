@@ -102,6 +102,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
             // Don't do base functionality
         }
 
+        protected override void OnDisable()
+        {
+            if (m_KeyboardOpen && Selection.activeObject == null)
+                CloseKeyboard(true);
+        }
+
         protected void SendOnValueChangedAndUpdateLabel()
         {
             SendOnValueChanged();
