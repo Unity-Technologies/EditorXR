@@ -25,10 +25,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static EditingContextManager s_Instance;
         static InputManager s_InputManager;
 
-        EditingContextManagerSettings m_Settings;
+        EditingContextManagerSettings m_Settings = null;
 
         List<IEditingContext> m_AvailableContexts;
-        string[] m_ContextNames;
+        string[] m_ContextNames = null;
         int m_SelectedContextIndex;
 
         IEditingContext m_CurrentContext;
@@ -81,20 +81,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
             ObjectUtils.Destroy(s_InputManager.gameObject);
         }
 
-        [MenuItem("Window/EditorVR %e", false)]
+        [MenuItem("Window/EditorXR %e", false)]
         internal static void ShowEditorVR()
         {
             // Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
-            EditorWindow.GetWindow<VRView>(true, "EditorVR", true);
+            EditorWindow.GetWindow<VRView>(true, "EditorXR", true);
         }
 
-        [MenuItem("Window/EditorVR %e", true)]
+        [MenuItem("Window/EditorXR %e", true)]
         static bool ShouldShowEditorVR()
         {
             return PlayerSettings.virtualRealitySupported;
         }
 
-        [MenuItem("Edit/Project Settings/EditorVR/Default Editing Context")]
+        [MenuItem("Edit/Project Settings/EditorXR/Default Editing Context")]
         static void EditProjectSettings()
         {
             var settings = LoadProjectSettings();
@@ -142,7 +142,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_ContextNames = availableContexts.Select(c => c.name).ToArray();
 
             if (m_AvailableContexts.Count == 0)
-                throw new Exception("You can't start EditorVR without at least one context. Try re-importing the package or use version control to restore the default context asset");
+                throw new Exception("You can't start EditorXR without at least one context. Try re-importing the package or use version control to restore the default context asset");
 
             SetEditingContext(defaultContext);
 

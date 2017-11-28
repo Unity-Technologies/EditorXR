@@ -316,7 +316,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (!Mathf.Approximately(speedControlValue, 0)) // Consume control to block selection
                 {
                     speed = k_SlowMoveSpeed + speedControlValue * (k_FastMoveSpeed - k_SlowMoveSpeed);
-                    consumeControl(speedControl);
                     HideSpeedFeedback();
                 }
                 else if (m_SpeedFeedback.Count == 0)
@@ -331,6 +330,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 m_Rotating = false;
                 cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
 
+                consumeControl(speedControl); // Consume trigger to block block-select
                 consumeControl(forwardControl);
                 return true;
             }
@@ -533,7 +533,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (blink.isHeld)
             {
                 this.AddRayVisibilitySettings(rayOrigin, this, false, false);
-                var speed = m_LocomotionInput.speed.value;
+                var speedControl = m_LocomotionInput.speed;
+                var speed = speedControl.value;
                 m_BlinkVisuals.extraSpeed = speed;
 
                 if (speed < 0)
@@ -543,6 +544,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 m_BlinkVisuals.visible = true;
 
+                consumeControl(speedControl); // Consume trigger to block block-select
                 consumeControl(blink);
                 return true;
             }
@@ -769,7 +771,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             var offset = cameraRig.position - CameraUtils.GetMainCamera().transform.position;
             offset.y = 0;
-            offset += VRView.HeadHeight * Vector3.up * this.GetViewerScale();
+            offset += VRView.headCenteredOrigin * this.GetViewerScale();
 
             targetPosition += offset;
             const float kTargetDuration = 0.05f;

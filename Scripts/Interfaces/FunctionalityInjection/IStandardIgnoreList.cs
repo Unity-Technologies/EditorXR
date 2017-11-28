@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// List of system objects to ignore for intersection purposes
         /// </summary>
-        List<Renderer> ignoreList { set; }
+        List<GameObject> ignoreList { set; }
     }
 }
 #endif
