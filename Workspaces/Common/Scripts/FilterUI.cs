@@ -162,15 +162,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 this.StopCoroutine(ref m_ShowButtonListCoroutine);
                 m_ShowButtonListCoroutine = StartCoroutine(ShowButtonList());
             }
-            else
+            else if (m_ButtonList.gameObject.activeSelf)
             {
                 this.StopCoroutine(ref m_ShowUICoroutine);
                 m_ShowUICoroutine = StartCoroutine(ShowUIContent());
 
                 this.StopCoroutine(ref m_HideButtonListCoroutine);
                 m_HideButtonListCoroutine = StartCoroutine(HideButtonList());
-
-                OnClicked(null);
             }
         }
 

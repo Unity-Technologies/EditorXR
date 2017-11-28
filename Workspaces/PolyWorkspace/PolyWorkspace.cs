@@ -1,12 +1,13 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Threading;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 
 #if INCLUDE_POLY_TOOLKIT
 using System.Collections.Generic;
-using System.Linq;
 using PolyToolkit;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -24,13 +25,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     [MainMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
     sealed class PolyWorkspace : Workspace, ISerializeWorkspace
     {
-        const float k_XBounds = 1.4f;
+        const float k_XBounds = 1.094f;
         const float k_YBounds = 0.2f;
 
         const float k_MinScale = 0.05f;
         const float k_MaxScale = 0.2f;
 
-        const float k_FilterUIWidth = 0.2f;
+        const float k_HighlightDelay = 0.05f;
+
+        const float k_FilterUIWidth = 0.162f;
 
         const string k_Featured = "Featured";
         const string k_Newest = "Newest";
@@ -71,6 +74,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         FilterUI m_ComplexityFilterUI;
         FilterUI m_CategoryFilterUI;
         ZoomSliderUI m_ZoomSliderUI;
+
+        Coroutine m_HighlightDelayCoroutine;
 
         public List<PolyGridAsset> assetData
         {
@@ -155,6 +160,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 UpdateComplexityFilterUI();
             };
 
+            m_CategoryFilterUI.buttonClicked += handle =>
+            {
+                m_SortingUI.SetListVisibility(false);
+                m_FormatFilterUI.SetListVisibility(false);
+                m_ComplexityFilterUI.SetListVisibility(false);
+            };
+
             var categoryList = new List<string>();
             var textInfo = Thread.CurrentThread.CurrentCulture.TextInfo;
             foreach (var category in Enum.GetNames(typeof(PolyCategory)))
@@ -213,6 +225,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 gridView.RequestAssetList();
                 UpdateComplexityFilterUI();
+            };
+
+            m_ComplexityFilterUI.buttonClicked += handle =>
+            {
+                m_SortingUI.SetListVisibility(false);
+                m_FormatFilterUI.SetListVisibility(false);
+                m_CategoryFilterUI.SetListVisibility(false);
             };
 
             m_ComplexityFilterUI.filterList = new List<string>
@@ -274,6 +293,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 UpdateFormatFilterUI();
             };
 
+            m_FormatFilterUI.buttonClicked += handle =>
+            {
+                m_SortingUI.SetListVisibility(false);
+                m_ComplexityFilterUI.SetListVisibility(false);
+                m_CategoryFilterUI.SetListVisibility(false);
+            };
+
             m_FormatFilterUI.filterList = new List<string>
             {
                 k_Blocks,
@@ -327,6 +353,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 gridView.RequestAssetList();
                 UpdateSortingUI();
+            };
+
+            m_SortingUI.buttonClicked += handle =>
+            {
+                m_FormatFilterUI.SetListVisibility(false);
+                m_ComplexityFilterUI.SetListVisibility(false);
+                m_CategoryFilterUI.SetListVisibility(false);
             };
 
             m_SortingUI.addDefaultOption = false;
@@ -405,15 +438,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnScrollHoverStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
         {
-            if (!m_Scrolling)
+            if (!m_Scrolling && m_HighlightDelayCoroutine == null)
             {
-                m_WorkspaceUI.topHighlight.visible = true;
-                m_WorkspaceUI.amplifyTopHighlight = true;
+                m_HighlightDelayCoroutine = StartCoroutine(DelayHighlight());
             }
+        }
+
+        IEnumerator DelayHighlight()
+        {
+            yield return new WaitForSeconds(k_HighlightDelay);
+            m_WorkspaceUI.topHighlight.visible = true;
+            m_WorkspaceUI.amplifyTopHighlight = true;
         }
 
         void OnScrollHoverEnded(BaseHandle handle, HandleEventData eventData = default(HandleEventData))
         {
+            this.StopCoroutine(ref m_HighlightDelayCoroutine);
             if (!m_Scrolling && m_WorkspaceUI.gameObject.activeInHierarchy) // Check active to prevent errors in OnDestroy
             {
                 m_WorkspaceUI.topHighlight.visible = false;
