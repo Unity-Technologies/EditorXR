@@ -203,9 +203,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_ListItems.Remove(index);
 
-            item.SetVisibility(false);
-            item.gameObject.SetActive(false);
-            m_TemplateDictionary[data.template].pool.Add(item);
+            item.SetVisibility(false, OnRecycleCompleted);
+        }
+
+        void OnRecycleCompleted(PolyGridItem gridItem)
+        {
+            gridItem.gameObject.SetActive(false);
+            m_TemplateDictionary[gridItem.data.template].pool.Add(gridItem);
         }
 
         protected override void UpdateVisibleItem(PolyGridAsset data, int order, float offset, ref bool doneSettling)
