@@ -377,6 +377,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 
             StartCoroutine(HideGrabbedObject(m_DragObject.gameObject, gridItem.m_Cube));
+            base.OnDragEnded(handle, eventData);
         }
 
         void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
@@ -394,6 +395,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
 
+            base.OnHoverStart(handle, eventData);
             ShowGrabFeedback(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
