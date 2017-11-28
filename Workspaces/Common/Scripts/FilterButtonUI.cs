@@ -37,6 +37,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_Text;
+#else
+        [SerializeField]
+        Text m_Text;
 #endif
 
         Transform m_InteractingRayOrigin;

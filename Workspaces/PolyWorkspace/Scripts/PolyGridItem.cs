@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
-using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -11,6 +10,10 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -34,6 +37,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_Text;
+#else
+        [SerializeField]
+        Text m_Text;
 #endif
 
         [SerializeField]

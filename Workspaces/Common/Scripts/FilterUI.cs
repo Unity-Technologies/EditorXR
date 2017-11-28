@@ -23,6 +23,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         TextMeshProUGUI m_DescriptionText;
+#else
+        [SerializeField]
+        Text m_SummaryText;
+
+        [SerializeField]
+        Text m_DescriptionText;
 #endif
 
         [SerializeField]

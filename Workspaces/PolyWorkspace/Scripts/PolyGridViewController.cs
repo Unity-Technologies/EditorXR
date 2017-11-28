@@ -3,9 +3,7 @@ using ListView;
 using UnityEngine;
 
 #if INCLUDE_POLY_TOOLKIT
-using System;
 using PolyToolkit;
-using UnityEditor.Experimental.EditorVR.Modules;
 #endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
