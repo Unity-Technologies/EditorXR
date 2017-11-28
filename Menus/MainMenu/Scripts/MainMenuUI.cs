@@ -492,12 +492,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             m_VisibilityState = visibilityState;
 
-            if (m_VisibilityState != VisibilityState.Hidden)
-            {
-                m_MenuFrameRenderer.SetBlendShapeWeight(1, targetWeight);
-                m_MenuFacesMaterial.color = targetWeight > 0 ? m_MenuFacesColor : k_MenuFacesHiddenColor;
-            }
-            else
+            m_MenuFrameRenderer.SetBlendShapeWeight(1, targetWeight);
+            m_MenuFacesMaterial.color = targetWeight > 0 ? m_MenuFacesColor : k_MenuFacesHiddenColor;
+
+            if (m_VisibilityState == VisibilityState.Hidden)
             {
                 m_MenuFrameRenderer.SetBlendShapeWeight(0, 0);
             }
