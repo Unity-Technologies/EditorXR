@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        const string k_APIKey = "QUl6YVN5QnNpZzFURzRIYUFwYTlfcUtMUU5ITm5rOVlTOExXbURV";
+        const string k_APIKey = "QUl6YVN5QUZvMEp6ZVZZRFNDSURFa3hlWmdMNjg0OUM0MThoWlYw";
 
         static readonly Dictionary<string, PolyGridAsset> k_AssetCache = new Dictionary<string, PolyGridAsset>();
 
