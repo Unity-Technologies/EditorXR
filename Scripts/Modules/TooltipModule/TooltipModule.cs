@@ -48,6 +48,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 return ((MonoBehaviour)tooltip).transform;
             }
+
+            public void Reset()
+            {
+                startTime = default(float);
+                lastModifiedTime = default(float);
+                tooltipUI = default(TooltipUI);
+                persistent = default(bool);
+                duration = default(float);
+                becameVisible = default(Action);
+                placement = default(ITooltipPlacement);
+                orientationWeight = default(float);
+                transitionOffset = default(Vector3);
+                transitionTime = default(float);
+            }
         }
 
         readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
@@ -320,7 +334,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         TooltipData GetTooltipData()
         {
             if (m_TooltipDataPool.Count > 0)
-                return m_TooltipDataPool.Dequeue();
+            {
+                var tooltipData = m_TooltipDataPool.Dequeue();
+                tooltipData.Reset();
+                return tooltipData;
+            }
 
             return new TooltipData();
         }
@@ -339,7 +357,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     return;
 
                 m_Tooltips.Remove(tooltip);
-                m_TooltipDataPool.Enqueue(tooltipData);
 
                 if (tooltipData.tooltipUI)
                     StartCoroutine(AnimateHide(tooltip, tooltipData));
@@ -407,6 +424,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 tooltipUI.removeSelf(tooltipUI);
 
             m_TooltipPool.Enqueue(tooltipUI);
+            m_TooltipDataPool.Enqueue(tooltipData);
         }
     }
 }

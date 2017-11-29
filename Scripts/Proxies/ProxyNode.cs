@@ -495,9 +495,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// The transform that the display/preview objects will be parented under
         /// </summary>
         public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
-
-        public event Action<FeedbackRequest> recycleFeedbackRequestObject;
-
         void Awake()
         {
             // Don't allow setup if affordances are invalid
@@ -826,8 +823,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 if (feedbackRequest == request)
                 {
-                    if (m_FeedbackRequests.Remove(feedbackRequest) && recycleFeedbackRequestObject != null)
-                        recycleFeedbackRequestObject(feedbackRequest);
+                    m_FeedbackRequests.Remove(feedbackRequest);
 
                     if (!request.showBody)
                         ExecuteFeedback(request);

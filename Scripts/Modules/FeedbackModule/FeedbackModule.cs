@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -91,13 +90,11 @@ namespace UnityEditor.Experimental.EditorVR
         public void AddReceiver(IFeedbackReceiver feedbackReceiver)
         {
             m_FeedbackReceivers.Add(feedbackReceiver);
-            feedbackReceiver.recycleFeedbackRequestObject += OnRecycleFeedbackRequestObject;
         }
 
         public void RemoveReceiver(IFeedbackReceiver feedbackReceiver)
         {
             m_FeedbackReceivers.Remove(feedbackReceiver);
-            feedbackReceiver.recycleFeedbackRequestObject -= OnRecycleFeedbackRequestObject;
         }
 
         void SetEnabled(bool enabled)
@@ -132,6 +129,8 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 receiver.RemoveFeedbackRequest(request);
             }
+
+            RecycleFeedbackRequestObject(request);
         }
 
         void ClearFeedbackRequests(IRequestFeedback caller)
@@ -164,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR
             return (FeedbackRequest)Activator.CreateInstance(type);
         }
 
-        void OnRecycleFeedbackRequestObject(FeedbackRequest request)
+        void RecycleFeedbackRequestObject(FeedbackRequest request)
         {
             var type = request.GetType();
             Queue<FeedbackRequest> pool;
