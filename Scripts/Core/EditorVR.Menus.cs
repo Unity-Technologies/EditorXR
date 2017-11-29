@@ -181,6 +181,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 foreach (var deviceData in k_ActiveDeviceData)
                 {
+                    foreach (var kvp in deviceData.menuHideData)
+                    {
+                        kvp.Value.hideFlags &= ~MenuHideFlags.Temporary;
+                    }
+                }
+
+                foreach (var deviceData in k_ActiveDeviceData)
+                {
                     var alternateMenu = deviceData.alternateMenu;
                     var mainMenu = deviceData.mainMenu;
                     var customMenu = deviceData.customMenu;
@@ -285,15 +293,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     UpdateAlternateMenuForDevice(deviceData);
                     Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
-                }
-
-                // Reset Temporary states and set lastHideFlags
-                foreach (var deviceData in k_ActiveDeviceData)
-                {
-                    foreach (var kvp in deviceData.menuHideData)
-                    {
-                        kvp.Value.hideFlags &= ~MenuHideFlags.Temporary;
-                    }
                 }
 
                 evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -421,7 +420,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         return true;
                     }
 
-                    return (menuHideFlags[openMenu].hideFlags & MenuHideFlags.Hidden) != 0;
+                    return menuHideFlags[openMenu].hideFlags != 0;
                 }
 
                 return true;
