@@ -46,11 +46,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         PolyFormatFilter? m_Format;
         PolyCategory m_Category;
 
-
-        public PolyOrderBy sorting { get; set; }
-        public PolyMaxComplexityFilter complexity { get; set; }
-        public PolyFormatFilter? format { get; set; }
-        public PolyCategory category { get; set; }
+        public PolyOrderBy sorting { private get; set; }
+        public PolyMaxComplexityFilter complexity { private get; set; }
+        public PolyFormatFilter? format { private get; set; }
+        public PolyCategory category { private get; set; }
 #endif
 
         public float scaleFactor
@@ -96,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     RecycleGridItem(asset);
                 }
+
                 data.Clear();
                 m_LastHiddenItemOffset = Mathf.Infinity;
             }
@@ -174,7 +174,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 var offset = count / m_NumPerRow * itemSize.z;
                 if (offset + scrollOffset < 0 || offset + scrollOffset > m_Size.z)
+                {
                     RecycleGridItem(data);
+                }
                 else
                 {
                     var ignored = true;
@@ -228,6 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_ScrollOffset = m_ScaleFactor;
                 m_ScrollDelta = 0;
             }
+
             if (m_ScrollReturn < float.MaxValue)
             {
                 m_ScrollOffset = m_ScrollReturn;
@@ -253,8 +256,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected override PolyGridItem GetItem(PolyGridAsset data)
         {
-            const float kJitterMargin = 0.125f;
-            if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * kJitterMargin) // Avoid jitter while scrolling rows in and out of view
+            const float jitterMargin = 0.125f;
+            if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * jitterMargin) // Avoid jitter while scrolling rows in and out of view
                 return null;
 
             var item = base.GetItem(data);

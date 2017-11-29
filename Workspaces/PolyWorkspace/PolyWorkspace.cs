@@ -57,8 +57,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        bool m_Scrolling;
-
         [SerializeField]
         GameObject m_ContentPrefab;
 
@@ -67,6 +65,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         GameObject m_SliderPrefab;
+
+        bool m_Scrolling;
 
         PolyUI m_PolyUI;
         FilterUI m_SortingUI;
@@ -100,7 +100,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var gridView = m_PolyUI.gridView;
             this.ConnectInterfaces(gridView);
             assetData = new List<PolyGridAsset>();
-
 
             var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
             m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
@@ -169,6 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var categoryList = new List<string>();
             var textInfo = Thread.CurrentThread.CurrentCulture.TextInfo;
+
             foreach (var category in Enum.GetNames(typeof(PolyCategory)))
             {
                 if (category == "UNSPECIFIED")
@@ -176,6 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 categoryList.Add(textInfo.ToTitleCase(category.ToLower()));
             }
+
             m_CategoryFilterUI.filterList = categoryList;
 
             m_CategoryFilterUI.GetComponentInChildren<Tooltip>().tooltipText = "Filter by Category";
@@ -407,8 +408,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             var size = contentBounds.size;
             var gridView = m_PolyUI.gridView;
-            size.x -= FaceMargin * 2; // Shrink the content width, so that there is space allowed to grab and scroll
-            size.z -= FaceMargin * 2; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
+            size.x -= DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
+            size.z -= DoubleFaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             gridView.size = size;
         }
 

@@ -64,6 +64,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         List<string> m_CompletedRequests = new List<string>(20);
         List<FileTransfer> m_CompletedTransfers = new List<FileTransfer>(20);
 
+        /// <summary>
+        /// Download a resource at the given URL and call a method on completion, providing the DownloadHandler
+        /// </summary>
+        /// <param name="url">The URL of the resource</param>
+        /// <param name="completed">The completion callback</param>
         public void Download(string url, Action<DownloadHandler> completed)
         {
             DownloadRequest request;
@@ -81,6 +86,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             request.completed += completed;
         }
 
+        /// <summary>
+        /// Download a texture at a given URL and call a method on completion, providing the DownloadTextureHandler
+        /// </summary>
+        /// <param name="url">The URL of the resource</param>
+        /// <param name="completed">The completion callback</param>
         public void DownloadTexture(string url, Action<DownloadHandlerTexture> completed)
         {
             TextureRequest request;
@@ -99,6 +109,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             request.completed += completed;
         }
 
+        /// <summary>
+        /// Download a resource at the given URL to the given destination file and call a method on completion
+        /// </summary>
+        /// <param name="url">The URL of the resource</param>
+        /// <param name="destination">The destination file path</param>
+        /// <param name="completed">The completion callback</param>
         public void Download(string url, string destination, Action completed)
         {
             Download(url, handler =>
@@ -147,6 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             //TODO: Generalize Request class
             m_CompletedRequests.Clear();
+
             foreach (var kvp in m_TextureRequests)
             {
                 var request = kvp.Value;

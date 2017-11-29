@@ -35,7 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public GameObject prefab { get { return m_Prefab; } }
         public Texture2D thumbnail { get { return m_Thumbnail; } }
         public bool initialized { get { return m_Initialized; } }
-        public bool importing { get { return m_Importing; } }
         public long complexity { get { return m_Complexity; } }
         public override string index { get { return m_Asset.name; } }
 
