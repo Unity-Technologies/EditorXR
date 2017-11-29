@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
+using System;
+
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
@@ -24,6 +26,11 @@ namespace UnityEditor.Experimental.EditorVR
         /// </summary>
         /// <param name="caller">The IRequestFeedback whose requests will be cleared</param>
         void ClearFeedbackRequests(IRequestFeedback caller);
+
+        /// <summary>
+        /// Recycle a feedback request object back into the pool when it is no longer needed
+        /// </summary>
+        event Action<FeedbackRequest> recycleFeedbackRequestObject;
     }
 }
 #endif

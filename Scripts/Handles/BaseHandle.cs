@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -54,6 +54,9 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         public event Action<BaseHandle, HandleEventData> hovering;
         public event Action<BaseHandle, HandleEventData> hoverEnded;
 
+        // Local method use only -- created here to reduce garbage collection
+        static readonly HandleEventData k_HandleEventData = new HandleEventData(null, false);
+
         void Awake()
         {
             // Put this object in the UI layer so that it is hit by UI raycasts
@@ -86,7 +89,9 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
         protected virtual HandleEventData GetHandleEventData(RayEventData eventData)
         {
-            return new HandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData));
+            k_HandleEventData.rayOrigin = eventData.rayOrigin;
+            k_HandleEventData.direct = UIUtils.IsDirectEvent(eventData);
+            return k_HandleEventData;
         }
 
         public int IndexOfHoverSource(Transform rayOrigin)

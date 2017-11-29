@@ -817,17 +817,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = tooltipText,
-                        priority = 1,
-                        suppressExisting = suppressExisting
-                    };
-
-                    this.AddFeedbackRequest(request);
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.tooltipText = tooltipText;
+                    request.priority = 1;
+                    request.suppressExisting = suppressExisting;
                     requests.Add(request);
+                    this.AddFeedbackRequest(request);
                 }
             }
         }

@@ -1,8 +1,9 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,8 @@ namespace UnityEditor.Experimental.EditorVR
     public abstract class FeedbackRequest
     {
         public IRequestFeedback caller;
+
+        public abstract void Reset();
     }
 
     public class FeedbackModule : MonoBehaviour, ISettingsMenuItemProvider, ISerializePreferences
@@ -69,11 +72,14 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Transform rayOrigin { get { return null; } }
 
+        readonly Dictionary<Type, Queue<FeedbackRequest>> m_FeedbackRequestPool = new Dictionary<Type, Queue<FeedbackRequest>>();
+
         void Awake()
         {
             IRequestFeedbackMethods.addFeedbackRequest = AddFeedbackRequest;
             IRequestFeedbackMethods.removeFeedbackRequest = RemoveFeedbackRequest;
             IRequestFeedbackMethods.clearFeedbackRequests = ClearFeedbackRequests;
+            IRequestFeedbackMethods.getFeedbackRequestObject = GetFeedbackRequestObject;
         }
 
         void Start()
@@ -85,11 +91,13 @@ namespace UnityEditor.Experimental.EditorVR
         public void AddReceiver(IFeedbackReceiver feedbackReceiver)
         {
             m_FeedbackReceivers.Add(feedbackReceiver);
+            feedbackReceiver.recycleFeedbackRequestObject += OnRecycleFeedbackRequestObject;
         }
 
         public void RemoveReceiver(IFeedbackReceiver feedbackReceiver)
         {
             m_FeedbackReceivers.Remove(feedbackReceiver);
+            feedbackReceiver.recycleFeedbackRequestObject -= OnRecycleFeedbackRequestObject;
         }
 
         void SetEnabled(bool enabled)
@@ -135,6 +143,38 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 receiver.ClearFeedbackRequests(caller);
             }
+        }
+
+        FeedbackRequest GetFeedbackRequestObject(Type type)
+        {
+            Queue<FeedbackRequest> pool;
+            if (!m_FeedbackRequestPool.TryGetValue(type, out pool))
+            {
+                pool = new Queue<FeedbackRequest>();
+                m_FeedbackRequestPool[type] = pool;
+            }
+
+            if (pool.Count > 0)
+            {
+                var request = pool.Dequeue();
+                request.Reset();
+                return request;
+            }
+
+            return (FeedbackRequest)Activator.CreateInstance(type);
+        }
+
+        void OnRecycleFeedbackRequestObject(FeedbackRequest request)
+        {
+            var type = request.GetType();
+            Queue<FeedbackRequest> pool;
+            if (!m_FeedbackRequestPool.TryGetValue(type, out pool))
+            {
+                pool = new Queue<FeedbackRequest>();
+                m_FeedbackRequestPool[type] = pool;
+            }
+
+            pool.Enqueue(request);
         }
 
         public object OnSerializePreferences()

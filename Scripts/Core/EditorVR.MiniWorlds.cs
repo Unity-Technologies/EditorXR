@@ -134,6 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         hash.AddToSpatialHash(grabData.transform.gameObject);
                         grabData.ResetScale();
                     }
+
                     hasPreview = false;
                 }
 

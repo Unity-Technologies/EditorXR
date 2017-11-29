@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -12,6 +13,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     /// </summary>
     public class ProxyFeedbackRequest : FeedbackRequest
     {
+        const float k_DefaultDuration = 5f;
+        const int k_DefaultMaxPresentations = 200000;
+
         /// <summary>
         /// The priority level for this request. Default is 0.
         /// If there are multiple requests for one control, the one with the highest priority is presented
@@ -47,18 +51,30 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// <summary>
         /// The duration of the presentation
         /// </summary>
-        public float duration = 5f;
+        public float duration = k_DefaultDuration;
 
         /// <summary>
         /// The maximum number times to present this feedback
         /// </summary>
-        public int maxPresentations = 20;
+        public int maxPresentations = k_DefaultMaxPresentations;
 
         /// <summary>
         /// (Optional) A delegate which returns true if presentation should be suppressed
         /// If the delegate is not null, feedback will be suppressed after it becomes visible a number of times (specified by maxPresentations)
         /// </summary>
         public Func<bool> suppressPresentation;
+
+        public override void Reset()
+        {
+            priority = default(int);
+            control = default(VRControl);
+            node = default(Node);
+            tooltipText = default(string);
+            suppressExisting = default(bool);
+            showBody = default(bool);
+            duration = k_DefaultDuration;
+            maxPresentations = k_DefaultMaxPresentations;
+        }
     }
 }
 #endif

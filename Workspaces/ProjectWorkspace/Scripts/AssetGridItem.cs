@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -583,12 +583,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void ShowGrabFeedback(Node node)
         {
-            this.AddFeedbackRequest(new ProxyFeedbackRequest
-            {
-                control = VRInputDevice.VRControl.Trigger1,
-                node = node,
-                tooltipText = "Grab"
-            });
+            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+            request.control = VRInputDevice.VRControl.Trigger1;
+            request.node = node;
+            request.tooltipText = "Grab";
+            this.AddFeedbackRequest(request);
         }
 
         void HideGrabFeedback()

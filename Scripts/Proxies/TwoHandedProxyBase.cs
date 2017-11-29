@@ -99,13 +99,17 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
+        public event Action<FeedbackRequest> recycleFeedbackRequestObject;
+
         protected virtual void Awake()
         {
             m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
             m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
 
             m_LeftProxyNode = m_LeftHand.GetComponent<ProxyNode>();
+            m_LeftProxyNode.recycleFeedbackRequestObject += OnRecycleFeedbackRequestObject;
             m_RightProxyNode = m_RightHand.GetComponent<ProxyNode>();
+            m_RightProxyNode.recycleFeedbackRequestObject += OnRecycleFeedbackRequestObject;
 
             m_RayOrigins = new Dictionary<Node, Transform>
             {
@@ -207,6 +211,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_LeftProxyNode.ClearFeedbackRequests(caller);
                 m_RightProxyNode.ClearFeedbackRequests(caller);
             }
+        }
+
+        void OnRecycleFeedbackRequestObject(FeedbackRequest request)
+        {
+            recycleFeedbackRequestObject(request);
         }
 
         public object OnSerializePreferences()
