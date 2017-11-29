@@ -25,6 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     readonly AffordanceTooltip[] m_Tooltips;
                     readonly AffordanceVisibilityDefinition m_Definition;
 
+                    readonly Action<float> m_SetFloat;
+                    readonly Action<Color> m_SetColor;
+
                     bool m_Visibile;
                     float m_VisibilityChangeTime;
 
@@ -34,6 +37,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                     public float visibleDuration { get; set; }
                     public float hideTime { get { return m_VisibilityChangeTime + visibleDuration; } }
+
+                    public Action<float> setFloat { get { return m_SetFloat; } }
+                    public Action<Color> setColor { get { return m_SetColor; } }
 
                     public bool visible
                     {
@@ -51,14 +57,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         m_Definition = definition;
                         m_Material = material;
                         m_MaterialIndex = Array.IndexOf(renderer.sharedMaterials, material);
+
+                        // Cache delegate versions of SetFloat and SetColor to avoid GC when used in AnimateProperty
+                        m_SetFloat = SetFloat;
+                        m_SetColor = SetColor;
                     }
 
-                    public void SetFloat(float value)
+                    void SetFloat(float value)
                     {
                         m_Material.SetFloat(m_Definition.alphaProperty, value);
                     }
 
-                    public void SetColor(Color value)
+                    void SetColor(Color value)
                     {
                         m_Material.SetColor(m_Definition.colorProperty, value);
                     }
@@ -146,7 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime,
                                 ref m_CurrentColor.a, ref m_StartColor.a, definition.hiddenColor.a, m_OriginalColor.a,
                                 fadeDuration, Mathf.Approximately, TransitionUtils.GetPercentage, Mathf.Lerp,
-                                visibilityState.SetFloat, false);
+                                visibilityState.setFloat, false);
                             break;
                         case VisibilityControlType.ColorProperty:
                             if (visibilityState == null)
@@ -162,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime,
                                 ref m_CurrentColor, ref m_StartColor, definition.hiddenColor, m_OriginalColor,
                                 fadeDuration, TransitionUtils.Approximately, TransitionUtils.GetPercentage, Color.Lerp,
-                                visibilityState.SetColor, false);
+                                visibilityState.setColor, false);
                             break;
                     }
 

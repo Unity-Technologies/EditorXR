@@ -9,6 +9,7 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.Profiling;
 using UnityEngine.UI;
 
 #if INCLUDE_TEXT_MESH_PRO
@@ -89,6 +90,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         float m_SetupTime = float.MaxValue;
 
         public float scaleFactor { private get; set; }
+
+        // Local method use only -- created here to reduce garbage collection
+        Action<float> m_CompleteHoverTransition;
+        Action<float> m_SetThumbnailScale;
+        Action<float> m_SetImportingScale;
+
+        Action<Color> m_SetImportingColor;
+
+        void Awake()
+        {
+            m_CompleteHoverTransition = CompleteHoverTransition;
+            m_SetThumbnailScale = SetThumbnailScale;
+            m_SetImportingScale = SetImportingScale;
+
+            m_SetImportingColor = SetImportingColor;
+        }
 
         public override void Setup(PolyGridAsset listData)
         {
@@ -185,77 +202,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var time = Time.time;
 
-            AnimateProperty(time, m_Hovered, ref m_WasHovered, ref m_HoverTime, ref m_HoverLerp, ref m_HoverLerpStart,
-                0f, 1f, Mathf.Approximately, GetPercentage, Mathf.Lerp, SetThumbnailScale, true, CompleteHoverTransition);
+            TransitionUtils.AnimateProperty(time, m_Hovered, ref m_WasHovered, ref m_HoverTime, ref m_HoverLerp,
+                ref m_HoverLerpStart, 0f, 1f, k_PreviewDuration, Mathf.Approximately, TransitionUtils.GetPercentage,
+                Mathf.Lerp, m_SetThumbnailScale, true, m_CompleteHoverTransition);
 
-            AnimateProperty(time, m_Importing, ref m_WasImporting, ref m_ImportingTime, ref m_ImportingScale,
-                ref m_ImportingStartScale, m_IconScale.y, k_ImportingScaleBump, Mathf.Approximately, GetPercentage, Mathf.Lerp,
-                SetImportingScale, false);
+            TransitionUtils.AnimateProperty(time, m_Importing, ref m_WasImporting, ref m_ImportingTime,
+                ref m_ImportingScale, ref m_ImportingStartScale, m_IconScale.y, k_ImportingScaleBump, k_PreviewDuration,
+                Mathf.Approximately, TransitionUtils.GetPercentage, Mathf.Lerp, m_SetImportingScale, false);
 
-            AnimateProperty(time, m_Importing, ref m_WasImporting, ref m_ImportingTime, ref m_ImportingColor,
-                ref m_ImportingStartColor, m_ImportingDefaultColor, m_ImportingTargetColor, Approximately, GetPercentage, Color.Lerp,
-                SetImportingColor);
+            TransitionUtils.AnimateProperty(time, m_Importing, ref m_WasImporting, ref m_ImportingTime,
+                ref m_ImportingColor, ref m_ImportingStartColor, m_ImportingDefaultColor, m_ImportingTargetColor,
+                k_PreviewDuration, TransitionUtils.Approximately, TransitionUtils.GetPercentage, Color.Lerp,
+                m_SetImportingColor);
 
             scaleFactor = scale;
 
             transform.localScale = Vector3.one * scale;
 
             m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent);
-        }
-
-        static float GetPercentage(float current, float target, float source)
-        {
-            return (current - source) / (target - source);
-        }
-
-        static float GetPercentage(Color currentColor, Color targetColor, Color sourceColor)
-        {
-            var current = currentColor.grayscale;
-            var target = targetColor.grayscale;
-            var source = sourceColor.grayscale;
-            return (current - source) / (target - source);
-        }
-
-        static bool Approximately(Color a, Color b)
-        {
-            return a == b;
-        }
-
-        static void AnimateProperty<T>(float time, bool state, ref bool lastState, ref float changeTime,
-            ref T property, ref T propertyStart,T startValue, T endValue, Func<T, T, bool> approximately,
-            Func<T, T, T, float> getPercentage, Func<T, T, float, T> lerp, Action<T> setProperty,
-            bool setState = true, Action<T> complete = null) where T : struct
-        {
-            if (state != lastState)
-            {
-                changeTime = time;
-                propertyStart = property;
-            }
-
-            var timeDiff = time - changeTime;
-            var source = state ? startValue : endValue;
-            var target = state ? endValue : startValue;
-            if (!approximately(property, target))
-            {
-                var duration =  (1 - getPercentage(propertyStart, target, source)) * k_PreviewDuration;
-                var smoothedAmount = MathUtilsExt.SmoothInOutLerpFloat(timeDiff / duration);
-                if (smoothedAmount > 1)
-                {
-                    property = target;
-                    propertyStart = property;
-                    if (complete != null)
-                        complete(target);
-                }
-                else
-                {
-                    property = lerp(propertyStart, target, smoothedAmount);
-                }
-
-                setProperty(property);
-            }
-
-            if (setState)
-                lastState = state;
         }
 
         void SetThumbnailScale(float lerp)
