@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Text;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
@@ -70,13 +71,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
+        const string k_APIKey = "QUl6YVN5QnNpZzFURzRIYUFwYTlfcUtMUU5ITm5rOVlTOExXbURV";
+
         static readonly Dictionary<string, PolyGridAsset> k_AssetCache = new Dictionary<string, PolyGridAsset>();
 
         Transform m_Container;
 
         void Awake()
         {
-            PolyApi.Init();
+            PolyApi.Init(new PolyAuthConfig(Encoding.UTF8.GetString(Convert.FromBase64String(k_APIKey)), "", ""));
             m_Container = ObjectUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
         }
 
