@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -14,7 +15,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-    abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale
+    abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale, IAllWorkspaces
     {
         const float k_MoveKeyboardTime = 0.2f;
 
@@ -47,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         [SerializeField]
         private int m_CharacterLimit = 10;
 
-        private bool m_KeyboardOpen;
+        protected bool m_KeyboardOpen;
 
         Coroutine m_MoveKeyboardCoroutine;
 
@@ -65,6 +66,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 m_Text = m_CharacterLimit > 0 && value.Length > m_CharacterLimit ? value.Substring(0, m_CharacterLimit) : value;
             }
         }
+
+        public List<IWorkspace> allWorkspaces { get;  set; }
 
         [HideInInspector]
         [SerializeField] // Serialized so that this remains set after cloning
@@ -104,7 +107,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         protected override void OnDisable()
         {
-            if (m_KeyboardOpen && Selection.activeObject == null)
+            // hide the keyboard if there are 0 open inspectors or the selection is null
+            if (m_KeyboardOpen && (Selection.activeObject == null || !FindAnyOpenInspector()))
                 CloseKeyboard(true);
         }
 
@@ -124,6 +128,27 @@ namespace UnityEditor.Experimental.EditorVR.UI
         {
             if (m_TextComponent != null && m_TextComponent.font != null)
                 m_TextComponent.text = m_Text;
+        }
+
+        /// <summary>
+        /// Check if any Inspector workspaces are still open
+        /// </summary>
+        protected bool FindAnyOpenInspector()
+        {
+            var found = false;
+            if (allWorkspaces == null || allWorkspaces.Count == 0)
+                return found;
+
+            foreach (var w in allWorkspaces)
+            {
+                if (w.GetType() == typeof(Workspaces.InspectorWorkspace))
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            return found;
         }
 
         /// <summary>
