@@ -307,7 +307,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
             else
             {
-                m_PreviewObjectTransform.localScale = m_PreviewTargetScale;
+                m_PreviewObjectTransform.localScale = Vector3.one;
                 m_Icon.SetActive(false);
             }
         }
