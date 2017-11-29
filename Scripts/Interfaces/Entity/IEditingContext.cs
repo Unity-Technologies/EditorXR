@@ -15,9 +15,9 @@ namespace UnityEditor.Experimental.EditorVR
         string name { get; }
 
         /// <summary>
-        /// Settings denoting that the scene camera's (component_ values should be cloned on the XR runtime camera
+        /// Bool denotes that the scene camera's (component) values should be cloned on the XR runtime camera
         /// </summary>
-        ContextSettings contextSettings { get; }
+        bool copySceneCameraSettings { get; }
 
         /// <summary>
         /// Perform one-time setup for the context when pushed to the stack.

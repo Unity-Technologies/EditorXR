@@ -7,16 +7,6 @@ using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    public struct ContextSettings
-    {
-        public bool copySceneCameraSettings;
-
-        public ContextSettings(bool copySceneCameraSettings)
-        {
-            this.copySceneCameraSettings = copySceneCameraSettings;
-        }
-    }
-
     [CreateAssetMenu(menuName = "EditorVR/EditorVR Context")]
     class EditorVRContext : ScriptableObject, IEditingContext
     {
@@ -31,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         EditorVR m_Instance;
 
-        public ContextSettings contextSettings { get { return new ContextSettings(m_CopySceneCameraSettings); } }
+        public bool copySceneCameraSettings { get { return m_CopySceneCameraSettings; } }
 
         public void Setup()
         {

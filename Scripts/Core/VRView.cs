@@ -119,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public static event Action<EditorWindow> beforeOnGUI;
         public static event Action<EditorWindow> afterOnGUI;
         public static event Action<bool> hmdStatusChange;
-        public static event Func<ContextSettings> cameraSetupStarted;
+        public static event Func<IEditingContext> cameraSetupStarted;
 
         public Rect guiRect { get; private set; }
 
@@ -141,12 +141,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             autoRepaintOnSceneChange = true;
             s_ActiveView = this;
 
-            ContextSettings contextSettings = new ContextSettings();
-            if (cameraSetupStarted != null)
-                 contextSettings = cameraSetupStarted();
-
+            var currentEditingContext = cameraSetupStarted != null ? cameraSetupStarted() : null;
             s_ExistingSceneMainCamera = Camera.main;
-            if (contextSettings.copySceneCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+            if (currentEditingContext != null && currentEditingContext.copySceneCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
             {
                 GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
                 m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);

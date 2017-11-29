@@ -82,13 +82,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             ObjectUtils.Destroy(s_InputManager.gameObject);
         }
 
-        public static ContextSettings OnCameraSetupStarted()
+        public static IEditingContext OnCameraSetupStarted()
         {
-            ContextSettings settings = new ContextSettings();
-            if (s_CurrentContext != null)
-                settings = s_CurrentContext.contextSettings;
-
-            return settings;
+            return s_CurrentContext;
         }
 
         [MenuItem("Window/EditorXR %e", false)]
