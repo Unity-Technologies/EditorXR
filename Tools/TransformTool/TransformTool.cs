@@ -436,6 +436,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     if (leftInput.select.wasJustReleased)
                     {
+                        if (rightInput != null && rightInput.select.wasJustReleased)
+                            m_Scaling = false;
+
                         DropHeldObjects(Node.LeftHand);
                         hasLeft = false;
                         consumeControl(leftInput.select);
@@ -447,7 +450,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     consumeControl(rightInput.cancel);
                     if (rightInput.cancel.wasJustPressed)
                     {
-                       
                         if (m_Scaling)
                         {
                             m_Scaling = false;
@@ -465,6 +467,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     if (rightInput.select.wasJustReleased)
                     {
+                        if (leftInput != null && leftInput.select.wasJustReleased)
+                            m_Scaling = false;
+
                         DropHeldObjects(Node.RightHand);
                         hasRight = false;
                         consumeControl(rightInput.select);
