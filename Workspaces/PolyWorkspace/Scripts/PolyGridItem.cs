@@ -9,7 +9,6 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Profiling;
 using UnityEngine.UI;
 
 #if INCLUDE_TEXT_MESH_PRO
