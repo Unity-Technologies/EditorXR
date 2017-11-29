@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     public class ProxyFeedbackRequest : FeedbackRequest
     {
         const float k_DefaultDuration = 5f;
-        const int k_DefaultMaxPresentations = 200000;
+        const int k_DefaultMaxPresentations = 20;
 
         /// <summary>
         /// The priority level for this request. Default is 0.

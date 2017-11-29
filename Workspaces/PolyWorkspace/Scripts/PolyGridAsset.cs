@@ -118,6 +118,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             this.DownloadTexture(thumbnail.url, handler =>
             {
                 m_Thumbnail = handler.texture;
+                if (m_Thumbnail == null)
+                    return;
+
                 m_Thumbnail.wrapMode = TextureWrapMode.Clamp;
 
                 if (thumbnailImportCompleted != null)

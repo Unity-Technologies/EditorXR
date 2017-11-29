@@ -161,12 +161,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnThumbnailImportCompleted(PolyGridAsset gridAsset, Texture2D thumbnail)
         {
-            if (m_Icon) // Prevent MissingReferenceException if shutdown occurs while fetching thumbnails
-                UpdateRepresentation();
+            UpdateRepresentation();
         }
 
         void UpdateRepresentation()
         {
+            if (!m_Icon) // Prevent MissingReferenceException if shutdown occurs while fetching thumbnails
+                return;
+
             m_Text.text = data.asset.displayName;
 
             if (!m_PreviewObjectTransform && data.prefab)
