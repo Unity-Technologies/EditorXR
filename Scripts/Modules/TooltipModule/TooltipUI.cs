@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Transform[] m_Spheres;
 
         [SerializeField]
-        Image m_Background;
+        RectTransform m_Background;
 
         [SerializeField]
         Image m_Icon;
@@ -66,8 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public RawImage dottedLine { get { return m_DottedLine; } }
         public Transform[] spheres { get { return m_Spheres; } }
-        public Image background { get { return m_Background; } }
-        public RectTransform rectTransform { get { return m_Background.rectTransform; } }
+        public RectTransform rectTransform { get { return m_Background; } }
 
         public event Action becameVisible;
 
