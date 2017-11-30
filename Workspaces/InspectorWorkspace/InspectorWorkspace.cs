@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -333,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var listView = m_InspectorUI.listView;
             var bounds = contentBounds;
             size.y = float.MaxValue; // Add height for dropdowns
-            size.x -= FaceMargin * 2; // Shrink the content width, so that there is space allowed to grab and scroll
+            size.x -= DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
             size.z -= FaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             bounds.size = size;
             listView.size = bounds.size;

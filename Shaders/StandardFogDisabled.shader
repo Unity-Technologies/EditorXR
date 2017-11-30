@@ -63,7 +63,7 @@ Shader "EditorVR/Standard Fog Disabled"
 
 			Blend [_SrcBlend] [_DstBlend]
 			ZWrite [_ZWrite]
-			ZTest Off
+			ZTest On
 			Offset 0, -1
 
 			CGPROGRAM

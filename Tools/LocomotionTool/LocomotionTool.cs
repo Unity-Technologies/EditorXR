@@ -26,8 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_MinScale = 0.1f;
         const float k_MaxScale = 1000f;
 
-        const string k_WorldScaleProperty = "_WorldScale";
-
         const string k_Crawl = "Crawl";
         const string k_Rotate = "Rotate";
         const string k_Blink = "Blink";
@@ -94,10 +92,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         // Allow shared updater to check input values and consume controls
         LocomotionInput m_LocomotionInput;
-
-        Camera m_MainCamera;
-        float m_OriginalNearClipPlane;
-        float m_OriginalFarClipPlane;
 
         Toggle m_FlyToggle;
         Toggle m_BlinkToggle;
@@ -191,12 +185,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_BlinkVisualsGO.transform.parent = rayOrigin;
             m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
             m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
-
-            m_MainCamera = CameraUtils.GetMainCamera();
-            m_OriginalNearClipPlane = m_MainCamera.nearClipPlane;
-            m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
-
-            Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
 
             var viewerScaleObject = ObjectUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
             m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
@@ -710,13 +698,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                     midPoint = currentRotation * midPoint * currentScale;
 
                                     cameraRig.position = m_StartPosition + m_StartMidPoint - midPoint;
-                                    cameraRig.localScale = Vector3.one * currentScale;
                                     cameraRig.rotation = currentRotation;
 
-                                    m_MainCamera.nearClipPlane = m_OriginalNearClipPlane * currentScale;
-                                    m_MainCamera.farClipPlane = m_OriginalFarClipPlane * currentScale;
-
-                                    Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / currentScale);
+                                    this.SetViewerScale(currentScale);
                                 }
                                 break;
                             }
@@ -737,9 +721,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ResetViewerScale()
         {
-            cameraRig.localScale = Vector3.one;
-            m_MainCamera.nearClipPlane = m_OriginalNearClipPlane;
-            m_MainCamera.farClipPlane = m_OriginalFarClipPlane;
+            this.SetViewerScale(1f);
             m_ViewerScaleVisuals.gameObject.SetActive(false);
         }
 
@@ -799,15 +781,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = tooltipText
-                    };
-
-                    this.AddFeedbackRequest(request);
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.tooltipText = tooltipText;
                     requests.Add(request);
+                    this.AddFeedbackRequest(request);
                 }
             }
         }
@@ -839,15 +818,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand,
-                        tooltipText = "Scale"
-                    };
-
-                    this.AddFeedbackRequest(request);
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.control = id;
+                    request.node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand;
+                    request.tooltipText = "Scale";
                     m_ScaleFeedback.Add(request);
+                    this.AddFeedbackRequest(request);
                 }
             }
         }

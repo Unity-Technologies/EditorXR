@@ -4,11 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+
+[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -234,6 +237,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             AddModule<SpatialScrollModule>();
 
             AddModule<FeedbackModule>();
+
+            AddModule<WebModule>();
+
+            //TODO: External module support (removes need for CCU in this instance)
+#if INCLUDE_POLY_TOOLKIT
+            AddModule<PolyModule>();
+#endif
 
             viewer.AddPlayerModel();
 

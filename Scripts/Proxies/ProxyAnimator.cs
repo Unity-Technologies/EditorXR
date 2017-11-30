@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -8,7 +8,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    using FeedbackDictionary = Dictionary<VRInputDevice.VRControl, ProxyFeedbackRequest>;
+    using FeedbackDictionary = Dictionary<int, ProxyFeedbackRequest>;
 
     [ProcessInput(1)]
     [RequireComponent(typeof(ProxyNode))]
@@ -151,25 +151,25 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void ShowFeedback(VRInputDevice.VRControl control)
         {
-            if (m_FeedbackRequests.ContainsKey(control))
+            var key = (int)control;
+            if (m_FeedbackRequests.ContainsKey(key))
                 return;
 
-            var request = new ProxyFeedbackRequest
-            {
-                control = control,
-                node = node,
-                duration = -1
-            };
-            m_FeedbackRequests[control] = request;
+            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+            request.control = control;
+            request.node = node;
+            request.duration = -1;
+            m_FeedbackRequests[key] = request;
             this.AddFeedbackRequest(request);
         }
 
         void HideFeedback(VRInputDevice.VRControl control)
         {
+            var key = (int)control;
             ProxyFeedbackRequest request;
-            if (m_FeedbackRequests.TryGetValue(control, out request))
+            if (m_FeedbackRequests.TryGetValue(key, out request))
             {
-                m_FeedbackRequests.Remove(control);
+                m_FeedbackRequests.Remove(key);
                 this.RemoveFeedbackRequest(request);
             }
         }

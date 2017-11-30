@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -276,16 +276,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in ids)
                 {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        priority = 1,
-                        tooltipText = tooltipText
-                    };
-
-                    this.AddFeedbackRequest(request);
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.priority = 1;
+                    request.tooltipText = tooltipText;
                     requests.Add(request);
+                    this.AddFeedbackRequest(request);
                 }
             }
         }

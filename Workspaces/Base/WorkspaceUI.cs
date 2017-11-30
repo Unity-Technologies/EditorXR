@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -983,16 +983,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 foreach (var id in ids)
                 {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        priority = priority,
-                        tooltipText = tooltipText
-                    };
-
-                    this.AddFeedbackRequest(request);
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.priority = priority;
+                    request.tooltipText = tooltipText;
                     requests.Add(request);
+                    this.AddFeedbackRequest(request);
                 }
             }
         }
