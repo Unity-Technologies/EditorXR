@@ -79,6 +79,13 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_Rotation = transform.localRotation;
         }
 
+        void OnEnable()
+        {
+            // Prevent camera from performing a very fast (shortest path) rotational correction when being enabled
+            if (m_VRCamera)
+                m_Rotation = m_VRCamera.transform.localRotation;
+        }
+
         void LateUpdate()
         {
             m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
