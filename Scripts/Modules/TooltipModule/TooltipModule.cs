@@ -22,6 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly Quaternion k_FlipYRotation = Quaternion.AngleAxis(180f, Vector3.up);
         static readonly Quaternion k_FlipZRotation = Quaternion.AngleAxis(180f, Vector3.forward);
 
+        static readonly Vector3[] k_Corners = new Vector3[4];
+
         [SerializeField]
         GameObject m_TooltipPrefab;
 
@@ -188,10 +190,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             if (placement != null)
             {
-                var rectTransform = tooltipUI.rectTransform;
-                var rect = rectTransform.rect;
-                var halfWidth = rect.width * 0.5f;
-                var halfHeight = rect.height * 0.5f;
+                //TODO: Figure out why rect gives us different height/width than GetWorldCorners
+                tooltipUI.rectTransform.GetWorldCorners(k_Corners);
+                var bottomLeft = k_Corners[0];
+                var halfWidth = (bottomLeft - k_Corners[2]).magnitude * 0.5f;
+                var halfHeight = (bottomLeft - k_Corners[1]).magnitude * 0.5f;
 
                 var source = placement.tooltipSource;
                 var toSource = tooltipTransform.InverseTransformPoint(source.position);
@@ -204,8 +207,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var boxSlope = halfHeight / halfWidth;
                 var toSourceSlope = Mathf.Abs(toSource.y / toSource.x);
 
-                halfHeight *= Mathf.Sign(toSource.y);
-                halfWidth *= Mathf.Sign(toSource.x);
+                var parentScale = attachedSphere.parent.lossyScale;
+                halfHeight *= Mathf.Sign(toSource.y) / parentScale.x;
+                halfWidth *= Mathf.Sign(toSource.x) / parentScale.y;
                 attachedSphere.localPosition = toSourceSlope > boxSlope
                     ? new Vector3(0, halfHeight)
                     : new Vector3(halfWidth, 0);
@@ -400,15 +404,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
 
-            // The rectTransform expansion is handled in the Tooltip dynamically, based on alignment & text length
-            var rectTransform = tooltipUI.rectTransform;
-            var rect = rectTransform.rect;
-            var halfWidth = rect.width * 0.5f;
-
             if (placement != null)
-                offset *= halfWidth * rectTransform.lossyScale.x;
+            {
+                tooltipUI.rectTransform.GetWorldCorners(k_Corners);
+                var halfWidth = (k_Corners[0] - k_Corners[2]).magnitude * 0.5f;
+                offset *= halfWidth;
+            }
             else
+            {
                 offset = Vector3.back * k_Offset * this.GetViewerScale();
+            }
 
             offset += transitionOffset;
 
