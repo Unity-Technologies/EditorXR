@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         GameObject m_RightHandTouchProxyPrefab;
 
-        bool m_IsOculus;
+        bool m_IsOculus = false;
 
         protected override void Awake()
         {

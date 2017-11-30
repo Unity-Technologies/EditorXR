@@ -105,20 +105,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
                 Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
+            }
+            // Add EVR tags and layers if they don't exist
+            var tags = TagManager.GetRequiredTags();
+            var layers = TagManager.GetRequiredLayers();
 
-                // Add EVR tags and layers if they don't exist
-                var tags = TagManager.GetRequiredTags();
-                var layers = TagManager.GetRequiredLayers();
+            foreach (var tag in tags)
+            {
+                TagManager.AddTag(tag);
+            }
 
-                foreach (var tag in tags)
-                {
-                    TagManager.AddTag(tag);
-                }
-
-                foreach (var layer in layers)
-                {
-                    TagManager.AddLayer(layer);
-                }
+            foreach (var layer in layers)
+            {
+                TagManager.AddLayer(layer);
             }
         }
 

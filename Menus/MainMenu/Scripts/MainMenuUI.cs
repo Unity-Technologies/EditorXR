@@ -481,7 +481,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             currentBlendShapeWeight = currentBlendShapeWeight > 0 ? currentBlendShapeWeight : zeroStartBlendShapePadding;
 
             var currentDuration = 0f;
-            while (m_VisibilityState != VisibilityState.Hidden && currentDuration < smoothTime)
+            while (m_VisibilityState != VisibilityState.Hidden && currentDuration - Time.deltaTime < smoothTime)
             {
                 currentBlendShapeWeight = MathUtilsExt.SmoothDamp(currentBlendShapeWeight, targetWeight, ref smoothVelocity, smoothTime, Mathf.Infinity, Time.deltaTime);
                 currentDuration += Time.deltaTime;
@@ -490,14 +490,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 yield return null;
             }
 
-            if (m_VisibilityState == visibilityState)
-            {
-                m_MenuFrameRenderer.SetBlendShapeWeight(1, targetWeight);
-                m_MenuFacesMaterial.color = targetWeight > 0 ? m_MenuFacesColor : k_MenuFacesHiddenColor;
-            }
+            m_MenuFrameRenderer.SetBlendShapeWeight(1, targetWeight);
+            m_MenuFacesMaterial.color = targetWeight > 0 ? m_MenuFacesColor : k_MenuFacesHiddenColor;
 
             if (m_VisibilityState == VisibilityState.Hidden)
+            {
                 m_MenuFrameRenderer.SetBlendShapeWeight(0, 0);
+            }
         }
 
         public void OnRayEnter(RayEventData eventData)

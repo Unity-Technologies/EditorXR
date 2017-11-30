@@ -142,6 +142,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (b.size == Vector3.zero)
             {
                 var transforms = transform.GetComponentsInChildren<Transform>();
+
+                if (transforms.Length > 0)
+                    b.center = transforms[0].position;
+
                 foreach (var t in transforms)
                     b.Encapsulate(t.position);
             }
