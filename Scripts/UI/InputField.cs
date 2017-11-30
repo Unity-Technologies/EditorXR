@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -17,40 +18,45 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
     abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale, IAllWorkspaces
     {
-        const float k_MoveKeyboardTime = 0.2f;
-
         public SelectionFlags selectionFlags
         {
             get { return m_SelectionFlags; }
             set { m_SelectionFlags = value; }
         }
 
-        [SerializeField]
-        [FlagsProperty]
-        protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
-
-        public Func<KeyboardUI> spawnKeyboard;
-        protected KeyboardUI m_Keyboard;
-
         [Serializable]
         public class OnChangeEvent : UnityEvent<string>
         {
         }
 
-        public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
+        const float k_MoveKeyboardTime = 0.2f;
 
         [SerializeField]
-        private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
+        [FlagsProperty]
+        SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
         [SerializeField]
-        protected Text m_TextComponent;
+        OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
         [SerializeField]
-        private int m_CharacterLimit = 10;
+        Text m_TextComponent;
 
-        protected bool m_KeyboardOpen;
+        [SerializeField]
+        int m_CharacterLimit = 10;
+
+        [HideInInspector]
+        [SerializeField] // Serialized so that this remains set after cloning
+        protected string m_Text = string.Empty;
+
+        bool m_KeyboardOpen;
 
         Coroutine m_MoveKeyboardCoroutine;
+
+        protected KeyboardUI m_Keyboard;
+
+        public Func<KeyboardUI> spawnKeyboard { private get; set; }
+
+        public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
 
         public virtual string text
         {
@@ -67,11 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             }
         }
 
-        public List<IWorkspace> allWorkspaces { get;  set; }
-
-        [HideInInspector]
-        [SerializeField] // Serialized so that this remains set after cloning
-        protected string m_Text = string.Empty;
+        public List<IWorkspace> allWorkspaces { private get; set; }
 
         protected override void OnEnable()
         {
@@ -135,13 +137,13 @@ namespace UnityEditor.Experimental.EditorVR.UI
         /// </summary>
         protected bool FindAnyOpenInspector()
         {
-            var found = false;
             if (allWorkspaces == null || allWorkspaces.Count == 0)
-                return found;
+                return false;
 
+            var found = false;
             foreach (var w in allWorkspaces)
             {
-                if (w.GetType() == typeof(Workspaces.InspectorWorkspace))
+                if (w is InspectorWorkspace)
                 {
                     found = true;
                     break;
