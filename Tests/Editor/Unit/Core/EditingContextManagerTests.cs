@@ -1,8 +1,6 @@
 ﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
-using System;
 using System.IO;
 using UnityEngine;
-using UnityEditor;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -47,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         [Test]
         public void Initializes_WithDefaultContext()
         {
-            Assert.AreEqual(manager.defaultContext, manager.currentContext);
+            Assert.AreEqual(EditingContextManager.defaultContext, manager.currentContext);
         }
 
         [Test]
@@ -160,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         public void Cleanup()
         {
             ObjectUtils.Destroy(go);
-            manager.SetEditingContext(manager.defaultContext);
+            manager.SetEditingContext(EditingContextManager.defaultContext);
             ObjectUtils.Destroy(context);
             ObjectUtils.Destroy(context2);
         }
