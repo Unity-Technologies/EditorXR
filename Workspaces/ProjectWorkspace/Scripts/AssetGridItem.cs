@@ -351,9 +351,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             if (!this.IsOverShoulder(eventData.rayOrigin))
             {
-                if (gridItem.m_PreviewObjectTransform)
+                var previewObjectTransform = gridItem.m_PreviewObjectTransform;
+                if (previewObjectTransform)
                 {
-                    this.PlaceSceneObject(gridItem.m_PreviewObjectTransform, m_PreviewPrefabScale);
+                    Undo.RegisterCreatedObjectUndo(previewObjectTransform.gameObject, "Place Scene Object");
+                    this.PlaceSceneObject(previewObjectTransform, m_PreviewPrefabScale);
                 }
                 else
                 {
@@ -371,6 +373,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #endif
 
                             this.AddToSpatialHash(go);
+                            Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
                             break;
                     }
                 }

@@ -250,7 +250,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return Enumerable.Empty<Type>();
         }
 
-        public static void Destroy(UnityObject o, float t = 0f)
+        public static void Destroy(UnityObject o, float t = 0f, bool withUndo = false)
         {
             if (Application.isPlaying)
             {
@@ -260,20 +260,30 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             else
             {
                 if (Mathf.Approximately(t, 0f))
-                    UnityObject.DestroyImmediate(o);
+                {
+                    if (withUndo)
+                        Undo.DestroyObjectImmediate(o);
+                    else
+                        UnityObject.DestroyImmediate(o);
+                }
                 else
+                {
                     VRView.StartCoroutine(DestroyInSeconds(o, t));
+                }
             }
 #endif
         }
 
-        static IEnumerator DestroyInSeconds(UnityObject o, float t)
+        static IEnumerator DestroyInSeconds(UnityObject o, float t, bool withUndo = false)
         {
             var startTime = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup <= startTime + t)
                 yield return null;
 
-            UnityObject.DestroyImmediate(o);
+            if (withUndo)
+                Undo.DestroyObjectImmediate(o);
+            else
+                UnityObject.DestroyImmediate(o);
         }
 
         /// <summary>

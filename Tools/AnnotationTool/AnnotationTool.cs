@@ -392,7 +392,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Widths.Clear();
             m_Length = 0;
 
-            var go = new GameObject(string.Format(k_AnnotationFormatStrig,+ m_AnnotationHolder.childCount));
+            var go = new GameObject(string.Format(k_AnnotationFormatStrig, m_AnnotationHolder.childCount));
+            Undo.RegisterCreatedObjectUndo(go, "Annotation");
 
             var goTrans = go.transform;
             goTrans.SetParent(m_AnnotationHolder);
@@ -420,6 +421,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (!newSession)
             {
                 newSession = new GameObject(string.Format(k_GroupFormatString, m_AnnotationRoot.childCount));
+                Undo.RegisterCreatedObjectUndo(newSession, "Annotation");
                 newSession.transform.position = GetPointerPosition();
                 m_Groups.Add(newSession);
             }
@@ -602,7 +604,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             this.AddToSpatialHash(go);
 
             Undo.IncrementCurrentGroup();
-            Undo.RegisterCreatedObjectUndo(go, "Create Annotation");
 
             if (AnnotationFinished != null)
             {
