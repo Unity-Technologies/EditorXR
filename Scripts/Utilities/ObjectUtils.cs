@@ -202,30 +202,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         public static T CopyComponent<T>(T sourceComponent, GameObject targetGameObject) where T : Component
         {
-            Type sourceType = sourceComponent.GetType();
-            var targetComponent = targetGameObject.GetComponent(sourceType) as T;
-            if (!targetComponent)
-                targetComponent = targetGameObject.AddComponent(sourceType) as T;
+            var sourceType = sourceComponent.GetType();
+            var clonedTargetComponent = AddComponent(sourceType, targetGameObject);
+            EditorUtility.CopySerialized(sourceComponent, clonedTargetComponent);
 
-            var fields = sourceType.GetFields();
-            foreach (var field in fields)
-            {
-                if (field.IsStatic)
-                    continue;
-
-                field.SetValue(targetComponent, field.GetValue(sourceComponent));
-            }
-
-            var properties = sourceType.GetProperties();
-            foreach (var property in properties)
-            {
-                if (!property.CanWrite || property.Name == "name")
-                    continue;
-
-                property.SetValue(targetComponent, property.GetValue(sourceComponent, null), null);
-            }
-
-            return (T)targetComponent;
+            return (T)clonedTargetComponent;
         }
 
         static IEnumerable<Type> GetAssignableTypes(Type type, Func<Type, bool> predicate = null)
