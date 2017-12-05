@@ -20,6 +20,11 @@ namespace UnityEditor.Experimental.EditorVR
         bool copySceneCameraSettings { get; }
 
         /// <summary>
+        /// Bool denotes that the EditorVR instance exists, having already been created in Setup()
+        /// </summary>
+        bool instanceExists { get; }
+
+        /// <summary>
         /// Perform one-time setup for the context when pushed to the stack.
         /// </summary>
         void Setup();

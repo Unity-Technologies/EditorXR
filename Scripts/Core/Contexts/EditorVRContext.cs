@@ -23,6 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public bool copySceneCameraSettings { get { return m_CopySceneCameraSettings; } }
 
+        public bool instanceExists { get { return m_Instance != null; } }
+
         public void Setup()
         {
             EditorVR.defaultTools = m_DefaultToolStack.Select(ms => ms.GetClass()).ToArray();
@@ -32,12 +34,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Dispose()
         {
-            if (m_Instance)
-            {
-                m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
-                ObjectUtils.Destroy(m_Instance.gameObject);
-                m_Instance = null;
-            }
+            m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
+            ObjectUtils.Destroy(m_Instance.gameObject);
+            m_Instance = null;
         }
     }
 }

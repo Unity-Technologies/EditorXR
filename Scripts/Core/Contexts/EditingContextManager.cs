@@ -227,7 +227,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (s_CurrentContext != null)
             {
                 m_PreviousContexts.Insert(0, s_CurrentContext);
-                s_CurrentContext.Dispose();
+
+                if (s_CurrentContext.instanceExists)
+                    s_CurrentContext.Dispose();
             }
 
             context.Setup();
