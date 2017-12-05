@@ -48,6 +48,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Get a pooled FeedbackRequest object from the system
         /// </summary>
+        /// <param name="type">The type of request object desired</param>
         public static FeedbackRequest GetFeedbackRequestObject(this IRequestFeedback obj, Type type)
         {
             return getFeedbackRequestObject(type);

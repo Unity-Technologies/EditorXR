@@ -149,7 +149,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                     b.center = k_Transforms[0].position;
 
                 foreach (var t in k_Transforms)
+                {
                     b.Encapsulate(t.position);
+                }
             }
 
             return b;

@@ -94,7 +94,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Action<float> m_CompleteHoverTransition;
         Action<float> m_SetThumbnailScale;
         Action<float> m_SetImportingScale;
-
         Action<Color> m_SetImportingColor;
 
         void Awake()
@@ -102,7 +101,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_CompleteHoverTransition = CompleteHoverTransition;
             m_SetThumbnailScale = SetThumbnailScale;
             m_SetImportingScale = SetImportingScale;
-
             m_SetImportingColor = SetImportingColor;
         }
 
@@ -422,7 +420,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             while (currentTime < k_TransitionDuration)
             {
                 currentTime += Time.deltaTime;
-                transform.localScale = Vector3.Lerp(currentScale, targetScale, currentTime / k_TransitionDuration);
+                transform.localScale = Vector3.Lerp(currentScale, targetScale,
+                    MathUtilsExt.SmoothInOutLerpFloat(currentTime / k_TransitionDuration));
                 yield return null;
             }
 
@@ -446,8 +445,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 currentPreviewOffset = m_PreviewObjectClone.localPosition;
 
             var currentTime = 0f;
-            var currentVelocity = 0f;
-            const float kDuration = 1f;
+            const float duration = 1f;
 
             var targetScale = Vector3.one * k_IconPreviewScale;
             var pivotOffset = Vector3.zero;
@@ -484,13 +482,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
 
-            while (currentTime < kDuration - 0.05f)
+            while (currentTime < duration)
             {
                 if (m_DragObject == null)
                     yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
 
-                currentTime = MathUtilsExt.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.deltaTime);
-                m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetScale, currentTime);
+                currentTime += Time.deltaTime;
+                m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetScale,
+                    MathUtilsExt.SmoothInOutLerpFloat(currentTime / duration));
 
                 if (m_PreviewObjectClone)
                 {
@@ -502,6 +501,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 
             m_DragObject.localScale = targetScale;
+            //No need to hard-set the preview object position/rotation because they will set in OnDragging in parent class
         }
 
         static IEnumerator HideGrabbedObject(GameObject itemToHide)
