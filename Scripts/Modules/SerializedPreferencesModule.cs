@@ -147,7 +147,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             SerializedPreferenceItem item;
             if (preferences.items.TryGetValue(serializer.GetType(), out item))
             {
-                var payload = JsonUtility.FromJson(item.payload, Type.GetType(item.payloadType));
+                var type = Type.GetType(item.payloadType);
+                if (type == null)
+                    return;
+
+                var payload = JsonUtility.FromJson(item.payload, type);
                 serializer.OnDeserializePreferences(payload);
             }
         }
