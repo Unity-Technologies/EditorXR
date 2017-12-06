@@ -81,9 +81,12 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         void OnEnable()
         {
-            // Prevent camera from performing a very fast (shortest path) rotational correction when being enabled
+            // Snap camera to starting position
             if (m_VRCamera)
+            {
                 m_Rotation = m_VRCamera.transform.localRotation;
+                m_Position = m_VRCamera.transform.localPosition;
+            }
         }
 
         void LateUpdate()
