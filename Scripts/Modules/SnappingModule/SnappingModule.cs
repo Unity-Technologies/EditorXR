@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
     sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
-        IRaycast
+        IRaycast, IStandardIgnoreList
     {
         const float k_GroundPlaneScale = 1000f;
 
@@ -243,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public bool widgetEnabled { get; set; }
 
-        public List<Renderer> ignoreList { private get; set; }
+        public List<GameObject> ignoreList { private get; set; }
 
         public GameObject settingsMenuPrefab { get { return m_SettingsMenuPrefab; } }
 
@@ -370,7 +370,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public Transform rayOrigin { get { return null; } }
 
         // Local method use only -- created here to reduce garbage collection
-        readonly List<Renderer> m_CombinedIgnoreList = new List<Renderer>();
+        readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
         Transform[] m_SingleTransformArray = new Transform[1];
 
         void Awake()
@@ -745,7 +745,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var renderers = transforms[i].GetComponentsInChildren<Renderer>();
                 for (var j = 0; j < renderers.Length; j++)
                 {
-                    m_CombinedIgnoreList.Add(renderers[j]);
+                    m_CombinedIgnoreList.Add(renderers[j].gameObject);
                 }
             }
 

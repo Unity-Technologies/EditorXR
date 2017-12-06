@@ -435,11 +435,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 referenceTransform.position = m_StartPosition - m_StartOffset * scaleFactor
                     + (m_StartMidPoint - worldMidPoint) * currentScale;
+
+                this.Pulse(Node.LeftHand, m_MovePulse);
+                this.Pulse(Node.RightHand, m_MovePulse);
             }
             else
             {
                 referenceTransform.position = m_StartPosition + referenceTransform.rotation
                     * Vector3.Scale(m_StartMidPoint - firstRayPosition, referenceTransform.localScale);
+
+                this.Pulse(this.RequestNodeFromRayOrigin(m_Rays[0]), m_MovePulse);
             }
         }
 
