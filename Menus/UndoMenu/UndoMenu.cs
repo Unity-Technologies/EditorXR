@@ -100,6 +100,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            if (!m_UndoMenuUI.visible)
+                return;
+
             var undoMenuInput = (UndoMenuInput)input;
             if (undoMenuInput == null)
             {
