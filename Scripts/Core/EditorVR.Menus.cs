@@ -156,7 +156,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (addMenu)
                     {
                         deviceData.customAlternateMenus.Add(customAlternateMenu);
-                        deviceData.menuHideData[customAlternateMenu] = new MenuHideData();
+
+                        MenuHideData tempData;
+                        if (!deviceData.menuHideData.TryGetValue(customAlternateMenu, out tempData))
+                        {
+                            deviceData.menuHideData.Add(customAlternateMenu, new MenuHideData());
+                        }
                     }
                     else
                     {
