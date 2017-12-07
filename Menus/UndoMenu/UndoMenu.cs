@@ -11,8 +11,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IMenu, IUsesMenuOrigins, ICustomActionMap,
-        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IUsesDeviceType
+    sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IUsesMenuOrigins, ICustomActionMap,
+        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IUsesDeviceType, ICustomAlternateMenu
     {
         const float k_UndoRedoThreshold = 0.5f;
         const string k_EngageControlName = "Engage";
@@ -51,6 +51,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
+
+        public int menuPriority { get { return 1; } }
 
         public Transform alternateMenuOrigin
         {

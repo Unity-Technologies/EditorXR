@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -18,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback
+        IUsesNode, IRequestFeedback, ICustomAlternateMenu
     {
         [Serializable]
         class Preferences
@@ -114,6 +115,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Toggle m_TransformToggle;
         Toggle m_MeshToggle;
         bool m_BlockValueChangedListener;
+        MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 
         public bool primary { private get; set; }
         public Transform rayOrigin { get; set; }
@@ -129,6 +131,24 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Node node { private get; set; }
 
         public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
+
+        public int menuPriority { get { return 2; } }
+
+        public MenuHideFlags menuHideFlags
+        {
+            get { return m_MenuHideFlags; }
+            set
+            {
+                if (m_MenuHideFlags != value)
+                {
+                    m_MenuHideFlags = value;
+                    gameObject.SetActive(value == 0);
+                }
+            }
+        }
+
+        public GameObject menuContent { get { return gameObject; } }
+        public Bounds localBounds { get; private set; }
 
         public GameObject settingsMenuItemInstance
         {
@@ -221,6 +241,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void Start()
         {
+            localBounds = ObjectUtils.GetBounds(transform);
+
             // Clear selection so we can't manipulate things
             Selection.activeGameObject = null;
 
