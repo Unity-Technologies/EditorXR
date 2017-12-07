@@ -76,10 +76,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     [Serializable]
     class RequestData
     {
-        readonly Action m_OnBecameVisible;
-
         [SerializeField]
         int m_Presentations;
+
+        readonly Action m_OnBecameVisible;
 
         /// <summary>
         /// How many times the user viewed the presentation of this type of request

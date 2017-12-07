@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
     sealed class ProxyFeedbackEditor : EditorWindow
     {
-        Dictionary<Type, SerializedProxyFeedback> m_SerializedFeedback = new Dictionary<Type, SerializedProxyFeedback>();
+        readonly Dictionary<Type, SerializedProxyFeedback> m_SerializedFeedback = new Dictionary<Type, SerializedProxyFeedback>();
         Vector2 m_Scroll;
 
         [MenuItem("Edit/Project Settings/EditorXR/Proxy Feedback")]
