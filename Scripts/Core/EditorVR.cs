@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+[assembly: OptionalDependency("UnityEngine.DrivenRectTransformTracker+BlockUndoCCU", "UNDO_PATCH")]
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -127,6 +128,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Awake()
         {
+#if UNDO_PATCH
+            DrivenRectTransformTracker.BlockUndo = true;
+#endif
             s_Instance = this; // Used only by PreferencesGUI
             Nested.evr = this; // Set this once for the convenience of all nested classes
             m_DefaultTools = defaultTools;
@@ -347,6 +351,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 nested.OnDestroy();
             }
+
+#if UNDO_PATCH
+            DrivenRectTransformTracker.BlockUndo = false;
+#endif
         }
 
         void Update()
