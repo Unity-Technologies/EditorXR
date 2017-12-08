@@ -177,8 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 alternateMenu.menuHideFlags = deviceData.currentTool is IExclusiveMode ? 0 : deviceData.menuHideData[alternateMenu].hideFlags;
 
                 // Move the Tools Menu buttons to an alternate position if the radial menu will be shown
-                if (alternateMenu is RadialMenu)
-                    deviceData.toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
+                deviceData.toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0 && alternateMenu is RadialMenu;
             }
 
             static Transform GetCustomMenuOrigin(Transform rayOrigin)
