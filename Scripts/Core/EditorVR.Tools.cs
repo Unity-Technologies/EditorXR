@@ -138,7 +138,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var undoMenu = menus.SpawnMenu<UndoMenu>(rayOrigin);
                     var hideData = new Menus.MenuHideData();
                     menuHideData[undoMenu] = hideData;
-                    hideData.hideFlags = 0;
 
                     // Setup ToolsMenu
                     var toolsMenu = ObjectUtils.AddComponent<Experimental.EditorVR.Menus.ToolsMenu>(evr.gameObject);

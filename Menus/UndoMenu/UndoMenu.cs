@@ -1,5 +1,4 @@
 #if UNITY_EDITOR
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -30,7 +29,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         HapticPulse m_UndoPulse;
 
         UndoMenuUI m_UndoMenuUI;
-        List<ActionMenuData> m_MenuActions;
         Transform m_AlternateMenuOrigin;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
         float m_PrevNavigateX;
@@ -107,16 +105,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 return;
             }
 
-            if (undoMenuInput.engage.wasJustReleased && !m_TrackpadController)
+            var engage = undoMenuInput.engage;
+            if (engage.wasJustReleased && !m_TrackpadController)
                 this.RestartCoroutine(ref m_StillEngagedAfterStickReleasedCoroutine, AcceptInputAfterStickReleased());
 
-            if (!(undoMenuInput.engage.wasJustPressed || !m_TrackpadController && (undoMenuInput.engage.isHeld || m_StillEngagedAfterStickRelease)))
+            if (!(engage.wasJustPressed || !m_TrackpadController && (engage.isHeld || m_StillEngagedAfterStickRelease)))
                 return;
 
-            consumeControl(undoMenuInput.engage);
+            consumeControl(engage);
             m_UndoMenuUI.engaged = true;
 
-            var navigateX = undoMenuInput.navigateX.value;
+            var navigateXControl = undoMenuInput.navigateX;
+            var navigateX = navigateXControl.value;
             var undoRedoPerformed = false;
             if (navigateX < -k_UndoRedoThreshold && (m_TrackpadController || m_PrevNavigateX > -k_UndoRedoThreshold))
             {
@@ -137,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             if (undoRedoPerformed)
             {
-                consumeControl(undoMenuInput.navigateX);
+                consumeControl(navigateXControl);
                 this.StopCoroutine(ref m_StillEngagedAfterStickReleasedCoroutine);
                 this.Pulse(node, m_UndoPulse);
             }

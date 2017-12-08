@@ -25,6 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Coroutine m_EngageCoroutine;
         Coroutine m_UndoPerformedCoroutine;
 
+        bool m_Engaged;
+        bool m_Visible;
+
         public Transform alternateMenuOrigin
         {
             get { return m_AlternateMenuOrigin; }
@@ -55,8 +58,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        bool m_Engaged;
-
         public bool visible
         {
             get { return m_Visible; }
@@ -71,8 +72,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 gameObject.SetActive(value);
             }
         }
-
-        bool m_Visible;
 
         void Awake()
         {
@@ -116,9 +115,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         IEnumerator AnimateUndoPerformed(bool undo)
         {
-            var targetMaterial = undo
-                ? m_UndoButtonMaterial
-                : m_RedoButtonMaterial;
+            var targetMaterial = undo ? m_UndoButtonMaterial : m_RedoButtonMaterial;
             var startingColor = m_UndoButtonMaterial.GetColor(k_MaterialColorProperty);
             var targetColor = startingColor;
             targetColor.a = k_UndoPerformedAlpha;

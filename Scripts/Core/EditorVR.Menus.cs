@@ -135,7 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 var customAlternateMenu = target as IAlternateMenu;
                 if (customAlternateMenu != null)
-                    RemoveCustomAlternateMenu(customAlternateMenu, rayOrigin);
+                    RemoveCustomAlternateMenu(customAlternateMenu);
             }
 
             static void AddCustomAlternateMenu(IAlternateMenu alternateMenu, Transform rayOrigin)
@@ -148,13 +148,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     device.alternateMenus.Add(alternateMenu);
                     var menuHideData = new MenuHideData();
                     device.menuHideData[alternateMenu] = menuHideData;
+                    // Alternate menus must be visible the first frame or they are ignored in the priority list
                     menuHideData.hideFlags = 0;
 
                     break;
                 }
             }
 
-            static void RemoveCustomAlternateMenu(IAlternateMenu customAlternateMenu, Transform rayOrigin)
+            static void RemoveCustomAlternateMenu(IAlternateMenu customAlternateMenu)
             {
                 foreach (var device in evr.m_DeviceData)
                 {
