@@ -509,8 +509,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 var index = data.index;
                 var gameObject = data.gameObject;
+                Transform transform = null;
+                if (gameObject != null) // In case we are dropping into the scene root
+                    transform = gameObject.transform;
+
                 var dropGameObject = dropData.gameObject;
-                var transform = gameObject.transform;
                 var dropTransform = dropGameObject.transform;
 
                 // OnHierarchyChanged doesn't happen until next frame--delay removal of the extra space
