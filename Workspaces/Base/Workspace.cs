@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -18,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public static readonly Vector3 MinBounds = new Vector3(0.677f, 0f, 0.1f);
 
         public const float FaceMargin = 0.025f;
+        protected float DoubleFaceMargin = FaceMargin * 2;
         public const float HighlightMargin = 0.002f;
 
         [SerializeField]

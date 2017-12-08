@@ -79,6 +79,16 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_Rotation = transform.localRotation;
         }
 
+        void OnEnable()
+        {
+            // Snap camera to starting position
+            if (m_VRCamera)
+            {
+                m_Rotation = m_VRCamera.transform.localRotation;
+                m_Position = m_VRCamera.transform.localPosition;
+            }
+        }
+
         void LateUpdate()
         {
             m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well

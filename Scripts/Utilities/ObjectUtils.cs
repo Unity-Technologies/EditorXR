@@ -25,6 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<Renderer> k_Renderers = new List<Renderer>();
+        static readonly List<Transform> k_Transforms = new List<Transform>();
 
         public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true,
             bool runInEditMode = true, bool active = true)
@@ -141,13 +142,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             // As a fallback when there are no bounds, collect all transform positions
             if (b.size == Vector3.zero)
             {
-                var transforms = transform.GetComponentsInChildren<Transform>();
+                k_Transforms.Clear();
+                transform.GetComponentsInChildren(k_Transforms);
 
-                if (transforms.Length > 0)
-                    b.center = transforms[0].position;
+                if (k_Transforms.Count > 0)
+                    b.center = k_Transforms[0].position;
 
-                foreach (var t in transforms)
+                foreach (var t in k_Transforms)
+                {
                     b.Encapsulate(t.position);
+                }
             }
 
             return b;

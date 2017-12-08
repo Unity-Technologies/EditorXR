@@ -167,6 +167,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
         {
+            if (!typeof(IWorkspace).IsAssignableFrom(t))
+                return;
+
             // HACK: MiniWorldWorkspace is not working in single pass yet
             if (t == typeof(MiniWorldWorkspace) && PlayerSettings.stereoRenderingPath != StereoRenderingPath.MultiPass)
             {

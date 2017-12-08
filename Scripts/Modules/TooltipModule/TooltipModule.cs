@@ -50,10 +50,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 return ((MonoBehaviour)tooltip).transform;
             }
+
+            public void Reset()
+            {
+                startTime = default(float);
+                lastModifiedTime = default(float);
+                tooltipUI = default(TooltipUI);
+                persistent = default(bool);
+                duration = default(float);
+                becameVisible = default(Action);
+                placement = default(ITooltipPlacement);
+                orientationWeight = default(float);
+                transitionOffset = default(Vector3);
+                transitionTime = default(float);
+            }
         }
 
         readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
         readonly Queue<TooltipUI> m_TooltipPool = new Queue<TooltipUI>(k_PoolInitialCapacity);
+        readonly Queue<TooltipData> m_TooltipDataPool = new Queue<TooltipData>(k_PoolInitialCapacity);
 
         Transform m_TooltipCanvas;
         Vector3 m_TooltipScale;
@@ -305,18 +320,31 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (duration < 0)
                 return;
 
-            m_Tooltips[tooltip] = new TooltipData
+            var tooltipData = GetTooltipData();
+
+            tooltipData.startTime = Time.time;
+            tooltipData.lastModifiedTime = Time.time;
+            tooltipData.persistent = persistent;
+            tooltipData.duration = duration;
+            tooltipData.becameVisible = becameVisible;
+            tooltipData.placement = placement ?? tooltip as ITooltipPlacement;
+            tooltipData.orientationWeight = 0.0f;
+            tooltipData.transitionOffset = Vector3.zero;
+            tooltipData.transitionTime = 0.0f;
+
+            m_Tooltips[tooltip] = tooltipData;
+        }
+
+        TooltipData GetTooltipData()
+        {
+            if (m_TooltipDataPool.Count > 0)
             {
-                startTime = Time.time,
-                lastModifiedTime = Time.time,
-                persistent = persistent,
-                duration = duration,
-                becameVisible = becameVisible,
-                placement = placement ?? tooltip as ITooltipPlacement,
-                orientationWeight = 0.0f,
-                transitionOffset = Vector3.zero,
-                transitionTime =  0.0f,
-            };
+                var tooltipData = m_TooltipDataPool.Dequeue();
+                tooltipData.Reset();
+                return tooltipData;
+            }
+
+            return new TooltipData();
         }
 
         static bool IsValidTooltip(ITooltip tooltip)
@@ -401,6 +429,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 tooltipUI.removeSelf(tooltipUI);
 
             m_TooltipPool.Enqueue(tooltipUI);
+            m_TooltipDataPool.Enqueue(tooltipData);
         }
     }
 }

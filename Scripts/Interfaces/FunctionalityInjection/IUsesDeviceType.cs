@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using UnityEngine.XR;
 
@@ -19,13 +19,18 @@ namespace UnityEditor.Experimental.EditorVR
 
     public static class IUsesDeviceTypeMethods
     {
+        static string s_XRDeviceModel;
+
         /// <summary>
         /// Returns the type of device currently in use
         /// </summary>
         /// <returns>The device type</returns>
         public static DeviceType GetDeviceType(this IUsesDeviceType @this)
         {
-            return XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0
+            if (string.IsNullOrEmpty(s_XRDeviceModel))
+                s_XRDeviceModel = XRDevice.model;
+
+            return s_XRDeviceModel.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0
                 ? DeviceType.Oculus : DeviceType.Vive;
         }
     }
