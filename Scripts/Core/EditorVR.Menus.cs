@@ -144,7 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 {
                     if (device.rayOrigin != rayOrigin)
                         continue;
-                    
+
                     device.alternateMenus.Add(alternateMenu);
                     var menuHideData = new MenuHideData();
                     device.menuHideData[alternateMenu] = menuHideData;
@@ -221,21 +221,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     IAlternateMenu alternateMenu = null;
                     var menuHideData = deviceData.menuHideData;
                     // Always display the highest-priority alternate menu, and hide all others.
-                    foreach (var menu in deviceData.alternateMenus)
+                    var alternateMenus = deviceData.alternateMenus;
+                    foreach (var menu in alternateMenus)
                     {
-                        if ((menuHideData[menu].hideFlags & MenuHideFlags.Hidden) == 0
+                        var hideData = menuHideData[menu];
+                        if ((hideData.hideFlags & MenuHideFlags.Hidden) == 0
                             && (alternateMenu == null || menu.priority >= alternateMenu.priority))
-                        {
                             alternateMenu = menu;
-                            menuHideData[alternateMenu].hideFlags = 0;
-                            deviceData.alternateMenu = alternateMenu;
-                        }
-                        else
-                        {
-                            menuHideData[menu].hideFlags |= MenuHideFlags.OtherMenu;
-                        }
+
+                        hideData.hideFlags |= MenuHideFlags.OtherMenu;
                     }
-                    
+
+                    deviceData.alternateMenu = alternateMenu;
+                    menuHideData[alternateMenu].hideFlags = 0;
+
                     var mainMenu = deviceData.mainMenu;
                     var customMenu = deviceData.customMenu;
                     MenuHideData customMenuHideData = null;
@@ -423,10 +422,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             if (k_WorkspaceComponents.Count > 0)
                                 hoveringCollider = true;
 
-                            k_ButtonComponents.Clear();
-                            overlap.GetComponents(k_ButtonComponents);
-                            if (k_ButtonComponents.Count > 0)
-                                hoveringCollider = true;
+                            if (menu is MainMenu)
+                            {
+                                k_ButtonComponents.Clear();
+                                overlap.GetComponents(k_ButtonComponents);
+                                if (k_ButtonComponents.Count > 0)
+                                    hoveringCollider = true;
+                            }
                         }
                     }
                 }

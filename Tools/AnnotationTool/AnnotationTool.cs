@@ -340,12 +340,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_BrushSizeUI = brushSizeUi.GetComponent<BrushSizeUI>();
 
             var transform = brushSizeUi.transform;
-            localBounds = ObjectUtils.GetBounds(transform);
             var scale = transform.localScale;
             transform.SetParent(alternateMenuOrigin, false);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.Euler(-90, 0, 0);
             transform.localScale = scale;
+
+            localBounds = ObjectUtils.GetBounds(transform);
 
             m_BrushSizeUI.onValueChanged = value =>
             {
@@ -746,36 +747,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     FinalizeMesh();
                     consumeControl(draw);
-                }
-            }
-            else
-            {
-                // Secondary hand uses brush size input to do undo/redo
-                var value = annotationInput.changeBrushSize.value;
-                if (this.GetDeviceType() == DeviceType.Vive)
-                {
-                    if (annotationInput.stickButton.wasJustPressed)
-                    {
-                        if (value > 0)
-                            Undo.PerformRedo();
-                        else
-                            Undo.PerformUndo();
-                    }
-                }
-                else
-                {
-                    var doUndoRedo = Math.Abs(value) > 0.5f;
-                    if (doUndoRedo != m_WasDoingUndoRedo)
-                    {
-                        m_WasDoingUndoRedo = doUndoRedo;
-                        if (doUndoRedo)
-                        {
-                            if (value > 0)
-                                Undo.PerformRedo();
-                            else
-                                Undo.PerformUndo();
-                        }
-                    }
                 }
             }
 
