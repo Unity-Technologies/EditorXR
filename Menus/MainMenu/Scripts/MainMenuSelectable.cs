@@ -26,9 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 #if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         protected TextMeshProUGUI m_Description;
-#endif
 
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         protected TextMeshProUGUI m_Title;
 #endif
