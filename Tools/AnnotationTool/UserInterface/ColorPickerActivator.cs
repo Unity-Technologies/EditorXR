@@ -18,50 +18,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Transform m_Icon;
 
         [SerializeField]
-    GameObject m_Undo;
-
-    [SerializeField]
-    GameObject m_Redo;
-
-    [SerializeField]
         float m_PickerOffset = 0.045f;
 
         Coroutine m_HighlightCoroutine;
-    GradientButton m_UndoButton;
-    GradientButton m_RedoButton;
 
         public Transform rayOrigin { private get; set; }
         public Action<Transform> showColorPicker { private get; set; }
         public Action hideColorPicker { private get; set; }
         public Node node { private get; set; }
-
-    public event Action undoButtonClick
-    {
-        add { m_UndoButton.click += value; }
-        remove { m_UndoButton.click -= value; }
-    }
-
-    public event Action redoButtonClick
-    {
-        add { m_RedoButton.click += value; }
-        remove { m_RedoButton.click -= value; }
-    }
-
-    void Awake()
-    {
-        m_UndoButton = m_Undo.GetComponentInChildren<GradientButton>();
-        m_UndoButton.normalGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
-        m_UndoButton.highlightGradientPair = UnityBrandColorScheme.sessionGradient;
-        m_RedoButton = m_Redo.GetComponentInChildren<GradientButton>();
-        m_RedoButton.normalGradientPair = UnityBrandColorScheme.grayscaleSessionGradient;
-        m_RedoButton.highlightGradientPair = UnityBrandColorScheme.sessionGradient;
-    }
-
-    void Start()
-    {
-        m_UndoButton.UpdateMaterialColors();
-        m_RedoButton.UpdateMaterialColors();
-    }
 
         public void OnPointerClick(PointerEventData eventData)
         {
@@ -73,9 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             showColorPicker(rayOrigin);
             this.RestartCoroutine(ref m_HighlightCoroutine, Highlight(true));
 
-        m_Undo.SetActive(false);
-        m_Redo.SetActive(false);
-
             eventData.Use();
         }
 
@@ -83,9 +44,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             hideColorPicker();
             this.RestartCoroutine(ref m_HighlightCoroutine, Highlight(false));
-
-        m_Undo.SetActive(true);
-        m_Redo.SetActive(true);
         }
 
         IEnumerator Highlight(bool transitionIn)

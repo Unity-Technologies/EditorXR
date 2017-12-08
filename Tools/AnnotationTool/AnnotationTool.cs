@@ -282,9 +282,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 activator.showColorPicker = ShowColorPicker;
                 activator.hideColorPicker = HideColorPicker;
 
-                activator.undoButtonClick += Undo.PerformUndo;
-                activator.redoButtonClick += Undo.PerformRedo;
-
                 var controls = new BindingDictionary();
                 InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, controls);
 
@@ -451,7 +448,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (!newSession)
             {
                 newSession = new GameObject(string.Format(k_GroupFormatString, m_AnnotationRoot.childCount));
-                Undo.RegisterCreatedObjectUndo(newSession, "Annotation");
                 newSession.transform.position = GetPointerPosition();
                 m_Groups.Add(newSession);
             }
