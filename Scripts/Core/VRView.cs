@@ -157,8 +157,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_Camera.nearClipPlane = nearClipPlane;
                 }
 
+                // TODO: Support multiple cameras
                 if (m_Camera.clearFlags == CameraClearFlags.Nothing)
                     m_Camera.clearFlags = CameraClearFlags.SolidColor;
+
+                m_Camera.stereoTargetEye = StereoTargetEyeMask.Both;
             }
             else
             {
