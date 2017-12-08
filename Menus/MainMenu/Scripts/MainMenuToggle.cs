@@ -28,13 +28,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void OnRayEnter(RayEventData eventData)
         {
-            if (hovered != null)
+            if (m_Toggle.isOn && hovered != null)
                 hovered(eventData.rayOrigin);
         }
 
         public void OnRayExit(RayEventData eventData)
         {
-            if (hovered != null)
+            if (m_Toggle.isOn && hovered != null)
                 hovered(eventData.rayOrigin);
         }
 
