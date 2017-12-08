@@ -377,7 +377,7 @@ MonoBehaviour:
   m_text: 'Viewer Scale: 0.5'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ea721564999c75441b5b3aa01ae88f76, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: db4a373a15bcdcc42af5fd55a87bdd2b, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5be343b145ab9dd42821b06c75f9a60c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

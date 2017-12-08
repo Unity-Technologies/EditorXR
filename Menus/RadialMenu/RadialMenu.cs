@@ -166,12 +166,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    this.AddFeedbackRequest(new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node,
-                        tooltipText = "Select Action (Press to Execute)"
-                    });
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.control = id;
+                    request.node = node;
+                    request.tooltipText = "Select Action (Press to Execute)";
+                    this.AddFeedbackRequest(request);
                 }
             }
         }

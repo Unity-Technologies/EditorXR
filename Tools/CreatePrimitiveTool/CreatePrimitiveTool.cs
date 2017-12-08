@@ -62,12 +62,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in control.Value)
                 {
-                    this.AddFeedbackRequest(new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = "Draw"
-                    });
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.tooltipText = "Draw";
+                    this.AddFeedbackRequest(request);
                 }
             }
         }

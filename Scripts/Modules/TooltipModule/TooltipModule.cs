@@ -22,6 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly Quaternion k_FlipYRotation = Quaternion.AngleAxis(180f, Vector3.up);
         static readonly Quaternion k_FlipZRotation = Quaternion.AngleAxis(180f, Vector3.forward);
 
+        static readonly Vector3[] k_Corners = new Vector3[4];
+
         [SerializeField]
         GameObject m_TooltipPrefab;
 
@@ -48,10 +50,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 return ((MonoBehaviour)tooltip).transform;
             }
+
+            public void Reset()
+            {
+                startTime = default(float);
+                lastModifiedTime = default(float);
+                tooltipUI = default(TooltipUI);
+                persistent = default(bool);
+                duration = default(float);
+                becameVisible = default(Action);
+                placement = default(ITooltipPlacement);
+                orientationWeight = default(float);
+                transitionOffset = default(Vector3);
+                transitionTime = default(float);
+            }
         }
 
         readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
         readonly Queue<TooltipUI> m_TooltipPool = new Queue<TooltipUI>(k_PoolInitialCapacity);
+        readonly Queue<TooltipData> m_TooltipDataPool = new Queue<TooltipData>(k_PoolInitialCapacity);
 
         Transform m_TooltipCanvas;
         Vector3 m_TooltipScale;
@@ -173,10 +190,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             if (placement != null)
             {
-                var rectTransform = tooltipUI.rectTransform;
-                var rect = rectTransform.rect;
-                var halfWidth = rect.width * 0.5f;
-                var halfHeight = rect.height * 0.5f;
+                //TODO: Figure out why rect gives us different height/width than GetWorldCorners
+                tooltipUI.rectTransform.GetWorldCorners(k_Corners);
+                var bottomLeft = k_Corners[0];
+                var halfWidth = (bottomLeft - k_Corners[2]).magnitude * 0.5f;
+                var halfHeight = (bottomLeft - k_Corners[1]).magnitude * 0.5f;
 
                 var source = placement.tooltipSource;
                 var toSource = tooltipTransform.InverseTransformPoint(source.position);
@@ -189,8 +207,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var boxSlope = halfHeight / halfWidth;
                 var toSourceSlope = Mathf.Abs(toSource.y / toSource.x);
 
-                halfHeight *= Mathf.Sign(toSource.y);
-                halfWidth *= Mathf.Sign(toSource.x);
+                var parentScale = attachedSphere.parent.lossyScale;
+                halfHeight *= Mathf.Sign(toSource.y) / parentScale.x;
+                halfWidth *= Mathf.Sign(toSource.x) / parentScale.y;
                 attachedSphere.localPosition = toSourceSlope > boxSlope
                     ? new Vector3(0, halfHeight)
                     : new Vector3(halfWidth, 0);
@@ -301,18 +320,31 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (duration < 0)
                 return;
 
-            m_Tooltips[tooltip] = new TooltipData
+            var tooltipData = GetTooltipData();
+
+            tooltipData.startTime = Time.time;
+            tooltipData.lastModifiedTime = Time.time;
+            tooltipData.persistent = persistent;
+            tooltipData.duration = duration;
+            tooltipData.becameVisible = becameVisible;
+            tooltipData.placement = placement ?? tooltip as ITooltipPlacement;
+            tooltipData.orientationWeight = 0.0f;
+            tooltipData.transitionOffset = Vector3.zero;
+            tooltipData.transitionTime = 0.0f;
+
+            m_Tooltips[tooltip] = tooltipData;
+        }
+
+        TooltipData GetTooltipData()
+        {
+            if (m_TooltipDataPool.Count > 0)
             {
-                startTime = Time.time,
-                lastModifiedTime = Time.time,
-                persistent = persistent,
-                duration = duration,
-                becameVisible = becameVisible,
-                placement = placement ?? tooltip as ITooltipPlacement,
-                orientationWeight = 0.0f,
-                transitionOffset = Vector3.zero,
-                transitionTime =  0.0f,
-            };
+                var tooltipData = m_TooltipDataPool.Dequeue();
+                tooltipData.Reset();
+                return tooltipData;
+            }
+
+            return new TooltipData();
         }
 
         static bool IsValidTooltip(ITooltip tooltip)
@@ -372,15 +404,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
 
-            // The rectTransform expansion is handled in the Tooltip dynamically, based on alignment & text length
-            var rectTransform = tooltipUI.rectTransform;
-            var rect = rectTransform.rect;
-            var halfWidth = rect.width * 0.5f;
-
             if (placement != null)
-                offset *= halfWidth * rectTransform.lossyScale.x;
+            {
+                tooltipUI.rectTransform.GetWorldCorners(k_Corners);
+                var halfWidth = (k_Corners[0] - k_Corners[2]).magnitude * 0.5f;
+                offset *= halfWidth;
+            }
             else
+            {
                 offset = Vector3.back * k_Offset * this.GetViewerScale();
+            }
 
             offset += transitionOffset;
 
@@ -396,6 +429,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 tooltipUI.removeSelf(tooltipUI);
 
             m_TooltipPool.Enqueue(tooltipUI);
+            m_TooltipDataPool.Enqueue(tooltipData);
         }
     }
 }

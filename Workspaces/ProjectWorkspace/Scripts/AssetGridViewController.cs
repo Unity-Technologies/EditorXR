@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using ListView;
@@ -218,8 +218,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected override AssetGridItem GetItem(AssetData data)
         {
-            const float kJitterMargin = 0.125f;
-            if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * kJitterMargin) // Avoid jitter while scrolling rows in and out of view
+            const float jitterMargin = 0.125f;
+            if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * jitterMargin) // Avoid jitter while scrolling rows in and out of view
                 return null;
 
             // If this AssetData hasn't fetched its asset yet, do so now
