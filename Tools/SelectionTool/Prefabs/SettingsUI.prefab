@@ -71,6 +71,7 @@ GameObject:
   m_Component:
   - component: {fileID: 224000010858218954}
   - component: {fileID: 114000011920048442}
+  - component: {fileID: 114098223122120698}
   m_Layer: 5
   m_Name: Sphere
   m_TagString: Untagged
@@ -121,6 +122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 224000011444372664}
   - component: {fileID: 114000013714903302}
+  - component: {fileID: 114941570635773572}
   m_Layer: 5
   m_Name: Cuboid
   m_TagString: Untagged
@@ -496,6 +498,22 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Toggle+ToggleEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_IsOn: 1
+--- !u!114 &114098223122120698
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011772923556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 766c9196b7801da49b40f523eaa556e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ClickPulse: {fileID: 11400000, guid: ad8089d07bd48a047b9d6b45f7a4fd57, type: 2}
+  m_HoverPulse: {fileID: 11400000, guid: dd561ccb8162d1040adba0a7ea60eadc, type: 2}
+  m_Description: {fileID: 0}
+  m_Title: {fileID: 0}
+  m_Toggle: {fileID: 114000011920048442}
 --- !u!114 &114210595956423184
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -563,6 +581,22 @@ MonoBehaviour:
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
   m_ChildControlHeight: 0
+--- !u!114 &114941570635773572
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013494423478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 766c9196b7801da49b40f523eaa556e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ClickPulse: {fileID: 11400000, guid: ad8089d07bd48a047b9d6b45f7a4fd57, type: 2}
+  m_HoverPulse: {fileID: 11400000, guid: dd561ccb8162d1040adba0a7ea60eadc, type: 2}
+  m_Description: {fileID: 0}
+  m_Title: {fileID: 0}
+  m_Toggle: {fileID: 114000013714903302}
 --- !u!222 &222000010570603678
 CanvasRenderer:
   m_ObjectHideFlags: 1
