@@ -142,7 +142,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (m_MenuHideFlags != value)
                 {
                     m_MenuHideFlags = value;
-                    gameObject.SetActive(value == 0);
+                    var visible = m_MenuHideFlags == 0;
+                    
+                    if (m_ColorPicker)
+                        m_ColorPicker.gameObject.SetActive(visible);
+
+                    if (m_BrushSizeUI)
+                        m_BrushSizeUI.gameObject.SetActive(visible);
+
+                    if (m_ColorPickerActivator)
+                        m_ColorPickerActivator.SetActive(visible);
+
+                    if (m_AnnotationPointer)
+                        m_AnnotationPointer.gameObject.SetActive(visible);
                 }
             }
         }
