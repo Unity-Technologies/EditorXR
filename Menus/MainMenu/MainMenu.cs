@@ -57,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
         public List<ActionMenuData> menuActions { get; set; }
+        public event Action<Transform> itemWasSelected;
         public Transform targetRayOrigin { private get; set; }
         public Node node { get; set; }
 
@@ -65,6 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Transform rayOrigin { private get; set; }
 
         public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
+        public int priority { get { return 0; } }
 
         public bool focus { get { return m_MainMenuUI.hovering; } }
 

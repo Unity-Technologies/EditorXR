@@ -12,7 +12,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IUsesMenuOrigins, ICustomActionMap,
-        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IUsesDeviceType, ICustomAlternateMenu
+        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IUsesDeviceType, IAlternateMenu
     {
         const float k_UndoRedoThreshold = 0.5f;
         const string k_EngageControlName = "Engage";
@@ -42,17 +42,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         readonly BindingDictionary m_Controls = new BindingDictionary();
 
         public Transform menuOrigin { get; set; }
-
-        public GameObject menuContent { get { return m_UndoMenuUI.gameObject; } }
-
+        public Transform rayOrigin { get; set; }
         public Node node { get; set; }
 
+        public GameObject menuContent { get { return m_UndoMenuUI.gameObject; } }
         public Bounds localBounds { get { return default(Bounds); } }
-
+        public int priority { get { return 0; } }
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
-
-        public int menuPriority { get { return 1; } }
 
         public Transform alternateMenuOrigin
         {

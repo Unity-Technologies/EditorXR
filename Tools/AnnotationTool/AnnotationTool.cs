@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback, ICustomAlternateMenu
+        IUsesNode, IRequestFeedback, IConnectInterfaces
     {
         [Serializable]
         class Preferences
@@ -215,7 +215,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 ObjectUtils.Destroy(m_ColorPicker.gameObject);
 
             if (m_BrushSizeUI)
+            {
+                this.DisconnectInterfaces(m_BrushSizeUI, rayOrigin);
                 ObjectUtils.Destroy(m_BrushSizeUI.gameObject);
+            }
 
             if (m_ColorPickerActivator)
                 ObjectUtils.Destroy(m_ColorPickerActivator);
@@ -333,7 +336,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var brushSize = m_Preferences.brushSize;
             m_AnnotationPointer.Resize(brushSize);
 
-            var brushSizeUi = this.InstantiateUI(m_BrushSizePrefab);
+            var brushSizeUi = this.InstantiateUI(m_BrushSizePrefab, rayOrigin: rayOrigin);
             m_BrushSizeUI = brushSizeUi.GetComponent<BrushSizeUI>();
 
             var transform = brushSizeUi.transform;

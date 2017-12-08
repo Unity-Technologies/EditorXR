@@ -97,9 +97,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
                 }
 
-                var customAlternateMenu = target as ICustomAlternateMenu;
+                var customAlternateMenu = target as IAlternateMenu;
                 if (customAlternateMenu != null)
-                    AddRemoveCustomAlternateMenu(customAlternateMenu, rayOrigin, true);
+                    AddCustomAlternateMenu(customAlternateMenu, rayOrigin);
             }
 
             public void DisconnectInterface(object target, object userData = null)
@@ -133,53 +133,33 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (mainMenu != null && rayOrigin != null)
                     m_MainMenus.Remove(rayOrigin);
 
-                var customAlternateMenu = target as ICustomAlternateMenu;
+                var customAlternateMenu = target as IAlternateMenu;
                 if (customAlternateMenu != null)
-                    AddRemoveCustomAlternateMenu(customAlternateMenu, rayOrigin, false);
+                    RemoveCustomAlternateMenu(customAlternateMenu, rayOrigin);
             }
 
-            static void AddRemoveCustomAlternateMenu(
-                ICustomAlternateMenu customAlternateMenu, Transform rayOrigin, bool addMenu)
+            static void AddCustomAlternateMenu(IAlternateMenu alternateMenu, Transform rayOrigin)
             {
-                DeviceData deviceData = null;
-                foreach (var currentDevice in evr.m_DeviceData)
+                foreach (var device in evr.m_DeviceData)
                 {
-                    if (currentDevice.rayOrigin == rayOrigin)
-                    {
-                        deviceData = currentDevice;
-                        break;
-                    }
+                    if (device.rayOrigin != rayOrigin)
+                        continue;
+                    
+                    device.alternateMenus.Add(alternateMenu);
+                    var menuHideData = new MenuHideData();
+                    device.menuHideData[alternateMenu] = menuHideData;
+                    menuHideData.hideFlags = 0;
+
+                    break;
                 }
+            }
 
-                if (deviceData != null)
+            static void RemoveCustomAlternateMenu(IAlternateMenu customAlternateMenu, Transform rayOrigin)
+            {
+                foreach (var device in evr.m_DeviceData)
                 {
-                    if (addMenu)
-                    {
-                        deviceData.customAlternateMenus.Add(customAlternateMenu);
-
-                        MenuHideData tempData;
-                        if (!deviceData.menuHideData.TryGetValue(customAlternateMenu, out tempData))
-                        {
-                            deviceData.menuHideData.Add(customAlternateMenu, new MenuHideData());
-                        }
-                    }
-                    else
-                    {
-                        deviceData.customAlternateMenus.Remove(customAlternateMenu);
-                        deviceData.menuHideData.Remove(customAlternateMenu);
-                    }
-
-                    ICustomAlternateMenu highestPriorityCustomAlternateMenu = null;
-                    foreach (var alternateMenu in deviceData.customAlternateMenus)
-                    {
-                        if (highestPriorityCustomAlternateMenu == null
-                            || alternateMenu.menuPriority >= highestPriorityCustomAlternateMenu.menuPriority)
-                        {
-                            highestPriorityCustomAlternateMenu = alternateMenu;
-                        }
-                    }
-
-                    deviceData.highestPriorityCustomAlternateMenu = highestPriorityCustomAlternateMenu;
+                    device.alternateMenus.Remove(customAlternateMenu);
+                    device.menuHideData.Remove(customAlternateMenu);
                 }
             }
 
@@ -191,10 +171,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             static void UpdateAlternateMenuForDevice(DeviceData deviceData)
             {
                 var alternateMenu = deviceData.alternateMenu;
+                if (alternateMenu == null || !deviceData.menuHideData.ContainsKey(alternateMenu))
+                    return;
+
                 alternateMenu.menuHideFlags = deviceData.currentTool is IExclusiveMode ? 0 : deviceData.menuHideData[alternateMenu].hideFlags;
 
-                // Move the Tools Menu buttons to an alternate position if the alternate menu will be shown
-                deviceData.toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
+                // Move the Tools Menu buttons to an alternate position if the radial menu will be shown
+                if (alternateMenu is RadialMenu)
+                    deviceData.toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
             }
 
             static Transform GetCustomMenuOrigin(Transform rayOrigin)
@@ -234,10 +218,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 foreach (var deviceData in k_ActiveDeviceData)
                 {
-                    var alternateMenu = deviceData.alternateMenu;
+                    IAlternateMenu alternateMenu = null;
+                    var menuHideData = deviceData.menuHideData;
+                    // Always display the highest-priority alternate menu, and hide all others.
+                    foreach (var menu in deviceData.alternateMenus)
+                    {
+                        if ((menuHideData[menu].hideFlags & MenuHideFlags.Hidden) == 0
+                            && (alternateMenu == null || menu.priority >= alternateMenu.priority))
+                        {
+                            alternateMenu = menu;
+                            menuHideData[alternateMenu].hideFlags = 0;
+                            deviceData.alternateMenu = alternateMenu;
+                        }
+                        else
+                        {
+                            menuHideData[menu].hideFlags |= MenuHideFlags.OtherMenu;
+                        }
+                    }
+                    
                     var mainMenu = deviceData.mainMenu;
                     var customMenu = deviceData.customMenu;
-                    var menuHideData = deviceData.menuHideData;
                     MenuHideData customMenuHideData = null;
                     MenuHideData alternateMenuData = null;
 
@@ -258,25 +258,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         customMenuVisible = customMenuHideData.hideFlags == 0;
                     }
 
-                    var customAlternateMenuVisible = false;
-                    foreach (var customAlternateMenu in deviceData.customAlternateMenus)
-                    {
-                        customAlternateMenuVisible = customAlternateMenuVisible || menuHideData[customAlternateMenu].hideFlags == 0;
-                    }
-
-                    // Kick the alternate menu to the other hand if a main menu or custom menu is visible
-                    if (alternateMenuVisible && (mainMenuVisible || customMenuVisible))
-                    {
-                        foreach (var otherDeviceData in k_ActiveDeviceData)
-                        {
-                            if (otherDeviceData == deviceData)
-                                continue;
-
-                            SetAlternateMenuVisibility(otherDeviceData.rayOrigin, true);
-                            break;
-                        }
-                    }
-
                     // Temporarily hide customMenu if other menus are visible or should be
                     if (customMenuVisible && (mainMenuVisible || mainMenuSupressed))
                         customMenuHideData.hideFlags |= MenuHideFlags.OtherMenu;
@@ -285,23 +266,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (alternateMenuVisible && (customMenuVisible || mainMenuVisible))
                         alternateMenuData.hideFlags |= MenuHideFlags.OtherMenu;
 
-                    // Temporarily hide custom alternate menu if radial menu is open.
-                    if (customAlternateMenuVisible && alternateMenuVisible)
+                    // Kick the alternate menu to the other hand if a main menu or custom menu is visible
+                    if (alternateMenuVisible && (mainMenuVisible || customMenuVisible) && alternateMenu is RadialMenu)
                     {
-                        foreach (var customAlternateMenu in deviceData.customAlternateMenus)
+                        foreach (var otherDeviceData in k_ActiveDeviceData)
                         {
-                            customAlternateMenu.menuHideFlags |= MenuHideFlags.OtherMenu;
-                        }
-                    }
-                    else
-                    {
-                        foreach (var customAlternateMenu in deviceData.customAlternateMenus)
-                        {
-                            // Always display the highest-priority custom alternate menu, and hide all others.
-                            if (customAlternateMenu == deviceData.highestPriorityCustomAlternateMenu)
-                                menuHideData[customAlternateMenu].hideFlags = 0;
-                            else
-                                menuHideData[customAlternateMenu].hideFlags |= MenuHideFlags.OtherMenu;
+                            if (otherDeviceData == deviceData)
+                                continue;
+
+                            SetAlternateMenuVisibility(otherDeviceData.rayOrigin, true);
+                            break;
                         }
                     }
 
@@ -362,13 +336,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (customMenu != null)
                         customMenu.menuHideFlags = deviceData.menuHideData[customMenu].hideFlags;
                     
-                    var customAlternateMenus = deviceData.customAlternateMenus;
-                    if (customAlternateMenus != null && customAlternateMenus.Count > 0)
+                    var alternateMenus = deviceData.alternateMenus;
+                    foreach (var menu in alternateMenus)
                     {
-                        foreach (var customAlternateMenu in customAlternateMenus)
-                        {
-                            customAlternateMenu.menuHideFlags = deviceData.menuHideData[customAlternateMenu].hideFlags;
-                        }
+                        menu.menuHideFlags = deviceData.menuHideData[menu].hideFlags;
                     }
 
                     UpdateAlternateMenuForDevice(deviceData);
@@ -411,7 +382,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             continue;
 
                         var otherRayOrigin = otherDeviceData.rayOrigin;
-                        if (alternateMenuVisible && otherDeviceData.alternateMenu != null)
+                        if (alternateMenuVisible)
                             SetAlternateMenuVisibility(otherRayOrigin, true);
 
                         // If other hand is within range to do a two-handed scale, hide its menu as well
@@ -527,12 +498,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 Rays.ForEachProxyDevice(deviceData =>
                 {
-                    var menuHideFlags = deviceData.menuHideData;
-                    var alternateMenu = deviceData.alternateMenu;
-                    if (alternateMenu != null)
+                    foreach (var menu in deviceData.alternateMenus)
                     {
+                        if (!(menu is IActionsMenu))
+                            continue;
+
+                        var menuHideFlags = deviceData.menuHideData;
                         // Set alternate menu visible on this rayOrigin and hide it on all others
-                        var alternateMenuData = menuHideFlags[alternateMenu];
+                        var alternateMenuData = menuHideFlags[menu];
                         if (deviceData.rayOrigin == rayOrigin && visible)
                             alternateMenuData.hideFlags &= ~MenuHideFlags.Hidden;
                         else
@@ -579,8 +552,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                     if (deviceData == otherDeviceData)
                                         continue;
 
-                                    if (otherDeviceData.alternateMenu != null)
-                                        SetAlternateMenuVisibility(rayOrigin, true);
+                                    SetAlternateMenuVisibility(rayOrigin, true);
                                 }
                             }
                         }
@@ -622,17 +594,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 this.ConnectInterfaces(mainMenu, rayOrigin);
 
                 return mainMenu;
-            }
-
-            internal static void UpdateAlternateMenuActions()
-            {
-                var actionsModule = evr.GetModule<ActionsModule>();
-                foreach (var deviceData in evr.m_DeviceData)
-                {
-                    var altMenu = deviceData.alternateMenu;
-                    if (altMenu != null)
-                        altMenu.menuActions = actionsModule.menuActions;
-                }
             }
 
             static bool IsMainMenuVisible(Transform rayOrigin)

@@ -131,13 +131,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     deviceData.mainMenu = mainMenu;
                     menuHideData[mainMenu] = new Menus.MenuHideData();
 
-                    var alternateMenu = menus.SpawnMenu<RadialMenu>(rayOrigin);
-                    deviceData.alternateMenu = alternateMenu;
-                    menuHideData[alternateMenu] = new Menus.MenuHideData();
-                    alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
+                    var radialMenu = menus.SpawnMenu<RadialMenu>(rayOrigin);
+                    menuHideData[radialMenu] = new Menus.MenuHideData();
+                    radialMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
 
                     var undoMenu = menus.SpawnMenu<UndoMenu>(rayOrigin);
-                    menuHideData[undoMenu] = new Menus.MenuHideData();
+                    var hideData = new Menus.MenuHideData();
+                    menuHideData[undoMenu] = hideData;
+                    hideData.hideFlags = 0;
 
                     // Setup ToolsMenu
                     var toolsMenu = ObjectUtils.AddComponent<Experimental.EditorVR.Menus.ToolsMenu>(evr.gameObject);

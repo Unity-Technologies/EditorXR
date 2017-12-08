@@ -71,12 +71,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public Transform rayOrigin;
             public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
             public IMainMenu mainMenu;
-            public IAlternateMenu alternateMenu;
             public ITool currentTool;
             public IMenu customMenu;
             public IToolsMenu toolsMenu;
-            public List<ICustomAlternateMenu> customAlternateMenus = new List<ICustomAlternateMenu>();
-            public ICustomAlternateMenu highestPriorityCustomAlternateMenu;
+            public readonly List<IAlternateMenu> alternateMenus = new List<IAlternateMenu>();
+            public IAlternateMenu alternateMenu;
             public readonly Dictionary<IMenu, Menus.MenuHideData> menuHideData = new Dictionary<IMenu, Menus.MenuHideData>();
         }
 
