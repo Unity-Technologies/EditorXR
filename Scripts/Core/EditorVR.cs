@@ -4,11 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+
+[assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -106,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
                 Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
-
+            }
                 // Add EVR tags and layers if they don't exist
                 var tags = TagManager.GetRequiredTags();
                 var layers = TagManager.GetRequiredLayers();
@@ -121,7 +124,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     TagManager.AddLayer(layer);
                 }
             }
-        }
 
         void Awake()
         {
@@ -236,6 +238,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             AddModule<SpatialScrollModule>();
 
             AddModule<FeedbackModule>();
+
+            AddModule<WebModule>();
+
+            //TODO: External module support (removes need for CCU in this instance)
+#if INCLUDE_POLY_TOOLKIT
+            AddModule<PolyModule>();
+#endif
 
             viewer.AddPlayerModel();
 

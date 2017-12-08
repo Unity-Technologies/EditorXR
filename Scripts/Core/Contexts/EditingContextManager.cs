@@ -25,10 +25,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static EditingContextManager s_Instance;
         static InputManager s_InputManager;
 
-        EditingContextManagerSettings m_Settings;
+        EditingContextManagerSettings m_Settings = null;
 
         List<IEditingContext> m_AvailableContexts;
-        string[] m_ContextNames;
+        string[] m_ContextNames = null;
         int m_SelectedContextIndex;
 
         IEditingContext m_CurrentContext;

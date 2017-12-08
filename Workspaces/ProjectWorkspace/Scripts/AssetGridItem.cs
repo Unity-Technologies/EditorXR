@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -380,6 +380,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 
             StartCoroutine(HideGrabbedObject(m_DragObject.gameObject, gridItem.m_Cube));
+            base.OnDragEnded(handle, eventData);
         }
 
         void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
@@ -397,6 +398,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
 
+            base.OnHoverStart(handle, eventData);
             ShowGrabFeedback(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
@@ -584,12 +586,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void ShowGrabFeedback(Node node)
         {
-            this.AddFeedbackRequest(new ProxyFeedbackRequest
-            {
-                control = VRInputDevice.VRControl.Trigger1,
-                node = node,
-                tooltipText = "Grab"
-            });
+            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+            request.control = VRInputDevice.VRControl.Trigger1;
+            request.node = node;
+            request.tooltipText = "Grab";
+            this.AddFeedbackRequest(request);
         }
 
         void HideGrabFeedback()

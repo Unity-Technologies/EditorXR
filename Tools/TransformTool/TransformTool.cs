@@ -419,16 +419,26 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     consumeControl(leftInput.cancel);
                     if (leftInput.cancel.wasJustPressed)
                     {
-                        DropHeldObjects(Node.LeftHand);
                         if (m_Scaling)
+                        {
+                            m_Scaling = false;
+                            DropHeldObjects(Node.LeftHand);
                             DropHeldObjects(Node.RightHand);
-
+                            hasRight = false;
+                        }
+                        else
+                        {
+                            DropHeldObjects(Node.LeftHand);
+                        }
                         hasLeft = false;
                         Undo.PerformUndo();
                     }
 
                     if (leftInput.select.wasJustReleased)
                     {
+                        if (rightInput != null && rightInput.select.wasJustReleased)
+                            m_Scaling = false;
+
                         DropHeldObjects(Node.LeftHand);
                         hasLeft = false;
                         consumeControl(leftInput.select);
@@ -440,16 +450,26 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     consumeControl(rightInput.cancel);
                     if (rightInput.cancel.wasJustPressed)
                     {
-                        DropHeldObjects(Node.RightHand);
                         if (m_Scaling)
+                        {
+                            m_Scaling = false;
+                            DropHeldObjects(Node.RightHand);
                             DropHeldObjects(Node.LeftHand);
-
+                            hasLeft = false;
+                        }
+                        else
+                        {
+                             DropHeldObjects(Node.RightHand);
+                        }
                         hasRight = false;
                         Undo.PerformUndo();
                     }
 
                     if (rightInput.select.wasJustReleased)
                     {
+                        if (leftInput != null && leftInput.select.wasJustReleased)
+                            m_Scaling = false;
+
                         DropHeldObjects(Node.RightHand);
                         hasRight = false;
                         consumeControl(rightInput.select);
@@ -802,17 +822,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = tooltipText,
-                        priority = 1,
-                        suppressExisting = suppressExisting
-                    };
-
-                    this.AddFeedbackRequest(request);
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.tooltipText = tooltipText;
+                    request.priority = 1;
+                    request.suppressExisting = suppressExisting;
                     requests.Add(request);
+                    this.AddFeedbackRequest(request);
                 }
             }
         }

@@ -1,15 +1,16 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using ListView;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class DraggableListItem<TData, TIndex> : ListViewItem<TData, TIndex>, IGetPreviewOrigin, IUsesViewerScale
+    class DraggableListItem<TData, TIndex> : ListViewItem<TData, TIndex>, IGetPreviewOrigin, IUsesViewerScale, IRayToNode
         where TData : ListViewItemData<TIndex>
     {
         const float k_MagnetizeDuration = 0.5f;
@@ -34,6 +35,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_DragObject = handle.transform;
                 m_DragLerp = 0;
                 StartCoroutine(Magnetize());
+
+                if (dragStart != null)
+                    dragStart(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
             }
             else
             {
@@ -55,6 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_DragLerp = currTime / k_MagnetizeDuration;
                 yield return null;
             }
+
             m_DragLerp = 1;
             OnMagnetizeEnded();
         }
@@ -67,6 +72,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     var previewOrigin = this.GetPreviewOriginForRayOrigin(eventData.rayOrigin);
                     MathUtilsExt.LerpTransform(m_DragObject, previewOrigin.position, previewOrigin.rotation, m_DragLerp);
+
+                    if (dragging != null)
+                        dragging(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
                 }
             }
             else
@@ -83,21 +91,50 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (m_DragObject == null && distance > k_DragDeadzone * this.GetViewerScale())
                 {
                     m_DragObject = handle.transform;
-                    OnGrabDragStart(handle, eventData, dragStart);
+                    OnDragStarted(handle, eventData, dragStart);
                 }
 
                 if (m_DragObject)
-                    OnGrabDragging(handle, eventData, dragStart);
+                    OnDragging(handle, eventData, dragStart);
             }
         }
 
-        protected virtual void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart) {}
+        protected virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData, Vector3 dragStartPosition)
+        {
+            if (dragStart != null)
+                dragStart(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
+        }
 
-        protected virtual void OnGrabDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart) {}
+        protected virtual void OnDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStartPosition)
+        {
+            if (dragging != null)
+                dragging(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
+        }
 
         protected virtual void OnDragEnded(BaseHandle handle, HandleEventData eventData)
         {
             m_DragObject = null;
+
+            if (dragEnd != null)
+                dragEnd(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
+        }
+
+        protected virtual void OnHoverStart(BaseHandle handle, HandleEventData eventData)
+        {
+            if (hoverStart != null)
+                hoverStart(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
+        }
+
+        protected virtual void OnHoverEnd(BaseHandle handle, HandleEventData eventData)
+        {
+            if (hoverEnd != null)
+                hoverEnd(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
+        }
+
+        protected virtual void OnClick(BaseHandle handle, HandleEventData eventData)
+        {
+            if (click != null)
+                click(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
         }
 
         protected virtual void OnMagnetizeEnded() {}

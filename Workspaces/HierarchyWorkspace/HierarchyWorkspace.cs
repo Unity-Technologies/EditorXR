@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -149,8 +149,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var size = contentBounds.size;
             var listView = m_HierarchyUI.listView;
             size.y = float.MaxValue; // Add height for dropdowns
-            size.x -= FaceMargin * 2; // Shrink the content width, so that there is space allowed to grab and scroll
-            size.z -= FaceMargin * 2; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
+            size.x -= DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
+            size.z -= DoubleFaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             listView.size = size;
         }
 

@@ -952,10 +952,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     toggle.graphic.gameObject.SetActive(!m_Preferences.disableAll);
             }
 
-            foreach (var text in m_SnappingModuleSettingsUI.GetComponentsInChildren<Text>(true))
+#if INCLUDE_TEXT_MESH_PRO
+            foreach (var text in m_SnappingModuleSettingsUI.GetComponentsInChildren<TextMeshProUGUI>(true))
             {
                 text.color = m_Preferences.disableAll ? Color.gray : Color.white;
             }
+#endif
         }
 
         void SetSessionGradientMaterial(GradientPair gradientPair)

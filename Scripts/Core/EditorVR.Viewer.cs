@@ -51,6 +51,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             const float k_CameraRigTransitionTime = 0.25f;
 
+            const string k_WorldScaleProperty = "_WorldScale";
+
             // Local method use only -- created here to reduce garbage collection
             const int k_MaxCollisionCheck = 32;
             static Collider[] s_CachedColliders = new Collider[k_MaxCollisionCheck];
@@ -80,6 +82,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 VRView.hmdStatusChange += OnHMDStatusChange;
 
                 preserveCameraRig = true;
+
+                Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
             }
 
             internal override void OnDestroy()
@@ -317,6 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
                 camera.nearClipPlane = m_OriginalNearClipPlane * scale;
                 camera.farClipPlane = m_OriginalFarClipPlane * scale;
+                Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / scale);
             }
         }
     }

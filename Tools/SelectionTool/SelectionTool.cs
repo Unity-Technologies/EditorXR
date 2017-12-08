@@ -34,7 +34,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
 
         const float k_MultiselectHueShift = 0.5f;
-        static readonly Vector3 k_TooltipPosition = new Vector3(0, -0.15f, -0.13f);
+        static readonly Vector3 k_TouchTooltipPosition = new Vector3(0, -0.08f, -0.13f);
+        static readonly Vector3 k_ViveTooltipPosition = new Vector3(0, 0.05f, -0.18f);
         const float k_BLockSelectDragThreshold = 0.01f;
         static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
 
@@ -163,7 +164,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_MultiselectRayColor = MaterialUtils.HueShift(m_MultiselectRayColor, k_MultiselectHueShift);
 
             tooltipTarget = ObjectUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
-            tooltipTarget.localPosition = k_TooltipPosition;
+            tooltipTarget.localPosition = this.GetDeviceType() == DeviceType.Oculus ? k_TouchTooltipPosition : k_ViveTooltipPosition;
             tooltipTarget.localRotation = k_TooltipRotation;
 
             m_BlockSelectCube = ObjectUtils.Instantiate(m_BlockSelectCube, transform);
@@ -570,15 +571,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = tooltipText
-                    };
-
-                    this.AddFeedbackRequest(request);
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.tooltipText = tooltipText;
                     requests.Add(request);
+                    this.AddFeedbackRequest(request);
                 }
             }
         }

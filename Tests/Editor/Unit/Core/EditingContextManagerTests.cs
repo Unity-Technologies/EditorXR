@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+using System;
 using System.IO;
 using UnityEngine;
 using UnityEditor;
@@ -167,3 +168,5 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
 
     class SetEditingContextImplementor : ISetEditingContext { }
 }
+
+#endif

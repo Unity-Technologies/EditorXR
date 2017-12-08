@@ -1,0 +1,28 @@
+fileFormatVersion: 2
+guid: 961e8cd46fb66f24386c3a139fd31265
+timeCreated: 1511078187
+licenseType: Pro
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_BasePrefab: {fileID: 1000011022840156, guid: 3a2153f70c365c540a3703c4cf22bc45,
+      type: 2}
+  - m_ActionMap: {fileID: 11400000, guid: 0a408a921faf5724492272bab472326f, type: 2}
+  - m_ButtonClickPulse: {fileID: 11400000, guid: 43f6d76e312f45145bc1ef9af446edfe,
+      type: 2}
+  - m_ButtonHoverPulse: {fileID: 11400000, guid: bf8c18d5dc5c90f4aa0782421bbaaf0e,
+      type: 2}
+  - m_ResizePulse: {fileID: 11400000, guid: daa1fd8c3e222aa4db108e0a2b0f7a7d, type: 2}
+  - m_MovePulse: {fileID: 11400000, guid: 83427d10dc20237408e0246b4b672682, type: 2}
+  - m_ContentPrefab: {fileID: 1000010661511152, guid: b419cb0d10c5da54b9bd9a557c3978ae,
+      type: 2}
+  - m_FilterUIPrefab: {fileID: 1000011003453154, guid: 02743e4708990fd43adb43911cb8fb26,
+      type: 2}
+  - m_SliderPrefab: {fileID: 1000011177834630, guid: 41f89a1e8d8d49f4f861f7cb581c1227,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

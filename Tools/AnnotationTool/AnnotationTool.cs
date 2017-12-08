@@ -282,6 +282,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 activator.showColorPicker = ShowColorPicker;
                 activator.hideColorPicker = HideColorPicker;
 
+                activator.undoButtonClick += Undo.PerformUndo;
+                activator.redoButtonClick += Undo.PerformRedo;
+
                 var controls = new BindingDictionary();
                 InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, controls);
 
@@ -294,14 +297,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     foreach (var id in control.Value)
                     {
-                        this.AddFeedbackRequest(new ProxyFeedbackRequest
-                        {
-                            node = node,
-                            control = id,
-                            priority = 1,
-                            tooltipText = tooltipText,
-                            suppressExisting = suppressExisting
-                        });
+                        var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                        request.node = node;
+                        request.control = id;
+                        request.priority = 1;
+                        request.tooltipText = tooltipText;
+                        request.suppressExisting = suppressExisting;
+                        this.AddFeedbackRequest(request);
                     }
                 }
             }
