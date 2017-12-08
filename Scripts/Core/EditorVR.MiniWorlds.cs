@@ -383,8 +383,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             directSelection.ResumeGrabbers(incomingPreview.node);
                         }
 
-                        miniWorldRay.UpdatePreview(); // Otherwise the object is in the wrong position for a frame
-
                         if (!isContained)
                             m_RayWasContained[originalRayOrigin] = false; //Prevent ray from showing
                     }
