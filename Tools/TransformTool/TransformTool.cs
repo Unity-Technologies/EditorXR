@@ -601,7 +601,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform[] GetHeldObjects(Node node)
         {
             var grabData = GrabDataForNode(node);
-            return grabData == null ? null : grabData.grabbedObjects;
+            var heldObjects = grabData == null ? null : grabData.grabbedObjects;
+            Debug.Log(node + ", " +heldObjects.Length);
+            return heldObjects;
         }
 
         public void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset = default(Vector3))
@@ -635,7 +637,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var grabbedObjects = grabData.grabbedObjects;
             var rayOrigin = grabData.rayOrigin;
 
-            if (objectsDropped != null && !m_Scaling)
+            if (objectsDropped != null)
                 objectsDropped(rayOrigin, grabbedObjects);
 
             if (node == Node.LeftHand)
