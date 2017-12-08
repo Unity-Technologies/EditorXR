@@ -143,18 +143,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     m_MenuHideFlags = value;
                     var visible = m_MenuHideFlags == 0;
-                    
-                    if (m_ColorPicker)
-                        m_ColorPicker.gameObject.SetActive(visible);
 
                     if (m_BrushSizeUI)
                         m_BrushSizeUI.gameObject.SetActive(visible);
-
-                    if (m_ColorPickerActivator)
-                        m_ColorPickerActivator.SetActive(visible);
-
-                    if (m_AnnotationPointer)
-                        m_AnnotationPointer.gameObject.SetActive(visible);
                 }
             }
         }
@@ -253,8 +244,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void Start()
         {
-            localBounds = ObjectUtils.GetBounds(transform);
-
             // Clear selection so we can't manipulate things
             Selection.activeGameObject = null;
 
@@ -348,6 +337,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_BrushSizeUI = brushSizeUi.GetComponent<BrushSizeUI>();
 
             var transform = brushSizeUi.transform;
+            localBounds = ObjectUtils.GetBounds(transform);
             var scale = transform.localScale;
             transform.SetParent(alternateMenuOrigin, false);
             transform.localPosition = Vector3.zero;
