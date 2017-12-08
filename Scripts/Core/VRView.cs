@@ -59,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         bool m_UseCustomPreviewCamera;
 
         Rect m_ToggleDeviceViewRect = new Rect(0, 0, 0, 20); // Width will be set based on window size
-        Rect m_PresentationCameraRect = new Rect(0, 0, 0, 20); // Y position and width will be set based on window size
+        Rect m_PresentationCameraRect = new Rect(0, 0, 160, 20); // Y position and width will be set based on window size
 
         public static Transform cameraRig
         {
@@ -116,10 +116,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public static event Action viewEnabled;
         public static event Action viewDisabled;
-        public static event Action<EditorWindow> beforeOnGUI;
-        public static event Action<EditorWindow> afterOnGUI;
+        public static event Action<VRView> beforeOnGUI;
+        public static event Action<VRView> afterOnGUI;
         public static event Action<bool> hmdStatusChange;
-        public static event Func<IEditingContext> cameraSetupStarted;
 
         public Rect guiRect { get; private set; }
 
@@ -143,9 +142,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             const float nearClipPlane = 0.01f;
             const float farClipPlane = 1000f;
 
-            var currentEditingContext = cameraSetupStarted != null ? cameraSetupStarted() : null;
             s_ExistingSceneMainCamera = Camera.main;
-            if (currentEditingContext != null && currentEditingContext.copySceneCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+            // TODO: Copy camera settings when changing contexts
+            if (EditingContextManager.defaultContext.copyExistingCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
             {
                 GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
                 m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
@@ -157,6 +156,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     m_Camera.nearClipPlane = nearClipPlane;
                 }
+
+                if (m_Camera.clearFlags == CameraClearFlags.Nothing)
+                    m_Camera.clearFlags = CameraClearFlags.SolidColor;
             }
             else
             {
@@ -315,7 +317,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             m_ToggleDeviceViewRect.width = width;
             m_PresentationCameraRect.y = height - m_PresentationCameraRect.height;
-            m_PresentationCameraRect.width = width;
 
             if (GUI.Button(m_ToggleDeviceViewRect, "Toggle Device View", EditorStyles.toolbarButton))
                 m_ShowDeviceView = !m_ShowDeviceView;

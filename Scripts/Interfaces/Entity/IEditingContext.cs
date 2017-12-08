@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Bool denotes that the scene camera's (component) values should be cloned on the XR runtime camera
         /// </summary>
-        bool copySceneCameraSettings { get; }
+        bool copyExistingCameraSettings { get; }
 
         /// <summary>
         /// Bool denotes that the EditorVR instance exists, having already been created in Setup()

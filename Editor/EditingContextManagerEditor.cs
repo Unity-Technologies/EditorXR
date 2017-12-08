@@ -21,7 +21,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public override void OnInspectorGUI()
         {
             GUILayout.Label("Available Contexts");
-            EditingContextManager.DoGUI(m_ContextNames, ref m_SelectedContextIndex, () => { m_Settings.defaultContextName = m_ContextNames[m_SelectedContextIndex]; });
+
+            m_SelectedContextIndex = EditorGUILayout.Popup(string.Empty, m_SelectedContextIndex, m_ContextNames);
+            if (GUI.changed)
+            {
+                m_Settings.defaultContextName = m_ContextNames[m_SelectedContextIndex];
+                GUIUtility.ExitGUI();
+            }
 
             EditorGUILayout.Space();
 

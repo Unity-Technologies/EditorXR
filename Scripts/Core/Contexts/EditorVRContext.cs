@@ -14,14 +14,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
         float m_RenderScale = 1f;
 
         [SerializeField]
-        bool m_CopySceneCameraSettings = true;
+        bool m_CopyExistingCameraSettings = true;
 
         [SerializeField]
         internal List<MonoScript> m_DefaultToolStack;
 
         EditorVR m_Instance;
 
-        public bool copySceneCameraSettings { get { return m_CopySceneCameraSettings; } }
+        public bool copyExistingCameraSettings { get { return m_CopyExistingCameraSettings; } }
 
         public bool instanceExists { get { return m_Instance != null; } }
 
