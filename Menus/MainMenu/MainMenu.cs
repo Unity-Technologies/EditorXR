@@ -381,6 +381,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var instance = m_MainMenuUI.CreateCustomButton(provider.settingsMenuItemPrefab, k_SettingsMenuSectionName);
             m_SettingsMenuItems[provider] = instance;
             provider.settingsMenuItemInstance = instance;
+            AddToggleHaptics(instance);
         }
 
         public void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider)
