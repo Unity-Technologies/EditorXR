@@ -350,7 +350,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
             }
 
-            void CheckDirectSelection(DeviceData deviceData, Dictionary<IMenu, MenuHideData> menuHideData, bool alternateMenuVisible)
+            static void CheckDirectSelection(DeviceData deviceData, Dictionary<IMenu, MenuHideData> menuHideData, bool alternateMenuVisible)
             {
                 var viewerScale = Viewer.GetViewerScale();
                 var directSelection = evr.GetNestedModule<DirectSelection>();

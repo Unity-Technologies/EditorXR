@@ -108,14 +108,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Vector3 m_OriginalAnnotationPointerLocalScale;
         Coroutine m_AnnotationPointerVisibilityCoroutine;
         bool m_WasOverUI;
-        bool m_WasDoingUndoRedo;
 
         GameObject m_ColorPickerActivator;
 
         Toggle m_TransformToggle;
         Toggle m_MeshToggle;
         bool m_BlockValueChangedListener;
-        MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 
         public bool primary { private get; set; }
         public Transform rayOrigin { get; set; }
@@ -131,27 +129,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Node node { private get; set; }
 
         public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
-
-        public int menuPriority { get { return 2; } }
-
-        public MenuHideFlags menuHideFlags
-        {
-            get { return m_MenuHideFlags; }
-            set
-            {
-                if (m_MenuHideFlags != value)
-                {
-                    m_MenuHideFlags = value;
-                    var visible = m_MenuHideFlags == 0;
-
-                    if (m_BrushSizeUI)
-                        m_BrushSizeUI.gameObject.SetActive(visible);
-                }
-            }
-        }
-
-        public GameObject menuContent { get { return gameObject; } }
-        public Bounds localBounds { get; private set; }
 
         public GameObject settingsMenuItemInstance
         {
@@ -344,8 +321,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.Euler(-90, 0, 0);
             transform.localScale = scale;
-
-            localBounds = ObjectUtils.GetBounds(transform);
 
             m_BrushSizeUI.onValueChanged = value =>
             {

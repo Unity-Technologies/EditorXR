@@ -597,6 +597,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                 consumeControl(otherLocomotionInput.horizontal);
                                 consumeControl(otherLocomotionInput.vertical);
 
+                                // Pre-emptively consume thumbstick press to override UndoMenu
                                 consumeControl(m_LocomotionInput.scaleReset);
                                 consumeControl(otherLocomotionInput.scaleReset);
 
