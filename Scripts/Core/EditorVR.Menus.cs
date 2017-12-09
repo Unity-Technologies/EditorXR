@@ -97,9 +97,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
                 }
 
-                var customAlternateMenu = target as IAlternateMenu;
-                if (customAlternateMenu != null)
-                    AddCustomAlternateMenu(customAlternateMenu, rayOrigin);
+                var alternateMenu = target as IAlternateMenu;
+                if (alternateMenu != null)
+                    AddAlternateMenu(alternateMenu, rayOrigin);
             }
 
             public void DisconnectInterface(object target, object userData = null)
@@ -133,12 +133,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (mainMenu != null && rayOrigin != null)
                     m_MainMenus.Remove(rayOrigin);
 
-                var customAlternateMenu = target as IAlternateMenu;
-                if (customAlternateMenu != null)
-                    RemoveCustomAlternateMenu(customAlternateMenu);
+                var alternateMenu = target as IAlternateMenu;
+                if (alternateMenu != null)
+                    RemoveAlternateMenu(alternateMenu);
             }
 
-            static void AddCustomAlternateMenu(IAlternateMenu alternateMenu, Transform rayOrigin)
+            static void AddAlternateMenu(IAlternateMenu alternateMenu, Transform rayOrigin)
             {
                 foreach (var device in evr.m_DeviceData)
                 {
@@ -155,12 +155,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            static void RemoveCustomAlternateMenu(IAlternateMenu customAlternateMenu)
+            static void RemoveAlternateMenu(IAlternateMenu alternateMenu)
             {
                 foreach (var device in evr.m_DeviceData)
                 {
-                    device.alternateMenus.Remove(customAlternateMenu);
-                    device.menuHideData.Remove(customAlternateMenu);
+                    device.alternateMenus.Remove(alternateMenu);
+                    device.menuHideData.Remove(alternateMenu);
                 }
             }
 
@@ -245,17 +245,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var mainMenu = deviceData.mainMenu;
                     var customMenu = deviceData.customMenu;
                     MenuHideData customMenuHideData = null;
-                    MenuHideData alternateMenuData = null;
 
                     var mainMenuVisible = mainMenu != null && menuHideData[mainMenu].hideFlags == 0;
                     var mainMenuSupressed = mainMenu != null && ((menuHideData[mainMenu].hideFlags & MenuHideFlags.Occluded) != 0);
 
-                    var alternateMenuVisible = false;
-                    if (alternateMenu != null)
-                    {
-                        alternateMenuData = menuHideData[alternateMenu];
-                        alternateMenuVisible = alternateMenuData.hideFlags == 0;
-                    }
+                    var alternateMenuData = menuHideData[alternateMenu];
+                    var alternateMenuVisible = alternateMenuData.hideFlags == 0;
 
                     var customMenuVisible = false;
                     if (customMenu != null)
