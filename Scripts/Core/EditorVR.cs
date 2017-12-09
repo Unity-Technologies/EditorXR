@@ -194,6 +194,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var intersectionModule = AddModule<IntersectionModule>();
             this.ConnectInterfaces(intersectionModule);
             intersectionModule.Setup(spatialHashModule.spatialHash);
+            // TODO: Support module dependencies via ConnectInterfaces
+            GetNestedModule<Rays>().ignoreList = intersectionModule.standardIgnoreList;
 
             AddModule<SnappingModule>();
 
