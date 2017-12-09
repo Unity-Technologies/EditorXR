@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         ProxyExtras m_ProxyExtras;
 
-        class Rays : Nested, IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces
+        class Rays : Nested, IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList
         {
             internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -34,6 +34,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             ScaleManipulator m_ScaleManipulator;
 
             internal Transform lastSelectionRayOrigin { get; private set; }
+
+            public List<GameObject> ignoreList { private get; set; }
 
             public Rays()
             {
@@ -204,7 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                             var uiDistance = source.eventData.pointerCurrentRaycast.distance;
 
                                             // If the distance to a scene object is less than the distance to the hovered UI, invalidate the UI raycast
-                                            if (!isManipulator && raycastObject && sceneObjectDistance < uiDistance)
+                                            if (!isManipulator && raycastObject && sceneObjectDistance < uiDistance && !ignoreList.Contains(raycastObject))
                                                 return false;
                                         }
 
