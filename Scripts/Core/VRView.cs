@@ -162,6 +162,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_Camera.clearFlags = CameraClearFlags.SolidColor;
 
                 m_Camera.stereoTargetEye = StereoTargetEyeMask.Both;
+                // Force HDR on because of a bug in the mirror view
+                m_Camera.allowHDR = true;
             }
             else
             {
