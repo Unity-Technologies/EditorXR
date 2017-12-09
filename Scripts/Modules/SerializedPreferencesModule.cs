@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         internal void SetupWithPreferences(string serializedPreferences)
         {
-            m_Preferences = DeserializePreferences(serializedPreferences);
+            m_Preferences = DeserializePreferences(serializedPreferences, m_Serializers);
         }
 
         internal static SerializedPreferences DeserializePreferences(string serializedPreferences, List<ISerializePreferences> serializers = null)
