@@ -299,6 +299,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 this.PreviewInToolMenuButton(rayOrigin, buttonType, buttonDescription);
         }
 
+        void OnToggleHovered(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+        }
+
         void SendVisibilityPulse()
         {
             this.Pulse(node, m_MenuHideFlags == 0 ? m_HidePulse : m_ShowPulse);
@@ -333,12 +338,29 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             buttonData.sectionName = k_SettingsMenuSectionName;
 
-            CreateFaceButton(buttonData, tooltip, () =>
+            var button = CreateFaceButton(buttonData, tooltip, () =>
             {
                 var instance = m_MainMenuUI.AddSubmenu(k_SettingsMenuSectionName, provider.settingsMenuPrefab);
                 m_SettingsMenus[provider] = instance;
                 provider.settingsMenuInstance = instance;
+                AddToggleHaptics(instance);
             });
+
+            button.hovered += OnButtonHovered;
+            button.clicked += OnButtonClicked;
+        }
+
+        void AddToggleHaptics(GameObject menuInstance)
+        {
+            var toggles = menuInstance.GetComponentsInChildren<MainMenuToggle>();
+            if (toggles != null && toggles.Length > 0)
+            {
+                foreach (var toggle in toggles)
+                {
+                    toggle.hovered += OnToggleHovered;
+                    toggle.clicked += OnButtonClicked;
+                }
+            }
         }
 
         public void RemoveSettingsMenu(ISettingsMenuProvider provider)
@@ -359,6 +381,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var instance = m_MainMenuUI.CreateCustomButton(provider.settingsMenuItemPrefab, k_SettingsMenuSectionName);
             m_SettingsMenuItems[provider] = instance;
             provider.settingsMenuItemInstance = instance;
+            AddToggleHaptics(instance);
         }
 
         public void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider)

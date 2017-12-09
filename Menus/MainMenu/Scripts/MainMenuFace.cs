@@ -181,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             visible = false;
         }
 
-        public void RemoveSubmenu()
+        public void RemoveSubmenu(Transform rayOrigin)
         {
             var target = m_Submenus.Pop();
             target.SetActive(false);
