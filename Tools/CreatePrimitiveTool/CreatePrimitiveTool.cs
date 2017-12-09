@@ -118,6 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (standardInput.action.wasJustPressed)
             {
                 m_CurrentGameObject = GameObject.CreatePrimitive(m_SelectedPrimitiveType);
+                Undo.RegisterCreatedObjectUndo(m_CurrentGameObject, "Create Primitive");
 
                 // Set starting minimum scale (don't allow zero scale object to be created)
                 const float kMinScale = 0.0025f;
@@ -165,6 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (standardInput.action.wasJustReleased)
             {
                 m_State = PrimitiveCreationStates.StartPoint;
+                Undo.IncrementCurrentGroup();
 
                 consumeControl(standardInput.action);
             }

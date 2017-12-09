@@ -9,13 +9,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
-  m_Name: MainMenuInput
+  m_Name: UndoMenuInput
   m_EditorClassIdentifier: 
   m_Actions:
-  - {fileID: 114000011099735542}
-  - {fileID: 114000011460179744}
+  - {fileID: 114324171257110392}
+  - {fileID: 114746503017599090}
   m_ControlSchemes:
-  - m_Name: MainMenu
+  - m_Name: UndoMenu
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
@@ -42,10 +42,10 @@ MonoBehaviour:
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
-  m_MapTypeName: MainMenuInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+  m_MapTypeName: UndoMenuInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   m_CustomNamespace: 
---- !u!114 &114000011099735542
+--- !u!114 &114324171257110392
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -54,7 +54,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: Rotate
+  m_Name: NavigateX
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 0
@@ -63,9 +63,9 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: Rotate
+    name: NavigateX
     defaultValue: 0
---- !u!114 &114000011460179744
+--- !u!114 &114746503017599090
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: FlickFace
+  m_Name: Engage
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 1
@@ -83,5 +83,5 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: FlickFace
+    name: Engage
     defaultValue: 0

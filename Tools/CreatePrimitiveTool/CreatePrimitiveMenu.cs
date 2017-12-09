@@ -15,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Action close;
 
         public Bounds localBounds { get; private set; }
+        public int priority { get { return 1; } }
 
         public MenuHideFlags menuHideFlags
         {

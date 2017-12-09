@@ -646,7 +646,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var grabbedObjects = grabData.grabbedObjects;
             var rayOrigin = grabData.rayOrigin;
 
-            if (objectsDropped != null && !m_Scaling)
+            if (objectsDropped != null)
                 objectsDropped(rayOrigin, grabbedObjects);
 
             if (node == Node.LeftHand)

@@ -95,6 +95,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
+        public bool rotating { get { return m_RotationState != RotationState.AtRest; } }
+
         public Transform menuOrigin
         {
             get { return m_MenuOrigin; }

@@ -26,13 +26,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void DeleteSceneObject(GameObject sceneObject)
         {
             this.RemoveFromSpatialHash(sceneObject);
-            ObjectUtils.Destroy(sceneObject);
+            ObjectUtils.Destroy(sceneObject, withUndo: true);
         }
 
         IEnumerator PlaceSceneObjectCoroutine(Transform obj, Vector3 targetScale)
         {
+            var go = obj.gameObject;
             // Don't let us direct select while placing
-            this.RemoveFromSpatialHash(obj.gameObject);
+            this.RemoveFromSpatialHash(go);
 
             var start = Time.realtimeSinceStartup;
             var currTime = 0f;
@@ -83,9 +84,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 yield return null;
             }
             obj.localScale = targetScale;
-            Selection.activeGameObject = obj.gameObject;
+            Selection.activeGameObject = go;
 
-            this.AddToSpatialHash(obj.gameObject);
+            this.AddToSpatialHash(go);
+            Undo.IncrementCurrentGroup();
         }
 
         public void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
@@ -178,6 +180,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             Selection.objects = objects;
+            Undo.IncrementCurrentGroup();
         }
     }
 }

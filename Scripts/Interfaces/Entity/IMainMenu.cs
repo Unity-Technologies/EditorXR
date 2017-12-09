@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// The main menu that can be shown on device proxies
     /// </summary>
-    public interface IMainMenu : IMenu, IUsesMenuActions, ISelectTool, IPreviewInToolsMenuButton
+    public interface IMainMenu : IMenu, ISelectTool, IPreviewInToolsMenuButton
     {
         /// <summary>
         /// The menu tools that will populate the menu

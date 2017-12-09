@@ -597,6 +597,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                 consumeControl(otherLocomotionInput.horizontal);
                                 consumeControl(otherLocomotionInput.vertical);
 
+                                // Pre-emptively consume thumbstick press to override UndoMenu
+                                consumeControl(m_LocomotionInput.scaleReset);
+                                consumeControl(otherLocomotionInput.scaleReset);
+
                                 var thisPosition = cameraRig.InverseTransformPoint(rayOrigin.position);
                                 var otherRayOrigin = otherLocomotionTool.rayOrigin;
                                 var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
@@ -647,13 +651,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                                 var scaleReset = m_LocomotionInput.scaleReset;
                                 var scaleResetHeld = scaleReset.isHeld;
-                                if (scaleResetHeld)
-                                    consumeControl(scaleReset);
 
                                 var otherScaleReset = otherLocomotionInput.scaleReset;
                                 var otherScaleResetHeld = otherScaleReset.isHeld;
-                                if (otherScaleResetHeld)
-                                    consumeControl(otherScaleReset);
 
                                 // Press both thumb buttons to reset scale
                                 if (scaleResetHeld && otherScaleResetHeld)

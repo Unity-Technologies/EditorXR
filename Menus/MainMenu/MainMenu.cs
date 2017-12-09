@@ -16,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IRequestFeedback
     {
         const string k_SettingsMenuSectionName = "Settings";
+        const float k_MaxFlickDuration = 0.3f;
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -43,6 +44,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         MainMenuUI m_MainMenuUI;
         float m_LastRotationInput;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
+        float m_RotationInputStartValue;
+        float m_RotationInputStartTime;
         readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
         readonly Dictionary<ISettingsMenuProvider, GameObject> m_SettingsMenus = new Dictionary<ISettingsMenuProvider, GameObject>();
         readonly Dictionary<ISettingsMenuItemProvider, GameObject> m_SettingsMenuItems = new Dictionary<ISettingsMenuItemProvider, GameObject>();
@@ -53,7 +56,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public List<Type> menuWorkspaces { private get; set; }
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
-        public List<ActionMenuData> menuActions { get; set; }
         public Transform targetRayOrigin { private get; set; }
         public Node node { get; set; }
 
@@ -62,6 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Transform rayOrigin { private get; set; }
 
         public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
+        public int priority { get { return 0; } }
 
         public bool focus { get { return m_MainMenuUI.hovering; } }
 
@@ -142,21 +145,51 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var mainMenuInput = (MainMenuInput)input;
             var rotationInput = -mainMenuInput.rotate.rawValue;
 
-            consumeControl(mainMenuInput.rotate);
-            consumeControl(mainMenuInput.blockY);
-
             const float kFlickDeltaThreshold = 0.5f;
-            if ((this.GetDeviceType() != DeviceType.Vive && Mathf.Abs(rotationInput) >= kFlickDeltaThreshold
-                && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold) || mainMenuInput.flickFace.wasJustReleased)
+
+            if (this.GetDeviceType() == DeviceType.Vive)
             {
-                m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
-                this.Pulse(node, m_FaceRotationPulse);
+                if (!Mathf.Approximately(rotationInput, 0f))
+                {
+                    var time = Time.time;
+                    if (Mathf.Approximately(m_LastRotationInput, 0f))
+                    {
+                        // Touch began
+                        m_RotationInputStartValue = rotationInput;
+                        m_RotationInputStartTime = time;
+                    }
+                    else
+                    {
+                        // Touch held
+                        var distance = rotationInput - m_RotationInputStartValue;
+                        var lastDistance = m_LastRotationInput - m_RotationInputStartValue;
+                        if (Mathf.Abs(distance) >= kFlickDeltaThreshold
+                            && Mathf.Abs(lastDistance) < kFlickDeltaThreshold
+                            && time - m_RotationInputStartTime < k_MaxFlickDuration)
+                        {
+                            m_RotationInputStartValue = rotationInput;
+                            m_RotationInputStartTime = time;
+                            if (!m_MainMenuUI.rotating)
+                            {
+                                FlickMenu(distance);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (Mathf.Abs(rotationInput) >= kFlickDeltaThreshold 
+                && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
+            {
+                FlickMenu(rotationInput);
             }
 
-            if (m_MenuHideFlags == 0)
-                consumeControl(mainMenuInput.flickFace);
-
             m_LastRotationInput = rotationInput;
+        }
+
+        void FlickMenu(float rotationInput)
+        {
+            m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
+            this.Pulse(node, m_FaceRotationPulse);
         }
 
         void OnDestroy()
@@ -399,7 +432,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void ShowFeedback()
         {
-            var tooltipText = this.GetDeviceType() == DeviceType.Vive ? "Press to Rotate Menu" : "Rotate Menu";
+            var tooltipText = this.GetDeviceType() == DeviceType.Vive ? "Swipe to Rotate Menu" : "Rotate Menu";
             List<VRInputDevice.VRControl> controls;
             if (m_Controls.TryGetValue("FlickFace", out controls))
             {
