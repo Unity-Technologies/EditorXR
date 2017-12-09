@@ -1,10 +1,11 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections;
+using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
-using System.Collections;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using System.Reflection;
 using UnityEngine.XR;
 
 #if ENABLE_STEAMVR_INPUT
@@ -18,6 +19,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public const float HeadHeight = 1.7f;
         const string k_ShowDeviceView = "VRView.ShowDeviceView";
         const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
+        const string k_CameraName = "VRCamera";
+
+        static Camera s_ExistingSceneMainCamera;
+        static bool s_ExistingSceneMainCameraEnabledState;
 
         DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
@@ -54,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         bool m_UseCustomPreviewCamera;
 
         Rect m_ToggleDeviceViewRect = new Rect(0, 0, 0, 20); // Width will be set based on window size
-        Rect m_PresentationCameraRect = new Rect(0, 0, 0, 20); // Y position and width will be set based on window size
+        Rect m_PresentationCameraRect = new Rect(0, 0, 160, 20); // Y position and width will be set based on window size
 
         public static Transform cameraRig
         {
@@ -111,8 +116,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public static event Action viewEnabled;
         public static event Action viewDisabled;
-        public static event Action<EditorWindow> beforeOnGUI;
-        public static event Action<EditorWindow> afterOnGUI;
+        public static event Action<VRView> beforeOnGUI;
+        public static event Action<VRView> afterOnGUI;
         public static event Action<bool> hmdStatusChange;
 
         public Rect guiRect { get; private set; }
@@ -134,18 +139,53 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             autoRepaintOnSceneChange = true;
             s_ActiveView = this;
+            const float nearClipPlane = 0.01f;
+            const float farClipPlane = 1000f;
 
-            GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
-            m_Camera = cameraGO.GetComponent<Camera>();
-            m_Camera.useOcclusionCulling = false;
+            s_ExistingSceneMainCamera = Camera.main;
+            // TODO: Copy camera settings when changing contexts
+            if (EditingContextManager.defaultContext.copyExistingCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+            {
+                GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
+                m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
+
+                if (m_Camera.nearClipPlane > nearClipPlane)
+                {
+                    Debug.LogWarning("Copying settings from scene camera that is tagged 'MainCamera'." + Environment.NewLine +
+                        " Clipping issues may occur with NearClipPlane values is greater than " + nearClipPlane);
+
+                    m_Camera.nearClipPlane = nearClipPlane;
+                }
+
+                // TODO: Support multiple cameras
+                if (m_Camera.clearFlags == CameraClearFlags.Nothing)
+                    m_Camera.clearFlags = CameraClearFlags.SolidColor;
+
+                m_Camera.stereoTargetEye = StereoTargetEyeMask.Both;
+                // Force HDR on because of a bug in the mirror view
+                m_Camera.allowHDR = true;
+            }
+            else
+            {
+                GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave, typeof(Camera));
+                m_Camera = cameraGO.GetComponent<Camera>();
+
+                m_Camera.nearClipPlane = nearClipPlane;
+                m_Camera.farClipPlane = farClipPlane;
+            }
+
+            if (s_ExistingSceneMainCamera)
+            {
+                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
+                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
+            }
+
             m_Camera.enabled = false;
             m_Camera.cameraType = CameraType.VR;
-
+            m_Camera.useOcclusionCulling = false;
             GameObject rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", HideFlags.HideAndDontSave, typeof(EditorMonoBehaviour));
             m_CameraRig = rigGO.transform;
             m_Camera.transform.parent = m_CameraRig;
-            m_Camera.nearClipPlane = 0.01f;
-            m_Camera.farClipPlane = 1000f;
             m_CameraRig.position = headCenteredOrigin;
             m_CameraRig.rotation = Quaternion.identity;
 
@@ -186,6 +226,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             Assert.IsNotNull(s_ActiveView, "EditorXR should have an active view");
             s_ActiveView = null;
+
+            if (s_ExistingSceneMainCamera)
+                s_ExistingSceneMainCamera.enabled = s_ExistingSceneMainCameraEnabledState;
         }
 
         void UpdateCameraTransform()
@@ -279,7 +322,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             m_ToggleDeviceViewRect.width = width;
             m_PresentationCameraRect.y = height - m_PresentationCameraRect.height;
-            m_PresentationCameraRect.width = width;
 
             if (GUI.Button(m_ToggleDeviceViewRect, "Toggle Device View", EditorStyles.toolbarButton))
                 m_ShowDeviceView = !m_ShowDeviceView;

@@ -71,6 +71,7 @@ GameObject:
   m_Component:
   - component: {fileID: 224000010858218954}
   - component: {fileID: 114000011920048442}
+  - component: {fileID: 114009511206996632}
   m_Layer: 5
   m_Name: Blink
   m_TagString: Untagged
@@ -121,6 +122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 224000011444372664}
   - component: {fileID: 114000013714903302}
+  - component: {fileID: 114546748432515818}
   m_Layer: 5
   m_Name: Fly
   m_TagString: Untagged
@@ -430,6 +432,22 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.Toggle+ToggleEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
   m_IsOn: 1
+--- !u!114 &114009511206996632
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000011772923556}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 766c9196b7801da49b40f523eaa556e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ClickPulse: {fileID: 11400000, guid: ad8089d07bd48a047b9d6b45f7a4fd57, type: 2}
+  m_HoverPulse: {fileID: 11400000, guid: dd561ccb8162d1040adba0a7ea60eadc, type: 2}
+  m_Description: {fileID: 0}
+  m_Title: {fileID: 114251560024549528}
+  m_Toggle: {fileID: 114000011920048442}
 --- !u!114 &114251560024549528
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -554,6 +572,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_DefaultToggle: {fileID: 114000013714903302}
+--- !u!114 &114546748432515818
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1000013494423478}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 766c9196b7801da49b40f523eaa556e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ClickPulse: {fileID: 11400000, guid: ad8089d07bd48a047b9d6b45f7a4fd57, type: 2}
+  m_HoverPulse: {fileID: 11400000, guid: dd561ccb8162d1040adba0a7ea60eadc, type: 2}
+  m_Description: {fileID: 0}
+  m_Title: {fileID: 114926923194449542}
+  m_Toggle: {fileID: 114000013714903302}
 --- !u!114 &114630463904937644
 MonoBehaviour:
   m_ObjectHideFlags: 1
