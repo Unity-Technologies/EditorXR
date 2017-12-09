@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set { EditorPrefs.SetBool(k_PreserveLayout, value); }
         }
 
-        static string serializedPreferences
+        internal static string serializedPreferences
         {
             get { return EditorPrefs.GetString(k_SerializedPreferences, string.Empty); }
             set { EditorPrefs.SetString(k_SerializedPreferences, value); }
@@ -279,7 +279,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             while (!viewer.hmdReady)
                 yield return null;
 
-            GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
+            GetModule<SerializedPreferencesModule>().SetupWithPreferences(serializedPreferences);
             m_HasDeserialized = true;
         }
 
