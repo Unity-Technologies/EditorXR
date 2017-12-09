@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
 
-            public void UpdatePositions(IUsesSnapping usesSnapping)
+            public void UpdatePositions(IUsesSnapping usesSnapping, bool interpolate = true)
             {
                 if (suspended)
                     return;
@@ -75,9 +75,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     if (usesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
                     {
-                        var deltaTime = Time.deltaTime;
-                        grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
-                        grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
+                        if (interpolate)
+                        {
+                            var deltaTime = Time.deltaTime;
+                            grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
+                            grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
+                        }
+                        else
+                        {
+                            grabbedObject.position = position;
+                            grabbedObject.rotation = rotation;
+                        }
                     }
                     else
                     {
@@ -595,7 +603,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             var grabData = GrabDataForNode(node);
             if (grabData != null)
+            {
                 grabData.suspended = false;
+                grabData.UpdatePositions(this, false);
+            }
         }
 
         public Transform[] GetHeldObjects(Node node)
@@ -616,7 +627,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             grabData.TransferTo(destRayOrigin, deltaOffset);
             this.ClearSnappingState(rayOrigin);
-            grabData.UpdatePositions(this);
+            grabData.UpdatePositions(this, false);
 
             // Prevent lock from getting stuck
             this.RemoveRayVisibilitySettings(rayOrigin, this);

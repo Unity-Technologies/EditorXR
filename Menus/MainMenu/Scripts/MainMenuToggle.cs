@@ -15,6 +15,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         Toggle m_Toggle;
 
+        CanvasGroup m_CanvasGroup;
+
         public Toggle toggle { get { return m_Toggle; } }
 
         public event Action<Transform> hovered;
@@ -26,21 +28,35 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_OriginalColor = m_Toggle.targetGraphic.color;
         }
 
+        void Start()
+        {
+            m_CanvasGroup = m_Toggle.GetComponentInParent<CanvasGroup>();
+        }
+
         public void OnRayEnter(RayEventData eventData)
         {
-            if (m_Toggle.isOn && hovered != null)
+            if (m_CanvasGroup && !m_CanvasGroup.interactable)
+                return;
+
+            if (m_Toggle.interactable && hovered != null)
                 hovered(eventData.rayOrigin);
         }
 
         public void OnRayExit(RayEventData eventData)
         {
-            if (m_Toggle.isOn && hovered != null)
+            if (m_CanvasGroup && !m_CanvasGroup.interactable)
+                return;
+
+            if (m_Toggle.interactable && hovered != null)
                 hovered(eventData.rayOrigin);
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (clicked != null)
+            if (m_CanvasGroup && !m_CanvasGroup.interactable)
+                return;
+
+            if (m_Toggle.interactable && clicked != null)
                 clicked(null); // Pass null to perform the selection haptic pulse on both nodes
         }
     }

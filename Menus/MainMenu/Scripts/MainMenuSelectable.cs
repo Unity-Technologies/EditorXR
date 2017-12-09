@@ -17,12 +17,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     {
         protected Selectable m_Selectable;
 
-        [SerializeField]
-        HapticPulse m_ClickPulse;
-
-        [SerializeField]
-        HapticPulse m_HoverPulse;
-
 #if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         protected TextMeshProUGUI m_Description;
