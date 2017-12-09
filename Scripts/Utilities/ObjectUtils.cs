@@ -204,6 +204,15 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return component;
         }
 
+        public static T CopyComponent<T>(T sourceComponent, GameObject targetGameObject) where T : Component
+        {
+            var sourceType = sourceComponent.GetType();
+            var clonedTargetComponent = AddComponent(sourceType, targetGameObject);
+            EditorUtility.CopySerialized(sourceComponent, clonedTargetComponent);
+
+            return (T)clonedTargetComponent;
+        }
+
         static IEnumerable<Type> GetAssignableTypes(Type type, Func<Type, bool> predicate = null)
         {
             var list = new List<Type>();
