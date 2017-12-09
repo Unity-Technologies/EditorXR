@@ -59,6 +59,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         var realTime = Time.realtimeSinceStartup;
                         if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
                         {
+                            consumeControl(vacuumInput.vacuum);
+
                             Coroutine coroutine;
                             if (m_VacuumingCoroutines.TryGetValue(vacuumableTransform, out coroutine))
                                 StopCoroutine(coroutine);
