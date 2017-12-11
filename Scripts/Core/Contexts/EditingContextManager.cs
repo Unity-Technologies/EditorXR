@@ -144,20 +144,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        void Awake()
-        {
-            s_DefaultContext = m_DefaultContext;
-
-            var availableContexts = GetAvailableEditingContexts();
-            m_ContextNames = availableContexts.Select(c => c.name).ToArray();
-
-            if (s_AvailableContexts.Count == 0)
-                throw new Exception("You can't start EditorXR without at least one context. Try re-importing the package or use version control to restore the default context asset");
-
-            if (s_AvailableContexts.Count > 1)
-                VRView.afterOnGUI += OnVRViewGUI;
-        }
-
         void OnEnable()
         {
             ISetEditingContextMethods.getAvailableEditingContexts = GetAvailableEditingContexts;
@@ -200,6 +186,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
             SaveUserSettings(settings);
         }
 #endif
+
+
+        void Awake()
+        {
+            s_DefaultContext = m_DefaultContext;
+
+            var availableContexts = GetAvailableEditingContexts();
+            m_ContextNames = availableContexts.Select(c => c.name).ToArray();
+
+            if (s_AvailableContexts.Count == 0)
+                throw new Exception("You can't start EditorXR without at least one context. Try re-importing the package or use version control to restore the default context asset");
+
+            if (s_AvailableContexts.Count > 1)
+                VRView.afterOnGUI += OnVRViewGUI;
+        }
 
         void OnVRViewGUI(VRView view)
         {
