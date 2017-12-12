@@ -317,102 +317,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        /// <summary>
-        /// Used as globally unique identifiers for feedback requests
-        /// They are used to relate feedback requests to the persistent count of visible presentations used to suppress feedback
-        /// </summary>
-        [Serializable]
-        internal class RequestKey
-        {
-            /// <summary>
-            /// The control index used to identify the related affordance
-            /// </summary>
-            [SerializeField]
-            VRControl m_Control;
-
-            /// <summary>
-            /// The tooltip text that was presented
-            /// </summary>
-            [SerializeField]
-            string m_TooltipText;
-
-            public void UpdateValues(ProxyFeedbackRequest request)
-            {
-                m_Control = request.control;
-                m_TooltipText = request.tooltipText;
-            }
-
-            public override int GetHashCode()
-            {
-                var hashCode = (int)m_Control;
-
-                if (m_TooltipText != null)
-                    hashCode ^= m_TooltipText.GetHashCode();
-
-                return hashCode;
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (obj == null)
-                    return false;
-
-                if (!(obj is RequestKey))
-                    return false;
-
-                var key = (RequestKey)obj;
-                return m_Control == key.m_Control && string.Equals(m_TooltipText, key.m_TooltipText);
-            }
-        }
-
-        /// <summary>
-        /// Contains per-request persistent data
-        /// </summary>
-        [Serializable]
-        internal class RequestData
-        {
-            readonly Action m_OnBecameVisible;
-
-            [SerializeField]
-            int m_Presentations;
-
-            /// <summary>
-            /// How many times the user viewed the presentation of this type of request
-            /// </summary>
-            public int presentations
-            {
-                get { return m_Presentations; }
-                set { m_Presentations = value; }
-            }
-
-            public bool visibleThisPresentation { get; set; }
-
-            public Action onBecameVisible { get { return m_OnBecameVisible; } }
-
-            public RequestData()
-            {
-                m_OnBecameVisible = OnBecameVisible;
-            }
-
-            void OnBecameVisible()
-            {
-                if (!visibleThisPresentation)
-                    presentations++;
-
-                visibleThisPresentation = true;
-            }
-        }
-
-        /// <summary>
-        /// Used to store persistent data about feedback requests
-        /// </summary>
-        [Serializable]
-        internal class SerializedFeedback
-        {
-            public RequestKey[] keys;
-            public RequestData[] values;
-        }
-
         const string k_ZWritePropertyName = "_ZWrite";
         const float k_LastFacingAngleWeight = 0.1f;         // How much extra emphasis to give the last facing angle to prevent 'jitter' when looking at a controller on a boundary
 
@@ -461,7 +365,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         FacingDirection m_FacingDirection = FacingDirection.Back;
 
-        SerializedFeedback m_SerializedFeedback;
+        SerializedProxyNodeFeedback m_SerializedFeedback;
         readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
         readonly Dictionary<RequestKey, RequestData> m_RequestData = new Dictionary<RequestKey, RequestData>();
 
@@ -848,24 +752,28 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        public SerializedFeedback OnSerializePreferences()
+        public SerializedProxyNodeFeedback OnSerializePreferences()
         {
-            if (m_SerializedFeedback != null)
-            {
-                var count = m_RequestData.Count;
-                var keys = new RequestKey[count];
-                var values = new RequestData[count];
-                count = 0;
-                foreach (var kvp in m_RequestData)
-                {
-                    keys[count] = kvp.Key;
-                    values[count] = kvp.Value;
-                    count++;
-                }
+            if (m_RequestData.Count == 0)
+                return m_SerializedFeedback;
 
-                m_SerializedFeedback.keys = keys;
-                m_SerializedFeedback.values = values;
+            if (m_SerializedFeedback == null)
+                m_SerializedFeedback = new SerializedProxyNodeFeedback();
+
+            var keys = new List<RequestKey>();
+            var values = new List<RequestData>();
+            foreach (var kvp in m_RequestData)
+            {
+                var requestKey = kvp.Key;
+                if (!requestKey.HasTooltip())
+                    continue;
+
+                keys.Add(requestKey);
+                values.Add(kvp.Value);
             }
+
+            m_SerializedFeedback.keys = keys.ToArray();
+            m_SerializedFeedback.values = values.ToArray();
 
             return m_SerializedFeedback;
         }
@@ -875,7 +783,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (obj == null)
                 return;
 
-            m_SerializedFeedback = (SerializedFeedback)obj;
+            m_SerializedFeedback = (SerializedProxyNodeFeedback)obj;
             if (m_SerializedFeedback.keys == null)
                 return;
 

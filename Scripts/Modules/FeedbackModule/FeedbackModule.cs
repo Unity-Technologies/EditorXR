@@ -1,10 +1,17 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -50,7 +57,9 @@ namespace UnityEditor.Experimental.EditorVR
                     toggle.isOn = m_Preferences.enabled;
 
                 m_Toggles.Add(toggle);
-                var label = value.GetComponentInChildren<Text>();
+
+#if INCLUDE_TEXT_MESH_PRO
+                var label = value.GetComponentInChildren<TextMeshProUGUI>();
 
                 const string feedbackEnabled = "Feedback enabled";
                 const string feedbackDisabled = "Feedback disabled";
@@ -66,6 +75,7 @@ namespace UnityEditor.Experimental.EditorVR
                 var handle = value.GetComponent<BaseHandle>();
                 handle.hoverStarted += (baseHandle, data) => { label.text = m_Preferences.enabled ? disableFeedback : enableFeedback; };
                 handle.hoverEnded += (baseHandle, data) => { label.text = m_Preferences.enabled ? feedbackEnabled : feedbackDisabled; };
+#endif
             }
         }
 

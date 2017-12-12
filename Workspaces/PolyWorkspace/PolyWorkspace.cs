@@ -25,9 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     [MainMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
     sealed class PolyWorkspace : Workspace, ISerializeWorkspace
     {
-        const float k_XBounds = 1.094f;
-        const float k_YBounds = 0.2f;
-
         const float k_MinScale = 0.05f;
         const float k_MaxScale = 0.2f;
 
@@ -43,6 +40,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const string k_Medium = "Medium";
         const string k_Simple = "Simple";
+
+        static readonly Vector3 k_MinBounds = new Vector3(1.094f, 0.2f, 0.5f);
+        static readonly Vector3 k_ScrollHandleScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
+        static readonly Vector3 k_ScrollHandlePosition = new Vector3(0f, -0.015f, 0f); // Offset from content for collision purposes
 
         [Serializable]
         class Preferences
@@ -89,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public override void Setup()
         {
             // Initial bounds must be set before the base.Setup() is called
-            minBounds = new Vector3(k_XBounds, k_YBounds, 0.5f);
+            minBounds = k_MinBounds;
             m_CustomStartingBounds = minBounds;
 
             base.Setup();
@@ -124,8 +125,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var scrollHandle = m_PolyUI.scrollHandle;
             var scrollHandleTransform = scrollHandle.transform;
             scrollHandleTransform.SetParent(m_WorkspaceUI.topFaceContainer);
-            scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
-            scrollHandleTransform.localPosition = new Vector3(0f, -0.015f, 0f); // Offset from content for collision purposes
+            scrollHandleTransform.localScale = k_ScrollHandleScale;
+            scrollHandleTransform.localPosition = k_ScrollHandlePosition;
 
             scrollHandle.dragStarted += OnScrollDragStarted;
             scrollHandle.dragging += OnScrollDragging;

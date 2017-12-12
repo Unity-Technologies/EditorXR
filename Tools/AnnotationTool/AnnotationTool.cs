@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -18,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback
+        IUsesNode, IRequestFeedback, IConnectInterfaces
     {
         [Serializable]
         class Preferences
@@ -107,7 +108,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Vector3 m_OriginalAnnotationPointerLocalScale;
         Coroutine m_AnnotationPointerVisibilityCoroutine;
         bool m_WasOverUI;
-        bool m_WasDoingUndoRedo;
 
         GameObject m_ColorPickerActivator;
 
@@ -192,7 +192,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 ObjectUtils.Destroy(m_ColorPicker.gameObject);
 
             if (m_BrushSizeUI)
+            {
+                this.DisconnectInterfaces(m_BrushSizeUI, rayOrigin);
                 ObjectUtils.Destroy(m_BrushSizeUI.gameObject);
+            }
 
             if (m_ColorPickerActivator)
                 ObjectUtils.Destroy(m_ColorPickerActivator);
@@ -256,9 +259,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 activator.showColorPicker = ShowColorPicker;
                 activator.hideColorPicker = HideColorPicker;
 
-                activator.undoButtonClick += Undo.PerformUndo;
-                activator.redoButtonClick += Undo.PerformRedo;
-
                 var controls = new BindingDictionary();
                 InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, controls);
 
@@ -312,7 +312,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var brushSize = m_Preferences.brushSize;
             m_AnnotationPointer.Resize(brushSize);
 
-            var brushSizeUi = this.InstantiateUI(m_BrushSizePrefab);
+            var brushSizeUi = this.InstantiateUI(m_BrushSizePrefab, rayOrigin: rayOrigin);
             m_BrushSizeUI = brushSizeUi.GetComponent<BrushSizeUI>();
 
             var transform = brushSizeUi.transform;
@@ -394,7 +394,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Widths.Clear();
             m_Length = 0;
 
-            var go = new GameObject(string.Format(k_AnnotationFormatStrig,+ m_AnnotationHolder.childCount));
+            var go = new GameObject(string.Format(k_AnnotationFormatStrig, m_AnnotationHolder.childCount));
+            Undo.RegisterCreatedObjectUndo(go, "Annotation");
 
             var goTrans = go.transform;
             goTrans.SetParent(m_AnnotationHolder);
@@ -604,7 +605,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             this.AddToSpatialHash(go);
 
             Undo.IncrementCurrentGroup();
-            Undo.RegisterCreatedObjectUndo(go, "Create Annotation");
 
             if (AnnotationFinished != null)
             {
@@ -720,39 +720,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     FinalizeMesh();
                     consumeControl(draw);
-                }
-            }
-            else
-            {
-                // Secondary hand uses brush size input to do undo/redo
-                var value = annotationInput.changeBrushSize.value;
-                if (this.GetDeviceType() == DeviceType.Vive)
-                {
-                    if (annotationInput.stickButton.wasJustPressed)
-                    {
-                        if (value > 0)
-                            Undo.PerformRedo();
-                        else
-                            Undo.PerformUndo();
-                    }
-                }
-                else
-                {
-                    var doUndoRedo = Math.Abs(value) > 0.5f;
-                    if (doUndoRedo != m_WasDoingUndoRedo)
-                    {
-                        m_WasDoingUndoRedo = doUndoRedo;
-                        if (doUndoRedo)
-                        {
-                            if (value > 0)
-                                Undo.PerformRedo();
-                            else
-                                Undo.PerformUndo();
-                        }
-                    }
-
-                    consumeControl(annotationInput.changeBrushSize);
-                    consumeControl(annotationInput.vertical);
                 }
             }
 

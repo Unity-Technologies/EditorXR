@@ -189,7 +189,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             switch (clickedButton.text.text)
             {
                 case k_AllText:
-
                     m_SummaryText.text = clickedButton.text.text;
                     m_DescriptionText.text = "All objects are visible";
                     break;

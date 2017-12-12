@@ -1,4 +1,6 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Core;
+
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
@@ -11,6 +13,16 @@ namespace UnityEditor.Experimental.EditorVR
         /// Name for this specific instance of an editing context
         /// </summary>
         string name { get; }
+
+        /// <summary>
+        /// Bool denotes that the scene camera's (component) values should be cloned on the XR runtime camera
+        /// </summary>
+        bool copyExistingCameraSettings { get; }
+
+        /// <summary>
+        /// Bool denotes that the EditorVR instance exists, having already been created in Setup()
+        /// </summary>
+        bool instanceExists { get; }
 
         /// <summary>
         /// Perform one-time setup for the context when pushed to the stack.

@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+[assembly: OptionalDependency("UnityEngine.DrivenRectTransformTracker+BlockUndoCCU", "UNDO_PATCH")]
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -58,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set { EditorPrefs.SetBool(k_PreserveLayout, value); }
         }
 
-        static string serializedPreferences
+        internal static string serializedPreferences
         {
             get { return EditorPrefs.GetString(k_SerializedPreferences, string.Empty); }
             set { EditorPrefs.SetString(k_SerializedPreferences, value); }
@@ -74,10 +75,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public Transform rayOrigin;
             public readonly Stack<Tools.ToolData> toolData = new Stack<Tools.ToolData>();
             public IMainMenu mainMenu;
-            public IAlternateMenu alternateMenu;
             public ITool currentTool;
             public IMenu customMenu;
             public IToolsMenu toolsMenu;
+            public readonly List<IAlternateMenu> alternateMenus = new List<IAlternateMenu>();
+            public IAlternateMenu alternateMenu;
             public readonly Dictionary<IMenu, Menus.MenuHideData> menuHideData = new Dictionary<IMenu, Menus.MenuHideData>();
         }
 
@@ -109,23 +111,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
             }
-            // Add EVR tags and layers if they don't exist
-            var tags = TagManager.GetRequiredTags();
-            var layers = TagManager.GetRequiredLayers();
+                // Add EVR tags and layers if they don't exist
+                var tags = TagManager.GetRequiredTags();
+                var layers = TagManager.GetRequiredLayers();
 
-            foreach (var tag in tags)
-            {
-                TagManager.AddTag(tag);
-            }
+                foreach (var tag in tags)
+                {
+                    TagManager.AddTag(tag);
+                }
 
-            foreach (var layer in layers)
-            {
-                TagManager.AddLayer(layer);
+                foreach (var layer in layers)
+                {
+                    TagManager.AddLayer(layer);
+                }
             }
-        }
 
         void Awake()
         {
+#if UNDO_PATCH
+            DrivenRectTransformTracker.BlockUndo = true;
+#endif
             s_Instance = this; // Used only by PreferencesGUI
             Nested.evr = this; // Set this once for the convenience of all nested classes
             m_DefaultTools = defaultTools;
@@ -194,6 +199,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var intersectionModule = AddModule<IntersectionModule>();
             this.ConnectInterfaces(intersectionModule);
             intersectionModule.Setup(spatialHashModule.spatialHash);
+            // TODO: Support module dependencies via ConnectInterfaces
+            GetNestedModule<Rays>().ignoreList = intersectionModule.standardIgnoreList;
 
             AddModule<SnappingModule>();
 
@@ -277,7 +284,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             while (!viewer.hmdReady)
                 yield return null;
 
-            GetModule<SerializedPreferencesModule>().DeserializePreferences(serializedPreferences);
+            GetModule<SerializedPreferencesModule>().SetupWithPreferences(serializedPreferences);
             m_HasDeserialized = true;
         }
 
@@ -346,6 +353,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 nested.OnDestroy();
             }
+
+#if UNDO_PATCH
+            DrivenRectTransformTracker.BlockUndo = false;
+#endif
         }
 
         void Update()

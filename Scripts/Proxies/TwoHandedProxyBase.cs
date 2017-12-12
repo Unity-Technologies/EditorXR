@@ -27,13 +27,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
     abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight, ISerializePreferences
     {
-        [Serializable]
-        class SerializedFeedback
-        {
-            public ProxyNode.SerializedFeedback leftNode;
-            public ProxyNode.SerializedFeedback rightNode;
-        }
-
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
 
@@ -214,16 +207,22 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (!active)
                 return null;
 
-            return new SerializedFeedback
+            var leftNode = m_LeftProxyNode.OnSerializePreferences();
+            var rightNode = m_RightProxyNode.OnSerializePreferences();
+
+            if (leftNode == null && rightNode == null)
+                return null;
+
+            return new SerializedProxyFeedback
             {
-                leftNode = m_LeftProxyNode.OnSerializePreferences(),
-                rightNode = m_RightProxyNode.OnSerializePreferences()
+                leftNode = leftNode,
+                rightNode = rightNode
             };
         }
 
         public void OnDeserializePreferences(object obj)
         {
-            var serializedFeedback = (SerializedFeedback)obj;
+            var serializedFeedback = (SerializedProxyFeedback)obj;
 
             m_LeftProxyNode.OnDeserializePreferences(serializedFeedback.leftNode);
             m_RightProxyNode.OnDeserializePreferences(serializedFeedback.rightNode);
