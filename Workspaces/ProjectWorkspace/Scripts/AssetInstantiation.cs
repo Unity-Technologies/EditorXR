@@ -44,9 +44,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (renderer != null)
             {
                 Undo.RecordObject(go, k_AttachScriptUndoLabel);
-                renderer.material = (Material)data.asset;
+                renderer.sharedMaterial = (Material)data.asset;
                 Undo.IncrementCurrentGroup();
-                return renderer.material;
+                return renderer.sharedMaterial;
             }
 
             return null;
