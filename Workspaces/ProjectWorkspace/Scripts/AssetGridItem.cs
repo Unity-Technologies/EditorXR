@@ -381,17 +381,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                             break;
                         case "Prefab":
                         case "Model":
-#if UNITY_EDITOR
-                            var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
-                            var transform = go.transform;
-                            transform.position = gridItem.transform.position;
-                            transform.rotation = MathUtilsExt.ConstrainYawRotation(gridItem.transform.rotation);
-#else
-                            var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-#endif
-
-                            this.AddToSpatialHash(go);
-                            Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
+                            PlaceModelOrPrefab(gridItem, data);
                             break;
                     }
                 }
@@ -406,6 +396,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AttachAudioClip(selection, data);
+        }
+
+        void PlaceModelOrPrefab(AssetGridItem gridItem, AssetData data)
+        {
+#if UNITY_EDITOR
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
+            var transform = go.transform;
+            transform.position = gridItem.transform.position;
+            transform.rotation = MathUtilsExt.ConstrainYawRotation(gridItem.transform.rotation);
+#else
+            var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+#endif
+
+            this.AddToSpatialHash(go);
+            Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
         }
 
         void PlaceFont(Transform rayOrigin, AssetData data)
