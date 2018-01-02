@@ -7,6 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
     internal static class AssetInstantiation
     {
         const string k_AudioClipAttachUndoLabel = "Add Audio Clip";
+        const string k_AssignFontUndoLabel = "Assign Font";
         const string k_AttachScriptUndoLabel = "Add Script";
         const string k_AssignMaterialUndoLabel = "Assign Material";
         const string k_AssignPhysicMaterialUndoLabel = "Assign Physic Material";
@@ -43,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             if (renderer != null)
             {
-                Undo.RecordObject(go, k_AttachScriptUndoLabel);
+                Undo.RecordObject(go, k_AssignMaterialUndoLabel);
                 renderer.sharedMaterial = (Material)data.asset;
                 Undo.IncrementCurrentGroup();
                 return renderer.sharedMaterial;
@@ -58,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             if(collider != null)
             {
-                Undo.RecordObject(go, k_AttachScriptUndoLabel);
+                Undo.RecordObject(go, k_AssignPhysicMaterialUndoLabel);
                 collider.material = (PhysicMaterial)data.asset;
                 Undo.IncrementCurrentGroup();
 
@@ -75,7 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (texts != null)
             {
                 var font = (Font)data.asset;
-                Undo.RecordObject(go, k_AttachScriptUndoLabel);
+                Undo.RecordObject(go, k_AssignFontUndoLabel);
 
                 foreach (var text in texts)
                     text.font = font;
