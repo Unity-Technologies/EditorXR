@@ -15,11 +15,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static AudioSource AttachAudioClip(GameObject go, AssetData data)
         {
-            Undo.RecordObject(go, k_AudioClipAttachUndoLabel);
-
             var source = go.GetComponent<AudioSource>();
             if (source == null)
-                source = go.AddComponent<AudioSource>();
+                source = Undo.AddComponent<AudioSource>(go);
             
             source.clip = (AudioClip)data.asset;
 
