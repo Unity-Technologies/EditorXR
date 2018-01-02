@@ -54,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return null;
         }
 
-        internal static void AssignMaterialShader(GameObject go, AssetData data)
+        internal static Shader AssignMaterialShader(GameObject go, AssetData data)
         {
             var renderer = go.GetComponent<Renderer>();
 
@@ -64,9 +64,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 // this warns that we're leaking materials into the scene,
                 // and creates a new instance, but we don't want to change
                 // the shader on the shared material here.
-                renderer.material.shader = (Shader)data.asset;
+                var shader = (Shader)data.asset;
+                renderer.material.shader = shader;
                 Undo.IncrementCurrentGroup();
+                return shader;
             }
+
+            return null;
         }
 
         internal static PhysicMaterial AssignColliderPhysicMaterial(GameObject go, AssetData data)
