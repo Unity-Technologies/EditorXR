@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         const string k_AttachScriptUndoLabel = "Add Script";
         const string k_AssignMaterialUndoLabel = "Assign Material";
         const string k_AssignPhysicMaterialUndoLabel = "Assign Physic Material";
+        const string k_AssignMaterialShaderUndoLabel = "Assign Material Shader";
 
         internal static AudioSource AttachAudioClip(GameObject go, AssetData data)
         {
@@ -38,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return type;
         }
 
-        internal static Material SwapMaterial(GameObject go, AssetData data)
+        internal static Material AssignMaterial(GameObject go, AssetData data)
         {
             var renderer = go.GetComponent<Renderer>();
 
@@ -51,6 +52,21 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
 
             return null;
+        }
+
+        internal static void AssignMaterialShader(GameObject go, AssetData data)
+        {
+            var renderer = go.GetComponent<Renderer>();
+
+            if (renderer != null)
+            {
+                Undo.RecordObject(go, k_AssignMaterialUndoLabel);
+                // this warns that we're leaking materials into the scene,
+                // and creates a new instance, but we don't want to change
+                // the shader on the shared material here.
+                renderer.material.shader = (Shader)data.asset;
+                Undo.IncrementCurrentGroup();
+            }
         }
 
         internal static PhysicMaterial AssignColliderPhysicMaterial(GameObject go, AssetData data)

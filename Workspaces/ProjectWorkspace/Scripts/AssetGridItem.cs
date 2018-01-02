@@ -376,6 +376,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         case "Script":
                             PlaceScript(rayOrigin, data);
                             break;
+                        case "Shader":
+                            PlaceShader(rayOrigin, data);
+                            break;
                         case "Prefab":
                         case "Model":
 #if UNITY_EDITOR
@@ -423,7 +426,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
-                AssetInstantiation.SwapMaterial(selection, data);
+                AssetInstantiation.AssignMaterial(selection, data);
         }
 
         void PlacePhysicMaterial(Transform rayOrigin, AssetData data)
@@ -431,6 +434,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
                 AssetInstantiation.AssignColliderPhysicMaterial(selection, data);
+        }
+
+        void PlaceShader(Transform rayOrigin, AssetData data)
+        {
+            var selection = TryGetRayDirectSelection(rayOrigin);
+            if (selection != null)
+                AssetInstantiation.AssignMaterialShader(selection, data);
         }
 
         GameObject TryGetRayDirectSelection(Transform rayOrigin)
