@@ -71,16 +71,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static Font AssignFontOnChildren(GameObject go, AssetData data)
         {
-            var texts = go.GetComponentsInChildren<TextMesh>();
+            var text = go.GetComponentInChildren<TextMesh>();
 
-            if (texts != null)
+            if (text != null)
             {
                 var font = (Font)data.asset;
                 Undo.RecordObject(go, k_AssignFontUndoLabel);
-
-                foreach (var text in texts)
-                    text.font = font;
-
+                text.font = font;
                 Undo.IncrementCurrentGroup();
                 return font;
             }
