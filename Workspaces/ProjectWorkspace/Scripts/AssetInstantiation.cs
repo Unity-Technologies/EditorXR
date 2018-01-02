@@ -4,7 +4,7 @@ using UnityEditor.Experimental.EditorVR.Data;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
-    internal static class AssetInstantiation
+    internal static class AssetDropUtils
     {
         const string k_AudioClipAttachUndoLabel = "Add Audio Clip";
         const string k_AssignFontUndoLabel = "Assign Font";

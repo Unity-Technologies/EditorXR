@@ -405,42 +405,42 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
-                AssetInstantiation.AttachAudioClip(selection, data);
+                AssetDropUtils.AttachAudioClip(selection, data);
         }
 
         void PlaceFont(Transform rayOrigin, AssetData data)
         {
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
-                AssetInstantiation.AssignFontOnChildren(selection, data);
+                AssetDropUtils.AssignFontOnChildren(selection, data);
         }
 
         void PlaceScript(Transform rayOrigin, AssetData data)
         {
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
-                AssetInstantiation.AttachScript(selection, data);
+                AssetDropUtils.AttachScript(selection, data);
         }
 
         void PlaceMaterial(Transform rayOrigin, AssetData data)
         {
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
-                AssetInstantiation.AssignMaterial(selection, data);
+                AssetDropUtils.AssignMaterial(selection, data);
         }
 
         void PlacePhysicMaterial(Transform rayOrigin, AssetData data)
         {
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
-                AssetInstantiation.AssignColliderPhysicMaterial(selection, data);
+                AssetDropUtils.AssignColliderPhysicMaterial(selection, data);
         }
 
         void PlaceShader(Transform rayOrigin, AssetData data)
         {
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
-                AssetInstantiation.AssignMaterialShader(selection, data);
+                AssetDropUtils.AssignMaterialShader(selection, data);
         }
 
         GameObject TryGetRayDirectSelection(Transform rayOrigin)
