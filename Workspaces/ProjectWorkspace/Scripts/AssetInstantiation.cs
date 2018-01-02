@@ -68,5 +68,24 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return null;
         }
 
+        internal static Font AssignFontOnChildren(GameObject go, AssetData data)
+        {
+            var texts = go.GetComponentsInChildren<TextMesh>();
+
+            if (texts != null)
+            {
+                var font = (Font)data.asset;
+                Undo.RecordObject(go, k_AttachScriptUndoLabel);
+
+                foreach (var text in texts)
+                    text.font = font;
+
+                Undo.IncrementCurrentGroup();
+                return font;
+            }
+
+            return null;
+        }
+
     }
 }

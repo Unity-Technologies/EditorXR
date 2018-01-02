@@ -364,6 +364,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         case "AudioClip":
                             PlaceAudioClip(rayOrigin, data);
                             break;
+                        case "Font":
+                            PlaceFont(rayOrigin, data);
+                            break;
                         case "PhysicMaterial":
                             PlacePhysicMaterial(rayOrigin, data);
                             break;
@@ -400,6 +403,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
                 AssetInstantiation.AttachAudioClip(selection, data);
+        }
+
+        void PlaceFont(Transform rayOrigin, AssetData data)
+        {
+            var selection = TryGetRayDirectSelection(rayOrigin);
+            if (selection != null)
+                AssetInstantiation.AssignFontOnChildren(selection, data);
         }
 
         void PlaceScript(Transform rayOrigin, AssetData data)
