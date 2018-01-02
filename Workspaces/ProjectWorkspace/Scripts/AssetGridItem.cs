@@ -362,9 +362,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     switch (data.type)
                     {
                         case "AudioClip":
-#if UNITY_EDITOR
                             PlaceAudioClip(rayOrigin, data);
-#endif
+                            break;
+                        case "PhysicMaterial":
+                            PlacePhysicMaterial(rayOrigin, data);
+                            break;
+                        case "Material":
+                            PlaceMaterial(rayOrigin, data);
+                            break;
+                        case "Script":
+                            PlaceScript(rayOrigin, data);
                             break;
                         case "Prefab":
                         case "Model":
@@ -380,11 +387,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                             this.AddToSpatialHash(go);
                             Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
                             break;
-                        case "Script":
-#if UNITY_EDITOR
-                            PlaceScript(rayOrigin, data);
-#endif
-                            break;
                     }
                 }
             }
@@ -396,19 +398,29 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void PlaceAudioClip(Transform rayOrigin, AssetData data)
         {
             var selection = TryGetRayDirectSelection(rayOrigin);
-
             if (selection != null)
-            {
                 AssetInstantiation.AttachAudioClip(selection, data);
-            }
         }
 
         void PlaceScript(Transform rayOrigin, AssetData data)
         {
             var selection = TryGetRayDirectSelection(rayOrigin);
-
             if (selection != null)
                 AssetInstantiation.AttachScript(selection, data);
+        }
+
+        void PlaceMaterial(Transform rayOrigin, AssetData data)
+        {
+            var selection = TryGetRayDirectSelection(rayOrigin);
+            if (selection != null)
+                AssetInstantiation.SwapMaterial(selection, data);
+        }
+
+        void PlacePhysicMaterial(Transform rayOrigin, AssetData data)
+        {
+            var selection = TryGetRayDirectSelection(rayOrigin);
+            if (selection != null)
+                AssetInstantiation.AssignColliderPhysicMaterial(selection, data);
         }
 
         GameObject TryGetRayDirectSelection(Transform rayOrigin)
