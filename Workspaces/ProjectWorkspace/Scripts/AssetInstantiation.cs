@@ -29,13 +29,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static Type AttachScript(GameObject go, AssetData data)
         {
-            Undo.RecordObject(go, k_AttachScriptUndoLabel);
-
             var script = (MonoScript)data.asset;
             var type = script.GetClass();
-            var component = go.AddComponent(type);
-
-            Undo.IncrementCurrentGroup();
+            Undo.AddComponent(go, type);
             return type;
         }
 
