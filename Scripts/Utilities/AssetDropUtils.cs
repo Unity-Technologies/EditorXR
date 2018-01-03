@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.Video;
 using UnityEditor.Experimental.EditorVR.Data;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
@@ -7,13 +8,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
     internal static class AssetDropUtils
     {
         const string k_AudioClipAttachUndoLabel = "Add Audio Clip";
+        const string k_AssignVideoClipUndoLabel = "Assign Video Clip";
         const string k_AssignFontUndoLabel = "Assign Font";
         const string k_AttachScriptUndoLabel = "Add Script";
         const string k_AssignMaterialUndoLabel = "Assign Material";
         const string k_AssignPhysicMaterialUndoLabel = "Assign Physic Material";
         const string k_AssignMaterialShaderUndoLabel = "Assign Material Shader";
 
-        internal static AudioSource AttachAudioClip(GameObject go, AssetData data)
+        internal static AudioClip AttachAudioClip(GameObject go, AssetData data)
         {
             var source = go.GetComponent<AudioSource>();
             if (source == null)
@@ -22,7 +24,20 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             source.clip = (AudioClip)data.asset;
 
             Undo.IncrementCurrentGroup();
-            return source;
+            return source.clip;
+        }
+
+        internal static VideoClip AttachVideoClip(GameObject go, AssetData data)
+        {
+            var player = go.GetComponent<VideoPlayer>();
+            if (player == null)
+                player = Undo.AddComponent<VideoPlayer>(go);
+
+            Undo.RecordObject(player, k_AssignVideoClipUndoLabel);
+            player.clip = (VideoClip)data.asset;
+
+            Undo.IncrementCurrentGroup();
+            return player.clip;
         }
 
         internal static Type AttachScript(GameObject go, AssetData data)

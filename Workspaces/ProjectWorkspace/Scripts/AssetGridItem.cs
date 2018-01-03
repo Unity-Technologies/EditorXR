@@ -364,6 +364,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         case "AudioClip":
                             PlaceAudioClip(rayOrigin, data);
                             break;
+                        case "VideoClip":
+                            PlaceVideoClip(rayOrigin, data);
+                            break;
                         case "Font":
                             PlaceFont(rayOrigin, data);
                             break;
@@ -396,6 +399,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AttachAudioClip(selection, data);
+        }
+
+        void PlaceVideoClip(Transform rayOrigin, AssetData data)
+        {
+            var selection = TryGetRayDirectSelection(rayOrigin);
+            if (selection != null)
+                AssetDropUtils.AttachVideoClip(selection, data);
         }
 
         void PlaceModelOrPrefab(AssetGridItem gridItem, AssetData data)
