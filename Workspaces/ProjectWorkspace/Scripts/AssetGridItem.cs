@@ -361,6 +361,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     switch (data.type)
                     {
+                        case "AnimationClip":
+                            PlaceAnimationClip(rayOrigin, data);
+                            break;
                         case "AudioClip":
                             PlaceAudioClip(rayOrigin, data);
                             break;
@@ -399,6 +402,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var selection = TryGetRayDirectSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AttachAudioClip(selection, data);
+        }
+
+        void PlaceAnimationClip(Transform rayOrigin, AssetData data)
+        {
+            var selection = TryGetRayDirectSelection(rayOrigin);
+            if (selection != null)
+                AssetDropUtils.AttachAnimationClip(selection, data);
         }
 
         void PlaceVideoClip(Transform rayOrigin, AssetData data)

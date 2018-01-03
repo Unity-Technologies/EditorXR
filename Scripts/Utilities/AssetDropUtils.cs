@@ -8,12 +8,26 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
     internal static class AssetDropUtils
     {
         const string k_AudioClipAttachUndoLabel = "Add Audio Clip";
+        const string k_AssignAnimationClipUndoLabel = "Add Animation Clip";
         const string k_AssignVideoClipUndoLabel = "Assign Video Clip";
         const string k_AssignFontUndoLabel = "Assign Font";
         const string k_AttachScriptUndoLabel = "Add Script";
         const string k_AssignMaterialUndoLabel = "Assign Material";
         const string k_AssignPhysicMaterialUndoLabel = "Assign Physic Material";
         const string k_AssignMaterialShaderUndoLabel = "Assign Material Shader";
+
+        internal static AnimationClip AttachAnimationClip(GameObject go, AssetData data)
+        {
+            var animation = go.GetComponent<Animation>();
+            if (animation == null)
+                animation = Undo.AddComponent<Animation>(go);
+
+            Undo.RecordObject(animation, k_AssignAnimationClipUndoLabel);
+            animation.clip = (AnimationClip)data.asset;
+
+            Undo.IncrementCurrentGroup();
+            return animation.clip;
+        }
 
         internal static AudioClip AttachAudioClip(GameObject go, AssetData data)
         {
