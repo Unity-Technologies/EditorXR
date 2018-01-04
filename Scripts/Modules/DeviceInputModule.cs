@@ -329,6 +329,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (processor.processor == processInput)
                 {
                     m_InputProcessors.Remove(processor);
+                    var input = processor.input;
+                    for (var i = 0; i < input.controlCount; i++)
+                    {
+                        m_LockedControls.Remove(input[i]);
+                    }
+                    
                     var customActionMap = processInput as ICustomActionMap;
                     if (customActionMap != null)
                         m_IgnoreLocking.Remove(processor.input);
