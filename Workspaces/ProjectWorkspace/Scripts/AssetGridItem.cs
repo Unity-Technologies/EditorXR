@@ -15,7 +15,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash,
-        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IRayToNode, IUsesDirectSelection, IGetPreviewOrigin
+        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IGetPreviewOrigin, IUsesRaycastResults
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -399,21 +399,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void PlaceAudioClip(Transform rayOrigin, AssetData data)
         {
-            var selection = TryGetRayDirectSelection(rayOrigin);
+            var selection = TryGetSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AttachAudioClip(selection, data);
         }
 
         void PlaceAnimationClip(Transform rayOrigin, AssetData data)
         {
-            var selection = TryGetRayDirectSelection(rayOrigin);
+            var selection = TryGetSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AttachAnimationClip(selection, data);
         }
 
         void PlaceVideoClip(Transform rayOrigin, AssetData data)
         {
-            var selection = TryGetRayDirectSelection(rayOrigin);
+            var selection = TryGetSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AttachVideoClip(selection, data);
         }
@@ -435,47 +435,51 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void PlaceFont(Transform rayOrigin, AssetData data)
         {
-            var selection = TryGetRayDirectSelection(rayOrigin);
+            var selection = TryGetSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AssignFontOnChildren(selection, data);
         }
 
         void PlaceScript(Transform rayOrigin, AssetData data)
         {
-            var selection = TryGetRayDirectSelection(rayOrigin);
+            var selection = TryGetSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AttachScript(selection, data);
         }
 
         void PlaceMaterial(Transform rayOrigin, AssetData data)
         {
-            var selection = TryGetRayDirectSelection(rayOrigin);
+            var selection = TryGetSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AssignMaterial(selection, data);
         }
 
         void PlacePhysicMaterial(Transform rayOrigin, AssetData data)
         {
-            var selection = TryGetRayDirectSelection(rayOrigin);
+            var selection = TryGetSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AssignColliderPhysicMaterial(selection, data);
         }
 
         void PlaceShader(Transform rayOrigin, AssetData data)
         {
-            var selection = TryGetRayDirectSelection(rayOrigin);
+            var selection = TryGetSelection(rayOrigin);
             if (selection != null)
                 AssetDropUtils.AssignMaterialShader(selection, data);
         }
 
-        GameObject TryGetRayDirectSelection(Transform rayOrigin)
+        GameObject TryGetSelection(Transform rayOrigin)
         {
-            GameObject raySelection = null;
-            var selections = this.GetDirectSelection();
-            if(selections != null)
-                selections.TryGetValue(rayOrigin, out raySelection);
+            GameObject selection = null;
+            var directSelections = this.GetDirectSelection();
+            if (directSelections != null)
+                directSelections.TryGetValue(rayOrigin, out selection);
+            
+            // if no direct selection for this hand, try ray selection
+            if (selection == null)
+                selection = this.GetFirstGameObject(rayOrigin);
 
-            return raySelection;
+            return selection;
         }
 
         void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
