@@ -16,6 +16,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         const string k_AssignPhysicMaterialUndo = "Assign Physic Material";
         const string k_AssignMaterialShaderUndo = "Assign Material Shader";
 
+        // TODO - make this into an option in the settings menu
+        static bool AssignMultipleAnimationClips = true;
+
         internal static AnimationClip AttachAnimationClip(GameObject go, AssetData data)
         {
             var animation = go.GetComponent<Animation>();
@@ -23,7 +26,19 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 animation = Undo.AddComponent<Animation>(go);
 
             Undo.RecordObject(animation, k_AssignAnimationClipUndo);
-            animation.clip = (AnimationClip)data.asset;
+            var clipAsset = (AnimationClip)data.asset;
+
+            if (animation.GetClipCount() > 0)
+            {
+                if(AssignMultipleAnimationClips)
+                    animation.AddClip(clipAsset, clipAsset.name);
+                else
+                    animation.clip = clipAsset;
+            }
+            else
+            {
+                animation.clip = clipAsset;
+            }
 
             return animation.clip;
         }
