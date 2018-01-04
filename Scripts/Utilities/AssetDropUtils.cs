@@ -25,7 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             Undo.RecordObject(animation, k_AssignAnimationClipUndo);
             animation.clip = (AnimationClip)data.asset;
 
-            Undo.IncrementCurrentGroup();
             return animation.clip;
         }
 
@@ -38,7 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             Undo.RecordObject(source, k_AssignAudioClipUndo);
             source.clip = (AudioClip)data.asset;
 
-            Undo.IncrementCurrentGroup();
             return source.clip;
         }
 
@@ -51,7 +49,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             Undo.RecordObject(player, k_AssignVideoClipUndo);
             player.clip = (VideoClip)data.asset;
 
-            Undo.IncrementCurrentGroup();
             return player.clip;
         }
 
@@ -71,8 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             {
                 Undo.RecordObject(go, k_AssignMaterialUndo);
                 renderer.sharedMaterial = (Material)data.asset;
-                Undo.IncrementCurrentGroup();
-
+                
                 return renderer.sharedMaterial;
             }
 
@@ -91,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 // the shader on the shared material here.
                 var shader = (Shader)data.asset;
                 renderer.material.shader = shader;
-                Undo.IncrementCurrentGroup();
+
                 return shader;
             }
 
@@ -106,7 +102,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             {
                 Undo.RecordObject(go, k_AssignPhysicMaterialUndo);
                 collider.material = (PhysicMaterial)data.asset;
-                Undo.IncrementCurrentGroup();
 
                 return collider.material;
             }
@@ -123,7 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 var font = (Font)data.asset;
                 Undo.RecordObject(go, k_AssignFontUndo);
                 text.font = font;
-                Undo.IncrementCurrentGroup();
+
                 return font;
             }
 
