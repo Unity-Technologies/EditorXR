@@ -10,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public void LateBindInterfaceMethods(HighlightModule provider)
             {
                 ISetHighlightMethods.setHighlight = provider.SetHighlight;
+                ISetHighlightMethods.setBlinkingHighlight = provider.SetBlinkingHighlight;
             }
 
             public void ConnectInterface(object target, object userData = null)
