@@ -24,4 +24,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return foundComponent;
         }
     }
+
+    public static class ComponentUtils
+    {
+        public static T GetOrAddIf<T>(GameObject go, bool option) where T : Component
+        {
+            T component = go.GetComponent<T>();
+            if (option && component == null)
+                component = Undo.AddComponent<T>(go);
+
+            return component;
+        }
+    }
 }
