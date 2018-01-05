@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -27,6 +28,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         readonly Dictionary<Material, Dictionary<GameObject, HighlightData>> m_Highlights = new Dictionary<Material, Dictionary<GameObject, HighlightData>>();
         readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
+
+        Dictionary<GameObject, float> m_LastBlinkStartTimes = new Dictionary<GameObject, float>();
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<KeyValuePair<Material, GameObject>> k_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
@@ -201,6 +204,39 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     k_BakedMeshes.Remove(skinnedMeshRenderer);
             }
         }
+
+        public Coroutine SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin, 
+            Material material, bool force, float dutyPercent, float cycleLength)
+        {
+            m_LastBlinkStartTimes[go] = Time.time;
+            var onDuration = Mathf.Clamp01(dutyPercent) * cycleLength;
+
+            SetHighlight(go, true, rayOrigin, material, false, onDuration);
+
+            return StartCoroutine(BlinkHighlight(go, true, rayOrigin, material, false, onDuration, cycleLength));
+        }
+
+        IEnumerator BlinkHighlight(GameObject go, bool active, Transform rayOrigin, Material material, 
+            bool force, float onTime, float cycleLength)
+        {
+            while (enabled)
+            {
+                float lastBlinkTime;
+                m_LastBlinkStartTimes.TryGetValue(go, out lastBlinkTime);
+                //Debug.Log("coroutine tick, last blink: " + lastBlinkTime);
+
+                var now = Time.time;
+                if (now - lastBlinkTime >= cycleLength)
+                {
+                    // Debug.Log("should blink again");
+                    m_LastBlinkStartTimes[go] = now;
+                    SetHighlight(go, true, rayOrigin, material, false, onTime);
+                }
+
+                yield return null;
+            }
+        }
+
     }
 }
 #endif

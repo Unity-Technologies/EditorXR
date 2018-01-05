@@ -1,12 +1,30 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 using UnityEditor.Experimental.EditorVR.Data;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
-    internal static class AssetDropUtils
+    public static class AssetDropUtils
     {
+        public static List<Material> activeMaterialClones = new List<Material>();
+
+        // null means assignable to anything
+        public static Dictionary<string, List<Type>> AssignmentDependencies
+            = new Dictionary<string, List<Type>>()
+        {
+            { "AnimationClip", MakeList(typeof(Animation)) },
+            { "AudioClip", MakeList(typeof(AudioSource)) },
+            { "VideoClip", MakeList(typeof(VideoPlayer)) },
+            { "Material", MakeList(typeof(Renderer)) },
+            { "Shader", MakeList(typeof(Material)) },
+            { "PhysicMaterial", MakeList(typeof(Collider)) },
+            { "Model", null },
+            { "Prefab", null },
+            { "Script", null },
+        };
+
         const string k_AssignAudioClipUndo = "Assign Audio Clip";
         const string k_AssignAnimationClipUndo = "Assign Animation Clip";
         const string k_AssignVideoClipUndo = "Assign Video Clip";
@@ -16,94 +34,116 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         const string k_AssignPhysicMaterialUndo = "Assign Physic Material";
         const string k_AssignMaterialShaderUndo = "Assign Material Shader";
 
+        // TODO - make this an option in the settings menu
+        static bool m_CreatePlayerForClips = true;
+
         // TODO - make this into an option in the settings menu
         static bool AssignMultipleAnimationClips = true;
 
-        internal static AnimationClip AttachAnimationClip(GameObject go, AssetData data)
+        // TODO - make this into an option in the settings menu
+        static bool SwapDefaultAnimationClips = true;
+
+        // TODO - make this into an option in the settings menu
+        static bool InstanceMaterialOnShaderAssign = true;
+
+        static List<Type> MakeList(params Type[] types)
         {
-            var animation = go.GetComponent<Animation>();
-            if (animation == null)
-                animation = Undo.AddComponent<Animation>(go);
+            return new List<Type>(types);
+        }
 
+        internal static void AssignAnimationClip(Animation animation, AnimationClip clipAsset)
+        {
             Undo.RecordObject(animation, k_AssignAnimationClipUndo);
-            var clipAsset = (AnimationClip)data.asset;
 
-            if (animation.GetClipCount() > 0)
+            if (animation.GetClipCount() > 0 && AssignMultipleAnimationClips)
             {
-                if(AssignMultipleAnimationClips)
-                    animation.AddClip(clipAsset, clipAsset.name);
-                else
+                if (SwapDefaultAnimationClips)
+                {
+                    var tempClip = animation.clip;
+                    animation.RemoveClip(animation.clip);
                     animation.clip = clipAsset;
+                    animation.AddClip(tempClip, tempClip.name);
+                }
+                else
+                {
+                    animation.AddClip(clipAsset, clipAsset.name);
+                }
             }
             else
             {
                 animation.clip = clipAsset;
             }
-
-            return animation.clip;
         }
 
-        internal static AudioClip AttachAudioClip(GameObject go, AssetData data)
+        internal static Animation AssignAnimationClip(GameObject go, AssetData data)
         {
-            var source = go.GetComponent<AudioSource>();
-            if (source == null)
-                source = Undo.AddComponent<AudioSource>(go);
+            var animation = ComponentUtils.GetOrAddIf<Animation>(go, m_CreatePlayerForClips);
+            if (animation != null)
+                AssignAnimationClip(animation, (AnimationClip)data.asset);
 
-            Undo.RecordObject(source, k_AssignAudioClipUndo);
-            source.clip = (AudioClip)data.asset;
-
-            return source.clip;
+            return animation;
         }
 
-        internal static VideoClip AttachVideoClip(GameObject go, AssetData data)
+        internal static AudioSource AttachAudioClip(GameObject go, AssetData data)
         {
-            var player = go.GetComponent<VideoPlayer>();
-            if (player == null)
-                player = Undo.AddComponent<VideoPlayer>(go);
+            var source = ComponentUtils.GetOrAddIf<AudioSource>(go, m_CreatePlayerForClips);
+            if (source != null)
+            {
+                Undo.RecordObject(source, k_AssignAudioClipUndo);
+                source.clip = (AudioClip)data.asset;
+            }
 
-            Undo.RecordObject(player, k_AssignVideoClipUndo);
-            player.clip = (VideoClip)data.asset;
-
-            return player.clip;
+            return source;
         }
 
-        internal static Type AttachScript(GameObject go, AssetData data)
+        internal static VideoPlayer AttachVideoClip(GameObject go, AssetData data)
+        {
+            var player = ComponentUtils.GetOrAddIf<VideoPlayer>(go, m_CreatePlayerForClips);
+            if (player != null)
+            {
+                Undo.RecordObject(player, k_AssignVideoClipUndo);
+                player.clip = (VideoClip)data.asset;
+            }
+
+            return player;
+        }
+
+        internal static GameObject AttachScript(GameObject go, AssetData data)
         {
             var script = (MonoScript)data.asset;
             var type = script.GetClass();
             Undo.AddComponent(go, type);
-            return type;
+            return go;
         }
 
-        internal static Material AssignMaterial(GameObject go, AssetData data)
+        internal static Renderer AssignMaterial(GameObject go, AssetData data)
         {
             var renderer = go.GetComponent<Renderer>();
-
             if (renderer != null)
             {
                 Undo.RecordObject(go, k_AssignMaterialUndo);
                 renderer.sharedMaterial = (Material)data.asset;
-                
-                return renderer.sharedMaterial;
             }
 
-            return null;
+            return renderer;
         }
 
-        internal static Shader AssignMaterialShader(GameObject go, AssetData data)
+        internal static Material AssignMaterialShader(GameObject go, AssetData data)
         {
             var renderer = go.GetComponent<Renderer>();
-
             if (renderer != null)
             {
                 Undo.RecordObject(go, k_AssignMaterialUndo);
-                // this warns that we're leaking materials into the scene,
-                // and creates a new instance, but we don't want to change
-                // the shader on the shared material here.
-                var shader = (Shader)data.asset;
-                renderer.material.shader = shader;
 
-                return shader;
+                // copy the material before applying shader to the instance
+                // this prevents the warning about leaking materials
+                var materialCopy = MaterialUtils.CloneMaterials(renderer)[0];
+                var shader = (Shader)data.asset;
+                materialCopy.shader = shader;
+                renderer.sharedMaterial = materialCopy;
+
+                activeMaterialClones.Add(materialCopy);
+                return materialCopy;
             }
 
             return null;
@@ -113,15 +153,21 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         {
             var collider = go.GetComponent<Collider>();
 
-            if(collider != null)
+            if (collider != null)
             {
-                Undo.RecordObject(go, k_AssignPhysicMaterialUndo);
-                collider.material = (PhysicMaterial)data.asset;
+                var material = (PhysicMaterial)data.asset;
+                AssignColliderPhysicMaterial(collider, material);
 
                 return collider.material;
             }
 
             return null;
+        }
+
+        internal static void AssignColliderPhysicMaterial(Collider collider, PhysicMaterial material)
+        {
+            Undo.RecordObject(collider, k_AssignPhysicMaterialUndo);
+            collider.material = material;
         }
 
         internal static Font AssignFontOnChildren(GameObject go, AssetData data)
