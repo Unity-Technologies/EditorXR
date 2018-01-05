@@ -205,15 +205,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public Coroutine SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin, 
+        public IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin, 
             Material material, bool force, float dutyPercent, float cycleLength)
         {
+            //Debug.Log("set blink");
             m_LastBlinkStartTimes[go] = Time.time;
             var onDuration = Mathf.Clamp01(dutyPercent) * cycleLength;
 
             SetHighlight(go, true, rayOrigin, material, false, onDuration);
 
-            return StartCoroutine(BlinkHighlight(go, true, rayOrigin, material, false, onDuration, cycleLength));
+            return BlinkHighlight(go, true, rayOrigin, material, false, onDuration, cycleLength);
         }
 
         IEnumerator BlinkHighlight(GameObject go, bool active, Transform rayOrigin, Material material, 

@@ -31,6 +31,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const int k_AutoHidePreviewVertexCount = 10000;
         const int k_HidePreviewVertexCount = 100000;
 
+        const float k_CheckAssignDelayTime = 0.15f;
+        const float k_CheckAssignDelayEndTime = 0.3f;
+
         [SerializeField]
         Text m_Text;
 
@@ -62,6 +65,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField] // Serialized so that this remains set after cloning
         Transform m_PreviewObjectTransform;
 
+        [SerializeField]
+        bool m_IncludeRaySelectForDrop = false;
+
         bool m_Setup;
         bool m_AutoHidePreview;
         Vector3 m_PreviewPrefabScale;
@@ -75,13 +81,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         Material m_SphereMaterial;
 
-        GameObject m_CachedDropSelection;
-
-        AssetAssigner m_AssetAssigner;
-
-        // this list contains, in order of preference,
-        // the types of Components that you can assign this asset to
+        // in priority order, the types of Components that you can assign this asset to
         List<Type> m_AssignmentDependencyTypes = new List<Type>();
+
+        List<GameObject> m_UnassignableHighlighted = new List<GameObject>();
+
+        GameObject m_CachedDropSelection;
+        float m_LastDragSelectionChange;
+        IEnumerator m_BlinkingSelectionEnumerator;
+
+        // negative float value means "unassignable" result for that object at that absolute value of time
+        Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
 
         public GameObject icon
         {
@@ -364,26 +374,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             StartCoroutine(ShowGrabbedObject());
         }
 
-        // we only want to check an object after a short hover delay
-        const float k_CheckAssignDelayTime = 0.15f;
-        const float k_CheckAssignDelayEndTime = 0.3f;
-        const float k_CheckAssignHighlightDuration = 2f;
-        const float k_ObjectCheckCacheDuration = 3f;
 
-        float m_LastFeedForwardSelectionChange;
-
-        [SerializeField]
-        bool m_IncludeRaySelectForDrop = false;
-
-        // negative float value means "unassignable" result at that absolute value of time
-        Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
-
-        bool HasBeenChecked(GameObject go)
-        {
-            float previous = 0f;
-            m_ObjectAssignmentChecks.TryGetValue(go.GetInstanceID(), out previous);
-            return previous != 0f;
-        }
 
         float PreviouslyFoundResult(GameObject go)
         {
@@ -392,22 +383,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             return previous;
         }
 
-        //Coroutine m_BlinkingSelectionCoroutine;
-        List<Coroutine> m_BlinkingSelectionCoroutines = new List<Coroutine>();
-        List<GameObject> m_AssignableHighlighted = new List<GameObject>();
-        List<GameObject> m_UnassignableHighlighted = new List<GameObject>();
-
         void SetFeedForwardHighlight(GameObject selection, Transform rayOrigin, bool assignable)
         {
             if (assignable)
             {
                 // blinking green highlight = YES, object can have this asset assigned
                 var mat = m_PositiveAssignmentHighlightMaterial;
-                var co = this.SetBlinkingHighlight(selection, true, rayOrigin, mat, false);
-                m_BlinkingSelectionCoroutines.Add(co);
-
-                if (!m_AssignableHighlighted.Contains(selection))
-                    m_AssignableHighlighted.Add(selection);
+                if(m_BlinkingSelectionEnumerator == null)
+                    m_BlinkingSelectionEnumerator = this.SetBlinkingHighlight(selection, true, rayOrigin, mat, false);
             }
             else
             {
@@ -425,27 +408,27 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var rayOrigin = eventData.rayOrigin;
             var selection = TryGetSelection(rayOrigin);
 
-            // we've just stopped hovering something, stop all the blinking
-            if (selection == null && m_CachedDropSelection != null)
+            // we've just stopped hovering something, stop any blinking highlights
+            if (selection == null)
             {
-                foreach (var routine in m_BlinkingSelectionCoroutines)
-                {
-                    //Debug.Log(routine);
-                    StopCoroutine(routine);
-                }
+                m_BlinkingSelectionEnumerator = null;
             }
             else if (selection != null)
             {
                 var time = Time.time;
                 if (selection != m_CachedDropSelection)
                 {
-                    m_LastFeedForwardSelectionChange = time;
+                    // changed selection - also stop the blinking select if present
+                    m_BlinkingSelectionEnumerator = null;
+                    m_CachedDropSelection = selection;
+                    m_LastDragSelectionChange = time;
+
                     var previous = PreviouslyFoundResult(selection);
 
                     // we've previously checked this object, found we can assign this asset
                     if (previous > 0f)
                     {
-                        Debug.Log("previous: CAN assign to: " + selection);
+                        //Debug.Log("previous: CAN assign to: " + selection);
                         SetFeedForwardHighlight(selection, rayOrigin, true);
                         return;
                     }
@@ -453,37 +436,24 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     // it should still be highlighted anyway, so do nothing
                     else if (previous < 0f)
                     {
-                        Debug.Log("previous: can NOT assign to: " + selection);
+                        //Debug.Log("previous: can NOT assign to: " + selection);
                         return;
                     }
-
-                    //this.SetHighlight(m_CachedDropSelection, true, rayOrigin, null, true);
-
-                    /*
-                    foreach (var routine in m_BlinkingSelectionCoroutines)
-                    {
-                        Debug.Log("coroutine stop inside else");
-                        StopCoroutine(routine);
-                    }
-                    */
-
-                    /*
-                    foreach (var go in m_AssignableHighlighted)
-                    {
-                        this.SetHighlight(go, false, rayOrigin, null, true);
-                    }
-                    */
-
-                    m_CachedDropSelection = selection;
                 }
 
-                var timeDiff = time - m_LastFeedForwardSelectionChange;
-                if (timeDiff > k_CheckAssignDelayTime)
+                var timeDiff = time - m_LastDragSelectionChange;
+                // wait until we've hovered this object for a short delay before checking its components
+                if (timeDiff > k_CheckAssignDelayTime && timeDiff < k_CheckAssignDelayEndTime)
                 {
                     var assignable = CheckAssignable(selection);
                     SetFeedForwardHighlight(selection, rayOrigin, assignable);
                 }
+
+                // update any blinking highlights 
+                if (m_BlinkingSelectionEnumerator != null)
+                    m_BlinkingSelectionEnumerator.MoveNext();
             }
+            
         }
 
         bool CheckAssignable(GameObject go, bool checkChildren = false)
@@ -519,20 +489,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
         {
-            m_ObjectAssignmentChecks.Clear();
-
-            // turn off all blinking, and then solid, highlights
+            // turn off all solid "can't assign here" highlights
             foreach (var go in m_UnassignableHighlighted)
             {
-                Debug.Log("trying to un-highlight negatives on drag end : " + go.name);
+                //Debug.Log("trying to un-highlight negatives on drag end : " + go.name);
                 this.SetHighlight(go, false, eventData.rayOrigin, null, true);
             }
 
-            foreach (var go in m_AssignableHighlighted)
-            {
-                Debug.Log("trying to un-highlight positives on drag end : " + go.name);
-                this.SetHighlight(go, false, eventData.rayOrigin, null, true);
-            }
+            m_ObjectAssignmentChecks.Clear();
+            m_UnassignableHighlighted.Clear();
 
             var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
