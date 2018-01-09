@@ -403,7 +403,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        void StopBlinkingHighlight(GameObject go, Transform rayOrigin)
+        void StopBlinkingHighlight(GameObject go)
         {
             if (m_BlinkingSelectionEnumerator != null)
             {
@@ -420,7 +420,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             // we've just stopped hovering something, stop any blinking highlights
             if (selection == null && m_CachedDropSelection != null)
             {
-                StopBlinkingHighlight(m_CachedDropSelection, rayOrigin);
+                StopBlinkingHighlight(m_CachedDropSelection);
                 m_BlinkingSelectionEnumerator = null;
                 m_CachedDropSelection = selection;
                 m_LastDragSelectionChange = Time.time;
@@ -431,7 +431,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (selection != m_CachedDropSelection)
                 {
                     // changed selection - stop the blinking select if present
-                    StopBlinkingHighlight(m_CachedDropSelection, rayOrigin);
+                    StopBlinkingHighlight(m_CachedDropSelection);
                     m_CachedDropSelection = selection;
                     m_LastDragSelectionChange = time;
 

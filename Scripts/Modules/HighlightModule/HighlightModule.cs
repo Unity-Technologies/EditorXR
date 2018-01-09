@@ -216,7 +216,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return null;
             }
 
-            //Debug.Log("set blink");
             m_LastBlinkStartTimes[go] = Time.time;
             var onDuration = Mathf.Clamp01(dutyPercent) * cycleLength;
 
