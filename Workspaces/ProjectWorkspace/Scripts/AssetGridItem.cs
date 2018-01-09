@@ -403,41 +403,50 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
+        void StopBlinkingHighlight(GameObject go, Transform rayOrigin)
+        {
+            if (m_BlinkingSelectionEnumerator != null)
+            {
+                this.SetBlinkingHighlight(go, false);
+                m_BlinkingSelectionEnumerator = null;
+            }
+        }
+
         void OnDraggingFeedForward(BaseHandle handle, HandleEventData eventData)
         {
             var rayOrigin = eventData.rayOrigin;
             var selection = TryGetSelection(rayOrigin);
 
             // we've just stopped hovering something, stop any blinking highlights
-            if (selection == null)
+            if (selection == null && m_CachedDropSelection != null)
             {
+                StopBlinkingHighlight(m_CachedDropSelection, rayOrigin);
                 m_BlinkingSelectionEnumerator = null;
+                m_CachedDropSelection = selection;
+                m_LastDragSelectionChange = Time.time;
             }
             else if (selection != null)
             {
                 var time = Time.time;
                 if (selection != m_CachedDropSelection)
                 {
-                    // changed selection - also stop the blinking select if present
-                    m_BlinkingSelectionEnumerator = null;
+                    // changed selection - stop the blinking select if present
+                    StopBlinkingHighlight(m_CachedDropSelection, rayOrigin);
                     m_CachedDropSelection = selection;
                     m_LastDragSelectionChange = time;
 
                     var previous = PreviouslyFoundResult(selection);
 
-                    // we've previously checked this object, found we can assign this asset
+                    // we've previously found we can assign this asset here
                     if (previous > 0f)
                     {
-                        //Debug.Log("previous: CAN assign to: " + selection);
                         SetFeedForwardHighlight(selection, rayOrigin, true);
                         return;
                     }
-                    // we've previously checked this object, found we can't assign this asset
-                    // it should still be highlighted anyway, so do nothing
+                    // we've previously found we can't assign this asset here
                     else if (previous < 0f)
                     {
-                        //Debug.Log("previous: can NOT assign to: " + selection);
-                        return;
+                        return;         // it should still be highlighted anyway, so do nothing
                     }
                 }
 
@@ -460,7 +469,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             if (!checkChildren)
             {
-
                 foreach (Type t in m_AssignmentDependencyTypes)
                 {
                     if (go.GetComponent(t) != null)
@@ -492,7 +500,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             // turn off all solid "can't assign here" highlights
             foreach (var go in m_UnassignableHighlighted)
             {
-                //Debug.Log("trying to un-highlight negatives on drag end : " + go.name);
                 this.SetHighlight(go, false, eventData.rayOrigin, null, true);
             }
 

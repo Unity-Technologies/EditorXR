@@ -208,6 +208,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin, 
             Material material, bool force, float dutyPercent, float cycleLength)
         {
+            if (!active)
+            {
+                SetHighlight(go, active, rayOrigin, null, true);
+                // using StopAll assumes that we're only allowing one simultaneous blinking highlight
+                StopAllCoroutines();
+                return null;
+            }
+
             //Debug.Log("set blink");
             m_LastBlinkStartTimes[go] = Time.time;
             var onDuration = Mathf.Clamp01(dutyPercent) * cycleLength;
@@ -224,12 +232,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 float lastBlinkTime;
                 m_LastBlinkStartTimes.TryGetValue(go, out lastBlinkTime);
-                //Debug.Log("coroutine tick, last blink: " + lastBlinkTime);
 
                 var now = Time.time;
                 if (now - lastBlinkTime >= cycleLength)
                 {
-                    // Debug.Log("should blink again");
                     m_LastBlinkStartTimes[go] = now;
                     SetHighlight(go, true, rayOrigin, material, false, onTime);
                 }
