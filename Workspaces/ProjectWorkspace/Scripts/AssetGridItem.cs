@@ -400,7 +400,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void StopHighlight(GameObject go, Transform rayOrigin = null)
         {
             this.SetBlinkingHighlight(go, false);
-            this.SetHighlight(m_CachedDropSelection, false, rayOrigin, null, true);
+            this.SetHighlight(go, false, rayOrigin, null, true);
         }
 
         void OnDraggingFeedForward(BaseHandle handle, HandleEventData eventData)
