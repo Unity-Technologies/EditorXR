@@ -434,9 +434,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     return;
                 }
 
-                // our selection hasn't changed, but we haven't yet checked for assignability
                 if (previous == 0f)
                 {
+                    // avoid checking every object the selector passes over with a short delay
                     if (time - m_LastDragSelectionChange > k_CheckAssignDelayTime)
                         SetAssignableHighlight(selection, rayOrigin, CheckAssignable(selection));
                 }
