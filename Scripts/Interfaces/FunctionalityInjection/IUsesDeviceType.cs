@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using UnityEngine;
 using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,7 +8,8 @@ namespace UnityEditor.Experimental.EditorVR
     public enum DeviceType
     {
         Oculus,
-        Vive
+        Vive,
+		WindowsMR
     }
 
     /// <summary>
@@ -30,6 +32,8 @@ namespace UnityEditor.Experimental.EditorVR
             if (string.IsNullOrEmpty(s_XRDeviceModel))
                 s_XRDeviceModel = XRDevice.model;
 
+			Debug.Log("s_XRDeviceModel [" + s_XRDeviceModel + "]");
+			
             return s_XRDeviceModel.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0
                 ? DeviceType.Oculus : DeviceType.Vive;
         }

@@ -392,6 +392,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (XRSettings.loadedDeviceName == "OpenVR")
                 return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
 #endif
+#if UNITY_WSA
+			if (XRSettings.loadedDeviceName == "WindowsMR")
+			    return true;
+#endif
 #endif
             return true;
         }
