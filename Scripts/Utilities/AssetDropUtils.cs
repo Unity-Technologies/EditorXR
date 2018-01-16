@@ -10,17 +10,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
     {
         public static List<Material> activeMaterialClones = new List<Material>();
 
-        // null means assignable to anything
-        public static Dictionary<string, List<Type>> AssignmentDependencies
+        // null means assignable to anything / no dependency type
+        public static readonly Dictionary<string, List<Type>> AssignmentDependencies
             = new Dictionary<string, List<Type>>()
         {
-            { "AnimationClip", MakeList(typeof(Animation)) },
-            { "AnimationClip", new List<Type> { (typeof(Animation)) } },
-            { "AudioClip", MakeList(typeof(AudioSource)) },
-            { "VideoClip", MakeList(typeof(VideoPlayer)) },
-            { "Material", MakeList(typeof(Renderer)) },
-            { "Shader", MakeList(typeof(Material)) },
-            { "PhysicMaterial", MakeList(typeof(Collider)) },
+            { "AnimationClip", new List<Type> { typeof(Animation) } },
+            { "AudioClip", new List<Type> { typeof(AudioSource) } },
+            { "VideoClip", new List<Type> { typeof(VideoPlayer) } },
+            { "Material", new List<Type> { typeof(Renderer) } },
+            { "Shader", new List<Type> { typeof(Material) } },
+            { "PhysicMaterial", new List<Type> {typeof(Collider) } },
             { "Model", null },
             { "Prefab", null },
             { "Script", null },
@@ -39,12 +38,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         static bool m_CreatePlayerForClips = true;
         static bool m_AssignMultipleAnimationClips = true;
         static bool m_InstanceMaterialOnShaderAssign = true;
-
-        static List<Type> MakeList(params Type[] types)
-        {
-            return new List<Type>(types);
-        }
-
 
         internal static void AssignAnimationClip(Animation animation, AnimationClip clipAsset)
         {
@@ -65,6 +58,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return animation;
         }
 
+        internal static void AssignAnimationClipAction(GameObject go, AssetData data)
+        {
+            AssignAnimationClip(go, data);
+        }
+
         internal static AudioSource AttachAudioClip(GameObject go, AssetData data)
         {
             var source = ComponentUtils.GetOrAddIf<AudioSource>(go, m_CreatePlayerForClips);
@@ -75,6 +73,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
 
             return source;
+        }
+
+        internal static void AudioClipAction(GameObject go, AssetData data)
+        {
+            AttachAudioClip(go, data);
         }
 
         internal static VideoPlayer AttachVideoClip(GameObject go, AssetData data)
@@ -89,12 +92,22 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return player;
         }
 
+        internal static void VideoClipAction(GameObject go, AssetData data)
+        {
+            AttachVideoClip(go, data);
+        }
+
         internal static GameObject AttachScript(GameObject go, AssetData data)
         {
             var script = (MonoScript)data.asset;
             var type = script.GetClass();
             Undo.AddComponent(go, type);
             return go;
+        }
+
+        internal static void AttachScriptAction(GameObject go, AssetData data)
+        {
+            AttachScript(go, data);
         }
 
         internal static Renderer AssignMaterial(GameObject go, AssetData data)
@@ -109,7 +122,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return renderer;
         }
 
-        internal static Material AssignMaterialShader(GameObject go, AssetData data)
+        internal static void AssignMaterialAction(GameObject go, AssetData data)
+        {
+            AssignMaterial(go, data);
+        }
+
+        internal static Material AssignShader(GameObject go, AssetData data)
         {
             var renderer = go.GetComponent<Renderer>();
             if (renderer != null)
@@ -130,22 +148,30 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return null;
         }
 
-        internal static PhysicMaterial AssignColliderPhysicMaterial(GameObject go, AssetData data)
+        internal static void AssignShaderAction(GameObject go, AssetData data)
+        {
+            AssignShader(go, data);
+        }
+
+        internal static PhysicMaterial AssignPhysicMaterial(GameObject go, AssetData data)
         {
             var collider = go.GetComponent<Collider>();
-
             if (collider != null)
             {
                 var material = (PhysicMaterial)data.asset;
-                AssignColliderPhysicMaterial(collider, material);
-
+                AssignPhysicMaterial(collider, material);
                 return collider.material;
             }
 
             return null;
         }
 
-        internal static void AssignColliderPhysicMaterial(Collider collider, PhysicMaterial material)
+        internal static void AssignPhysicMaterialAction(GameObject go, AssetData data)
+        {
+            AssignPhysicMaterial(go, data);
+        }
+
+        internal static void AssignPhysicMaterial(Collider collider, PhysicMaterial material)
         {
             Undo.RecordObject(collider, k_AssignPhysicMaterialUndo);
             collider.material = material;
@@ -165,6 +191,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
 
             return null;
+        }
+
+        internal static void AssignFontAction(GameObject go, AssetData data)
+        {
+            AssignFontOnChildren(go, data);
         }
 
     }
