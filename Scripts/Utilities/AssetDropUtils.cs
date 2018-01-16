@@ -38,7 +38,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         // TODO - make all these booleans options in the settings menu
         static bool m_CreatePlayerForClips = true;
         static bool m_AssignMultipleAnimationClips = true;
-        static bool m_SwapDefaultAnimationClips = true;
         static bool m_InstanceMaterialOnShaderAssign = true;
 
         static List<Type> MakeList(params Type[] types)
@@ -46,28 +45,15 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return new List<Type>(types);
         }
 
+
         internal static void AssignAnimationClip(Animation animation, AnimationClip clipAsset)
         {
             Undo.RecordObject(animation, k_AssignAnimationClipUndo);
 
             if (animation.GetClipCount() > 0 && m_AssignMultipleAnimationClips)
-            {
-                if (m_SwapDefaultAnimationClips)
-                {
-                    var tempClip = animation.clip;
-                    animation.RemoveClip(animation.clip);
-                    animation.clip = clipAsset;
-                    animation.AddClip(tempClip, tempClip.name);
-                }
-                else
-                {
-                    animation.AddClip(clipAsset, clipAsset.name);
-                }
-            }
+                animation.AddClip(clipAsset, clipAsset.name);
             else
-            {
                 animation.clip = clipAsset;
-            }
         }
 
         internal static Animation AssignAnimationClip(GameObject go, AssetData data)
