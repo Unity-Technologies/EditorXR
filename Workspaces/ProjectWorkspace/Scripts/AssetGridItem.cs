@@ -430,29 +430,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (selection != m_CachedDropSelection)
                 {
                     StopBlinkingHighlight(m_CachedDropSelection);
+                    SetFeedForwardHighlight(selection, rayOrigin, previous);
                     m_CachedDropSelection = selection;
                     m_LastDragSelectionChange = time;
-
-                    if (previous)
-                        SetFeedForwardHighlight(selection, rayOrigin, true);
-                    else if (previous)
-                        SetFeedForwardHighlight(selection, rayOrigin, false);
-
                     return;
                 }
 
+                // our selection hasn't changed, but we haven't yet checked for assignability
                 if (!previous)
                 {
-                    var timeDiff = time - m_LastDragSelectionChange;
-                    // wait until we've hovered this object for a short delay before checking its components
-                    if (timeDiff > k_CheckAssignDelayTime)
-                    {
-                        var assignable = CheckAssignable(selection);
-                        SetFeedForwardHighlight(selection, rayOrigin, assignable);
-                    }
+                    if (time - m_LastDragSelectionChange > k_CheckAssignDelayTime)
+                        SetFeedForwardHighlight(selection, rayOrigin, CheckAssignable(selection));
                 }
 
-                // update any blinking highlights 
+                // update any blinking highlights - TODO - move this into highlight module
                 if (m_BlinkingSelectionEnumerator != null)
                     m_BlinkingSelectionEnumerator.MoveNext();
             }
