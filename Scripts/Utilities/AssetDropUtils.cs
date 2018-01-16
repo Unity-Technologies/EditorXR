@@ -10,7 +10,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
     {
         public static List<Material> activeMaterialClones = new List<Material>();
 
-        // null means assignable to anything / no dependency type
         public static readonly Dictionary<string, List<Type>> AssignmentDependencies
             = new Dictionary<string, List<Type>>()
         {
@@ -19,10 +18,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             { "VideoClip", new List<Type> { typeof(VideoPlayer) } },
             { "Material", new List<Type> { typeof(Renderer) } },
             { "Shader", new List<Type> { typeof(Material) } },
-            { "PhysicMaterial", new List<Type> {typeof(Collider) } },
-            { "Model", null },
-            { "Prefab", null },
-            { "Script", null },
+            { "PhysicMaterial", new List<Type> {typeof(Collider) } }
+        };
+
+        // dependency types to ignore when previewing asset assignment validity
+        public static List<Type> ValidityOverrides = new List<Type>()
+        {
+            typeof(Animation), typeof(AudioSource), typeof(VideoPlayer)
         };
 
         const string k_AssignAudioClipUndo = "Assign Audio Clip";

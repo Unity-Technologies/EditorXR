@@ -217,6 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (!active)
             {
                 SetHighlight(go, active, rayOrigin, null, true);
+                m_Blinking.Clear();
                 // using StopAll assumes that we're only allowing one simultaneous blinking highlight
                 StopAllCoroutines();
                 return null;

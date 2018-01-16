@@ -438,19 +438,28 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     // avoid checking every object the selector passes over with a short delay
                     if (time - m_LastDragSelectionChange > k_CheckAssignDelayTime)
-                        SetAssignableHighlight(selection, rayOrigin, CheckAssignable(selection));
+                    {
+                        var assignable = CheckAssignable(selection);
+                        SetAssignableHighlight(selection, rayOrigin, assignable);
+                    }
                 }
             }
             
         }
 
-        bool CheckAssignable(GameObject go, bool checkChildren = false, bool fillDependency = false)
+        bool CheckAssignable(GameObject go, bool checkChildren = false)
         {
             // if our asset type has a component dependency, we might want to add that
             // component for the user sometimes - filling in the blank on their intention
             // ex: AudioClips & AudioSources, VideoClips & VideoPlayers
-            if (fillDependency)
-                return true;
+            foreach (var t in m_AssignmentDependencyTypes)
+            {
+                if (AssetDropUtils.ValidityOverrides.Contains(t))
+                {
+                    m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                    return true;
+                }
+            }
 
             if (!checkChildren)
             {
@@ -482,7 +491,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
         {
-            m_ObjectAssignmentChecks.Clear(); 
+            m_ObjectAssignmentChecks.Clear();
+            StopHighlight(m_CachedDropSelection, eventData.rayOrigin);
 
             var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
