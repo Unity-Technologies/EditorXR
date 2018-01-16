@@ -15,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             = new Dictionary<string, List<Type>>()
         {
             { "AnimationClip", MakeList(typeof(Animation)) },
+            { "AnimationClip", new List<Type> { (typeof(Animation)) } },
             { "AudioClip", MakeList(typeof(AudioSource)) },
             { "VideoClip", MakeList(typeof(VideoPlayer)) },
             { "Material", MakeList(typeof(Renderer)) },
@@ -34,17 +35,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         const string k_AssignPhysicMaterialUndo = "Assign Physic Material";
         const string k_AssignMaterialShaderUndo = "Assign Material Shader";
 
-        // TODO - make this an option in the settings menu
+        // TODO - make all these booleans options in the settings menu
         static bool m_CreatePlayerForClips = true;
-
-        // TODO - make this into an option in the settings menu
-        static bool AssignMultipleAnimationClips = true;
-
-        // TODO - make this into an option in the settings menu
-        static bool SwapDefaultAnimationClips = true;
-
-        // TODO - make this into an option in the settings menu
-        static bool InstanceMaterialOnShaderAssign = true;
+        static bool m_AssignMultipleAnimationClips = true;
+        static bool m_SwapDefaultAnimationClips = true;
+        static bool m_InstanceMaterialOnShaderAssign = true;
 
         static List<Type> MakeList(params Type[] types)
         {
@@ -55,9 +50,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         {
             Undo.RecordObject(animation, k_AssignAnimationClipUndo);
 
-            if (animation.GetClipCount() > 0 && AssignMultipleAnimationClips)
+            if (animation.GetClipCount() > 0 && m_AssignMultipleAnimationClips)
             {
-                if (SwapDefaultAnimationClips)
+                if (m_SwapDefaultAnimationClips)
                 {
                     var tempClip = animation.clip;
                     animation.RemoveClip(animation.clip);
