@@ -423,6 +423,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (selection != m_CachedDropSelection)
                 {
                     StopHighlight(m_CachedDropSelection);
+                    // if we've previously checked this object, indicate the result again
                     if(previous > 0f)
                         SetAssignableHighlight(selection, rayOrigin, true);
                     else if (previous < 0f)
@@ -443,8 +444,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             
         }
 
-        bool CheckAssignable(GameObject go, bool checkChildren = false)
+        bool CheckAssignable(GameObject go, bool checkChildren = false, bool fillDependency = false)
         {
+            // if our asset type has a component dependency, we might want to add that
+            // component for the user sometimes - filling in the blank on their intention
+            // ex: AudioClips & AudioSources, VideoClips & VideoPlayers
+            if (fillDependency)
+                return true;
+
             if (!checkChildren)
             {
                 foreach (Type t in m_AssignmentDependencyTypes)
