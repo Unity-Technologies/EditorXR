@@ -31,8 +31,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const int k_AutoHidePreviewVertexCount = 10000;
         const int k_HidePreviewVertexCount = 100000;
 
-        const float k_CheckAssignDelayTime = 0.15f;
-        const float k_CheckAssignDelayEndTime = 0.3f;
+        const float k_CheckAssignDelayTime = 0.125f;
+        const float k_CheckAssignDelayEndTime = 0.25f;
 
         [SerializeField]
         Text m_Text;
@@ -86,9 +86,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         GameObject m_CachedDropSelection;
         float m_LastDragSelectionChange;
-        IEnumerator m_BlinkingSelectionEnumerator;
 
-        Dictionary<int, bool> m_ObjectAssignmentChecks = new Dictionary<int, bool>();
+        // negative value means object has been checked and can't be assigned to
+        // positive means it can be assigned, 0 means it hasn't yet been checked
+        Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
 
         public GameObject icon
         {
@@ -373,9 +374,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 
 
-        bool PreviouslyFoundResult(GameObject go)
+        float PreviouslyFoundResult(GameObject go)
         {
-            bool previous;
+            float previous;
             m_ObjectAssignmentChecks.TryGetValue(go.GetInstanceID(), out previous);
             return previous;
         }
@@ -386,8 +387,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 // blinking green highlight = YES, object can have this asset assigned
                 var mat = m_PositiveAssignmentHighlightMaterial;
-                if(m_BlinkingSelectionEnumerator == null)
-                    m_BlinkingSelectionEnumerator = this.SetBlinkingHighlight(selection, true, rayOrigin, mat, false);
+                this.SetBlinkingHighlight(selection, true, rayOrigin, mat, false);
             }
             else
             {
@@ -397,17 +397,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        void StopBlinkingHighlight(GameObject go, Transform rayOrigin = null)
+        void StopHighlight(GameObject go, Transform rayOrigin = null)
         {
-            if (m_BlinkingSelectionEnumerator != null)
-            {
-                this.SetBlinkingHighlight(go, false);
-                m_BlinkingSelectionEnumerator = null;
-            }
-            else
-            {
-                this.SetHighlight(m_CachedDropSelection, false, rayOrigin, null, true);
-            }
+            this.SetBlinkingHighlight(go, false);
+            this.SetHighlight(m_CachedDropSelection, false, rayOrigin, null, true);
         }
 
         void OnDraggingFeedForward(BaseHandle handle, HandleEventData eventData)
@@ -418,7 +411,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             // we've just stopped hovering something, stop any highlights
             if (selection == null && m_CachedDropSelection != null)
             {
-                StopBlinkingHighlight(m_CachedDropSelection, rayOrigin);
+                StopHighlight(m_CachedDropSelection, rayOrigin);
                 m_CachedDropSelection = null;
                 m_LastDragSelectionChange = Time.time;
             }
@@ -429,23 +422,23 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 if (selection != m_CachedDropSelection)
                 {
-                    StopBlinkingHighlight(m_CachedDropSelection);
-                    SetFeedForwardHighlight(selection, rayOrigin, previous);
+                    StopHighlight(m_CachedDropSelection);
+                    if(previous > 0f)
+                        SetFeedForwardHighlight(selection, rayOrigin, true);
+                    else if (previous < 0f)
+                        SetFeedForwardHighlight(selection, rayOrigin, false);
+
                     m_CachedDropSelection = selection;
                     m_LastDragSelectionChange = time;
                     return;
                 }
 
                 // our selection hasn't changed, but we haven't yet checked for assignability
-                if (!previous)
+                if (previous == 0f)
                 {
                     if (time - m_LastDragSelectionChange > k_CheckAssignDelayTime)
                         SetFeedForwardHighlight(selection, rayOrigin, CheckAssignable(selection));
                 }
-
-                // update any blinking highlights - TODO - move this into highlight module
-                if (m_BlinkingSelectionEnumerator != null)
-                    m_BlinkingSelectionEnumerator.MoveNext();
             }
             
         }
@@ -458,7 +451,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     if (go.GetComponent(t) != null)
                     {
-                        m_ObjectAssignmentChecks[go.GetInstanceID()] = true;
+                        m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
                         return true;
                     }
                 }
@@ -469,20 +462,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     if (go.GetComponentInChildren(t) != null)
                     {
-                        m_ObjectAssignmentChecks[go.GetInstanceID()] = true;
+                        m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
                         return true;
                     }
 
                 }
             }
 
-            m_ObjectAssignmentChecks[go.GetInstanceID()] = false;
+            m_ObjectAssignmentChecks[go.GetInstanceID()] = -Time.time;
             return false;
         }
 
         protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
         {
-            // actually, do we want to clear this? still potentially useful data
             m_ObjectAssignmentChecks.Clear(); 
 
             var gridItem = m_DragObject.GetComponent<AssetGridItem>();
@@ -512,56 +504,42 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             switch (data.type)
             {
-                case "AnimationClip":
-                    PlaceAnimationClip(rayOrigin, data);
-                    break;
-                case "AudioClip":
-                    PlaceAudioClip(rayOrigin, data);
-                    break;
-                case "VideoClip":
-                    PlaceVideoClip(rayOrigin, data);
-                    break;
-                case "Font":
-                    PlaceFont(rayOrigin, data);
-                    break;
-                case "PhysicMaterial":
-                    PlacePhysicMaterial(rayOrigin, data);
-                    break;
-                case "Material":
-                    PlaceMaterial(rayOrigin, data);
-                    break;
-                case "Script":
-                    PlaceScript(rayOrigin, data);
-                    break;
-                case "Shader":
-                    PlaceShader(rayOrigin, data);
-                    break;
                 case "Prefab":
                 case "Model":
                     PlaceModelOrPrefab(gridItem.transform, data);
                     break;
+                case "AnimationClip":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignAnimationClipAction);
+                    break;
+                case "AudioClip":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AudioClipAction);
+                    break;
+                case "VideoClip":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.VideoClipAction);
+                    break;
+                case "Font":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignFontAction);
+                    break;
+                case "PhysicMaterial":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignPhysicMaterialAction);
+                    break;
+                case "Material":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignMaterialAction);
+                    break;
+                case "Script":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AttachScriptAction);
+                    break;
+                case "Shader":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignShaderAction);
+                    break;
             }
         }
 
-        void PlaceAudioClip(Transform rayOrigin, AssetData data)
+        void SelectAndPlace(Transform rayOrigin, AssetData data, Action<GameObject, AssetData> placeFunc)
         {
             var selection = TryGetSelection(rayOrigin);
             if (selection != null)
-                AssetDropUtils.AttachAudioClip(selection, data);
-        }
-
-        void PlaceAnimationClip(Transform rayOrigin, AssetData data)
-        {
-            var selection = TryGetSelection(rayOrigin);
-            if (selection != null)
-                AssetDropUtils.AssignAnimationClip(selection, data);
-        }
-
-        void PlaceVideoClip(Transform rayOrigin, AssetData data)
-        {
-            var selection = TryGetSelection(rayOrigin);
-            if (selection != null)
-                AssetDropUtils.AttachVideoClip(selection, data);
+                placeFunc.Invoke(selection, data);
         }
 
         void PlaceModelOrPrefab(Transform itemTransform, AssetData data)
@@ -578,42 +556,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             this.AddToSpatialHash(go);
             Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
         }
-
-        void PlaceFont(Transform rayOrigin, AssetData data)
-        {
-            var selection = TryGetSelection(rayOrigin);
-            if (selection != null)
-                AssetDropUtils.AssignFontOnChildren(selection, data);
-        }
-
-        void PlaceScript(Transform rayOrigin, AssetData data)
-        {
-            var selection = TryGetSelection(rayOrigin);
-            if (selection != null)
-                AssetDropUtils.AttachScript(selection, data);
-        }
-
-        void PlaceMaterial(Transform rayOrigin, AssetData data)
-        {
-            var selection = TryGetSelection(rayOrigin);
-            if (selection != null)
-                AssetDropUtils.AssignMaterial(selection, data);
-        }
-
-        void PlacePhysicMaterial(Transform rayOrigin, AssetData data)
-        {
-            var selection = TryGetSelection(rayOrigin);
-            if (selection != null)
-                AssetDropUtils.AssignColliderPhysicMaterial(selection, data);
-        }
-
-        void PlaceShader(Transform rayOrigin, AssetData data)
-        {
-            var selection = TryGetSelection(rayOrigin);
-            if (selection != null)
-                AssetDropUtils.AssignMaterialShader(selection, data);
-        }
-
 
         GameObject TryGetSelection(Transform rayOrigin, bool includeRays = false)
         {

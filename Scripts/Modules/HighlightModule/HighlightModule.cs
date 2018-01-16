@@ -29,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly Dictionary<Material, Dictionary<GameObject, HighlightData>> m_Highlights = new Dictionary<Material, Dictionary<GameObject, HighlightData>>();
         readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
 
+        Dictionary<int, IEnumerator> m_Blinking = new Dictionary<int, IEnumerator>();               // instanceID-keyed 
         Dictionary<GameObject, float> m_LastBlinkStartTimes = new Dictionary<GameObject, float>();
 
         // Local method use only -- created here to reduce garbage collection
@@ -100,6 +101,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var highlights = m_Highlights[kvp.Key];
                 if (highlights.Remove(kvp.Value) && highlights.Count == 0)
                     m_Highlights.Remove(kvp.Key);
+            }
+
+            foreach (var kvp in m_Blinking)
+            {
+                kvp.Value.MoveNext();
             }
         }
 
@@ -221,7 +227,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             SetHighlight(go, true, rayOrigin, material, false, onDuration);
 
-            return BlinkHighlight(go, true, rayOrigin, material, false, onDuration, cycleLength);
+            var blinker = BlinkHighlight(go, true, rayOrigin, material, false, onDuration, cycleLength);
+            m_Blinking.Add(go.GetInstanceID(), blinker);
+            return blinker;
         }
 
         IEnumerator BlinkHighlight(GameObject go, bool active, Transform rayOrigin, Material material, 
