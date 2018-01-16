@@ -547,7 +547,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     break;
                 case "Prefab":
                 case "Model":
-                    PlaceModelOrPrefab(gridItem, data);
+                    PlaceModelOrPrefab(gridItem.transform, data);
                     break;
             }
         }
@@ -573,13 +573,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 AssetDropUtils.AttachVideoClip(selection, data);
         }
 
-        void PlaceModelOrPrefab(AssetGridItem gridItem, AssetData data)
+        void PlaceModelOrPrefab(Transform itemTransform, AssetData data)
         {
 #if UNITY_EDITOR
             var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
             var transform = go.transform;
-            transform.position = gridItem.transform.position;
-            transform.rotation = MathUtilsExt.ConstrainYawRotation(gridItem.transform.rotation);
+            transform.position = itemTransform.position;
+            transform.rotation = MathUtilsExt.ConstrainYawRotation(itemTransform.rotation);
 #else
             var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
 #endif
