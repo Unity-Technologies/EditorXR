@@ -381,7 +381,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             return previous;
         }
 
-        void SetFeedForwardHighlight(GameObject selection, Transform rayOrigin, bool assignable)
+        void SetAssignableHighlight(GameObject selection, Transform rayOrigin, bool assignable)
         {
             if (assignable)
             {
@@ -424,9 +424,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     StopHighlight(m_CachedDropSelection);
                     if(previous > 0f)
-                        SetFeedForwardHighlight(selection, rayOrigin, true);
+                        SetAssignableHighlight(selection, rayOrigin, true);
                     else if (previous < 0f)
-                        SetFeedForwardHighlight(selection, rayOrigin, false);
+                        SetAssignableHighlight(selection, rayOrigin, false);
 
                     m_CachedDropSelection = selection;
                     m_LastDragSelectionChange = time;
@@ -437,7 +437,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (previous == 0f)
                 {
                     if (time - m_LastDragSelectionChange > k_CheckAssignDelayTime)
-                        SetFeedForwardHighlight(selection, rayOrigin, CheckAssignable(selection));
+                        SetAssignableHighlight(selection, rayOrigin, CheckAssignable(selection));
                 }
             }
             
