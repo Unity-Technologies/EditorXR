@@ -67,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             for (int i = 0; i < devices.Count; i++)
             {
                 var device = devices[i];
-                if (device is VRInputDevice && device.tagIndex != -1)
+                if (/*device is VRInputDevice && */device.tagIndex != -1)
                     m_SystemDevices.Add(device);
             }
 
