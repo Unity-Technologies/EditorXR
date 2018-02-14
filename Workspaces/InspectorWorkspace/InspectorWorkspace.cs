@@ -65,13 +65,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 OnSelectionChanged();
 
             Undo.postprocessModifications += OnPostprocessModifications;
-            Undo.undoRedoPerformed += OnUndoRedo;
+            Undo.undoRedoPerformed += UpdateCurrentObject;
 
             // Propagate initial bounds
             OnBoundsChanged();
         }
 
-        void OnUndoRedo()
+        void UpdateCurrentObject()
         {
             UpdateCurrentObject(true);
         }
@@ -357,7 +357,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override void OnDestroy()
         {
             Undo.postprocessModifications -= OnPostprocessModifications;
-            Undo.undoRedoPerformed -= OnUndoRedo;
+            Undo.undoRedoPerformed -= UpdateCurrentObject;
+            EditorApplication.hierarchyWindowChanged -= UpdateCurrentObject;
             base.OnDestroy();
         }
 
