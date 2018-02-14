@@ -10,14 +10,13 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Video;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
-        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IGetPreviewOrigin, IUsesRaycastResults
+        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IUsesRaycastResults
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -32,7 +31,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const int k_HidePreviewVertexCount = 100000;
 
         const float k_CheckAssignDelayTime = 0.125f;
-        const float k_CheckAssignDelayEndTime = 0.25f;
 
         [SerializeField]
         Text m_Text;
@@ -66,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Transform m_PreviewObjectTransform;
 
         [SerializeField]
-        bool m_IncludeRaySelectForDrop = false;
+        bool m_IncludeRaySelectForDrop;
 
         bool m_Setup;
         bool m_AutoHidePreview;
@@ -89,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         // negative value means object has been checked and can't be assigned to
         // positive means it can be assigned, 0 means it hasn't yet been checked
-        Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
+        readonly Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
 
         public GameObject icon
         {
@@ -205,8 +203,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_Handle.hoverEnded += OnHoverEnded;
 
                 m_Handle.getDropObject = GetDropObject;
-
-                //m_AssetAssigner = new AssetAssigner(data.type);
 
                 AssetDropUtils.AssignmentDependencies.TryGetValue(data.type, out m_AssignmentDependencyTypes);
 
@@ -389,7 +385,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 // blinking green highlight = YES, object can have this asset assigned
                 var mat = m_PositiveAssignmentHighlightMaterial;
-                this.SetBlinkingHighlight(selection, true, rayOrigin, mat, false);
+                this.SetBlinkingHighlight(selection, true, rayOrigin, mat);
             }
             else
             {
@@ -462,7 +458,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             foreach (var t in m_AssignmentDependencyTypes)
             {
-                if (AssetDropUtils.ValidityOverrides.Contains(t))
+                if (AssetDropUtils.AutoFillTypes.Contains(t))
                 {
                     m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
                     return true;
@@ -582,7 +578,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
         }
 
-        GameObject TryGetSelection(Transform rayOrigin, bool includeRays = false)
+        GameObject TryGetSelection(Transform rayOrigin, bool includeRays)
         {
             GameObject selection = null;
             var directSelections = this.GetDirectSelection();

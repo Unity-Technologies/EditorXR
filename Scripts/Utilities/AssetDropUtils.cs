@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         public static List<Material> activeMaterialClones = new List<Material>();
 
         public static readonly Dictionary<string, List<Type>> AssignmentDependencies
-            = new Dictionary<string, List<Type>>()
+            = new Dictionary<string, List<Type>>
         {
             { "AnimationClip", new List<Type> { typeof(Animation) } },
             { "AudioClip", new List<Type> { typeof(AudioSource) } },
@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         };
 
         // dependency types to ignore when previewing asset assignment validity
-        public static List<Type> ValidityOverrides = new List<Type>()
+        public static List<Type> AutoFillTypes = new List<Type>
         {
             typeof(Animation), typeof(AudioSource), typeof(VideoPlayer)
         };
@@ -31,21 +31,18 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         const string k_AssignAnimationClipUndo = "Assign Animation Clip";
         const string k_AssignVideoClipUndo = "Assign Video Clip";
         const string k_AssignFontUndo = "Assign Font";
-        const string k_AttachScriptUndo = "Assign Script";
         const string k_AssignMaterialUndo = "Assign Material";
         const string k_AssignPhysicMaterialUndo = "Assign Physic Material";
-        const string k_AssignMaterialShaderUndo = "Assign Material Shader";
 
         // TODO - make all these booleans options in the settings menu
-        static bool m_CreatePlayerForClips = true;
-        static bool m_AssignMultipleAnimationClips = true;
-        static bool m_InstanceMaterialOnShaderAssign = true;
+        static bool s_CreatePlayerForClips = true;
+        static bool s_AssignMultipleAnimationClips = true;
 
         internal static void AssignAnimationClip(Animation animation, AnimationClip clipAsset)
         {
             Undo.RecordObject(animation, k_AssignAnimationClipUndo);
 
-            if (animation.GetClipCount() > 0 && m_AssignMultipleAnimationClips)
+            if (animation.GetClipCount() > 0 && s_AssignMultipleAnimationClips)
                 animation.AddClip(clipAsset, clipAsset.name);
             else
                 animation.clip = clipAsset;
@@ -53,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static Animation AssignAnimationClip(GameObject go, AssetData data)
         {
-            var animation = ComponentUtils.GetOrAddIf<Animation>(go, m_CreatePlayerForClips);
+            var animation = ComponentUtils.GetOrAddIf<Animation>(go, s_CreatePlayerForClips);
             if (animation != null)
                 AssignAnimationClip(animation, (AnimationClip)data.asset);
 
@@ -67,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static AudioSource AttachAudioClip(GameObject go, AssetData data)
         {
-            var source = ComponentUtils.GetOrAddIf<AudioSource>(go, m_CreatePlayerForClips);
+            var source = ComponentUtils.GetOrAddIf<AudioSource>(go, s_CreatePlayerForClips);
             if (source != null)
             {
                 Undo.RecordObject(source, k_AssignAudioClipUndo);
@@ -84,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static VideoPlayer AttachVideoClip(GameObject go, AssetData data)
         {
-            var player = ComponentUtils.GetOrAddIf<VideoPlayer>(go, m_CreatePlayerForClips);
+            var player = ComponentUtils.GetOrAddIf<VideoPlayer>(go, s_CreatePlayerForClips);
             if (player != null)
             {
                 Undo.RecordObject(player, k_AssignVideoClipUndo);
@@ -199,6 +196,5 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         {
             AssignFontOnChildren(go, data);
         }
-
     }
 }
