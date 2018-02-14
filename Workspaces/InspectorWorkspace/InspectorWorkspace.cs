@@ -66,7 +66,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             Undo.postprocessModifications += OnPostprocessModifications;
             Undo.undoRedoPerformed += UpdateCurrentObject;
-            EditorApplication.hierarchyWindowChanged += UpdateCurrentObject;
 
             // Propagate initial bounds
             OnBoundsChanged();

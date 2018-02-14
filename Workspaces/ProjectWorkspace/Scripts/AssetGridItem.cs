@@ -16,7 +16,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
-        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IUsesRaycastResults
+        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -560,7 +560,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             var selection = TryGetSelection(rayOrigin);
             if (selection != null)
+            {
                 placeFunc.Invoke(selection, data);
+                this.UpdateInspectors(selection, true);
+            }
         }
 
         void PlaceModelOrPrefab(Transform itemTransform, AssetData data)
