@@ -208,6 +208,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 //m_AssetAssigner = new AssetAssigner(data.type);
 
+                AssetDropUtils.AssignmentDependencies.TryGetValue(data.type, out m_AssignmentDependencyTypes);
+
                 m_Setup = true;
             }
 
@@ -452,6 +454,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             // if our asset type has a component dependency, we might want to add that
             // component for the user sometimes - filling in the blank on their intention
             // ex: AudioClips & AudioSources, VideoClips & VideoPlayers
+            if (m_AssignmentDependencyTypes == null)
+            {
+                m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                return true;
+            }
+
             foreach (var t in m_AssignmentDependencyTypes)
             {
                 if (AssetDropUtils.ValidityOverrides.Contains(t))
