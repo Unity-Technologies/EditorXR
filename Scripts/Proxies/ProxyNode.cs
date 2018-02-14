@@ -240,21 +240,28 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             readonly Dictionary<Material, MaterialData> m_MaterialDictionary = new Dictionary<Material, MaterialData>();
 
-            public void AddAffordance(Affordance affordance, AffordanceVisibilityDefinition definition)
+            public void AddAffordance(Affordance affordance, AffordanceVisibilityDefinition[] definitions)
             {
                 var control = affordance.control;
-                var targetMaterial = affordance.material;
-                var renderer = affordance.renderer;
+                var materials = affordance.materials;
+                var renderers = affordance.renderers;
                 var tooltips = affordance.tooltips;
-                if (targetMaterial != null)
+                if (materials != null)
                 {
-                    AddMaterialData(targetMaterial, control, renderer, tooltips, definition);
+                    for (var i = 0; i < materials.Length; i++)
+                    {
+                        AddMaterialData(materials[i], control, renderers[i], tooltips, definitions[i]);
+                    }
                 }
                 else
                 {
-                    foreach (var material in renderer.sharedMaterials)
+                    for (var i = 0; i < renderers.Length; i++)
                     {
-                        AddMaterialData(material, control, renderer, tooltips, definition);
+                        var renderer = renderers[i];
+                        foreach (var material in renderer.sharedMaterials)
+                        {
+                            AddMaterialData(material, control, renderer, tooltips, definitions[i]);
+                        }
                     }
                 }
             }
@@ -422,36 +429,39 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             for (var i = 0; i < m_Affordances.Length; i++)
             {
                 var affordance = m_Affordances[i];
-                var renderer = affordance.renderer;
-                var sharedMaterials = renderer.sharedMaterials;
-                AffordanceData affordanceData;
-                if (!m_AffordanceData.TryGetValue(renderer, out affordanceData))
+                var renderers = affordance.renderers;
+                foreach (var renderer in renderers)
                 {
-                    MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with each renderer once
-                    affordanceData = new AffordanceData();
-                    m_AffordanceData[renderer] = affordanceData;
-
-                    // Clones that utilize the standard shader can lose their enabled ZWrite value (1), if it was enabled on the material
-                    foreach (var material in sharedMaterials)
+                    var sharedMaterials = renderer.sharedMaterials;
+                    AffordanceData affordanceData;
+                    if (!m_AffordanceData.TryGetValue(renderer, out affordanceData))
                     {
-                        material.SetFloat(k_ZWritePropertyName, 1);
+                        MaterialUtils.CloneMaterials(renderer); // Clone all materials associated with each renderer once
+                        affordanceData = new AffordanceData();
+                        m_AffordanceData[renderer] = affordanceData;
+
+                        // Clones that utilize the standard shader can lose their enabled ZWrite value (1), if it was enabled on the material
+                        foreach (var material in sharedMaterials)
+                        {
+                            material.SetFloat(k_ZWritePropertyName, 1);
+                        }
                     }
-                }
 
-                var control = affordance.control;
-                var definition = affordanceMapDefinitions.FirstOrDefault(x => x.control == control);
-                if (definition == null)
-                {
-                    definition = new AffordanceDefinition
+                    var control = affordance.control;
+                    var definition = affordanceMapDefinitions.FirstOrDefault(x => x.control == control);
+                    if (definition == null)
                     {
-                        control = control,
-                        visibilityDefinition = defaultAffordanceVisibilityDefinition,
-                        animationDefinition = defaultAffordanceAnimationDefinition
-                    };
-                }
+                        definition = new AffordanceDefinition
+                        {
+                            control = control,
+                            visibilityDefinitions = new[] { defaultAffordanceVisibilityDefinition },
+                            animationDefinitions = new[] { defaultAffordanceAnimationDefinition }
+                        };
+                    }
 
-                affordanceDefinitions[i] = definition;
-                affordanceData.AddAffordance(affordance, definition.visibilityDefinition);
+                    affordanceDefinitions[i] = definition;
+                    affordanceData.AddAffordance(affordance, definition.visibilityDefinitions);
+                }
             }
 
             foreach (var kvp in m_AffordanceData)
@@ -462,17 +472,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             var bodyRenderers = GetComponentsInChildren<Renderer>(true)
                 .Where(x => !m_AffordanceData.ContainsKey(x) && !IsChildOfProxyOrigin(x.transform)).ToList();
 
-            var bodyAffordanceDefinition = new AffordanceDefinition
-            {
-                visibilityDefinition = m_AffordanceMap.bodyVisibilityDefinition
-            };
-
             foreach (var renderer in bodyRenderers)
             {
                 MaterialUtils.CloneMaterials(renderer);
                 var affordanceData = new AffordanceData();
                 m_BodyData.Add(new Tuple<Renderer, AffordanceData>(renderer, affordanceData));
-                affordanceData.AddRenderer(renderer, bodyAffordanceDefinition.visibilityDefinition);
+                affordanceData.AddRenderer(renderer, m_AffordanceMap.bodyVisibilityDefinition);
                 renderer.AddMaterial(m_ProxyBackgroundMaterial);
             }
 
@@ -670,21 +675,24 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 if (affordance.control != request.control)
                     continue;
 
-                m_AffordanceData[affordance.renderer].SetVisibility(!request.suppressExisting, request.duration, changedRequest.control);
-
-                this.SetHighlight(affordance.renderer.gameObject, !request.suppressExisting);
-
-                var tooltipText = request.tooltipText;
-                if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
+                foreach (var renderer in affordance.renderers)
                 {
-                    foreach (var tooltip in affordance.tooltips)
+                    m_AffordanceData[renderer].SetVisibility(!request.suppressExisting, request.duration, changedRequest.control);
+
+                    this.SetHighlight(renderer.gameObject, !request.suppressExisting);
+
+                    var tooltipText = request.tooltipText;
+                    if (!string.IsNullOrEmpty(tooltipText) || request.suppressExisting)
                     {
-                        if (tooltip)
+                        foreach (var tooltip in affordance.tooltips)
                         {
-                            data.visibleThisPresentation = false;
-                            tooltip.tooltipText = tooltipText;
-                            this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection),
-                                becameVisible: data.onBecameVisible);
+                            if (tooltip)
+                            {
+                                data.visibleThisPresentation = false;
+                                tooltip.tooltipText = tooltipText;
+                                this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection),
+                                    becameVisible: data.onBecameVisible);
+                            }
                         }
                     }
                 }
@@ -706,18 +714,21 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 if (affordance.control != request.control)
                     continue;
 
-                m_AffordanceData[affordance.renderer].SetVisibility(false, request.duration, request.control);
-
-                this.SetHighlight(affordance.renderer.gameObject, false);
-
-                if (!string.IsNullOrEmpty(request.tooltipText))
+                foreach (var renderer in affordance.renderers)
                 {
-                    foreach (var tooltip in affordance.tooltips)
+                    m_AffordanceData[renderer].SetVisibility(false, request.duration, request.control);
+
+                    this.SetHighlight(renderer.gameObject, false);
+
+                    if (!string.IsNullOrEmpty(request.tooltipText))
                     {
-                        if (tooltip)
+                        foreach (var tooltip in affordance.tooltips)
                         {
-                            tooltip.tooltipText = string.Empty;
-                            this.HideTooltip(tooltip, true);
+                            if (tooltip)
+                            {
+                                tooltip.tooltipText = string.Empty;
+                                this.HideTooltip(tooltip, true);
+                            }
                         }
                     }
                 }

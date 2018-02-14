@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
-    sealed class InspectorWorkspace : Workspace, ISelectionChanged
+    sealed class InspectorWorkspace : Workspace, ISelectionChanged, IInspectorWorkspace
     {
         public new static readonly Vector3 DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
@@ -367,6 +367,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             SetIsLocked();
             OnButtonClicked(rayOrigin);
+        }
+
+        public void UpdateInspector(GameObject obj, bool fullRebuild = false)
+        {
+            if (obj == null || obj == m_SelectedObject)
+                UpdateCurrentObject(fullRebuild);
         }
     }
 }
