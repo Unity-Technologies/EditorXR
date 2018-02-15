@@ -79,6 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
 
         readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
+        readonly List<IInspectorWorkspace> m_Inspectors = new List<IInspectorWorkspace>();
 
         internal event Action<IWorkspace> workspaceCreated;
         internal event Action<IWorkspace> workspaceDestroyed;
@@ -231,6 +232,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static void ResetRotation(IWorkspace workspace, Vector3 forward)
         {
             workspace.transform.rotation = Quaternion.LookRotation(forward) * DefaultWorkspaceTilt;
+        }
+
+        internal void UpdateInspectors(GameObject obj = null, bool fullRebuild = false)
+        {
+            foreach (var inspector in m_Inspectors)
+            {
+                inspector.UpdateInspector(obj, fullRebuild);
+            }
+        }
+
+        public void AddInspector(IInspectorWorkspace inspectorWorkspace)
+        {
+            m_Inspectors.Add(inspectorWorkspace);
+        }
+
+        public void RemoveInspector(IInspectorWorkspace inspectorWorkspace)
+        {
+            m_Inspectors.Remove(inspectorWorkspace);
         }
     }
 }
