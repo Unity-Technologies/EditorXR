@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.SpatialUI;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -24,6 +25,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         // Collection housing objects whose position is controlled by this module
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
+
+        Transform m_GazeTransform;
 
         public class AdaptivePositionData : INodeToRay
         {
@@ -114,6 +117,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 currentPosition = newPosition;
             }
+        }
+
+        void Start()
+        {
+            m_GazeTransform = CameraUtils.GetMainCamera().transform;;
+        }
+
+        void Update()
+        {
+            Debug.LogWarning("Position: " + m_GazeTransform.position);
+            Debug.LogWarning("Rotation: " + m_GazeTransform.rotation.eulerAngles);
         }
     }
 }
