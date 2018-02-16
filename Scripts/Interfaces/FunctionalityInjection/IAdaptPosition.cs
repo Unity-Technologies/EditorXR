@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.SpatialUI
 {
     /// <summary>
     /// Gives decorated class ability to be automatically positioned by the AdaptivePositionModule
@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// Dot-product representing the allowed amount of tolerance between the gaze and the implementor transform,
         /// beyond which the implementor will be repositioned by the AdaptivePositionModule
         /// </summary>
-        float allowedGazeDivergence { get; set; }
+        float allowedGazeDivergence { get; }
     }
 }
 #endif
