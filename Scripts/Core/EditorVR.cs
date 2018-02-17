@@ -241,6 +241,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             AddModule<HapticsModule>();
             AddModule<AdaptivePositionModule>();
+            AddModule<GazeDivergenceModule>();
             AddModule<SpatialHintModule>();
             AddModule<SpatialScrollModule>();
 
