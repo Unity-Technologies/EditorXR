@@ -8,35 +8,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     {
         Transform m_GazeSourceTransform;
 
-        public class GazeDivergenceData
-        {
-            public GazeDivergenceData(Vector3 directionToTest, float divergenceThreshold)
-            {
-                this.directionToTest = directionToTest;
-                this.divergenceThreshold = divergenceThreshold;
-            }
-
-            // Below is Data assigned by calling object requesting a divergence delta test
-
-            /// <summary>
-            /// The vector, whose divergence will be tested against the gaze source's forward vector
-            /// </summary>
-            public Vector3 directionToTest { get; set; }
-
-            /// <summary>
-            /// Degree, beyond which the divergence threshold will return TRUE if passed
-            /// </summary>
-            public float divergenceThreshold { get; set; }
-        }
-
         void Awake()
         {
             m_GazeSourceTransform = CameraUtils.GetMainCamera().transform;
         }
 
-        public bool IsAboveDivergenceThreshold(GazeDivergenceData data)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="directionToTest">Vector to test for a threshold cross with relation to the gazeSource forward vector</param>
+        /// <param name="divergenceThreshold">Threshold, in degrees, via doc product conversion of this angular value</param>
+        /// <returns></returns>
+        public bool IsAboveDivergenceThreshold(Vector3 directionToTest, float divergenceThreshold)
         {
-            var isAbove = Vector3.Dot(data.directionToTest, m_GazeSourceTransform.forward) >= Mathf.Abs(data.divergenceThreshold);
+            // if I type in 90, I want any dot value greater than zero to be false, and value less than zero to be true
+            var divergenceThresholdConvertedToDot = Mathf.Cos(Mathf.Deg2Rad* divergenceThreshold);
+            var isAbove = Vector3.Dot(directionToTest, m_GazeSourceTransform.forward) > divergenceThresholdConvertedToDot;
+            Debug.LogError("divergenceThreshold : " + divergenceThreshold);
+            Debug.LogError("divergenceThresholdConvertedToDot : " + divergenceThresholdConvertedToDot);
+            Debug.LogError("Dot : " + Vector3.Dot(directionToTest, m_GazeSourceTransform.forward));
+            Debug.LogError("isAbove : " + isAbove);
             return isAbove;
         }
     }

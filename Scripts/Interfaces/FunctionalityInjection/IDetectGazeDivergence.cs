@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -11,21 +13,17 @@ namespace UnityEditor.Experimental.EditorVR
     /// </summary>
     public interface IDetectGazeDivergence
     {
-        /// <summary>
-        /// The data defining an element whose worldspace vector will be tested against the gaze-forward-vector
-        /// </summary>
-        GazeDivergenceModule.GazeDivergenceData gazeDivergenceData { get; set; }
     }
 
     public static class IDetectGazeDivergenceMethods
     {
-        internal delegate bool IsAboveDivergenceThresholdDelegate(IDetectGazeDivergence obj, GazeDivergenceModule.GazeDivergenceData data);
+        internal delegate bool IsAboveDivergenceThresholdDelegate(IDetectGazeDivergence obj, Vector3 directionToTest, float divergenceThreshold);
 
-        internal static IsAboveDivergenceThresholdDelegate isAboveDivergenceThreshold { private get; set; }
+        internal static Func<Vector3, float, bool> isAboveDivergenceThreshold { private get; set; }
 
-        public static bool IsAboveDivergenceThreshold(this IDetectGazeDivergence obj, GazeDivergenceModule.GazeDivergenceData data)
+        public static bool IsAboveDivergenceThreshold(this IDetectGazeDivergence obj, Vector3 directionToTest, float divergenceThreshold)
         {
-            return isAboveDivergenceThreshold(obj, data);
+            return isAboveDivergenceThreshold(directionToTest, divergenceThreshold);
         }
     }
 }
