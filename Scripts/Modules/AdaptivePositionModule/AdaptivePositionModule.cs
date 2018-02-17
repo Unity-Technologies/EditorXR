@@ -121,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void Start()
         {
-            m_GazeTransform = CameraUtils.GetMainCamera().transform;;
+            m_GazeTransform = CameraUtils.GetMainCamera().transform;
         }
 
         void Update()
