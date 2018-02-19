@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
@@ -22,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         };
 
         // dependency types to ignore when previewing asset assignment validity
-        public static List<Type> ValidityOverrides = new List<Type>()
+        public static List<Type> AutoFillTypes = new List<Type>()
         {
             typeof(Animation), typeof(AudioSource), typeof(VideoPlayer)
         };
@@ -39,7 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         // TODO - make all these booleans options in the settings menu
         static bool m_CreatePlayerForClips = true;
         static bool m_AssignMultipleAnimationClips = true;
-        static bool m_InstanceMaterialOnShaderAssign = true;
 
         internal static void AssignAnimationClip(Animation animation, AnimationClip clipAsset)
         {
@@ -101,8 +101,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static GameObject AttachScript(GameObject go, AssetData data)
         {
+            Debug.Log(data.asset);
             var script = (MonoScript)data.asset;
+            Debug.Log(script);
             var type = script.GetClass();
+            Debug.Log(type);
+
             Undo.AddComponent(go, type);
             return go;
         }
@@ -202,3 +206,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
     }
 }
+#endif
