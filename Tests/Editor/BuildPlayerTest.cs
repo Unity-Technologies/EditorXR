@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
 {
@@ -46,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
             }
 
             Assert.AreEqual(0, output.summary.totalErrors);
-# elif UNITY_2017_1_OR_NEWER
+# else
             string output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.BuildScriptsOnly);
             
             if (output.Contains("target is not supported"))

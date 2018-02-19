@@ -99,12 +99,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static GameObject AttachScript(GameObject go, AssetData data)
         {
-            Debug.Log(data.asset);
             var script = (MonoScript)data.asset;
-            Debug.Log(script);
             var type = script.GetClass();
-            Debug.Log(type);
-
             Undo.AddComponent(go, type);
             return go;
         }
