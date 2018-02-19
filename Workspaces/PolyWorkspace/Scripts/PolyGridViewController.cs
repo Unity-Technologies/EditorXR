@@ -251,7 +251,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, k_PositionFollow);
             t.localRotation = Quaternion.identity;
 
-            t.SetSiblingIndex(order);
+            if (t.GetSiblingIndex() != order)
+                t.SetSiblingIndex(order);
         }
 
         protected override PolyGridItem GetItem(PolyGridAsset data)

@@ -124,6 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 depth = depth
             });
 
+            order = m_ListItems.Count - 1;
             while (m_UpdateStack.Count > 0)
             {
                 var stackData = m_UpdateStack.Pop();
@@ -153,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
                         Recycle(index);
                     else
-                        UpdateInspectorItem(datum, order++, offset, depth, expanded, ref doneSettling);
+                        UpdateInspectorItem(datum, order--, offset, depth, expanded, ref doneSettling);
 
                     offset += itemSize.z;
 
@@ -203,8 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var targetPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
             var targetRotation = Quaternion.identity;
 
-            // order is reversed because Inspector draws bottom-to-top, hence the "0" below
-            UpdateItemTransform(t, 0, targetPosition, targetRotation, dontSettle, ref doneSettling);
+            UpdateItemTransform(t, order, targetPosition, targetRotation, dontSettle, ref doneSettling);
         }
 
         protected override InspectorListItem GetItem(InspectorData listData)
