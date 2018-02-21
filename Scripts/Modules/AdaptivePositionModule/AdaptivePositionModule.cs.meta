@@ -1,13 +1,12 @@
 fileFormatVersion: 2
 guid: 1fe169093b3871d4fb29b599bf826a09
-timeCreated: 1519168592
+timeCreated: 1519180031
 licenseType: Pro
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - m_TestObjecTransform: {instanceID: 0}
-  - m_TestObject: {fileID: 1000010777624494, guid: fb710a001890d9a44bb74a8ce4f20cc0,
+  - m_TestObject: {fileID: 1000010777624494, guid: 60a30ac512b480442a7357eaaa4af910,
       type: 2}
   - m_MovementStartPulse: {fileID: 11400000, guid: 511c17eccb9801e419708b7bcfc902c8,
       type: 2}
