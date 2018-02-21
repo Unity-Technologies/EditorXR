@@ -1,14 +1,25 @@
 ﻿#if UNITY_EDITOR
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.SpatialUI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngineInternal;
+
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class AdaptivePositionModule : MonoBehaviour
+    sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence
     {
+        [SerializeField] GameObject m_TestObject;
+        Transform m_TestObjectTransform;
+        float m_TestObjectDistanceOffset = 0.5f;
+        Vector3 m_TestObjectAnchoredWorldPosition;
+        Coroutine m_TestObjectAnimCoroutine;
+        bool m_TestInFocus;
+
         /// <summary>
         /// Distance beyond which content will be re-positioned at the ideal distance from the user's gaze/hmd
         /// </summary>
@@ -27,6 +38,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
 
         Transform m_GazeTransform;
+
+        Transform m_WorldspaceAnchorTransform; // The player transform under which anchored objects will be parented
 
         public class AdaptivePositionData : INodeToRay
         {
@@ -122,12 +135,53 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void Start()
         {
             m_GazeTransform = CameraUtils.GetMainCamera().transform;
+            m_WorldspaceAnchorTransform = m_GazeTransform.parent;
+
+            m_TestObjectTransform = ObjectUtils.Instantiate(m_TestObject, m_GazeTransform, false).transform;
+            m_TestObjectTransform.localPosition = new Vector3(0f, 0f, m_TestObjectDistanceOffset); // push the object away from the HMD
+            m_TestObjectTransform.parent = m_WorldspaceAnchorTransform;
+            m_TestObjectAnchoredWorldPosition = m_TestObjectTransform.position;
+            m_TestObjectTransform.rotation = Quaternion.identity;
+        }
+
+        void OnDestroy()
+        {
+            ObjectUtils.Destroy(m_TestObjectTransform.gameObject);
         }
 
         void Update()
         {
-            Debug.LogWarning("Position: " + m_GazeTransform.position);
-            Debug.LogWarning("Rotation: " + m_GazeTransform.rotation.eulerAngles);
+            //Debug.LogWarning("Position: " + m_GazeTransform.position);
+            //Debug.LogWarning("Rotation: " + m_GazeTransform.rotation.eulerAngles);
+
+            m_TestObjectTransform.LookAt(m_GazeTransform, m_WorldspaceAnchorTransform.up);
+            //m_TestObjectTransform.rotation.SetLookRotation(m_GazeTransform.position - m_TestObjectTransform.position, Vector3.up);
+
+            var attemptiaimingOutsideOfGazeThreshold = this.IsAboveDivergenceThreshold(m_TestObjectTransform, 15f);
+
+            if (attemptiaimingOutsideOfGazeThreshold != m_TestInFocus)
+            {
+                m_TestInFocus = attemptiaimingOutsideOfGazeThreshold;
+                this.RestartCoroutine(ref m_TestObjectAnimCoroutine, TestObjectInFocus());
+            }
+        }
+
+        IEnumerator TestObjectInFocus()
+        {
+            var currentScale = m_TestObjectTransform.localScale;
+            var targetScale = m_TestInFocus ? Vector3.one * 1f : Vector3.one * 0.5f;
+            var transitionAmount = 0f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
+            var transitionSubtractMultiplier = 5f;
+            while (transitionAmount < 1f)
+            {
+                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+                m_TestObjectTransform.localScale = Vector3.Lerp(currentScale, targetScale, smoothTransition);
+                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                yield return null;
+            }
+
+            m_TestObjectTransform.localScale = targetScale;
+            m_TestObjectAnimCoroutine = null;
         }
     }
 }
