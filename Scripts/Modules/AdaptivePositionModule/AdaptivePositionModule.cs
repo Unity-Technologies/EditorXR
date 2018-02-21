@@ -16,14 +16,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField] GameObject m_TestObject;
         Transform m_TestObjectTransform;
         float m_TestObjectDistanceOffset = 0.5f;
+        //float m_TestObjectAllowedDistanceDivergece = 0.1f;
         Vector3 m_TestObjectAnchoredWorldPosition;
-        Coroutine m_TestObjectAnimCoroutine;
+        Coroutine m_TestObjectAnimPositionCoroutine;
+        Coroutine m_TestObjectAnimRotationCoroutine;
         bool m_TestInFocus;
 
         /// <summary>
         /// Distance beyond which content will be re-positioned at the ideal distance from the user's gaze/hmd
         /// </summary>
-        const float k_AllowedDistanceDivergence = 0.1f;
+        const float k_AllowedDistanceDivergence = 0.2f;
 
         [SerializeField]
         HapticPulse m_MovementStartPulse; // The pulse performed when beginning to move an element to a new destination
@@ -159,11 +161,41 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             var attemptiaimingOutsideOfGazeThreshold = this.IsAboveDivergenceThreshold(m_TestObjectTransform, 15f);
 
+            Debug.LogError(Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)));
+            var distance = Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position));
+            if (m_TestObjectAnimPositionCoroutine == null && Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)) > k_AllowedDistanceDivergence)
+            {
+                this.RestartCoroutine(ref m_TestObjectAnimPositionCoroutine, TestObjectReposition());
+            }
+
             if (attemptiaimingOutsideOfGazeThreshold != m_TestInFocus)
             {
                 m_TestInFocus = attemptiaimingOutsideOfGazeThreshold;
-                this.RestartCoroutine(ref m_TestObjectAnimCoroutine, TestObjectInFocus());
+                this.RestartCoroutine(ref m_TestObjectAnimRotationCoroutine, TestObjectInFocus());
             }
+        }
+
+        IEnumerator TestObjectReposition()
+        {
+            Debug.LogWarning("TestObjectReposition: ");
+            var currentPosition = m_TestObjectTransform.position;
+            var targetPosition = m_GazeTransform.position + new Vector3(0f, 0f, m_TestObjectDistanceOffset);
+            var transitionAmount = 0f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
+            var transitionSubtractMultiplier = 2f;
+
+            //m_TestObjectTransform.rotation = m_GazeTransform.rotation;
+            //m_TestObjectTransform.localPosition = new Vector3(0f, 0f, m_TestObjectDistanceOffset); // push the object away from the HMD
+
+            while (transitionAmount < 1f)
+            {
+                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+                m_TestObjectTransform.position = Vector3.Lerp(currentPosition, targetPosition, smoothTransition);
+                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                yield return null;
+            }
+
+            m_TestObjectTransform.position = targetPosition;
+            m_TestObjectAnimPositionCoroutine = null;
         }
 
         IEnumerator TestObjectInFocus()
@@ -181,7 +213,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             m_TestObjectTransform.localScale = targetScale;
-            m_TestObjectAnimCoroutine = null;
+            m_TestObjectAnimRotationCoroutine = null;
         }
     }
 }
