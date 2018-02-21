@@ -7,10 +7,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     public sealed class GazeDivergenceModule : MonoBehaviour
     {
         Transform m_GazeSourceTransform;
+        Quaternion m_PreviousGazeRotation;
+        float m_GazeVelocity;
 
         void Awake()
         {
             m_GazeSourceTransform = CameraUtils.GetMainCamera().transform;
+        }
+
+        void Update()
+        {
+            var gazeRotationDifference = Quaternion.Angle(m_GazeSourceTransform.rotation, m_PreviousGazeRotation);
+            m_GazeVelocity += gazeRotationDifference;
+            m_GazeVelocity -= Time.unscaledDeltaTime;
+            m_PreviousGazeRotation = m_GazeSourceTransform.rotation; // Cache the previous camera rotation
         }
 
         /// <summary>
