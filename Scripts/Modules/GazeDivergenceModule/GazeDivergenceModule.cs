@@ -14,20 +14,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         /// <summary>
-        /// 
+        /// Test for a transform residing with a defined angular divergence threshold
         /// </summary>
-        /// <param name="directionToTest">Vector to test for a threshold cross with relation to the gazeSource forward vector</param>
+        /// <param name="objectToTest">Vector to test for a threshold cross with relation to the gazeSource forward vector</param>
         /// <param name="divergenceThreshold">Threshold, in degrees, via doc product conversion of this angular value</param>
         /// <returns></returns>
-        public bool IsAboveDivergenceThreshold(Vector3 directionToTest, float divergenceThreshold)
+        public bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold)
         {
-            // if I type in 90, I want any dot value greater than zero to be false, and value less than zero to be true
+            var gazeDirection = m_GazeSourceTransform.forward;
+            var testVector = objectToTest.position - m_GazeSourceTransform.position; // Test object to gaze source vector
+            testVector.Normalize(); // Normalize, in order to retain expected dot values
+
             var divergenceThresholdConvertedToDot = Mathf.Cos(Mathf.Deg2Rad* divergenceThreshold);
-            var isAbove = Vector3.Dot(directionToTest, m_GazeSourceTransform.forward) > divergenceThresholdConvertedToDot;
-            Debug.LogError("divergenceThreshold : " + divergenceThreshold);
-            Debug.LogError("divergenceThresholdConvertedToDot : " + divergenceThresholdConvertedToDot);
-            Debug.LogError("Dot : " + Vector3.Dot(directionToTest, m_GazeSourceTransform.forward));
-            Debug.LogError("isAbove : " + isAbove);
+            var isAbove = Vector3.Dot(testVector, gazeDirection) > divergenceThresholdConvertedToDot;
+
             return isAbove;
         }
     }
