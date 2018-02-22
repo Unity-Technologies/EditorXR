@@ -6,9 +6,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public sealed class GazeDivergenceModule : MonoBehaviour
     {
+        const float k_StableGazeThreshold = 0.25f;
+
         Transform m_GazeSourceTransform;
         Quaternion m_PreviousGazeRotation;
         float m_GazeVelocity;
+
+        public bool gazeStable { get { return m_GazeVelocity < k_StableGazeThreshold; } }
 
         void Awake()
         {
@@ -18,9 +22,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void Update()
         {
             var gazeRotationDifference = Quaternion.Angle(m_GazeSourceTransform.rotation, m_PreviousGazeRotation);
-            m_GazeVelocity += gazeRotationDifference;
-            m_GazeVelocity -= Time.unscaledDeltaTime;
+            m_GazeVelocity = m_GazeVelocity + gazeRotationDifference * Time.unscaledDeltaTime;
+            m_GazeVelocity = Mathf.Clamp01(m_GazeVelocity -= Time.unscaledDeltaTime * 0.5f);
+
             m_PreviousGazeRotation = m_GazeSourceTransform.rotation; // Cache the previous camera rotation
+            Debug.Log(m_GazeVelocity);
         }
 
         /// <summary>
@@ -29,14 +35,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// <param name="objectToTest">Vector to test for a threshold cross with relation to the gazeSource forward vector</param>
         /// <param name="divergenceThreshold">Threshold, in degrees, via doc product conversion of this angular value</param>
         /// <returns></returns>
-        public bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold)
+        public bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold, bool detectIfGazeIsUnstable = false)
         {
-            var gazeDirection = m_GazeSourceTransform.forward;
-            var testVector = objectToTest.position - m_GazeSourceTransform.position; // Test object to gaze source vector
-            testVector.Normalize(); // Normalize, in order to retain expected dot values
+            var isAbove = false;
+            if (detectIfGazeIsUnstable || gazeStable)
+            {
+                var gazeDirection = m_GazeSourceTransform.forward;
+                var testVector = objectToTest.position - m_GazeSourceTransform.position; // Test object to gaze source vector
+                testVector.Normalize(); // Normalize, in order to retain expected dot values
 
-            var divergenceThresholdConvertedToDot = Mathf.Cos(Mathf.Deg2Rad* divergenceThreshold);
-            var isAbove = Vector3.Dot(testVector, gazeDirection) > divergenceThresholdConvertedToDot;
+                var divergenceThresholdConvertedToDot = Mathf.Sin(Mathf.Deg2Rad * divergenceThreshold);
+                var angularComparison = Mathf.Abs(Vector3.Dot(testVector, gazeDirection));
+                isAbove = angularComparison > divergenceThresholdConvertedToDot;
+            }
 
             return isAbove;
         }

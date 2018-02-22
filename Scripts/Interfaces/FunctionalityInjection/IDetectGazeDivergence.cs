@@ -6,23 +6,21 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class ability to detect gaze divergence above an defined threshold, for a given transform's forward vector
-    /// 
-    /// Spatially scrolling allows for directional input-device movement to drive changes/progression of UI
-    /// element selection, without the need for additional input beyond the movement of an input-device.
     /// </summary>
     public interface IDetectGazeDivergence
     {
+        //float gazeIsStable { get; }
     }
 
     public static class IDetectGazeDivergenceMethods
     {
-        internal delegate bool IsAboveDivergenceThresholdDelegate(IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold);
+        internal delegate bool IsAboveDivergenceThresholdDelegate(IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold, bool detectIfGazeIsUnstable = false);
 
-        internal static Func<Transform, float, bool> isAboveDivergenceThreshold { private get; set; }
+        internal static Func<Transform, float, bool, bool> isAboveDivergenceThreshold { private get; set; }
 
-        public static bool IsAboveDivergenceThreshold(this IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold)
+        public static bool IsAboveDivergenceThreshold(this IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold, bool detectIfGazeIsUnstable = false)
         {
-            return isAboveDivergenceThreshold(transformToTest, divergenceThreshold);
+            return isAboveDivergenceThreshold(transformToTest, divergenceThreshold, detectIfGazeIsUnstable);
         }
     }
 }
