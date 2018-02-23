@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.SpatialUI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -19,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Coroutine m_TestObjectAnimPositionCoroutine;
         Coroutine m_TestObjectAnimRotationCoroutine;
         bool m_TestInFocus;
+        SpatialUI m_TestSpatialUI;
 
         /// <summary>
         /// Distance beyond which content will be re-positioned at the ideal distance from the user's gaze/hmd
@@ -142,6 +142,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_TestObjectTransform.parent = m_WorldspaceAnchorTransform;
             m_TestObjectAnchoredWorldPosition = m_TestObjectTransform.position;
             m_TestObjectTransform.rotation = Quaternion.identity;
+
+            m_TestSpatialUI = m_TestObjectTransform.GetComponent<SpatialUI>();
         }
 
         void OnDestroy()
@@ -159,7 +161,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             var attemptiaimingOutsideOfGazeThreshold = this.IsAboveDivergenceThreshold(m_TestObjectTransform, 15f);
 
-            Debug.LogError(Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)));
+            //Debug.LogError(Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)));
             var distance = Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position));
             if (m_TestObjectAnimPositionCoroutine == null && Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)) > k_AllowedDistanceDivergence)
             {
@@ -204,6 +206,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         IEnumerator TestObjectInFocus()
         {
+            m_TestSpatialUI.beingMoved = !m_TestInFocus;
+
             var currentScale = m_TestObjectTransform.localScale;
             var targetScale = m_TestInFocus ? Vector3.one * 1f : Vector3.one * 0.5f;
             var transitionAmount = 0f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y

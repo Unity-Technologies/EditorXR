@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.SpatialUI
+namespace UnityEditor.Experimental.EditorVR
 {
     public class AdaptivePositionTest01 : MonoBehaviour, IAdaptPosition
     {

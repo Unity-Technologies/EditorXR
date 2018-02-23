@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR.SpatialUI
+namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class ability to be automatically positioned by the AdaptivePositionModule
