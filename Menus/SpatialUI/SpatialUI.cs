@@ -1,16 +1,26 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿#if UNITY_EDITOR
 using UnityEngine;
 
-public class SpatialUI : MonoBehaviour {
+namespace UnityEditor.Experimental.EditorVR
+{
+    public class SpatialUI : MonoBehaviour, IAdaptPosition
+    {
+        [SerializeField] CanvasGroup m_MainCanvasGroup;
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+        bool m_BeingMoved;
+
+        public Transform transform { get; set; }
+        public float allowedGazeDivergence { get; private set; }
+
+        public bool beingMoved
+        {
+            get { return m_BeingMoved; }
+            set
+            {
+                m_BeingMoved = value;
+                m_MainCanvasGroup.alpha = m_BeingMoved ? 0.25f : 1f;
+            }
+        }
+    }
 }
+#endif
