@@ -568,6 +568,7 @@ GameObject:
   - component: {fileID: 224749180625870246}
   - component: {fileID: 222033468581579130}
   - component: {fileID: 114419184614183756}
+  - component: {fileID: 225627101902247892}
   m_Layer: 5
   m_Name: TestText
   m_TagString: Untagged
@@ -768,6 +769,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4542884266341674}
   - component: {fileID: 114400322844796516}
+  - component: {fileID: 320523694767722950}
+  - component: {fileID: 95737745899950516}
   m_Layer: 5
   m_Name: SpatialUIShell
   m_TagString: Untagged
@@ -1466,6 +1469,23 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1083723035257114}
   m_Mesh: {fileID: 0}
+--- !u!95 &95737745899950516
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1789767321393858}
+  m_Enabled: 0
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: ccf3fc5db7ddcb24bb84ad7f21d2de3d, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 2
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
 --- !u!114 &114000567662040162
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -1934,6 +1954,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_MainCanvasGroup: {fileID: 225156185928477662}
+  m_HomeTextCanvasGroup: {fileID: 225627101902247892}
+  m_HomeTextBackgroundTransform: {fileID: 224321282137255222}
+  m_Director: {fileID: 320523694767722950}
+  m_RevealPlayable: {fileID: 11400000, guid: 119b47a37635c0f42995968607e713a6, type: 2}
 --- !u!114 &114403956001920920
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3800,3 +3824,38 @@ CanvasGroup:
   m_Interactable: 0
   m_BlocksRaycasts: 0
   m_IgnoreParentGroups: 0
+--- !u!225 &225627101902247892
+CanvasGroup:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1593906124877426}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
+--- !u!320 &320523694767722950
+PlayableDirector:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1789767321393858}
+  m_Enabled: 0
+  serializedVersion: 3
+  m_PlayableAsset: {fileID: 11400000, guid: 119b47a37635c0f42995968607e713a6, type: 2}
+  m_InitialState: 0
+  m_WrapMode: 1
+  m_DirectorUpdateMode: 3
+  m_InitialTime: 0
+  m_SceneBindings:
+  - key: {fileID: 0}
+    value: {fileID: 95737745899950516}
+  - key: {fileID: 0}
+    value: {fileID: 95737745899950516}
+  - key: {fileID: 0}
+    value: {fileID: 95737745899950516}
+  - key: {fileID: 114237728701862262, guid: 119b47a37635c0f42995968607e713a6, type: 2}
+    value: {fileID: 1789767321393858}
+  m_ExposedReferences:
+    m_References: []
