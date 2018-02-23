@@ -24,6 +24,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// </summary>
         const float k_AllowedDistanceDivergence = 0.2f;
 
+        /// <summary>
+        /// The additional amount of diverge/tolerance allowed after an object has been anchored
+        /// This prevents a constant repositioning of elements, if the gaze lies at the edge of the divergence tolerance region
+        /// </summary>
+        float allowedStableDivergence = 0.001f;
+
+        Transform m_GazeTransform;
+
+        Transform m_WorldspaceAnchorTransform; // The player transform under which anchored objects will be parented
+
         [SerializeField]
         HapticPulse m_MovementStartPulse; // The pulse performed when beginning to move an element to a new destination
 
@@ -34,29 +44,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         HapticPulse m_MovementEndPulse; // The pulse performed when movement of an element has ended, the element has bee repositioned in the user's FOV
 
         // Collection housing objects whose position is controlled by this module
-        readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
+        readonly List<AdaptivePositionData> m_AdaptivePositionElements = new List<AdaptivePositionData>();
 
-        Transform m_GazeTransform;
-
-        Transform m_WorldspaceAnchorTransform; // The player transform under which anchored objects will be parented
-
-        public class AdaptivePositionData : INodeToRay
+        public class AdaptivePositionData
         {
-            public AdaptivePositionData(IAdaptPosition caller, Node node, Vector3 previousAnchoredPosition, float allowedStableDivergence, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+            public AdaptivePositionData(IAdaptPosition caller, bool centerVisuals = true)
             {
-                this.allowedStableDivergence = allowedStableDivergence;
-                this.previousAnchoredPosition = previousAnchoredPosition;
-
                 this.caller = caller;
-                this.node = node;
-                this.startingPosition = startingPosition;
-                this.currentPosition = currentPosition;
-                this.repeatingScrollLengthRange = repeatingScrollLengthRange;
-                this.scrollableItemCount = scrollableItemCount;
-                this.maxItemCount = maxItemCount;
+                this.previousAnchoredPosition = previousAnchoredPosition;
                 this.centerVisuals = centerVisuals;
                 spatialDirection = null;
-                rayOrigin = this.RequestRayOriginFromNode(node);
+                startingPosition = caller.transform.position;
             }
 
             // Below is Data assigned by calling object requesting spatial scroll processing
@@ -67,50 +65,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public IAdaptPosition caller { get; set; }
 
             /// <summary>
-            /// The node on which this spatial scroll is being processed
-            /// </summary>
-            public Node node { get; set; }
-
-            /// <summary>
-            /// The ray origin on which this spatial scroll is being processed
-            /// </summary>
-            public Transform rayOrigin { get; set; }
-
-            /// <summary>
             /// The world-position at which this object was last anchored
             /// </summary>
             public Vector3 previousAnchoredPosition { get; set; }
 
             /// <summary>
-            /// The additional amount of diverge/tolerance allowed after an object has been anchored
-            /// This prevents a constant repositioning of elements, if the gaze lies at the edge of the divergence tolerance region
-            /// </summary>
-            public float allowedStableDivergence { get; set; }
-
-            /// <summary>
             /// The origin/starting position of the scroll
             /// </summary>
             public Vector3 startingPosition { get; set; }
-
-            /// <summary>
-            /// The current scroll position
-            /// </summary>
-            public Vector3 currentPosition { get; set; }
-
-            /// <summary>
-            /// The magnitude at which a scroll will repeat/reset to its original scroll starting value
-            /// </summary>
-            public float repeatingScrollLengthRange { get; set; }
-
-            /// <summary>
-            /// Number of items being scrolled through
-            /// </summary>
-            public int scrollableItemCount { get; set; }
-
-            /// <summary>
-            /// Maximum number of items (to be scrolled through) that will be allowed
-            /// </summary>
-            public int maxItemCount { get; set; }
 
             /// <summary>
             /// If true, expand scroll visuals out from the center of the trigger/origin/start position
@@ -124,24 +86,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// </summary>
             public Vector3? spatialDirection { get; set; }
 
-            /// <summary>
-            /// 0-1 offset/magnitude of current scroll position, relative to the trigger/origin/start point, and the repeatingScrollLengthRange
-            /// </summary>
-            public float normalizedLoopingPosition { get; set; }
-
-            /// <summary>
-            /// Value representing how much of the pre-scroll drag amount has occurred
-            /// </summary>
-            public float dragDistance { get; set; }
-
-            /// <summary>
-            /// Bool denoting that the scroll trigger magnitude has been exceeded
-            /// </summary>
-            public bool passedMinDragActivationThreshold { get { return spatialDirection != null; } }
-
             public void UpdateExistingScrollData(Vector3 newPosition)
             {
-                currentPosition = newPosition;
+                //currentPosition = newPosition;
             }
         }
 
@@ -153,13 +100,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_TestObjectTransform = ObjectUtils.Instantiate(m_TestObject, m_GazeTransform, false).transform;
             m_TestSpatialUI = m_TestObjectTransform.GetComponent<SpatialUI>();
 
+            m_AdaptivePositionElements.Add(new AdaptivePositionData(m_TestSpatialUI));
+
             m_TestObjectTransform.localPosition = new Vector3(0f, 0f, m_TestSpatialUI.m_DistanceOffset); // push the object away from the HMD
             m_TestObjectTransform.parent = m_WorldspaceAnchorTransform;
             m_TestObjectAnchoredWorldPosition = m_TestObjectTransform.position;
             m_TestObjectTransform.rotation = Quaternion.identity;
-
-
-
         }
 
         void OnDestroy()
