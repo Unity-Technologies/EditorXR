@@ -10,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR
         public Transform transform { get; set; }
         public bool beingMoved { get; set; }
         public float allowedGazeDivergence { get { return k_AllowedGazeDivergence; } }
+        public float m_DistanceOffset { get; private set; }
 
         // Use this for initialization
         void Start()

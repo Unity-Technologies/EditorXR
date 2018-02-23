@@ -12,7 +12,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     {
         [SerializeField] GameObject m_TestObject;
         Transform m_TestObjectTransform;
-        float m_TestObjectDistanceOffset = 0.5f;
         //float m_TestObjectAllowedDistanceDivergece = 0.1f;
         Vector3 m_TestObjectAnchoredWorldPosition;
         Coroutine m_TestObjectAnimPositionCoroutine;
@@ -43,8 +42,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public class AdaptivePositionData : INodeToRay
         {
-            public AdaptivePositionData(IAdaptPosition caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+            public AdaptivePositionData(IAdaptPosition caller, Node node, Vector3 previousAnchoredPosition, float allowedStableDivergence, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
             {
+                this.allowedStableDivergence = allowedStableDivergence;
+                this.previousAnchoredPosition = previousAnchoredPosition;
+
                 this.caller = caller;
                 this.node = node;
                 this.startingPosition = startingPosition;
@@ -73,6 +75,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// The ray origin on which this spatial scroll is being processed
             /// </summary>
             public Transform rayOrigin { get; set; }
+
+            /// <summary>
+            /// The world-position at which this object was last anchored
+            /// </summary>
+            public Vector3 previousAnchoredPosition { get; set; }
+
+            /// <summary>
+            /// The additional amount of diverge/tolerance allowed after an object has been anchored
+            /// This prevents a constant repositioning of elements, if the gaze lies at the edge of the divergence tolerance region
+            /// </summary>
+            public float allowedStableDivergence { get; set; }
 
             /// <summary>
             /// The origin/starting position of the scroll
@@ -138,12 +151,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_WorldspaceAnchorTransform = m_GazeTransform.parent;
 
             m_TestObjectTransform = ObjectUtils.Instantiate(m_TestObject, m_GazeTransform, false).transform;
-            m_TestObjectTransform.localPosition = new Vector3(0f, 0f, m_TestObjectDistanceOffset); // push the object away from the HMD
+            m_TestSpatialUI = m_TestObjectTransform.GetComponent<SpatialUI>();
+
+            m_TestObjectTransform.localPosition = new Vector3(0f, 0f, m_TestSpatialUI.m_DistanceOffset); // push the object away from the HMD
             m_TestObjectTransform.parent = m_WorldspaceAnchorTransform;
             m_TestObjectAnchoredWorldPosition = m_TestObjectTransform.position;
             m_TestObjectTransform.rotation = Quaternion.identity;
 
-            m_TestSpatialUI = m_TestObjectTransform.GetComponent<SpatialUI>();
+
+
         }
 
         void OnDestroy()
@@ -181,7 +197,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Debug.LogWarning("TestObjectReposition: ");
             var currentPosition = m_TestObjectTransform.position;
             var targetPosition = m_GazeTransform.position;
-            targetPosition = targetPosition + (this.GetViewerScale() * m_GazeTransform.forward * m_TestObjectDistanceOffset);
+            targetPosition = targetPosition + (this.GetViewerScale() * m_GazeTransform.forward * m_TestSpatialUI.m_DistanceOffset);
             ;// + (Vector3.one * m_TestObjectDistanceOffset);// - new Vector3(0f, 0f, m_TestObjectDistanceOffset);
             var transitionAmount = 0f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
             var transitionSubtractMultiplier = 2f;

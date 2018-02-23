@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Transform transform { get; set; }
         public float allowedGazeDivergence { get; private set; }
+        public float m_DistanceOffset { get { return 0.5f; } }
 
         public bool beingMoved
         {

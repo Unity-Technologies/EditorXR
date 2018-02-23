@@ -24,6 +24,11 @@ namespace UnityEditor.Experimental.EditorVR
         /// beyond which the implementor will be repositioned by the AdaptivePositionModule
         /// </summary>
         float allowedGazeDivergence { get; }
+
+        /// <summary>
+        /// Target z-offset, away from the gaze source transform
+        /// </summary>
+        float m_DistanceOffset { get; }
     }
 }
 #endif
