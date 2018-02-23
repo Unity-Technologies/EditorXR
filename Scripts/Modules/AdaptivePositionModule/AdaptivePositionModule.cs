@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale
+    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale
     {
         [SerializeField] GameObject m_TestObject;
         Transform m_TestObjectTransform;
@@ -54,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 this.previousAnchoredPosition = previousAnchoredPosition;
                 this.centerVisuals = centerVisuals;
                 spatialDirection = null;
-                startingPosition = caller.transform.position;
+                startingPosition = caller.adaptiveTransform.position;
             }
 
             // Below is Data assigned by calling object requesting spatial scroll processing
@@ -99,8 +99,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             m_TestObjectTransform = ObjectUtils.Instantiate(m_TestObject, m_GazeTransform, false).transform;
             m_TestSpatialUI = m_TestObjectTransform.GetComponent<SpatialUI>();
+            m_TestSpatialUI.adaptivePositionData = new AdaptivePositionData(m_TestSpatialUI);
 
-            m_AdaptivePositionElements.Add(new AdaptivePositionData(m_TestSpatialUI));
+            m_AdaptivePositionElements.Add(m_TestSpatialUI.adaptivePositionData);
 
             m_TestObjectTransform.localPosition = new Vector3(0f, 0f, m_TestSpatialUI.m_DistanceOffset); // push the object away from the HMD
             m_TestObjectTransform.parent = m_WorldspaceAnchorTransform;
@@ -140,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         IEnumerator TestObjectReposition(bool lockToGazeHeight = false)
         {
-            Debug.LogWarning("TestObjectReposition: ");
+            //Debug.LogWarning("TestObjectReposition: ");
             var currentPosition = m_TestObjectTransform.position;
             var targetPosition = m_GazeTransform.position;
             targetPosition = targetPosition + (this.GetViewerScale() * m_GazeTransform.forward * m_TestSpatialUI.m_DistanceOffset);
@@ -155,6 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             while (transitionAmount < 1f)
             {
                 var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+                smoothTransition *= smoothTransition;
                 m_TestObjectTransform.position = Vector3.Lerp(currentPosition, targetPosition, smoothTransition);
                 transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
                 m_TestObjectTransform.LookAt(m_GazeTransform);

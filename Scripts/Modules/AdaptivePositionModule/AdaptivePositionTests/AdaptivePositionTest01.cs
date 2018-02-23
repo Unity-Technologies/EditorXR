@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,10 +8,11 @@ namespace UnityEditor.Experimental.EditorVR
     {
         const float k_AllowedGazeDivergence = 0.5f;
 
-        public Transform transform { get; set; }
+        public Transform adaptiveTransform { get; set; }
         public bool beingMoved { get; set; }
         public float allowedGazeDivergence { get { return k_AllowedGazeDivergence; } }
         public float m_DistanceOffset { get; private set; }
+        public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
 
         // Use this for initialization
         void Start()
