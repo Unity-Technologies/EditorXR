@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
         float allowedGazeDivergence { get; }
 
         /// <summary>
-        /// Target z-offset, away from the gaze source transform
+        /// Target z-offset, at which to position the gaze source transform
         /// </summary>
         float m_DistanceOffset { get; }
     }
