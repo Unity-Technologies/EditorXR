@@ -11,7 +11,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     public class SpatialUI : MonoBehaviour, IAdaptPosition
     {
-        const float k_DistanceOffset = 0.5f;
+        // TODO expose as a user preference, for spatial UI distance
+        const float k_DistanceOffset = 0.75f;
 
         [SerializeField]
         CanvasGroup m_MainCanvasGroup;
@@ -28,22 +29,40 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         PlayableAsset m_RevealPlayable;
 
+        float m_AllowedGazeDivergence = 45f;
         bool m_BeingMoved;
-        Coroutine m_VisibilityCoroutine;
+        bool m_InFocus;
         Vector3 m_HomeTextBackgroundOriginalLocalScale;
 
+        Coroutine m_VisibilityCoroutine;
+        Coroutine m_InFocusCoroutine;
+
         public Transform adaptiveTransform { get { return transform; } }
-        public float allowedGazeDivergence { get; private set; }
-        public float m_DistanceOffset { get { return k_DistanceOffset; } }
+        public float allowedDegreeOfGazeDivergence { get { return m_AllowedGazeDivergence; } }
+        public float distanceOffset { get { return k_DistanceOffset; } }
         public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
+
+        public bool inFocus
+        {
+            set
+            {
+                //if (value != m_InFocus)
+                    //this.RestartCoroutine(ref m_InFocusCoroutine, AnimateFocusVisuals());
+
+                m_InFocus = value;
+            }
+        }
 
         public bool beingMoved
         {
             get { return m_BeingMoved; }
             set
             {
-                m_BeingMoved = value;
-                this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(!m_BeingMoved));
+                if (m_BeingMoved != value)
+                {
+                    m_BeingMoved = value;
+                    this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility());
+                }
 
                 //m_Director.Play(m_RevealPlayable);
             }
@@ -54,17 +73,17 @@ namespace UnityEditor.Experimental.EditorVR
             m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
         }
 
-        IEnumerator AnimateVisibility(bool show = true)
+        IEnumerator AnimateVisibility()
         {
-            var speedScalar = show ? 3f : 2f;
+            var speedScalar = m_BeingMoved ? 2f : 4f;
             var currentAlpha = m_MainCanvasGroup.alpha;
-            var targetMainCanvasAlpha = show ? 1f : 0.25f;
+            var targetMainCanvasAlpha = m_BeingMoved ? 0.25f : 1f;
 
             var currentHomeTextAlpha = m_HomeTextCanvasGroup.alpha;
-            var targetHomeTextAlpha = show ? 1f : 0f;
+            var targetHomeTextAlpha = m_BeingMoved ? 0f : 1f;
 
             var currentHomeBackgroundLocalScale = m_HomeTextBackgroundTransform.localScale;
-            var targetHomeBackgroundLocalScale = show ? m_HomeTextBackgroundOriginalLocalScale : new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, 0f, 1f);
+            var targetHomeBackgroundLocalScale = m_BeingMoved ? new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, 0f, 1f) : m_HomeTextBackgroundOriginalLocalScale;
             //var targetPosition = show ? (moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition) : Vector3.zero;
             //var targetScale = show ? (moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_AlternateLocalScaleMultiplier) : Vector3.zero;
             //var currentPosition = transform.localPosition;
@@ -72,6 +91,18 @@ namespace UnityEditor.Experimental.EditorVR
             //var targetIconContainerScale = show ? m_OriginalIconContainerLocalScale : Vector3.zero;
             var transitionAmount = 0f;
             //var currentScale = transform.localScale;
+
+            if (!m_BeingMoved)
+            {
+                var delayBeforeReveal = 0.5f;
+                while (delayBeforeReveal > 0)
+                {
+                    // Pause before revealing 
+                    delayBeforeReveal -= Time.unscaledDeltaTime;
+                    yield return null;
+                }
+            }
+
             while (transitionAmount < 1)
             {
                 var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime * speedScalar);
@@ -79,12 +110,12 @@ namespace UnityEditor.Experimental.EditorVR
                 //m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
                 //transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
                 //transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedAmount);
-                //m_MainCanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetMainCanvasAlpha, shapedAmount);
+                m_MainCanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetMainCanvasAlpha, shapedAmount);
 
                 shapedAmount *= shapedAmount; // increase beginning & end anim emphasis
                 m_HomeTextCanvasGroup.alpha = Mathf.Lerp(currentHomeTextAlpha, targetHomeTextAlpha, shapedAmount);
 
-                m_HomeTextBackgroundTransform.localScale = Vector3.Lerp(currentHomeBackgroundLocalScale, targetHomeBackgroundLocalScale, shapedAmount);
+                //m_HomeTextBackgroundTransform.localScale = Vector3.Lerp(currentHomeBackgroundLocalScale, targetHomeBackgroundLocalScale, shapedAmount);
                 yield return null;
             }
 
@@ -95,6 +126,24 @@ namespace UnityEditor.Experimental.EditorVR
             //m_MainCanvasGroup.alpha = targetMainCanvasAlpha;
 
             m_VisibilityCoroutine = null;
+        }
+
+        IEnumerator AnimateFocusVisuals()
+        {
+            var currentScale = transform.localScale;
+            var targetScale = m_InFocus ? Vector3.one : Vector3.one * 0.5f;
+            var transitionAmount = 0f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
+            var transitionSubtractMultiplier = 5f;
+            while (transitionAmount < 1f)
+            {
+                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+                transform.localScale = Vector3.Lerp(currentScale, targetScale, smoothTransition);
+                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                yield return null;
+            }
+
+            transform.localScale = targetScale;
+            m_InFocusCoroutine = null;
         }
     }
 }

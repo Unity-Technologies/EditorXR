@@ -16,20 +16,25 @@ namespace UnityEditor.Experimental.EditorVR
         Transform adaptiveTransform { get; }
 
         /// <summary>
-        /// Bool denoting that this implementor is being moved by the AdaptivePositionModule
+        /// Bool denoting that this implementer is being moved by the AdaptivePositionModule
         /// </summary>
         bool beingMoved { get; set; }
 
         /// <summary>
-        /// Dot-product representing the allowed amount of tolerance between the gaze and the implementor transform,
-        /// beyond which the implementor will be repositioned by the AdaptivePositionModule
+        /// Bool denoting that this implementer within the allowed gaze range, being looked at
         /// </summary>
-        float allowedGazeDivergence { get; }
+        bool inFocus { set; }
+
+        /// <summary>
+        /// Angle representing the allowed amount of tolerance between the gaze's forward vector & the implementer transform,
+        /// beyond which the implementer will be repositioned by the AdaptivePositionModule
+        /// </summary>
+        float allowedDegreeOfGazeDivergence { get; }
 
         /// <summary>
         /// Target z-offset, at which to position the gaze source transform
         /// </summary>
-        float m_DistanceOffset { get; }
+        float distanceOffset { get; }
 
         /// <summary>
         /// The data defining the adaptive position state of the implementer

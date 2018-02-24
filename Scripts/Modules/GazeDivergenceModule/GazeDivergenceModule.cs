@@ -46,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 var divergenceThresholdConvertedToDot = Mathf.Sin(Mathf.Deg2Rad * divergenceThreshold);
                 var angularComparison = Mathf.Abs(Vector3.Dot(testVector, gazeDirection));
-                isAbove = angularComparison > divergenceThresholdConvertedToDot;
+                isAbove = angularComparison < divergenceThresholdConvertedToDot;
             }
 
             return isAbove;
