@@ -1478,7 +1478,7 @@ Animator:
   m_GameObject: {fileID: 1789767321393858}
   m_Enabled: 0
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: ccf3fc5db7ddcb24bb84ad7f21d2de3d, type: 2}
+  m_Controller: {fileID: 0}
   m_CullingMode: 0
   m_UpdateMode: 2
   m_ApplyRootMotion: 0
@@ -1956,8 +1956,7 @@ MonoBehaviour:
   m_MainCanvasGroup: {fileID: 225156185928477662}
   m_HomeTextCanvasGroup: {fileID: 225627101902247892}
   m_HomeTextBackgroundTransform: {fileID: 224321282137255222}
-  m_Director: {fileID: 320523694767722950}
-  m_RevealPlayable: {fileID: 11400000, guid: 119b47a37635c0f42995968607e713a6, type: 2}
+  m_RevealPlayable: {fileID: 0}
 --- !u!114 &114403956001920920
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -3843,7 +3842,7 @@ PlayableDirector:
   m_GameObject: {fileID: 1789767321393858}
   m_Enabled: 0
   serializedVersion: 3
-  m_PlayableAsset: {fileID: 11400000, guid: 119b47a37635c0f42995968607e713a6, type: 2}
+  m_PlayableAsset: {fileID: 0}
   m_InitialState: 0
   m_WrapMode: 1
   m_DirectorUpdateMode: 3
@@ -3855,7 +3854,7 @@ PlayableDirector:
     value: {fileID: 95737745899950516}
   - key: {fileID: 0}
     value: {fileID: 95737745899950516}
-  - key: {fileID: 114237728701862262, guid: 119b47a37635c0f42995968607e713a6, type: 2}
+  - key: {fileID: 0}
     value: {fileID: 1789767321393858}
   m_ExposedReferences:
     m_References: []
