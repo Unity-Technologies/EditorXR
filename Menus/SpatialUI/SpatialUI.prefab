@@ -772,7 +772,7 @@ GameObject:
   - component: {fileID: 320523694767722950}
   - component: {fileID: 95737745899950516}
   m_Layer: 5
-  m_Name: SpatialUIShell
+  m_Name: SpatialUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
