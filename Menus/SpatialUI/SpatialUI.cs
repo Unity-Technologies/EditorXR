@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -65,6 +66,22 @@ namespace UnityEditor.Experimental.EditorVR
 
                 //m_Director.Play(m_RevealPlayable);
             }
+        }
+
+        public class SpatialUITableElement
+        {
+            public SpatialUITableElement(string elementName, Sprite icon, Action correspondingFunction)
+            {
+                this.name = elementName;
+                this.icon = icon;
+                this.correspondingFunction = correspondingFunction;
+            }
+
+            public string name { get; set; }
+
+            public Sprite icon { get; set; }
+
+            public Action correspondingFunction { get; set; }
         }
 
         void Awake()
