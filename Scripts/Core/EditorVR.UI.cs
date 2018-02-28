@@ -13,6 +13,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         Camera m_EventCameraPrefab;
 
+        [SerializeField]
+        SpatialUI m_SpatialUIPrefab;
+
         class UI : Nested, IInterfaceConnector, IConnectInterfaces
         {
             const byte k_MinStencilRef = 2;
@@ -33,6 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             byte m_StencilRef = k_MinStencilRef;
 
             Camera m_EventCamera;
+            SpatialUI m_SpatialUI;
 
             readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
             readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
@@ -96,6 +100,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 inputModule.eventCamera = m_EventCamera;
 
                 inputModule.preProcessRaycastSource = evr.GetNestedModule<Rays>().PreProcessRaycastSource;
+
+                evr.AddModule<AdaptivePositionModule>();
+
+                // SpatialUI must be instantiated after the AdaptivePositionModule is added
+                m_SpatialUI = ObjectUtils.Instantiate(evr.m_SpatialUIPrefab.gameObject).GetComponent<SpatialUI>();
+                this.ConnectInterfaces(m_SpatialUI);
+            }
+
+            internal override void OnDestroy()
+            {
+                base.OnDestroy();
+
+                ObjectUtils.Destroy(m_SpatialUI.gameObject);
             }
 
             internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
