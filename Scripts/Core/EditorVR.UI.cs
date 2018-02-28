@@ -75,6 +75,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     usesStencilRef.stencilRef = stencilRef ?? RequestStencilRef();
                 }
+
+                var spatialMenuProvider = target as ISpatialMenuProvider;
+                if (spatialMenuProvider != null)
+                    m_SpatialUI.AddProvider(spatialMenuProvider);
             }
 
             public void DisconnectInterface(object target, object userData = null)
