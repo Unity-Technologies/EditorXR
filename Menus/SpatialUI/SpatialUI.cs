@@ -4,7 +4,6 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Networking;
 using UnityEngine.Playables;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -13,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
     {
         // TODO expose as a user preference, for spatial UI distance
         const float k_DistanceOffset = 0.75f;
+        const float k_AllowedGazeDivergence = 45f;
 
         [SerializeField]
         CanvasGroup m_MainCanvasGroup;
@@ -29,7 +29,6 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         PlayableAsset m_RevealPlayable;
 
-        float m_AllowedGazeDivergence = 45f;
         bool m_BeingMoved;
         bool m_InFocus;
         Vector3 m_HomeTextBackgroundOriginalLocalScale;
@@ -38,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR
         Coroutine m_InFocusCoroutine;
 
         public Transform adaptiveTransform { get { return transform; } }
-        public float allowedDegreeOfGazeDivergence { get { return m_AllowedGazeDivergence; } }
+        public float allowedDegreeOfGazeDivergence { get { return k_AllowedGazeDivergence; } }
         public float distanceOffset { get { return k_DistanceOffset; } }
         public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
 
