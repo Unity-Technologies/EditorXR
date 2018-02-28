@@ -348,7 +348,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public Sprite icon
         {
-            private get { return m_Icon; }
+            get { return m_Icon; }
             set
             {
                 m_PreviewIcon = null; // clear any cached preview icons

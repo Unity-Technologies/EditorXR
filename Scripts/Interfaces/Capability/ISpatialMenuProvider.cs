@@ -1,5 +1,5 @@
 ﻿#if UNITY_EDITOR
-using UnityEngine;
+using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Collection of elements with which to populate the corresponding spatial UI table/list/view
         /// </summary>
-        SpatialUI.SpatialUITableElement spatialTableElements { get; set; }
+        List<SpatialUI.SpatialUITableElement> spatialTableElements { get; }
     }
 }
 #endif

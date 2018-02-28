@@ -1,11 +1,12 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Playables;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -24,11 +25,14 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         Transform m_HomeTextBackgroundTransform;
 
+        [SerializeField]
+        TextMeshProUGUI m_MenuTitleText;
+
         //[SerializeField]
         //PlayableDirector m_Director;
 
-        [SerializeField]
-        PlayableAsset m_RevealPlayable;
+        //[SerializeField]
+        //PlayableAsset m_RevealPlayable;
 
         bool m_BeingMoved;
         bool m_InFocus;
@@ -41,6 +45,8 @@ namespace UnityEditor.Experimental.EditorVR
         public float allowedDegreeOfGazeDivergence { get { return k_AllowedGazeDivergence; } }
         public float distanceOffset { get { return k_DistanceOffset; } }
         public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
+
+        public readonly List<ISpatialMenuProvider> m_spatialMenuProviders = new List<ISpatialMenuProvider>();
 
         public bool inFocus
         {
@@ -88,6 +94,33 @@ namespace UnityEditor.Experimental.EditorVR
         {
             m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
         }
+
+        public void AddProvider(ISpatialMenuProvider provider)
+        {
+            Debug.LogError("Adding a provider");
+
+            if (m_spatialMenuProviders.Contains(provider))
+            {
+                Debug.LogWarning("Cannot add duplicates to the spatial menu provider collection.");
+                return;
+            }
+
+            m_spatialMenuProviders.Add(provider);
+
+            m_MenuTitleText.text = provider.spatialMenuName;
+        }
+
+        /*
+        public void RemoveProvider(ISpatialMenuProvider provider)
+        {
+            Debug.LogError("Removing a provider");
+            if (m_spatialMenuProviders.Contains(provider))
+            {
+                Debug.LogWarning("Cannot add duplicates to the spatial menu provider collection.");
+                m_spatialMenuProviders.Remove(provider);
+            }
+        }
+        */
 
         IEnumerator AnimateVisibility()
         {

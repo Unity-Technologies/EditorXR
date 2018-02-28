@@ -13,10 +13,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
         IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
-        IRequestFeedback
+        IRequestFeedback, ISpatialMenuProvider
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
+        readonly string k_SpatialDisplayName = "Tools";
+        readonly string k_SpatialDescription = "Select from the tools already enabled";
 
         [SerializeField]
         Sprite m_MainMenuIcon;
@@ -46,6 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_MenuFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<SpatialUI.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialUI.SpatialUITableElement>();
 
         public Transform menuOrigin { get; set; }
 
@@ -66,6 +69,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public bool ignoreLocking { get { return false; } }
 
         public Transform rayOrigin { get; set; }
+
+        // Spatial UI implementation
+        public string spatialMenuName { get { return k_SpatialDisplayName; } }
+        public string spatialMenuDescription { get { return k_SpatialDescription; } }
+        public bool displayingSpatially { get; set; }
+        public List<SpatialUI.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
 
         public bool mainMenuActivatorInteractable
         {
@@ -134,6 +143,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 PreviewToolsMenuButton = button;
 
             m_ToolsMenuUI.AddButton(button, buttonTransform);
+
+            spatialTableElements.Add(new SpatialUI.SpatialUITableElement(button.name, button.icon, null));
         }
 
         void DeleteToolsMenuButton(Type toolTypeToDelete, Type toolTypeToSelectAfterDelete)

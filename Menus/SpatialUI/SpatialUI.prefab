@@ -1956,7 +1956,7 @@ MonoBehaviour:
   m_MainCanvasGroup: {fileID: 225156185928477662}
   m_HomeTextCanvasGroup: {fileID: 225627101902247892}
   m_HomeTextBackgroundTransform: {fileID: 224321282137255222}
-  m_RevealPlayable: {fileID: 0}
+  m_MenuTitleText: {fileID: 114419184614183756}
 --- !u!114 &114403956001920920
 MonoBehaviour:
   m_ObjectHideFlags: 1
