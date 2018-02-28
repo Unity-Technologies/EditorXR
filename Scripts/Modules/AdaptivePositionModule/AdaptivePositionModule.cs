@@ -11,14 +11,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale
     {
-        [SerializeField] GameObject m_TestObject;
-        Transform m_TestObjectTransform;
+        //[SerializeField] GameObject m_TestObject;
+        //Transform m_TestObjectTransform;
         //float m_TestObjectAllowedDistanceDivergece = 0.1f;
-        Vector3 m_TestObjectAnchoredWorldPosition;
+        //Vector3 m_TestObjectAnchoredWorldPosition;
         Coroutine m_AdaptiveElementRepositionCoroutine;
         //Coroutine m_TestObjectAnimRotationCoroutine;
         bool m_TestInFocus;
-        SpatialUI m_TestSpatialUI;
+        //SpatialUI m_TestSpatialUI;
 
         /// <summary>
         /// Distance beyond which content will be re-positioned at the ideal distance from the user's gaze/hmd
@@ -93,11 +93,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        void Start()
+        void Awake()
         {
             m_GazeTransform = CameraUtils.GetMainCamera().transform;
             m_WorldspaceAnchorTransform = m_GazeTransform.parent;
 
+            /*
             m_TestObjectTransform = ObjectUtils.Instantiate(m_TestObject, m_GazeTransform, false).transform;
             m_TestSpatialUI = m_TestObjectTransform.GetComponent<SpatialUI>();
             m_TestSpatialUI.adaptivePositionData = new AdaptivePositionData(m_TestSpatialUI);
@@ -108,11 +109,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_TestObjectTransform.parent = m_WorldspaceAnchorTransform;
             m_TestObjectAnchoredWorldPosition = m_TestObjectTransform.position;
             m_TestObjectTransform.rotation = Quaternion.identity;
+            */
         }
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_TestObjectTransform.gameObject);
+            //ObjectUtils.Destroy(m_TestObjectTransform.gameObject);
         }
 
         void Update()
@@ -123,15 +125,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             //m_TestObjectTransform.LookAt(m_GazeTransform, m_WorldspaceAnchorTransform.up);
             //m_TestObjectTransform.rotation.SetLookRotation(m_GazeTransform.position - m_TestObjectTransform.position, Vector3.up);
 
-            var adaptiveElement = m_AdaptivePositionElements.First();
-            var isAboveDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveElement.adaptiveTransform, adaptiveElement.allowedDegreeOfGazeDivergence);
-
-            //Debug.LogError(Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)));
-            //var distance = Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position));
-            if (m_AdaptiveElementRepositionCoroutine == null && Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)) > k_AllowedDistanceDivergence)
+            if (m_AdaptivePositionElements.Count > 0)
             {
-                if (isAboveDivergenceThreshold)
-                    this.RestartCoroutine(ref m_AdaptiveElementRepositionCoroutine, RepositionElement(adaptiveElement));
+                var adaptiveElement = m_AdaptivePositionElements.First();
+                var adaptiveTransform = adaptiveElement.adaptiveTransform;
+                var allowedDegreeOfGazeDivergence = adaptiveElement.allowedDegreeOfGazeDivergence;
+                var isAboveDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveTransform, allowedDegreeOfGazeDivergence);
+
+                //Debug.LogError(Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)));
+                //var distance = Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position));
+                if (m_AdaptiveElementRepositionCoroutine == null && Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - adaptiveTransform.position)) > k_AllowedDistanceDivergence)
+                {
+                    if (isAboveDivergenceThreshold)
+                        this.RestartCoroutine(ref m_AdaptiveElementRepositionCoroutine, RepositionElement(adaptiveElement));
+                }
             }
 
             //adaptiveElement.inFocus = !isAboveDivergenceThreshold;
@@ -145,13 +152,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             */
         }
 
+        public void ControlObject(IAdaptPosition adaptiveElement)
+        {
+            m_AdaptivePositionElements.Add(adaptiveElement);
+
+            var adaptiveTransform = adaptiveElement.adaptiveTransform;
+            adaptiveTransform.localPosition = new Vector3(0f, 0f, adaptiveElement.distanceOffset); // push the object away from the HMD
+            adaptiveTransform.parent = m_WorldspaceAnchorTransform;
+            adaptiveTransform.rotation = Quaternion.identity;
+
+            adaptiveElement.adaptivePositionData = new AdaptivePositionData(adaptiveElement);
+            adaptiveElement.adaptivePositionData.previousAnchoredPosition = adaptiveTransform.position;
+        }
+
+        public void FreeObject(IAdaptPosition objectToStopControlling)
+        {
+            m_AdaptivePositionElements.Remove(objectToStopControlling);
+        }
+
         IEnumerator RepositionElement(IAdaptPosition adaptiveElement)
         {
             adaptiveElement.beingMoved = true;
             Debug.LogWarning("TestObjectReposition: ");
-            var currentPosition = m_TestObjectTransform.position;
+            var adaptiveTransform = adaptiveElement.adaptiveTransform;
+            var currentPosition = adaptiveTransform.position;
             var targetPosition = m_GazeTransform.position;
-            targetPosition = targetPosition + (this.GetViewerScale() * m_GazeTransform.forward * m_TestSpatialUI.distanceOffset);
+            targetPosition = targetPosition + (this.GetViewerScale() * m_GazeTransform.forward * adaptiveElement.distanceOffset);
             ;// + (Vector3.one * m_TestObjectDistanceOffset);// - new Vector3(0f, 0f, m_TestObjectDistanceOffset);
             var transitionAmount = 0f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
             var transitionSubtractMultiplier = 2f;
@@ -164,14 +190,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
                 smoothTransition *= smoothTransition;
-                m_TestObjectTransform.position = Vector3.Lerp(currentPosition, targetPosition, smoothTransition);
+                adaptiveTransform.position = Vector3.Lerp(currentPosition, targetPosition, smoothTransition);
                 transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
-                m_TestObjectTransform.LookAt(m_GazeTransform);
+                adaptiveTransform.LookAt(m_GazeTransform);
 
                 yield return null;
             }
 
-            m_TestObjectTransform.position = targetPosition;
+            adaptiveTransform.position = targetPosition;
             m_AdaptiveElementRepositionCoroutine = null;
             adaptiveElement.beingMoved = false;
         }
