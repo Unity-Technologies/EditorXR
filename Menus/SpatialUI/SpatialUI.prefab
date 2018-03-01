@@ -1953,6 +1953,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 148a8937dcf59af4da1f2607b0bbd9cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000, guid: d75dd6fbf66628f4587ef7d3cf00288f, type: 2}
   m_MainCanvasGroup: {fileID: 225156185928477662}
   m_HomeTextCanvasGroup: {fileID: 225627101902247892}
   m_HomeTextBackgroundTransform: {fileID: 224321282137255222}
