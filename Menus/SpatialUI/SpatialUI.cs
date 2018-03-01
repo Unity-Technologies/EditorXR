@@ -36,6 +36,9 @@ namespace UnityEditor.Experimental.EditorVR
         TextMeshProUGUI m_MenuTitleText;
 
         [SerializeField]
+        TextMeshProUGUI m_HomeSectionDescription;
+
+        [SerializeField]
         Transform m_Background;
 
         [SerializeField]
@@ -297,11 +300,13 @@ namespace UnityEditor.Experimental.EditorVR
 
                 if (actionMapInput.localRotationZ.value > 0)
                 {
+                    m_HomeSectionDescription.text = m_spatialMenuProviders[1].spatialMenuDescription;
                     m_SectionNameTexts[0].transform.localScale = Vector3.one * 0.5f;
                     m_SectionNameTexts[1].transform.localScale = Vector3.one;
                 }
                 else
                 {
+                    m_HomeSectionDescription.text = m_spatialMenuProviders[0].spatialMenuDescription;
                     m_SectionNameTexts[1].transform.localScale = Vector3.one * 0.5f;
                     m_SectionNameTexts[0].transform.localScale = Vector3.one;
                 }
