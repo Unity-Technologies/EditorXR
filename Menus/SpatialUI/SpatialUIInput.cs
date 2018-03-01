@@ -10,8 +10,6 @@ namespace UnityEngine.InputNew
 		public ButtonInputControl @show { get { return (ButtonInputControl)this[0]; } }
 		public ButtonInputControl @select { get { return (ButtonInputControl)this[1]; } }
 		public ButtonInputControl @cancel { get { return (ButtonInputControl)this[2]; } }
-		public AxisInputControl @localRotationX { get { return (AxisInputControl)this[3]; } }
-		public AxisInputControl @localRotationY { get { return (AxisInputControl)this[4]; } }
-		public AxisInputControl @localRotationZ { get { return (AxisInputControl)this[5]; } }
+		public AxisInputControl @localRotationZ { get { return (AxisInputControl)this[3]; } }
 	}
 }
