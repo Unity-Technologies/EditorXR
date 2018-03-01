@@ -33,16 +33,20 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         TextMeshProUGUI m_MenuTitleText;
 
+        [SerializeField]
+        Transform m_Background;
+
         //[SerializeField]
         //PlayableDirector m_Director;
 
         //[SerializeField]
         //PlayableAsset m_RevealPlayable;
 
+        bool m_Visible;
         bool m_BeingMoved;
         bool m_InFocus;
         Vector3 m_HomeTextBackgroundOriginalLocalScale;
-        bool m_Visible;
+        Vector3 m_HomeBackgroundOriginalLocalScale;
 
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
@@ -128,6 +132,7 @@ namespace UnityEditor.Experimental.EditorVR
         void Awake()
         {
             m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
+            m_HomeBackgroundOriginalLocalScale = m_Background.localScale;
         }
 
         public void AddProvider(ISpatialMenuProvider provider)
@@ -166,6 +171,9 @@ namespace UnityEditor.Experimental.EditorVR
             var currentHomeTextAlpha = m_HomeTextCanvasGroup.alpha;
             var targetHomeTextAlpha = m_BeingMoved ? 0f : 1f;
 
+            var currentBackgroundLocalScale = m_Background.localScale;
+            var targetBackgroundLocalScale = Vector3.one * (m_BeingMoved ? 0.75f : 1f);
+
             var currentHomeBackgroundLocalScale = m_HomeTextBackgroundTransform.localScale;
             var targetHomeBackgroundLocalScale = m_BeingMoved ? new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, 0f, 1f) : m_HomeTextBackgroundOriginalLocalScale;
             //var targetPosition = show ? (moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition) : Vector3.zero;
@@ -196,6 +204,8 @@ namespace UnityEditor.Experimental.EditorVR
                 //transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedAmount);
                 m_MainCanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetMainCanvasAlpha, shapedAmount);
 
+                m_Background.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, shapedAmount);
+
                 shapedAmount *= shapedAmount; // increase beginning & end anim emphasis
                 m_HomeTextCanvasGroup.alpha = Mathf.Lerp(currentHomeTextAlpha, targetHomeTextAlpha, shapedAmount);
 
@@ -207,7 +217,8 @@ namespace UnityEditor.Experimental.EditorVR
             //transform.localScale = targetScale;
             //transform.localPosition = targetPosition;
 
-            //m_MainCanvasGroup.alpha = targetMainCanvasAlpha;
+            m_MainCanvasGroup.alpha = targetMainCanvasAlpha;
+            m_Background.localScale = targetBackgroundLocalScale;
 
             m_VisibilityCoroutine = null;
         }
@@ -263,7 +274,7 @@ namespace UnityEditor.Experimental.EditorVR
                 return;
             }
             */
-
+            /*
             if (spatialScrollData == null && (actionMapInput.show.wasJustPressed || actionMapInput.show.isHeld) && actionMapInput.select.wasJustPressed)
             {
                 spatialScrollStartPosition = spatialScrollOrigin.position;
@@ -335,6 +346,7 @@ namespace UnityEditor.Experimental.EditorVR
 
                 CloseMenu();
             }
+            */
         }
     }
 }
