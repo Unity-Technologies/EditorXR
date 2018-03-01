@@ -7,14 +7,19 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    public class SpatialUI : MonoBehaviour, IAdaptPosition
+    public class SpatialUI : MonoBehaviour, IAdaptPosition, ICustomActionMap, IControlSpatialScrolling, IUsesNode
     {
         // TODO expose as a user preference, for spatial UI distance
         const float k_DistanceOffset = 0.75f;
         const float k_AllowedGazeDivergence = 45f;
+        const float k_SpatialQuickToggleDuration = 0.25f;
+
+        [SerializeField]
+        ActionMap m_ActionMap;
 
         [SerializeField]
         CanvasGroup m_MainCanvasGroup;
@@ -37,10 +42,40 @@ namespace UnityEditor.Experimental.EditorVR
         bool m_BeingMoved;
         bool m_InFocus;
         Vector3 m_HomeTextBackgroundOriginalLocalScale;
+        bool m_Visible;
 
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
 
+        bool visible
+        {
+            get { return m_Visible; }
+
+            set
+            {
+                if (m_Visible == value)
+                    return;
+
+                m_Visible = value;
+
+                gameObject.SetActive(m_Visible);
+            }
+        }
+
+        public Node node { get; set; }
+
+        // Action Map interface members
+        public ActionMap actionMap { get { return m_ActionMap; } }
+        public bool ignoreActionMapInputLocking { get; private set; }
+
+        // Spatial scroll interface members
+        public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
+        public Transform spatialScrollOrigin { get; set; }
+        public Vector3 spatialScrollStartPosition { get; set; }
+        public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
+        public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
+
+        // Adaptive position related members
         public Transform adaptiveTransform { get { return transform; } }
         public float allowedDegreeOfGazeDivergence { get { return k_AllowedGazeDivergence; } }
         public float distanceOffset { get { return k_DistanceOffset; } }
@@ -193,6 +228,113 @@ namespace UnityEditor.Experimental.EditorVR
 
             transform.localScale = targetScale;
             m_InFocusCoroutine = null;
+        }
+
+        public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
+        {
+            const float kAllowToggleDuration = 0.25f;
+
+            var actionMapInput = (SpatialUIInput)input;
+
+            // This block is only processed after a frame with both trigger buttons held has been detected
+            if (spatialScrollData != null && actionMapInput.cancel.wasJustPressed)
+            {
+                consumeControl(actionMapInput.cancel);
+                consumeControl(actionMapInput.show);
+                consumeControl(actionMapInput.select);
+
+                /*
+                //OnButtonClick();
+                //CloseMenu(); // Also ends spatial scroll
+                //m_ToolsMenuUI.allButtonsVisible = false;
+                */
+            }
+
+            /*
+            if (actionMapInput.show.wasJustPressed)
+            {
+                visible = true;
+                return;
+            }
+
+            if (actionMapInput.show.wasJustReleased)
+            {
+                visible = false;
+                return;
+            }
+            */
+
+            if (spatialScrollData == null && (actionMapInput.show.wasJustPressed || actionMapInput.show.isHeld) && actionMapInput.select.wasJustPressed)
+            {
+                spatialScrollStartPosition = spatialScrollOrigin.position;
+                allowSpatialQuickToggleActionBeforeThisTime = Time.realtimeSinceStartup + spatialQuickToggleDuration;
+                consumeControl(actionMapInput.show);
+                consumeControl(actionMapInput.select);
+
+                // Assign initial SpatialScrollData; begin scroll
+                spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+
+                HideScrollFeedback();
+                ShowMenuFeedback();
+            }
+            else if (spatialScrollData != null && actionMapInput.show.isHeld)
+            {
+                consumeControl(actionMapInput.show);
+                consumeControl(actionMapInput.select);
+
+                // Attempt to close a button, if a scroll has passed the trigger threshold
+                if (spatialScrollData != null && actionMapInput.select.wasJustPressed)
+                {
+                    if (m_ToolsMenuUI.DeleteHighlightedButton())
+                        buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
+
+                    if (buttonCount <= k_ActiveToolOrderPosition + 1)
+                    {
+                        if (spatialScrollData != null)
+                            this.EndSpatialScroll();
+
+                        return;
+                    }
+                }
+
+                // normalized input should loop after reaching the 0.15f length
+                buttonCount -= 1; // Decrement to disallow cycling through the main menu button
+                spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+                var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
+                if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
+                {
+                    if (!m_ToolsMenuUI.allButtonsVisible)
+                    {
+                        m_ToolsMenuUI.spatialDragDistance = spatialScrollData.dragDistance;
+                        this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
+                        m_ToolsMenuUI.allButtonsVisible = true;
+                    }
+                    else if (spatialScrollData.spatialDirection != null)
+                    {
+                        m_ToolsMenuUI.startingDragOrigin = spatialScrollData.spatialDirection;
+                    }
+
+                    m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
+                }
+            }
+            else if (spatialScrollData != null && !actionMapInput.show.isHeld && !actionMapInput.select.isHeld)
+            {
+                consumeControl(actionMapInput.show);
+                consumeControl(actionMapInput.select);
+
+                if (spatialScrollData != null && spatialScrollData.passedMinDragActivationThreshold)
+                {
+                    m_ToolsMenuUI.SelectHighlightedButton();
+                }
+                else if (Time.realtimeSinceStartup < allowSpatialQuickToggleActionBeforeThisTime)
+                {
+                    // Allow for single press+release to cycle through tools
+                    m_ToolsMenuUI.SelectNextExistingToolButton();
+                    OnButtonClick();
+                }
+
+                CloseMenu();
+            }
         }
     }
 }
