@@ -2,10 +2,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -35,6 +37,9 @@ namespace UnityEditor.Experimental.EditorVR
 
         [SerializeField]
         Transform m_Background;
+
+        [SerializeField]
+        List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
 
         //[SerializeField]
         //PlayableDirector m_Director;
@@ -137,17 +142,40 @@ namespace UnityEditor.Experimental.EditorVR
 
         public void AddProvider(ISpatialMenuProvider provider)
         {
-            Debug.LogError("Adding a provider");
 
-            if (m_spatialMenuProviders.Contains(provider))
+            Type providerType = provider.GetType();
+            foreach (var collectionProvider in m_spatialMenuProviders)
+            {
+                var type = collectionProvider.GetType();
+                if (type == providerType)
+                {
+                    Debug.LogWarning("Cannot add multiple menus of the same type to the SpatialUI");
+                    return;
+                }
+            }
+
+            /*
+            if (m_spatialMenuProviders.Where((x) => x.GetType() == providerType)
             {
                 Debug.LogWarning("Cannot add duplicates to the spatial menu provider collection.");
                 return;
             }
+            */
 
+            Debug.LogError("Adding a provider : " + provider.spatialMenuName);
             m_spatialMenuProviders.Add(provider);
 
-            m_MenuTitleText.text = provider.spatialMenuName;
+            //m_MenuTitleText.text = provider.spatialMenuName;
+
+            UpdateSectionNames();
+        }
+
+        void UpdateSectionNames()
+        {
+            for (int i = 0; i < m_spatialMenuProviders.Count; ++i)
+            {
+                m_SectionNameTexts[i].text = m_spatialMenuProviders[i].spatialMenuName;
+            }
         }
 
         /*
@@ -243,8 +271,6 @@ namespace UnityEditor.Experimental.EditorVR
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
-            const float kAllowToggleDuration = 0.25f;
-
             var actionMapInput = (SpatialUIInput)input;
 
             // This block is only processed after a frame with both trigger buttons held has been detected
@@ -261,18 +287,38 @@ namespace UnityEditor.Experimental.EditorVR
                 */
             }
 
-            /*
-            if (actionMapInput.show.wasJustPressed)
+            if (actionMapInput.show.isHeld && actionMapInput.select.isHeld)
             {
                 visible = true;
+
+                //Debug.Log("X: " + actionMapInput.localRotationX.value + " - Y:" + actionMapInput.localRotationY.value + " - Z:" + actionMapInput.localRotationZ.value);
+
+                //transform.localRotation = Quaternion.Euler(actionMapInput.localRotation.vector3);// Quaternion.Euler(transform.forward * actionMapInput.localRotationZ.value);
+
+                if (actionMapInput.localRotationZ.value > 0)
+                {
+                    m_SectionNameTexts[0].transform.localScale = Vector3.one * 0.5f;
+                    m_SectionNameTexts[1].transform.localScale = Vector3.one;
+                }
+                else
+                {
+                    m_SectionNameTexts[1].transform.localScale = Vector3.one * 0.5f;
+                    m_SectionNameTexts[0].transform.localScale = Vector3.one;
+                }
+
                 return;
             }
 
-            if (actionMapInput.show.wasJustReleased)
+            if (!actionMapInput.show.isHeld && !actionMapInput.select.isHeld)
             {
                 visible = false;
                 return;
             }
+
+            //if (actionMapInput.localRotationZ)
+
+
+            /*
             */
             /*
             if (spatialScrollData == null && (actionMapInput.show.wasJustPressed || actionMapInput.show.isHeld) && actionMapInput.select.wasJustPressed)
