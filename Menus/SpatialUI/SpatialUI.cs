@@ -13,12 +13,19 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    public class SpatialUI : MonoBehaviour, IAdaptPosition, ICustomActionMap, IControlSpatialScrolling, IUsesNode
+    public class SpatialUI : MonoBehaviour, IAdaptPosition, ICustomActionMap, IControlSpatialScrolling, IUsesNode, IUsesRayOrigin
     {
         // TODO expose as a user preference, for spatial UI distance
         const float k_DistanceOffset = 0.75f;
         const float k_AllowedGazeDivergence = 45f;
         const float k_SpatialQuickToggleDuration = 0.25f;
+
+        enum State
+        {
+            hidden,
+            navigatingTopLevel,
+            navigatingSubMenuContent
+        }
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -44,11 +51,16 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
 
+        [SerializeField]
+        Transform m_DemoMenuElements;
+
         //[SerializeField]
         //PlayableDirector m_Director;
 
         //[SerializeField]
         //PlayableAsset m_RevealPlayable;
+
+        State m_State;
 
         bool m_Visible;
         bool m_BeingMoved;
@@ -77,6 +89,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
+        public Transform rayOrigin { get; set; }
         public Node node { get; set; }
 
         // Action Map interface members
@@ -243,7 +256,7 @@ namespace UnityEditor.Experimental.EditorVR
                 shapedAmount *= shapedAmount; // increase beginning & end anim emphasis
                 m_HomeTextCanvasGroup.alpha = Mathf.Lerp(currentHomeTextAlpha, targetHomeTextAlpha, shapedAmount);
 
-                //m_HomeTextBackgroundTransform.localScale = Vector3.Lerp(currentHomeBackgroundLocalScale, targetHomeBackgroundLocalScale, shapedAmount);
+                m_HomeTextBackgroundTransform.localScale = Vector3.Lerp(currentHomeBackgroundLocalScale, targetHomeBackgroundLocalScale, shapedAmount);
                 yield return null;
             }
 
@@ -277,6 +290,9 @@ namespace UnityEditor.Experimental.EditorVR
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            Debug.Log("processing input in SpatialUI");
+
+            const float kSubMenuNavigationTranslationTriggerThreshold = 0.05f;
             var actionMapInput = (SpatialUIInput)input;
 
             // This block is only processed after a frame with both trigger buttons held has been detected
@@ -298,6 +314,9 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 consumeControl(actionMapInput.show);
                 consumeControl(actionMapInput.select);
+
+                if (m_State == State.navigatingTopLevel)
+                    spatialScrollStartPosition = actionMapInput.localPosition.vector3;
             }
 
             // Detect the initial activation of the relevant Spatial input
@@ -305,27 +324,48 @@ namespace UnityEditor.Experimental.EditorVR
                 (actionMapInput.show.wasJustPressed && actionMapInput.select.isHeld) ||
                 (actionMapInput.show.isHeld && actionMapInput.select.wasJustPressed))
             {
+                m_State = State.navigatingTopLevel;
+                spatialScrollStartPosition = actionMapInput.localPosition.vector3; // rayOrigin.position;
+                
                 // Cache the current starting rotation, current deltaAngle will be calculated relative to this rotation
                 m_InitialSpatialLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
+
+                // DEMO
+                // Proxy sub-menu/dynamicHUD menu element(s) display
+                m_DemoMenuElements.gameObject.SetActive(false);
+                m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
             }
 
-            if (actionMapInput.show.isHeld && actionMapInput.select.isHeld)
+            if (actionMapInput.show.isHeld)
             {
                 visible = true;
 
-                var currentLocalZRotation = actionMapInput.localRotationZ.value;
-                var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
-                if (localZRotationDelta > 0.05f) // Rotating (relatively) leftward
+                if (m_State == State.navigatingTopLevel && Vector3.Magnitude(spatialScrollStartPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
-                    m_HomeSectionDescription.text = m_spatialMenuProviders[1].spatialMenuDescription;
-                    m_SectionNameTexts[0].transform.localScale = Vector3.one * 0.5f;
-                    m_SectionNameTexts[1].transform.localScale = Vector3.one;
+                    //Debug.LogError("Crossed translation threshold");
+                    m_State = State.navigatingSubMenuContent;
+                    m_SectionNameTexts[0].transform.localScale = Vector3.zero;
+                    m_SectionNameTexts[1].transform.localScale = Vector3.zero;
+                    m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
+                    m_DemoMenuElements.gameObject.SetActive(true);
+                    return;
                 }
-                else if (localZRotationDelta < -0.05f)
+
+                if (m_State != State.navigatingSubMenuContent)
                 {
-                    m_HomeSectionDescription.text = m_spatialMenuProviders[0].spatialMenuDescription;
-                    m_SectionNameTexts[1].transform.localScale = Vector3.one * 0.5f;
-                    m_SectionNameTexts[0].transform.localScale = Vector3.one;
+                    var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
+                    if (localZRotationDelta > 0.05f) // Rotating (relatively) leftward
+                    {
+                        m_HomeSectionDescription.text = m_spatialMenuProviders[1].spatialMenuDescription;
+                        m_SectionNameTexts[0].transform.localScale = Vector3.one * 0.5f;
+                        m_SectionNameTexts[1].transform.localScale = Vector3.one;
+                    }
+                    else if (localZRotationDelta < -0.05f)
+                    {
+                        m_HomeSectionDescription.text = m_spatialMenuProviders[0].spatialMenuDescription;
+                        m_SectionNameTexts[1].transform.localScale = Vector3.one * 0.5f;
+                        m_SectionNameTexts[0].transform.localScale = Vector3.one;
+                    }
                 }
 
                 return;
@@ -334,6 +374,7 @@ namespace UnityEditor.Experimental.EditorVR
             if (!actionMapInput.show.isHeld && !actionMapInput.select.isHeld)
             {
                 visible = false;
+                m_State = State.hidden;
                 return;
             }
 
