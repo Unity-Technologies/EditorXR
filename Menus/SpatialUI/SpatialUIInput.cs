@@ -15,5 +15,9 @@ namespace UnityEngine.InputNew
 		public AxisInputControl @localRotationX { get { return (AxisInputControl)this[5]; } }
 		public AxisInputControl @localRotationW { get { return (AxisInputControl)this[6]; } }
 		public QuaternionInputControl @localRotationQuaternion { get { return (QuaternionInputControl)this[7]; } }
+		public AxisInputControl @localPositionX { get { return (AxisInputControl)this[8]; } }
+		public AxisInputControl @localPositionY { get { return (AxisInputControl)this[9]; } }
+		public AxisInputControl @localPositionZ { get { return (AxisInputControl)this[10]; } }
+		public Vector3InputControl @localPosition { get { return (Vector3InputControl)this[11]; } }
 	}
 }
