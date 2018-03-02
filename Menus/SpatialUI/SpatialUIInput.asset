@@ -15,10 +15,7 @@ MonoBehaviour:
   - {fileID: 114282548721718466}
   - {fileID: 114567485256439312}
   - {fileID: 114571782520733462}
-  - {fileID: 114102478222613536}
-  - {fileID: 114141260399119254}
   - {fileID: 114855327280463144}
-  - {fileID: 114563656779418158}
   m_ControlSchemes:
   - m_Name: SpatialUIInput
     m_DeviceSlots:
@@ -57,34 +54,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 13
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 14
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
       - controlIndex: 15
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 24
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -95,46 +65,6 @@ MonoBehaviour:
   m_MapTypeName: SpatialUIInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   m_CustomNamespace: 
---- !u!114 &114102478222613536
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: LocalRotationX
-  m_EditorClassIdentifier: 
-  m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 3
-  m_ControlData:
-    componentControlIndices: 00000000000000000000000000000000
-    controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-    name: LocalRotationX
-    defaultValue: 0
---- !u!114 &114141260399119254
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: LocalRotationY
-  m_EditorClassIdentifier: 
-  m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 4
-  m_ControlData:
-    componentControlIndices: 
-    controlType:
-      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-    name: LocalRotationY
-    defaultValue: 0
 --- !u!114 &114282548721718466
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154,26 +84,6 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
     name: show
-    defaultValue: 0
---- !u!114 &114563656779418158
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: localRotation
-  m_EditorClassIdentifier: 
-  m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 6
-  m_ControlData:
-    componentControlIndices: 030000000400000005000000
-    controlType:
-      m_TypeName: UnityEngine.InputNew.Vector3InputControl, Assembly-CSharp, Version=0.0.0.0,
-        Culture=neutral, PublicKeyToken=null
-    name: localRotation
     defaultValue: 0
 --- !u!114 &114567485256439312
 MonoBehaviour:
@@ -224,14 +134,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: LocalRotationZ
+  m_Name: localRotationZ
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
-  m_ActionIndex: 5
+  m_ActionIndex: 3
   m_ControlData:
     componentControlIndices: 00000000000000000000000000000000
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: LocalRotationZ
+    name: localRotationZ
     defaultValue: 0
