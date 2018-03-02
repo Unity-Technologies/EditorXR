@@ -59,6 +59,9 @@ namespace UnityEditor.Experimental.EditorVR
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
 
+        // Spatial rotation members
+        Quaternion m_InitialSpatialLocalRotation;
+
         bool visible
         {
             get { return m_Visible; }
@@ -290,15 +293,29 @@ namespace UnityEditor.Experimental.EditorVR
                 */
             }
 
+            // Prevent input processing while moving
+            if (m_BeingMoved)
+            {
+                consumeControl(actionMapInput.show);
+                consumeControl(actionMapInput.select);
+            }
+
+            // Detect the initial activation of the relevant Spatial input
+            if ((actionMapInput.show.wasJustPressed && actionMapInput.select.wasJustPressed) ||
+                (actionMapInput.show.wasJustPressed && actionMapInput.select.isHeld) ||
+                (actionMapInput.show.isHeld && actionMapInput.select.wasJustPressed))
+            {
+                // Cache the current starting rotation, current deltaAngle will be calculated relative to this rotation
+                m_InitialSpatialLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
+            }
+
             if (actionMapInput.show.isHeld && actionMapInput.select.isHeld)
             {
                 visible = true;
 
-                //Debug.Log("X: " + actionMapInput.localRotationX.value + " - Y:" + actionMapInput.localRotationY.value + " - Z:" + actionMapInput.localRotationZ.value);
-
-                //transform.localRotation = Quaternion.Euler(actionMapInput.localRotation.vector3);// Quaternion.Euler(transform.forward * actionMapInput.localRotationZ.value);
-
-                if (actionMapInput.localRotationZ.value > 0)
+                var currentLocalZRotation = actionMapInput.localRotationZ.value;
+                var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
+                if (localZRotationDelta > 0) // Rotating (relatively) leftward
                 {
                     m_HomeSectionDescription.text = m_spatialMenuProviders[1].spatialMenuDescription;
                     m_SectionNameTexts[0].transform.localScale = Vector3.one * 0.5f;
@@ -320,11 +337,6 @@ namespace UnityEditor.Experimental.EditorVR
                 return;
             }
 
-            //if (actionMapInput.localRotationZ)
-
-
-            /*
-            */
             /*
             if (spatialScrollData == null && (actionMapInput.show.wasJustPressed || actionMapInput.show.isHeld) && actionMapInput.select.wasJustPressed)
             {
