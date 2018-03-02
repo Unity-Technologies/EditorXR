@@ -315,13 +315,13 @@ namespace UnityEditor.Experimental.EditorVR
 
                 var currentLocalZRotation = actionMapInput.localRotationZ.value;
                 var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
-                if (localZRotationDelta > 0) // Rotating (relatively) leftward
+                if (localZRotationDelta > 0.05f) // Rotating (relatively) leftward
                 {
                     m_HomeSectionDescription.text = m_spatialMenuProviders[1].spatialMenuDescription;
                     m_SectionNameTexts[0].transform.localScale = Vector3.one * 0.5f;
                     m_SectionNameTexts[1].transform.localScale = Vector3.one;
                 }
-                else
+                else if (localZRotationDelta < -0.05f)
                 {
                     m_HomeSectionDescription.text = m_spatialMenuProviders[0].spatialMenuDescription;
                     m_SectionNameTexts[1].transform.localScale = Vector3.one * 0.5f;
