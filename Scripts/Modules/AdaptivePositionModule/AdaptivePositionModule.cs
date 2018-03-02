@@ -173,7 +173,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         IEnumerator RepositionElement(IAdaptPosition adaptiveElement)
         {
             adaptiveElement.beingMoved = true;
-            Debug.LogWarning("TestObjectReposition: ");
+            //Debug.LogWarning("TestObjectReposition: ");
             var adaptiveTransform = adaptiveElement.adaptiveTransform;
             var currentPosition = adaptiveTransform.position;
             var targetPosition = m_GazeTransform.position;
