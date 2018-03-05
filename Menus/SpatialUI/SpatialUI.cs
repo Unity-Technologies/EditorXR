@@ -327,6 +327,9 @@ namespace UnityEditor.Experimental.EditorVR
                 // Proxy sub-menu/dynamicHUD menu element(s) display
                 m_DemoMenuElements.gameObject.SetActive(false);
                 m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
+                m_SectionNameTexts[0].transform.localScale = Vector3.one;
+                m_SectionNameTexts[1].transform.localScale = Vector3.one;
+                m_HomeSectionDescription.gameObject.SetActive(true);
 
                 // Director related
                 m_Director.time = 0f;
@@ -348,6 +351,7 @@ namespace UnityEditor.Experimental.EditorVR
                     m_SectionNameTexts[1].transform.localScale = Vector3.zero;
                     m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
                     m_DemoMenuElements.gameObject.SetActive(true);
+                    m_HomeSectionDescription.gameObject.SetActive(false);
                     return;
                 }
 
