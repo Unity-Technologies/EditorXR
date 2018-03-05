@@ -10,6 +10,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.Playables;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -54,11 +55,11 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         Transform m_DemoMenuElements;
 
-        //[SerializeField]
-        //PlayableDirector m_Director;
+        [SerializeField]
+        PlayableDirector m_Director;
 
-        //[SerializeField]
-        //PlayableAsset m_RevealPlayable;
+        [SerializeField]
+        PlayableAsset m_RevealTimelinePlayable;
 
         State m_State;
 
@@ -133,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR
                     this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility());
                 }
 
-                //m_Director.Play(m_RevealPlayable);
+                m_Director.Evaluate();
             }
         }
 
@@ -172,14 +173,6 @@ namespace UnityEditor.Experimental.EditorVR
                     return;
                 }
             }
-
-            /*
-            if (m_spatialMenuProviders.Where((x) => x.GetType() == providerType)
-            {
-                Debug.LogWarning("Cannot add duplicates to the spatial menu provider collection.");
-                return;
-            }
-            */
 
             Debug.LogError("Adding a provider : " + provider.spatialMenuName);
             m_spatialMenuProviders.Add(provider);
@@ -292,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             Debug.Log("processing input in SpatialUI");
 
-            const float kSubMenuNavigationTranslationTriggerThreshold = 0.05f;
+            const float kSubMenuNavigationTranslationTriggerThreshold = 0.075f;
             var actionMapInput = (SpatialUIInput)input;
 
             // This block is only processed after a frame with both trigger buttons held has been detected
@@ -334,7 +327,14 @@ namespace UnityEditor.Experimental.EditorVR
                 // Proxy sub-menu/dynamicHUD menu element(s) display
                 m_DemoMenuElements.gameObject.SetActive(false);
                 m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
+
+                // Director related
+                m_Director.time = 0f;
+                m_Director.Evaluate();
             }
+
+            m_Director.time = m_Director.time += Time.unscaledDeltaTime;
+            m_Director.Evaluate();
 
             if (actionMapInput.show.isHeld)
             {
