@@ -25,7 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             gazeRotationDifference *= gazeRotationDifference; // Square the difference for intended response curve/shape
             m_GazeVelocity = m_GazeVelocity + gazeRotationDifference * Time.unscaledDeltaTime;
             m_GazeVelocity = Mathf.Clamp01(m_GazeVelocity -= Time.unscaledDeltaTime);
-
             m_PreviousGazeRotation = m_GazeSourceTransform.rotation; // Cache the previous camera rotation
         }
 
@@ -34,7 +33,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// </summary>
         /// <param name="objectToTest">Vector to test for a threshold cross with relation to the gazeSource forward vector</param>
         /// <param name="divergenceThreshold">Threshold, in degrees, via doc product conversion of this angular value</param>
-        /// <returns></returns>
+        /// <param name="detectIfGazeIsUnstable">Mandate that divergence detection occur, regardless of the gaze being stable</param>
+        /// <returns>True if the object is beyond the divergence threshold, False if it is within the defined range</returns>
         public bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold, bool detectIfGazeIsUnstable = false)
         {
             var isAbove = false;
