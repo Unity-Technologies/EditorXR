@@ -5,11 +5,10 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
-    /// Gives decorated class ability to detect gaze divergence above an defined threshold, for a given transform's forward vector
+    /// Gives decorated class ability to detect gaze divergence above a defined threshold, for a given transform's forward vector
     /// </summary>
     public interface IDetectGazeDivergence
     {
-        //float gazeIsStable { get; }
     }
 
     public static class IDetectGazeDivergenceMethods
