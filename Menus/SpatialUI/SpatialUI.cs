@@ -56,6 +56,9 @@ namespace UnityEditor.Experimental.EditorVR
         Transform m_DemoMenuElements;
 
         [SerializeField]
+        TextMeshProUGUI m_SubMenuText;
+
+        [SerializeField]
         PlayableDirector m_Director;
 
         [SerializeField]
@@ -281,6 +284,11 @@ namespace UnityEditor.Experimental.EditorVR
             m_InFocusCoroutine = null;
         }
 
+        void DisplaySubMenuContents(ISpatialMenuProvider provider)
+        {
+            m_SubMenuText.text = provider.spatialTableElements[0].name;
+        }
+
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             Debug.Log("processing input in SpatialUI");
@@ -350,8 +358,10 @@ namespace UnityEditor.Experimental.EditorVR
                     m_SectionNameTexts[0].transform.localScale = Vector3.zero;
                     m_SectionNameTexts[1].transform.localScale = Vector3.zero;
                     m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
-                    m_DemoMenuElements.gameObject.SetActive(true);
                     m_HomeSectionDescription.gameObject.SetActive(false);
+
+                    m_DemoMenuElements.gameObject.SetActive(true);
+                    DisplaySubMenuContents(m_spatialMenuProviders[1]);
                     return;
                 }
 
