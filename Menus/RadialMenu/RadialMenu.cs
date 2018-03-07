@@ -116,6 +116,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_RadialMenuUI.buttonClicked += OnButtonClicked;
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+
+
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Action Item : 1", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Action Item : 2", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Action Item : 3", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Action Item : 4", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Action Item : 5", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Action Item : 6", null, null));
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

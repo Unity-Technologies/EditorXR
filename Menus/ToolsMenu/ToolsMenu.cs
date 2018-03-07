@@ -89,6 +89,13 @@ public bool mainMenuActivatorInteractable
             setButtonForType = CreateToolsMenuButton;
             deleteToolsMenuButton = DeleteToolsMenuButton;
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 1", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 2", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 3", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 4", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 5", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 6", null, null));
         }
 
         void OnDestroy()
