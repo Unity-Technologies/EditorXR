@@ -39,13 +39,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void OnEnable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.hierarchyChanged += UpdateHierarchyData;
+#else
             EditorApplication.hierarchyWindowChanged += UpdateHierarchyData;
+#endif
             UpdateHierarchyData();
         }
 
         void OnDisable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.hierarchyChanged -= UpdateHierarchyData;
+#else
             EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
+#endif
         }
 
         public void OnSelectionChanged()

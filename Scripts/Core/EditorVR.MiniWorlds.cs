@@ -188,7 +188,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             public MiniWorlds()
             {
+#if UNITY_2018_1_OR_NEWER
+                EditorApplication.hierarchyChanged += OnHierarchyChanged;
+#else
                 EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
+#endif
                 IIsInMiniWorldMethods.isInMiniWorld = IsInMiniWorld;
             }
 
@@ -207,7 +211,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             internal override void OnDestroy()
             {
                 base.OnDestroy();
+#if UNITY_2018_1_OR_NEWER
+                EditorApplication.hierarchyChanged -= OnHierarchyChanged;
+#else
                 EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
+#endif
             }
 
             public void LateBindInterfaceMethods(DirectSelection provider)
