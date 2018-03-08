@@ -32,7 +32,24 @@ namespace UnityEditor.Experimental.EditorVR
         ActionMap m_ActionMap;
 
         [SerializeField]
+        Transform m_DemoMenuElements;
+
+        [SerializeField]
+        TextMeshProUGUI m_SubMenuText;
+
+        [Header("Common UI")]
+        [SerializeField]
         CanvasGroup m_MainCanvasGroup;
+
+        [SerializeField]
+        Transform m_Background;
+
+        [SerializeField]
+        TextMeshProUGUI m_MenuTitleText;
+
+        [Header("Home Section")]
+        [SerializeField]
+        Transform m_HomeMenuContainer;
 
         [SerializeField]
         CanvasGroup m_HomeTextCanvasGroup;
@@ -41,23 +58,16 @@ namespace UnityEditor.Experimental.EditorVR
         Transform m_HomeTextBackgroundTransform;
 
         [SerializeField]
-        TextMeshProUGUI m_MenuTitleText;
-
-        [SerializeField]
         TextMeshProUGUI m_HomeSectionDescription;
-
-        [SerializeField]
-        Transform m_Background;
 
         [SerializeField]
         List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
 
+        [Header("Prefabs")]
         [SerializeField]
-        Transform m_DemoMenuElements;
+        GameObject m_MenuElementPrefab;
 
-        [SerializeField]
-        TextMeshProUGUI m_SubMenuText;
-
+        [Header("Animation")]
         [SerializeField]
         PlayableDirector m_Director;
 
@@ -77,6 +87,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         // Spatial rotation members
         Quaternion m_InitialSpatialLocalRotation;
+
+        readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
 
         bool visible
         {
@@ -161,11 +173,13 @@ namespace UnityEditor.Experimental.EditorVR
         {
             m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
             m_HomeBackgroundOriginalLocalScale = m_Background.localScale;
+
+            // TODO remove serialized inspector references for home menu section titles, use instantiated prefabs only
+            m_SectionNameTexts.Clear();
         }
 
         public void AddProvider(ISpatialMenuProvider provider)
         {
-
             Type providerType = provider.GetType();
             foreach (var collectionProvider in m_spatialMenuProviders)
             {
@@ -180,9 +194,13 @@ namespace UnityEditor.Experimental.EditorVR
             Debug.LogError("Adding a provider : " + provider.spatialMenuName);
             m_spatialMenuProviders.Add(provider);
 
+            var providerMenuElement = ObjectUtils.Instantiate(m_MenuElementPrefab, m_HomeMenuContainer).GetComponent<SpatialUIMenuElement>();
+            providerMenuElement.Setup(providerMenuElement.transform, () => Debug.LogError("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
+            m_ProviderToMenuElements.Add(provider, providerMenuElement);
+
             //m_MenuTitleText.text = provider.spatialMenuName;
 
-            UpdateSectionNames();
+            //UpdateSectionNames();
         }
 
         void UpdateSectionNames()
@@ -344,8 +362,8 @@ namespace UnityEditor.Experimental.EditorVR
                 m_Director.Evaluate();
             }
 
-            m_Director.time = m_Director.time += Time.unscaledDeltaTime;
-            m_Director.Evaluate();
+            //m_Director.time = m_Director.time += Time.unscaledDeltaTime;
+            //m_Director.Evaluate();
 
             if (actionMapInput.show.isHeld)
             {
