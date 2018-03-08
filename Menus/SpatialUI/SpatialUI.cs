@@ -194,9 +194,14 @@ namespace UnityEditor.Experimental.EditorVR
             Debug.LogError("Adding a provider : " + provider.spatialMenuName);
             m_spatialMenuProviders.Add(provider);
 
-            var providerMenuElement = ObjectUtils.Instantiate(m_MenuElementPrefab, m_HomeMenuContainer).GetComponent<SpatialUIMenuElement>();
-            providerMenuElement.Setup(providerMenuElement.transform, () => Debug.LogError("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
+            var instantiatedPrefab = ObjectUtils.Instantiate(m_MenuElementPrefab, m_HomeMenuContainer).transform as RectTransform;
+            var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
+            //providerMenuElement.Setup(instantiatedPrefab, null, provider.spatialMenuName);
+            providerMenuElement.Setup(instantiatedPrefab, () => Debug.LogError("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
             m_ProviderToMenuElements.Add(provider, providerMenuElement);
+            instantiatedPrefab.localRotation = Quaternion.identity;
+            instantiatedPrefab.localPosition = Vector3.zero;
+            instantiatedPrefab.localScale = Vector3.one;
 
             //m_MenuTitleText.text = provider.spatialMenuName;
 
