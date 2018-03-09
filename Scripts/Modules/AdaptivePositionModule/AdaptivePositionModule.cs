@@ -132,6 +132,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var allowedDegreeOfGazeDivergence = adaptiveElement.allowedDegreeOfGazeDivergence;
                 var isAboveDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveTransform, allowedDegreeOfGazeDivergence);
 
+                adaptiveElement.inFocus = !isAboveDivergenceThreshold;
+                
                 //Debug.LogError(Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)));
                 //var distance = Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position));
                 if (m_AdaptiveElementRepositionCoroutine == null && Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - adaptiveTransform.position)) > k_AllowedDistanceDivergence)

@@ -446,6 +446,9 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 visible = true;
 
+                if (!m_InFocus && m_State == State.navigatingTopLevel)
+                    return;
+
                 if (m_Director.time < 0.4f)
                 {
                     m_Director.time = m_Director.time += Time.unscaledDeltaTime;
