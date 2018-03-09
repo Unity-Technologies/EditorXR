@@ -88,6 +88,8 @@ namespace UnityEditor.Experimental.EditorVR
         // Spatial rotation members
         Quaternion m_InitialSpatialLocalRotation;
 
+        ISpatialMenuProvider m_HighlightedTopLevelMenuProvider;
+
         readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
 
         bool visible
@@ -194,9 +196,8 @@ namespace UnityEditor.Experimental.EditorVR
             Debug.LogError("Adding a provider : " + provider.spatialMenuName);
             m_spatialMenuProviders.Add(provider);
 
-            var instantiatedPrefab = ObjectUtils.Instantiate(m_MenuElementPrefab, m_HomeMenuContainer).transform as RectTransform;
+            var instantiatedPrefab = ObjectUtils.Instantiate(m_MenuElementPrefab).transform as RectTransform;
             var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
-            //providerMenuElement.Setup(instantiatedPrefab, null, provider.spatialMenuName);
             providerMenuElement.Setup(instantiatedPrefab, () => Debug.LogError("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
             m_ProviderToMenuElements.Add(provider, providerMenuElement);
             instantiatedPrefab.transform.SetParent(m_HomeMenuContainer);
@@ -308,9 +309,53 @@ namespace UnityEditor.Experimental.EditorVR
             m_InFocusCoroutine = null;
         }
 
+        void SetupUIForInteraction()
+        {
+            // Proxy sub-menu/dynamicHUD menu element(s) display
+            m_DemoMenuElements.gameObject.SetActive(false);
+            m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
+            m_HomeSectionDescription.gameObject.SetActive(true);
+
+            foreach (var kvp in m_ProviderToMenuElements)
+            {
+                kvp.Value.transform.localScale = Vector3.one;
+            }
+
+            // Director related
+            m_Director.time = 0f;
+            m_Director.Evaluate();
+        }
+
         void DisplaySubMenuContents(ISpatialMenuProvider provider)
         {
-            m_SubMenuText.text = provider.spatialTableElements[0].name;
+            m_State = State.navigatingSubMenuContent;
+            m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
+            m_HomeSectionDescription.gameObject.SetActive(false);
+            m_DemoMenuElements.gameObject.SetActive(true);
+
+            foreach (var kvp in m_ProviderToMenuElements)
+            {
+                var key = kvp.Key;
+                if (key == provider)
+                {
+                    m_SubMenuText.text = provider.spatialTableElements[0].name;
+                    // TODO display all sub menu contents here
+                    return;
+                }
+            }
+        }
+
+        void HighlightHomeSectionMenuElement(ISpatialMenuProvider provider)
+        {
+            m_HomeSectionDescription.text = provider.spatialMenuDescription;
+            m_HighlightedTopLevelMenuProvider = provider;
+
+            foreach (var kvp in m_ProviderToMenuElements)
+            {
+                var key = kvp.Key;
+                var targetSize = key == provider ? Vector3.one : Vector3.one * 0.5f;
+                kvp.Value.transform.localScale = targetSize;
+            }
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -351,58 +396,38 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 m_State = State.navigatingTopLevel;
                 spatialScrollStartPosition = actionMapInput.localPosition.vector3; // rayOrigin.position;
-                
+
                 // Cache the current starting rotation, current deltaAngle will be calculated relative to this rotation
                 m_InitialSpatialLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
 
-                // DEMO
-                // Proxy sub-menu/dynamicHUD menu element(s) display
-                m_DemoMenuElements.gameObject.SetActive(false);
-                m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
-                m_SectionNameTexts[0].transform.localScale = Vector3.one;
-                m_SectionNameTexts[1].transform.localScale = Vector3.one;
-                m_HomeSectionDescription.gameObject.SetActive(true);
-
-                // Director related
-                m_Director.time = 0f;
-                m_Director.Evaluate();
+                SetupUIForInteraction();
             }
 
             //m_Director.time = m_Director.time += Time.unscaledDeltaTime;
             //m_Director.Evaluate();
 
-            if (actionMapInput.show.isHeld)
+            if (actionMapInput.show.isHeld && m_State != State.hidden)
             {
                 visible = true;
 
                 if (m_State == State.navigatingTopLevel && Vector3.Magnitude(spatialScrollStartPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
-                    //Debug.LogError("Crossed translation threshold");
-                    m_State = State.navigatingSubMenuContent;
-                    m_SectionNameTexts[0].transform.localScale = Vector3.zero;
-                    m_SectionNameTexts[1].transform.localScale = Vector3.zero;
-                    m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
-                    m_HomeSectionDescription.gameObject.SetActive(false);
-
-                    m_DemoMenuElements.gameObject.SetActive(true);
+                    Debug.LogError("Crossed translation threshold");
                     DisplaySubMenuContents(m_spatialMenuProviders[1]);
                     return;
                 }
 
+                // Cycle through top-level sections, before opening a corresponding sub-menu
                 if (m_State != State.navigatingSubMenuContent)
                 {
                     var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
                     if (localZRotationDelta > 0.05f) // Rotating (relatively) leftward
                     {
-                        m_HomeSectionDescription.text = m_spatialMenuProviders[1].spatialMenuDescription;
-                        m_SectionNameTexts[0].transform.localScale = Vector3.one * 0.5f;
-                        m_SectionNameTexts[1].transform.localScale = Vector3.one;
+                        HighlightHomeSectionMenuElement(m_spatialMenuProviders[0]);
                     }
                     else if (localZRotationDelta < -0.05f)
                     {
-                        m_HomeSectionDescription.text = m_spatialMenuProviders[0].spatialMenuDescription;
-                        m_SectionNameTexts[1].transform.localScale = Vector3.one * 0.5f;
-                        m_SectionNameTexts[0].transform.localScale = Vector3.one;
+                        HighlightHomeSectionMenuElement(m_spatialMenuProviders[1]);
                     }
                 }
 
