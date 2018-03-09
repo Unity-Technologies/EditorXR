@@ -199,6 +199,7 @@ namespace UnityEditor.Experimental.EditorVR
             //providerMenuElement.Setup(instantiatedPrefab, null, provider.spatialMenuName);
             providerMenuElement.Setup(instantiatedPrefab, () => Debug.LogError("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
             m_ProviderToMenuElements.Add(provider, providerMenuElement);
+            instantiatedPrefab.transform.SetParent(m_HomeMenuContainer);
             instantiatedPrefab.localRotation = Quaternion.identity;
             instantiatedPrefab.localPosition = Vector3.zero;
             instantiatedPrefab.localScale = Vector3.one;
