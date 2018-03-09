@@ -311,6 +311,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         void SetupUIForInteraction()
         {
+            m_Director.Play(m_RevealTimelinePlayable);
+
             // Proxy sub-menu/dynamicHUD menu element(s) display
             m_DemoMenuElements.gameObject.SetActive(false);
             m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
@@ -406,8 +408,8 @@ namespace UnityEditor.Experimental.EditorVR
                 SetupUIForInteraction();
             }
 
-            //m_Director.time = m_Director.time += Time.unscaledDeltaTime;
-            //m_Director.Evaluate();
+            m_Director.time = m_Director.time += Time.unscaledDeltaTime;
+            m_Director.Evaluate();
 
             if (actionMapInput.show.isHeld && m_State != State.hidden)
             {
