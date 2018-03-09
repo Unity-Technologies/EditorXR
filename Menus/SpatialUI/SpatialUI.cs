@@ -318,31 +318,14 @@ namespace UnityEditor.Experimental.EditorVR
 
             foreach (var kvp in m_ProviderToMenuElements)
             {
-                kvp.Value.transform.localScale = Vector3.one;
+                var elementTransform = kvp.Value.transform;
+                elementTransform.gameObject.SetActive(true);
+                elementTransform.localScale = Vector3.one;
             }
 
             // Director related
             m_Director.time = 0f;
             m_Director.Evaluate();
-        }
-
-        void DisplaySubMenuContents(ISpatialMenuProvider provider)
-        {
-            m_State = State.navigatingSubMenuContent;
-            m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
-            m_HomeSectionDescription.gameObject.SetActive(false);
-            m_DemoMenuElements.gameObject.SetActive(true);
-
-            foreach (var kvp in m_ProviderToMenuElements)
-            {
-                var key = kvp.Key;
-                if (key == provider)
-                {
-                    m_SubMenuText.text = provider.spatialTableElements[0].name;
-                    // TODO display all sub menu contents here
-                    return;
-                }
-            }
         }
 
         void HighlightHomeSectionMenuElement(ISpatialMenuProvider provider)
@@ -355,6 +338,26 @@ namespace UnityEditor.Experimental.EditorVR
                 var key = kvp.Key;
                 var targetSize = key == provider ? Vector3.one : Vector3.one * 0.5f;
                 kvp.Value.transform.localScale = targetSize;
+            }
+        }
+
+        void DisplayHighlightedSubMenuContents()
+        {
+            m_State = State.navigatingSubMenuContent;
+            m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
+            m_HomeSectionDescription.gameObject.SetActive(false);
+            m_DemoMenuElements.gameObject.SetActive(true);
+
+            foreach (var kvp in m_ProviderToMenuElements)
+            {
+                var key = kvp.Key;
+                if (key == m_HighlightedTopLevelMenuProvider)
+                {
+                    m_SubMenuText.text = m_HighlightedTopLevelMenuProvider.spatialTableElements[0].name;
+                    // TODO display all sub menu contents here
+                }
+
+                kvp.Value.gameObject.SetActive(false);
             }
         }
 
@@ -413,7 +416,7 @@ namespace UnityEditor.Experimental.EditorVR
                 if (m_State == State.navigatingTopLevel && Vector3.Magnitude(spatialScrollStartPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
                     Debug.LogError("Crossed translation threshold");
-                    DisplaySubMenuContents(m_spatialMenuProviders[1]);
+                    DisplayHighlightedSubMenuContents();
                     return;
                 }
 
