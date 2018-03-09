@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             hidden,
             navigatingTopLevel,
-            navigatingSubMenuContent
+            navigatingSubMenuContent,
         }
 
         [SerializeField]
@@ -92,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
 
-        bool visible
+        private bool visible
         {
             get { return m_Visible; }
 
@@ -103,12 +103,40 @@ namespace UnityEditor.Experimental.EditorVR
 
                 m_Visible = value;
 
+                if (m_Visible)
+                    gameObject.SetActive(true);
+                else
+                    m_State = State.hidden;
+
+                return;
                 if (m_State == State.hidden)
                 {
-                    m_Director.time = 0f;
-                    m_Director.Evaluate();
+                    if (m_Director.time <= 1.2f)
+                    {
+                        m_Director.time = m_Director.time += Time.unscaledDeltaTime;
+                        m_Director.Evaluate();
+                    }
+                    else if (m_Director.time > 1.2f)
+                    {
+                        m_Director.time = 0f;
+                        m_Director.Evaluate();
+                        gameObject.SetActive(m_Visible);
+                    }
                 }
+            }
+        }
 
+        void Update()
+        {
+            if (m_State == State.hidden && m_Director.time <= 1.2f)
+            {
+                m_Director.time = m_Director.time += Time.unscaledDeltaTime;
+                m_Director.Evaluate();
+            }
+            else if (m_Director.time > 1.2f)
+            {
+                //m_Director.time = 0f;
+                m_Director.Evaluate();
                 gameObject.SetActive(m_Visible);
             }
         }
@@ -267,6 +295,7 @@ namespace UnityEditor.Experimental.EditorVR
                 }
             }
 
+            /*
             while (transitionAmount < 1)
             {
                 var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime * speedScalar);
@@ -274,9 +303,9 @@ namespace UnityEditor.Experimental.EditorVR
                 //m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
                 //transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
                 //transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedAmount);
-                m_MainCanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetMainCanvasAlpha, shapedAmount);
-
                 //m_Background.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, shapedAmount);
+
+                m_MainCanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetMainCanvasAlpha, shapedAmount);
 
                 shapedAmount *= shapedAmount; // increase beginning & end anim emphasis
                 m_HomeTextCanvasGroup.alpha = Mathf.Lerp(currentHomeTextAlpha, targetHomeTextAlpha, shapedAmount);
@@ -290,6 +319,7 @@ namespace UnityEditor.Experimental.EditorVR
             //transform.localPosition = targetPosition;
 
             m_MainCanvasGroup.alpha = targetMainCanvasAlpha;
+            */
             //m_Background.localScale = targetBackgroundLocalScale;
 
             m_VisibilityCoroutine = null;
@@ -416,8 +446,11 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 visible = true;
 
-                m_Director.time = m_Director.time += Time.unscaledDeltaTime;
-                m_Director.Evaluate();
+                if (m_Director.time < 0.4f)
+                {
+                    m_Director.time = m_Director.time += Time.unscaledDeltaTime;
+                    m_Director.Evaluate();
+                }
 
                 if (m_State == State.navigatingTopLevel && Vector3.Magnitude(spatialScrollStartPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
@@ -446,7 +479,6 @@ namespace UnityEditor.Experimental.EditorVR
             if (!actionMapInput.show.isHeld && !actionMapInput.select.isHeld)
             {
                 visible = false;
-                m_State = State.hidden;
                 return;
             }
 
