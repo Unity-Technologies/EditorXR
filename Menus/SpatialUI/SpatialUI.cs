@@ -92,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
 
-        private bool visible
+        bool visible
         {
             get { return m_Visible; }
 
@@ -156,8 +156,6 @@ namespace UnityEditor.Experimental.EditorVR
                     m_BeingMoved = value;
                     this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility());
                 }
-
-                m_Director.Evaluate();
             }
         }
 
@@ -334,8 +332,6 @@ namespace UnityEditor.Experimental.EditorVR
             // Director related
             m_Director.time = 0f;
             m_Director.Evaluate();
-            m_Director.time = m_Director.time += Time.unscaledDeltaTime;
-            m_Director.Evaluate();
         }
 
         void HighlightHomeSectionMenuElement(ISpatialMenuProvider provider)
@@ -369,11 +365,6 @@ namespace UnityEditor.Experimental.EditorVR
 
                 kvp.Value.gameObject.SetActive(false);
             }
-        }
-
-        void Update()
-        {
-            //if (m_State == state)
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -421,12 +412,12 @@ namespace UnityEditor.Experimental.EditorVR
                 SetupUIForInteraction();
             }
 
-            m_Director.time = m_Director.time += Time.unscaledDeltaTime;
-            m_Director.Evaluate();
-
             if (actionMapInput.show.isHeld && m_State != State.hidden)
             {
                 visible = true;
+
+                m_Director.time = m_Director.time += Time.unscaledDeltaTime;
+                m_Director.Evaluate();
 
                 if (m_State == State.navigatingTopLevel && Vector3.Magnitude(spatialScrollStartPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
