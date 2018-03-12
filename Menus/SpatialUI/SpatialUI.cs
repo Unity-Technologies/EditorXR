@@ -7,7 +7,6 @@ using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.Playables;
@@ -63,9 +62,16 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
 
+        [Header("SubMenu Section")]
+        [SerializeField]
+        Transform m_SubMenuContainer;
+
         [Header("Prefabs")]
         [SerializeField]
         GameObject m_MenuElementPrefab;
+
+        [SerializeField]
+        GameObject m_SubMenuElementPrefab;
 
         [Header("Animation")]
         [SerializeField]
@@ -230,12 +236,13 @@ namespace UnityEditor.Experimental.EditorVR
 
             var instantiatedPrefab = ObjectUtils.Instantiate(m_MenuElementPrefab).transform as RectTransform;
             var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
-            providerMenuElement.Setup(instantiatedPrefab, () => Debug.LogError("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
+            providerMenuElement.Setup(instantiatedPrefab, m_HomeMenuContainer, () => Debug.LogError("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
             m_ProviderToMenuElements.Add(provider, providerMenuElement);
-            instantiatedPrefab.transform.SetParent(m_HomeMenuContainer);
-            instantiatedPrefab.localRotation = Quaternion.identity;
-            instantiatedPrefab.localPosition = Vector3.zero;
-            instantiatedPrefab.localScale = Vector3.one;
+
+            //instantiatedPrefab.transform.SetParent(m_HomeMenuContainer);
+            //instantiatedPrefab.localRotation = Quaternion.identity;
+            //instantiatedPrefab.localPosition = Vector3.zero;
+            //instantiatedPrefab.localScale = Vector3.one;
 
             //m_MenuTitleText.text = provider.spatialMenuName;
 
@@ -389,8 +396,18 @@ namespace UnityEditor.Experimental.EditorVR
                 var key = kvp.Key;
                 if (key == m_HighlightedTopLevelMenuProvider)
                 {
-                    m_SubMenuText.text = m_HighlightedTopLevelMenuProvider.spatialTableElements[0].name;
+                    m_SubMenuText.gameObject.SetActive(false); // TODO delete proxy submenu text
+                    // m_SubMenuText.text = m_HighlightedTopLevelMenuProvider.spatialTableElements[0].name;
                     // TODO display all sub menu contents here
+
+                    var instantiatedPrefab = ObjectUtils.Instantiate(m_MenuElementPrefab).transform as RectTransform;
+                    var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
+                    providerMenuElement.Setup(instantiatedPrefab, m_SubMenuContainer, () => Debug.LogError("Setting up SubMenu : " + providerMenuElement.name), providerMenuElement.name);
+                    //.Add(provider, providerMenuElement);
+                    //instantiatedPrefab.transform.SetParent(m_SubMenuContainer);
+                    //instantiatedPrefab.localRotation = Quaternion.identity;
+                    //instantiatedPrefab.localPosition = Vector3.zero;
+                    //instantiatedPrefab.localScale = Vector3.one;
                 }
 
                 kvp.Value.gameObject.SetActive(false);
