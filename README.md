@@ -44,3 +44,6 @@ Optionally, you could add a [git hook for post-checkout](https://ttboj.wordpress
 If you plan on making changes to EditorXR and/or contributing back, then you'll need to set the `Asset Serialization` property under Edit->Project Settings->Editor to `Force Text`.
 
 We're using `#if UNITY_EDITOR` for now in order to keep our code out of your player builds. We will eventually explore a possible overlap between EditorXR and player builds. We recommend you do the same for your tools if you plan to distribute them to others.
+
+## All contributions are subject to the [Unity Contribution Agreement (UCA)](https://unity3d.com/legal/licenses/Unity_Contribution_Agreement)
+By making a pull request, you are confirming agreement to the terms and conditions of the UCA, including that your Contributions are your original creation and that you have complete right and authority to make your Contributions.
