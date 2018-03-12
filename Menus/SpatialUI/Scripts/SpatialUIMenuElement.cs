@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR
         public Transform transform { get { return m_Transform; } }
         public Action selectedAction { get { return m_SelectedAction; } }
 
-        public void Setup(Transform transform, Action selectedAction, String displayedText = null, Sprite sprite = null)
+        public void Setup(Transform transform, Transform parentTransform, Action selectedAction, String displayedText = null, Sprite sprite = null)
         {
             if (selectedAction == null)
             {
@@ -46,6 +46,10 @@ namespace UnityEditor.Experimental.EditorVR
                 m_Text.text = displayedText;
             }
 
+            transform.SetParent(parentTransform);
+            transform.localRotation = Quaternion.identity;
+            transform.localPosition = Vector3.zero;
+            transform.localScale = Vector3.one;
         }
 
         // TODO perform animated reveal of content after setup
