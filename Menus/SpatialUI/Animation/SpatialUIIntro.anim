@@ -44,7 +44,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: CanvasContent/TopArrow
+    path: CanvasContent/ArrowsContainer/TopArrow
   - curve:
       serializedVersion: 2
       m_Curve:
@@ -75,7 +75,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: CanvasContent/BottomArrow
+    path: CanvasContent/ArrowsContainer/BottomArrow
   - curve:
       serializedVersion: 2
       m_Curve:
@@ -106,7 +106,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: CanvasContent/LeftArrow
+    path: CanvasContent/ArrowsContainer/LeftArrow
   - curve:
       serializedVersion: 2
       m_Curve:
@@ -137,7 +137,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: CanvasContent/RightArrow
+    path: CanvasContent/ArrowsContainer/RightArrow
   m_ScaleCurves:
   - curve:
       serializedVersion: 2
@@ -1018,7 +1018,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.x
-    path: CanvasContent/TopArrow
+    path: CanvasContent/ArrowsContainer/TopArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1052,7 +1052,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.y
-    path: CanvasContent/TopArrow
+    path: CanvasContent/ArrowsContainer/TopArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1080,7 +1080,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.z
-    path: CanvasContent/TopArrow
+    path: CanvasContent/ArrowsContainer/TopArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1108,7 +1108,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.x
-    path: CanvasContent/BottomArrow
+    path: CanvasContent/ArrowsContainer/BottomArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1142,7 +1142,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.y
-    path: CanvasContent/BottomArrow
+    path: CanvasContent/ArrowsContainer/BottomArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1170,7 +1170,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.z
-    path: CanvasContent/BottomArrow
+    path: CanvasContent/ArrowsContainer/BottomArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1204,7 +1204,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.x
-    path: CanvasContent/LeftArrow
+    path: CanvasContent/ArrowsContainer/LeftArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1232,7 +1232,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.y
-    path: CanvasContent/LeftArrow
+    path: CanvasContent/ArrowsContainer/LeftArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1260,7 +1260,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.z
-    path: CanvasContent/LeftArrow
+    path: CanvasContent/ArrowsContainer/LeftArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1294,7 +1294,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.x
-    path: CanvasContent/RightArrow
+    path: CanvasContent/ArrowsContainer/RightArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1322,7 +1322,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.y
-    path: CanvasContent/RightArrow
+    path: CanvasContent/ArrowsContainer/RightArrow
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1350,7 +1350,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalPosition.z
-    path: CanvasContent/RightArrow
+    path: CanvasContent/ArrowsContainer/RightArrow
     classID: 4
     script: {fileID: 0}
   - curve:
