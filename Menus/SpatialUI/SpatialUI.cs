@@ -79,6 +79,10 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         HintIcon[] m_HomeSectionArrows;
 
+        [Header("Ghost Input Device")]
+        [SerializeField]
+        Transform m_GhostInputDevice;
+
         State m_State;
 
         bool m_Visible;
@@ -458,6 +462,8 @@ namespace UnityEditor.Experimental.EditorVR
                 consumeControl(actionMapInput.cancel);
                 consumeControl(actionMapInput.show);
                 consumeControl(actionMapInput.select);
+                consumeControl(actionMapInput.localPosition);
+                consumeControl(actionMapInput.localRotationQuaternion);
 
                 /*
                 //OnButtonClick();
@@ -506,6 +512,9 @@ namespace UnityEditor.Experimental.EditorVR
                     m_InitialSpatialLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
                     return; // Don't process further input if the menu is not in focus
                 }
+
+                var inputLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
+                m_GhostInputDevice.localRotation = inputLocalRotation;
 
                 if (m_State == State.navigatingTopLevel && Vector3.Magnitude(spatialScrollStartPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
