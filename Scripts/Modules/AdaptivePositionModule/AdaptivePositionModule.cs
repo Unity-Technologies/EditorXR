@@ -131,14 +131,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var adaptiveTransform = adaptiveElement.adaptiveTransform;
                 var allowedDegreeOfGazeDivergence = adaptiveElement.allowedDegreeOfGazeDivergence;
                 var isAboveDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveTransform, allowedDegreeOfGazeDivergence);
+                adaptiveElement.inFocus = !isAboveDivergenceThreshold; // gaze divergence threshold test regardless of temporal stability
 
-                adaptiveElement.inFocus = !isAboveDivergenceThreshold;
-                
+                if (!adaptiveElement.allowAdaptivePositioning)
+                    return;
+
                 //Debug.LogError(Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position)));
                 //var distance = Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - m_TestObjectTransform.position));
                 if (m_AdaptiveElementRepositionCoroutine == null && Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - adaptiveTransform.position)) > k_AllowedDistanceDivergence)
                 {
-                    if (isAboveDivergenceThreshold)
+                    var isAboveTemporalDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveTransform, allowedDegreeOfGazeDivergence, false);
+                    if (isAboveTemporalDivergenceThreshold) // only move if above the gaze divergence threshold with respect to temporal stability
                         this.RestartCoroutine(ref m_AdaptiveElementRepositionCoroutine, RepositionElement(adaptiveElement));
                 }
             }

@@ -10,6 +10,11 @@ namespace UnityEditor.Experimental.EditorVR
     public interface IAdaptPosition
     {
         /// <summary>
+        /// Bool denoting that this implementer is active, and will have it's position adjusted automatically
+        /// </summary>
+        bool allowAdaptivePositioning { get; }
+
+        /// <summary>
         /// Transform utilized by the AdaptivePositionModule to reposition this transform when the allowedGazeDivergence threshold is surpassed.
         /// If null, the adaptivePositionModule will not manually re-position the implementor, regardless of applicable criteria
         /// </summary>
@@ -18,12 +23,12 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Bool denoting that this implementer is being moved by the AdaptivePositionModule
         /// </summary>
-        bool beingMoved { get; set; }
+        bool beingMoved { set; }
 
         /// <summary>
         /// Bool denoting that this implementer within the allowed gaze range, being looked at
         /// </summary>
-        bool inFocus { set; }
+        bool inFocus { get; set; }
 
         /// <summary>
         /// Angle representing the allowed amount of tolerance between the gaze's forward vector & the implementer transform,
