@@ -13,13 +13,13 @@ namespace UnityEditor.Experimental.EditorVR
 
     public static class IDetectGazeDivergenceMethods
     {
-        internal delegate bool IsAboveDivergenceThresholdDelegate(IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold, bool detectIfGazeIsUnstable = false);
+        internal delegate bool IsAboveDivergenceThresholdDelegate(IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold, bool disregardTemporalStability = true);
 
         internal static Func<Transform, float, bool, bool> isAboveDivergenceThreshold { private get; set; }
 
-        public static bool IsAboveDivergenceThreshold(this IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold, bool detectIfGazeIsUnstable = false)
+        public static bool IsAboveDivergenceThreshold(this IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold, bool disregardTemporalStability = true)
         {
-            return isAboveDivergenceThreshold(transformToTest, divergenceThreshold, detectIfGazeIsUnstable);
+            return isAboveDivergenceThreshold(transformToTest, divergenceThreshold, disregardTemporalStability);
         }
     }
 }

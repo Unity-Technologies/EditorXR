@@ -33,12 +33,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// </summary>
         /// <param name="objectToTest">Vector to test for a threshold cross with relation to the gazeSource forward vector</param>
         /// <param name="divergenceThreshold">Threshold, in degrees, via doc product conversion of this angular value</param>
-        /// <param name="detectIfGazeIsUnstable">Mandate that divergence detection occur, regardless of the gaze being stable</param>
+        /// <param name="disregardTemporalStability">If true, mandate that divergence detection occur, regardless of the gaze being stable</param>
         /// <returns>True if the object is beyond the divergence threshold, False if it is within the defined range</returns>
-        public bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold, bool detectIfGazeIsUnstable = false)
+        public bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold, bool disregardTemporalStability = true)
         {
             var isAbove = false;
-            if (detectIfGazeIsUnstable || gazeStable)
+            if (disregardTemporalStability || gazeStable) // validate that the gaze is stable if disregarding temporal stability
             {
                 var gazeDirection = m_GazeSourceTransform.forward;
                 var testVector = objectToTest.position - m_GazeSourceTransform.position; // Test object to gaze source vector
