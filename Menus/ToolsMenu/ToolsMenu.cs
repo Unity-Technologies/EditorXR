@@ -13,10 +13,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
         IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
-        IRequestFeedback
+        IRequestFeedback, ISpatialMenuProvider
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
+        const float k_SpatialQuickToggleDuration = 0.25f;
+        readonly string k_SpatialDisplayName = "Tools";
+        readonly string k_SpatialDescription = "Select from the tools already enabled";
 
         [SerializeField]
         Sprite m_MainMenuIcon;
@@ -39,13 +42,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         HapticPulse m_HidingPulse; // The pulse performed when ending a spatial selection
 
-        float m_AllowToolToggleBeforeThisTime;
-        Vector3 m_SpatialScrollStartPosition;
         ToolsMenuUI m_ToolsMenuUI;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_MenuFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<SpatialUI.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialUI.SpatialUITableElement>();
 
         public Transform menuOrigin { get; set; }
 
@@ -60,14 +62,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Node node { get; set; }
         public IToolsMenuButton PreviewToolsMenuButton { get; private set; }
         public Transform alternateMenuOrigin { get; set; }
+        public Transform spatialScrollOrigin { get; set; }
         public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
+        public Vector3 spatialScrollStartPosition { get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         public Transform rayOrigin { get; set; }
 
-        public bool mainMenuActivatorInteractable
+        // Spatial UI implementation
+        public string spatialMenuName { get { return k_SpatialDisplayName; } }
+        public string spatialMenuDescription { get { return k_SpatialDescription; } }
+        public bool displayingSpatially { get; set; }
+        public List<SpatialUI.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
+        public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
+        public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
+
+public bool mainMenuActivatorInteractable
         {
             set { PreviewToolsMenuButton.interactable = value; }
         }
@@ -77,6 +89,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             setButtonForType = CreateToolsMenuButton;
             deleteToolsMenuButton = DeleteToolsMenuButton;
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 1", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 2", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 3", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 4", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 5", null, null));
+            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 6", null, null));
         }
 
         void OnDestroy()
@@ -99,6 +118,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             toolsMenuUITransform.SetParent(alternateMenuOrigin);
             toolsMenuUITransform.localPosition = Vector3.zero;
             toolsMenuUITransform.localRotation = Quaternion.identity;
+
+            // Spatial scroll setup
+            spatialScrollOrigin = alternateMenuOrigin;
         }
 
         void CreateToolsMenuButton(Type toolType, Sprite buttonIcon)
@@ -134,6 +156,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 PreviewToolsMenuButton = button;
 
             m_ToolsMenuUI.AddButton(button, buttonTransform);
+
+            spatialTableElements.Add(new SpatialUI.SpatialUITableElement(button.name, button.icon, null));
         }
 
         void DeleteToolsMenuButton(Type toolTypeToDelete, Type toolTypeToSelectAfterDelete)
@@ -147,8 +171,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var buttonCount = buttons.Count;
             if (buttonCount <= k_ActiveToolOrderPosition + 1)
                 return;
-
-            const float kAllowToggleDuration = 0.25f;
 
             var toolslMenuInput = (ToolsMenuInput)input;
 
@@ -170,15 +192,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             if (spatialScrollData == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld) && toolslMenuInput.select.wasJustPressed)
             {
-                m_SpatialScrollStartPosition = alternateMenuOrigin.position;
-                m_AllowToolToggleBeforeThisTime = Time.realtimeSinceStartup + kAllowToggleDuration;
+                spatialScrollStartPosition = spatialScrollOrigin.position;
+                allowSpatialQuickToggleActionBeforeThisTime = Time.realtimeSinceStartup + spatialQuickToggleDuration;
                 this.SetSpatialHintControlNode(node);
                 m_ToolsMenuUI.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
                 consumeControl(toolslMenuInput.show);
                 consumeControl(toolslMenuInput.select);
 
                 // Assign initial SpatialScrollData; begin scroll
-                spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+                spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
 
                 HideScrollFeedback();
                 ShowMenuFeedback();
@@ -205,7 +227,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 // normalized input should loop after reaching the 0.15f length
                 buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-                spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+                spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
                 var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
                 if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
                 {
@@ -232,7 +254,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 {
                     m_ToolsMenuUI.SelectHighlightedButton();
                 }
-                else if (Time.realtimeSinceStartup < m_AllowToolToggleBeforeThisTime)
+                else if (Time.realtimeSinceStartup < allowSpatialQuickToggleActionBeforeThisTime)
                 {
                     // Allow for single press+release to cycle through tools
                     m_ToolsMenuUI.SelectNextExistingToolButton();

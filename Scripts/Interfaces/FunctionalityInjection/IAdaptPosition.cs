@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -9,21 +10,41 @@ namespace UnityEditor.Experimental.EditorVR
     public interface IAdaptPosition
     {
         /// <summary>
+        /// Bool denoting that this implementer is active, and will have it's position adjusted automatically
+        /// </summary>
+        bool allowAdaptivePositioning { get; }
+
+        /// <summary>
         /// Transform utilized by the AdaptivePositionModule to reposition this transform when the allowedGazeDivergence threshold is surpassed.
         /// If null, the adaptivePositionModule will not manually re-position the implementor, regardless of applicable criteria
         /// </summary>
-        Transform transform { get; set; }
+        Transform adaptiveTransform { get; }
 
         /// <summary>
-        /// Bool denoting that this implementor is being moved by the AdaptivePositionModule
+        /// Bool denoting that this implementer is being moved by the AdaptivePositionModule
         /// </summary>
-        bool beingMoved { get; set; }
+        bool beingMoved { set; }
 
         /// <summary>
-        /// Dot-product representing the allowed amount of tolerance between the gaze and the implementor transform,
-        /// beyond which the implementor will be repositioned by the AdaptivePositionModule
+        /// Bool denoting that this implementer within the allowed gaze range, being looked at
         /// </summary>
-        float allowedGazeDivergence { get; set; }
+        bool inFocus { get; set; }
+
+        /// <summary>
+        /// Angle representing the allowed amount of tolerance between the gaze's forward vector & the implementer transform,
+        /// beyond which the implementer will be repositioned by the AdaptivePositionModule
+        /// </summary>
+        float allowedDegreeOfGazeDivergence { get; }
+
+        /// <summary>
+        /// Target z-offset, at which to position the gaze source transform
+        /// </summary>
+        float distanceOffset { get; }
+
+        /// <summary>
+        /// The data defining the adaptive position state of the implementer
+        /// </summary>
+        AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
     }
 }
 #endif

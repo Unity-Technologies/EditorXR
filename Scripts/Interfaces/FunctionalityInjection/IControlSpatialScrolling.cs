@@ -17,6 +17,28 @@ namespace UnityEditor.Experimental.EditorVR
         /// The data defining a spatial scroll operation
         /// </summary>
         SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
+
+        /// <summary>
+        /// The transform, whose world position will be utilized as the starting position for spatial scroll processing/evaluation
+        /// </summary>
+        Transform spatialScrollOrigin { get; }
+
+        /// <summary>
+        /// The cached worldspace position at which a spatial scroll is initiated
+        /// This position is evaluated for distance/magnitude divergence as the spatialScrollOrigin is dragged away from this cached position
+        /// </summary>
+        Vector3 spatialScrollStartPosition { get; }
+
+        /// <summary>
+        /// The window of time, added to Time.realtimeSinceStartup, during which a quick start, then stop of a spatial scroll can perform a custom "quick" action/toggle
+        /// </summary>
+        float spatialQuickToggleDuration { get; }
+
+        /// <summary>
+        /// When a brief start, then immediate stop/end of a spatial scroll occurs before this duration, support a custom "quick" action
+        /// This action should be set upon the start of a spatial scroll action as "Time.realtimeSinceStartup + quickToggleDuration"
+        /// </summary>
+        float allowSpatialQuickToggleActionBeforeThisTime { get; }
     }
 
     public static class IControlSpatialScrollingMethods

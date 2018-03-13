@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
 
             public ActionMap actionMap { get { return m_Owner.m_UIActionMap; } }
-            public bool ignoreLocking { get { return false; } }
+            public bool ignoreActionMapInputLocking { get { return false; } }
 
             public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<RaycastSource, bool> validationCallback)
             {

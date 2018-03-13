@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<ProxyFeedbackRequest> m_Feedback = new List<ProxyFeedbackRequest>();
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         public List<IVacuumable> vacuumables { private get; set; }
 
