@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -74,6 +75,10 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         PlayableAsset m_RevealTimelinePlayable;
 
+        [Header("Arrows")]
+        [SerializeField]
+        HintIcon[] m_HomeSectionArrows;
+
         State m_State;
 
         bool m_Visible;
@@ -106,9 +111,18 @@ namespace UnityEditor.Experimental.EditorVR
                 m_Visible = value;
 
                 if (m_Visible)
+                {
                     gameObject.SetActive(true);
+
+                    foreach (var hintArrow in m_HomeSectionArrows)
+                    {
+                        hintArrow.visible = true;
+                    }
+                }
                 else
+                {
                     m_State = State.hidden;
+                }
 
                 return;
                 if (m_State == State.hidden)
@@ -122,6 +136,7 @@ namespace UnityEditor.Experimental.EditorVR
                     {
                         m_Director.time = 0f;
                         m_Director.Evaluate();
+
                         gameObject.SetActive(m_Visible);
                     }
                 }
@@ -519,6 +534,11 @@ namespace UnityEditor.Experimental.EditorVR
             if (!actionMapInput.show.isHeld && !actionMapInput.select.isHeld)
             {
                 visible = false;
+
+                foreach (var hintArrow in m_HomeSectionArrows)
+                {
+                    hintArrow.visible = false;
+                }
                 return;
             }
 
