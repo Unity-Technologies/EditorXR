@@ -75,10 +75,6 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         PlayableAsset m_RevealTimelinePlayable;
 
-        [Header("Arrows")]
-        [SerializeField]
-        HintIcon[] m_HomeSectionArrows;
-
         [Header("Ghost Input Device")]
         [SerializeField]
         Transform m_GhostInputDevice;
@@ -117,11 +113,6 @@ namespace UnityEditor.Experimental.EditorVR
                 if (m_Visible)
                 {
                     gameObject.SetActive(true);
-
-                    foreach (var hintArrow in m_HomeSectionArrows)
-                    {
-                        hintArrow.visible = true;
-                    }
                 }
                 else
                 {
@@ -543,11 +534,6 @@ namespace UnityEditor.Experimental.EditorVR
             if (!actionMapInput.show.isHeld && !actionMapInput.select.isHeld)
             {
                 visible = false;
-
-                foreach (var hintArrow in m_HomeSectionArrows)
-                {
-                    hintArrow.visible = false;
-                }
                 return;
             }
 
