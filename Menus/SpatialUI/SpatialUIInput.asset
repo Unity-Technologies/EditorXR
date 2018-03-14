@@ -62,7 +62,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 15
+      - controlIndex: 13
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -80,7 +80,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 13
+      - controlIndex: 15
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: localRotationX
+  m_Name: localRotationZ
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 5
@@ -159,7 +159,7 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: localRotationX
+    name: localRotationZ
     defaultValue: 0
 --- !u!114 &114230455893738008
 MonoBehaviour:
@@ -330,7 +330,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: localRotationZ
+  m_Name: localRotationX
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 3
@@ -339,7 +339,7 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: localRotationZ
+    name: localRotationX
     defaultValue: 0
 --- !u!114 &114883331070369782
 MonoBehaviour:
@@ -375,7 +375,7 @@ MonoBehaviour:
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 7
   m_ControlData:
-    componentControlIndices: 05000000040000000300000006000000
+    componentControlIndices: 03000000040000000500000006000000
     controlType:
       m_TypeName: UnityEngine.InputNew.QuaternionInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
