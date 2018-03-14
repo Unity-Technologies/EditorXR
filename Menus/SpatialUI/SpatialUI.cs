@@ -20,8 +20,8 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_DistanceOffset = 0.75f;
         const float k_AllowedGazeDivergence = 45f;
         const float k_SpatialQuickToggleDuration = 0.25f;
-        const float k_WristReturnRotationThreshold = 0.4f;
-        const float k_MenuSectionBlockedTransitionTimeWindow = 2f;
+        const float k_WristReturnRotationThreshold = 0.3f;
+        const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
 
         enum State
         {
@@ -379,16 +379,7 @@ namespace UnityEditor.Experimental.EditorVR
             allowAdaptivePositioning = true;
             m_Director.playableAsset = m_RevealTimelinePlayable;
 
-            // Proxy sub-menu/dynamicHUD menu element(s) display
-            m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
-            m_HomeSectionDescription.gameObject.SetActive(true);
-
-            foreach (var kvp in m_ProviderToMenuElements)
-            {
-                var elementTransform = kvp.Value.transform;
-                elementTransform.gameObject.SetActive(true);
-                elementTransform.localScale = Vector3.one;
-            }
+            DisplayHomeSectionContents();
 
             // Director related
             m_Director.time = 0f;
@@ -405,6 +396,22 @@ namespace UnityEditor.Experimental.EditorVR
                 var key = kvp.Key;
                 var targetSize = key == provider ? Vector3.one : Vector3.one * 0.5f;
                 kvp.Value.transform.localScale = targetSize;
+            }
+        }
+
+        void DisplayHomeSectionContents()
+        {
+            m_State = State.navigatingTopLevel;
+
+            // Proxy sub-menu/dynamicHUD menu element(s) display
+            m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
+            m_HomeSectionDescription.gameObject.SetActive(true);
+
+            foreach (var kvp in m_ProviderToMenuElements)
+            {
+                var elementTransform = kvp.Value.transform;
+                elementTransform.gameObject.SetActive(true);
+                elementTransform.localScale = Vector3.one;
             }
         }
 
@@ -460,11 +467,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             HideSubMenu();
-            
-            m_State = State.navigatingTopLevel;
-            // Proxy sub-menu/dynamicHUD menu element(s) display
-            m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
-            m_HomeSectionDescription.gameObject.SetActive(true);
+            DisplayHomeSectionContents();
 
             Debug.LogWarning("<color=green>Above wrist return threshold</color>");
         }
