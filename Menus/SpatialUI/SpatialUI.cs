@@ -66,6 +66,9 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         Transform m_SubMenuContainer;
 
+        [SerializeField]
+        CanvasGroup m_SubMenuContentsCanvasGroup;
+
         [Header("Prefabs")]
         [SerializeField]
         GameObject m_MenuElementPrefab;
@@ -238,40 +241,77 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 //m_Director.time = 0f;
                 m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
+                m_SubMenuContentsCanvasGroup.alpha = 0f;
 
                 HideSubMenu();
                 m_Director.Evaluate();
                 allowAdaptivePositioning = false;
                 gameObject.SetActive(m_Visible);
+
+                var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
+                if (deleteOldChildren.Count() > 0)
+                {
+                    foreach (var child in deleteOldChildren)
+                    {
+                        ObjectUtils.Destroy(child.gameObject);
+                    }
+                }
             }
             else if (m_State == State.navigatingSubMenuContent)
             {
-                if (m_HomeTextBackgroundInnerTransform.localScale.y < 6f)
+                var targetScale = m_spatialMenuProviders[0] == m_HighlightedTopLevelMenuProvider ? 7f : 9f;
+                var timeMultiplier = 24;
+                if (m_HomeTextBackgroundInnerTransform.localScale.y < targetScale)
                 {
-                    if (m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * 12 > 6f)
+                    if (m_HomeTextBackgroundInnerTransform.localScale.y + Time.unscaledDeltaTime * timeMultiplier > targetScale)
+                    {
+                        m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
+                        m_SubMenuContentsCanvasGroup.alpha = 1f;
                         return;
+                    }
 
-                    var newScale = new Vector3(m_HomeTextBackgroundInnerTransform.localScale.x, m_HomeTextBackgroundInnerTransform.localScale.y + Time.unscaledDeltaTime * 12, m_HomeTextBackgroundInnerTransform.localScale.z);
+                    var newScale = new Vector3(m_HomeTextBackgroundInnerTransform.localScale.x, m_HomeTextBackgroundInnerTransform.localScale.y + Time.unscaledDeltaTime * timeMultiplier, m_HomeTextBackgroundInnerTransform.localScale.z);
                     m_HomeTextBackgroundInnerTransform.localScale = newScale;
+                    m_SubMenuContentsCanvasGroup.alpha += Time.unscaledDeltaTime;
                 }
                 else
                 {
-                    m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 6f, 1f);
+                    return;
+                    m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
+                    m_SubMenuContentsCanvasGroup.alpha = 1f;
                 }
             }
             else if (m_State == State.navigatingTopLevel)
             {
-                if (m_HomeTextBackgroundInnerTransform.localScale.y > 1f)
+                var targetScale = 1f;
+                var timeMultiplier = 24;
+                if (m_HomeTextBackgroundInnerTransform.localScale.y > targetScale)
                 {
-                    if (m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * 20 < 1f)
+                    if (m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * timeMultiplier < targetScale)
+                    {
+                        m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
+                        m_SubMenuContentsCanvasGroup.alpha = 0f;
+                        var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
+                        if (deleteOldChildren.Count() > 0)
+                        {
+                            foreach (var child in deleteOldChildren)
+                            {
+                                ObjectUtils.Destroy(child.gameObject);
+                            }
+                        }
                         return;
+                    }
 
-                    var newScale = new Vector3(m_HomeTextBackgroundInnerTransform.localScale.x, m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * 20, m_HomeTextBackgroundInnerTransform.localScale.z);
+                    var newScale = new Vector3(m_HomeTextBackgroundInnerTransform.localScale.x, m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * timeMultiplier, m_HomeTextBackgroundInnerTransform.localScale.z);
                     m_HomeTextBackgroundInnerTransform.localScale = newScale;
+                    m_SubMenuContentsCanvasGroup.alpha -= Time.unscaledDeltaTime * 10;
                 }
                 else
                 {
-                    m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
+                    //m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
+                    //m_SubMenuContentsCanvasGroup.alpha = 0f;
+
+                    
                 }
             }
         }
@@ -492,11 +532,13 @@ namespace UnityEditor.Experimental.EditorVR
 
         void HideSubMenu()
         {
+            /*
             var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
             foreach (var child in deleteOldChildren)
             {
                 ObjectUtils.Destroy(child.gameObject);
             }
+            */
         }
 
         void ReturnToPreviousMenuLevel()

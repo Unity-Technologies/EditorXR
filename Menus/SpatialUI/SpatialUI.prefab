@@ -7116,6 +7116,7 @@ MonoBehaviour:
   - {fileID: 114465444220507486}
   - {fileID: 114412573811626742}
   m_SubMenuContainer: {fileID: 224500006906110670}
+  m_SubMenuContentsCanvasGroup: {fileID: 225744566652108476}
   m_MenuElementPrefab: {fileID: 1584814999618646, guid: a61a3a80dcc34ea4cbe25ed9322becba,
     type: 2}
   m_SubMenuElementPrefab: {fileID: 1584814999618646, guid: c9560594fe525ac4fbf8a1b444b58e6b,
