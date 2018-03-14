@@ -20,6 +20,8 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_DistanceOffset = 0.75f;
         const float k_AllowedGazeDivergence = 45f;
         const float k_SpatialQuickToggleDuration = 0.25f;
+        const float k_WristReturnRotationThreshold = 0.4f;
+        const float k_MenuSectionBlockedTransitionTimeWindow = 2f;
 
         enum State
         {
@@ -88,6 +90,7 @@ namespace UnityEditor.Experimental.EditorVR
         Vector3 m_HomeBackgroundOriginalLocalScale;
         float m_HomeSectionTimelineDuration;
         float m_HomeSectionTimelineStoppingTime;
+        Vector3 m_HomeSectionSpatialScrollStartLocalPosition;
 
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
@@ -95,6 +98,9 @@ namespace UnityEditor.Experimental.EditorVR
         // "Rotate wrist to return" members
         float m_StartingWristXRotation;
         float m_WristReturnVelocity;
+
+        // Menu entrance start time
+        float m_MenuEntranceStartTime;
 
         // Spatial rotation members
         Quaternion m_InitialSpatialLocalRotation;
@@ -228,11 +234,7 @@ namespace UnityEditor.Experimental.EditorVR
             else if (m_Director.time > m_HomeSectionTimelineDuration)
             {
                 //m_Director.time = 0f;
-                var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
-                foreach (var child in deleteOldChildren)
-                {
-                    ObjectUtils.Destroy(child.gameObject);
-                }
+                HideSubMenu();
 
                 m_Director.Evaluate();
                 allowAdaptivePositioning = false;
@@ -408,6 +410,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void DisplayHighlightedSubMenuContents()
         {
+            m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             m_State = State.navigatingSubMenuContent;
             m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
             m_HomeSectionDescription.gameObject.SetActive(false);
@@ -444,6 +447,28 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
+        void HideSubMenu()
+        {
+            var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
+            foreach (var child in deleteOldChildren)
+            {
+                ObjectUtils.Destroy(child.gameObject);
+            }
+        }
+
+        void ReturnToPreviousMenuLevel()
+        {
+            m_MenuEntranceStartTime = Time.realtimeSinceStartup;
+            HideSubMenu();
+            
+            m_State = State.navigatingTopLevel;
+            // Proxy sub-menu/dynamicHUD menu element(s) display
+            m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
+            m_HomeSectionDescription.gameObject.SetActive(true);
+
+            Debug.LogWarning("<color=green>Above wrist return threshold</color>");
+        }
+
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             //Debug.Log("processing input in SpatialUI");
@@ -457,8 +482,8 @@ namespace UnityEditor.Experimental.EditorVR
                 consumeControl(actionMapInput.cancel);
                 consumeControl(actionMapInput.show);
                 consumeControl(actionMapInput.select);
-                consumeControl(actionMapInput.localPosition);
-                consumeControl(actionMapInput.localRotationQuaternion);
+                //consumeControl(actionMapInput.localPosition);
+                //consumeControl(actionMapInput.localRotationQuaternion);
 
                 /*
                 //OnButtonClick();
@@ -473,8 +498,9 @@ namespace UnityEditor.Experimental.EditorVR
                 consumeControl(actionMapInput.show);
                 consumeControl(actionMapInput.select);
 
-                if (m_State == State.navigatingTopLevel)
-                    spatialScrollStartPosition = actionMapInput.localPosition.vector3;
+                //TODO restore this functionality.  It resets the starting position when being moved, but currently breaks when initially opening the menu
+                if (m_State != State.hidden && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
+                    m_HomeSectionSpatialScrollStartLocalPosition = actionMapInput.localPosition.vector3;
             }
 
             // Detect the initial activation of the relevant Spatial input
@@ -483,7 +509,7 @@ namespace UnityEditor.Experimental.EditorVR
                 (actionMapInput.show.isHeld && actionMapInput.select.wasJustPressed))
             {
                 m_State = State.navigatingTopLevel;
-                spatialScrollStartPosition = actionMapInput.localPosition.vector3;
+                m_HomeSectionSpatialScrollStartLocalPosition = actionMapInput.localPosition.vector3;
                 m_InitialSpatialLocalRotation = actionMapInput.localRotationQuaternion.quaternion; // Cache the current starting rotation, current deltaAngle will be calculated relative to this rotation
 
                 SetupUIForInteraction();
@@ -491,6 +517,7 @@ namespace UnityEditor.Experimental.EditorVR
 
             if (actionMapInput.show.isHeld && m_State != State.hidden)
             {
+                var canSwitchMenus = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // beyond wait duration for menu swapping
                 visible = true;
 
                 if (m_Director.time <= m_HomeSectionTimelineStoppingTime)
@@ -499,6 +526,7 @@ namespace UnityEditor.Experimental.EditorVR
                     m_Director.Evaluate();
                 }
 
+                /*
                 if (!inFocus)
                 {
                     Debug.LogWarning("<color=red>BLOCKING INPUT while out of focus</color>");
@@ -507,26 +535,44 @@ namespace UnityEditor.Experimental.EditorVR
                     m_InitialSpatialLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
                     return; // Don't process further input if the menu is not in focus
                 }
+                */
 
                 var inputLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
-                m_GhostInputDevice.localRotation = Quaternion.Euler(-inputLocalRotation.eulerAngles.x, inputLocalRotation.eulerAngles.y, -inputLocalRotation.eulerAngles.z);
+                var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
+                m_GhostInputDevice.localRotation = ghostDeviceRotation;// Quaternion.Euler(-ghostDeviceRotation.eulerAngles.x, ghostDeviceRotation.eulerAngles.y, -ghostDeviceRotation.eulerAngles.z);
 
-                if (m_State == State.navigatingTopLevel && Vector3.Magnitude(spatialScrollStartPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
+                if (canSwitchMenus && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z)) > k_WristReturnRotationThreshold)
                 {
-                    Debug.LogError("Crossed translation threshold");
-                    DisplayHighlightedSubMenuContents();
+                    //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
+                    ReturnToPreviousMenuLevel();
+                    return;
+                }
+
+                if (m_State == State.navigatingTopLevel && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
+                {
+                    if (canSwitchMenus)
+                    {
+                        var x = Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3);
+                        //Debug.LogError("<color=green>"+ x + "</color>");
+                        Debug.LogError("Crossed translation threshold");
+                        DisplayHighlightedSubMenuContents();
+                    }
+
                     return;
                 }
 
                 // Cycle through top-level sections, before opening a corresponding sub-menu
                 if (m_State != State.navigatingSubMenuContent)
                 {
-                    var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
-                    if (localZRotationDelta > 0.05f) // Rotating (relatively) leftward
+                    // The "roll" rotation expected on the z is polled for via the X in the action map...???
+                    const float kSectionSpacingBuffer = 0.05f;
+                    var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
+                    //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x) + "</color>");
+                    if (localZRotationDelta > kSectionSpacingBuffer) // Rotating (relatively) leftward
                     {
                         HighlightHomeSectionMenuElement(m_spatialMenuProviders[0]);
                     }
-                    else if (localZRotationDelta < -0.05f)
+                    else if (localZRotationDelta < -kSectionSpacingBuffer)
                     {
                         HighlightHomeSectionMenuElement(m_spatialMenuProviders[1]);
                     }
