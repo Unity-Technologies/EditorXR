@@ -54,6 +54,9 @@ namespace UnityEditor.Experimental.EditorVR
         Transform m_HomeTextBackgroundTransform;
 
         [SerializeField]
+        Transform m_HomeTextBackgroundInnerTransform;
+
+        [SerializeField]
         TextMeshProUGUI m_HomeSectionDescription;
 
         [SerializeField]
@@ -234,11 +237,42 @@ namespace UnityEditor.Experimental.EditorVR
             else if (m_Director.time > m_HomeSectionTimelineDuration)
             {
                 //m_Director.time = 0f;
-                HideSubMenu();
+                m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
 
+                HideSubMenu();
                 m_Director.Evaluate();
                 allowAdaptivePositioning = false;
                 gameObject.SetActive(m_Visible);
+            }
+            else if (m_State == State.navigatingSubMenuContent)
+            {
+                if (m_HomeTextBackgroundInnerTransform.localScale.y < 6f)
+                {
+                    if (m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * 12 > 6f)
+                        return;
+
+                    var newScale = new Vector3(m_HomeTextBackgroundInnerTransform.localScale.x, m_HomeTextBackgroundInnerTransform.localScale.y + Time.unscaledDeltaTime * 12, m_HomeTextBackgroundInnerTransform.localScale.z);
+                    m_HomeTextBackgroundInnerTransform.localScale = newScale;
+                }
+                else
+                {
+                    m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 6f, 1f);
+                }
+            }
+            else if (m_State == State.navigatingTopLevel)
+            {
+                if (m_HomeTextBackgroundInnerTransform.localScale.y > 1f)
+                {
+                    if (m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * 20 < 1f)
+                        return;
+
+                    var newScale = new Vector3(m_HomeTextBackgroundInnerTransform.localScale.x, m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * 20, m_HomeTextBackgroundInnerTransform.localScale.z);
+                    m_HomeTextBackgroundInnerTransform.localScale = newScale;
+                }
+                else
+                {
+                    m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
+                }
             }
         }
 
@@ -419,7 +453,9 @@ namespace UnityEditor.Experimental.EditorVR
         {
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             m_State = State.navigatingSubMenuContent;
-            m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
+
+            //m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
+
             m_HomeSectionDescription.gameObject.SetActive(false);
 
             foreach (var kvp in m_ProviderToMenuElements)
