@@ -92,6 +92,10 @@ namespace UnityEditor.Experimental.EditorVR
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
 
+        // "Rotate wrist to return" members
+        float m_StartingWristXRotation;
+        float m_WristReturnVelocity;
+
         // Spatial rotation members
         Quaternion m_InitialSpatialLocalRotation;
 
@@ -505,7 +509,7 @@ namespace UnityEditor.Experimental.EditorVR
                 }
 
                 var inputLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
-                m_GhostInputDevice.localRotation = inputLocalRotation;
+                m_GhostInputDevice.localRotation = Quaternion.Euler(-inputLocalRotation.eulerAngles.x, inputLocalRotation.eulerAngles.y, -inputLocalRotation.eulerAngles.z);
 
                 if (m_State == State.navigatingTopLevel && Vector3.Magnitude(spatialScrollStartPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
