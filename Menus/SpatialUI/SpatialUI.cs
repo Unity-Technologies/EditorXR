@@ -115,7 +115,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
 
-        private bool visible
+        bool visible
         {
             get { return m_Visible; }
 
@@ -136,21 +136,6 @@ namespace UnityEditor.Experimental.EditorVR
                 }
 
                 return;
-                if (m_State == State.hidden)
-                {
-                    if (m_Director.time <= m_HomeSectionTimelineDuration)
-                    {
-                        m_Director.time = m_Director.time += Time.unscaledDeltaTime;
-                        m_Director.Evaluate();
-                    }
-                    else if (m_Director.time > m_HomeSectionTimelineDuration)
-                    {
-                        m_Director.time = 0f;
-                        m_Director.Evaluate();
-
-                        gameObject.SetActive(m_Visible);
-                    }
-                }
             }
         }
 
