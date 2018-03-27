@@ -617,7 +617,7 @@ namespace UnityEditor.Experimental.EditorVR
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
                 m_GhostInputDevice.localRotation = ghostDeviceRotation;// Quaternion.Euler(-ghostDeviceRotation.eulerAngles.x, ghostDeviceRotation.eulerAngles.y, -ghostDeviceRotation.eulerAngles.z);
 
-                if (canSwitchMenus && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z)) > k_WristReturnRotationThreshold)
+                if (canSwitchMenus && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
                     ReturnToPreviousMenuLevel();
@@ -642,7 +642,7 @@ namespace UnityEditor.Experimental.EditorVR
                 {
                     // The "roll" rotation expected on the z is polled for via the X in the action map...???
                     const float kSectionSpacingBuffer = 0.05f;
-                    var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
+                    var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x) + "</color>");
                     if (localZRotationDelta > kSectionSpacingBuffer) // Rotating (relatively) leftward
                     {
