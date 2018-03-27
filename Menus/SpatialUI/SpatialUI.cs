@@ -97,6 +97,7 @@ namespace UnityEditor.Experimental.EditorVR
         float m_HomeSectionTimelineDuration;
         float m_HomeSectionTimelineStoppingTime;
         Vector3 m_HomeSectionSpatialScrollStartLocalPosition;
+        Vector3 m_GhostInputDeviceHomeSectionLocalPosition;
 
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
@@ -213,6 +214,8 @@ namespace UnityEditor.Experimental.EditorVR
 
             m_HomeSectionTimelineDuration = (float) m_RevealTimelinePlayable.duration;
             m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
+
+            m_GhostInputDeviceHomeSectionLocalPosition = m_GhostInputDevice.localPosition;
         }
 
         void Update()
@@ -460,6 +463,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         void DisplayHomeSectionContents()
         {
+            m_GhostInputDevice.localPosition = m_GhostInputDeviceHomeSectionLocalPosition;
+
             m_State = State.navigatingTopLevel;
 
             // Proxy sub-menu/dynamicHUD menu element(s) display
@@ -483,6 +488,8 @@ namespace UnityEditor.Experimental.EditorVR
 
             m_HomeSectionDescription.gameObject.SetActive(false);
 
+            const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
+            int subMenuElementCount = 0;
             foreach (var kvp in m_ProviderToMenuElements)
             {
                 var key = kvp.Key;
@@ -499,6 +506,7 @@ namespace UnityEditor.Experimental.EditorVR
 
                     foreach (var subMenuElement in m_HighlightedTopLevelMenuProvider.spatialTableElements)
                     {
+                        ++subMenuElementCount;
                         var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
                         var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
                         providerMenuElement.Setup(instantiatedPrefab, m_SubMenuContainer, () => Debug.LogError("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
@@ -513,6 +521,8 @@ namespace UnityEditor.Experimental.EditorVR
 
                 kvp.Value.gameObject.SetActive(false);
             }
+
+            m_GhostInputDevice.localPosition -= new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
         }
 
         void HideSubMenu()
