@@ -101,6 +101,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
+        Coroutine m_GhostInputDeviceRepositionCoroutine;
 
         // "Rotate wrist to return" members
         float m_StartingWristXRotation;
@@ -231,6 +232,7 @@ namespace UnityEditor.Experimental.EditorVR
                 m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
                 m_SubMenuContentsCanvasGroup.alpha = 0f;
 
+                this.StopAllCoroutines();
                 HideSubMenu();
                 m_Director.Evaluate();
                 allowAdaptivePositioning = false;
@@ -440,6 +442,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             allowAdaptivePositioning = true;
             m_Director.playableAsset = m_RevealTimelinePlayable;
+            m_GhostInputDevice.localPosition = m_GhostInputDeviceHomeSectionLocalPosition;
 
             DisplayHomeSectionContents();
 
@@ -463,7 +466,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void DisplayHomeSectionContents()
         {
-            m_GhostInputDevice.localPosition = m_GhostInputDeviceHomeSectionLocalPosition;
+            this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(m_GhostInputDeviceHomeSectionLocalPosition));
 
             m_State = State.navigatingTopLevel;
 
@@ -522,7 +525,8 @@ namespace UnityEditor.Experimental.EditorVR
                 kvp.Value.gameObject.SetActive(false);
             }
 
-            m_GhostInputDevice.localPosition -= new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
+            var newGhostInputDevicePosition = m_GhostInputDevice.localPosition - new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
+            this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newGhostInputDevicePosition));
         }
 
         void HideSubMenu()
@@ -736,6 +740,23 @@ namespace UnityEditor.Experimental.EditorVR
                 CloseMenu();
             }
             */
+        }
+
+        IEnumerator AnimateGhostInputDevicePosition(Vector3 targetLocalPosition)
+        {
+            var currentPosition = m_GhostInputDevice.localPosition;
+            var transitionAmount = 0f;
+            var transitionSubtractMultiplier = 5f;
+            while (transitionAmount < 1f)
+            {
+                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+                m_GhostInputDevice.localPosition = Vector3.Lerp(currentPosition, targetLocalPosition, smoothTransition);
+                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                yield return null;
+            }
+
+            m_GhostInputDevice.localPosition = targetLocalPosition;
+            m_GhostInputDeviceRepositionCoroutine = null;
         }
     }
 }
