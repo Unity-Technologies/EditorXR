@@ -11,10 +11,11 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.Playables;
+using Random = UnityEngine.Random;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    public class SpatialUI : MonoBehaviour, IAdaptPosition, ICustomActionMap, IControlSpatialScrolling, IUsesNode, IUsesRayOrigin
+    public class SpatialUI : MonoBehaviour, IAdaptPosition, ICustomActionMap, IControlSpatialScrolling, IUsesNode, IUsesRayOrigin, ISelectTool
     {
         // TODO expose as a user preference, for spatial UI distance
         const float k_DistanceOffset = 0.75f;
@@ -61,6 +62,9 @@ namespace UnityEditor.Experimental.EditorVR
 
         [SerializeField]
         List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
+        
+        [SerializeField]
+        CanvasGroup m_HomeSectionTitlesBackgroundBorders;
 
         [Header("SubMenu Section")]
         [SerializeField]
@@ -102,6 +106,7 @@ namespace UnityEditor.Experimental.EditorVR
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
         Coroutine m_GhostInputDeviceRepositionCoroutine;
+        Coroutine m_HomeSectionTitlesBackgroundBordersTransitionCoroutine;
 
         // "Rotate wrist to return" members
         float m_StartingWristXRotation;
@@ -117,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
 
-        bool visible
+        private bool visible
         {
             get { return m_Visible; }
 
@@ -134,6 +139,13 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 else
                 {
+                    var randomButtonPosition = Random.Range(0, 3);
+                    if (m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition] != null &&
+                        m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition].correspondingFunction != null)
+                    {
+                        m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition].correspondingFunction();
+                    }
+
                     m_State = State.hidden;
                 }
 
@@ -446,6 +458,7 @@ namespace UnityEditor.Experimental.EditorVR
             allowAdaptivePositioning = true;
             m_Director.playableAsset = m_RevealTimelinePlayable;
             m_GhostInputDevice.localPosition = m_GhostInputDeviceHomeSectionLocalPosition;
+            m_HomeSectionTitlesBackgroundBorders.alpha = 1f;
 
             DisplayHomeSectionContents();
 
@@ -470,6 +483,7 @@ namespace UnityEditor.Experimental.EditorVR
         void DisplayHomeSectionContents()
         {
             this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(m_GhostInputDeviceHomeSectionLocalPosition));
+            this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(true));
 
             m_State = State.navigatingTopLevel;
 
@@ -487,6 +501,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void DisplayHighlightedSubMenuContents()
         {
+            this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             m_State = State.navigatingSubMenuContent;
 
@@ -760,6 +775,24 @@ namespace UnityEditor.Experimental.EditorVR
 
             m_GhostInputDevice.localPosition = targetLocalPosition;
             m_GhostInputDeviceRepositionCoroutine = null;
+        }
+
+        IEnumerator AnimateTopAndBottomCenterBackgroundBorders(bool visible)
+        {
+            var currentAlpha = m_HomeSectionTitlesBackgroundBorders.alpha;
+            var targetAlpha = visible ? 1f : 0f;
+            var transitionAmount = 0f;
+            var transitionSubtractMultiplier = 5f;
+            while (transitionAmount < 1f)
+            {
+                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+                m_HomeSectionTitlesBackgroundBorders.alpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
+                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                yield return null;
+            }
+
+            m_HomeSectionTitlesBackgroundBorders.alpha = targetAlpha;
+            m_HomeSectionTitlesBackgroundBordersTransitionCoroutine = null;
         }
     }
 }
