@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
         IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
-        IRequestFeedback, ISpatialMenuProvider
+        IRequestFeedback, ISpatialMenuProvider, INodeToRay
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
@@ -160,7 +160,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_ToolsMenuUI.AddButton(button, buttonTransform);
 
             if (toolType != typeof(IMainMenu))
-                spatialTableElements.Add(new SpatialUI.SpatialUITableElement(toolType.Name, button.icon, null));
+                spatialTableElements.Add(new SpatialUI.SpatialUITableElement(toolType.Name, button.icon, () =>
+                {
+                    this.SelectTool(this.RequestRayOriginFromNode(Node.RightHand), toolType,
+                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(toolType));
+                }));
         }
 
         void DeleteToolsMenuButton(Type toolTypeToDelete, Type toolTypeToSelectAfterDelete)
