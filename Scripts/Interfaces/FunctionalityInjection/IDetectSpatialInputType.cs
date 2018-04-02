@@ -18,6 +18,19 @@ namespace UnityEditor.Experimental.EditorVR
 
     public static class IDetectSpatialInputTypeMethods
     {
+        internal delegate SpatialInputType GetSpatialInputTypeForNodeDelegate(IDetectSpatialInputType caller, Node node);
+
+        internal static GetSpatialInputTypeForNodeDelegate getSpatialInputTypeForNode { private get; set; }
+
+        /// <summary>
+        /// Detect the active/current spatial input type of a given node
+        /// </summary>
+        /// "obj" : The caller polling for a node's spatial input type
+        /// "node" : The node whose spatial input type will be returned
+        public static SpatialInputType GetSpatialInputTypeForNode(this IDetectSpatialInputType obj, Node node)
+        {
+            return getSpatialInputTypeForNode(obj, node);
+        }
     }
 }
 #endif

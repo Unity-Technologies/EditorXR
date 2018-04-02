@@ -48,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // Otherwise, set relevant SpatialInputType value
         }
 
-        SpatialInputType GetSpatialInputTypeForNode(Node node)
+        public SpatialInputType GetSpatialInputTypeForNode(IDetectSpatialInputType obj, Node node)
         {
             // Iterate on the node to active state collection
             // Return none for those not performing a spatial input action
