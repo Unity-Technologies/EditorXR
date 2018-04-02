@@ -251,7 +251,8 @@ namespace UnityEditor.Experimental.EditorVR
             }
             else if (m_State == State.navigatingSubMenuContent)
             {
-                var targetScale = m_spatialMenuProviders[0] == m_HighlightedTopLevelMenuProvider ? 7f : 9f;
+                // Scale background based on number of sub-menu elements
+                var targetScale = m_HighlightedTopLevelMenuProvider != null ? m_HighlightedTopLevelMenuProvider.spatialTableElements.Count * 1.05f : 1f;
                 var timeMultiplier = 24;
                 if (m_HomeTextBackgroundInnerTransform.localScale.y < targetScale)
                 {
