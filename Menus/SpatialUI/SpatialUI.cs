@@ -225,6 +225,8 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 m_Director.time = m_Director.time += Time.unscaledDeltaTime;
                 m_Director.Evaluate();
+                
+                m_SubMenuContentsCanvasGroup.alpha = Mathf.Clamp01(m_SubMenuContentsCanvasGroup.alpha -= Time.unscaledDeltaTime * 4);
             }
             else if (m_Director.time > m_HomeSectionTimelineDuration)
             {
