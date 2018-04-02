@@ -79,7 +79,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
         public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
 
-public bool mainMenuActivatorInteractable
+        public bool mainMenuActivatorInteractable
         {
             set { PreviewToolsMenuButton.interactable = value; }
         }
@@ -90,12 +90,14 @@ public bool mainMenuActivatorInteractable
             deleteToolsMenuButton = DeleteToolsMenuButton;
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
 
+            /*
             m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 1", null, null));
             m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 2", null, null));
             m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 3", null, null));
             m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 4", null, null));
             m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 5", null, null));
             m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 6", null, null));
+            */
         }
 
         void OnDestroy()
@@ -157,7 +159,8 @@ public bool mainMenuActivatorInteractable
 
             m_ToolsMenuUI.AddButton(button, buttonTransform);
 
-            spatialTableElements.Add(new SpatialUI.SpatialUITableElement(button.name, button.icon, null));
+            if (toolType != typeof(IMainMenu))
+                spatialTableElements.Add(new SpatialUI.SpatialUITableElement(toolType.Name, button.icon, null));
         }
 
         void DeleteToolsMenuButton(Type toolTypeToDelete, Type toolTypeToSelectAfterDelete)
@@ -168,6 +171,8 @@ public bool mainMenuActivatorInteractable
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            return;
+
             var buttonCount = buttons.Count;
             if (buttonCount <= k_ActiveToolOrderPosition + 1)
                 return;
