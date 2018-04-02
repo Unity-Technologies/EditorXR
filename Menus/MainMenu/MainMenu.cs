@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace,
         ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
-        IRequestFeedback
+        IRequestFeedback, INodeToRay
     {
         const string k_SettingsMenuSectionName = "Settings";
         const float k_MaxFlickDuration = 0.3f;
@@ -252,6 +253,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     // Assign Tools Menu button preview properties
                     if (mainMenuButton != null)
                         mainMenuButton.toolType = selectedType;
+
+                    // Pre-populate the tools on both nodes
+                    //this.SelectTool(this.RequestRayOriginFromNode(Node.RightHand), selectedType,
+                        //hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+                    
+                    this.SelectTool(this.RequestRayOriginFromNode(Node.LeftHand), selectedType,
+                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+
+                    // Force the return to the selection tool after pre-populating new tools on both nodes
+                    // TODO: optimize, and add support for resuming the session using the previously selected tool (if available)
+                    //this.SelectTool(this.RequestRayOriginFromNode(Node.RightHand), typeof(SelectionTool),
+                        //hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+                    
+                    this.SelectTool(this.RequestRayOriginFromNode(Node.LeftHand), typeof(SelectionTool),
+                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+
+                    UpdateToolButtons();
                 }
 
                 if (isWorkspace)
