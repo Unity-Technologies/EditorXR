@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -31,16 +32,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     {
         public class SpatialInputData : INodeToRay
         {
-            public SpatialInputData(Node node, Vector3 startingPosition, Vector3 currentPosition,
-                Quaternion startingRotation, Quaternion currentRotation)
+            public SpatialInputData(Node node, SpatialUIInput actionMap,
+                Vector3 initialPosition, Quaternion initialRotation)
             {
                 this.node = node;
-                this.startingPosition = startingPosition;
-                this.currentPosition = currentPosition;
-                this.startingRotation = startingRotation;
-                this.currentRotation = currentRotation;
                 rayOrigin = this.RequestRayOriginFromNode(node);
+                spatialUiInput = actionMap;
+
+                this.initialPosition = initialPosition;
+                currentPosition = initialPosition;
+                this.initialRotation = initialRotation;
+                currentRotation = initialRotation;
             }
+
+            /// <summary>
+            /// ActionMap utilized for input evaluation
+            /// </summary>
+            SpatialUIInput spatialUiInput;
 
             /// <summary>
             /// The node on which this spatial scroll is being processed
@@ -58,12 +66,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// Signed starting-position-dependent direction
             /// Each time an input type change occurs, this value is then recalculated from the new local input direction type
             /// </summary>
-            public float signedDirection { get; set; }
+            public float signedDeltaMagnitude { get; set; }
 
             /// <summary>
             /// The origin/starting input position
             /// </summary>
-            public Vector3 startingPosition { get; set; }
+            public Vector3 initialPosition { get; set; }
 
             /// <summary>
             /// The current input position
@@ -73,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// <summary>
             /// The origin/starting input rotation
             /// </summary>
-            public Quaternion startingRotation { get; set; }
+            public Quaternion initialRotation { get; set; }
 
             /// <summary>
             /// The current input rotation
@@ -84,6 +92,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// Value representing how much of the pre-scroll drag amount has occurred
             /// </summary>
             public float dragDistance { get; set; }
+
+            /// <summary>
+            /// Bool denoting that the scroll trigger magnitude has been exceeded
+            /// </summary>
+            public bool inputTypeChanged { get; set; }
 
             public void UpdateExistingScrollData(Vector3 newPosition)
             {
@@ -101,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         HapticPulse m_SingleAxistRotationPulse; // The pulse performed on a node performing a spatial scroll while only in single-axis rotation mode
 
         // Collection housing objects whose spatial input is being processed
-        readonly Dictionary<Node, SpatialInputType> m_ActiveSpatialNodes = new Dictionary<Node, SpatialInputType>();
+        readonly Dictionary<Node, SpatialInputData> m_ActiveSpatialNodes = new Dictionary<Node, SpatialInputData>();
 
         // Perform a constant haptic for translation/dragging
         // Perform a sharply pulsing haptic for rotation
@@ -116,13 +129,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // Otherwise, set relevant SpatialInputType value
         }
 
-        public SpatialInputType GetSpatialInputTypeForNode(IDetectSpatialInputType obj, Node node)
+        public SpatialInputData GetSpatialInputTypeForNode(IDetectSpatialInputType obj, Node node)
         {
             // Iterate on the node to active state collection
             // Return none for those not performing a spatial input action
             // Return the relevant SpatialInputType for a given node otherwise
 
-            SpatialInputType spatialInputType = SpatialInputType.None;
+            SpatialInputData spatialInputType = null;
             foreach (var nodeToInputType in m_ActiveSpatialNodes)
             {
                 if (nodeToInputType.Key == node)
