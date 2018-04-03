@@ -12,9 +12,10 @@ namespace UnityEditor.Experimental.EditorVR
     /// </summary>
     public interface IDetectSpatialInputType
     {
-        //Func that takes a node, and returns the current TEMPORAL spatial input type detected for that node
+        // Func that takes a node, and returns the current TEMPORAL spatial input type detected for that node
         Func<Node, SpatialInputType> getSpatialInputTypeForNode { get; set; }
 
+        // Utilized by the SpatialInputDetectionModule when processing input for a given node & caller
         SpatialUIInput spatialInputActionMap { get; set; }
     }
 
