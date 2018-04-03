@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -14,6 +14,8 @@ namespace UnityEditor.Experimental.EditorVR
     {
         //Func that takes a node, and returns the current TEMPORAL spatial input type detected for that node
         Func<Node, SpatialInputType> getSpatialInputTypeForNode { get; set; }
+
+        SpatialUIInput spatialInputActionMap { get; set; }
     }
 
     public static class IDetectSpatialInputTypeMethods
