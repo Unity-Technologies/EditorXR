@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR
         List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
         
         [SerializeField]
-        CanvasGroup m_HomeSectionTitlesBackgroundBorders;
+        CanvasGroup m_HomeSectionBackgroundBordersCanvas;
 
         [Header("SubMenu Section")]
         [SerializeField]
@@ -140,7 +140,9 @@ namespace UnityEditor.Experimental.EditorVR
                 else
                 {
                     var randomButtonPosition = Random.Range(0, 3);
-                    if (m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition] != null &&
+                    if (m_HighlightedTopLevelMenuProvider != null &&
+                        m_HighlightedTopLevelMenuProvider.spatialTableElements.Count > 0 &&
+                        m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition] != null &&
                         m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition].correspondingFunction != null)
                     {
                         m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition].correspondingFunction();
@@ -237,8 +239,9 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 m_Director.time = m_Director.time += Time.unscaledDeltaTime;
                 m_Director.Evaluate();
-                
-                m_SubMenuContentsCanvasGroup.alpha = Mathf.Clamp01(m_SubMenuContentsCanvasGroup.alpha -= Time.unscaledDeltaTime * 4);
+
+                m_SubMenuContentsCanvasGroup.alpha = Mathf.Clamp01(m_SubMenuContentsCanvasGroup.alpha - Time.unscaledDeltaTime * 4);
+                m_HomeSectionBackgroundBordersCanvas.alpha = Mathf.Clamp01(m_HomeSectionBackgroundBordersCanvas.alpha - Time.unscaledDeltaTime * 4);
             }
             else if (m_Director.time > m_HomeSectionTimelineDuration)
             {
@@ -458,7 +461,7 @@ namespace UnityEditor.Experimental.EditorVR
             allowAdaptivePositioning = true;
             m_Director.playableAsset = m_RevealTimelinePlayable;
             m_GhostInputDevice.localPosition = m_GhostInputDeviceHomeSectionLocalPosition;
-            m_HomeSectionTitlesBackgroundBorders.alpha = 1f;
+            m_HomeSectionBackgroundBordersCanvas.alpha = 1f;
 
             DisplayHomeSectionContents();
 
@@ -779,19 +782,19 @@ namespace UnityEditor.Experimental.EditorVR
 
         IEnumerator AnimateTopAndBottomCenterBackgroundBorders(bool visible)
         {
-            var currentAlpha = m_HomeSectionTitlesBackgroundBorders.alpha;
+            var currentAlpha = m_HomeSectionBackgroundBordersCanvas.alpha;
             var targetAlpha = visible ? 1f : 0f;
             var transitionAmount = 0f;
             var transitionSubtractMultiplier = 5f;
             while (transitionAmount < 1f)
             {
                 var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-                m_HomeSectionTitlesBackgroundBorders.alpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
+                m_HomeSectionBackgroundBordersCanvas.alpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
                 transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
                 yield return null;
             }
 
-            m_HomeSectionTitlesBackgroundBorders.alpha = targetAlpha;
+            m_HomeSectionBackgroundBordersCanvas.alpha = targetAlpha;
             m_HomeSectionTitlesBackgroundBordersTransitionCoroutine = null;
         }
     }
