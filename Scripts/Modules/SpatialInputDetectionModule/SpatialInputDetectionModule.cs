@@ -255,24 +255,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                             if (isNodeRotatingSingleAxis(spatialInputData))
                                 continue;
 
-                            if (isNodeRotatingFreely(spatialInputData))
-                                continue;
+                            isNodeRotatingFreely(spatialInputData);
 
                             break;
                         case SpatialInputType.SingleAxisRotation:
                             if (isNodeTranslating(spatialInputData))
                                 continue;
 
-                            if (isNodeRotatingFreely(spatialInputData))
-                                continue;
+                            isNodeRotatingFreely(spatialInputData);
 
                             break;
                         case SpatialInputType.FreeRotation:
                             if (isNodeTranslating(spatialInputData))
                                 continue;
 
-                            if (isNodeRotatingSingleAxis(spatialInputData))
-                                continue;
+                            isNodeRotatingSingleAxis(spatialInputData);
 
                             break;
                     }
@@ -341,18 +338,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return aboveThreshold;
         }
 
-        public SpatialInputData GetSpatialInputTypeForNode(IDetectSpatialInputType obj, Node node)
+        public SpatialInputType GetSpatialInputTypeForNode(IDetectSpatialInputType obj, Node node)
         {
             // Iterate on the node to active state collection
             // Return none for those not performing a spatial input action
             // Return the relevant SpatialInputType for a given node otherwise
 
-            SpatialInputData spatialInputType = null;
+            SpatialInputType spatialInputType = SpatialInputType.None;
             foreach (var nodeToInputType in m_SpatialNodeData)
             {
                 if (nodeToInputType.Key == node)
                 {
-                    spatialInputType = nodeToInputType.Value;
+                    spatialInputType = nodeToInputType.Value.spatialInputType;
                     break;
                 }
             }
