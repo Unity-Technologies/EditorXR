@@ -5,9 +5,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR
     {
-        class SpatialInputDetectionModuleConnector : Nested, ILateBindInterfaceMethods<SpatialInputDetectionModule>
+        class SpatialInputModuleConnector : Nested, ILateBindInterfaceMethods<SpatialInputModule>
         {
-            public void LateBindInterfaceMethods(SpatialInputDetectionModule provider)
+            public void LateBindInterfaceMethods(SpatialInputModule provider)
             {
                 IDetectSpatialInputTypeMethods.getSpatialInputTypeForNode = provider.GetSpatialInputTypeForNode;
             }

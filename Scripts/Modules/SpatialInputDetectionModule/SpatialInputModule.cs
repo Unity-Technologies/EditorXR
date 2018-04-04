@@ -38,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         StateChangedThisFrame = 1 << 11,
     }
 
-    public sealed class SpatialInputDetectionModule : MonoBehaviour
+    public sealed class SpatialInputModule : MonoBehaviour
     {
         public class SpatialInputData : INodeToRay
         {

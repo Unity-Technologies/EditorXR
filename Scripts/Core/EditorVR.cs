@@ -243,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             AddModule<GazeDivergenceModule>();
             AddModule<SpatialHintModule>();
             AddModule<SpatialScrollModule>();
-            AddModule<SpatialInputDetectionModule>();
+            AddModule<SpatialInputModule>();
 
             AddModule<FeedbackModule>();
 
