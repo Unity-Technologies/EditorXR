@@ -78,6 +78,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public Quaternion currentLocalRotation { get { return rayOrigin.localRotation; } }
 
             public float CurrenLocalXRotation { get { return rayOrigin.localRotation.eulerAngles.x; } }
+            public float CurrenLocalYRotation { get { return rayOrigin.localRotation.eulerAngles.y; } }
+            public float CurrenLocalZRotation { get { return rayOrigin.localRotation.eulerAngles.z; } }
 
             /// <summary>
             /// Value representing how much of the pre-scroll drag amount has occurred
@@ -250,43 +252,28 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     {
                         case SpatialInputType.None:
                         case SpatialInputType.DragTranslation:
-                            if (isNodeTranslating(spatialInputData))
-                                continue;
-
                             if (isNodeRotatingSingleAxis(spatialInputData))
                                 continue;
 
                             if (isNodeRotatingFreely(spatialInputData))
                                 continue;
 
-                            spatialInputData.spatialInputType = SpatialInputType.None;
                             break;
                         case SpatialInputType.SingleAxisRotation:
-                            if (isNodeRotatingSingleAxis(spatialInputData))
-                                continue;
-
                             if (isNodeTranslating(spatialInputData))
                                 continue;
 
                             if (isNodeRotatingFreely(spatialInputData))
                                 continue;
 
-                            spatialInputData.spatialInputType = SpatialInputType.None;
                             break;
                         case SpatialInputType.FreeRotation:
-                            if (isNodeRotatingFreely(spatialInputData))
-                                continue;
-
                             if (isNodeTranslating(spatialInputData))
                                 continue;
 
                             if (isNodeRotatingSingleAxis(spatialInputData))
                                 continue;
 
-                            spatialInputData.spatialInputType = SpatialInputType.None;
-                            break;
-                        default:
-                            spatialInputData.spatialInputType = SpatialInputType.None;
                             break;
                     }
                 }
@@ -309,7 +296,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // test X
             // test Y
 
-            // set spatialInputType state
+            var simultaneousAxisRotationCount = 0;
+            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.x, nodeData.CurrenLocalXRotation) ? 1 : 0;
+            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.y, nodeData.CurrenLocalYRotation) ? 1 : 0;
+
+            // don't perform if this is going to be evaluated as a free rotation, due to multi-axis threshold crossing
+            if (simultaneousAxisRotationCount < 2)
+                simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.z, nodeData.CurrenLocalZRotation) ? 1 : 0;
+
+            switch (simultaneousAxisRotationCount)
+            {
+                    case 1:
+                        nodeData.spatialInputType = SpatialInputType.SingleAxisRotation;
+                        return true;
+                        break;
+                    case 2:
+                    case 3:
+                        nodeData.spatialInputType = SpatialInputType.FreeRotation;
+                        break;
+            }
+
             return false;
         }
 
@@ -327,11 +333,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return false;
         }
 
-        bool PerformSingleAxisRotationTest(SpatialInputData data)
+        bool PerformSingleAxisRotationTest(float initialSingleAxisRotationValue, float currentSingleAxisRotationValue)
         {
-            const float k_WristReturnRotationThreshold = 0.3f;
-            var deltaAngle = Mathf.Abs(Mathf.DeltaAngle(data.initialLocalRotation.x, data.CurrenLocalXRotation));
-            var aboveThreshold = deltaAngle > k_WristReturnRotationThreshold;
+            const float kRotationThreshold = 0.3f; // Estimated wrist rotation threshold
+            var deltaAngle = Mathf.Abs(Mathf.DeltaAngle(initialSingleAxisRotationValue, currentSingleAxisRotationValue));
+            var aboveThreshold = deltaAngle > kRotationThreshold;
             return aboveThreshold;
         }
 
