@@ -10,13 +10,12 @@ namespace UnityEditor.Experimental.EditorVR
     /// Spatial UI & UX can/should respond, based on a given node's spatial input type:
     /// (translation, single axis rotation, free rotation, etc)
     /// </summary>
-    public interface IDetectSpatialInputType
+    public interface IDetectSpatialInputType : ICustomActionMap
     {
         // Func that takes a node, and returns the current TEMPORAL spatial input type detected for that node
         Func<Node, SpatialInputType> getSpatialInputTypeForNode { get; set; }
 
-        // Utilized by the SpatialInputDetectionModule when processing input for a given node & caller
-        SpatialUIInput spatialInputActionMap { get; set; }
+        bool pollingSpatialInputType { get; set; }
     }
 
     public static class IDetectSpatialInputTypeMethods
