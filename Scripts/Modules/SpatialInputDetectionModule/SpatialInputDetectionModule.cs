@@ -13,6 +13,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     public enum SpatialInputType
     {
         None = 0, // 0
+        DragTranslation = 1 << 3, // 8
+        SingleAxisRotation = 1 << 4, // Validate that only one axis is being rotated
+        FreeRotation = 1 << 5, // Can be either 0/1. Detect at least two axis' crossing their local rotation threshold, triggers ray-based selection
+        StateChangedThisFrame = 1 << 6,
+    }
+
+    [Flags]
+    public enum SpatialInputTypeAdvanced
+    {
+        None = 0, // 0
         X = 1 << 0, // 1 / Allow for flag-based polling of which axis' are involved in either a drag or rotation.
         Y = 1 << 1, // 2 / Euler's used in order to allow for polling either for translation or rotation
         Z = 1 << 2, // 4
@@ -24,7 +34,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         PitchForward = 1 << 7,
         PitchBackward = 1 << 8,
         RollLeft = 1 << 9,
-        RollRight = 1 << 10
+        RollRight = 1 << 10,
+        StateChangedThisFrame = 1 << 11,
     }
 
     public sealed class SpatialInputDetectionModule : MonoBehaviour
@@ -81,19 +92,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float CurrenLocalYRotation { get { return rayOrigin.localRotation.eulerAngles.y; } }
             public float CurrenLocalZRotation { get { return rayOrigin.localRotation.eulerAngles.z; } }
 
-            /// <summary>
-            /// Value representing how much of the pre-scroll drag amount has occurred
-            /// </summary>
-            public float dragDistance { get; set; }
-
-            /// <summary>
-            /// Bool denoting that the scroll trigger magnitude has been exceeded
-            /// </summary>
-            public bool inputTypeChanged { get; set; }
-
             public void AddCaller(IDetectSpatialInputType caller)
             {
-                m_Callers.Add(caller);
+                if (!m_Callers.Contains(caller))
+                    m_Callers.Add(caller);
             }
 
             public bool RemoveCaller(IDetectSpatialInputType caller)
@@ -146,10 +148,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         return;
                     }
 
-                    Debug.LogError("Changing state to : " + spatialInputType.ToString() + " : " + rayOrigin.name);
+                    Debug.LogWarning("Changing state to : " + spatialInputType.ToString() + " : " + rayOrigin.name);
 
                     stateChangedThisFrame = true;
-                    m_SpatialInputType = value;
+                    m_SpatialInputType = value; // Set new state
+                    m_SpatialInputType |= SpatialInputType.StateChangedThisFrame; // Set frame change flag
                     if (m_SpatialInputType == SpatialInputType.None)
                         return;
 
@@ -173,6 +176,62 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         // Collection housing objects whose spatial input is being processed
         readonly Dictionary<Node, SpatialInputData> m_SpatialNodeData = new Dictionary<Node, SpatialInputData>();
+
+        bool isNodeTranslating(SpatialInputData nodeData)
+        {
+            const float kSubMenuNavigationTranslationTriggerThreshold = 0.075f;
+            var initialPosition = nodeData.initialPosition;
+            var currentPosition = nodeData.currentPosition;
+            var aboveMagnitudeDeltaThreshold = Vector3.Magnitude(initialPosition - currentPosition) > kSubMenuNavigationTranslationTriggerThreshold;
+
+            if (aboveMagnitudeDeltaThreshold)
+            {
+                nodeData.spatialInputType = SpatialInputType.DragTranslation;
+            }
+
+            /* No need to test this, only another rotation state, or a state of NONE will clear the value
+            if (!aboveMagnitudeDeltaThreshold && nodeData.spatialInputType == SpatialInputType.DragTranslation)
+            {
+                // Clear dragTranslation state if the previous state was dragTranslation, and now below the threshold
+                nodeData.spatialInputType = SpatialInputType.None;
+            }
+            */
+
+            return aboveMagnitudeDeltaThreshold;
+        }
+
+        bool isNodeRotatingSingleAxisOrFreely(SpatialInputData nodeData)
+        {
+            // Test each individual axis delta for residing below the given threshold
+            // If more than 1 tests beyond the threshold, set isTorationFreely to true, and isTranslating to false, then return false here
+
+            // Ordered by usage priority Z(roll), X(pitch), then Y(yaw)
+            // test z
+            // test X
+            // test Y
+
+            // Prioritize Z rotation, then X, then Y
+            var simultaneousAxisRotationCount = 0;
+            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.z, nodeData.CurrenLocalZRotation) ? 1 : 0;
+            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.x, nodeData.CurrenLocalXRotation) ? 1 : 0;
+
+            // don't perform if this is going to be evaluated as a free rotation, due to multi-axis threshold crossing having already occurred
+            if (simultaneousAxisRotationCount < 2)
+                simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.y, nodeData.CurrenLocalYRotation) ? 1 : 0;
+
+            switch (simultaneousAxisRotationCount)
+            {
+                    case 1:
+                        nodeData.spatialInputType = SpatialInputType.SingleAxisRotation;
+                        break;
+                    case 2:
+                    case 3:
+                        nodeData.spatialInputType = SpatialInputType.FreeRotation;
+                        break;
+            }
+
+            return simultaneousAxisRotationCount == 1;
+        }
 
         // Perform a constant haptic for translation/dragging
         // Perform a sharply pulsing haptic for rotation
@@ -241,10 +300,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 {
                     // Spatial input is NOT being performed on this node
                     // A frame with a state of NONE has already been processed, now unset the stateChangedThisFrameValue
-                    if (spatialInputData.spatialInputType == SpatialInputType.None)
+                    /*
+                    if (spatialInputData.spatialInputType == SpatialInputType.StateChangedThisFrame)
+                    {
+                        spatialInputData.spatialInputType |= SpatialInputType.StateChangedThisFrame; // Clear frame change flag
                         spatialInputData.stateChangedThisFrame = false; // Consider removing
+                    }
+                    */
 
-                    spatialInputData.spatialInputType = SpatialInputType.None;
+                    spatialInputData.spatialInputType = SpatialInputType.None; // Clears frame change flag
                 }
                 else
                 {
@@ -256,76 +320,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     // Order tests based on the active spatial input type of the node
                     switch (spatialInputData.spatialInputType)
                     {
-                        case SpatialInputType.None:
                         case SpatialInputType.DragTranslation:
                             isNodeRotatingSingleAxisOrFreely(spatialInputData);
                             break;
                         case SpatialInputType.SingleAxisRotation:
                             isNodeTranslating(spatialInputData);
                             break;
+                        case SpatialInputType.None:
                         case SpatialInputType.FreeRotation:
+                            if (isNodeRotatingSingleAxisOrFreely(spatialInputData))
+                                continue;
+                            
                             isNodeTranslating(spatialInputData);
-                            isNodeRotatingSingleAxisOrFreely(spatialInputData);
+
                             break;
                     }
                 }
             }
-        }
-
-        bool isNodeTranslating(SpatialInputData nodeData)
-        {
-            const float kSubMenuNavigationTranslationTriggerThreshold = 0.075f;
-            var initialPosition = nodeData.initialPosition;
-            var currentPosition = nodeData.currentPosition;
-            var aboveMagnitudeDeltaThreshold = Vector3.Magnitude(initialPosition - currentPosition) > kSubMenuNavigationTranslationTriggerThreshold)
-
-            if (aboveMagnitudeDeltaThreshold)
-            {
-                nodeData.spatialInputType = SpatialInputType.DragTranslation;
-            }
-
-            /* No need to test this, only another rotation state, or a state of NONE will clear the value
-            if (!aboveMagnitudeDeltaThreshold && nodeData.spatialInputType == SpatialInputType.DragTranslation)
-            {
-                // Clear dragTranslation state if the previous state was dragTranslation, and now below the threshold
-                nodeData.spatialInputType = SpatialInputType.None;
-            }
-            */
-
-            return aboveMagnitudeDeltaThreshold;
-        }
-
-        bool isNodeRotatingSingleAxisOrFreely(SpatialInputData nodeData)
-        {
-            // Test each individual axis delta for residing below the given threshold
-            // If more than 1 tests beyond the threshold, set isTorationFreely to true, and isTranslating to false, then return false here
-
-            // Ordered by usage priority Z(roll), X(pitch), then Y(yaw)
-            // test z
-            // test X
-            // test Y
-
-            // Prioritize Z rotation, then X, then Y
-            var simultaneousAxisRotationCount = 0;
-            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.z, nodeData.CurrenLocalZRotation) ? 1 : 0;
-            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.x, nodeData.CurrenLocalXRotation) ? 1 : 0;
-
-            // don't perform if this is going to be evaluated as a free rotation, due to multi-axis threshold crossing having already occurred
-            if (simultaneousAxisRotationCount < 2)
-                simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.y, nodeData.CurrenLocalYRotation) ? 1 : 0;
-
-            switch (simultaneousAxisRotationCount)
-            {
-                    case 1:
-                        nodeData.spatialInputType = SpatialInputType.SingleAxisRotation;
-                        break;
-                    case 2:
-                    case 3:
-                        nodeData.spatialInputType = SpatialInputType.FreeRotation;
-                        break;
-            }
-
-            return simultaneousAxisRotationCount == 1;
         }
 
         /// <summary>
@@ -348,16 +359,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // Return none for those not performing a spatial input action
             // Return the relevant SpatialInputType for a given node otherwise
 
+            var nodeDetected = false;
             SpatialInputType spatialInputType = SpatialInputType.None;
             foreach (var nodeToInputType in m_SpatialNodeData)
             {
                 if (nodeToInputType.Key == node)
                 {
-                    spatialInputType = nodeToInputType.Value.spatialInputType;
+                    var nodeData = nodeToInputType.Value;
+                    nodeData.AddCaller(obj);
+                    spatialInputType = nodeData.spatialInputType;
                     break;
                 }
             }
-            
+
+            if (!nodeDetected)
+            {
+                // Node not found, add node and caller to collection
+                BeginSpatialInputDetection(obj, node);
+            }
+
             return spatialInputType;
         }
     }

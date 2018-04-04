@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
     public interface IDetectSpatialInputType : ICustomActionMap
     {
         // Func that takes a node, and returns the current TEMPORAL spatial input type detected for that node
-        Func<Node, SpatialInputType> getSpatialInputTypeForNode { get; set; }
+        //Func<Node, SpatialInputType> getSpatialInputTypeForNode { get; set; }
 
         bool pollingSpatialInputType { get; set; }
     }

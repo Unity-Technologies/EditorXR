@@ -165,7 +165,6 @@ namespace UnityEditor.Experimental.EditorVR
         public bool ignoreActionMapInputLocking { get; private set; }
 
         // IDetectSpatialInput implementation
-        public Func<Node, SpatialInputType> getSpatialInputTypeForNode { get; set; }
         public bool pollingSpatialInputType { get; set; }
 
         // Spatial scroll interface members
@@ -573,7 +572,7 @@ namespace UnityEditor.Experimental.EditorVR
             HideSubMenu();
             DisplayHomeSectionContents();
 
-            Debug.LogWarning("<color=green>Above wrist return threshold</color>");
+            Debug.LogWarning("SpatialUI : <color=green>Above wrist return threshold</color>");
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -643,6 +642,13 @@ namespace UnityEditor.Experimental.EditorVR
                     return; // Don't process further input if the menu is not in focus
                 }
                 */
+
+                // TODO: check the node currently controlling the spatial UI, don't hard set on left hand
+                var spatialInputType = this.GetSpatialInputTypeForNode(Node.LeftHand);
+                Debug.LogError("SpatialUI current input type : " + spatialInputType);
+
+                if (spatialInputType == SpatialInputType.StateChangedThisFrame)
+                    Debug.LogError("<color=green>SpatialUI state changed this frame!!</color>");
 
                 var inputLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
