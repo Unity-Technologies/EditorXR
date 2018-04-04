@@ -15,7 +15,9 @@ using Random = UnityEngine.Random;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    public class SpatialUI : MonoBehaviour, IAdaptPosition, ICustomActionMap, IControlSpatialScrolling, IUsesNode, IUsesRayOrigin, ISelectTool
+    [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
+    public class SpatialUI : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling,
+        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType
     {
         // TODO expose as a user preference, for spatial UI distance
         const float k_DistanceOffset = 0.75f;
@@ -135,6 +137,7 @@ namespace UnityEditor.Experimental.EditorVR
 
                 if (m_Visible)
                 {
+                    pollingSpatialInputType = true;
                     gameObject.SetActive(true);
                 }
                 else
@@ -148,10 +151,9 @@ namespace UnityEditor.Experimental.EditorVR
                         m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition].correspondingFunction();
                     }
 
+                    pollingSpatialInputType = false;
                     m_State = State.hidden;
                 }
-
-                return;
             }
         }
 
@@ -161,6 +163,10 @@ namespace UnityEditor.Experimental.EditorVR
         // Action Map interface members
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreActionMapInputLocking { get; private set; }
+
+        // IDetectSpatialInput implementation
+        public Func<Node, SpatialInputType> getSpatialInputTypeForNode { get; set; }
+        public bool pollingSpatialInputType { get; set; }
 
         // Spatial scroll interface members
         public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
