@@ -318,6 +318,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         return;
 
                     // Order tests based on the active spatial input type of the node
+                    // Testing for the opposite type of input will set the SpatialInputType accordingly, if a given input type change has occurred
                     switch (spatialInputData.spatialInputType)
                     {
                         case SpatialInputType.DragTranslation:

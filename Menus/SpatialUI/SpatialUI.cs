@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         [SerializeField]
         List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
-        
+
         [SerializeField]
         CanvasGroup m_HomeSectionBackgroundBordersCanvas;
 
@@ -324,7 +324,7 @@ namespace UnityEditor.Experimental.EditorVR
                     //m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
                     //m_SubMenuContentsCanvasGroup.alpha = 0f;
 
-                    
+
                 }
             }
         }
@@ -407,7 +407,7 @@ namespace UnityEditor.Experimental.EditorVR
                 var delayBeforeReveal = 0.5f;
                 while (delayBeforeReveal > 0)
                 {
-                    // Pause before revealing 
+                    // Pause before revealing
                     delayBeforeReveal -= Time.unscaledDeltaTime;
                     yield return null;
                 }
@@ -674,6 +674,28 @@ namespace UnityEditor.Experimental.EditorVR
                     return;
                 }
 
+                // utilize the YAW rotation of the input device to cycle through menu items
+                // Scale the cycling speed based on the dot-base divergence from the initial starting angle
+                // Will need to consider how to handle a user starting at a steep angle initially, baesd upon how far they scroll in the opposite direction.
+                // In other words, if the user rotates beyond the max estimated threshold, we offset the initial starting angle by that amount, so when returning their rotation to the original extreme angle
+                // They will have offset their "neutral" rotation position, and have newfound room to rotate/advance in the original "extreme" rotation direction
+                if (m_State != State.navigatingSubMenuContent)
+                {
+                    // The "roll" rotation expected on the z is polled for via the X in the action map...???
+                    const float kSectionSpacingBuffer = 0.05f;
+                    var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.y, actionMapInput.localRotationQuaternion.quaternion.y);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
+                    //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x) + "</color>");
+                    if (localZRotationDelta > kSectionSpacingBuffer) // Rotating (relatively) leftward
+                    {
+                        HighlightHomeSectionMenuElement(m_spatialMenuProviders[0]);
+                    }
+                    else if (localZRotationDelta < -kSectionSpacingBuffer)
+                    {
+                        HighlightHomeSectionMenuElement(m_spatialMenuProviders[1]);
+                    }
+                }
+
+                /* Working Z-rotation based cycling through menu elements
                 // Cycle through top-level sections, before opening a corresponding sub-menu
                 if (m_State != State.navigatingSubMenuContent)
                 {
@@ -690,6 +712,7 @@ namespace UnityEditor.Experimental.EditorVR
                         HighlightHomeSectionMenuElement(m_spatialMenuProviders[1]);
                     }
                 }
+                */
 
                 return;
             }
