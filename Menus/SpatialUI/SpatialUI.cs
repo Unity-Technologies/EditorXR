@@ -265,7 +265,8 @@ namespace UnityEditor.Experimental.EditorVR
                 {
                     foreach (var child in deleteOldChildren)
                     {
-                        ObjectUtils.Destroy(child.gameObject);
+                        if (child != null && child.gameObject != null)
+                            ObjectUtils.Destroy(child.gameObject);
                     }
                 }
             }
@@ -309,7 +310,8 @@ namespace UnityEditor.Experimental.EditorVR
                         {
                             foreach (var child in deleteOldChildren)
                             {
-                                ObjectUtils.Destroy(child.gameObject);
+                                if (child != null && child.gameObject != null)
+                                    ObjectUtils.Destroy(child.gameObject);
                             }
                         }
                         return;
@@ -342,12 +344,12 @@ namespace UnityEditor.Experimental.EditorVR
                 }
             }
 
-            Debug.LogError("Adding a provider : " + provider.spatialMenuName);
+            Debug.LogWarning("Adding a provider : " + provider.spatialMenuName);
             m_spatialMenuProviders.Add(provider);
 
             var instantiatedPrefab = ObjectUtils.Instantiate(m_MenuElementPrefab).transform as RectTransform;
             var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
-            providerMenuElement.Setup(instantiatedPrefab, m_HomeMenuContainer, () => Debug.LogError("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
+            providerMenuElement.Setup(instantiatedPrefab, m_HomeMenuContainer, () => Debug.LogWarning("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
             m_ProviderToMenuElements.Add(provider, providerMenuElement);
 
             //instantiatedPrefab.transform.SetParent(m_HomeMenuContainer);
@@ -475,6 +477,12 @@ namespace UnityEditor.Experimental.EditorVR
             m_Director.Evaluate();
         }
 
+        void SetSpatialScrollStartingConditions(Vector3 localPosition, Quaternion localRotation)
+        {
+            m_HomeSectionSpatialScrollStartLocalPosition = localPosition;
+            m_InitialSpatialLocalRotation = localRotation; // Cache the current starting rotation, current deltaAngle will be calculated relative to this rotation
+        }
+
         void HighlightHomeSectionMenuElement(ISpatialMenuProvider provider)
         {
             m_HomeSectionDescription.text = provider.spatialMenuDescription;
@@ -530,7 +538,8 @@ namespace UnityEditor.Experimental.EditorVR
                     var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( (x) => x != m_SubMenuContainer);
                     foreach (var child in deleteOldChildren)
                     {
-                        ObjectUtils.Destroy(child.gameObject);
+                        if (child != null && child.gameObject != null)
+                            ObjectUtils.Destroy(child.gameObject);
                     }
 
                     foreach (var subMenuElement in m_HighlightedTopLevelMenuProvider.spatialTableElements)
@@ -538,7 +547,7 @@ namespace UnityEditor.Experimental.EditorVR
                         ++subMenuElementCount;
                         var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
                         var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
-                        providerMenuElement.Setup(instantiatedPrefab, m_SubMenuContainer, () => Debug.LogError("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
+                        providerMenuElement.Setup(instantiatedPrefab, m_SubMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
                     }
 
                     //.Add(provider, providerMenuElement);
@@ -615,15 +624,13 @@ namespace UnityEditor.Experimental.EditorVR
                 (actionMapInput.show.isHeld && actionMapInput.select.wasJustPressed))
             {
                 m_State = State.navigatingTopLevel;
-                m_HomeSectionSpatialScrollStartLocalPosition = actionMapInput.localPosition.vector3;
-                m_InitialSpatialLocalRotation = actionMapInput.localRotationQuaternion.quaternion; // Cache the current starting rotation, current deltaAngle will be calculated relative to this rotation
-
+                SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
                 SetupUIForInteraction();
             }
 
             if (actionMapInput.show.isHeld && m_State != State.hidden)
             {
-                var canSwitchMenus = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // beyond wait duration for menu swapping
+                var canSwitchMenus = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // duration for which input is not taken into account when menu swapping
                 visible = true;
 
                 if (m_Director.time <= m_HomeSectionTimelineStoppingTime)
@@ -645,10 +652,10 @@ namespace UnityEditor.Experimental.EditorVR
 
                 // TODO: check the node currently controlling the spatial UI, don't hard set on left hand
                 var spatialInputType = this.GetSpatialInputTypeForNode(Node.LeftHand);
-                Debug.LogError("SpatialUI current input type : " + spatialInputType);
+                Debug.LogWarning("SpatialUI current input type : " + spatialInputType);
 
                 if (spatialInputType == SpatialInputType.StateChangedThisFrame)
-                    Debug.LogError("<color=green>SpatialUI state changed this frame!!</color>");
+                    Debug.Log("<color=green>SpatialUI state changed this frame!!</color>");
 
                 var inputLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
@@ -657,6 +664,7 @@ namespace UnityEditor.Experimental.EditorVR
                 if (canSwitchMenus && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
+                    SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
                     ReturnToPreviousMenuLevel();
                     return;
                 }
@@ -667,7 +675,8 @@ namespace UnityEditor.Experimental.EditorVR
                     {
                         var x = Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3);
                         //Debug.LogError("<color=green>"+ x + "</color>");
-                        Debug.LogError("Crossed translation threshold");
+                        Debug.Log("Crossed translation threshold");
+                        SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
                         DisplayHighlightedSubMenuContents();
                     }
 
