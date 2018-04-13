@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -174,12 +175,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_Camera.farClipPlane = farClipPlane;
             }
 
-            if (s_ExistingSceneMainCamera)
-            {
-                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
-                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
-            }
-
             m_Camera.enabled = false;
             m_Camera.cameraType = CameraType.VR;
             m_Camera.useOcclusionCulling = false;
@@ -188,6 +183,70 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_Camera.transform.parent = m_CameraRig;
             m_CameraRig.position = headCenteredOrigin;
             m_CameraRig.rotation = Quaternion.identity;
+
+            if (s_ExistingSceneMainCamera)
+            {
+                var cameraGameObject = m_Camera.gameObject;
+                var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>();
+                var enabledPotentialImageEffects = potentialImageEffects.Where(x => x != null && x.enabled);
+                var targetMethodNames = new [] {"OnRenderImage", "OnPreRender", "OnPostRender"};
+                var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+                foreach (var potentialImageEffect in enabledPotentialImageEffects)
+                {
+                    var componentInstanceType = potentialImageEffect.GetType();
+                    var targetMethodFound = false;
+                    for (int i = 0; i < targetMethodNames.Length; ++i)
+                    {
+                        // Each of the three checks is performed to catch the various image effect variants I've tested against
+                        // Each check catches a different case that was encountered during testing
+                        // Check isntanced type for target methods
+                        targetMethodFound = componentInstanceType.GetMethod(targetMethodNames[i], bindingFlags) != null;
+
+                        // Check base type for target methods
+                        if (!targetMethodFound)
+                        {
+                            var componentBaseType = componentInstanceType.BaseType;
+                            if (componentBaseType != null)
+                                targetMethodFound = componentBaseType.GetMethod(targetMethodNames[i], bindingFlags) != null;
+                        }
+
+                        // Check nested types for target methods
+                        if (!targetMethodFound)
+                        {
+                            var nestedTypes = componentInstanceType.GetNestedTypes();
+                            foreach (var nestedType in nestedTypes)
+                            {
+                                if (nestedType == null)
+                                    continue;
+
+                                targetMethodFound = nestedType.GetMethod(targetMethodNames[i], bindingFlags) != null;
+                                if (targetMethodFound)
+                                    break;
+                            }
+                        }
+
+                        if (targetMethodFound)
+                            break;
+                    }
+
+                    if (targetMethodFound)
+                    {
+                        try
+                        {
+                            // During testing, some image effects caused Unity to crash when copied
+                            ObjectUtils.CopyComponent(potentialImageEffect, cameraGameObject);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                    }
+                }
+
+                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
+                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
+            }
 
             m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
             m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
