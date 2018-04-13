@@ -175,12 +175,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_Camera.farClipPlane = farClipPlane;
             }
 
-            if (s_ExistingSceneMainCamera)
-            {
-                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
-                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
-            }
-
             m_Camera.enabled = false;
             m_Camera.cameraType = CameraType.VR;
             m_Camera.useOcclusionCulling = false;
@@ -198,16 +192,32 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
                 foreach (var potentialImageEffect in potentialImageEffects)
                 {
-                    var componentInstanceType = potentialImageEffect.GetType(); // Get instance type first. Handles MonoBehaviours, but not derived classes
+                    var componentInstanceType = potentialImageEffect.GetType();
                     var targetMethodFound = false;
                     for (int i = 0; i < targetMethodNames.Length; ++i)
                     {
+                        // Each of the three checks is performed to catch the various image effect variants I've tested against
+                        // Each check catches a different case that was encountered during testing
+                        // Check isntanced type for target methods
                         targetMethodFound = componentInstanceType.GetMethod(targetMethodNames[i], bindingFlags) != null;
+
+                        // Check base type for target methods
+                        if (!targetMethodFound)
+                        {
+                            var componentBaseType = componentInstanceType.BaseType;
+                            if (componentBaseType != null)
+                                targetMethodFound = componentBaseType.GetMethod(targetMethodNames[i], bindingFlags) != null;
+                        }
+
+                        // Check nested types for target methods
                         if (!targetMethodFound)
                         {
                             var nestedTypes = componentInstanceType.GetNestedTypes();
                             foreach (var nestedType in nestedTypes)
                             {
+                                if (nestedType == null)
+                                    continue;
+
                                 targetMethodFound = nestedType.GetMethod(targetMethodNames[i], bindingFlags) != null;
                                 if (targetMethodFound)
                                     break;
@@ -219,8 +229,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
 
                     if (targetMethodFound)
-                        ObjectUtils.CopyComponent(potentialImageEffect, cameraGameObject);
+                    {
+                        try
+                        {
+                            // During testing, some image effects caused Unity to crash when copied
+                            ObjectUtils.CopyComponent(potentialImageEffect, cameraGameObject);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                            throw;
+                        }
+                    }
                 }
+
+                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
+                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
             }
 
             m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
