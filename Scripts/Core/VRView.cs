@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -188,6 +189,46 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_Camera.transform.parent = m_CameraRig;
             m_CameraRig.position = headCenteredOrigin;
             m_CameraRig.rotation = Quaternion.identity;
+
+            if (s_ExistingSceneMainCamera)
+            {
+                var cameraGameObject = m_Camera.gameObject;
+                var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>().Where(x => x.enabled == true);
+                var targetMethodNames = new [] {"OnRenderImage", "OnPreRender", "OnPostRender"};
+                var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+                foreach (var potentialImageEffect in potentialImageEffects)
+                {
+                    var componentInstanceType = potentialImageEffect.GetType(); // Get instance type first.  Handles monobehaviours, but not classes that derive from MonoBehaviour
+                    var componentBaseType = componentInstanceType.BaseType;
+                    var targetMethodFound = false;
+                    for (int i = 0; i < targetMethodNames.Length; ++i)
+                    {
+                        targetMethodFound = componentInstanceType.GetMethod(targetMethodNames[i], bindingFlags) != null;
+
+                        if (!targetMethodFound)
+                        {
+                            var nestedTypes = componentInstanceType.GetNestedTypes();
+                            foreach (var nestedType in nestedTypes)
+                            {
+                                targetMethodFound = nestedType.GetMethod(targetMethodNames[i], bindingFlags) != null;
+                                if (targetMethodFound)
+                                    break;
+                            }
+                        }
+
+                        if (targetMethodFound)
+                            break;
+                    }
+
+                    if (targetMethodFound)
+                    {
+                        var instanceType = potentialImageEffect.GetType();
+                        // TODO: Add try catch for effects that crash when being copied (Amplify Occlusion, etc)
+                        ObjectUtils.CopyComponent(potentialImageEffect, cameraGameObject);
+                    }
+                }
+
+            }
 
             m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
             m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
