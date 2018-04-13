@@ -193,18 +193,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (s_ExistingSceneMainCamera)
             {
                 var cameraGameObject = m_Camera.gameObject;
-                var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>().Where(x => x.enabled == true);
+                var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>().Where(x => x.enabled);
                 var targetMethodNames = new [] {"OnRenderImage", "OnPreRender", "OnPostRender"};
                 var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
                 foreach (var potentialImageEffect in potentialImageEffects)
                 {
-                    var componentInstanceType = potentialImageEffect.GetType(); // Get instance type first.  Handles monobehaviours, but not classes that derive from MonoBehaviour
-                    var componentBaseType = componentInstanceType.BaseType;
+                    var componentInstanceType = potentialImageEffect.GetType(); // Get instance type first. Handles MonoBehaviours, but not derived classes
                     var targetMethodFound = false;
                     for (int i = 0; i < targetMethodNames.Length; ++i)
                     {
                         targetMethodFound = componentInstanceType.GetMethod(targetMethodNames[i], bindingFlags) != null;
-
                         if (!targetMethodFound)
                         {
                             var nestedTypes = componentInstanceType.GetNestedTypes();
@@ -221,13 +219,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
 
                     if (targetMethodFound)
-                    {
-                        var instanceType = potentialImageEffect.GetType();
-                        // TODO: Add try catch for effects that crash when being copied (Amplify Occlusion, etc)
                         ObjectUtils.CopyComponent(potentialImageEffect, cameraGameObject);
-                    }
                 }
-
             }
 
             m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
