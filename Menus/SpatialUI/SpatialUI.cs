@@ -104,6 +104,7 @@ namespace UnityEditor.Experimental.EditorVR
         float m_HomeSectionTimelineStoppingTime;
         Vector3 m_HomeSectionSpatialScrollStartLocalPosition;
         Vector3 m_GhostInputDeviceHomeSectionLocalPosition;
+        bool m_Transitioning;
 
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
@@ -240,6 +241,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void Update()
         {
+            Debug.Log("<color=yellow>" + m_Transitioning + "</color>");
             if (m_State == State.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
             {
                 m_Director.time = m_Director.time += Time.unscaledDeltaTime;
@@ -630,7 +632,7 @@ namespace UnityEditor.Experimental.EditorVR
 
             if (actionMapInput.show.isHeld && m_State != State.hidden)
             {
-                var canSwitchMenus = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // duration for which input is not taken into account when menu swapping
+                m_Transitioning = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // duration for which input is not taken into account when menu swapping
                 visible = true;
 
                 if (m_Director.time <= m_HomeSectionTimelineStoppingTime)
@@ -661,7 +663,7 @@ namespace UnityEditor.Experimental.EditorVR
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
                 m_GhostInputDevice.localRotation = ghostDeviceRotation;// Quaternion.Euler(-ghostDeviceRotation.eulerAngles.x, ghostDeviceRotation.eulerAngles.y, -ghostDeviceRotation.eulerAngles.z);
 
-                if (canSwitchMenus && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
+                if (m_Transitioning && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
                     SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
@@ -671,7 +673,7 @@ namespace UnityEditor.Experimental.EditorVR
 
                 if (m_State == State.navigatingTopLevel && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
-                    if (canSwitchMenus)
+                    if (m_Transitioning)
                     {
                         var x = Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3);
                         //Debug.LogError("<color=green>"+ x + "</color>");
