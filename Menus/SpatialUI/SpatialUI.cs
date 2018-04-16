@@ -7,6 +7,7 @@ using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -17,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public class SpatialUI : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling,
-        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType
+        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType, IPerformSpatialRayInteraction
     {
         // TODO expose as a user preference, for spatial UI distance
         const float k_DistanceOffset = 0.75f;
@@ -158,6 +159,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
+        public Transform spatialProxyRayDriverTransform { get; set; }
         public Transform rayOrigin { get; set; }
         public Node node { get; set; }
 
@@ -237,6 +239,8 @@ namespace UnityEditor.Experimental.EditorVR
             m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
 
             m_GhostInputDeviceHomeSectionLocalPosition = m_GhostInputDevice.localPosition;
+
+            spatialProxyRayDriverTransform = m_GhostInputDevice;
         }
 
         void Update()
@@ -588,6 +592,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            this.UpdateSpatialRay();
+
             //Debug.Log("processing input in SpatialUI");
 
             const float kSubMenuNavigationTranslationTriggerThreshold = 0.075f;
