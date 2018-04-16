@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -39,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         StateChangedThisFrame = 1 << 11,
     }
 
-    public sealed class SpatialInputModule : MonoBehaviour
+    public sealed class SpatialInputModule : MonoBehaviour, ISpatialProxyRay
     {
         public class SpatialInputData : INodeToRay
         {
@@ -166,7 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         [SerializeField]
-        DefaultProxyRay m_SpatialUIRay;
+        DefaultProxyRay m_SpatialProxyRayPrefab;
 
         // Serialized Field region
         [SerializeField]
@@ -180,6 +181,86 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         // Collection housing objects whose spatial input is being processed
         readonly Dictionary<Node, SpatialInputData> m_SpatialNodeData = new Dictionary<Node, SpatialInputData>();
+
+        /// <summary>
+        /// Ray origin used for ray-based interaction with Spatial UI elements
+        /// </summary>
+        public Transform spatialProxyRayOrigin { get; set; }
+
+        public DefaultProxyRay spatialProxyRay { get; set; }
+
+        public Transform spatialProxyRayDriverTransform { get; set; }
+
+        void Start()
+        {
+            spatialProxyRayOrigin = ObjectUtils.Instantiate(m_SpatialProxyRayPrefab.gameObject).transform;
+            spatialProxyRayOrigin.position = Vector3.zero;
+            spatialProxyRayOrigin.rotation = Quaternion.identity;
+            spatialProxyRay = spatialProxyRayOrigin.GetComponent<DefaultProxyRay>();
+            spatialProxyRay.SetColor(Color.white);
+        }
+
+        private void OnDestroy()
+        {
+            ObjectUtils.Destroy(spatialProxyRayOrigin.gameObject);
+        }
+
+        void Update()
+        {
+            // Iterate over all ACTIVE(performing spatial input) nodes perform a spatial scroll
+            // Update the SpatialInputType for each ACTIVE node
+            // Set SpatialInputType for nodes not performing any spatial input to NONE
+            // Otherwise, set relevant SpatialInputType value
+
+            foreach (var nodeToSpatialData in m_SpatialNodeData)
+            {
+                var spatialInputData = nodeToSpatialData.Value;
+                if (!spatialInputData.beingPolled)
+                {
+                    // Spatial input is NOT being performed on this node
+                    // A frame with a state of NONE has already been processed, now unset the stateChangedThisFrameValue
+                    /*
+                    if (spatialInputData.spatialInputType == SpatialInputType.StateChangedThisFrame)
+                    {
+                        spatialInputData.spatialInputType |= SpatialInputType.StateChangedThisFrame; // Clear frame change flag
+                        spatialInputData.stateChangedThisFrame = false; // Consider removing
+                    }
+                    */
+
+                    spatialInputData.spatialInputType = SpatialInputType.None; // Clears frame change flag
+                }
+                else
+                {
+                    //spatialProxyRayOrigin.localRotation = spatialInputData.currentLocalRotation;
+                    //this.UpdateSpatialRay();
+
+                    // New initial position & rotation was just set
+                    // Skip further evaluation for this data this frame for efficiency; evaluate next frame
+                    if (spatialInputData.stateChangedThisFrame)
+                        return;
+
+                    // Order tests based on the active spatial input type of the node
+                    // Testing for the opposite type of input will set the SpatialInputType accordingly, if a given input type change has occurred
+                    switch (spatialInputData.spatialInputType)
+                    {
+                        case SpatialInputType.DragTranslation:
+                            isNodeRotatingSingleAxisOrFreely(spatialInputData);
+                            break;
+                        case SpatialInputType.SingleAxisRotation:
+                            isNodeTranslating(spatialInputData);
+                            break;
+                        case SpatialInputType.None:
+                        case SpatialInputType.FreeRotation:
+                            if (isNodeRotatingSingleAxisOrFreely(spatialInputData))
+                                continue;
+
+                            isNodeTranslating(spatialInputData);
+
+                            break;
+                    }
+                }
+            }
+        }
 
         bool isNodeTranslating(SpatialInputData nodeData)
         {
@@ -290,60 +371,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        void Update()
-        {
-            // Iterate over all ACTIVE(performing spatial input) nodes perform a spatial scroll
-            // Update the SpatialInputType for each ACTIVE node
-            // Set SpatialInputType for nodes not performing any spatial input to NONE
-            // Otherwise, set relevant SpatialInputType value
-
-            foreach (var nodeToSpatialData in m_SpatialNodeData)
-            {
-                var spatialInputData = nodeToSpatialData.Value;
-                if (!spatialInputData.beingPolled)
-                {
-                    // Spatial input is NOT being performed on this node
-                    // A frame with a state of NONE has already been processed, now unset the stateChangedThisFrameValue
-                    /*
-                    if (spatialInputData.spatialInputType == SpatialInputType.StateChangedThisFrame)
-                    {
-                        spatialInputData.spatialInputType |= SpatialInputType.StateChangedThisFrame; // Clear frame change flag
-                        spatialInputData.stateChangedThisFrame = false; // Consider removing
-                    }
-                    */
-
-                    spatialInputData.spatialInputType = SpatialInputType.None; // Clears frame change flag
-                }
-                else
-                {
-                    // New initial position & rotation was just set
-                    // Skip further evaluation for this data this frame for efficiency; evaluate next frame
-                    if (spatialInputData.stateChangedThisFrame)
-                        return;
-
-                    // Order tests based on the active spatial input type of the node
-                    // Testing for the opposite type of input will set the SpatialInputType accordingly, if a given input type change has occurred
-                    switch (spatialInputData.spatialInputType)
-                    {
-                        case SpatialInputType.DragTranslation:
-                            isNodeRotatingSingleAxisOrFreely(spatialInputData);
-                            break;
-                        case SpatialInputType.SingleAxisRotation:
-                            isNodeTranslating(spatialInputData);
-                            break;
-                        case SpatialInputType.None:
-                        case SpatialInputType.FreeRotation:
-                            if (isNodeRotatingSingleAxisOrFreely(spatialInputData))
-                                continue;
-
-                            isNodeTranslating(spatialInputData);
-
-                            break;
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// Separate helper function, due to the logic re-use for individual axis'
         /// </summary>
@@ -384,6 +411,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             return spatialInputType;
+        }
+
+        public void UpdateSpatialRay(IPerformSpatialRayInteraction caller)
+        {
+            this.UpdateSpatialProxyRayLength();
+            spatialProxyRayOrigin.SetParent(caller.spatialProxyRayDriverTransform);
+            spatialProxyRayOrigin.localPosition = Vector3.zero;
+            spatialProxyRayOrigin.localRotation = caller.spatialProxyRayDriverTransform.localRotation;
         }
     }
 }
