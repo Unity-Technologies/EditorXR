@@ -68,7 +68,7 @@ GameObject:
   - component: {fileID: 4000011852083516}
   - component: {fileID: 114000010564953552}
   m_Layer: 0
-  m_Name: DefaultProxyRay
+  m_Name: SpatialUIRay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -392,7 +392,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_Materials:
-  - {fileID: 2100000, guid: 414bf0b08e4c4fe469729b12c1c9949f, type: 2}
+  - {fileID: 2100000, guid: 2d124b28edb55e344b9748b10ae4b93c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -442,9 +442,9 @@ MeshCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Convex: 1
-  m_InflateMesh: 0
+  m_CookingOptions: 14
   m_SkinWidth: 0.01
   m_Mesh: {fileID: 4300000, guid: cdace0cf368873c4796b9f9ade156c53, type: 3}
 --- !u!114 &114000010564953552
