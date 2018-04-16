@@ -1,6 +1,8 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections;
 using TMPro;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,8 +17,15 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         Image m_Icon;
 
+        [SerializeField]
+        CanvasGroup m_CanvasGroup;
+
+        [SerializeField]
+        float m_transitionDuration = 1f;
+
         Transform m_Transform;
         Action m_SelectedAction;
+        Coroutine m_VisibilityCoroutine;
 
         public Transform transform { get { return m_Transform; } }
         public Action selectedAction { get { return m_SelectedAction; } }
@@ -50,17 +59,40 @@ namespace UnityEditor.Experimental.EditorVR
             transform.localRotation = Quaternion.identity;
             transform.localPosition = Vector3.zero;
             transform.localScale = Vector3.one;
+
+            if (Mathf.Approximately(m_transitionDuration, 0f))
+                m_transitionDuration = 0.001f;
+        }
+
+        void OnEnable()
+        {
+            if (m_CanvasGroup != null)
+                this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(true));
+        }
+
+        void OnDisable()
+        {
+            StopAllCoroutines();
         }
 
         // TODO perform animated reveal of content after setup
-        public void AnimateShow()
+        public IEnumerator AnimateVisibility(bool fadeIn)
         {
             Debug.Log("Performing AnimateShow for SpatialUIMenuElement : " + m_Text.text);
-        }
+            var currentAlpha = fadeIn ? 0f : m_CanvasGroup.alpha;
+            var targetAlpha = fadeIn ? 1f : 0f;
+            var transitionAmount = 0f;
+            var transitionSubtractMultiplier = 1f / m_transitionDuration;
+            while (transitionAmount < 1f)
+            {
+                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+                m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
+                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                yield return null;
+            }
 
-        public void AnimateHide()
-        {
-            Debug.Log("Performing AnimateHide for SpatialUIMenuElement : " + m_Text.text);
+            m_CanvasGroup.alpha = targetAlpha;
+            m_VisibilityCoroutine = null;
         }
     }
 }

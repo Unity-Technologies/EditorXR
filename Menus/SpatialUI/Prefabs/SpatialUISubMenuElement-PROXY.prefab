@@ -39,6 +39,7 @@ GameObject:
   - component: {fileID: 222830001522009730}
   - component: {fileID: 225481093296125408}
   - component: {fileID: 114538880653868246}
+  - component: {fileID: 114511323528745350}
   m_Layer: 5
   m_Name: SpatialUISubMenuElement-PROXY
   m_TagString: Untagged
@@ -90,7 +91,6 @@ GameObject:
   - component: {fileID: 224403772215985124}
   - component: {fileID: 222545334563753532}
   - component: {fileID: 114994720903854654}
-  - component: {fileID: 225599421478893036}
   - component: {fileID: 114176867817396356}
   m_Layer: 5
   m_Name: Text
@@ -139,6 +139,60 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Text: {fileID: 114994720903854654}
   m_Icon: {fileID: 0}
+  m_CanvasGroup: {fileID: 0}
+  m_transitionDuration: 1
+--- !u!114 &114511323528745350
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1395846264238232}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1392445389, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Navigation:
+    m_Mode: 3
+    m_SelectOnUp: {fileID: 0}
+    m_SelectOnDown: {fileID: 0}
+    m_SelectOnLeft: {fileID: 0}
+    m_SelectOnRight: {fileID: 0}
+  m_Transition: 1
+  m_Colors:
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
+    m_HighlightedColor: {r: 0, g: 1, b: 0.25517225, a: 1}
+    m_PressedColor: {r: 1, g: 0.80689657, b: 0, a: 1}
+    m_DisabledColor: {r: 0.47794116, g: 0.47794116, b: 0.47794116, a: 0.272}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.25
+  m_SpriteState:
+    m_HighlightedSprite: {fileID: 0}
+    m_PressedSprite: {fileID: 0}
+    m_DisabledSprite: {fileID: 0}
+  m_AnimationTriggers:
+    m_NormalTrigger: Normal
+    m_HighlightedTrigger: Highlighted
+    m_PressedTrigger: Pressed
+    m_DisabledTrigger: Disabled
+  m_Interactable: 1
+  m_TargetGraphic: {fileID: 114994720903854654}
+  m_OnClick:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 1
+    m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
+      Culture=neutral, PublicKeyToken=null
 --- !u!114 &114538880653868246
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -152,6 +206,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Text: {fileID: 114994720903854654}
   m_Icon: {fileID: 114141395541448976}
+  m_CanvasGroup: {fileID: 225481093296125408}
+  m_transitionDuration: 0.75
 --- !u!114 &114620682591609200
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -383,9 +439,9 @@ RectTransform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 150, y: -147.88152}
   m_SizeDelta: {x: 300, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224403772215985124
@@ -448,19 +504,8 @@ CanvasGroup:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1395846264238232}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Alpha: 1
-  m_Interactable: 0
-  m_BlocksRaycasts: 0
-  m_IgnoreParentGroups: 0
---- !u!225 &225599421478893036
-CanvasGroup:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1584814999618646}
-  m_Enabled: 0
-  m_Alpha: 1
-  m_Interactable: 0
-  m_BlocksRaycasts: 0
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0

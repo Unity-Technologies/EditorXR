@@ -87,6 +87,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Text: {fileID: 114994720903854654}
   m_Icon: {fileID: 114141395541448976}
+  m_CanvasGroup: {fileID: 225599421478893036}
+  m_transitionDuration: 0.75
 --- !u!114 &114994720903854654
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -256,6 +258,6 @@ CanvasGroup:
   m_GameObject: {fileID: 1584814999618646}
   m_Enabled: 1
   m_Alpha: 1
-  m_Interactable: 0
-  m_BlocksRaycasts: 0
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
