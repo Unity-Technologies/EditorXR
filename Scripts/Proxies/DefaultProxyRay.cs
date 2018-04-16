@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
+    public sealed class DefaultProxyRay : MonoBehaviour, IUsesViewerScale
     {
         struct DefaultRayVisibilitySettings
         {
