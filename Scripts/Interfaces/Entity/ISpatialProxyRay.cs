@@ -16,16 +16,16 @@ namespace UnityEditor.Experimental.EditorVR
 
     public static class ISpatialProxyRayMethods
     {
-        internal delegate void UpdateSpatialProxyRayDelegate(ISpatialProxyRay caller);
+        internal delegate void UpdateSpatialProxyRayLengthDelegate(ISpatialProxyRay caller);
 
-        internal static UpdateSpatialProxyRayDelegate updateSpatialProxyRay { private get; set; }
+        internal static UpdateSpatialProxyRayLengthDelegate updateSpatialUIRayLengthLength { private get; set; }
 
         /// <summary>
         ///
         /// </summary>
-        public static void UpdateSpatialProxyRay(this ISpatialProxyRay obj)
+        public static void UpdateSpatialProxyRayLength(this ISpatialProxyRay obj)
         {
-            updateSpatialProxyRay(obj);
+            updateSpatialUIRayLengthLength(obj);
         }
     }
 }
