@@ -53,6 +53,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
                 IGetRayVisibilityMethods.isRayVisible = IsRayActive;
                 IGetRayVisibilityMethods.isConeVisible = IsConeActive;
+
+                // Allow the Spatial UI elements to update the spatial ray, at its their own frequency
+                ISpatialProxyRayMethods.updateSpatialUIRayLengthLength = UpdateSpatialUIRayLength;
             }
 
             internal override void OnDestroy()
@@ -318,6 +321,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         m_DefaultRays[rayOrigin].SetLength(distance);
                     }
                 }
+            }
+
+            internal void UpdateSpatialUIRayLength(ISpatialProxyRay caller)
+            {
+                Debug.Log("<color=orange> updating spatial UI ray</color>");
+                const float k_SpatialUIRayLength = 0.5f;
+                var intersectionModule = evr.GetModule<IntersectionModule>();
+                var inputModule = evr.GetModule<MultipleRayInputModule>();
+                var spatialProxyRayOrigin = caller.spatialProxyRayOrigin;
+                var distance = k_SpatialUIRayLength * Viewer.GetViewerScale();
+                var uiEventData = inputModule.GetPointerEventData(spatialProxyRayOrigin);
+                if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
+                {
+                    // Set ray length to distance to UI objects
+                    distance = uiEventData.pointerCurrentRaycast.distance;
+                }
+                else
+                {
+                    float hitDistance;
+                    if (intersectionModule.GetFirstGameObject(spatialProxyRayOrigin, out hitDistance))
+                        distance = hitDistance;
+                }
+
+                caller.spatialProxyRay.SetLength(distance);
             }
 
             internal static void ForEachProxyDevice(ForEachProxyDeviceCallback callback, bool activeOnly = true)
