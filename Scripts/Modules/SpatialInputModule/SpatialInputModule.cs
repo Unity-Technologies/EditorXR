@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -164,13 +165,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
+        [SerializeField]
+        DefaultProxyRay m_SpatialUIRay;
+
         // Serialized Field region
         [SerializeField]
         HapticPulse m_TranslationPulse; // The pulse performed on a node performing a spatial scroll while only in translation mode
-        
+
         [SerializeField]
         HapticPulse m_FreeRotationPulse; // The pulse performed on a node performing a spatial scroll while only in free-rotation mode
-        
+
         [SerializeField]
         HapticPulse m_SingleAxistRotationPulse; // The pulse performed on a node performing a spatial scroll while only in single-axis rotation mode
 
@@ -331,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         case SpatialInputType.FreeRotation:
                             if (isNodeRotatingSingleAxisOrFreely(spatialInputData))
                                 continue;
-                            
+
                             isNodeTranslating(spatialInputData);
 
                             break;
