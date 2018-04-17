@@ -190,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>();
                 var enabledPotentialImageEffects = potentialImageEffects.Where(x => x != null && x.enabled);
                 var targetMethodNames = new [] {"OnRenderImage", "OnPreRender", "OnPostRender"};
-                var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+                var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
                 foreach (var potentialImageEffect in enabledPotentialImageEffects)
                 {
                     var componentInstanceType = potentialImageEffect.GetType();
