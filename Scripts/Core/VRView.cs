@@ -145,7 +145,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             s_ExistingSceneMainCamera = Camera.main;
             // TODO: Copy camera settings when changing contexts
-            if (EditingContextManager.defaultContext.copyExistingCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+            var defaultContext = EditingContextManager.defaultContext;
+            if (defaultContext.copyMainCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
             {
                 GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
                 m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
@@ -184,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_CameraRig.position = headCenteredOrigin;
             m_CameraRig.rotation = Quaternion.identity;
 
-            if (s_ExistingSceneMainCamera)
+            if (s_ExistingSceneMainCamera && defaultContext.copyMainCameraImageEffects)
             {
                 var cameraGameObject = m_Camera.gameObject;
                 var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>();
@@ -197,8 +198,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var targetMethodFound = false;
                     for (int i = 0; i < targetMethodNames.Length; ++i)
                     {
-                        // Each of the three checks is performed to catch the various image effect variants I've tested against
-                        // Each check catches a different case that was encountered during testing
                         // Check isntanced type for target methods
                         targetMethodFound = componentInstanceType.GetMethod(targetMethodNames[i], bindingFlags) != null;
 
