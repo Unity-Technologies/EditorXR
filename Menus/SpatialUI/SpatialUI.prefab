@@ -7304,6 +7304,12 @@ MonoBehaviour:
     type: 2}
   m_GhostInputDevice: {fileID: 4559759134640260}
   m_SurroundingArrowsContainer: {fileID: 224684741921168796}
+  m_MenuOpenPulse: {fileID: 11400000, guid: c3431dcd399d5444883404b83143af3c, type: 2}
+  m_MenuClosePulse: {fileID: 11400000, guid: 882c4bab0da249b4fae5301c404087b5, type: 2}
+  m_NavigateBackPulse: {fileID: 11400000, guid: 7a5f9eb2b4ece224da0fdb4c06c36ab6,
+    type: 2}
+  m_HighlightMenuElementPulse: {fileID: 11400000, guid: 8a40320bd3d9301459e26bf8738e37d5,
+    type: 2}
 --- !u!114 &114400933472596102
 MonoBehaviour:
   m_ObjectHideFlags: 1
