@@ -210,18 +210,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                 targetMethodFound = componentBaseType.GetMethod(targetMethodNames[i], bindingFlags) != null;
                         }
 
-                        // Check nested types for target methods
-                        if (!targetMethodFound)
-                        {
-                            var nestedTypes = componentInstanceType.GetNestedTypes();
-                            foreach (var nestedType in nestedTypes)
-                            {
-                                targetMethodFound = nestedType.GetMethod(targetMethodNames[i], bindingFlags) != null;
-                                if (targetMethodFound)
-                                    break;
-                            }
-                        }
-
                         if (targetMethodFound)
                             break;
                     }
