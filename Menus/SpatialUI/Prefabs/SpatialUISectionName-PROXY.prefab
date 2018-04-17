@@ -89,6 +89,7 @@ MonoBehaviour:
   m_Icon: {fileID: 114141395541448976}
   m_CanvasGroup: {fileID: 225599421478893036}
   m_transitionDuration: 0.75
+  m_FadeInZOffset: 0.075
 --- !u!114 &114994720903854654
 MonoBehaviour:
   m_ObjectHideFlags: 1

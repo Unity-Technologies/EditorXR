@@ -23,9 +23,13 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         float m_transitionDuration = 1f;
 
+        [SerializeField]
+        float m_FadeInZOffset = 0f;
+
         Transform m_Transform;
         Action m_SelectedAction;
         Coroutine m_VisibilityCoroutine;
+        Vector3 m_TextOriginalLocalPosition;
 
         public Transform transform { get { return m_Transform; } }
         public Action selectedAction { get { return m_SelectedAction; } }
@@ -66,6 +70,9 @@ namespace UnityEditor.Experimental.EditorVR
 
         void OnEnable()
         {
+            // Cacheing position here, as layout groups were altering the position when originally cacheing in Start()
+            m_TextOriginalLocalPosition = m_Text.transform.localPosition;
+
             if (m_CanvasGroup != null)
                 this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(true));
         }
@@ -75,22 +82,29 @@ namespace UnityEditor.Experimental.EditorVR
             StopAllCoroutines();
         }
 
-        // TODO perform animated reveal of content after setup
         public IEnumerator AnimateVisibility(bool fadeIn)
         {
-            Debug.Log("Performing AnimateShow for SpatialUIMenuElement : " + m_Text.text);
             var currentAlpha = fadeIn ? 0f : m_CanvasGroup.alpha;
             var targetAlpha = fadeIn ? 1f : 0f;
-            var transitionAmount = 0f;
+            var alphaTransitionAmount = 0f;
+            var textTransform = m_Text.transform;
+            var textCurrentLocalPosition = textTransform.localPosition;
+            textCurrentLocalPosition = fadeIn ? new Vector3(m_TextOriginalLocalPosition.x, m_TextOriginalLocalPosition.y, m_FadeInZOffset) : textCurrentLocalPosition;
+            var textTargetLocalPosition = m_TextOriginalLocalPosition;
+            var positionTransitionAmount = 0f;
             var transitionSubtractMultiplier = 1f / m_transitionDuration;
-            while (transitionAmount < 1f)
+            while (alphaTransitionAmount < 1f)
             {
-                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-                m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
-                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                var alphaSmoothTransition = MathUtilsExt.SmoothInOutLerpFloat(alphaTransitionAmount);
+                var positionSmoothTransition = MathUtilsExt.SmoothInOutLerpFloat(positionTransitionAmount);
+                m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetAlpha, alphaSmoothTransition);
+                textTransform.localPosition = Vector3.Lerp(textCurrentLocalPosition, textTargetLocalPosition, positionSmoothTransition);
+                alphaTransitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                positionTransitionAmount += alphaTransitionAmount * 1.35f;
                 yield return null;
             }
 
+            textTransform.localPosition = textTargetLocalPosition;
             m_CanvasGroup.alpha = targetAlpha;
             m_VisibilityCoroutine = null;
         }
