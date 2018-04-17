@@ -33,7 +33,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set
             {
                 if (s_ActiveView)
+                {
                     s_ActiveView.m_CustomPreviewCamera = value;
+                    if (EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
+                        CopyImagesEffectsToCamera(value);
+                }
             }
             get
             {
@@ -185,34 +189,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_CameraRig.position = headCenteredOrigin;
             m_CameraRig.rotation = Quaternion.identity;
 
-            if (s_ExistingSceneMainCamera && defaultContext.copyMainCameraImageEffects)
+            if (s_ExistingSceneMainCamera && defaultContext.copyMainCameraImageEffectsToHMD)
             {
-                var cameraGameObject = m_Camera.gameObject;
-                var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>();
-                var enabledPotentialImageEffects = potentialImageEffects.Where(x => x != null && x.enabled);
-                var targetMethodNames = new [] {"OnRenderImage", "OnPreRender", "OnPostRender"};
-                var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-                foreach (var potentialImageEffect in enabledPotentialImageEffects)
-                {
-                    var componentInstanceType = potentialImageEffect.GetType();
-                    var targetMethodFound = false;
-                    for (int i = 0; i < targetMethodNames.Length; ++i)
-                    {
-                        // Check isntanced type for target methods
-                        targetMethodFound = componentInstanceType.GetMethod(targetMethodNames[i], bindingFlags) != null;
-
-                        // Check base type for target methods
-                        if (!targetMethodFound)
-                            targetMethodFound = ComponentUtils.MethodFoundInBaseType(componentInstanceType, targetMethodNames[i]);
-
-                        if (targetMethodFound)
-                            break;
-                    }
-
-                    // Copying of certain image effects can cause Unity to crash when copied
-                    if (targetMethodFound)
-                        ObjectUtils.CopyComponent(potentialImageEffect, cameraGameObject);
-                }
+                CopyImagesEffectsToCamera(m_Camera);
 
                 s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
                 s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
@@ -234,6 +213,37 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (viewEnabled != null)
                 viewEnabled();
+        }
+
+        static void CopyImagesEffectsToCamera(Camera targetCamera)
+        {
+            var targetCameraGO = targetCamera.gameObject;
+            var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>();
+            var enabledPotentialImageEffects = potentialImageEffects.Where(x => x != null && x.enabled);
+            var targetMethodNames = new [] {"OnRenderImage", "OnPreRender", "OnPostRender"};
+            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            foreach (var potentialImageEffect in enabledPotentialImageEffects)
+            {
+                var componentInstanceType = potentialImageEffect.GetType();
+                var targetMethodFound = false;
+                for (int i = 0; i < targetMethodNames.Length; ++i)
+                {
+                    // Check isntanced type for target methods
+                    targetMethodFound = componentInstanceType.GetMethod(targetMethodNames[i], bindingFlags) != null;
+
+                    // Check base type for target methods
+                    if (!targetMethodFound)
+                        targetMethodFound =
+                            ComponentUtils.MethodFoundInBaseType(componentInstanceType, targetMethodNames[i]);
+
+                    if (targetMethodFound)
+                        break;
+                }
+
+                // Copying of certain image effects can cause Unity to crash when copied
+                if (targetMethodFound)
+                    ObjectUtils.CopyComponent(potentialImageEffect, targetCameraGO);
+            }
         }
 
         public void OnDisable()
