@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
@@ -36,7 +38,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             return component;
         }
+
+        public static bool MethodFoundInBaseType(Type type, string methodName, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+        {
+            var methodFound = false;
+            var componentBaseType = type.BaseType;
+            if (componentBaseType != null)
+                methodFound = componentBaseType.GetMethod(methodName, bindingFlags) != null;
+
+            return methodFound;
+        }
     }
 }
-
 #endif

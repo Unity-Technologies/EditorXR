@@ -204,11 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                         // Check base type for target methods
                         if (!targetMethodFound)
-                        {
-                            var componentBaseType = componentInstanceType.BaseType;
-                            if (componentBaseType != null)
-                                targetMethodFound = componentBaseType.GetMethod(targetMethodNames[i], bindingFlags) != null;
-                        }
+                            targetMethodFound = ComponentUtils.MethodFoundInBaseType(componentInstanceType, targetMethodNames[i]);
 
                         if (targetMethodFound)
                             break;
