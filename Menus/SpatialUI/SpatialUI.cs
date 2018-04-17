@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -18,8 +19,8 @@ using Random = UnityEngine.Random;
 namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
-    public class SpatialUI : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling,
-        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType, IPerformSpatialRayInteraction
+    public class SpatialUI : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling, IInstantiateUI,
+        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType, IPerformSpatialRayInteraction, IControlHaptics
     {
         // TODO expose as a user preference, for spatial UI distance
         const float k_DistanceOffset = 0.75f;
@@ -102,6 +103,19 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         Transform m_SurroundingArrowsContainer;
 
+        [Header("Haptic Pulses")]
+        [SerializeField]
+        HapticPulse m_MenuOpenPulse;
+
+        [SerializeField]
+        HapticPulse m_MenuClosePulse;
+
+        [SerializeField]
+        HapticPulse m_NavigateBackPulse;
+
+        [SerializeField]
+        HapticPulse m_HighlightMenuElementPulse;
+
         State m_State;
 
         bool m_Visible;
@@ -159,8 +173,10 @@ namespace UnityEditor.Experimental.EditorVR
                         m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition].correspondingFunction != null)
                     {
                         m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition].correspondingFunction();
+                        this.Pulse(Node.None, m_HighlightMenuElementPulse);
                     }
 
+                    this.Pulse(Node.None, m_MenuClosePulse);
                     pollingSpatialInputType = false;
                     m_State = State.hidden;
                 }
@@ -490,6 +506,8 @@ namespace UnityEditor.Experimental.EditorVR
             m_Director.time = 0f;
             m_Director.Evaluate();
 
+            this.Pulse(Node.None, m_MenuOpenPulse);
+
             // Hack that fixes the home section menu element positions not being recalculated when first revealed
             m_HomeMenuLayoutGroup.enabled = false;
             m_HomeMenuLayoutGroup.enabled = true;
@@ -503,6 +521,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void HighlightHomeSectionMenuElement(ISpatialMenuProvider provider)
         {
+            this.Pulse(Node.None, m_HighlightMenuElementPulse);
             m_HomeSectionDescription.text = provider.spatialMenuDescription;
             m_HighlightedTopLevelMenuProvider = provider;
 
@@ -535,6 +554,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void DisplayHighlightedSubMenuContents()
         {
+            this.Pulse(Node.None, m_MenuOpenPulse);
             this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             m_State = State.navigatingSubMenuContent;
@@ -595,6 +615,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void ReturnToPreviousMenuLevel()
         {
+            this.Pulse(Node.None, m_NavigateBackPulse);
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             HideSubMenu();
             DisplayHomeSectionContents();
