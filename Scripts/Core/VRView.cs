@@ -216,9 +216,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             var nestedTypes = componentInstanceType.GetNestedTypes();
                             foreach (var nestedType in nestedTypes)
                             {
-                                if (nestedType == null)
-                                    continue;
-
                                 targetMethodFound = nestedType.GetMethod(targetMethodNames[i], bindingFlags) != null;
                                 if (targetMethodFound)
                                     break;
