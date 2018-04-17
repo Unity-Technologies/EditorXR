@@ -12,6 +12,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.Playables;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -55,6 +56,9 @@ namespace UnityEditor.Experimental.EditorVR
         CanvasGroup m_HomeTextCanvasGroup;
 
         [SerializeField]
+        HorizontalLayoutGroup m_HomeMenuLayoutGroup;
+
+        [SerializeField]
         Transform m_HomeTextBackgroundTransform;
 
         [SerializeField]
@@ -93,6 +97,10 @@ namespace UnityEditor.Experimental.EditorVR
         [Header("Ghost Input Device")]
         [SerializeField]
         Transform m_GhostInputDevice;
+
+        [Header("Surrounding Arrows")]
+        [SerializeField]
+        Transform m_SurroundingArrowsContainer;
 
         State m_State;
 
@@ -481,6 +489,10 @@ namespace UnityEditor.Experimental.EditorVR
             // Director related
             m_Director.time = 0f;
             m_Director.Evaluate();
+
+            // Hack that fixes the home section menu element positions not being recalculated when first revealed
+            m_HomeMenuLayoutGroup.enabled = false;
+            m_HomeMenuLayoutGroup.enabled = true;
         }
 
         void SetSpatialScrollStartingConditions(Vector3 localPosition, Quaternion localRotation)
@@ -842,6 +854,7 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
                 m_HomeSectionBackgroundBordersCanvas.alpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
+                m_SurroundingArrowsContainer.localScale = Vector3.one + (Vector3.one * Mathf.Sin(transitionAmount * 2) * 0.1f);
                 transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
                 yield return null;
             }
