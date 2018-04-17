@@ -229,19 +229,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             break;
                     }
 
+                    // Copying of certain image effects can cause Unity to crash when copied
                     if (targetMethodFound)
-                    {
-                        try
-                        {
-                            // During testing, some image effects caused Unity to crash when copied
-                            ObjectUtils.CopyComponent(potentialImageEffect, cameraGameObject);
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine(e);
-                            throw;
-                        }
-                    }
+                        ObjectUtils.CopyComponent(potentialImageEffect, cameraGameObject);
                 }
 
                 s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
