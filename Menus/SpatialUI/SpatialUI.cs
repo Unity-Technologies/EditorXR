@@ -650,6 +650,10 @@ namespace UnityEditor.Experimental.EditorVR
 
             if (actionMapInput.show.isHeld && m_State != State.hidden)
             {
+                consumeControl(actionMapInput.cancel);
+                consumeControl(actionMapInput.show);
+                consumeControl(actionMapInput.select);
+
                 m_Transitioning = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // duration for which input is not taken into account when menu swapping
                 visible = true;
 
