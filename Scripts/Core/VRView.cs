@@ -228,13 +228,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var targetMethodFound = false;
                 for (int i = 0; i < targetMethodNames.Length; ++i)
                 {
-                    // Check isntanced type for target methods
-                    targetMethodFound = componentInstanceType.GetMethod(targetMethodNames[i], bindingFlags) != null;
-
-                    // Check base type for target methods
-                    if (!targetMethodFound)
-                        targetMethodFound =
-                            ComponentUtils.MethodFoundInBaseType(componentInstanceType, targetMethodNames[i]);
+                    targetMethodFound = componentInstanceType.GetMethodRecursively(targetMethodNames[i], bindingFlags) != null;
 
                     if (targetMethodFound)
                         break;
