@@ -29,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_SpatialQuickToggleDuration = 0.25f;
         const float k_WristReturnRotationThreshold = 0.3f;
         const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
+        const float k_SpatialScrollVectorLength = 0.125f;
 
         enum State
         {
@@ -149,7 +150,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
 
-        readonly List<SpatialUIMenuElement> currentlyDisplayedSubMenuElements = new List<SpatialUIMenuElement>();
+        readonly List<SpatialUIMenuElement> currentlyDisplayedMenuElements = new List<SpatialUIMenuElement>();
+        int m_HighlightedButtonPosition; // element position amidst the currentlyDisplayedMenuElements
 
         private bool visible
         {
@@ -169,13 +171,12 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 else
                 {
-                    var randomButtonPosition = Random.Range(0, 3);
                     if (m_HighlightedTopLevelMenuProvider != null &&
                         m_HighlightedTopLevelMenuProvider.spatialTableElements.Count > 0 &&
-                        m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition] != null &&
-                        m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition].correspondingFunction != null)
+                        m_HighlightedTopLevelMenuProvider.spatialTableElements[m_HighlightedButtonPosition] != null &&
+                        m_HighlightedTopLevelMenuProvider.spatialTableElements[m_HighlightedButtonPosition].correspondingFunction != null)
                     {
-                        m_HighlightedTopLevelMenuProvider.spatialTableElements[randomButtonPosition].correspondingFunction();
+                        m_HighlightedTopLevelMenuProvider.spatialTableElements[m_HighlightedButtonPosition].correspondingFunction();
                         this.Pulse(Node.None, m_HighlightMenuElementPulse);
                     }
 
@@ -532,7 +533,7 @@ namespace UnityEditor.Experimental.EditorVR
                 spatialScrollStartPosition = spatialScrollOrigin.position;
                 var elementCount = m_HighlightedTopLevelMenuProvider.spatialTableElements.Count;
                 spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition,
-                spatialScrollOrigin.position, 0.325f, elementCount, elementCount);
+                spatialScrollOrigin.position, k_SpatialScrollVectorLength, elementCount, elementCount);
             }
         }
 
@@ -590,7 +591,7 @@ namespace UnityEditor.Experimental.EditorVR
                     // m_SubMenuText.text = m_HighlightedTopLevelMenuProvider.spatialTableElements[0].name;
                     // TODO display all sub menu contents here
 
-                    currentlyDisplayedSubMenuElements.Clear();
+                    currentlyDisplayedMenuElements.Clear();
                     var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( (x) => x != m_SubMenuContainer);
                     foreach (var child in deleteOldChildren)
                     {
@@ -604,7 +605,7 @@ namespace UnityEditor.Experimental.EditorVR
                         var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
                         var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
                         providerMenuElement.Setup(instantiatedPrefab, m_SubMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
-                        currentlyDisplayedSubMenuElements.Add(providerMenuElement);
+                        currentlyDisplayedMenuElements.Add(providerMenuElement);
                     }
 
                     //.Add(provider, providerMenuElement);
@@ -785,7 +786,7 @@ namespace UnityEditor.Experimental.EditorVR
                 if (m_State == State.navigatingSubMenuContent)
                 {
                     var menuElementCount = m_HighlightedTopLevelMenuProvider.spatialTableElements.Count;
-                    spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, menuElementCount, menuElementCount);
+                    spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, menuElementCount, menuElementCount);
                     var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
                     Debug.Log("Spatiall scrolling : normalized position : " + normalizedRepeatingPosition + " : highlighted button position : " + (int)(menuElementCount * normalizedRepeatingPosition) + " : MenuElementCount : " + menuElementCount);
                     if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
@@ -803,11 +804,11 @@ namespace UnityEditor.Experimental.EditorVR
                         }
                         */
 
-                        var highlightedButtonPosition = (int) (menuElementCount * normalizedRepeatingPosition);
+                        m_HighlightedButtonPosition = (int) (menuElementCount * normalizedRepeatingPosition);
                         for (int i = 0; i < menuElementCount; ++i)
                         {
                             //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
-                            currentlyDisplayedSubMenuElements[i].transform.localScale = i == highlightedButtonPosition ? Vector3.one * 1.25f : Vector3.one;
+                            currentlyDisplayedMenuElements[i].transform.localScale = i == m_HighlightedButtonPosition ? Vector3.one * 1.25f : Vector3.one;
                             //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
                         }
                         
