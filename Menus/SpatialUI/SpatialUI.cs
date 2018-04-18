@@ -20,7 +20,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public class SpatialUI : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling, IInstantiateUI,
-        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType, IPerformSpatialRayInteraction, IControlHaptics
+        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType, IPerformSpatialRayInteraction,
+        IControlHaptics, INodeToRay
     {
         // TODO expose as a user preference, for spatial UI distance
         const float k_DistanceOffset = 0.75f;
@@ -148,6 +149,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
 
+        readonly List<SpatialUIMenuElement> currentlyDisplayedSubMenuElements = new List<SpatialUIMenuElement>();
+
         private bool visible
         {
             get { return m_Visible; }
@@ -242,13 +245,16 @@ namespace UnityEditor.Experimental.EditorVR
                 this.name = name;
                 this.icon = icon;
                 this.correspondingFunction = correspondingFunction;
+                //this.spatialUIMenuElement = element;
             }
 
             public string name { get; set; }
 
             public Sprite icon { get; set; }
 
-            public Action correspondingFunction { get; set; }
+            public Action correspondingFunction { get; private set; }
+
+            //public SpatialUIMenuElement spatialUIMenuElement { get; private set; }
         }
 
         void Awake()
@@ -515,8 +521,19 @@ namespace UnityEditor.Experimental.EditorVR
 
         void SetSpatialScrollStartingConditions(Vector3 localPosition, Quaternion localRotation)
         {
+            node = Node.LeftHand; // TODO: fetch node that initiated the display of the spatial ui
             m_HomeSectionSpatialScrollStartLocalPosition = localPosition;
             m_InitialSpatialLocalRotation = localRotation; // Cache the current starting rotation, current deltaAngle will be calculated relative to this rotation
+
+            if (m_HighlightedTopLevelMenuProvider != null)
+            {
+                // TODO: set the spatial scroll origin based on the node that initiates the display of the SpatialUI
+                spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
+                spatialScrollStartPosition = spatialScrollOrigin.position;
+                var elementCount = m_HighlightedTopLevelMenuProvider.spatialTableElements.Count;
+                spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition,
+                spatialScrollOrigin.position, 0.325f, elementCount, elementCount);
+            }
         }
 
         void HighlightHomeSectionMenuElement(ISpatialMenuProvider provider)
@@ -573,6 +590,7 @@ namespace UnityEditor.Experimental.EditorVR
                     // m_SubMenuText.text = m_HighlightedTopLevelMenuProvider.spatialTableElements[0].name;
                     // TODO display all sub menu contents here
 
+                    currentlyDisplayedSubMenuElements.Clear();
                     var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( (x) => x != m_SubMenuContainer);
                     foreach (var child in deleteOldChildren)
                     {
@@ -586,6 +604,7 @@ namespace UnityEditor.Experimental.EditorVR
                         var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
                         var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
                         providerMenuElement.Setup(instantiatedPrefab, m_SubMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
+                        currentlyDisplayedSubMenuElements.Add(providerMenuElement);
                     }
 
                     //.Add(provider, providerMenuElement);
@@ -600,6 +619,20 @@ namespace UnityEditor.Experimental.EditorVR
 
             var newGhostInputDevicePosition = m_GhostInputDevice.localPosition - new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
             this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newGhostInputDevicePosition));
+
+            // Spatial Scrolling setup
+            //spatialScrollStartPosition = spatialScrollOrigin.position;
+            //allowSpatialQuickToggleActionBeforeThisTime = Time.realtimeSinceStartup + spatialQuickToggleDuration;
+            //this.SetSpatialHintControlNode(node);
+            //m_ToolsMenuUI.spatiallyScrolling = true; // Triggers the display of the directional hint arrows
+            //consumeControl(toolslMenuInput.show);
+            //consumeControl(toolslMenuInput.select);
+
+            // Assign initial SpatialScrollData; begin scroll
+            //spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, subMenuElementCount, subMenuElementCount);
+
+            //HideScrollFeedback();
+            //ShowMenuFeedback();
         }
 
         void HideSubMenu()
@@ -749,6 +782,39 @@ namespace UnityEditor.Experimental.EditorVR
                     }
                 }
 
+                if (m_State == State.navigatingSubMenuContent)
+                {
+                    var menuElementCount = m_HighlightedTopLevelMenuProvider.spatialTableElements.Count;
+                    spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, menuElementCount, menuElementCount);
+                    var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
+                    Debug.Log("Spatiall scrolling : normalized position : " + normalizedRepeatingPosition + " : highlighted button position : " + (int)(menuElementCount * normalizedRepeatingPosition) + " : MenuElementCount : " + menuElementCount);
+                    if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
+                    {
+                        /*
+                        if (!m_ToolsMenuUI.allButtonsVisible)
+                        {
+                            m_ToolsMenuUI.spatialDragDistance = spatialScrollData.dragDistance;
+                            this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
+                            m_ToolsMenuUI.allButtonsVisible = true;
+                        }
+                        else if (spatialScrollData.spatialDirection != null)
+                        {
+                            m_ToolsMenuUI.startingDragOrigin = spatialScrollData.spatialDirection;
+                        }
+                        */
+
+                        var highlightedButtonPosition = (int) (menuElementCount * normalizedRepeatingPosition);
+                        for (int i = 0; i < menuElementCount; ++i)
+                        {
+                            //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
+                            currentlyDisplayedSubMenuElements[i].transform.localScale = i == highlightedButtonPosition ? Vector3.one * 1.25f : Vector3.one;
+                            //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
+                        }
+                        
+                        //m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
+                    }
+                }
+                
                 /* Working Z-rotation based cycling through menu elements
                 // Cycle through top-level sections, before opening a corresponding sub-menu
                 if (m_State != State.navigatingSubMenuContent)
