@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -182,6 +183,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Collection housing objects whose spatial input is being processed
         readonly Dictionary<Node, SpatialInputData> m_SpatialNodeData = new Dictionary<Node, SpatialInputData>();
 
+        RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
+
         /// <summary>
         /// Ray origin used for ray-based interaction with Spatial UI elements
         /// </summary>
@@ -238,6 +241,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     // Skip further evaluation for this data this frame for efficiency; evaluate next frame
                     if (spatialInputData.stateChangedThisFrame)
                         return;
+
+                    m_RotationVelocityTracker.Update(spatialInputData.currentLocalRotation, Time.deltaTime);
+                    Debug.LogError("Rotation strength " + m_RotationVelocityTracker.rotationStrength);
 
                     // Order tests based on the active spatial input type of the node
                     // Testing for the opposite type of input will set the SpatialInputType accordingly, if a given input type change has occurred
