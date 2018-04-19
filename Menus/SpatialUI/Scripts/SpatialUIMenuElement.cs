@@ -27,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR
         float m_FadeInZOffset = 0.05f;
 
         [SerializeField]
-        float m_HighlightedZOffset = -0.0125f;
+        float m_HighlightedZOffset = -0.005f;
 
         [SerializeField]
         Image m_BackgroundImage;
