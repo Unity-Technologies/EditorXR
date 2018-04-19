@@ -6,6 +6,7 @@ using System.Linq;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -152,6 +153,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         readonly List<SpatialUIMenuElement> currentlyDisplayedMenuElements = new List<SpatialUIMenuElement>();
         int m_HighlightedButtonPosition; // element position amidst the currentlyDisplayedMenuElements
+
+        RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
 
         private bool visible
         {
@@ -518,6 +521,8 @@ namespace UnityEditor.Experimental.EditorVR
             // Hack that fixes the home section menu element positions not being recalculated when first revealed
             m_HomeMenuLayoutGroup.enabled = false;
             m_HomeMenuLayoutGroup.enabled = true;
+
+            m_RotationVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).localRotation);
         }
 
         void SetSpatialScrollStartingConditions(Vector3 localPosition, Quaternion localRotation)
@@ -705,6 +710,9 @@ namespace UnityEditor.Experimental.EditorVR
 
             if (actionMapInput.show.isHeld && m_State != State.hidden)
             {
+                m_RotationVelocityTracker.Update(actionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
+                Debug.LogError("Rotation strength " + m_RotationVelocityTracker.rotationStrength);
+
                 consumeControl(actionMapInput.cancel);
                 consumeControl(actionMapInput.show);
                 consumeControl(actionMapInput.select);
@@ -785,35 +793,37 @@ namespace UnityEditor.Experimental.EditorVR
 
                 if (m_State == State.navigatingSubMenuContent)
                 {
-                    var menuElementCount = m_HighlightedTopLevelMenuProvider.spatialTableElements.Count;
-                    spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, menuElementCount, menuElementCount);
-                    var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
-                    Debug.Log("Spatiall scrolling : normalized position : " + normalizedRepeatingPosition + " : highlighted button position : " + (int)(menuElementCount * normalizedRepeatingPosition) + " : MenuElementCount : " + menuElementCount);
-                    if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
+                    if (m_HighlightedTopLevelMenuProvider != null)
                     {
-                        /*
-                        if (!m_ToolsMenuUI.allButtonsVisible)
+                        var menuElementCount = m_HighlightedTopLevelMenuProvider.spatialTableElements.Count;
+                        spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, menuElementCount, menuElementCount);
+                        var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
+                        if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
                         {
-                            m_ToolsMenuUI.spatialDragDistance = spatialScrollData.dragDistance;
-                            this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
-                            m_ToolsMenuUI.allButtonsVisible = true;
-                        }
-                        else if (spatialScrollData.spatialDirection != null)
-                        {
-                            m_ToolsMenuUI.startingDragOrigin = spatialScrollData.spatialDirection;
-                        }
-                        */
+                            /*
+                            if (!m_ToolsMenuUI.allButtonsVisible)
+                            {
+                                m_ToolsMenuUI.spatialDragDistance = spatialScrollData.dragDistance;
+                                this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
+                                m_ToolsMenuUI.allButtonsVisible = true;
+                            }
+                            else if (spatialScrollData.spatialDirection != null)
+                            {
+                                m_ToolsMenuUI.startingDragOrigin = spatialScrollData.spatialDirection;
+                            }
+                            */
 
-                        m_HighlightedButtonPosition = (int) (menuElementCount * normalizedRepeatingPosition);
-                        for (int i = 0; i < menuElementCount; ++i)
-                        {
-                            //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
-                            currentlyDisplayedMenuElements[i].transform.localScale = i == m_HighlightedButtonPosition ? Vector3.one * 1.25f : Vector3.one;
-                            //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
-                        }
+                            m_HighlightedButtonPosition = (int) (menuElementCount * normalizedRepeatingPosition);
+                            for (int i = 0; i < menuElementCount; ++i)
+                            {
+                                //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
+                                currentlyDisplayedMenuElements[i].highlighted = i == m_HighlightedButtonPosition;
+                                //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
+                            }
                         
-                        //m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
-                    }
+                            //m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
+                        }
+                        }
                 }
                 
                 /* Working Z-rotation based cycling through menu elements
