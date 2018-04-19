@@ -32,6 +32,10 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         Image m_BackgroundImage;
 
+        [Header("Borders")]
+        [SerializeField]
+        CanvasGroup m_BordersCanvasGroup;
+
         [SerializeField]
         RectTransform m_TopBorder;
 
@@ -44,6 +48,7 @@ namespace UnityEditor.Experimental.EditorVR
         Vector3 m_TextOriginalLocalPosition;
         bool m_Highlighted;
         Vector3 m_OriginalBordersLocalScale;
+        float m_BordersOriginalAlpha;
 
         public Transform transform { get { return m_Transform; } }
         public Action selectedAction { get { return m_SelectedAction; } }
@@ -100,7 +105,10 @@ namespace UnityEditor.Experimental.EditorVR
             m_TextOriginalLocalPosition = m_Text.transform.localPosition;
 
             if (m_TopBorder != null && m_BottomBorder != null)
+            {
                 m_OriginalBordersLocalScale = m_TopBorder.localScale;
+                m_BordersOriginalAlpha = m_BordersCanvasGroup.alpha;
+            }
 
             if (m_CanvasGroup != null)
                 this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(true));
@@ -140,8 +148,6 @@ namespace UnityEditor.Experimental.EditorVR
 
         public IEnumerator AnimateHighlight(bool isHighlighted)
         {
-            var currentBordersLocalScale = m_TopBorder.localScale;
-            var targetBordersLocalScale = isHighlighted ? new Vector3 (m_OriginalBordersLocalScale.x * 0.75f, m_OriginalBordersLocalScale.y * 6, m_OriginalBordersLocalScale.z) : m_OriginalBordersLocalScale;
             var currentAlpha = m_CanvasGroup.alpha;
             var targetAlpha = 1f;
             var alphaTransitionAmount = 0f;
@@ -153,6 +159,10 @@ namespace UnityEditor.Experimental.EditorVR
             var targetTextLocalScale = isHighlighted ? Vector3.one * 1.15f : Vector3.one;
             var currentBackgroundColor = m_BackgroundImage.color;
             var targetBackgroundColor = isHighlighted ? Color.black : Color.clear;
+            var currentBordersLocalScale = m_TopBorder.localScale;
+            var targetBordersLocalScale = isHighlighted ? new Vector3 (m_OriginalBordersLocalScale.x * 0.65f, m_OriginalBordersLocalScale.y * 8, m_OriginalBordersLocalScale.z) : m_OriginalBordersLocalScale;
+            var currentBordersCanvasGroupAlpha = m_BordersCanvasGroup.alpha;
+            var targetBordersCanvasGroupAlpha = isHighlighted ? 1f : m_BordersOriginalAlpha;
             var speedMultiplier = isHighlighted ? 3f : 6f;
             while (alphaTransitionAmount < 1f)
             {
@@ -166,9 +176,11 @@ namespace UnityEditor.Experimental.EditorVR
                 m_BackgroundImage.color = Color.Lerp(currentBackgroundColor, targetBackgroundColor, alphaSmoothTransition);
                 m_TopBorder.localScale = Vector3.Lerp(currentBordersLocalScale, targetBordersLocalScale, alphaSmoothTransition);
                 m_BottomBorder.localScale = Vector3.Lerp(currentBordersLocalScale, targetBordersLocalScale, alphaSmoothTransition);
+                m_BordersCanvasGroup.alpha = Mathf.Lerp(currentBordersCanvasGroupAlpha, targetBordersCanvasGroupAlpha, alphaSmoothTransition);
                 yield return null;
             }
 
+            m_BordersCanvasGroup.alpha = targetBordersCanvasGroupAlpha;
             textTransform.localPosition = textTargetLocalPosition;
             textTransform.localScale = targetTextLocalScale;
             m_BackgroundImage.color = targetBackgroundColor;
