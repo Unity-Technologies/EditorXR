@@ -41,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         StateChangedThisFrame = 1 << 11,
     }
 
-    public sealed class SpatialInputModule : MonoBehaviour, ISpatialProxyRay
+    public sealed class SpatialInputModule : MonoBehaviour
     {
         public class SpatialInputData : INodeToRay
         {
@@ -167,9 +167,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        [SerializeField]
-        DefaultProxyRay m_SpatialProxyRayPrefab;
-
         // Serialized Field region
         [SerializeField]
         HapticPulse m_TranslationPulse; // The pulse performed on a node performing a spatial scroll while only in translation mode
@@ -184,29 +181,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly Dictionary<Node, SpatialInputData> m_SpatialNodeData = new Dictionary<Node, SpatialInputData>();
 
         RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
-
-        /// <summary>
-        /// Ray origin used for ray-based interaction with Spatial UI elements
-        /// </summary>
-        public Transform spatialProxyRayOrigin { get; set; }
-
-        public DefaultProxyRay spatialProxyRay { get; set; }
-
-        public Transform spatialProxyRayDriverTransform { get; set; }
-
-        void Start()
-        {
-            spatialProxyRayOrigin = ObjectUtils.Instantiate(m_SpatialProxyRayPrefab.gameObject).transform;
-            spatialProxyRayOrigin.position = Vector3.zero;
-            spatialProxyRayOrigin.rotation = Quaternion.identity;
-            spatialProxyRay = spatialProxyRayOrigin.GetComponent<DefaultProxyRay>();
-            spatialProxyRay.SetColor(Color.white);
-        }
-
-        private void OnDestroy()
-        {
-            ObjectUtils.Destroy(spatialProxyRayOrigin.gameObject);
-        }
 
         void Update()
         {
@@ -417,14 +391,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             return spatialInputType;
-        }
-
-        public void UpdateSpatialRay(IPerformSpatialRayInteraction caller)
-        {
-            this.UpdateSpatialProxyRayLength();
-            spatialProxyRayOrigin.SetParent(caller.spatialProxyRayDriverTransform);
-            spatialProxyRayOrigin.localPosition = Vector3.zero;
-            spatialProxyRayOrigin.localRotation = caller.spatialProxyRayDriverTransform.localRotation;
         }
     }
 }
