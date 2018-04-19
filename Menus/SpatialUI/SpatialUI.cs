@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public class SpatialUI : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling, IInstantiateUI,
-        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType, IPerformSpatialRayInteraction,
+        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType,
         IControlHaptics, INodeToRay
     {
         // TODO expose as a user preference, for spatial UI distance
@@ -107,7 +107,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         [Header("Ghost Input Device")]
         [SerializeField]
-        Transform m_GhostInputDevice;
+        SpatialUIGhostVisuals m_SpatialUIGhostVisuals;
 
         [Header("Surrounding Arrows")]
         [SerializeField]
@@ -136,12 +136,10 @@ namespace UnityEditor.Experimental.EditorVR
         float m_HomeSectionTimelineDuration;
         float m_HomeSectionTimelineStoppingTime;
         Vector3 m_HomeSectionSpatialScrollStartLocalPosition;
-        Vector3 m_GhostInputDeviceHomeSectionLocalPosition;
         bool m_Transitioning;
 
         Coroutine m_VisibilityCoroutine;
         Coroutine m_InFocusCoroutine;
-        Coroutine m_GhostInputDeviceRepositionCoroutine;
         Coroutine m_HomeSectionTitlesBackgroundBordersTransitionCoroutine;
 
         // "Rotate wrist to return" members
@@ -197,7 +195,6 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        public Transform spatialProxyRayDriverTransform { get; set; }
         public Transform rayOrigin { get; set; }
         public Node node { get; set; }
 
@@ -278,10 +275,6 @@ namespace UnityEditor.Experimental.EditorVR
 
             m_HomeSectionTimelineDuration = (float) m_RevealTimelinePlayable.duration;
             m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
-
-            m_GhostInputDeviceHomeSectionLocalPosition = m_GhostInputDevice.localPosition;
-
-            spatialProxyRayDriverTransform = m_GhostInputDevice;
         }
 
         void Update()
@@ -515,7 +508,6 @@ namespace UnityEditor.Experimental.EditorVR
             m_InputModeText.text = k_SpatialInputModeName;
             allowAdaptivePositioning = true;
             m_Director.playableAsset = m_RevealTimelinePlayable;
-            m_GhostInputDevice.localPosition = m_GhostInputDeviceHomeSectionLocalPosition;
             m_HomeSectionBackgroundBordersCanvas.alpha = 1f;
 
             DisplayHomeSectionContents();
@@ -531,6 +523,7 @@ namespace UnityEditor.Experimental.EditorVR
             m_HomeMenuLayoutGroup.enabled = true;
 
             m_RotationVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).localRotation);
+            m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.touch;
         }
 
         void SetSpatialScrollStartingConditions(Vector3 localPosition, Quaternion localRotation)
@@ -566,7 +559,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         void DisplayHomeSectionContents()
         {
-            this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(m_GhostInputDeviceHomeSectionLocalPosition));
+            m_SpatialUIGhostVisuals.SetPositionOffset(Vector3.zero);
+            m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.touch;
             this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(true));
 
             m_State = State.navigatingTopLevel;
@@ -631,8 +625,8 @@ namespace UnityEditor.Experimental.EditorVR
                 kvp.Value.gameObject.SetActive(false);
             }
 
-            var newGhostInputDevicePosition = m_GhostInputDevice.localPosition - new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
-            this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newGhostInputDevicePosition));
+            var newGhostInputDevicePositionOffset = new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
+            m_SpatialUIGhostVisuals.SetPositionOffset(newGhostInputDevicePositionOffset);
 
             // Spatial Scrolling setup
             //spatialScrollStartPosition = spatialScrollOrigin.position;
@@ -672,8 +666,6 @@ namespace UnityEditor.Experimental.EditorVR
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
-            this.UpdateSpatialRay();
-
             //Debug.Log("processing input in SpatialUI");
 
             const float kSubMenuNavigationTranslationTriggerThreshold = 0.075f;
@@ -722,7 +714,7 @@ namespace UnityEditor.Experimental.EditorVR
                 if (m_RotationVelocityTracker.rotationStrength > 500)
                 {
                     m_InputModeText.text = k_RotationInputModeName;
-                    //m_GhostInputDevice.localPosition *= 1.25f;
+                    m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.ray;
                 }
 
                 Debug.LogError("Rotation strength " + m_RotationVelocityTracker.rotationStrength);
@@ -760,7 +752,7 @@ namespace UnityEditor.Experimental.EditorVR
 
                 var inputLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
-                m_GhostInputDevice.localRotation = ghostDeviceRotation;// Quaternion.Euler(-ghostDeviceRotation.eulerAngles.x, ghostDeviceRotation.eulerAngles.y, -ghostDeviceRotation.eulerAngles.z);
+                m_SpatialUIGhostVisuals.UpdateRotation(ghostDeviceRotation);
 
                 if (m_Transitioning && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
                 {
@@ -941,23 +933,6 @@ namespace UnityEditor.Experimental.EditorVR
                 CloseMenu();
             }
             */
-        }
-
-        IEnumerator AnimateGhostInputDevicePosition(Vector3 targetLocalPosition)
-        {
-            var currentPosition = m_GhostInputDevice.localPosition;
-            var transitionAmount = 0f;
-            var transitionSubtractMultiplier = 5f;
-            while (transitionAmount < 1f)
-            {
-                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-                m_GhostInputDevice.localPosition = Vector3.Lerp(currentPosition, targetLocalPosition, smoothTransition);
-                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
-                yield return null;
-            }
-
-            m_GhostInputDevice.localPosition = targetLocalPosition;
-            m_GhostInputDeviceRepositionCoroutine = null;
         }
 
         IEnumerator AnimateTopAndBottomCenterBackgroundBorders(bool visible)

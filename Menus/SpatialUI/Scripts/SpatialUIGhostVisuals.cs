@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
+using System.Collections;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -18,6 +20,9 @@ public class SpatialUIGhostVisuals : MonoBehaviour, ISpatialProxyRay
     DefaultProxyRay m_SpatialProxyRayPrefab;
 
     [SerializeField]
+    Transform m_GhostInputDeviceContainer;
+
+    [SerializeField]
     GameObject m_RayContainer;
 
     [SerializeField]
@@ -30,6 +35,8 @@ public class SpatialUIGhostVisuals : MonoBehaviour, ISpatialProxyRay
     GameObject m_ViveContainer;
 
     SpatialInteractionType m_SpatialInteractionType;
+    Vector3 m_GhostInputDeviceOriginalLocalPosition;
+    Coroutine m_GhostInputDeviceRepositionCoroutine;
 
     public SpatialInteractionType spatialInteractionType
     {
@@ -39,6 +46,8 @@ public class SpatialUIGhostVisuals : MonoBehaviour, ISpatialProxyRay
                 return;
 
             m_SpatialInteractionType = value;
+
+            m_GhostInputDeviceContainer.localPosition = m_GhostInputDeviceOriginalLocalPosition;
 
             var rayVisible = false;
             var bciVisible = false;
@@ -78,6 +87,9 @@ public class SpatialUIGhostVisuals : MonoBehaviour, ISpatialProxyRay
 
     void Start()
     {
+        m_GhostInputDeviceOriginalLocalPosition = m_GhostInputDeviceContainer.localPosition;
+        spatialProxyRayDriverTransform = m_GhostInputDeviceContainer;
+
         spatialProxyRayOrigin = ObjectUtils.Instantiate(m_SpatialProxyRayPrefab.gameObject, m_RayContainer.transform).transform;
         spatialProxyRayOrigin.position = Vector3.zero;
         spatialProxyRayOrigin.rotation = Quaternion.identity;
@@ -90,6 +102,12 @@ public class SpatialUIGhostVisuals : MonoBehaviour, ISpatialProxyRay
         ObjectUtils.Destroy(spatialProxyRayOrigin.gameObject);
     }
 
+    public void SetPositionOffset(Vector3 newLocalPositionOffset)
+    {
+        var newGhostInputDevicePosition = m_GhostInputDeviceOriginalLocalPosition + newLocalPositionOffset;
+        this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newLocalPositionOffset));
+    }
+
     public void UpdateSpatialRay(IPerformSpatialRayInteraction caller)
     {
         this.UpdateSpatialProxyRayLength();
@@ -100,7 +118,25 @@ public class SpatialUIGhostVisuals : MonoBehaviour, ISpatialProxyRay
 
     public void UpdateRotation(Quaternion rotation)
     {
-
+        m_GhostInputDeviceContainer.localRotation = rotation;
     }
+
+    IEnumerator AnimateGhostInputDevicePosition(Vector3 targetLocalPosition)
+    {
+        var currentPosition = m_GhostInputDeviceContainer.localPosition;
+        var transitionAmount = 0f;
+        var transitionSubtractMultiplier = 5f;
+        while (transitionAmount < 1f)
+        {
+            var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+            m_GhostInputDeviceContainer.localPosition = Vector3.Lerp(currentPosition, targetLocalPosition, smoothTransition);
+            transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+            yield return null;
+        }
+
+        m_GhostInputDeviceContainer.localPosition = targetLocalPosition;
+        m_GhostInputDeviceRepositionCoroutine = null;
+    }
+
 }
 #endif
