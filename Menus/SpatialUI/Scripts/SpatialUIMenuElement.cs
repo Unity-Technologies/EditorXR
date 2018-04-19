@@ -173,7 +173,7 @@ namespace UnityEditor.Experimental.EditorVR
                 textTransform.localScale = Vector3.Lerp(currentTextLocalScale, targetTextLocalScale, alphaSmoothTransition);
                 alphaTransitionAmount += Time.deltaTime * speedMultiplier;
                 positionTransitionAmount += alphaTransitionAmount * 1.35f;
-                m_BackgroundImage.color = Color.Lerp(currentBackgroundColor, targetBackgroundColor, alphaSmoothTransition);
+                m_BackgroundImage.color = Color.Lerp(currentBackgroundColor, targetBackgroundColor, alphaSmoothTransition * 4);
                 m_TopBorder.localScale = Vector3.Lerp(currentBordersLocalScale, targetBordersLocalScale, alphaSmoothTransition);
                 m_BottomBorder.localScale = Vector3.Lerp(currentBordersLocalScale, targetBordersLocalScale, alphaSmoothTransition);
                 m_BordersCanvasGroup.alpha = Mathf.Lerp(currentBordersCanvasGroupAlpha, targetBordersCanvasGroupAlpha, alphaSmoothTransition);
