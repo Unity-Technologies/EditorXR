@@ -32,6 +32,10 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
         const float k_SpatialScrollVectorLength = 0.125f;
 
+        readonly string k_SpatialInputModeName = "Spatial Input Mode";
+        readonly string k_RotationInputModeName = "Rotation Input Mode";
+        readonly string k_BCIInputModeName = "Brain Input Mode";
+
         enum State
         {
             hidden,
@@ -51,6 +55,9 @@ namespace UnityEditor.Experimental.EditorVR
 
         [SerializeField]
         TextMeshProUGUI m_MenuTitleText;
+
+        [SerializeField]
+        TextMeshProUGUI m_InputModeText;
 
         [Header("Home Section")]
         [SerializeField]
@@ -505,6 +512,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void SetupUIForInteraction()
         {
+            m_InputModeText.text = k_SpatialInputModeName;
             allowAdaptivePositioning = true;
             m_Director.playableAsset = m_RevealTimelinePlayable;
             m_GhostInputDevice.localPosition = m_GhostInputDeviceHomeSectionLocalPosition;
@@ -711,6 +719,12 @@ namespace UnityEditor.Experimental.EditorVR
             if (actionMapInput.show.isHeld && m_State != State.hidden)
             {
                 m_RotationVelocityTracker.Update(actionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
+                if (m_RotationVelocityTracker.rotationStrength > 500)
+                {
+                    m_InputModeText.text = k_RotationInputModeName;
+                    //m_GhostInputDevice.localPosition *= 1.25f;
+                }
+
                 Debug.LogError("Rotation strength " + m_RotationVelocityTracker.rotationStrength);
 
                 consumeControl(actionMapInput.cancel);
