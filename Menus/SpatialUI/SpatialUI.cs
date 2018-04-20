@@ -160,6 +160,7 @@ namespace UnityEditor.Experimental.EditorVR
         int m_HighlightedButtonPosition; // element position amidst the currentlyDisplayedMenuElements
 
         RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
+        ContinuousDirectionalVelocityTracker m_ContinuousDirectionalVelocityTracker = new ContinuousDirectionalVelocityTracker();
 
         private bool visible
         {
@@ -279,7 +280,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void Update()
         {
-            Debug.Log("<color=yellow>" + m_Transitioning + "</color>");
+            //Debug.Log("<color=yellow>" + m_Transitioning + "</color>");
             if (m_State == State.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
             {
                 m_Director.time = m_Director.time += Time.unscaledDeltaTime;
@@ -523,6 +524,7 @@ namespace UnityEditor.Experimental.EditorVR
             m_HomeMenuLayoutGroup.enabled = true;
 
             m_RotationVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).localRotation);
+            m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
             m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.touch;
         }
 
@@ -717,7 +719,8 @@ namespace UnityEditor.Experimental.EditorVR
                     m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.ray;
                 }
 
-                Debug.LogError("Rotation strength " + m_RotationVelocityTracker.rotationStrength);
+                m_ContinuousDirectionalVelocityTracker.Update(actionMapInput.localPosition.vector3, Time.deltaTime);
+                Debug.Log("<color=green>Continuous Direction strength " + m_ContinuousDirectionalVelocityTracker.directionalDivergence + "</color>");
 
                 consumeControl(actionMapInput.cancel);
                 consumeControl(actionMapInput.show);
@@ -754,7 +757,17 @@ namespace UnityEditor.Experimental.EditorVR
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
                 m_SpatialUIGhostVisuals.UpdateRotation(ghostDeviceRotation);
 
+                /*
                 if (m_Transitioning && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
+                {
+                    //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
+                    SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
+                    ReturnToPreviousMenuLevel();
+                    return;
+                }
+                */
+
+                if (m_Transitioning && m_State == State.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 1)
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
                     SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
