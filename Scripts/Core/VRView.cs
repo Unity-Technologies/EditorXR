@@ -34,9 +34,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (s_ActiveView)
                 {
-                    s_ActiveView.m_CustomPreviewCamera = value;
-                    if (EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
+                    if (!s_ActiveView.m_CustomPreviewCamera && EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
                         CopyImagesEffectsToCamera(value);
+
+                    s_ActiveView.m_CustomPreviewCamera = value;
                 }
             }
             get
