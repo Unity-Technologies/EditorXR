@@ -39,14 +39,17 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return component;
         }
 
-        public static bool MethodFoundInBaseType(Type type, string methodName, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+        public static MethodInfo GetMethodRecursively(this Type type, string name, BindingFlags bindingAttr)
         {
-            var methodFound = false;
-            var componentBaseType = type.BaseType;
-            if (componentBaseType != null)
-                methodFound = componentBaseType.GetMethod(methodName, bindingFlags) != null;
+            var method = type.GetMethod(name, bindingAttr);
+            if (method != null)
+                return method;
 
-            return methodFound;
+            var baseType = type.BaseType;
+            if (baseType != null)
+                method = type.BaseType.GetMethodRecursively(name, bindingAttr);
+
+            return method;
         }
     }
 }
