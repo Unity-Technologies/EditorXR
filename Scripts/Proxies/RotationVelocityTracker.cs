@@ -31,6 +31,10 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
 
         bool m_Initialized;
 
+        public float timePeriod { set { m_Period = value; } }
+        public int steps { set { m_Steps = value; } }
+        public float newChunkWeight { set { m_NewChunkWeight = value; } }
+
         /// <summary>
         /// How a rotation the tracked object is experiencing this frame
         /// </summary>
@@ -85,8 +89,6 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
             // Update the average velocity
             var totalTime = 0.0f;
             var totalRotationDelta = 0.0f;
-            var minOffset = Vector3.zero;
-            var maxOffset = Vector3.zero;
 
             var chunkCounter = 0;
             while (chunkCounter < m_Steps)
@@ -104,7 +106,6 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
 
                 chunkCounter++;
             }
-            var motionBounds = (maxOffset - minOffset).magnitude;
 
             if (totalTime > 0.0f)
             {
