@@ -34,9 +34,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (s_ActiveView)
                 {
-                    s_ActiveView.m_CustomPreviewCamera = value;
-                    if (EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
+                    if (!s_ActiveView.m_CustomPreviewCamera && EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
                         CopyImagesEffectsToCamera(value);
+
+                    s_ActiveView.m_CustomPreviewCamera = value;
                 }
             }
             get
@@ -228,13 +229,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var targetMethodFound = false;
                 for (int i = 0; i < targetMethodNames.Length; ++i)
                 {
-                    // Check isntanced type for target methods
-                    targetMethodFound = componentInstanceType.GetMethod(targetMethodNames[i], bindingFlags) != null;
-
-                    // Check base type for target methods
-                    if (!targetMethodFound)
-                        targetMethodFound =
-                            ComponentUtils.MethodFoundInBaseType(componentInstanceType, targetMethodNames[i]);
+                    targetMethodFound = componentInstanceType.GetMethodRecursively(targetMethodNames[i], bindingFlags) != null;
 
                     if (targetMethodFound)
                         break;
