@@ -719,7 +719,7 @@ namespace UnityEditor.Experimental.EditorVR
                     m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.ray;
                 }
 
-                m_ContinuousDirectionalVelocityTracker.Update(actionMapInput.localPosition.vector3, Time.deltaTime);
+                m_ContinuousDirectionalVelocityTracker.Update(actionMapInput.localPosition.vector3, Time.unscaledDeltaTime);
                 Debug.Log("<color=green>Continuous Direction strength " + m_ContinuousDirectionalVelocityTracker.directionalDivergence + "</color>");
 
                 consumeControl(actionMapInput.cancel);
@@ -767,7 +767,7 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 */
 
-                if (m_Transitioning && m_State == State.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 1)
+                if (m_Transitioning && m_State == State.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
                     SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
@@ -839,12 +839,12 @@ namespace UnityEditor.Experimental.EditorVR
                                 currentlyDisplayedMenuElements[i].highlighted = i == m_HighlightedButtonPosition;
                                 //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
                             }
-                        
+
                             //m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
                         }
                         }
                 }
-                
+
                 /* Working Z-rotation based cycling through menu elements
                 // Cycle through top-level sections, before opening a corresponding sub-menu
                 if (m_State != State.navigatingSubMenuContent)

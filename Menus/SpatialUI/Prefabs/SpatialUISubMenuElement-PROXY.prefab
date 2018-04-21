@@ -175,7 +175,7 @@ MonoBehaviour:
   m_CanvasGroup: {fileID: 0}
   m_transitionDuration: 1
   m_FadeInZOffset: 0
-  m_HighlightedZOffset: -0.025
+  m_HighlightedZOffset: -0.005
   m_BackgroundImage: {fileID: 0}
   m_BordersCanvasGroup: {fileID: 0}
   m_TopBorder: {fileID: 0}
@@ -275,7 +275,7 @@ MonoBehaviour:
   m_CanvasGroup: {fileID: 225481093296125408}
   m_transitionDuration: 0.75
   m_FadeInZOffset: 0.05
-  m_HighlightedZOffset: -0.025
+  m_HighlightedZOffset: -0.005
   m_BackgroundImage: {fileID: 114478067524488788}
   m_BordersCanvasGroup: {fileID: 225310472566469222}
   m_TopBorder: {fileID: 224940737302464290}
