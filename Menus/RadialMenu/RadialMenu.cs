@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
-        readonly List<SpatialUI.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialUI.SpatialUITableElement>();
+        readonly List<SpatialUIController.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialUIController.SpatialUITableElement>();
 
         public event Action<Transform> itemWasSelected;
 
@@ -59,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public string spatialMenuName { get { return k_SpatialDisplayName; } }
         public string spatialMenuDescription { get { return k_SpatialDescription; } }
         public bool displayingSpatially { get; set; }
-        public List<SpatialUI.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
+        public List<SpatialUIController.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
 
         public List<ActionMenuData> menuActions
         {
@@ -118,12 +118,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
 
 
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Undo", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Redo", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Deselect", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Delete", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Duplicate", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Exit EditorXR", null, null));
+            m_SpatialUITableElements.Add(new SpatialUIController.SpatialUITableElement("Undo", null, null));
+            m_SpatialUITableElements.Add(new SpatialUIController.SpatialUITableElement("Redo", null, null));
+            m_SpatialUITableElements.Add(new SpatialUIController.SpatialUITableElement("Deselect", null, null));
+            m_SpatialUITableElements.Add(new SpatialUIController.SpatialUITableElement("Delete", null, null));
+            m_SpatialUITableElements.Add(new SpatialUIController.SpatialUITableElement("Duplicate", null, null));
+            m_SpatialUITableElements.Add(new SpatialUIController.SpatialUITableElement("Exit EditorXR", null, null));
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

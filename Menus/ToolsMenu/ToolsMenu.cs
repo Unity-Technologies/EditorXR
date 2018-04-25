@@ -47,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_MenuFeedback = new List<ProxyFeedbackRequest>();
-        readonly List<SpatialUI.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialUI.SpatialUITableElement>();
+        readonly List<SpatialUIController.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialUIController.SpatialUITableElement>();
 
         public Transform menuOrigin { get; set; }
 
@@ -75,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public string spatialMenuName { get { return k_SpatialDisplayName; } }
         public string spatialMenuDescription { get { return k_SpatialDescription; } }
         public bool displayingSpatially { get; set; }
-        public List<SpatialUI.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
+        public List<SpatialUIController.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
         public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
         public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
 
@@ -160,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_ToolsMenuUI.AddButton(button, buttonTransform);
 
             if (toolType != typeof(IMainMenu))
-                spatialTableElements.Add(new SpatialUI.SpatialUITableElement(toolType.Name, button.icon, () =>
+                spatialTableElements.Add(new SpatialUIController.SpatialUITableElement(toolType.Name, button.icon, () =>
                 {
                     this.SelectTool(this.RequestRayOriginFromNode(Node.RightHand), toolType,
                         hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(toolType));

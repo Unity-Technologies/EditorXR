@@ -20,7 +20,7 @@ using Random = UnityEngine.Random;
 namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
-    public class SpatialUI : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling, IInstantiateUI,
+    public class SpatialUIController : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling, IInstantiateUI,
         IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType,
         IControlHaptics, INodeToRay
     {
