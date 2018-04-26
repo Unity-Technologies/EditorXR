@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         [SerializeField]
         [Tooltip("A weight to apply to the newest velocity sample for prediction")]
-        float m_NewChunkWeight = 2.0f;
+        float m_NewChunkWeight = 4.0f;
 
         int m_ChunkIndex;
         float m_ChunkPeriod = 1.0f;

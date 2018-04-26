@@ -20,7 +20,7 @@ using Random = UnityEngine.Random;
 namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
-    public class SpatialUIController : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling, IInstantiateUI,
+    public class SpatialInterfaceController : MonoBehaviour, IAdaptPosition, IControlSpatialScrolling, IInstantiateUI,
         IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType,
         IControlHaptics, INodeToRay
     {
@@ -32,11 +32,7 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
         const float k_SpatialScrollVectorLength = 0.125f;
 
-        readonly string k_SpatialInputModeName = "Spatial Input Mode";
-        readonly string k_RotationInputModeName = "Rotation Input Mode";
-        readonly string k_BCIInputModeName = "Brain Input Mode";
-
-        enum State
+        public enum SpatialinterfaceState
         {
             hidden,
             navigatingTopLevel,
@@ -44,74 +40,10 @@ namespace UnityEditor.Experimental.EditorVR
         }
 
         [SerializeField]
+        SpatialInterfaceUI m_SpatialInterfaceUIPrefab;
+
+        [SerializeField]
         ActionMap m_ActionMap;
-
-        [Header("Common UI")]
-        [SerializeField]
-        CanvasGroup m_MainCanvasGroup;
-
-        [SerializeField]
-        Transform m_Background;
-
-        [SerializeField]
-        TextMeshProUGUI m_MenuTitleText;
-
-        [SerializeField]
-        TextMeshProUGUI m_InputModeText;
-
-        [Header("Home Section")]
-        [SerializeField]
-        Transform m_HomeMenuContainer;
-
-        [SerializeField]
-        CanvasGroup m_HomeTextCanvasGroup;
-
-        [SerializeField]
-        HorizontalLayoutGroup m_HomeMenuLayoutGroup;
-
-        [SerializeField]
-        Transform m_HomeTextBackgroundTransform;
-
-        [SerializeField]
-        Transform m_HomeTextBackgroundInnerTransform;
-
-        [SerializeField]
-        TextMeshProUGUI m_HomeSectionDescription;
-
-        [SerializeField]
-        List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
-
-        [SerializeField]
-        CanvasGroup m_HomeSectionBackgroundBordersCanvas;
-
-        [Header("SubMenu Section")]
-        [SerializeField]
-        Transform m_SubMenuContainer;
-
-        [SerializeField]
-        CanvasGroup m_SubMenuContentsCanvasGroup;
-
-        [Header("Prefabs")]
-        [SerializeField]
-        GameObject m_MenuElementPrefab;
-
-        [SerializeField]
-        GameObject m_SubMenuElementPrefab;
-
-        [Header("Animation")]
-        [SerializeField]
-        PlayableDirector m_Director;
-
-        [SerializeField]
-        PlayableAsset m_RevealTimelinePlayable;
-
-        [Header("Ghost Input Device")]
-        [SerializeField]
-        SpatialUIGhostVisuals m_SpatialUIGhostVisuals;
-
-        [Header("Surrounding Arrows")]
-        [SerializeField]
-        Transform m_SurroundingArrowsContainer;
 
         [Header("Haptic Pulses")]
         [SerializeField]
@@ -126,21 +58,14 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         HapticPulse m_HighlightMenuElementPulse;
 
-        State m_State;
+        SpatialInterfaceUI m_SpatialInterfaceUI;
+        SpatialinterfaceState m_SpatialinterfaceState;
 
         bool m_Visible;
         bool m_BeingMoved;
         bool m_InFocus;
-        Vector3 m_HomeTextBackgroundOriginalLocalScale;
-        Vector3 m_HomeBackgroundOriginalLocalScale;
-        float m_HomeSectionTimelineDuration;
-        float m_HomeSectionTimelineStoppingTime;
         Vector3 m_HomeSectionSpatialScrollStartLocalPosition;
         bool m_Transitioning;
-
-        Coroutine m_VisibilityCoroutine;
-        Coroutine m_InFocusCoroutine;
-        Coroutine m_HomeSectionTitlesBackgroundBordersTransitionCoroutine;
 
         // "Rotate wrist to return" members
         float m_StartingWristXRotation;
@@ -176,7 +101,7 @@ namespace UnityEditor.Experimental.EditorVR
                 if (m_Visible)
                 {
                     pollingSpatialInputType = true;
-                    gameObject.SetActive(true);
+                    //gameObject.SetActive(true);  MOVED TO SPATIAL UI View
                 }
                 else
                 {
@@ -191,8 +116,20 @@ namespace UnityEditor.Experimental.EditorVR
 
                     this.Pulse(Node.None, m_MenuClosePulse);
                     pollingSpatialInputType = false;
-                    m_State = State.hidden;
+                    spatialinterfaceState = SpatialinterfaceState.hidden;
                 }
+            }
+        }
+
+        private SpatialinterfaceState spatialinterfaceState
+        {
+            set
+            {
+                if (m_SpatialinterfaceState == value)
+                    return;
+
+                m_SpatialinterfaceState = value;
+                m_SpatialInterfaceUI.spatialinterfaceState = value;
             }
         }
 
@@ -227,23 +164,26 @@ namespace UnityEditor.Experimental.EditorVR
             get { return m_InFocus; }
             set
             {
+                if (m_InFocus == value)
+                    return;
+
                 //if (value != m_InFocus)
                     //this.RestartCoroutine(ref m_InFocusCoroutine, AnimateFocusVisuals());
 
                 m_InFocus = value;
+                m_SpatialInterfaceUI.inFocus = value;
             }
         }
 
         public bool beingMoved
         {
-            get { return m_BeingMoved; }
             set
             {
                 if (m_BeingMoved != value)
-                {
-                    m_BeingMoved = value;
-                    this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility());
-                }
+                    return;
+
+                m_BeingMoved = value;
+                m_SpatialInterfaceUI.beingMoved = value;
             }
         }
 
@@ -266,52 +206,28 @@ namespace UnityEditor.Experimental.EditorVR
             //public SpatialUIMenuElement spatialUIMenuElement { get; private set; }
         }
 
-        void Awake()
+        void Start()
         {
-            m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
-            m_HomeBackgroundOriginalLocalScale = m_Background.localScale;
+            m_SpatialInterfaceUI = this.InstantiateUI(m_SpatialInterfaceUIPrefab.gameObject).GetComponent<SpatialInterfaceUI>();
+            ConnectInterfaces(m_SpatialInterfaceUI);
+            m_SpatialInterfaceUI.Setup();
+        }
 
-            // TODO remove serialized inspector references for home menu section titles, use instantiated prefabs only
-            m_SectionNameTexts.Clear();
-
-            m_HomeSectionTimelineDuration = (float) m_RevealTimelinePlayable.duration;
-            m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
+        private void ConnectInterfaces(SpatialInterfaceUI spatialInterfaceUI)
+        {
+            throw new NotImplementedException();
         }
 
         void Update()
         {
-            //Debug.Log("<color=yellow>" + m_Transitioning + "</color>");
-            if (m_State == State.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
+            if (m_SpatialInterfaceUI.directorBeyondHomeSectionDuration)
             {
-                m_Director.time = m_Director.time += Time.unscaledDeltaTime;
-                m_Director.Evaluate();
-
-                m_SubMenuContentsCanvasGroup.alpha = Mathf.Clamp01(m_SubMenuContentsCanvasGroup.alpha - Time.unscaledDeltaTime * 4);
-                m_HomeSectionBackgroundBordersCanvas.alpha = Mathf.Clamp01(m_HomeSectionBackgroundBordersCanvas.alpha - Time.unscaledDeltaTime * 4);
-            }
-            else if (m_Director.time > m_HomeSectionTimelineDuration)
-            {
-                //m_Director.time = 0f;
-                m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
-                m_SubMenuContentsCanvasGroup.alpha = 0f;
-
-                this.StopAllCoroutines();
-                HideSubMenu();
-                m_Director.Evaluate();
+                StopAllCoroutines();
+                //HideSubMenu();
                 allowAdaptivePositioning = false;
-                gameObject.SetActive(m_Visible);
-
-                var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
-                if (deleteOldChildren.Count() > 0)
-                {
-                    foreach (var child in deleteOldChildren)
-                    {
-                        if (child != null && child.gameObject != null)
-                            ObjectUtils.Destroy(child.gameObject);
-                    }
-                }
+                //gameObject.SetActive(m_Visible);
             }
-            else if (m_State == State.navigatingSubMenuContent)
+            else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
             {
                 // Scale background based on number of sub-menu elements
                 var targetScale = m_HighlightedTopLevelMenuProvider != null ? m_HighlightedTopLevelMenuProvider.spatialTableElements.Count * 1.05f : 1f;
@@ -336,7 +252,7 @@ namespace UnityEditor.Experimental.EditorVR
                     m_SubMenuContentsCanvasGroup.alpha = 1f;
                 }
             }
-            else if (m_State == State.navigatingTopLevel)
+            else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingTopLevel)
             {
                 var targetScale = 1f;
                 var timeMultiplier = 24;
@@ -388,9 +304,9 @@ namespace UnityEditor.Experimental.EditorVR
             Debug.LogWarning("Adding a provider : " + provider.spatialMenuName);
             m_spatialMenuProviders.Add(provider);
 
-            var instantiatedPrefab = ObjectUtils.Instantiate(m_MenuElementPrefab).transform as RectTransform;
+            var instantiatedPrefab = ObjectUtils.Instantiate(m_SpatialInterfaceUI.menuElementPrefab).transform as RectTransform;
             var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
-            providerMenuElement.Setup(instantiatedPrefab, m_HomeMenuContainer, () => Debug.LogWarning("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
+            providerMenuElement.Setup(instantiatedPrefab, m_SpatialInterfaceUI.homeMenuContainer, () => Debug.LogWarning("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
             m_ProviderToMenuElements.Add(provider, providerMenuElement);
 
             //instantiatedPrefab.transform.SetParent(m_HomeMenuContainer);
@@ -399,16 +315,7 @@ namespace UnityEditor.Experimental.EditorVR
             //instantiatedPrefab.localScale = Vector3.one;
 
             //m_MenuTitleText.text = provider.spatialMenuName;
-
             //UpdateSectionNames();
-        }
-
-        void UpdateSectionNames()
-        {
-            for (int i = 0; i < m_spatialMenuProviders.Count; ++i)
-            {
-                m_SectionNameTexts[i].text = m_spatialMenuProviders[i].spatialMenuName;
-            }
         }
 
         /*
@@ -423,109 +330,14 @@ namespace UnityEditor.Experimental.EditorVR
         }
         */
 
-        IEnumerator AnimateVisibility()
+        void Reset()
         {
-            var speedScalar = m_BeingMoved ? 2f : 4f;
-            var currentAlpha = m_MainCanvasGroup.alpha;
-            var targetMainCanvasAlpha = m_BeingMoved ? 0.25f : 1f;
-
-            var currentHomeTextAlpha = m_HomeTextCanvasGroup.alpha;
-            var targetHomeTextAlpha = m_BeingMoved ? 0f : 1f;
-
-            //var currentBackgroundLocalScale = m_Background.localScale;
-            //var targetBackgroundLocalScale = Vector3.one * (m_BeingMoved ? 0.75f : 1f);
-
-            var currentHomeBackgroundLocalScale = m_HomeTextBackgroundTransform.localScale;
-            var targetHomeBackgroundLocalScale = m_BeingMoved ? new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, 0f, 1f) : m_HomeTextBackgroundOriginalLocalScale;
-            //var targetPosition = show ? (moveToAlternatePosition ? m_AlternateLocalPosition : m_OriginalLocalPosition) : Vector3.zero;
-            //var targetScale = show ? (moveToAlternatePosition ? m_OriginalLocalScale : m_OriginalLocalScale * k_AlternateLocalScaleMultiplier) : Vector3.zero;
-            //var currentPosition = transform.localPosition;
-            //var currentIconScale = m_IconContainer.localScale;
-            //var targetIconContainerScale = show ? m_OriginalIconContainerLocalScale : Vector3.zero;
-            var transitionAmount = 0f;
-            //var currentScale = transform.localScale;
-
-            if (!m_BeingMoved)
-            {
-                var delayBeforeReveal = 0.5f;
-                while (delayBeforeReveal > 0)
-                {
-                    // Pause before revealing
-                    delayBeforeReveal -= Time.unscaledDeltaTime;
-                    yield return null;
-                }
-            }
-
-            /*
-            while (transitionAmount < 1)
-            {
-                var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount += Time.unscaledDeltaTime * speedScalar);
-                //m_Director.time = shapedAmount;
-                //m_IconContainer.localScale = Vector3.Lerp(currentIconScale, targetIconContainerScale, shapedAmount);
-                //transform.localPosition = Vector3.Lerp(currentPosition, targetPosition, shapedAmount);
-                //transform.localScale = Vector3.Lerp(currentScale, targetScale, shapedAmount);
-                //m_Background.localScale = Vector3.Lerp(currentBackgroundLocalScale, targetBackgroundLocalScale, shapedAmount);
-
-                m_MainCanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetMainCanvasAlpha, shapedAmount);
-
-                shapedAmount *= shapedAmount; // increase beginning & end anim emphasis
-                m_HomeTextCanvasGroup.alpha = Mathf.Lerp(currentHomeTextAlpha, targetHomeTextAlpha, shapedAmount);
-
-                m_HomeTextBackgroundTransform.localScale = Vector3.Lerp(currentHomeBackgroundLocalScale, targetHomeBackgroundLocalScale, shapedAmount);
-                yield return null;
-            }
-
-            //m_IconContainer.localScale = targetIconContainerScale;
-            //transform.localScale = targetScale;
-            //transform.localPosition = targetPosition;
-
-            m_MainCanvasGroup.alpha = targetMainCanvasAlpha;
-            */
-            //m_Background.localScale = targetBackgroundLocalScale;
-
-            m_VisibilityCoroutine = null;
-        }
-
-        IEnumerator AnimateFocusVisuals()
-        {
-            var currentScale = transform.localScale;
-            var targetScale = m_InFocus ? Vector3.one : Vector3.one * 0.5f;
-            var transitionAmount = 0f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
-            var transitionSubtractMultiplier = 5f;
-            while (transitionAmount < 1f)
-            {
-                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-                transform.localScale = Vector3.Lerp(currentScale, targetScale, smoothTransition);
-                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
-                yield return null;
-            }
-
-            transform.localScale = targetScale;
-            m_InFocusCoroutine = null;
-        }
-
-        void SetupUIForInteraction()
-        {
-            m_InputModeText.text = k_SpatialInputModeName;
-            allowAdaptivePositioning = true;
-            m_Director.playableAsset = m_RevealTimelinePlayable;
-            m_HomeSectionBackgroundBordersCanvas.alpha = 1f;
-
             DisplayHomeSectionContents();
-
-            // Director related
-            m_Director.time = 0f;
-            m_Director.Evaluate();
 
             this.Pulse(Node.None, m_MenuOpenPulse);
 
-            // Hack that fixes the home section menu element positions not being recalculated when first revealed
-            m_HomeMenuLayoutGroup.enabled = false;
-            m_HomeMenuLayoutGroup.enabled = true;
-
             m_RotationVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).localRotation);
             m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
-            m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.touch;
         }
 
         void SetSpatialScrollStartingConditions(Vector3 localPosition, Quaternion localRotation)
@@ -561,11 +373,12 @@ namespace UnityEditor.Experimental.EditorVR
 
         void DisplayHomeSectionContents()
         {
+            m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
             m_SpatialUIGhostVisuals.SetPositionOffset(Vector3.zero);
             m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.touch;
             this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(true));
 
-            m_State = State.navigatingTopLevel;
+            spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
 
             // Proxy sub-menu/dynamicHUD menu element(s) display
             m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
@@ -581,10 +394,11 @@ namespace UnityEditor.Experimental.EditorVR
 
         void DisplayHighlightedSubMenuContents()
         {
+            m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
             this.Pulse(Node.None, m_MenuOpenPulse);
             this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
-            m_State = State.navigatingSubMenuContent;
+            spatialinterfaceState = SpatialinterfaceState.navigatingSubMenuContent;
 
             //m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
 
@@ -611,9 +425,9 @@ namespace UnityEditor.Experimental.EditorVR
                     foreach (var subMenuElement in m_HighlightedTopLevelMenuProvider.spatialTableElements)
                     {
                         ++subMenuElementCount;
-                        var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
+                        var instantiatedPrefab = ObjectUtils.Instantiate(m_SpatialInterfaceUI.subMenuElementPrefab).transform as RectTransform;
                         var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
-                        providerMenuElement.Setup(instantiatedPrefab, m_SubMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
+                        providerMenuElement.Setup(instantiatedPrefab, m_SpatialInterfaceUI.subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
                         currentlyDisplayedMenuElements.Add(providerMenuElement);
                     }
 
@@ -628,7 +442,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
 
             var newGhostInputDevicePositionOffset = new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
-            m_SpatialUIGhostVisuals.SetPositionOffset(newGhostInputDevicePositionOffset);
+            m_SpatialInterfaceUI.DisplayHighlightedSubMenuContents(newGhostInputDevicePositionOffset);
 
             // Spatial Scrolling setup
             //spatialScrollStartPosition = spatialScrollOrigin.position;
@@ -645,22 +459,10 @@ namespace UnityEditor.Experimental.EditorVR
             //ShowMenuFeedback();
         }
 
-        void HideSubMenu()
-        {
-            /*
-            var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
-            foreach (var child in deleteOldChildren)
-            {
-                ObjectUtils.Destroy(child.gameObject);
-            }
-            */
-        }
-
         void ReturnToPreviousMenuLevel()
         {
             this.Pulse(Node.None, m_NavigateBackPulse);
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
-            HideSubMenu();
             DisplayHomeSectionContents();
 
             Debug.LogWarning("SpatialUI : <color=green>Above wrist return threshold</color>");
@@ -696,7 +498,7 @@ namespace UnityEditor.Experimental.EditorVR
                 consumeControl(actionMapInput.select);
 
                 //TODO restore this functionality.  It resets the starting position when being moved, but currently breaks when initially opening the menu
-                if (m_State != State.hidden && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
+                if (m_SpatialinterfaceState != SpatialinterfaceState.hidden && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                     m_HomeSectionSpatialScrollStartLocalPosition = actionMapInput.localPosition.vector3;
             }
 
@@ -705,18 +507,17 @@ namespace UnityEditor.Experimental.EditorVR
                 (actionMapInput.show.wasJustPressed && actionMapInput.select.isHeld) ||
                 (actionMapInput.show.isHeld && actionMapInput.select.wasJustPressed))
             {
-                m_State = State.navigatingTopLevel;
+                spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
                 SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
-                SetupUIForInteraction();
+                Reset();
             }
 
-            if (actionMapInput.show.isHeld && m_State != State.hidden)
+            if (actionMapInput.show.isHeld && m_SpatialinterfaceState != SpatialinterfaceState.hidden)
             {
                 m_RotationVelocityTracker.Update(actionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
                 if (m_RotationVelocityTracker.rotationStrength > 500)
                 {
-                    m_InputModeText.text = k_RotationInputModeName;
-                    m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.ray;
+                    m_SpatialInterfaceUI.spatialInterfaceInputMode = SpatialInterfaceUI.SpatialInterfaceInputMode.Ray;
                 }
 
                 m_ContinuousDirectionalVelocityTracker.Update(actionMapInput.localPosition.vector3, Time.unscaledDeltaTime);
@@ -728,12 +529,6 @@ namespace UnityEditor.Experimental.EditorVR
 
                 m_Transitioning = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // duration for which input is not taken into account when menu swapping
                 visible = true;
-
-                if (m_Director.time <= m_HomeSectionTimelineStoppingTime)
-                {
-                    m_Director.time = m_Director.time += Time.unscaledDeltaTime;
-                    m_Director.Evaluate();
-                }
 
                 /*
                 if (!inFocus)
@@ -755,7 +550,7 @@ namespace UnityEditor.Experimental.EditorVR
 
                 var inputLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
-                m_SpatialUIGhostVisuals.UpdateRotation(ghostDeviceRotation);
+                m_SpatialInterfaceUI.UpdateGhostDeviceRotation(ghostDeviceRotation);
 
                 /*
                 if (m_Transitioning && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
@@ -767,7 +562,7 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 */
 
-                if (m_Transitioning && m_State == State.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
+                if (m_Transitioning && m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
                     SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
@@ -775,7 +570,7 @@ namespace UnityEditor.Experimental.EditorVR
                     return;
                 }
 
-                if (m_State == State.navigatingTopLevel && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
+                if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingTopLevel && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - actionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
                     if (m_Transitioning)
                     {
@@ -794,7 +589,7 @@ namespace UnityEditor.Experimental.EditorVR
                 // Will need to consider how to handle a user starting at a steep angle initially, baesd upon how far they scroll in the opposite direction.
                 // In other words, if the user rotates beyond the max estimated threshold, we offset the initial starting angle by that amount, so when returning their rotation to the original extreme angle
                 // They will have offset their "neutral" rotation position, and have newfound room to rotate/advance in the original "extreme" rotation direction
-                if (m_State != State.navigatingSubMenuContent)
+                if (m_SpatialinterfaceState != SpatialinterfaceState.navigatingSubMenuContent)
                 {
                     // The "roll" rotation expected on the z is polled for via the X in the action map...???
                     const float kSectionSpacingBuffer = 0.05f;
@@ -810,7 +605,7 @@ namespace UnityEditor.Experimental.EditorVR
                     }
                 }
 
-                if (m_State == State.navigatingSubMenuContent)
+                if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
                 {
                     if (m_HighlightedTopLevelMenuProvider != null)
                     {
@@ -946,25 +741,6 @@ namespace UnityEditor.Experimental.EditorVR
                 CloseMenu();
             }
             */
-        }
-
-        IEnumerator AnimateTopAndBottomCenterBackgroundBorders(bool visible)
-        {
-            var currentAlpha = m_HomeSectionBackgroundBordersCanvas.alpha;
-            var targetAlpha = visible ? 1f : 0f;
-            var transitionAmount = 0f;
-            var transitionSubtractMultiplier = 5f;
-            while (transitionAmount < 1f)
-            {
-                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-                m_HomeSectionBackgroundBordersCanvas.alpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
-                m_SurroundingArrowsContainer.localScale = Vector3.one + (Vector3.one * Mathf.Sin(transitionAmount * 2) * 0.1f);
-                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
-                yield return null;
-            }
-
-            m_HomeSectionBackgroundBordersCanvas.alpha = targetAlpha;
-            m_HomeSectionTitlesBackgroundBordersTransitionCoroutine = null;
         }
     }
 }
