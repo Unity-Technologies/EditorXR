@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -67,6 +68,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             set
             {
                 m_MenuActions = value;
+
+                m_MenuActions = value
+                    .Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
+                    .OrderBy(a => a.priority)
+                    .ToList();
+
+                m_SpatialUITableElements.Clear();
+                foreach (var action in m_MenuActions)
+                {
+                    m_SpatialUITableElements.Add(new SpatialInterfaceController.SpatialUITableElement(action.name, null, action.action.ExecuteAction));
+                }
 
                 if (m_RadialMenuUI)
                     m_RadialMenuUI.actions = value;

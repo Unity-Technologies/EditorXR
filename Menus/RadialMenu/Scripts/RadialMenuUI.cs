@@ -75,11 +75,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 if (value != null)
                 {
-                    m_Actions = value
-                        .Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
-                        .OrderBy(a => a.priority)
-                        .ToList();
-
                     if (visible && actions.Count > 0)
                     {
                         this.StopCoroutine(ref m_VisibilityCoroutine);
