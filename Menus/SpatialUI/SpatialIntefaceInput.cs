@@ -4,8 +4,8 @@ using UnityEngine.InputNew;
 // GENERATED FILE - DO NOT EDIT MANUALLY
 namespace UnityEngine.InputNew
 {
-	public class SpatialUIInput : ActionMapInput {
-		public SpatialUIInput (ActionMap actionMap) : base (actionMap) { }
+	public class SpatialIntefaceInput : ActionMapInput {
+		public SpatialIntefaceInput (ActionMap actionMap) : base (actionMap) { }
 		
 		public ButtonInputControl @show { get { return (ButtonInputControl)this[0]; } }
 		public ButtonInputControl @select { get { return (ButtonInputControl)this[1]; } }
@@ -19,5 +19,6 @@ namespace UnityEngine.InputNew
 		public AxisInputControl @localPositionY { get { return (AxisInputControl)this[9]; } }
 		public AxisInputControl @localPositionZ { get { return (AxisInputControl)this[10]; } }
 		public Vector3InputControl @localPosition { get { return (Vector3InputControl)this[11]; } }
+		public ButtonInputControl @test { get { return (ButtonInputControl)this[12]; } }
 	}
 }
