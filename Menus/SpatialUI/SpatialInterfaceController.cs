@@ -92,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
+        readonly Dictionary<ISpatialMenuProvider, SpatialInterfaceMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialInterfaceMenuElement>();
 
 
         int m_HighlightedButtonPosition; // element position amidst the currentlyDisplayedMenuElements
@@ -259,7 +259,7 @@ namespace UnityEditor.Experimental.EditorVR
             m_spatialMenuProviders.Add(provider);
 
             var instantiatedPrefab = ObjectUtils.Instantiate(m_SpatialInterfaceUI.menuElementPrefab).transform as RectTransform;
-            var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
+            var providerMenuElement = instantiatedPrefab.GetComponent<SpatialInterfaceMenuElement>();
             providerMenuElement.Setup(instantiatedPrefab, m_SpatialInterfaceUI.homeMenuContainer, () => Debug.LogWarning("Setting up : " + provider.spatialMenuName), provider.spatialMenuName);
             m_ProviderToMenuElements.Add(provider, providerMenuElement);
 
@@ -358,7 +358,7 @@ namespace UnityEditor.Experimental.EditorVR
             //Debug.Log("processing input in SpatialUI");
 
             const float kSubMenuNavigationTranslationTriggerThreshold = 0.075f;
-            var actionMapInput = (SpatialUIInput)input;
+            var actionMapInput = (SpatialInterfaceInput)input;
 
             // This block is only processed after a frame with both trigger buttons held has been detected
             if (spatialScrollData != null && actionMapInput.cancel.wasJustPressed)

@@ -6,7 +6,7 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-public class SpatialUIGhostVisuals : MonoBehaviour, ISpatialProxyRay
+public class SpatialInterfaceGhostVisuals : MonoBehaviour, ISpatialProxyRay
 {
     public enum SpatialInteractionType
     {
