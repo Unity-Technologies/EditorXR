@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
-  m_Name: SpatialUIInput
+  m_Name: SpatialInterfaceInput
   m_EditorClassIdentifier: 
   m_Actions:
   - {fileID: 114282548721718466}
@@ -25,7 +25,7 @@ MonoBehaviour:
   - {fileID: 114525501712458028}
   - {fileID: 114338676564487066}
   m_ControlSchemes:
-  - m_Name: SpatialUIInput
+  - m_Name: SpatialInterfaceInput
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
@@ -138,7 +138,7 @@ MonoBehaviour:
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
-  m_MapTypeName: SpatialUIInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+  m_MapTypeName: SpatialInterfaceInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   m_CustomNamespace: 
 --- !u!114 &114073851200093002
