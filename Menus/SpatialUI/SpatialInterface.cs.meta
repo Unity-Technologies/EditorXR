@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: 148a8937dcf59af4da1f2607b0bbd9cc
+timeCreated: 1524855019
+licenseType: Pro
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_SpatialInterfaceUIPrefab: {fileID: 114973006485777900, guid: 1cfdca3f54ef6914bb53878610be8682,
+      type: 2}
+  - m_ActionMap: {fileID: 11400000, guid: d75dd6fbf66628f4587ef7d3cf00288f, type: 2}
+  - m_MenuOpenPulse: {fileID: 11400000, guid: c3431dcd399d5444883404b83143af3c, type: 2}
+  - m_MenuClosePulse: {fileID: 11400000, guid: 882c4bab0da249b4fae5301c404087b5, type: 2}
+  - m_NavigateBackPulse: {fileID: 11400000, guid: 7a5f9eb2b4ece224da0fdb4c06c36ab6,
+      type: 2}
+  - m_HighlightMenuElementPulse: {fileID: 11400000, guid: 8a40320bd3d9301459e26bf8738e37d5,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

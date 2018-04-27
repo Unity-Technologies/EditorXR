@@ -3540,6 +3540,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4542884266341674}
   - component: {fileID: 114400322844796516}
+  - component: {fileID: 114973006485777900}
   - component: {fileID: 320579960660821910}
   - component: {fileID: 95733557967973550}
   m_Layer: 5
@@ -13553,6 +13554,37 @@ MonoBehaviour:
   m_TooltipSource: {fileID: 4363399107548604}
   m_TooltipAlignment: 2
   m_FacingDirection: 3
+--- !u!114 &114973006485777900
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1789767321393858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dfe219337f521f4fb2ffd308d7239cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_MainCanvasGroup: {fileID: 0}
+  m_Background: {fileID: 0}
+  m_MenuTitleText: {fileID: 0}
+  m_InputModeText: {fileID: 0}
+  m_HomeMenuContainer: {fileID: 0}
+  m_HomeTextCanvasGroup: {fileID: 0}
+  m_HomeMenuLayoutGroup: {fileID: 0}
+  m_HomeTextBackgroundTransform: {fileID: 0}
+  m_HomeTextBackgroundInnerTransform: {fileID: 0}
+  m_HomeSectionDescription: {fileID: 0}
+  m_SectionNameTexts: []
+  m_HomeSectionBackgroundBordersCanvas: {fileID: 0}
+  m_SubMenuContainer: {fileID: 0}
+  m_SubMenuContentsCanvasGroup: {fileID: 0}
+  m_MenuElementPrefab: {fileID: 0}
+  m_Director: {fileID: 0}
+  m_RevealTimelinePlayable: {fileID: 0}
+  m_SubMenuElementPrefab: {fileID: 0}
+  m_SpatialUIGhostVisuals: {fileID: 0}
+  m_SurroundingArrowsContainer: {fileID: 0}
 --- !u!114 &114973295192596792
 MonoBehaviour:
   m_ObjectHideFlags: 1

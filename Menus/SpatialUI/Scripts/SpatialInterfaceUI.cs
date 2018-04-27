@@ -8,7 +8,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
-using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialInterfaceController.SpatialinterfaceState;
+using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialInterface.SpatialinterfaceState;
 
 public class SpatialInterfaceUI : MonoBehaviour
 {

@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         Camera m_EventCameraPrefab;
 
         [SerializeField]
-        SpatialInterfaceController m_SpatialUIPrefab;
+        SpatialInterface m_SpatialUIPrefab;
 
         class UI : Nested, IInterfaceConnector, IConnectInterfaces
         {
@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             byte m_StencilRef = k_MinStencilRef;
 
             Camera m_EventCamera;
-            SpatialInterfaceController m_SpatialInterfaceController;
+            SpatialInterface m_SpatialInterface;
 
             readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
             readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
@@ -78,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 var spatialMenuProvider = target as ISpatialMenuProvider;
                 if (spatialMenuProvider != null)
-                    m_SpatialInterfaceController.AddProvider(spatialMenuProvider);
+                    m_SpatialInterface.AddProvider(spatialMenuProvider);
             }
 
             public void DisconnectInterface(object target, object userData = null)
@@ -108,15 +108,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 evr.AddModule<AdaptivePositionModule>();
 
                 // SpatialUI must be instantiated after the AdaptivePositionModule is added
-                m_SpatialInterfaceController = ObjectUtils.Instantiate(evr.m_SpatialUIPrefab.gameObject).GetComponent<SpatialInterfaceController>();
-                this.ConnectInterfaces(m_SpatialInterfaceController);
+                m_SpatialInterface = ObjectUtils.Instantiate(evr.m_SpatialUIPrefab.gameObject).GetComponent<SpatialInterface>();
+                this.ConnectInterfaces(m_SpatialInterface);
             }
 
             internal override void OnDestroy()
             {
                 base.OnDestroy();
 
-                ObjectUtils.Destroy(m_SpatialInterfaceController.gameObject);
+                ObjectUtils.Destroy(m_SpatialInterface.gameObject);
             }
 
             internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
