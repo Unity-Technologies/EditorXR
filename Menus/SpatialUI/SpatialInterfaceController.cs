@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using TMPro.Examples;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -66,6 +67,7 @@ namespace UnityEditor.Experimental.EditorVR
         bool m_InFocus;
         Vector3 m_HomeSectionSpatialScrollStartLocalPosition;
         bool m_Transitioning;
+        ISpatialMenuProvider m_HighlightedTopLevelMenuProvider;
 
         // "Rotate wrist to return" members
         float m_StartingWristXRotation;
@@ -77,11 +79,22 @@ namespace UnityEditor.Experimental.EditorVR
         // Spatial rotation members
         Quaternion m_InitialSpatialLocalRotation;
 
-        ISpatialMenuProvider m_HighlightedTopLevelMenuProvider;
+        private ISpatialMenuProvider highlightedTopLevelMenuProvider
+        {
+            get { return m_HighlightedTopLevelMenuProvider; }
+            set
+            {
+                if (m_HighlightedTopLevelMenuProvider == value)
+                    return;
+
+                m_HighlightedTopLevelMenuProvider = value;
+                m_SpatialInterfaceUI.highlightedTopLevelMenuProvider = value;
+            }
+        }
 
         readonly Dictionary<ISpatialMenuProvider, SpatialUIMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialUIMenuElement>();
 
-        readonly List<SpatialUIMenuElement> currentlyDisplayedMenuElements = new List<SpatialUIMenuElement>();
+
         int m_HighlightedButtonPosition; // element position amidst the currentlyDisplayedMenuElements
 
         RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
@@ -105,12 +118,12 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 else
                 {
-                    if (m_HighlightedTopLevelMenuProvider != null &&
-                        m_HighlightedTopLevelMenuProvider.spatialTableElements.Count > 0 &&
-                        m_HighlightedTopLevelMenuProvider.spatialTableElements[m_HighlightedButtonPosition] != null &&
-                        m_HighlightedTopLevelMenuProvider.spatialTableElements[m_HighlightedButtonPosition].correspondingFunction != null)
+                    if (highlightedTopLevelMenuProvider != null &&
+                        highlightedTopLevelMenuProvider.spatialTableElements.Count > 0 &&
+                        highlightedTopLevelMenuProvider.spatialTableElements[m_HighlightedButtonPosition] != null &&
+                        highlightedTopLevelMenuProvider.spatialTableElements[m_HighlightedButtonPosition].correspondingFunction != null)
                     {
-                        m_HighlightedTopLevelMenuProvider.spatialTableElements[m_HighlightedButtonPosition].correspondingFunction();
+                        highlightedTopLevelMenuProvider.spatialTableElements[m_HighlightedButtonPosition].correspondingFunction();
                         this.Pulse(Node.None, m_HighlightMenuElementPulse);
                     }
 
@@ -210,7 +223,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             m_SpatialInterfaceUI = this.InstantiateUI(m_SpatialInterfaceUIPrefab.gameObject).GetComponent<SpatialInterfaceUI>();
             ConnectInterfaces(m_SpatialInterfaceUI);
-            m_SpatialInterfaceUI.Setup();
+            m_SpatialInterfaceUI.Setup(m_ProviderToMenuElements);
         }
 
         private void ConnectInterfaces(SpatialInterfaceUI spatialInterfaceUI)
@@ -226,65 +239,6 @@ namespace UnityEditor.Experimental.EditorVR
                 //HideSubMenu();
                 allowAdaptivePositioning = false;
                 //gameObject.SetActive(m_Visible);
-            }
-            else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
-            {
-                // Scale background based on number of sub-menu elements
-                var targetScale = m_HighlightedTopLevelMenuProvider != null ? m_HighlightedTopLevelMenuProvider.spatialTableElements.Count * 1.05f : 1f;
-                var timeMultiplier = 24;
-                if (m_HomeTextBackgroundInnerTransform.localScale.y < targetScale)
-                {
-                    if (m_HomeTextBackgroundInnerTransform.localScale.y + Time.unscaledDeltaTime * timeMultiplier > targetScale)
-                    {
-                        m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
-                        m_SubMenuContentsCanvasGroup.alpha = 1f;
-                        return;
-                    }
-
-                    var newScale = new Vector3(m_HomeTextBackgroundInnerTransform.localScale.x, m_HomeTextBackgroundInnerTransform.localScale.y + Time.unscaledDeltaTime * timeMultiplier, m_HomeTextBackgroundInnerTransform.localScale.z);
-                    m_HomeTextBackgroundInnerTransform.localScale = newScale;
-                    m_SubMenuContentsCanvasGroup.alpha += Time.unscaledDeltaTime;
-                }
-                else
-                {
-                    return;
-                    m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
-                    m_SubMenuContentsCanvasGroup.alpha = 1f;
-                }
-            }
-            else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingTopLevel)
-            {
-                var targetScale = 1f;
-                var timeMultiplier = 24;
-                if (m_HomeTextBackgroundInnerTransform.localScale.y > targetScale)
-                {
-                    if (m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * timeMultiplier < targetScale)
-                    {
-                        m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
-                        m_SubMenuContentsCanvasGroup.alpha = 0f;
-                        var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
-                        if (deleteOldChildren.Count() > 0)
-                        {
-                            foreach (var child in deleteOldChildren)
-                            {
-                                if (child != null && child.gameObject != null)
-                                    ObjectUtils.Destroy(child.gameObject);
-                            }
-                        }
-                        return;
-                    }
-
-                    var newScale = new Vector3(m_HomeTextBackgroundInnerTransform.localScale.x, m_HomeTextBackgroundInnerTransform.localScale.y - Time.unscaledDeltaTime * timeMultiplier, m_HomeTextBackgroundInnerTransform.localScale.z);
-                    m_HomeTextBackgroundInnerTransform.localScale = newScale;
-                    m_SubMenuContentsCanvasGroup.alpha -= Time.unscaledDeltaTime * 10;
-                }
-                else
-                {
-                    //m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
-                    //m_SubMenuContentsCanvasGroup.alpha = 0f;
-
-
-                }
             }
         }
 
@@ -346,103 +300,34 @@ namespace UnityEditor.Experimental.EditorVR
             m_HomeSectionSpatialScrollStartLocalPosition = localPosition;
             m_InitialSpatialLocalRotation = localRotation; // Cache the current starting rotation, current deltaAngle will be calculated relative to this rotation
 
-            if (m_HighlightedTopLevelMenuProvider != null)
+            if (highlightedTopLevelMenuProvider != null)
             {
                 // TODO: set the spatial scroll origin based on the node that initiates the display of the SpatialUI
                 spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
                 spatialScrollStartPosition = spatialScrollOrigin.position;
-                var elementCount = m_HighlightedTopLevelMenuProvider.spatialTableElements.Count;
+                var elementCount = highlightedTopLevelMenuProvider.spatialTableElements.Count;
                 spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition,
                 spatialScrollOrigin.position, k_SpatialScrollVectorLength, elementCount, elementCount);
-            }
-        }
-
-        void HighlightHomeSectionMenuElement(ISpatialMenuProvider provider)
-        {
-            this.Pulse(Node.None, m_HighlightMenuElementPulse);
-            m_HomeSectionDescription.text = provider.spatialMenuDescription;
-            m_HighlightedTopLevelMenuProvider = provider;
-
-            foreach (var kvp in m_ProviderToMenuElements)
-            {
-                var key = kvp.Key;
-                var targetSize = key == provider ? Vector3.one : Vector3.one * 0.5f;
-                kvp.Value.transform.localScale = targetSize;
             }
         }
 
         void DisplayHomeSectionContents()
         {
             m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
-            m_SpatialUIGhostVisuals.SetPositionOffset(Vector3.zero);
-            m_SpatialUIGhostVisuals.spatialInteractionType = SpatialUIGhostVisuals.SpatialInteractionType.touch;
-            this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(true));
-
             spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
-
-            // Proxy sub-menu/dynamicHUD menu element(s) display
-            m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
-            m_HomeSectionDescription.gameObject.SetActive(true);
-
-            foreach (var kvp in m_ProviderToMenuElements)
-            {
-                var elementTransform = kvp.Value.transform;
-                elementTransform.gameObject.SetActive(true);
-                elementTransform.localScale = Vector3.one;
-            }
+            m_SpatialInterfaceUI.DisplayHomeSectionContents();
         }
 
         void DisplayHighlightedSubMenuContents()
         {
             m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
             this.Pulse(Node.None, m_MenuOpenPulse);
-            this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
+
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             spatialinterfaceState = SpatialinterfaceState.navigatingSubMenuContent;
-
             //m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
 
-            m_HomeSectionDescription.gameObject.SetActive(false);
-
-            const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
-            int subMenuElementCount = 0;
-            foreach (var kvp in m_ProviderToMenuElements)
-            {
-                var key = kvp.Key;
-                if (key == m_HighlightedTopLevelMenuProvider)
-                {
-                    // m_SubMenuText.text = m_HighlightedTopLevelMenuProvider.spatialTableElements[0].name;
-                    // TODO display all sub menu contents here
-
-                    currentlyDisplayedMenuElements.Clear();
-                    var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( (x) => x != m_SubMenuContainer);
-                    foreach (var child in deleteOldChildren)
-                    {
-                        if (child != null && child.gameObject != null)
-                            ObjectUtils.Destroy(child.gameObject);
-                    }
-
-                    foreach (var subMenuElement in m_HighlightedTopLevelMenuProvider.spatialTableElements)
-                    {
-                        ++subMenuElementCount;
-                        var instantiatedPrefab = ObjectUtils.Instantiate(m_SpatialInterfaceUI.subMenuElementPrefab).transform as RectTransform;
-                        var providerMenuElement = instantiatedPrefab.GetComponent<SpatialUIMenuElement>();
-                        providerMenuElement.Setup(instantiatedPrefab, m_SpatialInterfaceUI.subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
-                        currentlyDisplayedMenuElements.Add(providerMenuElement);
-                    }
-
-                    //.Add(provider, providerMenuElement);
-                    //instantiatedPrefab.transform.SetParent(m_SubMenuContainer);
-                    //instantiatedPrefab.localRotation = Quaternion.identity;
-                    //instantiatedPrefab.localPosition = Vector3.zero;
-                    //instantiatedPrefab.localScale = Vector3.one;
-                }
-
-                kvp.Value.gameObject.SetActive(false);
-            }
-
-            var newGhostInputDevicePositionOffset = new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
-            m_SpatialInterfaceUI.DisplayHighlightedSubMenuContents(newGhostInputDevicePositionOffset);
+            m_SpatialInterfaceUI.DisplayHighlightedSubMenuContents();
 
             // Spatial Scrolling setup
             //spatialScrollStartPosition = spatialScrollOrigin.position;
@@ -597,19 +482,21 @@ namespace UnityEditor.Experimental.EditorVR
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x) + "</color>");
                     if (localZRotationDelta > kSectionSpacingBuffer) // Rotating (relatively) leftward
                     {
-                        HighlightHomeSectionMenuElement(m_spatialMenuProviders[0]);
+                        this.Pulse(Node.None, m_HighlightMenuElementPulse);
+                        m_SpatialInterfaceUI.HighlightHomeSectionMenuElement(m_spatialMenuProviders[0]);
                     }
                     else if (localZRotationDelta < -kSectionSpacingBuffer)
                     {
-                        HighlightHomeSectionMenuElement(m_spatialMenuProviders[1]);
+                        this.Pulse(Node.None, m_HighlightMenuElementPulse);
+                        m_SpatialInterfaceUI.HighlightHomeSectionMenuElement(m_spatialMenuProviders[1]);
                     }
                 }
 
                 if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
                 {
-                    if (m_HighlightedTopLevelMenuProvider != null)
+                    if (highlightedTopLevelMenuProvider != null)
                     {
-                        var menuElementCount = m_HighlightedTopLevelMenuProvider.spatialTableElements.Count;
+                        var menuElementCount = highlightedTopLevelMenuProvider.spatialTableElements.Count;
                         spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, menuElementCount, menuElementCount);
                         var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
                         if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
@@ -628,13 +515,7 @@ namespace UnityEditor.Experimental.EditorVR
                             */
 
                             m_HighlightedButtonPosition = (int) (menuElementCount * normalizedRepeatingPosition);
-                            for (int i = 0; i < menuElementCount; ++i)
-                            {
-                                //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
-                                currentlyDisplayedMenuElements[i].highlighted = i == m_HighlightedButtonPosition;
-                                //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
-                            }
-
+                            m_SpatialInterfaceUI.HighlightSingleElementInCurrentMenu(m_HighlightedButtonPosition);
                             //m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
                         }
                         }
