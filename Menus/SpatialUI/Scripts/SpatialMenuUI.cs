@@ -11,7 +11,7 @@ using UnityEngine.Playables;
 using UnityEngine.UI;
 using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialMenu.SpatialinterfaceState;
 
-public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
+public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 {
     const float k_DistanceOffset = 0.75f;
     const float k_AllowedGazeDivergence = 45f;
@@ -87,7 +87,7 @@ public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
 
     [Header("Ghost Input Device")]
     [SerializeField]
-    SpatialInterfaceGhostVisuals m_SpatialUIGhostVisuals;
+    SpatialMenuGhostVisuals m_SpatialUIGhostVisuals;
 
     [Header("Surrounding Arrows")]
     [SerializeField]
@@ -111,11 +111,11 @@ public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
     Coroutine m_HomeSectionTitlesBackgroundBordersTransitionCoroutine;
 
     // Reference set by the controller in the Setup method
-    Dictionary<ISpatialMenuProvider, SpatialInterfaceMenuElement> m_ProviderToMenuElements;
+    Dictionary<ISpatialMenuProvider, SpatialMenuElement> m_ProviderToMenuElements;
 
     readonly List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
 
-    readonly List<SpatialInterfaceMenuElement> currentlyDisplayedMenuElements = new List<SpatialInterfaceMenuElement>();
+    readonly List<SpatialMenuElement> currentlyDisplayedMenuElements = new List<SpatialMenuElement>();
 
     // Adaptive position related members
     public Transform adaptiveTransform { get { return transform; } }
@@ -171,15 +171,15 @@ public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
             {
                 case SpatialInterfaceInputMode.Translation:
                     m_InputModeText.text = k_TranslationInputModeName;
-                    m_SpatialUIGhostVisuals.spatialInteractionType = SpatialInterfaceGhostVisuals.SpatialInteractionType.touch;
+                    m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
                     break;
                 case SpatialInterfaceInputMode.Ray:
                     m_InputModeText.text = k_RayBasedInputModeName;
-                    m_SpatialUIGhostVisuals.spatialInteractionType = SpatialInterfaceGhostVisuals.SpatialInteractionType.ray;
+                    m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.ray;
                     break;
                 case SpatialInterfaceInputMode.BCI:
                     m_InputModeText.text = k_BCIInputModeName;
-                    m_SpatialUIGhostVisuals.spatialInteractionType = SpatialInterfaceGhostVisuals.SpatialInteractionType.bci;
+                    m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.bci;
                     break;
             }
         }
@@ -220,7 +220,7 @@ public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
 
     public Transform subMenuContainer { get { return m_SubMenuContainer; } }
 
-    public void Setup(Dictionary<ISpatialMenuProvider, SpatialInterfaceMenuElement> providerToMenuElementsx)
+    public void Setup(Dictionary<ISpatialMenuProvider, SpatialMenuElement> providerToMenuElementsx)
     {
         m_ProviderToMenuElements = providerToMenuElementsx;
         m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
@@ -231,6 +231,8 @@ public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
 
         m_HomeSectionTimelineDuration = (float) m_RevealTimelinePlayable.duration;
         m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
+
+
     }
 
     public void Reset()
@@ -248,7 +250,7 @@ public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
         // Hack that fixes the home section menu element positions not being recalculated when first revealed
         m_HomeMenuLayoutGroup.enabled = false;
         m_HomeMenuLayoutGroup.enabled = true;
-        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialInterfaceGhostVisuals.SpatialInteractionType.touch;
+        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
     }
 
     void Update()
@@ -369,7 +371,7 @@ public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
     public void DisplayHomeSectionContents()
     {
         m_SpatialUIGhostVisuals.SetPositionOffset(Vector3.zero);
-        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialInterfaceGhostVisuals.SpatialInteractionType.touch;
+        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
         this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(true));
 
         spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
@@ -410,7 +412,7 @@ public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
                 {
                     ++subMenuElementCount;
                     var instantiatedPrefab = ObjectUtils.Instantiate(subMenuElementPrefab).transform as RectTransform;
-                    var providerMenuElement = instantiatedPrefab.GetComponent<SpatialInterfaceMenuElement>();
+                    var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
                     providerMenuElement.Setup(instantiatedPrefab, subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
                     currentlyDisplayedMenuElements.Add(providerMenuElement);
                 }

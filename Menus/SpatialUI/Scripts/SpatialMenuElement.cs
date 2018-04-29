@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    public class SpatialInterfaceMenuElement : MonoBehaviour
+    public class SpatialMenuElement : MonoBehaviour
     {
         [SerializeField]
         TextMeshProUGUI m_Text;

@@ -1,12 +1,12 @@
 fileFormatVersion: 2
 guid: 148a8937dcf59af4da1f2607b0bbd9cc
-timeCreated: 1524980165
+timeCreated: 1524986061
 licenseType: Pro
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - m_SpatialInterfaceUIPrefab: {fileID: 114973006485777900, guid: 1cfdca3f54ef6914bb53878610be8682,
+  - _mSpatialMenuUiPrefab: {fileID: 114973006485777900, guid: 1cfdca3f54ef6914bb53878610be8682,
       type: 2}
   - m_ActionMap: {fileID: 11400000, guid: 297f02fb28c61054384f048d70fe6099, type: 2}
   - m_MenuOpenPulse: {fileID: 11400000, guid: c3431dcd399d5444883404b83143af3c, type: 2}

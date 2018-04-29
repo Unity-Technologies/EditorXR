@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR
         }
 
         [SerializeField]
-        SpatialInterfaceUI m_SpatialInterfaceUIPrefab;
+        SpatialMenuUI _mSpatialMenuUiPrefab;
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -57,7 +57,7 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         HapticPulse m_HighlightMenuElementPulse;
 
-        static SpatialInterfaceUI m_SpatialInterfaceUI;
+        static SpatialMenuUI _mSpatialMenuUi;
         SpatialinterfaceState m_SpatialinterfaceState;
 
         bool m_Visible;
@@ -85,11 +85,11 @@ namespace UnityEditor.Experimental.EditorVR
                     return;
 
                 m_HighlightedTopLevelMenuProvider = value;
-                m_SpatialInterfaceUI.highlightedTopLevelMenuProvider = value;
+                _mSpatialMenuUi.highlightedTopLevelMenuProvider = value;
             }
         }
 
-        static readonly Dictionary<ISpatialMenuProvider, SpatialInterfaceMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialInterfaceMenuElement>();
+        static readonly Dictionary<ISpatialMenuProvider, SpatialMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialMenuElement>();
 
 
         int m_HighlightedButtonPosition; // element position amidst the currentlyDisplayedMenuElements
@@ -107,7 +107,7 @@ namespace UnityEditor.Experimental.EditorVR
                     return;
 
                 m_Visible = value;
-                m_SpatialInterfaceUI.visible = m_Visible;
+                _mSpatialMenuUi.visible = m_Visible;
                 pollingSpatialInputType = m_Visible;
 
                 if (m_Visible)
@@ -139,7 +139,7 @@ namespace UnityEditor.Experimental.EditorVR
                     return;
 
                 m_SpatialinterfaceState = value;
-                m_SpatialInterfaceUI.spatialinterfaceState = value;
+                _mSpatialMenuUi.spatialinterfaceState = value;
             }
         }
 
@@ -176,7 +176,7 @@ namespace UnityEditor.Experimental.EditorVR
                     return;
 
                 m_BeingMoved = value;
-                m_SpatialInterfaceUI.beingMoved = value;
+                _mSpatialMenuUi.beingMoved = value;
             }
         }
 
@@ -207,7 +207,7 @@ namespace UnityEditor.Experimental.EditorVR
         void Update()
         {
             return;
-            if (m_SpatialInterfaceUI != null && m_SpatialInterfaceUI.directorBeyondHomeSectionDuration)
+            if (_mSpatialMenuUi != null && _mSpatialMenuUi.directorBeyondHomeSectionDuration)
             {
                 //StopAllCoroutines();
                 //HideSubMenu();
@@ -218,20 +218,20 @@ namespace UnityEditor.Experimental.EditorVR
 
         void CreateUI()
         {
-            if (m_SpatialInterfaceUI == null)
+            if (_mSpatialMenuUi == null)
             {
-                var ui = ObjectUtils.Instantiate(m_SpatialInterfaceUIPrefab.gameObject, VRView.cameraRig);
-                m_SpatialInterfaceUI = ui.GetComponent<SpatialInterfaceUI>();
-                this.ConnectInterfaces(m_SpatialInterfaceUI);
-                m_SpatialInterfaceUI.Setup(m_ProviderToMenuElements);
+                var ui = ObjectUtils.Instantiate(_mSpatialMenuUiPrefab.gameObject, VRView.cameraRig);
+                _mSpatialMenuUi = ui.GetComponent<SpatialMenuUI>();
+                this.ConnectInterfaces(_mSpatialMenuUi);
+                _mSpatialMenuUi.Setup(m_ProviderToMenuElements);
             }
 
             foreach (var providerToMenuElement in m_ProviderToMenuElements)
             {
                 if (providerToMenuElement.Value == null)
                 {
-                    var instantiatedPrefab = ObjectUtils.Instantiate(m_SpatialInterfaceUI.menuElementPrefab).transform as RectTransform;
-                    var providerMenuElement = instantiatedPrefab.GetComponent<SpatialInterfaceMenuElement>();
+                    var instantiatedPrefab = ObjectUtils.Instantiate(_mSpatialMenuUi.menuElementPrefab).transform as RectTransform;
+                    var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
                     m_ProviderToMenuElements[providerToMenuElement.Key] = providerMenuElement;
                 }
             }
@@ -309,7 +309,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
             spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
-            m_SpatialInterfaceUI.DisplayHomeSectionContents();
+            _mSpatialMenuUi.DisplayHomeSectionContents();
         }
 
         void DisplayHighlightedSubMenuContents()
@@ -321,7 +321,7 @@ namespace UnityEditor.Experimental.EditorVR
             spatialinterfaceState = SpatialinterfaceState.navigatingSubMenuContent;
             //m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
 
-            m_SpatialInterfaceUI.DisplayHighlightedSubMenuContents();
+            _mSpatialMenuUi.DisplayHighlightedSubMenuContents();
 
             // Spatial Scrolling setup
             //spatialScrollStartPosition = spatialScrollOrigin.position;
@@ -349,7 +349,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
-            Debug.Log("processing input in SpatialUI");
+            //Debug.Log("processing input in SpatialUI");
 
             const float kSubMenuNavigationTranslationTriggerThreshold = 0.075f;
             var actionMapInput = (SpatialMenuInput)input;
@@ -396,11 +396,11 @@ namespace UnityEditor.Experimental.EditorVR
                 m_RotationVelocityTracker.Update(actionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
                 if (m_RotationVelocityTracker.rotationStrength > 500)
                 {
-                    m_SpatialInterfaceUI.spatialInterfaceInputMode = SpatialInterfaceUI.SpatialInterfaceInputMode.Ray;
+                    _mSpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Ray;
                 }
 
                 m_ContinuousDirectionalVelocityTracker.Update(actionMapInput.localPosition.vector3, Time.unscaledDeltaTime);
-                Debug.Log("<color=green>Continuous Direction strength " + m_ContinuousDirectionalVelocityTracker.directionalDivergence + "</color>");
+                //Debug.Log("<color=green>Continuous Direction strength " + m_ContinuousDirectionalVelocityTracker.directionalDivergence + "</color>");
 
                 consumeControl(actionMapInput.cancel);
                 consumeControl(actionMapInput.show);
@@ -422,14 +422,14 @@ namespace UnityEditor.Experimental.EditorVR
 
                 // TODO: check the node currently controlling the spatial UI, don't hard set on left hand
                 var spatialInputType = this.GetSpatialInputTypeForNode(Node.LeftHand);
-                Debug.LogWarning("SpatialUI current input type : " + spatialInputType);
+                //Debug.LogWarning("SpatialUI current input type : " + spatialInputType);
 
                 if (spatialInputType == SpatialInputType.StateChangedThisFrame)
                     Debug.Log("<color=green>SpatialUI state changed this frame!!</color>");
 
                 var inputLocalRotation = actionMapInput.localRotationQuaternion.quaternion;
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
-                m_SpatialInterfaceUI.UpdateGhostDeviceRotation(ghostDeviceRotation);
+                _mSpatialMenuUi.UpdateGhostDeviceRotation(ghostDeviceRotation);
 
                 /*
                 if (m_Transitioning && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
@@ -477,12 +477,12 @@ namespace UnityEditor.Experimental.EditorVR
                     if (localZRotationDelta > kSectionSpacingBuffer) // Rotating (relatively) leftward
                     {
                         this.Pulse(Node.None, m_HighlightMenuElementPulse);
-                        m_SpatialInterfaceUI.HighlightHomeSectionMenuElement(s_SpatialMenuProviders[0]);
+                        _mSpatialMenuUi.HighlightHomeSectionMenuElement(s_SpatialMenuProviders[0]);
                     }
                     else if (localZRotationDelta < -kSectionSpacingBuffer)
                     {
                         this.Pulse(Node.None, m_HighlightMenuElementPulse);
-                        m_SpatialInterfaceUI.HighlightHomeSectionMenuElement(s_SpatialMenuProviders[1]);
+                        _mSpatialMenuUi.HighlightHomeSectionMenuElement(s_SpatialMenuProviders[1]);
                     }
                 }
 
@@ -509,7 +509,7 @@ namespace UnityEditor.Experimental.EditorVR
                             */
 
                             m_HighlightedButtonPosition = (int) (menuElementCount * normalizedRepeatingPosition);
-                            m_SpatialInterfaceUI.HighlightSingleElementInCurrentMenu(m_HighlightedButtonPosition);
+                            _mSpatialMenuUi.HighlightSingleElementInCurrentMenu(m_HighlightedButtonPosition);
                             //m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
                         }
                         }
