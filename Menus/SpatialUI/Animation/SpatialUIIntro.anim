@@ -213,7 +213,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: CanvasContent/HomeSectionTitlesBackground-TopBorder
+    path: CanvasContent/HomeSectionTitlesBackgroundBorders/HomeSectionTitlesBackground-TopBorder
   - curve:
       serializedVersion: 2
       m_Curve:
@@ -244,7 +244,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: CanvasContent/HomeSectionTitlesBackground-BottomBorder
+    path: CanvasContent/HomeSectionTitlesBackgroundBorders/HomeSectionTitlesBackground-BottomBorder
   - curve:
       serializedVersion: 2
       m_Curve:
@@ -275,7 +275,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: CanvasContent/GhostInputDevice
+    path: CanvasContent/GhostInputVisuals
   - curve:
       serializedVersion: 2
       m_Curve:
@@ -306,7 +306,7 @@ AnimationClip:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    path: CanvasContent/GhostInputDevice/TransformContainer/SurroundingArrows
+    path: CanvasContent/GhostInputVisuals/TransformContainer/SurroundingArrows
   m_FloatCurves:
   - curve:
       serializedVersion: 2
@@ -825,7 +825,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.x
-    path: CanvasContent/HomeSectionTitlesBackground-TopBorder
+    path: CanvasContent/HomeSectionTitlesBackgroundBorders/HomeSectionTitlesBackground-TopBorder
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -859,7 +859,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.y
-    path: CanvasContent/HomeSectionTitlesBackground-TopBorder
+    path: CanvasContent/HomeSectionTitlesBackgroundBorders/HomeSectionTitlesBackground-TopBorder
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -893,7 +893,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.z
-    path: CanvasContent/HomeSectionTitlesBackground-TopBorder
+    path: CanvasContent/HomeSectionTitlesBackgroundBorders/HomeSectionTitlesBackground-TopBorder
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -927,7 +927,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.x
-    path: CanvasContent/HomeSectionTitlesBackground-BottomBorder
+    path: CanvasContent/HomeSectionTitlesBackgroundBorders/HomeSectionTitlesBackground-BottomBorder
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -961,7 +961,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.y
-    path: CanvasContent/HomeSectionTitlesBackground-BottomBorder
+    path: CanvasContent/HomeSectionTitlesBackgroundBorders/HomeSectionTitlesBackground-BottomBorder
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -995,7 +995,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.z
-    path: CanvasContent/HomeSectionTitlesBackground-BottomBorder
+    path: CanvasContent/HomeSectionTitlesBackgroundBorders/HomeSectionTitlesBackground-BottomBorder
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -1433,7 +1433,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.x
-    path: CanvasContent/GhostInputDevice
+    path: CanvasContent/GhostInputVisuals
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1467,7 +1467,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.y
-    path: CanvasContent/GhostInputDevice
+    path: CanvasContent/GhostInputVisuals
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1501,7 +1501,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.z
-    path: CanvasContent/GhostInputDevice
+    path: CanvasContent/GhostInputVisuals
     classID: 4
     script: {fileID: 0}
   - curve:
@@ -1575,7 +1575,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.x
-    path: CanvasContent/GhostInputDevice/TransformContainer/SurroundingArrows
+    path: CanvasContent/GhostInputVisuals/TransformContainer/SurroundingArrows
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -1609,7 +1609,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.y
-    path: CanvasContent/GhostInputDevice/TransformContainer/SurroundingArrows
+    path: CanvasContent/GhostInputVisuals/TransformContainer/SurroundingArrows
     classID: 224
     script: {fileID: 0}
   - curve:
@@ -1643,7 +1643,7 @@ AnimationClip:
       m_PostInfinity: 2
       m_RotationOrder: 4
     attribute: m_LocalScale.z
-    path: CanvasContent/GhostInputDevice/TransformContainer/SurroundingArrows
+    path: CanvasContent/GhostInputVisuals/TransformContainer/SurroundingArrows
     classID: 224
     script: {fileID: 0}
   - curve:
