@@ -151,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         return;
                     }
 
-                    Debug.LogWarning("Changing state to : " + spatialInputType.ToString() + " : " + rayOrigin.name);
+                    //Debug.LogWarning("Changing state to : " + spatialInputType.ToString() + " : " + rayOrigin.name);
 
                     stateChangedThisFrame = true;
                     m_SpatialInputType = value; // Set new state
@@ -217,7 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         return;
 
                     m_RotationVelocityTracker.Update(spatialInputData.currentLocalRotation, Time.deltaTime);
-                    Debug.LogError("Rotation strength " + m_RotationVelocityTracker.rotationStrength);
+                    //Debug.LogError("Rotation strength " + m_RotationVelocityTracker.rotationStrength);
 
                     // Order tests based on the active spatial input type of the node
                     // Testing for the opposite type of input will set the SpatialInputType accordingly, if a given input type change has occurred

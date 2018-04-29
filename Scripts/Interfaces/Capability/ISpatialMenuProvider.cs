@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Collection of elements with which to populate the corresponding spatial UI table/list/view
         /// </summary>
-        List<SpatialInterface.SpatialUITableElement> spatialTableElements { get; }
+        List<SpatialMenu.SpatialUITableElement> spatialTableElements { get; }
     }
 }
 #endif

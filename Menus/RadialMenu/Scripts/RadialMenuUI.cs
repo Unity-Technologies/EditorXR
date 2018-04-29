@@ -73,6 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             get { return m_Actions; }
             set
             {
+                m_Actions = value;
                 if (value != null)
                 {
                     if (visible && actions.Count > 0)

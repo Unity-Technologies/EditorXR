@@ -127,6 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     var menus = evr.GetNestedModule<Menus>();
                     var menuHideData = deviceData.menuHideData;
+
                     var mainMenu = menus.SpawnMenu<MainMenu>(rayOrigin);
                     deviceData.mainMenu = mainMenu;
                     menuHideData[mainMenu] = new Menus.MenuHideData();
@@ -147,6 +148,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     toolsMenu.rayOrigin = rayOrigin;
                     toolsMenu.setButtonForType(typeof(IMainMenu), null);
                     toolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
+
+                    var spatialMenu = menus.SpawnMenu<SpatialMenu>(rayOrigin);
+                    spatialMenu.Setup();
+                    menuHideData[spatialMenu] = new Menus.MenuHideData();
+                    spatialMenu.hideFlags = 0;
                 }
 
                 evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();

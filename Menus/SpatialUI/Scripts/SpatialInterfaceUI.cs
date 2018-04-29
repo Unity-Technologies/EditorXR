@@ -4,14 +4,18 @@ using System.Linq;
 using TMPro;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
-using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialInterface.SpatialinterfaceState;
+using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialMenu.SpatialinterfaceState;
 
-public class SpatialInterfaceUI : MonoBehaviour
+public class SpatialInterfaceUI : MonoBehaviour, IAdaptPosition
 {
+    const float k_DistanceOffset = 0.75f;
+    const float k_AllowedGazeDivergence = 45f;
+
     readonly string k_TranslationInputModeName = "Translation Input Mode";
     readonly string k_RayBasedInputModeName = "Ray-based Input Mode";
     readonly string k_RotationInputModeName = "Rotation Input Mode";
@@ -32,8 +36,8 @@ public class SpatialInterfaceUI : MonoBehaviour
     [SerializeField]
     Transform m_Background;
 
-    [SerializeField]
-    TextMeshProUGUI m_MenuTitleText;
+    //[SerializeField]
+    //TextMeshProUGUI m_MenuTitleText;
 
     [SerializeField]
     TextMeshProUGUI m_InputModeText;
@@ -58,9 +62,6 @@ public class SpatialInterfaceUI : MonoBehaviour
     TextMeshProUGUI m_HomeSectionDescription;
 
     [SerializeField]
-    List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
-
-    [SerializeField]
     CanvasGroup m_HomeSectionBackgroundBordersCanvas;
 
     [Header("SubMenu Section")]
@@ -74,15 +75,15 @@ public class SpatialInterfaceUI : MonoBehaviour
     [SerializeField]
     GameObject m_MenuElementPrefab;
 
+    [SerializeField]
+    GameObject m_SubMenuElementPrefab;
+
     [Header("Animation")]
     [SerializeField]
     PlayableDirector m_Director;
 
     [SerializeField]
     PlayableAsset m_RevealTimelinePlayable;
-
-    [SerializeField]
-    GameObject m_SubMenuElementPrefab;
 
     [Header("Ghost Input Device")]
     [SerializeField]
@@ -112,9 +113,18 @@ public class SpatialInterfaceUI : MonoBehaviour
     // Reference set by the controller in the Setup method
     Dictionary<ISpatialMenuProvider, SpatialInterfaceMenuElement> m_ProviderToMenuElements;
 
+    readonly List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
+
     readonly List<SpatialInterfaceMenuElement> currentlyDisplayedMenuElements = new List<SpatialInterfaceMenuElement>();
 
-    private bool visible
+    // Adaptive position related members
+    public Transform adaptiveTransform { get { return transform; } }
+    public float allowedDegreeOfGazeDivergence { get { return k_AllowedGazeDivergence; } }
+    public float distanceOffset { get { return k_DistanceOffset; } }
+    public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
+    public bool allowAdaptivePositioning { get; private set; }
+
+    public bool visible
     {
         get { return m_Visible; }
 
@@ -124,6 +134,7 @@ public class SpatialInterfaceUI : MonoBehaviour
                 return;
 
             m_Visible = value;
+            allowAdaptivePositioning = value;
 
             if (m_Visible)
             {
@@ -131,7 +142,7 @@ public class SpatialInterfaceUI : MonoBehaviour
             }
             else
             {
-                //
+                gameObject.SetActive(false);
             }
         }
     }
@@ -176,10 +187,14 @@ public class SpatialInterfaceUI : MonoBehaviour
 
     public bool inFocus
     {
+        get { return m_InFocus; }
         set
         {
             if (m_InFocus == value)
                 return;
+
+            //if (value != m_InFocus)
+            //this.RestartCoroutine(ref m_InFocusCoroutine, AnimateFocusVisuals());
 
             m_InFocus = value;
         }
@@ -235,13 +250,6 @@ public class SpatialInterfaceUI : MonoBehaviour
         m_HomeMenuLayoutGroup.enabled = true;
         m_SpatialUIGhostVisuals.spatialInteractionType = SpatialInterfaceGhostVisuals.SpatialInteractionType.touch;
     }
-
-    /*
-    void UpdateX()
-    {
-        UpdateDirector();
-    }
-    */
 
     void Update()
     {

@@ -38,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
-        readonly List<SpatialInterface.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialInterface.SpatialUITableElement>();
+        readonly List<SpatialMenu.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialMenu.SpatialUITableElement>();
 
         public event Action<Transform> itemWasSelected;
 
@@ -60,24 +60,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public string spatialMenuName { get { return k_SpatialDisplayName; } }
         public string spatialMenuDescription { get { return k_SpatialDescription; } }
         public bool displayingSpatially { get; set; }
-        public List<SpatialInterface.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
+        public List<SpatialMenu.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
 
         public List<ActionMenuData> menuActions
         {
             get { return m_MenuActions; }
             set
             {
-                m_MenuActions = value;
-
-                m_MenuActions = value
+                m_MenuActions = value;/*
                     .Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
                     .OrderBy(a => a.priority)
-                    .ToList();
+                    .ToList();*/
 
                 m_SpatialUITableElements.Clear();
                 foreach (var action in m_MenuActions)
                 {
-                    m_SpatialUITableElements.Add(new SpatialInterface.SpatialUITableElement(action.name, null, action.action.ExecuteAction));
+                    m_SpatialUITableElements.Add(new SpatialMenu.SpatialUITableElement(action.name, null, action.action.ExecuteAction));
                 }
 
                 if (m_RadialMenuUI)
@@ -128,14 +126,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_RadialMenuUI.buttonClicked += OnButtonClicked;
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
-
-
-            m_SpatialUITableElements.Add(new SpatialInterface.SpatialUITableElement("Undo", null, null));
-            m_SpatialUITableElements.Add(new SpatialInterface.SpatialUITableElement("Redo", null, null));
-            m_SpatialUITableElements.Add(new SpatialInterface.SpatialUITableElement("Deselect", null, null));
-            m_SpatialUITableElements.Add(new SpatialInterface.SpatialUITableElement("Delete", null, null));
-            m_SpatialUITableElements.Add(new SpatialInterface.SpatialUITableElement("Duplicate", null, null));
-            m_SpatialUITableElements.Add(new SpatialInterface.SpatialUITableElement("Exit EditorXR", null, null));
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

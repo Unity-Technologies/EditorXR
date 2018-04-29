@@ -4,8 +4,8 @@ using UnityEngine.InputNew;
 // GENERATED FILE - DO NOT EDIT MANUALLY
 namespace UnityEngine.InputNew
 {
-	public class SpatialInterfaceInput : ActionMapInput {
-		public SpatialInterfaceInput (ActionMap actionMap) : base (actionMap) { }
+	public class SpatialMenuInput : ActionMapInput {
+		public SpatialMenuInput (ActionMap actionMap) : base (actionMap) { }
 		
 		public ButtonInputControl @show { get { return (ButtonInputControl)this[0]; } }
 		public ButtonInputControl @select { get { return (ButtonInputControl)this[1]; } }
