@@ -231,8 +231,6 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
         m_HomeSectionTimelineDuration = (float) m_RevealTimelinePlayable.duration;
         m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
-
-
     }
 
     public void Reset()
@@ -255,7 +253,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     void Update()
     {
-        //Debug.Log("<color=yellow>" + m_Transitioning + "</color>");
+        Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
         if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
         {
             m_Director.time = m_Director.time += Time.unscaledDeltaTime;
@@ -344,6 +342,11 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
             }
         }
+    }
+
+    public void UpdateProviderMenuElements()
+    {
+
     }
 
     public void UpdateGhostDeviceRotation(Quaternion newRotation)
