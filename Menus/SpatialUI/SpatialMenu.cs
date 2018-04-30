@@ -344,7 +344,7 @@ namespace UnityEditor.Experimental.EditorVR
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             DisplayHomeSectionContents();
 
-            Debug.LogWarning("SpatialUI : <color=green>Above wrist return threshold</color>");
+            Debug.LogWarning("SpatialMenu : <color=green>Above wrist return threshold</color>");
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -388,7 +388,6 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
                 SetSpatialScrollStartingConditions(actionMapInput.localPosition.vector3, actionMapInput.localRotationQuaternion.quaternion);
-                m_SpatialMenuUi.Reset();
                 //Reset();
             }
 

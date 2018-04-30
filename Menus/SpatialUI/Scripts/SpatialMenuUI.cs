@@ -150,7 +150,20 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     public ISpatialMenuProvider highlightedTopLevelMenuProvider { private get; set; }
     public SpatialinterfaceState spatialinterfaceState
     {
-        set { m_SpatialinterfaceState = value; }
+        set
+        {
+            if (m_SpatialinterfaceState == value)
+                return;
+
+            m_SpatialinterfaceState = value;
+
+            switch (m_SpatialinterfaceState)
+            {
+                case SpatialinterfaceState.navigatingTopLevel:
+                    Reset();
+                    break;
+            }
+        }
     }
 
     public bool directorBeyondHomeSectionDuration
@@ -256,6 +269,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
         if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
         {
+            // Performed an animated hide of any currently displayed UI
             m_Director.time = m_Director.time += Time.unscaledDeltaTime;
             m_Director.Evaluate();
 
@@ -264,6 +278,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         }
         else if (m_Director.time > m_HomeSectionTimelineDuration)
         {
+            // UI hiding animation has finished, perform final cleanup.  TODO: optimze for pooling and a lesser GC impact
             //m_Director.time = 0f;
             m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
             m_SubMenuContentsCanvasGroup.alpha = 0f;
@@ -310,6 +325,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         }
         else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingTopLevel)
         {
+            //Debug.LogWarning("SpatialUI : <color=green>Navigating top level content</color>");
             var targetScale = 1f;
             var timeMultiplier = 24;
             if (m_HomeTextBackgroundInnerTransform.localScale.y > targetScale)
@@ -336,10 +352,9 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             }
             else
             {
+                UpdateDirector();
                 //m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
                 //m_SubMenuContentsCanvasGroup.alpha = 0f;
-
-
             }
         }
     }
