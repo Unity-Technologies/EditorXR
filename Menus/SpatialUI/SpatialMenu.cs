@@ -89,7 +89,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        static readonly Dictionary<ISpatialMenuProvider, SpatialMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialMenuElement>();
+        //static readonly Dictionary<ISpatialMenuProvider, SpatialMenuElement> m_ProviderToMenuElements = new Dictionary<ISpatialMenuProvider, SpatialMenuElement>();
 
 
         int m_HighlightedButtonPosition; // element position amidst the currentlyDisplayedMenuElements
@@ -140,6 +140,13 @@ namespace UnityEditor.Experimental.EditorVR
 
                 m_SpatialinterfaceState = value;
                 m_SpatialMenuUi.spatialinterfaceState = value;
+
+                switch (m_SpatialinterfaceState)
+                {
+                    case SpatialinterfaceState.navigatingTopLevel:
+                        m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
+                        break;
+                }
             }
         }
 
@@ -223,17 +230,8 @@ namespace UnityEditor.Experimental.EditorVR
                 var ui = ObjectUtils.Instantiate(_mSpatialMenuUiPrefab.gameObject, VRView.cameraRig);
                 m_SpatialMenuUi = ui.GetComponent<SpatialMenuUI>();
                 this.ConnectInterfaces(m_SpatialMenuUi);
-                m_SpatialMenuUi.Setup(m_ProviderToMenuElements);
-            }
-
-            foreach (var providerToMenuElement in m_ProviderToMenuElements)
-            {
-                if (providerToMenuElement.Value == null)
-                {
-                    var instantiatedPrefab = ObjectUtils.Instantiate(m_SpatialMenuUi.menuElementPrefab).transform as RectTransform;
-                    var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
-                    m_ProviderToMenuElements[providerToMenuElement.Key] = providerMenuElement;
-                }
+                m_SpatialMenuUi.Setup();
+                SpatialMenuUI.spatialMenuProviders = s_SpatialMenuProviders;
             }
 
             visible = false;
@@ -254,6 +252,7 @@ namespace UnityEditor.Experimental.EditorVR
 
             Debug.LogWarning("Adding a provider : " + provider.spatialMenuName);
             s_SpatialMenuProviders.Add(provider);
+            //m_ProviderToMenuElements[provider] = null;
 
             //instantiatedPrefab.transform.SetParent(m_HomeMenuContainer);
             //instantiatedPrefab.localRotation = Quaternion.identity;
@@ -307,9 +306,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void DisplayHomeSectionContents()
         {
-            m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
             spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
-            m_SpatialMenuUi.DisplayHomeSectionContents();
         }
 
         void DisplayHighlightedSubMenuContents()

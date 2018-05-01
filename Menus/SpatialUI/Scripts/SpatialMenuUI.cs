@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Actions;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 using UnityEngine.Playables;
 using UnityEngine.UI;
 using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialMenu.SpatialinterfaceState;
@@ -111,11 +113,13 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     Coroutine m_HomeSectionTitlesBackgroundBordersTransitionCoroutine;
 
     // Reference set by the controller in the Setup method
-    Dictionary<ISpatialMenuProvider, SpatialMenuElement> m_ProviderToMenuElements;
+    readonly Dictionary<ISpatialMenuProvider, SpatialMenuElement> m_ProviderToHomeMenuElements = new Dictionary<ISpatialMenuProvider, SpatialMenuElement>();
 
     readonly List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
 
     readonly List<SpatialMenuElement> currentlyDisplayedMenuElements = new List<SpatialMenuElement>();
+
+    public static List<ISpatialMenuProvider> spatialMenuProviders;
 
     // Adaptive position related members
     public Transform adaptiveTransform { get { return transform; } }
@@ -155,12 +159,17 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             if (m_SpatialinterfaceState == value)
                 return;
 
+            // If the previous state was Hidden & this object was disabled, enable the UI gameobject
+            if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && !gameObject.activeSelf)
+                gameObject.SetActive(true);
+
             m_SpatialinterfaceState = value;
 
             switch (m_SpatialinterfaceState)
             {
                 case SpatialinterfaceState.navigatingTopLevel:
                     Reset();
+                    DisplayHomeSectionContents();
                     break;
             }
         }
@@ -233,9 +242,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     public Transform subMenuContainer { get { return m_SubMenuContainer; } }
 
-    public void Setup(Dictionary<ISpatialMenuProvider, SpatialMenuElement> providerToMenuElementsx)
+    public void Setup()
     {
-        m_ProviderToMenuElements = providerToMenuElementsx;
         m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
         m_HomeBackgroundOriginalLocalScale = m_Background.localScale;
 
@@ -248,11 +256,12 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     public void Reset()
     {
+        ClearHomeMenuElements();
+        ClearSubMenuElements();
+
         m_InputModeText.text = k_TranslationInputModeName;
         m_Director.playableAsset = m_RevealTimelinePlayable;
         m_HomeSectionBackgroundBordersCanvas.alpha = 1f;
-
-        DisplayHomeSectionContents();
 
         // Director related
         m_Director.time = 0f;
@@ -262,6 +271,158 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         m_HomeMenuLayoutGroup.enabled = false;
         m_HomeMenuLayoutGroup.enabled = true;
         m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
+    }
+
+    void ClearHomeMenuElements()
+    {
+        var homeMenuElementParent = m_HomeMenuLayoutGroup.transform;
+        var childrenToDelete = homeMenuElementParent.GetComponentsInChildren<Transform>().Where((x) => x != homeMenuElementParent);
+        var childCount = childrenToDelete.Count();
+        if (childCount > 0)
+        {
+            foreach (var child in childrenToDelete)
+            {
+                if (child != null && child.gameObject != null)
+                    ObjectUtils.Destroy(child.gameObject);
+            }
+        }
+    }
+
+    void ClearSubMenuElements()
+    {
+        var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
+        if (deleteOldChildren.Count() > 0)
+        {
+            foreach (var child in deleteOldChildren)
+            {
+                if (child != null && child.gameObject != null)
+                    ObjectUtils.Destroy(child.gameObject);
+            }
+        }
+    }
+
+    public void UpdateProviderMenuElements()
+    {
+
+    }
+
+    public void UpdateGhostDeviceRotation(Quaternion newRotation)
+    {
+        m_SpatialUIGhostVisuals.UpdateRotation(newRotation);
+    }
+
+    public void UpdateDirector()
+    {
+        if (m_Director.time <= m_HomeSectionTimelineStoppingTime)
+        {
+            m_Director.time = m_Director.time += Time.unscaledDeltaTime;
+            m_Director.Evaluate();
+        }
+    }
+
+    public void UpdateSectionNames(List<ISpatialMenuProvider> spatialMenuProviders)
+    {
+        for (int i = 0; i < spatialMenuProviders.Count; ++i)
+        {
+            m_SectionNameTexts[i].text = spatialMenuProviders[i].spatialMenuName;
+        }
+    }
+
+    void DisplayHomeSectionContents()
+    {
+        m_SpatialUIGhostVisuals.SetPositionOffset(Vector3.zero);
+        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
+        this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(true));
+
+        // Proxy sub-menu/dynamicHUD menu element(s) display
+        m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
+        m_HomeSectionDescription.gameObject.SetActive(true);
+
+        m_ProviderToHomeMenuElements.Clear();
+        var homeMenuElementParent = m_HomeMenuLayoutGroup.transform;
+        foreach (var provider in spatialMenuProviders)
+        {
+            Debug.Log("<color=green>Displaying home section contents</color>");
+            var instantiatedPrefabTransform = ObjectUtils.Instantiate(m_MenuElementPrefab).transform as RectTransform;
+            var providerMenuElement = instantiatedPrefabTransform.GetComponent<SpatialMenuElement>();
+            providerMenuElement.Setup(instantiatedPrefabTransform, homeMenuElementParent, () => { }, provider.spatialMenuName);
+            m_ProviderToHomeMenuElements[provider] = providerMenuElement;
+
+            instantiatedPrefabTransform.SetParent(homeMenuElementParent);
+            instantiatedPrefabTransform.localScale = Vector3.one;
+            instantiatedPrefabTransform.localRotation = Quaternion.identity;
+        }
+    }
+
+    public void DisplayHighlightedSubMenuContents()
+    {
+        const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
+        int subMenuElementCount = 0;
+        foreach (var kvp in m_ProviderToHomeMenuElements)
+        {
+            var key = kvp.Key;
+            if (key == highlightedTopLevelMenuProvider)
+            {
+                // m_SubMenuText.text = m_HighlightedTopLevelMenuProvider.spatialTableElements[0].name;
+                // TODO display all sub menu contents here
+
+                currentlyDisplayedMenuElements.Clear();
+                var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( (x) => x != m_SubMenuContainer);
+                foreach (var child in deleteOldChildren)
+                {
+                    if (child != null && child.gameObject != null)
+                        ObjectUtils.Destroy(child.gameObject);
+                }
+
+                foreach (var subMenuElement in highlightedTopLevelMenuProvider.spatialTableElements)
+                {
+                    ++subMenuElementCount;
+                    var instantiatedPrefab = ObjectUtils.Instantiate(subMenuElementPrefab).transform as RectTransform;
+                    var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
+                    providerMenuElement.Setup(instantiatedPrefab, subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
+                    currentlyDisplayedMenuElements.Add(providerMenuElement);
+                }
+
+                //.Add(provider, providerMenuElement);
+                //instantiatedPrefab.transform.SetParent(m_SubMenuContainer);
+                //instantiatedPrefab.localRotation = Quaternion.identity;
+                //instantiatedPrefab.localPosition = Vector3.zero;
+                //instantiatedPrefab.localScale = Vector3.one;
+            }
+
+            kvp.Value.gameObject.SetActive(false);
+        }
+
+        var newGhostInputDevicePositionOffset = new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
+        m_SpatialUIGhostVisuals.SetPositionOffset(newGhostInputDevicePositionOffset);
+        m_HomeSectionDescription.gameObject.SetActive(false);
+        this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
+
+    }
+
+    public void HighlightHomeSectionMenuElement(ISpatialMenuProvider provider)
+    {
+        m_HomeSectionDescription.text = provider.spatialMenuDescription;
+        highlightedTopLevelMenuProvider = provider;
+
+        foreach (var kvp in m_ProviderToHomeMenuElements)
+        {
+            var key = kvp.Key;
+            var targetSize = key == provider ? Vector3.one : Vector3.one * 0.5f;
+            kvp.Value.transform.localScale = targetSize;
+        }
+    }
+
+    public void HighlightSingleElementInCurrentMenu(int elementOrderPosition)
+    {
+        var menuElementCount = highlightedTopLevelMenuProvider.spatialTableElements.Count;
+        for (int i = 0; i < menuElementCount; ++i)
+        {
+
+            //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
+            currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
+            //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
+        }
     }
 
     void Update()
@@ -288,15 +449,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             m_Director.Evaluate();
             gameObject.SetActive(m_Visible);
 
-            var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
-            if (deleteOldChildren.Count() > 0)
-            {
-                foreach (var child in deleteOldChildren)
-                {
-                    if (child != null && child.gameObject != null)
-                        ObjectUtils.Destroy(child.gameObject);
-                }
-            }
+            ClearSubMenuElements();
         }
         else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
         {
@@ -356,124 +509,6 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
                 //m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
                 //m_SubMenuContentsCanvasGroup.alpha = 0f;
             }
-        }
-    }
-
-    public void UpdateProviderMenuElements()
-    {
-
-    }
-
-    public void UpdateGhostDeviceRotation(Quaternion newRotation)
-    {
-        m_SpatialUIGhostVisuals.UpdateRotation(newRotation);
-    }
-
-    public void UpdateDirector()
-    {
-        if (m_Director.time <= m_HomeSectionTimelineStoppingTime)
-        {
-            m_Director.time = m_Director.time += Time.unscaledDeltaTime;
-            m_Director.Evaluate();
-        }
-    }
-
-    public void UpdateSectionNames(List<ISpatialMenuProvider> spatialMenuProviders)
-    {
-        for (int i = 0; i < spatialMenuProviders.Count; ++i)
-        {
-            m_SectionNameTexts[i].text = spatialMenuProviders[i].spatialMenuName;
-        }
-    }
-
-    public void DisplayHomeSectionContents()
-    {
-        m_SpatialUIGhostVisuals.SetPositionOffset(Vector3.zero);
-        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
-        this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(true));
-
-        spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
-
-        // Proxy sub-menu/dynamicHUD menu element(s) display
-        m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
-        m_HomeSectionDescription.gameObject.SetActive(true);
-
-        foreach (var kvp in m_ProviderToMenuElements)
-        {
-            var elementTransform = kvp.Value.transform;
-            elementTransform.gameObject.SetActive(true);
-            elementTransform.localScale = Vector3.one;
-        }
-    }
-
-    public void DisplayHighlightedSubMenuContents()
-    {
-        const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
-        int subMenuElementCount = 0;
-        foreach (var kvp in m_ProviderToMenuElements)
-        {
-            var key = kvp.Key;
-            if (key == highlightedTopLevelMenuProvider)
-            {
-                // m_SubMenuText.text = m_HighlightedTopLevelMenuProvider.spatialTableElements[0].name;
-                // TODO display all sub menu contents here
-
-                currentlyDisplayedMenuElements.Clear();
-                var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( (x) => x != m_SubMenuContainer);
-                foreach (var child in deleteOldChildren)
-                {
-                    if (child != null && child.gameObject != null)
-                        ObjectUtils.Destroy(child.gameObject);
-                }
-
-                foreach (var subMenuElement in highlightedTopLevelMenuProvider.spatialTableElements)
-                {
-                    ++subMenuElementCount;
-                    var instantiatedPrefab = ObjectUtils.Instantiate(subMenuElementPrefab).transform as RectTransform;
-                    var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
-                    providerMenuElement.Setup(instantiatedPrefab, subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
-                    currentlyDisplayedMenuElements.Add(providerMenuElement);
-                }
-
-                //.Add(provider, providerMenuElement);
-                //instantiatedPrefab.transform.SetParent(m_SubMenuContainer);
-                //instantiatedPrefab.localRotation = Quaternion.identity;
-                //instantiatedPrefab.localPosition = Vector3.zero;
-                //instantiatedPrefab.localScale = Vector3.one;
-            }
-
-            kvp.Value.gameObject.SetActive(false);
-        }
-
-        var newGhostInputDevicePositionOffset = new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
-        m_SpatialUIGhostVisuals.SetPositionOffset(newGhostInputDevicePositionOffset);
-        m_HomeSectionDescription.gameObject.SetActive(false);
-        this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
-
-    }
-
-    public void HighlightHomeSectionMenuElement(ISpatialMenuProvider provider)
-    {
-        m_HomeSectionDescription.text = provider.spatialMenuDescription;
-        highlightedTopLevelMenuProvider = provider;
-
-        foreach (var kvp in m_ProviderToMenuElements)
-        {
-            var key = kvp.Key;
-            var targetSize = key == provider ? Vector3.one : Vector3.one * 0.5f;
-            kvp.Value.transform.localScale = targetSize;
-        }
-    }
-
-    public void HighlightSingleElementInCurrentMenu(int elementOrderPosition)
-    {
-        var menuElementCount = highlightedTopLevelMenuProvider.spatialTableElements.Count;
-        for (int i = 0; i < menuElementCount; ++i)
-        {
-
-            //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
-            currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
-            //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
         }
     }
 
