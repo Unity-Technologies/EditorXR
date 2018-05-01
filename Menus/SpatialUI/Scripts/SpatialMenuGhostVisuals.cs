@@ -105,7 +105,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
     public void SetPositionOffset(Vector3 newLocalPositionOffset)
     {
         var newGhostInputDevicePosition = m_GhostInputDeviceOriginalLocalPosition - newLocalPositionOffset;
-        this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newLocalPositionOffset));
+        this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newGhostInputDevicePosition));
     }
 
     public void UpdateSpatialRay(IPerformSpatialRayInteraction caller)
