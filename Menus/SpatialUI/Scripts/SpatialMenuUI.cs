@@ -415,6 +415,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     public void HighlightSingleElementInCurrentMenu(int elementOrderPosition)
     {
+        //Debug.Log("<color=blue>HighlightSingleElementInCurrentMenu in SpatialMenuUI : " + elementOrderPosition + "</color>");
         var menuElementCount = highlightedTopLevelMenuProvider.spatialTableElements.Count;
         for (int i = 0; i < menuElementCount; ++i)
         {
@@ -427,7 +428,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     void Update()
     {
-        Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
+        //Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
         if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
         {
             // Performed an animated hide of any currently displayed UI
