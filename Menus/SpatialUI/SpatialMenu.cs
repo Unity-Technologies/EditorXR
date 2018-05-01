@@ -321,7 +321,6 @@ namespace UnityEditor.Experimental.EditorVR
             this.Pulse(Node.None, m_MenuOpenPulse);
 
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
-            spatialinterfaceState = SpatialinterfaceState.navigatingSubMenuContent;
             //m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
 
             m_SpatialMenuUi.DisplayHighlightedSubMenuContents();

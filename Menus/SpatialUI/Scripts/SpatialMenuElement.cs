@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR
         CanvasGroup m_CanvasGroup;
 
         [SerializeField]
-        float m_transitionDuration = 1f;
+        float m_TransitionDuration = 0.75f;
 
         [SerializeField]
         float m_FadeInZOffset = 0.05f;
@@ -42,15 +42,33 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         RectTransform m_BottomBorder;
 
-        Transform m_Transform;
+        [Header("Tooltip Visuals")]
+        [SerializeField]
+        bool m_DisplayTooltip = false;
+
+        [SerializeField]
+        CanvasGroup m_TooltipVisualsCanvasGroup;
+
+        [SerializeField]
+        TextMeshProUGUI m_TooltipText;
+
+        [SerializeField]
+        float m_ExpandedTooltipHeight = 52f;
+
+        [SerializeField]
+        float m_TooltipTransitionDuration = 1f;
+
+        RectTransform m_Transform;
         Action m_SelectedAction;
+        Vector2 m_OriginalSize;
+        Vector2 m_ExpandedTooltipDisplaySize;
         Coroutine m_VisibilityCoroutine;
+        Coroutine m_TooltipVisualsVisibilityCoroutine;
         Vector3 m_TextOriginalLocalPosition;
         bool m_Highlighted;
         Vector3 m_OriginalBordersLocalScale;
         float m_BordersOriginalAlpha;
 
-        public Transform transform { get { return m_Transform; } }
         public Action selectedAction { get { return m_SelectedAction; } }
 
         public bool highlighted
@@ -65,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        public void Setup(Transform transform, Transform parentTransform, Action selectedAction, String displayedText = null, Sprite sprite = null)
+        public void Setup(Transform parentTransform, Action selectedAction, String displayedText = null, string toolTipText = null, Sprite sprite = null)
         {
             if (selectedAction == null)
             {
@@ -75,7 +93,9 @@ namespace UnityEditor.Experimental.EditorVR
             }
 
             m_SelectedAction = selectedAction;
-            m_Transform = transform;
+            m_Transform = (RectTransform)transform;
+            m_OriginalSize = m_Transform.sizeDelta;
+            m_ExpandedTooltipDisplaySize = new Vector2(m_Transform.sizeDelta.x, m_ExpandedTooltipHeight);
 
             if (sprite != null) // Displaying a sprite icon instead of text
             {
@@ -95,8 +115,12 @@ namespace UnityEditor.Experimental.EditorVR
             transform.localPosition = Vector3.zero;
             transform.localScale = Vector3.one;
 
-            if (Mathf.Approximately(m_transitionDuration, 0f))
-                m_transitionDuration = 0.001f;
+            if (Mathf.Approximately(m_TransitionDuration, 0f))
+                m_TransitionDuration = 0.001f;
+
+            // Tooltip text related
+            m_TooltipVisualsCanvasGroup.alpha = 0;
+            m_TooltipText.text = toolTipText;
         }
 
         void OnEnable()
@@ -119,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR
             StopAllCoroutines();
         }
 
-        public IEnumerator AnimateVisibility(bool fadeIn)
+        IEnumerator AnimateVisibility(bool fadeIn)
         {
             var currentAlpha = fadeIn ? 0f : m_CanvasGroup.alpha;
             var targetAlpha = fadeIn ? 1f : 0f;
@@ -129,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR
             textCurrentLocalPosition = fadeIn ? new Vector3(m_TextOriginalLocalPosition.x, m_TextOriginalLocalPosition.y, m_FadeInZOffset) : textCurrentLocalPosition;
             var textTargetLocalPosition = m_TextOriginalLocalPosition;
             var positionTransitionAmount = 0f;
-            var transitionSubtractMultiplier = 1f / m_transitionDuration;
+            var transitionSubtractMultiplier = 1f / m_TransitionDuration;
             while (alphaTransitionAmount < 1f)
             {
                 var alphaSmoothTransition = MathUtilsExt.SmoothInOutLerpFloat(alphaTransitionAmount);
@@ -146,8 +170,10 @@ namespace UnityEditor.Experimental.EditorVR
             m_VisibilityCoroutine = null;
         }
 
-        public IEnumerator AnimateHighlight(bool isHighlighted)
+        IEnumerator AnimateHighlight(bool isHighlighted)
         {
+            this.RestartCoroutine(ref m_TooltipVisualsVisibilityCoroutine, AnimateTooltipVisualsVisibility(isHighlighted));
+
             var currentAlpha = m_CanvasGroup.alpha;
             var targetAlpha = 1f;
             var alphaTransitionAmount = 0f;
@@ -188,6 +214,39 @@ namespace UnityEditor.Experimental.EditorVR
             m_TopBorder.localScale = targetBordersLocalScale;
             m_BottomBorder.localScale = targetBordersLocalScale;
             m_VisibilityCoroutine = null;
+        }
+
+        IEnumerator AnimateTooltipVisualsVisibility(bool fadeIn)
+        {
+            var initialWaitBeforeDisplayDuration = fadeIn ? 3f : 0f;
+            var currentAlpha = fadeIn ? 0f : m_TooltipVisualsCanvasGroup.alpha;
+            var targetAlpha = fadeIn ? 1f : 0f;
+            var alphaTransitionAmount = 0f;
+            var currentSize = m_Transform.sizeDelta;
+            var targetSize = fadeIn ? m_ExpandedTooltipDisplaySize : m_OriginalSize;
+            var sizeTransitionAmount = 0f;
+            var transitionDuration = fadeIn ? m_TooltipTransitionDuration : m_TooltipTransitionDuration * 0.5f; // faster fade out
+            var transitionSubtractMultiplier = 1f / transitionDuration;
+
+            while (initialWaitBeforeDisplayDuration > 0f)
+            {
+                initialWaitBeforeDisplayDuration -= Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            while (alphaTransitionAmount < 1f)
+            {
+                var alphaSmoothTransition = MathUtilsExt.SmoothInOutLerpFloat(alphaTransitionAmount);
+                m_TooltipVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetAlpha, alphaSmoothTransition);
+                m_Transform.sizeDelta = Vector2.Lerp(currentSize, targetSize, sizeTransitionAmount);
+                alphaTransitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                sizeTransitionAmount += alphaTransitionAmount * 1.35f;
+                yield return null;
+            }
+
+            m_TooltipVisualsCanvasGroup.alpha = targetAlpha;
+            m_Transform.sizeDelta = targetSize;
+            m_TooltipVisualsVisibilityCoroutine = null;
         }
     }
 }

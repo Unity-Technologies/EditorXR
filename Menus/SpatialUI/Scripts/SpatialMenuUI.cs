@@ -75,7 +75,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     [Header("Prefabs")]
     [SerializeField]
-    GameObject m_MenuElementPrefab;
+    GameObject m_SectionTitleElementPrefab;
 
     [SerializeField]
     GameObject m_SubMenuElementPrefab;
@@ -113,11 +113,11 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     Coroutine m_HomeSectionTitlesBackgroundBordersTransitionCoroutine;
 
     // Reference set by the controller in the Setup method
-    readonly Dictionary<ISpatialMenuProvider, SpatialMenuElement> m_ProviderToHomeMenuElements = new Dictionary<ISpatialMenuProvider, SpatialMenuElement>();
+    readonly Dictionary<ISpatialMenuProvider, ISpatialMenuElement> m_ProviderToHomeMenuElements = new Dictionary<ISpatialMenuProvider, ISpatialMenuElement>();
 
     readonly List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
 
-    readonly List<SpatialMenuElement> currentlyDisplayedMenuElements = new List<SpatialMenuElement>();
+    readonly List<ISpatialMenuElement> currentlyDisplayedMenuElements = new List<ISpatialMenuElement>();
 
     public static List<ISpatialMenuProvider> spatialMenuProviders;
 
@@ -236,9 +236,9 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     public Transform homeMenuContainer { get { return m_HomeMenuContainer; } }
 
-    public GameObject menuElementPrefab { get { return m_MenuElementPrefab; } }
+    //public GameObject menuElementPrefab { get { return m_MenuElementPrefab; } }
 
-    public GameObject subMenuElementPrefab { get { return m_SubMenuElementPrefab; } }
+    //public GameObject subMenuElementPrefab { get { return m_SubMenuElementPrefab; } }
 
     public Transform subMenuContainer { get { return m_SubMenuContainer; } }
 
@@ -339,19 +339,18 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         m_HomeSectionDescription.gameObject.SetActive(true);
 
         m_ProviderToHomeMenuElements.Clear();
-        var homeMenuElementParent = m_HomeMenuLayoutGroup.transform;
+        m_HomeMenuLayoutGroup.enabled = false;
+        var homeMenuElementParent = (RectTransform)m_HomeMenuLayoutGroup.transform;
         foreach (var provider in spatialMenuProviders)
         {
             Debug.Log("<color=green>Displaying home section contents</color>");
-            var instantiatedPrefabTransform = ObjectUtils.Instantiate(m_MenuElementPrefab).transform as RectTransform;
-            var providerMenuElement = instantiatedPrefabTransform.GetComponent<SpatialMenuElement>();
-            providerMenuElement.Setup(instantiatedPrefabTransform, homeMenuElementParent, () => { }, provider.spatialMenuName);
+            var instantiatedPrefabTransform = ObjectUtils.Instantiate(m_SectionTitleElementPrefab).transform as RectTransform;
+            var providerMenuElement = instantiatedPrefabTransform.GetComponent<ISpatialMenuElement>();
+            providerMenuElement.Setup(homeMenuElementParent, () => { }, provider.spatialMenuName, null);
             m_ProviderToHomeMenuElements[provider] = providerMenuElement;
-
-            instantiatedPrefabTransform.SetParent(homeMenuElementParent);
-            instantiatedPrefabTransform.localScale = Vector3.one;
-            instantiatedPrefabTransform.localRotation = Quaternion.identity;
         }
+        m_HomeMenuLayoutGroup.enabled = true;
+        //LayoutRebuilder.ForceRebuildLayoutImmediate(homeMenuElementParent);
     }
 
     public void DisplayHighlightedSubMenuContents()
@@ -377,9 +376,9 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
                 foreach (var subMenuElement in highlightedTopLevelMenuProvider.spatialTableElements)
                 {
                     ++subMenuElementCount;
-                    var instantiatedPrefab = ObjectUtils.Instantiate(subMenuElementPrefab).transform as RectTransform;
-                    var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
-                    providerMenuElement.Setup(instantiatedPrefab, subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name);
+                    var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
+                    var providerMenuElement = instantiatedPrefab.GetComponent<ISpatialMenuElement>();
+                    providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, "Tooltip Text displayed Here!");
                     currentlyDisplayedMenuElements.Add(providerMenuElement);
                 }
 
@@ -409,7 +408,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         {
             var key = kvp.Key;
             var targetSize = key == provider ? Vector3.one : Vector3.one * 0.5f;
-            kvp.Value.transform.localScale = targetSize;
+            // switch to highlighted bool set in ISpatialMenuElement
+            //kvp.Value.transform.localScale = targetSize;
         }
     }
 
