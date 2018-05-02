@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -19,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback, IConnectInterfaces
+        IUsesNode, IRequestFeedback, IConnectInterfaces, ISpatialMenuData
     {
         [Serializable]
         class Preferences
@@ -59,6 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const string k_AnnotationFormatStrig = "Annotation {0}";
         const string k_MainHolderName = "Annotations";
         const string k_MeshName = "Annotation";
+        const string k_SpatialMenuDescription = "Annotate objects & draw in your scene";
 
         public const float TipDistance = 0.05f;
         public const float MinBrushSize = 0.0025f;
@@ -114,6 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Toggle m_TransformToggle;
         Toggle m_MeshToggle;
         bool m_BlockValueChangedListener;
+        private ISpatialMenuData _spatialMenuDataImplementation;
 
         public bool primary { private get; set; }
         public Transform rayOrigin { get; set; }
@@ -127,6 +128,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public List<ILinkedObject> linkedObjects { private get; set; }
         public Node node { private get; set; }
+
+        public string spatialMenuDescription { get { return k_SpatialMenuDescription; } }
 
         public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 

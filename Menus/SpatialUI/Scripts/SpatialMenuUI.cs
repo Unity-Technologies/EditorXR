@@ -61,10 +61,16 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     Transform m_HomeTextBackgroundInnerTransform;
 
     [SerializeField]
+    CanvasGroup m_HomeSectionTitlesBackgroundBorderCanvasGroup;
+
+    [SerializeField]
+    CanvasGroup m_HomeTextBackgroundInnerCanvasGroup;
+
+    [SerializeField]
     TextMeshProUGUI m_HomeSectionDescription;
 
     [SerializeField]
-    CanvasGroup m_HomeSectionBackgroundBordersCanvas;
+    CanvasGroup m_HomeSectionCanvasGroup;
 
     [Header("SubMenu Section")]
     [SerializeField]
@@ -261,7 +267,9 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
         m_InputModeText.text = k_TranslationInputModeName;
         m_Director.playableAsset = m_RevealTimelinePlayable;
-        m_HomeSectionBackgroundBordersCanvas.alpha = 1f;
+        m_HomeSectionCanvasGroup.alpha = 1f;
+        m_HomeTextBackgroundInnerCanvasGroup.alpha = 1f;
+        m_HomeSectionTitlesBackgroundBorderCanvasGroup.alpha = 1f;
 
         // Director related
         m_Director.time = 0f;
@@ -378,7 +386,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
                     ++subMenuElementCount;
                     var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
                     var providerMenuElement = instantiatedPrefab.GetComponent<ISpatialMenuElement>();
-                    providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, "Tooltip Text displayed Here!");
+                    providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, subMenuElement.tooltipText);
                     currentlyDisplayedMenuElements.Add(providerMenuElement);
                 }
 
@@ -436,7 +444,10 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             m_Director.Evaluate();
 
             m_SubMenuContentsCanvasGroup.alpha = Mathf.Clamp01(m_SubMenuContentsCanvasGroup.alpha - Time.unscaledDeltaTime * 4);
-            m_HomeSectionBackgroundBordersCanvas.alpha = Mathf.Clamp01(m_HomeSectionBackgroundBordersCanvas.alpha - Time.unscaledDeltaTime * 4);
+            var newHomeSectionAlpha = Mathf.Clamp01(m_HomeSectionCanvasGroup.alpha - Time.unscaledDeltaTime * 4);
+            m_HomeSectionCanvasGroup.alpha = newHomeSectionAlpha;
+            m_HomeTextBackgroundInnerCanvasGroup.alpha = newHomeSectionAlpha;
+            m_HomeSectionTitlesBackgroundBorderCanvasGroup.alpha = newHomeSectionAlpha;
         }
         else if (m_Director.time > m_HomeSectionTimelineDuration)
         {
@@ -596,20 +607,23 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     IEnumerator AnimateTopAndBottomCenterBackgroundBorders(bool visible)
     {
-        var currentAlpha = m_HomeSectionBackgroundBordersCanvas.alpha;
+        var currentAlpha = m_HomeSectionCanvasGroup.alpha;
         var targetAlpha = visible ? 1f : 0f;
         var transitionAmount = 0f;
         var transitionSubtractMultiplier = 5f;
         while (transitionAmount < 1f)
         {
             var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-            m_HomeSectionBackgroundBordersCanvas.alpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
+            var newAlpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
+            m_HomeSectionCanvasGroup.alpha = newAlpha;
+            m_HomeTextBackgroundInnerCanvasGroup.alpha = newAlpha;
+            m_HomeSectionTitlesBackgroundBorderCanvasGroup.alpha = newAlpha;
             m_SurroundingArrowsContainer.localScale = Vector3.one + (Vector3.one * Mathf.Sin(transitionAmount * 2) * 0.1f);
             transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
             yield return null;
         }
 
-        m_HomeSectionBackgroundBordersCanvas.alpha = targetAlpha;
+        m_HomeSectionCanvasGroup.alpha = targetAlpha;
         m_HomeSectionTitlesBackgroundBordersTransitionCoroutine = null;
     }
 }

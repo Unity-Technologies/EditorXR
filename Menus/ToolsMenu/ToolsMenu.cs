@@ -57,7 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public Action<Transform, int, bool> highlightSingleButton { get; set; }
         public Action<Transform> selectHighlightedButton { get; set; }
-        public Action<Type, Sprite> setButtonForType { get; set; }
+        public Action<Type, Sprite, String> setButtonForType { get; set; }
         public Action<Type, Type> deleteToolsMenuButton { get; set; }
         public Node node { get; set; }
         public IToolsMenuButton PreviewToolsMenuButton { get; private set; }
@@ -125,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             spatialScrollOrigin = alternateMenuOrigin;
         }
 
-        void CreateToolsMenuButton(Type toolType, Sprite buttonIcon)
+        void CreateToolsMenuButton(Type toolType, Sprite buttonIcon, string toolDescription)
         {
             // Verify first that the ToolsMenuUI exists
             // This is called in EditorVR.Tools before the UI can be created herein in Awake
@@ -160,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_ToolsMenuUI.AddButton(button, buttonTransform);
 
             if (toolType != typeof(IMainMenu))
-                spatialTableElements.Add(new SpatialMenu.SpatialUITableElement(toolType.Name, button.icon, () =>
+                spatialTableElements.Add(new SpatialMenu.SpatialUITableElement(toolType.Name, button.icon, toolDescription, () =>
                 {
                     this.SelectTool(this.RequestRayOriginFromNode(Node.RightHand), toolType,
                         hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(toolType));

@@ -65,6 +65,7 @@ namespace UnityEditor.Experimental.EditorVR
         bool m_Highlighted;
         Vector3 m_OriginalBordersLocalScale;
         float m_BordersOriginalAlpha;
+        Color m_OriginalBackgroundColor;
 
         public Action selectedAction { get { return m_SelectedAction; } }
 
@@ -85,6 +86,7 @@ namespace UnityEditor.Experimental.EditorVR
         void Awake()
         {
             Setup = SetupInternal;
+            m_OriginalBackgroundColor = m_BackgroundImage.color;
         }
 
         public void SetupInternal(Transform parentTransform, Action selectedAction, String displayedText = null, string toolTipText = null)
@@ -189,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR
             var currentTextLocalScale = textTransform.localScale;
             var targetTextLocalScale = isHighlighted ? Vector3.one * 1.15f : Vector3.one;
             var currentBackgroundColor = m_BackgroundImage.color;
-            var targetBackgroundColor = isHighlighted ? Color.black : Color.clear;
+            var targetBackgroundColor = isHighlighted ? Color.black : m_OriginalBackgroundColor;
             var currentBordersLocalScale = m_TopBorder.localScale;
             var targetBordersLocalScale = isHighlighted ? new Vector3 (m_OriginalBordersLocalScale.x * 0.65f, m_OriginalBordersLocalScale.y * 8, m_OriginalBordersLocalScale.z) : m_OriginalBordersLocalScale;
             var currentBordersCanvasGroupAlpha = m_BordersCanvasGroup.alpha;
@@ -230,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR
             var currentSize = m_RectTransform.sizeDelta;
             var targetSize = fadeIn ? m_ExpandedTooltipDisplaySize : m_OriginalSize;
             var sizeTransitionAmount = 0f;
-            var transitionDuration = fadeIn ? m_TooltipTransitionDuration : m_TooltipTransitionDuration * 0.125f; // faster fade out
+            var transitionDuration = fadeIn ? m_TooltipTransitionDuration : m_TooltipTransitionDuration * 0.2f; // faster fade out
             var transitionMultiplier = 1f / transitionDuration;
 
             while (initialWaitBeforeDisplayDuration > 0f)

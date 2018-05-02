@@ -75,7 +75,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_SpatialUITableElements.Clear();
                 foreach (var action in m_MenuActions)
                 {
-                    m_SpatialUITableElements.Add(new SpatialMenu.SpatialUITableElement(action.name, null, action.action.ExecuteAction));
+                    if (action.addToSpatialMenu)
+                        m_SpatialUITableElements.Add(new SpatialMenu.SpatialUITableElement(action.name, null, action.tooltipText, action.action.ExecuteAction));
                 }
 
                 if (m_RadialMenuUI)

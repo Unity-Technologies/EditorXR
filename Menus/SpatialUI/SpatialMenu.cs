@@ -195,10 +195,11 @@ namespace UnityEditor.Experimental.EditorVR
 
         public class SpatialUITableElement
         {
-            public SpatialUITableElement(string name, Sprite icon, Action correspondingFunction)
+            public SpatialUITableElement(string name, Sprite icon, string tooltipText, Action correspondingFunction)
             {
                 this.name = name;
                 this.icon = icon;
+                this.tooltipText = tooltipText;
                 this.correspondingFunction = correspondingFunction;
                 //this.spatialUIMenuElement = element;
             }
@@ -208,6 +209,8 @@ namespace UnityEditor.Experimental.EditorVR
             public Sprite icon { get; set; }
 
             public Action correspondingFunction { get; private set; }
+
+            public string tooltipText { get; private set; }
 
             //public SpatialUIMenuElement spatialUIMenuElement { get; private set; }
         }
@@ -426,8 +429,8 @@ namespace UnityEditor.Experimental.EditorVR
                 var spatialInputType = this.GetSpatialInputTypeForNode(Node.LeftHand);
                 //Debug.LogWarning("SpatialUI current input type : " + spatialInputType);
 
-                if (spatialInputType == SpatialInputType.StateChangedThisFrame)
-                    Debug.Log("<color=green>SpatialUI state changed this frame!!</color>");
+                //if (spatialInputType == SpatialInputType.StateChangedThisFrame)
+                    //Debug.Log("<color=green>SpatialUI state changed this frame!!</color>");
 
                 var inputLocalRotation = m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion;
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
