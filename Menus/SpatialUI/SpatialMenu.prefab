@@ -2749,6 +2749,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 224366625210285114}
+  - component: {fileID: 225833651207951742}
   m_Layer: 5
   m_Name: HomeSectionTitlesBackground
   m_TagString: Untagged
@@ -9861,7 +9862,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 2100000, guid: f67ae259a3636124a8e12340e957bd8c, type: 2}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.784}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.78431374}
   m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -11792,8 +11793,10 @@ MonoBehaviour:
   m_HomeMenuLayoutGroup: {fileID: 114252596971781572}
   m_HomeTextBackgroundTransform: {fileID: 224366625210285114}
   m_HomeTextBackgroundInnerTransform: {fileID: 224113578593577414}
+  m_HomeSectionTitlesBackgroundBorderCanvasGroup: {fileID: 225810307688447136}
+  m_HomeTextBackgroundInnerCanvasGroup: {fileID: 225833651207951742}
   m_HomeSectionDescription: {fileID: 114110306753894748}
-  m_HomeSectionBackgroundBordersCanvas: {fileID: 225605059610888044}
+  m_HomeSectionCanvasGroup: {fileID: 225605059610888044}
   m_SubMenuContainer: {fileID: 224500006906110670}
   m_SubMenuContentsCanvasGroup: {fileID: 225744566652108476}
   m_SectionTitleElementPrefab: {fileID: 1584814999618646, guid: 73e4c61e303e9874ebc6d838fee35d21,
@@ -14125,7 +14128,7 @@ RectTransform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1523037002661318}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -14938,6 +14941,17 @@ CanvasGroup:
   m_Alpha: 1
   m_Interactable: 0
   m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
+--- !u!225 &225833651207951742
+CanvasGroup:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1665864322566654}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
 --- !u!225 &225885795448610784
 CanvasGroup:
