@@ -2538,7 +2538,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 224749180625870246}
-  - component: {fileID: 114252596971781572}
+  - component: {fileID: 114647540470155398}
   m_Layer: 5
   m_Name: HomeMenuSectionTitles
   m_TagString: Untagged
@@ -8261,28 +8261,6 @@ MonoBehaviour:
   m_TooltipSource: {fileID: 4264301432658286}
   m_TooltipAlignment: 1
   m_FacingDirection: 8
---- !u!114 &114252596971781572
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1593906124877426}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: -405508275, guid: f70555f144d8491a825f0804e09c671c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 4
-  m_Spacing: 2
-  m_ChildForceExpandWidth: 0
-  m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
 --- !u!114 &114260835056392188
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -9911,6 +9889,28 @@ MonoBehaviour:
   m_ShowDuration: 0.125
   m_HideDuration: 0.25
   m_SlightlyRandomizeHideDuration: 1
+--- !u!114 &114647540470155398
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1593906124877426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -405508275, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 1
+  m_Spacing: 0.05
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 1
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
 --- !u!114 &114650107410517210
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -11790,7 +11790,7 @@ MonoBehaviour:
   m_InputModeText: {fileID: 114748702323181232}
   m_HomeMenuContainer: {fileID: 224548596711576928}
   m_HomeTextCanvasGroup: {fileID: 225605059610888044}
-  m_HomeMenuLayoutGroup: {fileID: 114252596971781572}
+  m_HomeMenuLayoutGroup: {fileID: 114647540470155398}
   m_HomeTextBackgroundTransform: {fileID: 224366625210285114}
   m_HomeTextBackgroundInnerTransform: {fileID: 224113578593577414}
   m_HomeSectionTitlesBackgroundBorderCanvasGroup: {fileID: 225810307688447136}
@@ -13633,10 +13633,10 @@ RectTransform:
   m_Father: {fileID: 224548596711576928}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -50.04}
-  m_SizeDelta: {x: 0.6, y: 0.03}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: -0.05004}
+  m_SizeDelta: {x: 0.6, y: 0.030000001}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224342491541870430
 RectTransform:
@@ -14157,10 +14157,10 @@ RectTransform:
   m_Father: {fileID: 224722201347996720}
   m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224555829213721632
 RectTransform:
@@ -14393,15 +14393,15 @@ RectTransform:
   m_GameObject: {fileID: 1593906124877426}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.002, y: 0.002, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 224548596711576928}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 303.16693, y: 26.78707}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -0.000014990568, y: 0.00014698505}
+  m_SizeDelta: {x: -0.30013013, y: -0.9463243}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224771858595270594
 RectTransform:

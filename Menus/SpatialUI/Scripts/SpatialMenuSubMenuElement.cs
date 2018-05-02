@@ -201,7 +201,7 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 var alphaSmoothTransition = MathUtilsExt.SmoothInOutLerpFloat(alphaTransitionAmount);
                 var positionSmoothTransition = MathUtilsExt.SmoothInOutLerpFloat(positionTransitionAmount);
-                m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetAlpha, alphaSmoothTransition);
+                m_CanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetAlpha, alphaSmoothTransition * 1.5f);
                 textTransform.localPosition = Vector3.Lerp(textCurrentLocalPosition, textTargetLocalPosition, positionSmoothTransition);
                 textTransform.localScale = Vector3.Lerp(currentTextLocalScale, targetTextLocalScale, alphaSmoothTransition);
                 alphaTransitionAmount += Time.deltaTime * speedMultiplier;
@@ -234,16 +234,19 @@ namespace UnityEditor.Experimental.EditorVR
             var sizeTransitionAmount = 0f;
             var transitionDuration = fadeIn ? m_TooltipTransitionDuration : m_TooltipTransitionDuration * 0.2f; // faster fade out
             var transitionMultiplier = 1f / transitionDuration;
-
             while (initialWaitBeforeDisplayDuration > 0f)
             {
                 initialWaitBeforeDisplayDuration -= Time.unscaledDeltaTime;
                 yield return null;
             }
 
+            var currentBordersLocalScale = m_TopBorder.localScale;
             while (alphaTransitionAmount < 1f)
             {
                 var alphaSmoothTransition = MathUtilsExt.SmoothInOutLerpFloat(alphaTransitionAmount);
+                var newBorderLocalScale = Vector3.Lerp(currentBordersLocalScale, m_OriginalBordersLocalScale, alphaSmoothTransition);
+                m_TopBorder.localScale = newBorderLocalScale;
+                m_BottomBorder.localScale = newBorderLocalScale;
                 m_TooltipVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, targetAlpha, alphaSmoothTransition);
                 m_RectTransform.sizeDelta = Vector2.Lerp(currentSize, targetSize, sizeTransitionAmount);
                 alphaTransitionAmount += Time.deltaTime * transitionMultiplier;
@@ -254,6 +257,9 @@ namespace UnityEditor.Experimental.EditorVR
 
             m_TooltipVisualsCanvasGroup.alpha = targetAlpha;
             m_RectTransform.sizeDelta = targetSize;
+            m_TopBorder.localScale = m_OriginalBordersLocalScale;
+            m_BottomBorder.localScale = m_OriginalBordersLocalScale;
+
             m_TooltipVisualsVisibilityCoroutine = null;
         }
     }

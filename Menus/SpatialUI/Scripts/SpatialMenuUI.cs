@@ -109,6 +109,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     Vector3 m_HomeBackgroundOriginalLocalScale;
     float m_HomeSectionTimelineDuration;
     float m_HomeSectionTimelineStoppingTime;
+    float m_OriginalHomeSectionTitleTextSpacing;
 
     // Adaptive Position related fields
     bool m_InFocus;
@@ -174,7 +175,6 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             switch (m_SpatialinterfaceState)
             {
                 case SpatialinterfaceState.navigatingTopLevel:
-                    Reset();
                     DisplayHomeSectionContents();
                     break;
             }
@@ -256,8 +256,11 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         // TODO remove serialized inspector references for home menu section titles, use instantiated prefabs only
         m_SectionNameTexts.Clear();
 
+        m_OriginalHomeSectionTitleTextSpacing = m_HomeMenuLayoutGroup.spacing;
+
         m_HomeSectionTimelineDuration = (float) m_RevealTimelinePlayable.duration;
         m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
+        Reset();
     }
 
     public void Reset()
@@ -276,14 +279,14 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         m_Director.Evaluate();
 
         // Hack that fixes the home section menu element positions not being recalculated when first revealed
-        m_HomeMenuLayoutGroup.enabled = false;
-        m_HomeMenuLayoutGroup.enabled = true;
+        //m_HomeMenuLayoutGroup.enabled = false;
+        //m_HomeMenuLayoutGroup.enabled = true;
         m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
     }
 
     void ClearHomeMenuElements()
     {
-        var homeMenuElementParent = m_HomeMenuLayoutGroup.transform;
+        var homeMenuElementParent = (Transform)m_HomeMenuLayoutGroup.transform;
         var childrenToDelete = homeMenuElementParent.GetComponentsInChildren<Transform>().Where((x) => x != homeMenuElementParent);
         var childCount = childrenToDelete.Count();
         if (childCount > 0)
@@ -347,7 +350,6 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         m_HomeSectionDescription.gameObject.SetActive(true);
 
         m_ProviderToHomeMenuElements.Clear();
-        m_HomeMenuLayoutGroup.enabled = false;
         var homeMenuElementParent = (RectTransform)m_HomeMenuLayoutGroup.transform;
         foreach (var provider in spatialMenuProviders)
         {
@@ -356,9 +358,13 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             var providerMenuElement = instantiatedPrefabTransform.GetComponent<ISpatialMenuElement>();
             providerMenuElement.Setup(homeMenuElementParent, () => { }, provider.spatialMenuName, null);
             m_ProviderToHomeMenuElements[provider] = providerMenuElement;
+
+            //m_HomeMenuLayoutGroup.SetLayoutHorizontal();
+            m_HomeMenuLayoutGroup.enabled = false;
+            Canvas.ForceUpdateCanvases();
+            m_HomeMenuLayoutGroup.enabled = true;
+            Canvas.ForceUpdateCanvases();
         }
-        m_HomeMenuLayoutGroup.enabled = true;
-        //LayoutRebuilder.ForceRebuildLayoutImmediate(homeMenuElementParent);
     }
 
     public void DisplayHighlightedSubMenuContents()
@@ -417,7 +423,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             var key = kvp.Key;
             var targetSize = key == provider ? Vector3.one : Vector3.one * 0.5f;
             // switch to highlighted bool set in ISpatialMenuElement
-            //kvp.Value.transform.localScale = targetSize;
+            kvp.Value.gameObject.transform.localScale = targetSize;
         }
     }
 
@@ -436,6 +442,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     void Update()
     {
+        m_HomeMenuLayoutGroup.spacing = m_OriginalHomeSectionTitleTextSpacing + Mathf.Sign(Time.frameCount) * 0.1f;
+
         //Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
         if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
         {
@@ -459,9 +467,9 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             this.StopAllCoroutines();
             //HideSubMenu();
             m_Director.Evaluate();
-            gameObject.SetActive(m_Visible);
-
+            ClearHomeMenuElements();
             ClearSubMenuElements();
+            gameObject.SetActive(m_Visible);
         }
         else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
         {
@@ -611,6 +619,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         var targetAlpha = visible ? 1f : 0f;
         var transitionAmount = 0f;
         var transitionSubtractMultiplier = 5f;
+        //m_HomeMenuLayoutGroup.enabled = false;
         while (transitionAmount < 1f)
         {
             var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
@@ -621,8 +630,10 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             m_SurroundingArrowsContainer.localScale = Vector3.one + (Vector3.one * Mathf.Sin(transitionAmount * 2) * 0.1f);
             transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
             yield return null;
+            //LayoutRebuilder.ForceRebuildLayoutImmediate(m_HomeMenuLayoutGroup.transform as RectTransform);
         }
 
+        //m_HomeMenuLayoutGroup.enabled = true;
         m_HomeSectionCanvasGroup.alpha = targetAlpha;
         m_HomeSectionTitlesBackgroundBordersTransitionCoroutine = null;
     }
