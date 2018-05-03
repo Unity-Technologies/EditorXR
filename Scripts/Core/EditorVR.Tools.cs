@@ -305,8 +305,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                                 AddToolToStack(data, newTool);
 
-                                var spatialMenuData = tool as ISpatialMenuData;
-                                var spatialMenuDescription = spatialMenuData != null ? spatialMenuData.spatialMenuDescription : null;
+                                var spatialMenuData = tool as ISpatialMenuCustomDescription;
+                                var spatialMenuDescription = spatialMenuData != null ? spatialMenuData.spatialMenuCustomDescription : null;
                                 toolsMenu.setButtonForType(toolType, newTool.icon, spatialMenuDescription);
                             }
                         }
