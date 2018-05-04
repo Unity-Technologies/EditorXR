@@ -134,6 +134,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     public float distanceOffset { get { return k_DistanceOffset; } }
     public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
     public bool allowAdaptivePositioning { get; private set; }
+    public bool resetAdaptivePosition { get; set; }
 
     // Section name string, corresponding element collection, currentlyHighlightedState
     public List<SpatialMenu.SpatialMenuData> spatialMenuData { get; set; }
@@ -143,23 +144,15 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     public bool visible
     {
         get { return m_Visible; }
-
         set
         {
             if (m_Visible == value)
                 return;
 
             m_Visible = value;
-            allowAdaptivePositioning = value;
-
-            if (m_Visible)
-            {
-                gameObject.SetActive(true);
-            }
-            else
-            {
-                gameObject.SetActive(false);
-            }
+            gameObject.SetActive(m_Visible);
+            allowAdaptivePositioning = m_Visible;
+            resetAdaptivePosition = m_Visible;
         }
     }
 

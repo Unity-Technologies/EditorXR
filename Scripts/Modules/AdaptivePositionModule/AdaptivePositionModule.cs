@@ -127,7 +127,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             if (m_AdaptivePositionElements.Count > 0)
             {
-                var adaptiveElement = m_AdaptivePositionElements.First();
+                var adaptiveElement = m_AdaptivePositionElements.First(); // TODO: add support for multiple implementers
+                if (adaptiveElement.resetAdaptivePosition)
+                {
+                    this.RestartCoroutine(ref m_AdaptiveElementRepositionCoroutine, RepositionElement(adaptiveElement));
+                    return;
+                }
+
                 var adaptiveTransform = adaptiveElement.adaptiveTransform;
                 var allowedDegreeOfGazeDivergence = adaptiveElement.allowedDegreeOfGazeDivergence;
                 var isAboveDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveTransform, allowedDegreeOfGazeDivergence);
@@ -177,34 +183,39 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         IEnumerator RepositionElement(IAdaptPosition adaptiveElement)
         {
-            adaptiveElement.beingMoved = true;
-            //Debug.LogWarning("TestObjectReposition: ");
             var adaptiveTransform = adaptiveElement.adaptiveTransform;
             var currentPosition = adaptiveTransform.position;
             var targetPosition = m_GazeTransform.position;
             targetPosition = targetPosition + (this.GetViewerScale() * m_GazeTransform.forward * adaptiveElement.distanceOffset);
-            ;// + (Vector3.one * m_TestObjectDistanceOffset);// - new Vector3(0f, 0f, m_TestObjectDistanceOffset);
-            var transitionAmount = 0f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
-            var transitionSubtractMultiplier = 2f;
-
-            //var targetRotation = m_GazeTransform.localRotation; // set same local rotation, due to the target object transform parent being the same as the gaze source/camera
-            //m_TestObjectTransform.rotation = m_GazeTransform.rotation;
-            //m_TestObjectTransform.localPosition = new Vector3(0f, 0f, m_TestObjectDistanceOffset); // push the object away from the HMD
-
-            while (transitionAmount < 1f)
+            if (!adaptiveElement.resetAdaptivePosition)
             {
-                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-                smoothTransition *= smoothTransition;
-                adaptiveTransform.position = Vector3.Lerp(currentPosition, targetPosition, smoothTransition);
-                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
-                adaptiveTransform.LookAt(m_GazeTransform);
+                adaptiveElement.beingMoved = true;
+                //Debug.LogWarning("TestObjectReposition: ");
+                // + (Vector3.one * m_TestObjectDistanceOffset);// - new Vector3(0f, 0f, m_TestObjectDistanceOffset);
+                var transitionAmount = 0f; // this should account for the magnitude difference between the highlightedYPositionOffset, and the current magnitude difference between the local Y and the original Y
+                var transitionSubtractMultiplier = 2f;
 
-                yield return null;
+                //var targetRotation = m_GazeTransform.localRotation; // set same local rotation, due to the target object transform parent being the same as the gaze source/camera
+                //m_TestObjectTransform.rotation = m_GazeTransform.rotation;
+                //m_TestObjectTransform.localPosition = new Vector3(0f, 0f, m_TestObjectDistanceOffset); // push the object away from the HMD
+
+                while (transitionAmount < 1f)
+                {
+                    var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+                    smoothTransition *= smoothTransition;
+                    adaptiveTransform.position = Vector3.Lerp(currentPosition, targetPosition, smoothTransition);
+                    transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                    adaptiveTransform.LookAt(m_GazeTransform);
+
+                    yield return null;
+                }
             }
 
             adaptiveTransform.position = targetPosition;
+            adaptiveTransform.LookAt(m_GazeTransform);
             m_AdaptiveElementRepositionCoroutine = null;
             adaptiveElement.beingMoved = false;
+            adaptiveElement.resetAdaptivePosition = false;
         }
 
         /*

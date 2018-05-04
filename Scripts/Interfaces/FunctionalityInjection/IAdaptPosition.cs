@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
         bool beingMoved { set; }
 
         /// <summary>
-        /// Bool denoting that this implementer within the allowed gaze range, being looked at
+        /// Bool denoting that this implementer is within the allowed gaze range, & being looked at
         /// </summary>
         bool inFocus { get; set; }
 
@@ -45,6 +45,11 @@ namespace UnityEditor.Experimental.EditorVR
         /// The data defining the adaptive position state of the implementer
         /// </summary>
         AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
+
+        /// <summary>
+        /// Bool denoting that this implementer should have its position immediately reset when the next scheduled position update occurs
+        /// </summary>
+        bool resetAdaptivePosition { get; set; }
     }
 }
 #endif
