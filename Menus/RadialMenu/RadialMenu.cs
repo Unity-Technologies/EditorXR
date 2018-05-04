@@ -14,8 +14,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IActionsMenu, ISpatialMenuProvider
     {
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
-        readonly string k_SpatialDisplayName = "Actions";
-        readonly string k_SpatialDescription = "Perform actions based on selected-object context";
+        const string k_SpatialDisplayName = "Actions";
+        const string k_SpatialDescription = "Perform actions based on selected-object context";
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -38,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
-        readonly List<SpatialMenu.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialMenu.SpatialUITableElement>();
+        readonly List<SpatialMenu.SpatialMenuData> m_SpatialMenuData = new List<SpatialMenu.SpatialMenuData>();
 
         public event Action<Transform> itemWasSelected;
 
@@ -60,7 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public string spatialMenuName { get { return k_SpatialDisplayName; } }
         public string spatialMenuDescription { get { return k_SpatialDescription; } }
         public bool displayingSpatially { get; set; }
-        public List<SpatialMenu.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
+        public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
 
         public List<ActionMenuData> menuActions
         {
@@ -72,11 +72,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     .OrderBy(a => a.priority)
                     .ToList();*/
 
-                m_SpatialUITableElements.Clear();
+                m_SpatialMenuData.Clear();
+                var spatialMenuActions = new List<SpatialMenu.SpatialMenuElement>();
+                var spatialMenuData = new SpatialMenu.SpatialMenuData(k_SpatialDisplayName, k_SpatialDescription, spatialMenuActions);
+                m_SpatialMenuData.Add(spatialMenuData);
                 foreach (var action in m_MenuActions)
                 {
                     if (action.addToSpatialMenu)
-                        m_SpatialUITableElements.Add(new SpatialMenu.SpatialUITableElement(action.name, null, action.tooltipText, action.action.ExecuteAction));
+                        spatialMenuActions.Add(new SpatialMenu.SpatialMenuElement(action.name, null, action.tooltipText, action.action.ExecuteAction));
                 }
 
                 if (m_RadialMenuUI)

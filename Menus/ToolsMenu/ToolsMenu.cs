@@ -47,8 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_MenuFeedback = new List<ProxyFeedbackRequest>();
-        readonly List<SpatialMenu.SpatialUITableElement> m_SpatialUITableElements = new List<SpatialMenu.SpatialUITableElement>();
-
+        readonly List<SpatialMenu.SpatialMenuElement> m_SpatialMenuTools = new List<SpatialMenu.SpatialMenuElement>();
+        readonly List<SpatialMenu.SpatialMenuData> m_SpatialMenuData = new List<SpatialMenu.SpatialMenuData>();
         public Transform menuOrigin { get; set; }
 
         List<IToolsMenuButton> buttons { get { return m_ToolsMenuUI.buttons; } }
@@ -75,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public string spatialMenuName { get { return k_SpatialDisplayName; } }
         public string spatialMenuDescription { get { return k_SpatialDescription; } }
         public bool displayingSpatially { get; set; }
-        public List<SpatialMenu.SpatialUITableElement> spatialTableElements { get { return m_SpatialUITableElements; } }
+        public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
         public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
         public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
 
@@ -123,6 +123,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             // Spatial scroll setup
             spatialScrollOrigin = alternateMenuOrigin;
+
+            // Spatial Menu Setup
+            var spatialMenuData = new SpatialMenu.SpatialMenuData(k_SpatialDisplayName, k_SpatialDescription, m_SpatialMenuTools);
+            m_SpatialMenuData.Add(spatialMenuData);
         }
 
         void CreateToolsMenuButton(Type toolType, Sprite buttonIcon, string toolDescription)
@@ -160,11 +164,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_ToolsMenuUI.AddButton(button, buttonTransform);
 
             if (toolType != typeof(IMainMenu))
-                spatialTableElements.Add(new SpatialMenu.SpatialUITableElement(toolType.Name, button.icon, toolDescription, () =>
+            {
+                // Add the tools that have been instantiated, and are already selectable to the spatial menu "tools" section
+                m_SpatialMenuTools.Add(new SpatialMenu.SpatialMenuElement(toolType.Name, button.icon, toolDescription, () =>
                 {
                     this.SelectTool(this.RequestRayOriginFromNode(Node.RightHand), toolType,
                         hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(toolType));
                 }));
+            }
         }
 
         void DeleteToolsMenuButton(Type toolTypeToDelete, Type toolTypeToSelectAfterDelete)

@@ -62,7 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public string spatialMenuName { get { return k_SpatialDisplayName; } }
         public string spatialMenuDescription { get { return k_SpatialDescription; } }
         public bool displayingSpatially { get; set; }
-        public SpatialMenu.SpatialUITableElement spatialTableElements { get; set; }
+        public SpatialMenu.SpatialMenuElement spatialTableElements { get; set; }
 
         public bool allButtonsVisible
         {
