@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
-    [ActionMenuItem("SaveScene", "Scene")]
+    [ActionMenuItem("SaveScene", "Scene", addToSpatialMenu: false)]
     sealed class SaveScene : BaseAction
     {
         public override void ExecuteAction()
