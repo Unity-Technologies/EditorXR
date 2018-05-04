@@ -94,7 +94,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
         spatialProxyRayOrigin.position = Vector3.zero;
         spatialProxyRayOrigin.rotation = Quaternion.identity;
         spatialProxyRay = spatialProxyRayOrigin.GetComponent<DefaultProxyRay>();
-        spatialProxyRay.SetColor(Color.white);
+        //spatialProxyRay.SetColor(Color.white);
     }
 
     private void OnDestroy()
