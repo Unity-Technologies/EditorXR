@@ -9,24 +9,9 @@ namespace UnityEditor.Experimental.EditorVR
     public interface ISpatialMenuProvider
     {
         /// <summary>
-        /// Name of the menu whose contents will be added to the menu
+        /// Collection of section elements with which to populate the spatial UI table/list/view
         /// </summary>
-        string spatialMenuName { get; }
-
-        /// <summary>
-        /// Description of the menu whose contents will be added to the menu
-        /// </summary>
-        string spatialMenuDescription { get; }
-
-        /// <summary>
-        /// Bool denoting that this menu's contents are being displayed via the SpatialUI
-        /// </summary>
-        bool displayingSpatially { get; set; }
-
-        /// <summary>
-        /// Collection of elements with which to populate the corresponding spatial UI table/list/view
-        /// </summary>
-        List<SpatialMenu.SpatialUITableElement> spatialTableElements { get; }
+        List<SpatialMenu.SpatialMenuData> spatialMenuData { get; }
     }
 }
 #endif
