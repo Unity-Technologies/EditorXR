@@ -340,11 +340,11 @@ namespace UnityEditor.Experimental.EditorVR
             }
             */
 
-            Debug.LogWarning("Adding a provider");
+            //Debug.LogWarning("Adding a provider");
             s_SpatialMenuProviders.Add(provider);
 
-            if (provider.spatialMenuData.Count == 0)
-                Debug.LogWarning("No spatial menu data was found when adding a new Spatial Menu provider");
+            //if (provider.spatialMenuData.Count == 0)
+                //Debug.LogWarning("No spatial menu data was found when adding a new Spatial Menu provider");
 
             foreach (var menuElementSet in provider.spatialMenuData)
             {

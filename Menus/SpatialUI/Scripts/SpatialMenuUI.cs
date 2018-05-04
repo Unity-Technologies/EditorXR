@@ -420,7 +420,6 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         m_SpatialUIGhostVisuals.SetPositionOffset(newGhostInputDevicePositionOffset);
         m_HomeSectionDescription.gameObject.SetActive(false);
         this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
-
     }
 
     public void HighlightHomeSectionMenuElement(int providerCollectionPosition)
