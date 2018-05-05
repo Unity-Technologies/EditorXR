@@ -66,8 +66,24 @@ namespace UnityEditor.Experimental.EditorVR
         Vector3 m_OriginalBordersLocalScale;
         float m_BordersOriginalAlpha;
         Color m_OriginalBackgroundColor;
+        bool m_Visible;
 
         public Action selectedAction { get { return m_SelectedAction; } }
+
+        public bool visible
+        {
+            get { return m_Visible; }
+            set
+            {
+                if (m_Visible == value)
+                    return;
+
+                m_Visible = value;
+
+                if (m_CanvasGroup != null)
+                    this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(m_Visible));
+            }
+        }
 
         public bool highlighted
         {
@@ -140,9 +156,6 @@ namespace UnityEditor.Experimental.EditorVR
                 m_OriginalBordersLocalScale = m_TopBorder.localScale;
                 m_BordersOriginalAlpha = m_BordersCanvasGroup.alpha;
             }
-
-            if (m_CanvasGroup != null)
-                this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(true));
         }
 
         void OnDisable()
@@ -152,6 +165,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         IEnumerator AnimateVisibility(bool fadeIn)
         {
+            Debug.LogError("Animating visible of submenu button : " + fadeIn);
             var currentAlpha = fadeIn ? 0f : m_CanvasGroup.alpha;
             var targetAlpha = fadeIn ? 1f : 0f;
             var alphaTransitionAmount = 0f;

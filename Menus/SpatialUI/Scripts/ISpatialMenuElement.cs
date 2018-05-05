@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using UnityEngine;
 
 public interface ISpatialMenuElement
@@ -7,5 +8,8 @@ public interface ISpatialMenuElement
 
     bool highlighted { set; }
 
-    Action <Transform, Action, string, string> Setup { get; set; }
+    bool visible { set; }
+
+    Action <Transform, Action, string, string> Setup { get; }
 }
+#endif

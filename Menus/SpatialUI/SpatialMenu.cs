@@ -153,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        bool visible
+        private bool visible
         {
             get { return m_Visible; }
 
@@ -162,18 +162,20 @@ namespace UnityEditor.Experimental.EditorVR
                 if (m_Visible == value)
                     return;
 
-                RefreshProviderData();
                 m_Visible = value;
-                m_SpatialMenuUi.visible = m_Visible;
+                //m_SpatialMenuUi.visible = m_Visible;
                 pollingSpatialInputType = m_Visible;
 
                 if (m_Visible)
                 {
+                    RefreshProviderData();
+                    spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
                     //gameObject.SetActive(true);  MOVED TO SPATIAL UI View
                 }
                 else
                 {
-                    if (m_HighlightedMenuElements != null &&
+                    if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent &&
+                        m_HighlightedMenuElements != null &&
                         m_HighlightedMenuElements.Count > 0 &&
                         m_HighlightedMenuElements[m_HighlightedMenuElementPosition] != null &&
                         m_HighlightedMenuElements[m_HighlightedMenuElementPosition].correspondingFunction != null)
@@ -418,7 +420,7 @@ namespace UnityEditor.Experimental.EditorVR
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             //m_HomeTextBackgroundTransform.localScale = new Vector3(m_HomeTextBackgroundOriginalLocalScale.x, m_HomeTextBackgroundOriginalLocalScale.y * 6, 1f);
 
-            m_SpatialMenuUi.DisplayHighlightedSubMenuContents();
+           //m_SpatialMenuUi.DisplayHighlightedSubMenuContents();
 
             // Spatial Scrolling setup
             //spatialScrollStartPosition = spatialScrollOrigin.position;

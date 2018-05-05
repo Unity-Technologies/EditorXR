@@ -141,7 +141,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     public List<SpatialMenu.SpatialMenuElement> highlightedMenuElements;
     public string highlightedSectionName { get; set; }
 
-    public bool visible
+    bool visible
     {
         get { return m_Visible; }
         set
@@ -153,6 +153,9 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             gameObject.SetActive(m_Visible);
             allowAdaptivePositioning = m_Visible;
             resetAdaptivePosition = m_Visible;
+
+            if (!m_Visible)
+                spatialinterfaceState = SpatialinterfaceState.hidden;
         }
     }
 
@@ -161,19 +164,35 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     {
         set
         {
+            // If the previous state was hidden, reset the state of the UI
+            if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && value == SpatialinterfaceState.navigatingTopLevel)
+                Reset();
+
             if (m_SpatialinterfaceState == value)
                 return;
 
             // If the previous state was Hidden & this object was disabled, enable the UI gameobject
-            if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && !gameObject.activeSelf)
-                gameObject.SetActive(true);
+            //if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && !gameObject.activeSelf)
+                //gameObject.SetActive(true);
 
             m_SpatialinterfaceState = value;
+            Debug.LogError("Switching spatial menu state to " + m_SpatialinterfaceState);
 
             switch (m_SpatialinterfaceState)
             {
                 case SpatialinterfaceState.navigatingTopLevel:
+                    visible = true;
                     DisplayHomeSectionContents();
+                    break;
+                case SpatialinterfaceState.navigatingSubMenuContent:
+                    DisplayHighlightedSubMenuContents();
+                    break;
+                case SpatialinterfaceState.hidden:
+                    foreach (var element in currentlyDisplayedMenuElements)
+                    {
+                        // Perform animated hiding of elements
+                        element.visible = false;
+                    }
                     break;
             }
         }
@@ -246,6 +265,11 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     public Transform subMenuContainer { get { return m_SubMenuContainer; } }
 
+    void Start()
+    {
+        visible = false;
+    }
+
     public void Setup()
     {
         m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
@@ -263,6 +287,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     public void Reset()
     {
+        Debug.LogError("Resetting state in Spatial menu UI " + m_SpatialinterfaceState);
         ClearHomeMenuElements();
         ClearSubMenuElements();
 
@@ -285,7 +310,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     void ClearHomeMenuElements()
     {
         var homeMenuElementParent = m_HomeMenuLayoutGroup.transform;
-        var childrenToDelete = homeMenuElementParent.GetComponentsInChildren<RectTransform>().Where((x) => x != homeMenuElementParent);
+        var childrenToDelete = homeMenuElementParent.GetComponentsInChildren<Transform>().Where((x) => x != homeMenuElementParent);
         var childCount = childrenToDelete.Count();
         if (childCount > 0)
         {
@@ -361,17 +386,12 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             providerMenuElement.Setup(homeMenuElementParent, () => { }, spatialMenuData[i].spatialMenuName, null);
             currentlyDisplayedMenuElements.Add(providerMenuElement);
             //m_ProviderToHomeMenuElements[menuData] = providerMenuElement;
-
-            //m_HomeMenuLayoutGroup.SetLayoutHorizontal();
-            //m_HomeMenuLayoutGroup.enabled = false;
-            //Canvas.ForceUpdateCanvases();
-            //m_HomeMenuLayoutGroup.enabled = true;
-            //Canvas.ForceUpdateCanvases();
         }
     }
 
     public void DisplayHighlightedSubMenuContents()
     {
+        ClearHomeMenuElements();
         const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
         int subMenuElementCount = 0;
         foreach (var menuData in spatialMenuData)
@@ -397,6 +417,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
                     providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, subMenuElement.tooltipText);
                     currentlyDisplayedMenuElements.Add(providerMenuElement);
                     subMenuElement.VisualElement = providerMenuElement;
+                    providerMenuElement.visible = true;
                 }
 
                 //.Add(provider, providerMenuElement);
@@ -426,7 +447,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             var targetSize = i == providerCollectionPosition ? Vector3.one : Vector3.one * 0.5f;
             // switch to highlighted bool set in ISpatialMenuElement
             //menuData.gameObject.transform.localScale = targetSize;
-            currentlyDisplayedMenuElements[i].gameObject.transform.localScale = targetSize;
+            if (currentlyDisplayedMenuElements.Count >= i && currentlyDisplayedMenuElements[i] != null)
+                currentlyDisplayedMenuElements[i].gameObject.transform.localScale = targetSize;
         }
     }
 
@@ -445,11 +467,11 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     void Update()
     {
-        m_HomeMenuLayoutGroup.spacing = m_OriginalHomeSectionTitleTextSpacing + Mathf.Sign(Time.frameCount) * 0.1f;
-
+        m_HomeMenuLayoutGroup.spacing = 1 % Time.unscaledDeltaTime * 0.01f; // Don't ask... horizontal layout group refused to play nicely without this... b'cause magic mysetery something
         //Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
         if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
         {
+            //Debug.LogWarning("<color=orange>Hiding spatial menu UI</color>");
             // Performed an animated hide of any currently displayed UI
             m_Director.time = m_Director.time += Time.unscaledDeltaTime;
             m_Director.Evaluate();
@@ -462,6 +484,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         }
         else if (m_Director.time > m_HomeSectionTimelineDuration)
         {
+            Debug.LogWarning("<color=green>Finished hiding spatial menu UI</color>");
             // UI hiding animation has finished, perform final cleanup.  TODO: optimze for pooling and a lesser GC impact
             //m_Director.time = 0f;
             m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
@@ -472,7 +495,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             m_Director.Evaluate();
             ClearHomeMenuElements();
             ClearSubMenuElements();
-            gameObject.SetActive(m_Visible);
+            visible = false;
         }
         else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
         {
@@ -510,15 +533,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
                 {
                     m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
                     m_SubMenuContentsCanvasGroup.alpha = 0f;
-                    var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
-                    if (deleteOldChildren.Count() > 0)
-                    {
-                        foreach (var child in deleteOldChildren)
-                        {
-                            if (child != null && child.gameObject != null)
-                                ObjectUtils.Destroy(child.gameObject);
-                        }
-                    }
+                    ClearSubMenuElements();
                     return;
                 }
 

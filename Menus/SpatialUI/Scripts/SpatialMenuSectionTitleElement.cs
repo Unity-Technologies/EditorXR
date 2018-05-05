@@ -42,9 +42,23 @@ namespace UnityEditor.Experimental.EditorVR
         bool m_Highlighted;
         Vector3 m_OriginalBordersLocalScale;
         float m_BordersOriginalAlpha;
+        bool m_Visible;
 
         public Transform elementTransform { get { return transform; } }
         public Action selectedAction { get { return m_SelectedAction; } }
+
+        public bool visible
+        {
+            get { return m_Visible; }
+            set
+            {
+                if (m_Visible == value)
+                    return;
+
+                if (m_CanvasGroup != null)
+                    this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(m_Visible));
+            }
+        }
 
         public bool highlighted
         {
@@ -105,9 +119,6 @@ namespace UnityEditor.Experimental.EditorVR
         {
             // Cacheing position here, as layout groups were altering the position when originally cacheing in Start()
             m_TextOriginalLocalPosition = m_Text.transform.localPosition;
-
-            if (m_CanvasGroup != null)
-                this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(true));
         }
 
         void OnDisable()
