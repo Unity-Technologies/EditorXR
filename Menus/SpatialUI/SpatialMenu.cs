@@ -21,9 +21,8 @@ using Random = UnityEngine.Random;
 namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
-    public class SpatialMenu : MonoBehaviour, IControlSpatialScrolling, IInstantiateUI,
-        IUsesNode, IUsesRayOrigin, ISelectTool, IDetectSpatialInputType, IConnectInterfaces,
-        IControlHaptics, INodeToRay, IMenu
+    public class SpatialMenu : MonoBehaviour, IProcessSpatialInput, IInstantiateUI, IUsesNode,
+        IUsesRayOrigin, ISelectTool, IConnectInterfaces, IControlHaptics, INodeToRay, IMenu
     {
         public class SpatialMenuData
         {
@@ -230,7 +229,7 @@ namespace UnityEditor.Experimental.EditorVR
         public bool pollingSpatialInputType { get; set; }
 
         // Spatial scroll interface members
-        public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
+        public SpatialInputModule.SpatialScrollData spatialScrollData { get; set; }
         public Transform spatialScrollOrigin { get; set; }
         public Vector3 spatialScrollStartPosition { get; set; }
         public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
@@ -402,8 +401,7 @@ namespace UnityEditor.Experimental.EditorVR
                 spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
                 spatialScrollStartPosition = spatialScrollOrigin.position;
                 var elementCount = m_HighlightedMenuElements.Count;
-                spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition,
-                spatialScrollOrigin.position, k_SpatialScrollVectorLength, elementCount, elementCount);
+                spatialScrollData = this.PerformSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, elementCount, elementCount);
             }
         }
 
@@ -520,7 +518,7 @@ namespace UnityEditor.Experimental.EditorVR
                 */
 
                 // TODO: check the node currently controlling the spatial UI, don't hard set on left hand
-                var spatialInputType = this.GetSpatialInputTypeForNode(Node.LeftHand);
+                //var spatialInputType = this.GetSpatialInputTypeForNode(Node.LeftHand);
                 //Debug.LogWarning("SpatialUI current input type : " + spatialInputType);
 
                 //if (spatialInputType == SpatialInputType.StateChangedThisFrame)

@@ -10,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public void LateBindInterfaceMethods(SpatialInputModule provider)
             {
                 IDetectSpatialInputTypeMethods.getSpatialInputTypeForNode = provider.GetSpatialInputTypeForNode;
+                IProcessSpatialInputTypeMethods.performSpatialScroll = provider.PerformSpatialScroll;
             }
         }
     }

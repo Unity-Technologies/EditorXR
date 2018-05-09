@@ -19,7 +19,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         DragTranslation = 1 << 3, // 8
         SingleAxisRotation = 1 << 4, // Validate that only one axis is being rotated
         FreeRotation = 1 << 5, // Can be either 0/1. Detect at least two axis' crossing their local rotation threshold, triggers ray-based selection
-        StateChangedThisFrame = 1 << 6,
+        CardinalConstrainedTanslation = 1 << 6,
+        StateChangedThisFrame = 1 << 7,
     }
 
     [Flags]
@@ -41,24 +42,133 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         StateChangedThisFrame = 1 << 11,
     }
 
-    public sealed class SpatialInputModule : MonoBehaviour
+    public sealed class SpatialInputModule : MonoBehaviour, IRayVisibilitySettings, IUsesViewerScale, IControlHaptics
     {
-        public class SpatialInputData : INodeToRay
+        public class SpatialScrollData : INodeToRay
         {
-            public SpatialInputData(Node node, IDetectSpatialInputType caller)
+            public SpatialScrollData(IProcessSpatialInput caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
             {
+                this.caller = caller;
+                this.node = node;
+                this.startingPosition = startingPosition;
+                this.currentPosition = currentPosition;
+                this.repeatingScrollLengthRange = repeatingScrollLengthRange;
+                this.scrollableItemCount = scrollableItemCount;
+                this.maxItemCount = maxItemCount;
+                this.centerVisuals = centerVisuals;
+                spatialDirection = null;
                 rayOrigin = this.RequestRayOriginFromNode(node);
-                m_Callers.Add(caller);
+            }
+
+            // Below is Data assigned by calling object requesting spatial scroll processing
+
+            /// <summary>
+            /// The object/caller initiating this particular spatial scroll action
+            /// </summary>
+            public IProcessSpatialInput caller { get; set; }
+
+            /// <summary>
+            /// The node on which this spatial scroll is being processed
+            /// </summary>
+            public Node node { get; set; }
+
+            /// <summary>
+            /// The ray origin on which this spatial scroll is being processed
+            /// </summary>
+            public Transform rayOrigin { get; set; }
+
+            /// <summary>
+            /// The origin/starting position of the scroll
+            /// </summary>
+            public Vector3 startingPosition { get; set; }
+
+            /// <summary>
+            /// The current scroll position
+            /// </summary>
+            public Vector3 currentPosition { get; set; }
+
+            /// <summary>
+            /// The magnitude at which a scroll will repeat/reset to its original scroll starting value
+            /// </summary>
+            public float repeatingScrollLengthRange { get; set; }
+
+            /// <summary>
+            /// Number of items being scrolled through
+            /// </summary>
+            public int scrollableItemCount { get; set; }
+
+            /// <summary>
+            /// Maximum number of items (to be scrolled through) that will be allowed
+            /// </summary>
+            public int maxItemCount { get; set; }
+
+            /// <summary>
+            /// If true, expand scroll visuals out from the center of the trigger/origin/start position
+            /// </summary>
+            public bool centerVisuals { get; set; }
+
+            // The Values below are populated by scroll processing
+
+            /// <summary>
+            /// The vector defining the spatial scroll direction
+            /// </summary>
+            public Vector3? spatialDirection { get; set; }
+
+            /// <summary>
+            /// 0-1 offset/magnitude of current scroll position, relative to the trigger/origin/start point, and the repeatingScrollLengthRange
+            /// </summary>
+            public float normalizedLoopingPosition { get; set; }
+
+            /// <summary>
+            /// Value representing how much of the pre-scroll drag amount has occurred
+            /// </summary>
+            public float dragDistance { get; set; }
+
+            /// <summary>
+            /// Bool denoting that the scroll trigger magnitude has been exceeded
+            /// </summary>
+            public bool passedMinDragActivationThreshold { get { return spatialDirection != null; } }
+
+            public void UpdateExistingScrollData(Vector3 newPosition)
+            {
+                currentPosition = newPosition;
+            }
+        }
+
+        public class SpatialInputReceiverData : INodeToRay
+        {
+            // SpatialInputReceiver interface reference / caller
+            // Transform/rayorigin
+            // bool request made this frame
+            // bool request made previous frame
+            // initialLocalPosition / cached when a new request this frame bool is set
+            // initialLocalRotation / cached when a new request this frame bool is set
+            // currentLocalPosition / cached each frame in which either request bool is true
+            // currentLocalRotation / cached each frame in which either request bool is true
+            // processing & cacheing of currentPosition+rotation is skipped if no request was made this frame, or previous frame
+            // 
+            public SpatialInputReceiverData(Node node, IProcessSpatialInput caller)
+            {
+                this.caller = caller;
+                rayOrigin = this.RequestRayOriginFromNode(node);
+                //m_Callers.Add(caller);
 
                 initialPosition = rayOrigin.position;
                 initialLocalRotation = rayOrigin.localRotation;
                 spatialInputType = SpatialInputType.None;
             }
 
-            private SpatialInputType m_SpatialInputType;
+            SpatialInputType m_SpatialInputType;
+            bool m_PolledThisFrame;
+            bool m_PolledPreviousFrame;
 
             // Collection housing caller objects requesting that this node be evaluated
-            readonly List<IDetectSpatialInputType> m_Callers = new List<IDetectSpatialInputType>();
+            //readonly List<IDetectSpatialInputType> m_Callers = new List<IDetectSpatialInputType>();
+
+            /// <summary>
+            /// The object/caller that will request spatial input related processing for a given node
+            /// </summary>
+            public IProcessSpatialInput caller { get; set; }
 
             /// <summary>
             /// The ray origin on which this spatial scroll is being processed
@@ -95,6 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float CurrenLocalYRotation { get { return rayOrigin.localRotation.eulerAngles.y; } }
             public float CurrenLocalZRotation { get { return rayOrigin.localRotation.eulerAngles.z; } }
 
+            /* TODO: multiple callers per-node is not needed at this time, refactor out of system
             public void AddCaller(IDetectSpatialInputType caller)
             {
                 if (!m_Callers.Contains(caller))
@@ -115,24 +226,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 return m_Callers.Count > 0;
             }
+            */
 
-            public bool beingPolled
-            {
-                get
-                {
-                    var beingPolledByCaller = false;
-                    foreach (var caller in m_Callers)
-                    {
-                        if (caller.pollingSpatialInputType)
-                        {
-                            beingPolledByCaller = true;
-                            break;
-                        }
-                    }
-
-                    return beingPolledByCaller;
-                }
-            }
+            /// <summary>
+            /// When not having been polled for a frame, stop monitoring the corresponding transform in Update
+            /// </summary>
+            public bool beingPolled { get { return (m_PolledThisFrame || m_PolledPreviousFrame); } }
 
             public bool stateChangedThisFrame { get; set; }
 
@@ -178,7 +277,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         HapticPulse m_SingleAxistRotationPulse; // The pulse performed on a node performing a spatial scroll while only in single-axis rotation mode
 
         // Collection housing objects whose spatial input is being processed
-        readonly Dictionary<Node, SpatialInputData> m_SpatialNodeData = new Dictionary<Node, SpatialInputData>();
+        readonly Dictionary<Node, SpatialInputReceiverData> m_SpatialNodeData = new Dictionary<Node, SpatialInputReceiverData>();
+
+        // Collection housing objects whose scroll data is being processed
+        readonly List<IProcessSpatialInput> m_SpatialScrollCallers = new List<IProcessSpatialInput>();
 
         RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
 
@@ -242,16 +344,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        bool isNodeTranslating(SpatialInputData nodeData)
+        bool isNodeTranslating(SpatialInputReceiverData nodeReceiverData)
         {
             const float kSubMenuNavigationTranslationTriggerThreshold = 0.075f;
-            var initialPosition = nodeData.initialPosition;
-            var currentPosition = nodeData.currentPosition;
+            var initialPosition = nodeReceiverData.initialPosition;
+            var currentPosition = nodeReceiverData.currentPosition;
             var aboveMagnitudeDeltaThreshold = Vector3.Magnitude(initialPosition - currentPosition) > kSubMenuNavigationTranslationTriggerThreshold;
 
             if (aboveMagnitudeDeltaThreshold)
             {
-                nodeData.spatialInputType = SpatialInputType.DragTranslation;
+                nodeReceiverData.spatialInputType = SpatialInputType.DragTranslation;
             }
 
             /* No need to test this, only another rotation state, or a state of NONE will clear the value
@@ -265,7 +367,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return aboveMagnitudeDeltaThreshold;
         }
 
-        bool isNodeRotatingSingleAxisOrFreely(SpatialInputData nodeData)
+        bool isNodeRotatingSingleAxisOrFreely(SpatialInputReceiverData nodeReceiverData)
         {
             // Test each individual axis delta for residing below the given threshold
             // If more than 1 tests beyond the threshold, set isTorationFreely to true, and isTranslating to false, then return false here
@@ -277,21 +379,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             // Prioritize Z rotation, then X, then Y
             var simultaneousAxisRotationCount = 0;
-            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.z, nodeData.CurrenLocalZRotation) ? 1 : 0;
-            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.x, nodeData.CurrenLocalXRotation) ? 1 : 0;
+            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeReceiverData.initialLocalRotation.z, nodeReceiverData.CurrenLocalZRotation) ? 1 : 0;
+            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeReceiverData.initialLocalRotation.x, nodeReceiverData.CurrenLocalXRotation) ? 1 : 0;
 
             // don't perform if this is going to be evaluated as a free rotation, due to multi-axis threshold crossing having already occurred
             if (simultaneousAxisRotationCount < 2)
-                simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeData.initialLocalRotation.y, nodeData.CurrenLocalYRotation) ? 1 : 0;
+                simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeReceiverData.initialLocalRotation.y, nodeReceiverData.CurrenLocalYRotation) ? 1 : 0;
 
             switch (simultaneousAxisRotationCount)
             {
                     case 1:
-                        nodeData.spatialInputType = SpatialInputType.SingleAxisRotation;
+                        nodeReceiverData.spatialInputType = SpatialInputType.SingleAxisRotation;
                         break;
                     case 2:
                     case 3:
-                        nodeData.spatialInputType = SpatialInputType.FreeRotation;
+                        nodeReceiverData.spatialInputType = SpatialInputType.FreeRotation;
                         break;
             }
 
@@ -310,31 +412,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// <param name="node">Node whose input will be processed.  A caller may track multiple nodes.</param>
         public void BeginSpatialInputDetection(IDetectSpatialInputType caller, Node node)
         {
-            SpatialInputData existingData = null;
+        /*
+            SpatialInputReceiverData existingReceiverData = null;
             foreach (var nodeData in m_SpatialNodeData)
             {
                 if (nodeData.Key == node)
                 {
-                    existingData = nodeData.Value;
+                    existingReceiverData = nodeData.Value;
                     break;
                 }
             }
 
-            if (existingData != null)
+            if (existingReceiverData != null)
             {
-                existingData.AddCaller(caller);
+                existingReceiverData.AddCaller(caller);
             }
             else
             {
                 // Create a new KVP for a node not currently being processed
                 // Additional callers can be added to a node's correspondng SpatialInputData
-                var newTrackedObjectData = new SpatialInputData(node, caller);
+                var newTrackedObjectData = new SpatialInputReceiverData(node, caller);
                 m_SpatialNodeData.Add(node, newTrackedObjectData);
             }
+        */
         }
 
         public void EndSpatialInputDetection(IDetectSpatialInputType caller, Node node)
         {
+        /*
             // remove caller from any spatialInputData objects referencing this caller
             // If no callers remain for a node, remove the corresponding entry from the SpatialNodeData collection
             foreach (var nodeData in m_SpatialNodeData)
@@ -349,6 +454,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     break;
                 }
             }
+        */
         }
 
         /// <summary>
@@ -373,6 +479,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             var nodeDetected = false;
             SpatialInputType spatialInputType = SpatialInputType.None;
+            /*
             foreach (var nodeToInputType in m_SpatialNodeData)
             {
                 if (nodeToInputType.Key == node)
@@ -389,8 +496,63 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 // Node not found, add node and caller to collection
                 BeginSpatialInputDetection(obj, node);
             }
+            */
 
             return spatialInputType;
+        }
+
+        internal SpatialScrollData PerformSpatialScroll(IProcessSpatialInput caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
+        {
+            // Continue processing of spatial scrolling for a given caller,
+            // Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
+            SpatialScrollData scrollData = null;
+            foreach (var scroller in m_SpatialScrollCallers)
+            {
+                if (scroller == caller)
+                {
+                    scrollData = scroller.spatialScrollData;
+                    scrollData.UpdateExistingScrollData(currentPosition);
+                    break;
+                }
+            }
+
+            if (scrollData == null)
+            {
+                scrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
+                m_SpatialScrollCallers.Add(caller);
+                this.AddRayVisibilitySettings(scrollData.rayOrigin, caller, false, false, 1);
+            }
+
+            var directionVector = currentPosition - startingPosition;
+            if (scrollData.spatialDirection == null)
+            {
+                var newDirectionVectorThreshold = 0.0175f; // Initial magnitude beyond which spatial scrolling will be evaluated
+                newDirectionVectorThreshold *= this.GetViewerScale();
+                var dragMagnitude = Vector3.Magnitude(directionVector);
+                var dragPercentage = dragMagnitude / newDirectionVectorThreshold;
+                const int kPulseSpeedMultiplier = 20;
+                const float kPulseThreshold = 0.5f;
+                const float kPulseOnAmount = 1f;
+                const float kPulseOffAmount = 0f;
+                var repeatingPulseAmount = Mathf.Sin(Time.realtimeSinceStartup * kPulseSpeedMultiplier) > kPulseThreshold ? kPulseOnAmount : kPulseOffAmount; // Perform an on/off repeating pulse while waiting for the drag threshold to be crossed
+                scrollData.dragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set value representing how much of the pre-scroll drag amount has occurred
+                //this.Pulse(node, m_ActivationPulse, repeatingPulseAmount, repeatingPulseAmount);
+                if (dragMagnitude > newDirectionVectorThreshold)
+                    scrollData.spatialDirection = directionVector; // Initialize vector defining the spatial scroll direction
+            }
+            else
+            {
+                var spatialDirection = scrollData.spatialDirection.Value;
+                var scrollingAfterTriggerOirigin = Vector3.Dot(directionVector, spatialDirection) >= 0; // Detect that the user is scrolling forward from the trigger origin point
+                var projectionVector = scrollingAfterTriggerOirigin ? spatialDirection : spatialDirection + spatialDirection;
+                var projectedAmount = Vector3.Project(directionVector, projectionVector).magnitude / this.GetViewerScale();
+
+                // Mandate that scrolling maintain the initial direction, regardless of the user scrolling before/after the trigger origin point; prevent direction flipping
+                projectedAmount = scrollingAfterTriggerOirigin ? projectedAmount : 1 - projectedAmount;
+                scrollData.normalizedLoopingPosition = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
+            }
+
+            return scrollData;
         }
     }
 }
