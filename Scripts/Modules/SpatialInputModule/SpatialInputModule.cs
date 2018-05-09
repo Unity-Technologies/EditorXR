@@ -44,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
     public sealed class SpatialInputModule : MonoBehaviour, IRayVisibilitySettings, IUsesViewerScale, IControlHaptics, IControlSpatialHinting
     {
-        internal enum SpatialCardinalScrollDirection
+        public enum SpatialCardinalScrollDirection
         {
             LocalX,
             LocalY,
@@ -290,6 +290,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly List<IProcessSpatialInput> m_SpatialScrollCallers = new List<IProcessSpatialInput>();
 
         RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
+
+        Transform m_HMDTransform;
+
+        void Awake()
+        {
+            m_HMDTransform = CameraUtils.GetMainCamera().transform;
+        }
 
         void Update()
         {
@@ -562,7 +569,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return scrollData;
         }
 
-        internal SpatialScrollData PerformLocalCardinalConstrainedSpatialScroll(IProcessSpatialInput caller, SpatialCardinalScrollDirection cardinalScrollDirection, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
+        internal SpatialScrollData PerformLocalCardinallyConstrainedSpatialScroll(IProcessSpatialInput caller, SpatialCardinalScrollDirection cardinalScrollDirection, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
         {
             // Continue processing of spatial scrolling for a given caller,
             // Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
@@ -584,7 +591,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 this.AddRayVisibilitySettings(scrollData.rayOrigin, caller, false, false, 1);
             }
 
-            var directionVector = currentPosition - startingPosition;
+            var cardinalDirectionVector = startingPosition;
+            /*
+            switch (cardinalScrollDirection)
+            {
+                case SpatialCardinalScrollDirection.LocalX:
+                    cardinalDirectionVector = Vector3.left;
+                    break;
+                case SpatialCardinalScrollDirection.LocalY:
+                    cardinalDirectionVector = Vector3.up;
+                    break;
+                case SpatialCardinalScrollDirection.LocalZ:
+                    cardinalDirectionVector = Vector3.forward;
+                    break;
+            }
+            */
+
+            var directionVector = currentPosition - cardinalDirectionVector;
+
+            // Define the initial vector upon which further spatial scrolling will be orthogonally projected upon
+            var hmdToDeviceInitialVector = startingPosition - m_HMDTransform.position;
+            var hmdToDeviceCurrentVector = currentPosition - m_HMDTransform.position;
+
+            var projectedVector = Vector3.ProjectOnPlane(hmdToDeviceCurrentVector, hmdToDeviceInitialVector);
+            Debug.LogError("Projected vector : <color=yellow>" + projectedVector + "</color>");
+
+            //project additional positions upon the plane defined by the hmdToDeviceInitialVector
+
             if (scrollData.spatialDirection == null)
             {
                 var newDirectionVectorThreshold = 0.0175f; // Initial magnitude beyond which spatial scrolling will be evaluated

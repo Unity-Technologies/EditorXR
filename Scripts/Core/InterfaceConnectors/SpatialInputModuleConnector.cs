@@ -12,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IDetectSpatialInputTypeMethods.getSpatialInputTypeForNode = provider.GetSpatialInputTypeForNode;
                 IProcessSpatialInputTypeMethods.performSpatialScroll = provider.PerformSpatialScroll;
                 IProcessSpatialInputTypeMethods.performOriginalSpatialScroll = provider.PerformOriginalSpatialScroll;
+                IProcessSpatialInputTypeMethods.performLocalCardinallyConstrainedSpatialScroll = provider.PerformLocalCardinallyConstrainedSpatialScroll;
                 IProcessSpatialInputTypeMethods.endSpatialScroll = provider.EndScroll;
             }
         }

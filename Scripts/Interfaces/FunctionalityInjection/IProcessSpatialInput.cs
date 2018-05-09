@@ -25,6 +25,31 @@ namespace UnityEditor.Experimental.EditorVR
 
     public static class IProcessSpatialInputTypeMethods
     {
+        internal delegate SpatialInputModule.SpatialScrollData PerformLocalCardinallyConstrainedSpatialScrollDelegate(IProcessSpatialInput caller, SpatialInputModule.SpatialCardinalScrollDirection cardinalScrollDirection, Node node, Vector3 startingPosition,
+            Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
+
+        internal static PerformLocalCardinallyConstrainedSpatialScrollDelegate performLocalCardinallyConstrainedSpatialScroll { private get; set; }
+
+        /// <summary>
+        /// Perform a spatial scroll action
+        /// </summary>
+        /// "obj" : The object requesting the performance of a spatial scroll action
+        /// <param name="node">The node on which to display & perform the spatial scroll</param>
+        /// <param name="startingPosition">The initial position of the spatial scroll</param>
+        /// <param name="currentPosition">The current/updated position of the spatial scroll</param>
+        /// <param name="repeatingScrollLengthRange">The length at which a scroll action will return a repeating/looping value</param>
+        /// <param name="scrollableItemCount">The number of items being scrolled through with this action</param>
+        /// <param name="maxItemCount">The maximum number of items that can be scrolled through for this action</param>
+        /// <param name="centerVisuals">If true, expand the scroll line visuals outward in both directions from the scroll start position</param>
+        /// <returns>The spatial scroll data for a single scroll action, but an individual caller object</returns>
+        public static SpatialInputModule.SpatialScrollData PerformLocalCardinallyConstrainedSpatialScroll(this IProcessSpatialInput obj, SpatialInputModule.SpatialCardinalScrollDirection cardinalScrollDirection, Node node,
+            Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+        {
+            return performLocalCardinallyConstrainedSpatialScroll(obj, cardinalScrollDirection, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
+        }
+
+        // Below are previous implementations
+
         internal delegate SpatialInputModule.SpatialScrollData PerformOriginalSpatialScrollDelegate(IProcessSpatialInput caller, Node node, Vector3 startingPosition,
             Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
 
