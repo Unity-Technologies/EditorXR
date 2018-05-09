@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             public void LateBindInterfaceMethods(SpatialScrollModule provider)
             {
-                IControlSpatialScrollingMethods.performSpatialScroll = provider.PerformScroll;
+                IControlSpatialScrollingMethods.performSpatialScrollDeprecated = provider.PerformScroll;
                 IControlSpatialScrollingMethods.endSpatialScroll = provider.EndScroll;
             }
         }
