@@ -12,7 +12,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
-        IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
+        IUsesViewerScale, IProcessSpatialInput, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
         IRequestFeedback, ISpatialMenuProvider, INodeToRay
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
@@ -63,7 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public IToolsMenuButton PreviewToolsMenuButton { get; private set; }
         public Transform alternateMenuOrigin { get; set; }
         public Transform spatialScrollOrigin { get; set; }
-        public SpatialScrollModule.SpatialScrollDataDeprecated SpatialScrollDataDeprecated { get; set; }
         public Vector3 spatialScrollStartPosition { get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
@@ -78,6 +77,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
         public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
         public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
+        public SpatialInputModule.SpatialScrollData spatialScrollData { get; set; }
+        public bool pollingSpatialInputType { get; set; }
 
         public bool mainMenuActivatorInteractable
         {
@@ -182,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
-            return;
+            //return;
 
             var buttonCount = buttons.Count;
             if (buttonCount <= k_ActiveToolOrderPosition + 1)
@@ -190,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             var toolslMenuInput = (ToolsMenuInput)input;
 
-            if (SpatialScrollDataDeprecated != null && toolslMenuInput.cancel.wasJustPressed)
+            if (spatialScrollData != null && toolslMenuInput.cancel.wasJustPressed)
             {
                 consumeControl(toolslMenuInput.cancel);
                 consumeControl(toolslMenuInput.show);
@@ -206,7 +207,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (toolslMenuInput.show.wasJustReleased)
                 HideScrollFeedback();
 
-            if (SpatialScrollDataDeprecated == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld) && toolslMenuInput.select.wasJustPressed)
+            if (spatialScrollData == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld) && toolslMenuInput.select.wasJustPressed)
             {
                 spatialScrollStartPosition = spatialScrollOrigin.position;
                 allowSpatialQuickToggleActionBeforeThisTime = Time.realtimeSinceStartup + spatialQuickToggleDuration;
@@ -216,25 +217,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 consumeControl(toolslMenuInput.select);
 
                 // Assign initial SpatialScrollData; begin scroll
-                SpatialScrollDataDeprecated = this.PerformSpatialScrollDeprecated(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+                spatialScrollData = this.PerformOriginalSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
 
                 HideScrollFeedback();
                 ShowMenuFeedback();
             }
-            else if (SpatialScrollDataDeprecated != null && toolslMenuInput.show.isHeld)
+            else if (spatialScrollData != null && toolslMenuInput.show.isHeld)
             {
                 consumeControl(toolslMenuInput.show);
                 consumeControl(toolslMenuInput.select);
 
                 // Attempt to close a button, if a scroll has passed the trigger threshold
-                if (SpatialScrollDataDeprecated != null && toolslMenuInput.select.wasJustPressed)
+                if (spatialScrollData != null && toolslMenuInput.select.wasJustPressed)
                 {
                     if (m_ToolsMenuUI.DeleteHighlightedButton())
                         buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
 
                     if (buttonCount <= k_ActiveToolOrderPosition + 1)
                     {
-                        if (SpatialScrollDataDeprecated != null)
+                        if (spatialScrollData != null)
                             this.EndSpatialScroll();
 
                         return;
@@ -243,30 +244,30 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 // normalized input should loop after reaching the 0.15f length
                 buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-                SpatialScrollDataDeprecated = this.PerformSpatialScrollDeprecated(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
-                var normalizedRepeatingPosition = SpatialScrollDataDeprecated.normalizedLoopingPosition;
+                spatialScrollData = this.PerformOriginalSpatialScroll(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+                var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
                 if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
                 {
                     if (!m_ToolsMenuUI.allButtonsVisible)
                     {
-                        m_ToolsMenuUI.spatialDragDistance = SpatialScrollDataDeprecated.dragDistance;
+                        m_ToolsMenuUI.spatialDragDistance = spatialScrollData.dragDistance;
                         this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
                         m_ToolsMenuUI.allButtonsVisible = true;
                     }
-                    else if (SpatialScrollDataDeprecated.spatialDirection != null)
+                    else if (spatialScrollData.spatialDirection != null)
                     {
-                        m_ToolsMenuUI.startingDragOrigin = SpatialScrollDataDeprecated.spatialDirection;
+                        m_ToolsMenuUI.startingDragOrigin = spatialScrollData.spatialDirection;
                     }
 
                     m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
                 }
             }
-            else if (SpatialScrollDataDeprecated != null && !toolslMenuInput.show.isHeld && !toolslMenuInput.select.isHeld)
+            else if (spatialScrollData != null && !toolslMenuInput.show.isHeld && !toolslMenuInput.select.isHeld)
             {
                 consumeControl(toolslMenuInput.show);
                 consumeControl(toolslMenuInput.select);
 
-                if (SpatialScrollDataDeprecated != null && SpatialScrollDataDeprecated.passedMinDragActivationThreshold)
+                if (spatialScrollData != null && spatialScrollData.passedMinDragActivationThreshold)
                 {
                     m_ToolsMenuUI.SelectHighlightedButton();
                 }

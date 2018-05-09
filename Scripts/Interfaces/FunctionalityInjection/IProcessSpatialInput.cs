@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
@@ -24,6 +25,29 @@ namespace UnityEditor.Experimental.EditorVR
 
     public static class IProcessSpatialInputTypeMethods
     {
+        internal delegate SpatialInputModule.SpatialScrollData PerformOriginalSpatialScrollDelegate(IProcessSpatialInput caller, Node node, Vector3 startingPosition,
+            Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
+
+        internal static PerformSpatialScrollDelegate performOriginalSpatialScroll { private get; set; }
+
+        /// <summary>
+        /// Perform a spatial scroll action
+        /// </summary>
+        /// "obj" : The object requesting the performance of a spatial scroll action
+        /// <param name="node">The node on which to display & perform the spatial scroll</param>
+        /// <param name="startingPosition">The initial position of the spatial scroll</param>
+        /// <param name="currentPosition">The current/updated position of the spatial scroll</param>
+        /// <param name="repeatingScrollLengthRange">The length at which a scroll action will return a repeating/looping value</param>
+        /// <param name="scrollableItemCount">The number of items being scrolled through with this action</param>
+        /// <param name="maxItemCount">The maximum number of items that can be scrolled through for this action</param>
+        /// <param name="centerVisuals">If true, expand the scroll line visuals outward in both directions from the scroll start position</param>
+        /// <returns>The spatial scroll data for a single scroll action, but an individual caller object</returns>
+        public static SpatialInputModule.SpatialScrollData PerformOriginalSpatialScroll(this IProcessSpatialInput obj, Node node,
+            Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+        {
+            return performOriginalSpatialScroll(obj, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
+        }
+
         internal delegate SpatialInputModule.SpatialScrollData PerformSpatialScrollDelegate(IProcessSpatialInput caller, Node node, Vector3 startingPosition,
            Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
 
@@ -49,6 +73,16 @@ namespace UnityEditor.Experimental.EditorVR
 
         internal delegate SpatialInputType GetSpatialInputTypeForNodeDelegate(IDetectSpatialInputType caller, Node node);
         internal static GetSpatialInputTypeForNodeDelegate getSpatialInputTypeForNode { private get; set; }
+
+        internal static Action<IProcessSpatialInput> endSpatialScroll { private get; set; }
+        /// <summary>
+        /// End a spatial scrolling action for a given caller
+        /// </summary>
+        /// "obj" : The caller whose spatial scroll action will be ended
+        public static void EndSpatialScroll(this IProcessSpatialInput obj)
+        {
+            endSpatialScroll(obj);
+        }
 
         /// <summary>
         /// Detect the active/current spatial input type of a given node

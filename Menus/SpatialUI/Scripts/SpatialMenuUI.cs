@@ -287,7 +287,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     public void Reset()
     {
-        Debug.LogError("Resetting state in Spatial menu UI " + m_SpatialinterfaceState);
+        Debug.LogWarning("Resetting state in Spatial menu UI " + m_SpatialinterfaceState);
         ClearHomeMenuElements();
         ClearSubMenuElements();
 
