@@ -67,6 +67,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 rayOrigin = this.RequestRayOriginFromNode(node);
             }
 
+            private int m_lastChangedFrame;// m_PolledThisFrame;
+            //bool m_PolledPreviousFrame;
+
+            /// <summary>
+            /// When not having been polled for a frame, stop monitoring the corresponding transform in Update
+            /// </summary>
+            public bool beingPolled { get { return Time.frameCount - m_lastChangedFrame < 2; } } // after a frame in which this data isn't polled/updated, end the scroll action
+
             // Below is Data assigned by calling object requesting spatial scroll processing
 
             /// <summary>
@@ -130,6 +138,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// Value representing how much of the pre-scroll drag amount has occurred
             /// </summary>
             public float dragDistance { get; set; }
+
+            /// <summary>
+            /// Order/position of the currently highlighted menu element
+            /// </summary>
+            public int highlightedMenuElementPosition { get { return (int)(scrollableItemCount * normalizedLoopingPosition); } }
 
             /// <summary>
             /// Bool denoting that the scroll trigger magnitude has been exceeded

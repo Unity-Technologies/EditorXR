@@ -615,7 +615,7 @@ namespace UnityEditor.Experimental.EditorVR
                             */
 
                             //Debug.LogWarning("Performing spatial scrolling of sub-menu contents");
-                            m_HighlightedMenuElementPosition = (int) (menuElementCount * normalizedRepeatingPosition);
+                            m_HighlightedMenuElementPosition = spatialScrollData.highlightedMenuElementPosition;//(int) (menuElementCount * normalizedRepeatingPosition);
                             m_SpatialMenuUi.HighlightSingleElementInCurrentMenu(m_HighlightedMenuElementPosition);
                             //m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
                         }
