@@ -401,7 +401,7 @@ namespace UnityEditor.Experimental.EditorVR
                 spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
                 spatialScrollStartPosition = spatialScrollOrigin.position;
                 var elementCount = m_HighlightedMenuElements.Count;
-                spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(SpatialInputModule.SpatialCardinalScrollDirection.LocalX, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, elementCount, elementCount);
+                spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(SpatialInputModule.SpatialCardinalScrollDirection.LocalY, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, elementCount, elementCount);
             }
         }
 
@@ -597,8 +597,8 @@ namespace UnityEditor.Experimental.EditorVR
                     if (m_HighlightedMenuElements != null)
                     {
                         var menuElementCount = m_HighlightedMenuElements.Count;
-                        spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(SpatialInputModule.SpatialCardinalScrollDirection.LocalX, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, menuElementCount, menuElementCount);
-                        var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPosition;
+                        spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(SpatialInputModule.SpatialCardinalScrollDirection.LocalY, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, menuElementCount, menuElementCount);
+                        var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPositionUnconstrained;
                         if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
                         {
                             /*
@@ -615,8 +615,9 @@ namespace UnityEditor.Experimental.EditorVR
                             */
 
                             //Debug.LogWarning("Performing spatial scrolling of sub-menu contents");
-                            m_HighlightedMenuElementPosition = spatialScrollData.highlightedMenuElementPosition;//(int) (menuElementCount * normalizedRepeatingPosition);
-                            m_SpatialMenuUi.HighlightSingleElementInCurrentMenu(m_HighlightedMenuElementPosition);
+                            m_HighlightedMenuElementPosition = spatialScrollData.highlightedMenuElementPositionUnconstrained;//(int) (menuElementCount * normalizedRepeatingPosition);
+                            m_SpatialMenuUi.HighlightSingleElementInCurrentMenu(spatialScrollData.highlightedMenuElementPositionYConstrained);
+                            //m_SpatialMenuUi.HighlightSingleElementInCurrentMenu(m_HighlightedMenuElementPosition);
                             //m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
                         }
                         }
