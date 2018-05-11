@@ -237,6 +237,9 @@ MonoBehaviour:
   m_TooltipText: {fileID: 114771324426420722}
   m_ExpandedTooltipHeight: 0.11
   m_TooltipTransitionDuration: 1
+  m_HighlightPulse: {fileID: 11400000, guid: 8a40320bd3d9301459e26bf8738e37d5, type: 2}
+  m_TooltipDisplayPulse: {fileID: 11400000, guid: 59e74aae0e677f442a3b53128741861e,
+    type: 2}
 --- !u!114 &114194490353985554
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -263,6 +266,8 @@ MonoBehaviour:
   m_TooltipText: {fileID: 0}
   m_ExpandedTooltipHeight: 52
   m_TooltipTransitionDuration: 1
+  m_HighlightPulse: {fileID: 0}
+  m_TooltipDisplayPulse: {fileID: 0}
 --- !u!114 &114249040244160594
 MonoBehaviour:
   m_ObjectHideFlags: 1

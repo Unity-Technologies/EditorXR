@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using TMPro;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -9,7 +10,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    public class SpatialMenuElement : MonoBehaviour
+    public class SpatialMenuElement : MonoBehaviour, IControlHaptics
     {
         [SerializeField]
         TextMeshProUGUI m_Text;
@@ -58,6 +59,13 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         float m_TooltipTransitionDuration = 1f;
 
+        [Header("Haptic Pulses")]
+        [SerializeField]
+        HapticPulse m_HighlightPulse;
+
+        [SerializeField]
+        HapticPulse m_TooltipDisplayPulse;
+
         RectTransform m_Transform;
         Action m_SelectedAction;
         Vector2 m_OriginalSize;
@@ -80,6 +88,9 @@ namespace UnityEditor.Experimental.EditorVR
 
                 m_Highlighted = value;
                 this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHighlight(m_Highlighted));
+
+                if (m_Highlighted)
+                    this.Pulse(Node.None, m_HighlightPulse);
             }
         }
 
