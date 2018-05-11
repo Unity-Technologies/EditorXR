@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         /// <summary>
         /// How powerful of a shake an object is experiencing this frame
         /// </summary>
-        public float shakeStrength { get; private set; }
+        public float directionalVelocity { get; private set; }
 
         /// <summary>
         /// Float representing the temporal median strength of the velocity projected upon the median temporal directional vector
@@ -130,8 +130,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
             if (totalTime > 0.0f)
             {
-                shakeStrength = totalDistance / totalTime;
                 directionalDivergence = Mathf.Abs(totalAngularUniformity * motionBounds / totalTime) / 4000f;
+                const float kDirectionalDivergenceScalar = 10f; // used to scale the divercence value closer to a 1.0f maximum, rather than 0.1f
+                directionalVelocity = (totalDistance / totalTime) * directionalDivergence * kDirectionalDivergenceScalar;
             }
         }
 
