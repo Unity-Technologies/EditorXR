@@ -171,10 +171,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// </summary>
             public int highlightedMenuElementPositionUnconstrained { get { return (int)(scrollableItemCount * normalizedLoopingPositionUnconstrained); } }
 
-            public int highlightedMenuElementPositionXConstrained { get { return (int)(scrollableItemCount * normalizedLoopingPositionXConstrained); } }
-
             //public int highlightedMenuElementPositionYConstrained { get { return (int)(scrollableItemCount * normalizedLoopingPositionYConstrained); } }
             int m_HighlightedMenuElementsCycledThrough;
+            public int highlightedMenuElementPositionXConstrained { get { return (int)Mathf.Repeat(m_HighlightedMenuElementsCycledThrough, scrollableItemCount); } }
             public int highlightedMenuElementPositionYConstrained { get { return (int)Mathf.Repeat(m_HighlightedMenuElementsCycledThrough, scrollableItemCount); } }
 
             private const float k_ProjectedVectorUpdateInterval = 0.125f;
@@ -186,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 set
                 {
                     // Prevent micro-movements from triggering a highlighted menu element position update
-                    if (Vector3.Magnitude(m_CurrentProjectedVector - value) * this.GetViewerScale() < 0.025f)
+                    if (Vector3.Magnitude(m_CurrentProjectedVector - value) * this.GetViewerScale() < 0.0125f * this.GetViewerScale())
                         return;
 
                     // Limit the projection update rate independent of delta time
@@ -199,13 +198,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                     if (movingInPositiveDirectionOnConstrainedAxis != m_PreviouslyMovingInPositivelyConstrainedDirection)
                     {
-                        directionChangedUpdatedConstrainedReferencePosition = m_CurrentProjectedVector;
+                        directionChangedUpdatedConstrainedReferencePosition = m_CurrentProjectedVector;// + m_CurrentProjectedVector * 0.5f;
                         Debug.Log("<color=red>constrained directional scrolling has reversed!</color> : " + movingInPositiveDirectionOnConstrainedAxis);
                     }
 
                     m_PreviouslyMovingInPositivelyConstrainedDirection = movingInPositiveDirectionOnConstrainedAxis;
-                    var direction = movingInPositiveDirectionOnConstrainedAxis ? -1 : 1;
-                    var highlightedElementScrollAddition = (int)((m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude * direction * this.GetViewerScale() * 5f);
+                    var direction = movingInPositiveDirectionOnConstrainedAxis ? -1 : 1; // multiplier that singifies that m_HighlightedMenuElementsCycledThrough will be either incremented or decremented, based on the direction of input
+                    var highlightedElementScrollAddition = (int)((m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude * direction * this.GetViewerScale() * 4f);
                     m_HighlightedMenuElementsCycledThrough += highlightedElementScrollAddition;
                     Debug.Log(highlightedElementScrollAddition + " : <color=green>Updating current projected vector of scroll data</color> : " + m_CurrentProjectedVector + " - highlightedMenuElementsCycledThrough : " + m_HighlightedMenuElementsCycledThrough + " : directionChangedUpdatedConstrainedReferencePosition : " + directionChangedUpdatedConstrainedReferencePosition);
                     Debug.Log("m_CurrentProjectedVector : " + m_CurrentProjectedVector + " - directionChangedUpdatedConstrainedReferencePosition : " + directionChangedUpdatedConstrainedReferencePosition + " : MAGNITUDE: " + (m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude);
@@ -220,10 +219,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     var movingInPositiveDirection = false;
                     switch (spatialCardinalScrollDirection)
                     {
+                        case SpatialCardinalScrollDirection.LocalX:
+                            movingInPositiveDirection = m_CurrentProjectedVector.x - m_PreviousProjectedVector.x > 0;
+                            break;
                         case SpatialCardinalScrollDirection.LocalY:
-                        default:
                             movingInPositiveDirection = m_CurrentProjectedVector.y - m_PreviousProjectedVector.y > 0;
                             //Debug.LogWarning("moving in positive direction : " + movingInPositiveDirection);
+                            break;
+                        case SpatialCardinalScrollDirection.LocalZ:
+                            Debug.LogError("Z-based constrained spatial scrolling is not implemented");
+                            //movingInPositiveDirection = m_CurrentProjectedVector.x - m_PreviousProjectedVector.x > 0;
                             break;
                     }
 
