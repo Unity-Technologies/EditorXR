@@ -177,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             int m_HighlightedMenuElementsCycledThrough;
             public int highlightedMenuElementPositionYConstrained { get { return (int)Mathf.Repeat(m_HighlightedMenuElementsCycledThrough, scrollableItemCount); } }
 
-            private const float k_ProjectedVectorUpdateInterval = 0.25f;
+            private const float k_ProjectedVectorUpdateInterval = 0.125f;
             float m_NextProjectedVectorUpdateTime;
             public Vector3 previousProjectedVector { get { return m_PreviousProjectedVector; } }
             public Vector3 currentProjectedVector
@@ -189,6 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (Vector3.Magnitude(m_CurrentProjectedVector - value) * this.GetViewerScale() < 0.025f)
                         return;
 
+                    // Limit the projection update rate independent of delta time
                     if (m_NextProjectedVectorUpdateTime > Time.realtimeSinceStartup)
                         return;
 
@@ -204,10 +205,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                     m_PreviouslyMovingInPositivelyConstrainedDirection = movingInPositiveDirectionOnConstrainedAxis;
                     var direction = movingInPositiveDirectionOnConstrainedAxis ? -1 : 1;
-                    var highlightedElementScrollAddition = (int)((m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude * this.GetViewerScale() * 0.5f);
+                    var highlightedElementScrollAddition = (int)((m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude * direction * this.GetViewerScale() * 5f);
                     m_HighlightedMenuElementsCycledThrough += highlightedElementScrollAddition;
                     Debug.Log(highlightedElementScrollAddition + " : <color=green>Updating current projected vector of scroll data</color> : " + m_CurrentProjectedVector + " - highlightedMenuElementsCycledThrough : " + m_HighlightedMenuElementsCycledThrough + " : directionChangedUpdatedConstrainedReferencePosition : " + directionChangedUpdatedConstrainedReferencePosition);
-                    Debug.Log("m_CurrentProjectedVector : " + m_CurrentProjectedVector + " - directionChangedUpdatedConstrainedReferencePosition : " + directionChangedUpdatedConstrainedReferencePosition);
+                    Debug.Log("m_CurrentProjectedVector : " + m_CurrentProjectedVector + " - directionChangedUpdatedConstrainedReferencePosition : " + directionChangedUpdatedConstrainedReferencePosition + " : MAGNITUDE: " + (m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude);
                 }
             }
 
@@ -230,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
 
-            Vector3 directionChangedUpdatedConstrainedReferencePosition { get; set; }
+            Vector3 directionChangedUpdatedConstrainedReferencePosition { get; set; } // TODO: rename
 
             public void UpdateExistingScrollData(Vector3 newPosition)
             {
@@ -249,7 +250,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // currentLocalPosition / cached each frame in which either request bool is true
             // currentLocalRotation / cached each frame in which either request bool is true
             // processing & cacheing of currentPosition+rotation is skipped if no request was made this frame, or previous frame
-            // 
+            //
             public SpatialInputReceiverData(Node node, IProcessSpatialInput caller)
             {
                 this.caller = caller;
