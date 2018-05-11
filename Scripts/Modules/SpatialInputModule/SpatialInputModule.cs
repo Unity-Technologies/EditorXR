@@ -186,9 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 get { return m_CurrentProjectedVector; }
                 set
                 {
-                    //m_ContinuousDirectionalVelocityTracker.Update();
-
-
+                    m_ContinuousDirectionalVelocityTracker.Update(value, Time.unscaledDeltaTime);
 
                     // Prevent micro-movements from triggering a highlighted menu element position update
                     if (Vector3.Magnitude(m_CurrentProjectedVector - value) * this.GetViewerScale() < 0.0125f * this.GetViewerScale())
@@ -198,6 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (m_NextProjectedVectorUpdateTime > Time.realtimeSinceStartup)
                         return;
 
+                    var directionalVelocity = m_ContinuousDirectionalVelocityTracker.directionalVelocity;
                     m_PreviousProjectedVector = m_CurrentProjectedVector; // automatically update previous projected vector when setting new current projected vector
                     m_CurrentProjectedVector = value;
                     m_NextProjectedVectorUpdateTime = Time.realtimeSinceStartup + k_ProjectedVectorUpdateInterval;
@@ -210,7 +209,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                     m_PreviouslyMovingInPositivelyConstrainedDirection = movingInPositiveDirectionOnConstrainedAxis;
                     var direction = movingInPositiveDirectionOnConstrainedAxis ? -1 : 1; // multiplier that singifies that m_HighlightedMenuElementsCycledThrough will be either incremented or decremented, based on the direction of input
-                    var highlightedElementScrollAddition = (int)((m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude * direction * this.GetViewerScale() * 4f);
+                    var highlightedElementScrollAddition = (int)((m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude * direction * this.GetViewerScale() * 6f * directionalVelocity);
                     m_HighlightedMenuElementsCycledThrough += highlightedElementScrollAddition;
                     Debug.Log(highlightedElementScrollAddition + " : <color=green>Updating current projected vector of scroll data</color> : " + m_CurrentProjectedVector + " - highlightedMenuElementsCycledThrough : " + m_HighlightedMenuElementsCycledThrough + " : directionChangedUpdatedConstrainedReferencePosition : " + directionChangedUpdatedConstrainedReferencePosition);
                     Debug.Log("m_CurrentProjectedVector : " + m_CurrentProjectedVector + " - directionChangedUpdatedConstrainedReferencePosition : " + directionChangedUpdatedConstrainedReferencePosition + " : MAGNITUDE: " + (m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude);
