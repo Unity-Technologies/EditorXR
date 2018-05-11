@@ -67,11 +67,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 spatialDirection = null;
                 rayOrigin = this.RequestRayOriginFromNode(node);
                 directionChangedUpdatedConstrainedReferencePosition = startingPosition;
+                m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(node).position);
             }
 
             int m_lastChangedFrame;
             Vector3 m_PreviousProjectedVector;
             Vector3 m_CurrentProjectedVector;
+            ContinuousDirectionalVelocityTracker m_ContinuousDirectionalVelocityTracker = new ContinuousDirectionalVelocityTracker();
 
             public SpatialCardinalScrollDirection spatialCardinalScrollDirection { get; set; }
 
@@ -184,6 +186,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 get { return m_CurrentProjectedVector; }
                 set
                 {
+                    //m_ContinuousDirectionalVelocityTracker.Update();
+
+
+
                     // Prevent micro-movements from triggering a highlighted menu element position update
                     if (Vector3.Magnitude(m_CurrentProjectedVector - value) * this.GetViewerScale() < 0.0125f * this.GetViewerScale())
                         return;
