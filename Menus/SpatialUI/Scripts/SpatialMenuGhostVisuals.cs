@@ -34,6 +34,13 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
     [SerializeField]
     GameObject m_ViveContainer;
 
+    [Header("Accompanying Visual Elements")]
+    [SerializeField]
+    Transform m_SpatialSecondaryVisuals;
+
+    [SerializeField]
+    Transform m_RaybasedSecondaryVisuals;
+
     SpatialInteractionType m_SpatialInteractionType;
     Vector3 m_GhostInputDeviceOriginalLocalPosition;
     Coroutine m_GhostInputDeviceRepositionCoroutine;
@@ -47,7 +54,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
 
             m_SpatialInteractionType = value;
 
-            m_GhostInputDeviceContainer.localPosition = m_GhostInputDeviceOriginalLocalPosition;
+            //m_GhostInputDeviceContainer.localPosition = m_GhostInputDeviceOriginalLocalPosition;
 
             var rayVisible = false;
             var bciVisible = false;
@@ -57,17 +64,22 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
             {
                 case SpatialInteractionType.ray:
                     rayVisible = true;
+                    SetPositionOffset(Vector3.zero);
                     break;
                 case SpatialInteractionType.bci:
                     bciVisible = true;
                     break;
                 case SpatialInteractionType.touch:
+                    SetPositionOffset(Vector3.zero);
                     touchVisible = true;
                     break;
                 case SpatialInteractionType.vive:
                     viveVisible = true;
                     break;
             }
+
+            m_SpatialSecondaryVisuals.gameObject.SetActive(touchVisible);
+            m_RaybasedSecondaryVisuals.gameObject.SetActive(rayVisible);
 
             m_RayContainer.SetActive(rayVisible);
             m_BCIContainer.SetActive(bciVisible);
@@ -85,6 +97,8 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
 
     public Transform spatialProxyRayDriverTransform { get; set; }
 
+    public bool transitioningModes { get; private set; }
+
     void Start()
     {
         m_GhostInputDeviceOriginalLocalPosition = m_GhostInputDeviceContainer.localPosition;
@@ -94,6 +108,9 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
         spatialProxyRayOrigin.position = Vector3.zero;
         spatialProxyRayOrigin.rotation = Quaternion.identity;
         spatialProxyRay = spatialProxyRayOrigin.GetComponent<DefaultProxyRay>();
+
+        m_SpatialSecondaryVisuals.gameObject.SetActive(true);
+        m_RaybasedSecondaryVisuals.gameObject.SetActive(false);
         //spatialProxyRay.SetColor(Color.white);
     }
 
@@ -105,6 +122,9 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
     public void SetPositionOffset(Vector3 newLocalPositionOffset)
     {
         var newGhostInputDevicePosition = m_GhostInputDeviceOriginalLocalPosition - newLocalPositionOffset;
+        if (m_SpatialInteractionType == SpatialInteractionType.ray)
+            newGhostInputDevicePosition = m_GhostInputDeviceOriginalLocalPosition - Vector3.forward * 0.325f;
+
         this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newGhostInputDevicePosition));
     }
 
@@ -123,6 +143,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
 
     IEnumerator AnimateGhostInputDevicePosition(Vector3 targetLocalPosition)
     {
+        transitioningModes = true;
         var currentPosition = m_GhostInputDeviceContainer.localPosition;
         var transitionAmount = 0f;
         var transitionSubtractMultiplier = 5f;
@@ -135,6 +156,15 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
         }
 
         m_GhostInputDeviceContainer.localPosition = targetLocalPosition;
+
+        var waitBeforeTransitionEnd = 1f;
+        while (waitBeforeTransitionEnd > 0f)
+        {
+            waitBeforeTransitionEnd -= Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        transitioningModes = false;
         m_GhostInputDeviceRepositionCoroutine = null;
     }
 
