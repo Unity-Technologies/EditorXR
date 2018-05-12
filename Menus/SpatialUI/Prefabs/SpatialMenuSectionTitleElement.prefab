@@ -92,6 +92,9 @@ MonoBehaviour:
   m_TransitionDuration: 0.75
   m_FadeInZOffset: 0.05
   m_HighlightedZOffset: -0.005
+  m_HighlightPulse: {fileID: 11400000, guid: 8a40320bd3d9301459e26bf8738e37d5, type: 2}
+  m_TooltipDisplayPulse: {fileID: 11400000, guid: 59e74aae0e677f442a3b53128741861e,
+    type: 2}
 --- !u!114 &114354140332370826
 MonoBehaviour:
   m_ObjectHideFlags: 1
