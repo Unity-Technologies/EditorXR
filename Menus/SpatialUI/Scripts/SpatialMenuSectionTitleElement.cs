@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using TMPro;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -9,7 +10,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    public class SpatialMenuSectionTitleElement : MonoBehaviour, ISpatialMenuElement
+    public class SpatialMenuSectionTitleElement : MonoBehaviour, ISpatialMenuElement, IControlHaptics
     {
         [SerializeField]
         TextMeshProUGUI m_Text;
@@ -31,6 +32,13 @@ namespace UnityEditor.Experimental.EditorVR
 
         //[SerializeField]
         //Image m_BackgroundImage;
+
+        [Header("Haptic Pulses")]
+        [SerializeField]
+        HapticPulse m_HighlightPulse;
+
+        [SerializeField]
+        HapticPulse m_TooltipDisplayPulse;
 
         RectTransform m_RectTransform;
         Action m_SelectedAction;
@@ -69,6 +77,10 @@ namespace UnityEditor.Experimental.EditorVR
 
                 m_Highlighted = value;
                 this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHighlight(m_Highlighted));
+
+                //Debug.LogWarning("<color=orange>Highlighting top level menu button : </color>" + m_Text.text);
+                if (m_Highlighted)
+                    this.Pulse(Node.None, m_HighlightPulse);
             }
         }
 
