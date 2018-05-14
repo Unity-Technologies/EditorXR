@@ -67,18 +67,21 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
                     SetPositionOffset(Vector3.zero);
                     break;
                 case SpatialInteractionType.bci:
+                    UpdateRotation(Quaternion.identity);
                     bciVisible = true;
                     break;
                 case SpatialInteractionType.touch:
+                    UpdateRotation(Quaternion.identity);
                     SetPositionOffset(Vector3.zero);
                     touchVisible = true;
                     break;
                 case SpatialInteractionType.vive:
+                    UpdateRotation(Quaternion.identity);
                     viveVisible = true;
                     break;
             }
 
-            m_SpatialSecondaryVisuals.gameObject.SetActive(touchVisible);
+            m_SpatialSecondaryVisuals.gameObject.SetActive(false); // disable for now, until touch again supports rotation(touchVisible);
             m_RaybasedSecondaryVisuals.gameObject.SetActive(rayVisible);
 
             m_RayContainer.SetActive(rayVisible);
@@ -109,7 +112,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
         spatialProxyRayOrigin.rotation = Quaternion.identity;
         spatialProxyRay = spatialProxyRayOrigin.GetComponent<DefaultProxyRay>();
 
-        m_SpatialSecondaryVisuals.gameObject.SetActive(true);
+        m_SpatialSecondaryVisuals.gameObject.SetActive(false);
         m_RaybasedSecondaryVisuals.gameObject.SetActive(false);
         //spatialProxyRay.SetColor(Color.white);
     }
