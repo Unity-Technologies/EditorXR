@@ -440,6 +440,9 @@ namespace UnityEditor.Experimental.EditorVR
 
         void ReturnToPreviousMenuLevel()
         {
+            if (m_SpatialInterfaceState == SpatialInterfaceState.navigatingSubMenuContent)
+                SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
+
             this.Pulse(Node.None, m_NavigateBackPulse);
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             DisplayHomeSectionContents();
