@@ -13,7 +13,7 @@ using UnityEngine.Playables;
 using UnityEngine.UI;
 using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialMenu.SpatialinterfaceState;
 
-public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
+public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
 {
     const float k_DistanceOffset = 0.75f;
     const float k_AllowedGazeDivergence = 45f;
@@ -97,9 +97,12 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     [SerializeField]
     SpatialMenuGhostVisuals m_SpatialUIGhostVisuals;
 
-    [Header("Surrounding Arrows")]
+    [Header("Secondary Visuals")]
     [SerializeField]
     Transform m_SurroundingArrowsContainer;
+
+    [SerializeField]
+    SpatialMenuTranslationVisuals m_SpatialMenuTranslationVisuals;
 
     bool m_Visible;
     SpatialInterfaceInputMode m_SpatialInterfaceInputMode;
@@ -118,6 +121,9 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     Coroutine m_VisibilityCoroutine;
     Coroutine m_InFocusCoroutine;
     Coroutine m_HomeSectionTitlesBackgroundBordersTransitionCoroutine;
+
+    // Secondary visuals
+    int m_PreviouslyHighlightedElementOrderPosition;
 
     // Reference set by the controller in the Setup method
     //readonly Dictionary<ISpatialMenuProvider, ISpatialMenuElement> m_ProviderToHomeMenuElements = new Dictionary<ISpatialMenuProvider, ISpatialMenuElement>();
@@ -205,6 +211,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     public SpatialInterfaceInputMode spatialInterfaceInputMode
     {
+        get { return m_SpatialInterfaceInputMode; }
         set
         {
             if (m_SpatialInterfaceInputMode == value)
@@ -229,6 +236,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             }
         }
     }
+
+    public bool transitioningInputModes { get { return m_SpatialUIGhostVisuals.transitioningModes; } }
 
     public bool inFocus
     {
@@ -264,6 +273,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
     //public GameObject subMenuElementPrefab { get { return m_SubMenuElementPrefab; } }
 
     public Transform subMenuContainer { get { return m_SubMenuContainer; } }
+
+    public Transform rayBasedInteractionSource { get { return m_SpatialUIGhostVisuals.spatialProxyRayOrigin; } }
 
     void Start()
     {
@@ -343,7 +354,9 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     public void UpdateGhostDeviceRotation(Quaternion newRotation)
     {
-        m_SpatialUIGhostVisuals.UpdateRotation(newRotation);
+        // Currently only rotation mode, and ray-based input should update the rotation of the ghost visuals
+        if (spatialInterfaceInputMode == SpatialInterfaceInputMode.Ray)
+            m_SpatialUIGhostVisuals.UpdateRotation(newRotation);
     }
 
     public void UpdateDirector()
@@ -383,14 +396,17 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
             Debug.Log("<color=green>Displaying home section contents</color>");
             var instantiatedPrefabTransform = ObjectUtils.Instantiate(m_SectionTitleElementPrefab).transform as RectTransform;
             var providerMenuElement = instantiatedPrefabTransform.GetComponent<ISpatialMenuElement>();
+            this.ConnectInterfaces(instantiatedPrefabTransform);
             providerMenuElement.Setup(homeMenuElementParent, () => { }, spatialMenuData[i].spatialMenuName, null);
             currentlyDisplayedMenuElements.Add(providerMenuElement);
+            providerMenuElement.selected = DisplayHighlightedSubMenuContents;
             //m_ProviderToHomeMenuElements[menuData] = providerMenuElement;
         }
     }
 
     public void DisplayHighlightedSubMenuContents()
     {
+        Debug.LogWarning("Displaying sub-menu elements");
         ClearHomeMenuElements();
         const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
         int subMenuElementCount = 0;
@@ -414,6 +430,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
                     ++subMenuElementCount;
                     var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
                     var providerMenuElement = instantiatedPrefab.GetComponent<ISpatialMenuElement>();
+                    this.ConnectInterfaces(providerMenuElement);
                     providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, subMenuElement.tooltipText);
                     currentlyDisplayedMenuElements.Add(providerMenuElement);
                     subMenuElement.VisualElement = providerMenuElement;
@@ -452,6 +469,36 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
         }
     }
 
+    public void HighlightSingleElementInHomeMenu(int elementOrderPosition)
+    {
+        if (elementOrderPosition > m_PreviouslyHighlightedElementOrderPosition)
+        {
+            m_SpatialMenuTranslationVisuals.leftArrowHighlighted = false;
+            m_SpatialMenuTranslationVisuals.rightArrowHighlighted = true;
+        }
+        else
+        {
+            m_SpatialMenuTranslationVisuals.leftArrowHighlighted = true;
+            m_SpatialMenuTranslationVisuals.rightArrowHighlighted = false;
+        }
+
+        //Debug.Log("<color=blue>HighlightSingleElementInCurrentMenu in SpatialMenuUI : " + elementOrderPosition + "</color>");
+        var menuElementCount = 3;// highlightedMenuElements.Count;
+        for (int i = 0; i < menuElementCount; ++i)
+        {
+
+            //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
+            currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
+
+            if (i == elementOrderPosition)
+                Debug.LogWarning("Highlighting home level menu element : " + currentlyDisplayedMenuElements[i].gameObject.name);
+
+            //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
+        }
+
+        m_PreviouslyHighlightedElementOrderPosition = elementOrderPosition;
+    }
+
     public void HighlightSingleElementInCurrentMenu(int elementOrderPosition)
     {
         //Debug.Log("<color=blue>HighlightSingleElementInCurrentMenu in SpatialMenuUI : " + elementOrderPosition + "</color>");
@@ -467,6 +514,13 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition
 
     void Update()
     {
+        var selectionRayOrigin = m_SpatialUIGhostVisuals.transform;
+        var hover = this.GetFirstGameObject(selectionRayOrigin);
+        if (hover != null)
+            Debug.LogError("<color=green>!!!!!!!!!!!!!!!!!!!!!!!!!!!</color>");
+        else
+            Debug.LogError("<color=red>!!!!!!!!!!!!!!!!!!!!!!!!!!!</color>");
+
         m_HomeMenuLayoutGroup.spacing = 1 % Time.unscaledDeltaTime * 0.01f; // Don't ask... horizontal layout group refused to play nicely without this... b'cause magic mysetery something
         //Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
         if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
