@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -100,20 +101,23 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
 
     public DefaultProxyRay spatialProxyRay { get; set; }
 
-    public Transform spatialProxyRayDriverTransform { get; set; }
+    //public Transform spatialProxyRayDriverTransform { get; set; }
 
     public bool transitioningModes { get; private set; }
 
-    void Start()
+    void Awake()
     {
         m_GhostInputDeviceOriginalLocalPosition = m_GhostInputDeviceContainer.localPosition;
-        spatialProxyRayDriverTransform = m_GhostInputDeviceContainer;
+        //spatialProxyRayDriverTransform = m_GhostInputDeviceContainer;
 
         spatialProxyRayOrigin = ObjectUtils.Instantiate(m_SpatialProxyRayPrefab.gameObject, m_RayContainer.transform).transform;
-        spatialProxyRayOrigin.position = Vector3.zero;
+        spatialProxyRayOrigin.localPosition = Vector3.zero;
         spatialProxyRayOrigin.localRotation = Quaternion.identity;
         spatialProxyRayOrigin.localScale = Vector3.one;
         spatialProxyRay = spatialProxyRayOrigin.GetComponent<DefaultProxyRay>();
+
+        var tester = spatialProxyRayOrigin.GetComponentInChildren<IntersectionTester>();
+        tester.active = false;
 
         m_SpatialSecondaryVisuals.gameObject.SetActive(false);
         m_RaybasedSecondaryVisuals.gameObject.SetActive(false);
@@ -127,6 +131,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
 
     void Update()
     {
+        return;
         spatialProxyRay.SetLength(k_SpatialRayLength * this.GetViewerScale());
         spatialProxyRay.SetColor(Random.ColorHSV());
     }
@@ -140,6 +145,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
         this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newGhostInputDevicePosition));
     }
 
+    /*
     public void UpdateSpatialRay(IPerformSpatialRayInteraction caller)
     {
         this.UpdateSpatialProxyRayLength();
@@ -147,6 +153,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
         spatialProxyRayOrigin.localPosition = Vector3.zero;
         spatialProxyRayOrigin.localRotation = caller.spatialProxyRayDriverTransform.localRotation;
     }
+    */
 
     public void UpdateRotation(Quaternion rotation)
     {
