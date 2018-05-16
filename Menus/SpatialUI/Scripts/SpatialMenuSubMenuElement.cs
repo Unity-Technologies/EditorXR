@@ -4,13 +4,14 @@ using System.Collections;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    public class SpatialMenuSubMenuElement : MonoBehaviour, ISpatialMenuElement, IControlHaptics
+    internal class SpatialMenuSubMenuElement : MonoBehaviour, ISpatialMenuElement, IControlHaptics, IRayEnterHandler, IRayExitHandler
     {
         [SerializeField]
         TextMeshProUGUI m_Text;
@@ -20,6 +21,9 @@ namespace UnityEditor.Experimental.EditorVR
 
         [SerializeField]
         CanvasGroup m_CanvasGroup;
+
+        [SerializeField]
+        Button m_Button;
 
         [SerializeField]
         float m_TransitionDuration = 0.75f;
@@ -77,6 +81,7 @@ namespace UnityEditor.Experimental.EditorVR
         bool m_Visible;
 
         public Action selectedAction { get { return m_SelectedAction; } }
+        public Button button { get { return m_Button; } }
 
         public bool visible
         {
@@ -109,11 +114,35 @@ namespace UnityEditor.Experimental.EditorVR
         }
 
         public Action<Transform, Action, string, string> Setup { get; set; }
+        public Action selected { get; set; }
 
         void Awake()
         {
             Setup = SetupInternal;
             m_OriginalBackgroundColor = m_BackgroundImage.color;
+
+            m_Button.onClick.AddListener(Select);
+        }
+
+        void OnDestroy()
+        {
+            m_Button.onClick.RemoveAllListeners();
+        }
+
+        public void OnRayEnter(RayEventData eventData)
+        {
+            highlighted = true;
+        }
+
+        public void OnRayExit(RayEventData eventData)
+        {
+            highlighted = false;
+        }
+
+        void Select()
+        {
+            if (selected != null)
+                selected();
         }
 
         public void SetupInternal(Transform parentTransform, Action selectedAction, String displayedText = null, string toolTipText = null)
