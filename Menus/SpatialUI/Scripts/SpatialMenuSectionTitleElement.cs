@@ -12,7 +12,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    internal class SpatialMenuSectionTitleElement : MonoBehaviour, ISpatialMenuElement, IControlHaptics, IRayEnterHandler, IRayExitHandler
+    internal class SpatialMenuSectionTitleElement : MonoBehaviour, ISpatialMenuElement, IControlHaptics, IRayEnterHandler, IRayExitHandler,
+        IRayClickHandler, IPointerClickHandler
     {
         [SerializeField]
         TextMeshProUGUI m_Text;
@@ -82,6 +83,8 @@ namespace UnityEditor.Experimental.EditorVR
                     return;
 
                 m_Highlighted = value;
+                parentMenuData.highlighted = value;
+
                 this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHighlight(m_Highlighted));
 
                 //Debug.LogWarning("<color=orange>Highlighting top level menu button : </color>" + m_Text.text);
@@ -92,11 +95,12 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Action<Transform, Action, string, string> Setup { get; set; }
         public Action selected { get; set; }
+        public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
+        public Action correspondingFunction { get; set; }
 
         void Awake()
         {
             Setup = SetupInternal;
-
             m_Button.onClick.AddListener(Select);
         }
 
@@ -107,6 +111,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void Select()
         {
+            Debug.LogError("Selected called in spatial menu sectio title element :" + m_Text.text);
             if (selected != null)
                 selected();
         }
@@ -227,6 +232,16 @@ namespace UnityEditor.Experimental.EditorVR
             //m_BackgroundImage.color = targetBackgroundColor;
             m_CanvasGroup.alpha = targetAlpha;
             m_VisibilityCoroutine = null;
+        }
+
+        public void OnRayClick(RayEventData eventData)
+        {
+            Debug.LogError("OnRayClick called for spatial menu section title element :" + m_Text.text);
+         }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            Debug.LogError("OnPointerClick called for spatial menu section title element :" + m_Text.text);
         }
     }
 }

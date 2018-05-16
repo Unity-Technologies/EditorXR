@@ -106,6 +106,7 @@ namespace UnityEditor.Experimental.EditorVR
                     return;
 
                 m_Highlighted = value;
+                parentMenuData.highlighted = value;
                 this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHighlight(m_Highlighted));
 
                 if (m_Highlighted)
@@ -115,6 +116,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Action<Transform, Action, string, string> Setup { get; set; }
         public Action selected { get; set; }
+        public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
+        public Action correspondingFunction { get; set; }
 
         void Awake()
         {
