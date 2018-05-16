@@ -6,7 +6,7 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
-public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
+public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesViewerScale
 {
     public enum SpatialInteractionType
     {
@@ -15,6 +15,8 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
         touch,
         vive
     }
+
+    const float k_SpatialRayLength = 1f;
 
     [SerializeField]
     DefaultProxyRay m_SpatialProxyRayPrefab;
@@ -109,7 +111,8 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
 
         spatialProxyRayOrigin = ObjectUtils.Instantiate(m_SpatialProxyRayPrefab.gameObject, m_RayContainer.transform).transform;
         spatialProxyRayOrigin.position = Vector3.zero;
-        spatialProxyRayOrigin.rotation = Quaternion.identity;
+        spatialProxyRayOrigin.localRotation = Quaternion.identity;
+        spatialProxyRayOrigin.localScale = Vector3.one;
         spatialProxyRay = spatialProxyRayOrigin.GetComponent<DefaultProxyRay>();
 
         m_SpatialSecondaryVisuals.gameObject.SetActive(false);
@@ -120,6 +123,12 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay
     private void OnDestroy()
     {
         ObjectUtils.Destroy(spatialProxyRayOrigin.gameObject);
+    }
+
+    void Update()
+    {
+        spatialProxyRay.SetLength(k_SpatialRayLength * this.GetViewerScale());
+        spatialProxyRay.SetColor(Random.ColorHSV());
     }
 
     public void SetPositionOffset(Vector3 newLocalPositionOffset)
