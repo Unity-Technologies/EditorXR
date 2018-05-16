@@ -11,5 +11,7 @@ public interface ISpatialMenuElement
     bool visible { set; }
 
     Action <Transform, Action, string, string> Setup { get; }
+
+    Action selected { get; set; }
 }
 #endif
