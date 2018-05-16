@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -11,7 +12,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.Playables;
 using UnityEngine.UI;
-using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialMenu.SpatialinterfaceState;
+using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialMenu.SpatialInterfaceState;
 
 public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
 {
@@ -104,9 +105,13 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     [SerializeField]
     SpatialMenuTranslationVisuals m_SpatialMenuTranslationVisuals;
 
+    [Header("SurroundingBorderButtons")]
+    [SerializeField]
+    Button[] m_BorderButtons;
+
     bool m_Visible;
     SpatialInterfaceInputMode m_SpatialInterfaceInputMode;
-    SpatialinterfaceState m_SpatialinterfaceState;
+    SpatialinterfaceState m_SpatialInterfaceState;
 
     Vector3 m_HomeTextBackgroundOriginalLocalScale;
     Vector3 m_HomeBackgroundOriginalLocalScale;
@@ -147,6 +152,10 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     public List<SpatialMenu.SpatialMenuElement> highlightedMenuElements;
     public string highlightedSectionName { get; set; }
 
+    // SpatialMenu actions/delegates/funcs
+    public Action returnToPreviousMenuLevel { get; set; }
+    public Action<SpatialinterfaceState> changeMenuState { get; set; }
+
     bool visible
     {
         get { return m_Visible; }
@@ -161,30 +170,30 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             resetAdaptivePosition = m_Visible;
 
             if (!m_Visible)
-                spatialinterfaceState = SpatialinterfaceState.hidden;
+                spatialInterfaceState = SpatialinterfaceState.hidden;
         }
     }
 
     //public ISpatialMenuProvider highlightedTopLevelMenuProvider { private get; set; }
-    public SpatialinterfaceState spatialinterfaceState
+    public SpatialinterfaceState spatialInterfaceState
     {
         set
         {
             // If the previous state was hidden, reset the state of the UI
-            if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && value == SpatialinterfaceState.navigatingTopLevel)
+            if (m_SpatialInterfaceState == SpatialinterfaceState.hidden && value == SpatialinterfaceState.navigatingTopLevel)
                 Reset();
 
-            if (m_SpatialinterfaceState == value)
+            if (m_SpatialInterfaceState == value)
                 return;
 
             // If the previous state was Hidden & this object was disabled, enable the UI gameobject
             //if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && !gameObject.activeSelf)
                 //gameObject.SetActive(true);
 
-            m_SpatialinterfaceState = value;
-            Debug.LogError("Switching spatial menu state to " + m_SpatialinterfaceState);
+            m_SpatialInterfaceState = value;
+            Debug.LogError("Switching spatial menu state to " + m_SpatialInterfaceState);
 
-            switch (m_SpatialinterfaceState)
+            switch (m_SpatialInterfaceState)
             {
                 case SpatialinterfaceState.navigatingTopLevel:
                     visible = true;
@@ -281,6 +290,14 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         visible = false;
     }
 
+    void OnDestroy()
+    {
+        foreach (var button in m_BorderButtons)
+        {
+            button.onClick.RemoveAllListeners();
+        }
+    }
+
     public void Setup()
     {
         m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
@@ -294,11 +311,16 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         m_HomeSectionTimelineDuration = (float) m_RevealTimelinePlayable.duration;
         m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
         Reset();
+
+        foreach (var button in m_BorderButtons)
+        {
+            button.onClick.AddListener(ReturnToPreviousMenuLevel);
+        }
     }
 
     public void Reset()
     {
-        Debug.LogWarning("Resetting state in Spatial menu UI " + m_SpatialinterfaceState);
+        Debug.LogWarning("Resetting state in Spatial menu UI " + m_SpatialInterfaceState);
         ClearHomeMenuElements();
         ClearSubMenuElements();
 
@@ -316,6 +338,12 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         //m_HomeMenuLayoutGroup.enabled = false;
         //m_HomeMenuLayoutGroup.enabled = true;
         m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
+    }
+
+    void ReturnToPreviousMenuLevel()
+    {
+        Debug.LogWarning("Return to previous menu level");
+        returnToPreviousMenuLevel();
     }
 
     void ClearHomeMenuElements()
@@ -399,9 +427,15 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             this.ConnectInterfaces(instantiatedPrefabTransform);
             providerMenuElement.Setup(homeMenuElementParent, () => { }, spatialMenuData[i].spatialMenuName, null);
             currentlyDisplayedMenuElements.Add(providerMenuElement);
-            providerMenuElement.selected = DisplayHighlightedSubMenuContents;
+            providerMenuElement.selected = SectionTitleButtonSelected;
+            providerMenuElement.parentMenuData = spatialMenuData[i];
             //m_ProviderToHomeMenuElements[menuData] = providerMenuElement;
         }
+    }
+
+    public void SectionTitleButtonSelected()
+    {
+        changeMenuState(SpatialinterfaceState.navigatingSubMenuContent);
     }
 
     public void DisplayHighlightedSubMenuContents()
@@ -434,7 +468,9 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
                     providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, subMenuElement.tooltipText);
                     currentlyDisplayedMenuElements.Add(providerMenuElement);
                     subMenuElement.VisualElement = providerMenuElement;
+                    providerMenuElement.parentMenuData = menuData;
                     providerMenuElement.visible = true;
+                    providerMenuElement.selected = subMenuElement.correspondingFunction;
                 }
 
                 //.Add(provider, providerMenuElement);
@@ -518,12 +554,10 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         var hover = this.GetFirstGameObject(selectionRayOrigin);
         if (hover != null)
             Debug.LogError("<color=green>!!!!!!!!!!!!!!!!!!!!!!!!!!!</color>");
-        else
-            Debug.LogError("<color=red>!!!!!!!!!!!!!!!!!!!!!!!!!!!</color>");
 
         m_HomeMenuLayoutGroup.spacing = 1 % Time.unscaledDeltaTime * 0.01f; // Don't ask... horizontal layout group refused to play nicely without this... b'cause magic mysetery something
         //Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
-        if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
+        if (m_SpatialInterfaceState == SpatialinterfaceState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
         {
             //Debug.LogWarning("<color=orange>Hiding spatial menu UI</color>");
             // Performed an animated hide of any currently displayed UI
@@ -538,7 +572,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         }
         else if (m_Director.time > m_HomeSectionTimelineDuration)
         {
-            Debug.LogWarning("<color=green>Finished hiding spatial menu UI</color>");
+            Debug.Log("<color=green>Finished hiding spatial menu UI</color>");
             // UI hiding animation has finished, perform final cleanup.  TODO: optimze for pooling and a lesser GC impact
             //m_Director.time = 0f;
             m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
@@ -551,7 +585,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             ClearSubMenuElements();
             visible = false;
         }
-        else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
+        else if (m_SpatialInterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
         {
             // Scale background based on number of sub-menu elements
             var targetScale = highlightedMenuElements != null ? highlightedMenuElements.Count * 1.05f : 1f;
@@ -576,7 +610,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
                 m_SubMenuContentsCanvasGroup.alpha = 1f;
             }
         }
-        else if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingTopLevel)
+        else if (m_SpatialInterfaceState == SpatialinterfaceState.navigatingTopLevel)
         {
             //Debug.LogWarning("SpatialUI : <color=green>Navigating top level content</color>");
             var targetScale = 1f;
