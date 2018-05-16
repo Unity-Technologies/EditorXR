@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,5 +17,9 @@ public interface ISpatialMenuElement
     Action <Transform, Action, string, string> Setup { get; }
 
     Action selected { get; set; }
+
+    SpatialMenu.SpatialMenuData parentMenuData { get; set; }
+
+    Action correspondingFunction { get; set; }
 }
 #endif
