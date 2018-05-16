@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public class SpatialMenu : MonoBehaviour, IProcessSpatialInput, IInstantiateUI, IUsesNode,
-        IUsesRayOrigin, ISelectTool, IConnectInterfaces, IControlHaptics, INodeToRay, IMenu
+        IUsesRayOrigin, ISelectTool, IConnectInterfaces, IControlHaptics, INodeToRay
     {
         public class SpatialMenuData
         {
