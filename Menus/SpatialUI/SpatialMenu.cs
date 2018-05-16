@@ -235,6 +235,9 @@ namespace UnityEditor.Experimental.EditorVR
         public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
         public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
 
+        // Ray-based members
+        public Transform rayBasedInteractionSource { get { return m_SpatialMenuUi != null ? m_SpatialMenuUi.rayBasedInteractionSource : null; } }
+
         public static readonly List<ISpatialMenuProvider> s_SpatialMenuProviders = new List<ISpatialMenuProvider>();
 
         public bool beingMoved
