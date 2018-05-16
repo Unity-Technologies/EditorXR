@@ -52,15 +52,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             LocalZ
         }
 
+        public enum ScrollRepeatType
+        {
+            Looping,
+            Clamped
+        }
+
         public class SpatialScrollData : INodeToRay, IUsesViewerScale
         {
-            public SpatialScrollData(IProcessSpatialInput caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+            public SpatialScrollData(IProcessSpatialInput caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float scrollLengthRange, ScrollRepeatType scrollRepeatType, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
             {
                 this.caller = caller;
                 this.node = node;
                 this.startingPosition = startingPosition;
                 this.currentPosition = currentPosition;
-                this.repeatingScrollLengthRange = repeatingScrollLengthRange;
+                this.scrollLengthRange = scrollLengthRange;
                 this.scrollableItemCount = scrollableItemCount;
                 this.maxItemCount = maxItemCount;
                 this.centerVisuals = centerVisuals;
@@ -68,6 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 rayOrigin = this.RequestRayOriginFromNode(node);
                 directionChangedUpdatedConstrainedReferencePosition = startingPosition;
                 m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(node).position);
+                this.scrollRepeatType = scrollRepeatType;
             }
 
             int m_lastChangedFrame;
@@ -76,6 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             ContinuousDirectionalVelocityTracker m_ContinuousDirectionalVelocityTracker = new ContinuousDirectionalVelocityTracker();
 
             public SpatialCardinalScrollDirection spatialCardinalScrollDirection { get; set; }
+            public ScrollRepeatType scrollRepeatType { get; set; }
 
             /// <summary>
             /// When not having been polled for a frame, stop monitoring the corresponding transform in Update
@@ -125,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// <summary>
             /// The magnitude at which a scroll will repeat/reset to its original scroll starting value
             /// </summary>
-            public float repeatingScrollLengthRange { get; set; }
+            public float scrollLengthRange { get; set; }
 
             /// <summary>
             /// Number of items being scrolled through
@@ -175,8 +183,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             //public int highlightedMenuElementPositionYConstrained { get { return (int)(scrollableItemCount * normalizedLoopingPositionYConstrained); } }
             int m_HighlightedMenuElementsCycledThrough;
-            public int highlightedMenuElementPositionXConstrained { get { return (int)Mathf.Repeat(m_HighlightedMenuElementsCycledThrough, scrollableItemCount); } }
-            public int highlightedMenuElementPositionYConstrained { get { return (int)Mathf.Repeat(m_HighlightedMenuElementsCycledThrough, scrollableItemCount); } }
+            public int clampedHighlightedMenuElementPositionXConstrained { get { return (int)Mathf.Clamp(m_HighlightedMenuElementsCycledThrough, 0, scrollableItemCount); } }
+            public int loopingHighlightedMenuElementPositionXConstrained { get { return (int)Mathf.Repeat(m_HighlightedMenuElementsCycledThrough, scrollableItemCount); } }
+            public int loopingHighlightedMenuElementPositionYConstrained { get { return (int)Mathf.Repeat(m_HighlightedMenuElementsCycledThrough, scrollableItemCount); } }
 
             private const float k_ProjectedVectorUpdateInterval = 0.125f;
             float m_NextProjectedVectorUpdateTime;
@@ -196,7 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (m_NextProjectedVectorUpdateTime > Time.realtimeSinceStartup)
                         return;
 
-                    var directionalVelocity = m_ContinuousDirectionalVelocityTracker.directionalVelocity;
+                    var directionalVelocity = 1f;// m_ContinuousDirectionalVelocityTracker.directionalVelocity;
                     m_PreviousProjectedVector = m_CurrentProjectedVector; // automatically update previous projected vector when setting new current projected vector
                     m_CurrentProjectedVector = value;
                     m_NextProjectedVectorUpdateTime = Time.realtimeSinceStartup + k_ProjectedVectorUpdateInterval;
@@ -209,7 +218,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                     m_PreviouslyMovingInPositivelyConstrainedDirection = movingInPositiveDirectionOnConstrainedAxis;
                     var direction = movingInPositiveDirectionOnConstrainedAxis ? -1 : 1; // multiplier that singifies that m_HighlightedMenuElementsCycledThrough will be either incremented or decremented, based on the direction of input
-                    var highlightedElementScrollAddition = (int)((m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude * direction * this.GetViewerScale() * 6f * directionalVelocity);
+                    var highlightedElementScrollAddition = 0;
+
+                    switch (scrollRepeatType)
+                    {
+                        case ScrollRepeatType.Clamped:
+                            highlightedElementScrollAddition = m_HighlightedMenuElementsCycledThrough + (int)((m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude * direction * this.GetViewerScale() * 10f * directionalVelocity);
+                            var newIncrementalPosition = m_HighlightedMenuElementsCycledThrough + highlightedElementScrollAddition;
+                            var incrementedValue = m_HighlightedMenuElementsCycledThrough + newIncrementalPosition;
+                            if (incrementedValue < 0 || incrementedValue > scrollableItemCount)
+                                highlightedElementScrollAddition = 0; // Clamped value should be within the bounds of the scrollableItemCount
+                            break;
+                        case ScrollRepeatType.Looping:
+                            Debug.LogError("Validate Looping spatial scrolling after axis constraints were added.");
+                            highlightedElementScrollAddition = (int)((m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude * direction * this.GetViewerScale() * 6f * directionalVelocity);
+                            break;
+                    }
+
                     m_HighlightedMenuElementsCycledThrough += highlightedElementScrollAddition;
                     Debug.Log(highlightedElementScrollAddition + " : <color=green>Updating current projected vector of scroll data</color> : " + m_CurrentProjectedVector + " - highlightedMenuElementsCycledThrough : " + m_HighlightedMenuElementsCycledThrough + " : directionChangedUpdatedConstrainedReferencePosition : " + directionChangedUpdatedConstrainedReferencePosition);
                     Debug.Log("m_CurrentProjectedVector : " + m_CurrentProjectedVector + " - directionChangedUpdatedConstrainedReferencePosition : " + directionChangedUpdatedConstrainedReferencePosition + " : MAGNITUDE: " + (m_CurrentProjectedVector - directionChangedUpdatedConstrainedReferencePosition).magnitude);
@@ -225,7 +250,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     switch (spatialCardinalScrollDirection)
                     {
                         case SpatialCardinalScrollDirection.LocalX:
-                            movingInPositiveDirection = m_CurrentProjectedVector.x - m_PreviousProjectedVector.x > 0;
+                            movingInPositiveDirection = m_PreviousProjectedVector.x - m_CurrentProjectedVector.x > 0;
                             break;
                         case SpatialCardinalScrollDirection.LocalY:
                             movingInPositiveDirection = m_CurrentProjectedVector.y - m_PreviousProjectedVector.y > 0;
@@ -638,7 +663,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return spatialInputType;
         }
 
-        internal SpatialScrollData PerformSpatialScroll(IProcessSpatialInput caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
+        internal SpatialScrollData PerformSpatialScroll(IProcessSpatialInput caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float scrollLengthRange, ScrollRepeatType scrollRepeatType, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
         {
             // Continue processing of spatial scrolling for a given caller,
             // Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
@@ -655,7 +680,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             if (scrollData == null)
             {
-                scrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
+                scrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, scrollLengthRange, scrollRepeatType, scrollableItemCount, maxItemCount, centerScrollVisuals);
                 m_SpatialScrollCallers.Add(caller);
                 this.AddRayVisibilitySettings(scrollData.rayOrigin, caller, false, false, 1);
             }
@@ -686,13 +711,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 // Mandate that scrolling maintain the initial direction, regardless of the user scrolling before/after the trigger origin point; prevent direction flipping
                 projectedAmount = scrollingAfterTriggerOirigin ? projectedAmount : 1 - projectedAmount;
-                scrollData.normalizedLoopingPositionUnconstrained = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
+                scrollData.normalizedLoopingPositionUnconstrained = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % scrollLengthRange) * (1 / scrollLengthRange);
             }
 
             return scrollData;
         }
 
-        internal SpatialScrollData PerformLocalCardinallyConstrainedSpatialScroll(IProcessSpatialInput caller, SpatialCardinalScrollDirection cardinalScrollDirection, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
+        internal SpatialScrollData PerformLocalCardinallyConstrainedSpatialScroll(IProcessSpatialInput caller, SpatialCardinalScrollDirection cardinalScrollDirection, Node node, Vector3 startingPosition, Vector3 currentPosition, float scrollLengthRange, ScrollRepeatType scrollRepeatType, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
         {
             // Continue processing of spatial scrolling for a given caller,
             // Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
@@ -715,7 +740,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             if (scrollData == null)
             {
-                scrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
+                scrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, scrollLengthRange, scrollRepeatType, scrollableItemCount, maxItemCount, centerScrollVisuals);
                 scrollData.spatialCardinalScrollDirection = cardinalScrollDirection;
                 m_SpatialScrollCallers.Add(caller);
                 this.AddRayVisibilitySettings(scrollData.rayOrigin, caller, false, false, 1);
@@ -742,11 +767,29 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var directionVector = currentPosition - cardinalDirectionVector;
 
             // Define the initial vector upon which further spatial scrolling will be orthogonally projected upon
-            var hmdToDeviceInitialVector = startingPosition - m_HMDTransform.position;
-            var hmdToDeviceCurrentVector = currentPosition - m_HMDTransform.position;
+            var hmdToDeviceInitialVector = Vector3.Normalize(m_HMDTransform.position - startingPosition);
+            var hmdToDeviceCurrentVector = Vector3.Normalize(m_HMDTransform.position - currentPosition);
+            var constrainedProjectedVector = Vector3.ProjectOnPlane(hmdToDeviceCurrentVector, hmdToDeviceInitialVector);
 
-            scrollData.currentProjectedVector = Vector3.ProjectOnPlane(hmdToDeviceCurrentVector, hmdToDeviceInitialVector);
-            //Debug.Log("Projected vector : <color=yellow>" + scrollData.currentProjectedVector + "</color>");
+            Debug.Log("Projected vector : <color=red>" + constrainedProjectedVector + "</color>");
+            switch (cardinalScrollDirection)
+            {
+                    case SpatialCardinalScrollDirection.LocalX:
+                        constrainedProjectedVector.y = 0;
+                        constrainedProjectedVector.z = 0;
+                        break;
+                    case SpatialCardinalScrollDirection.LocalY:
+                        constrainedProjectedVector.x = 0;
+                        constrainedProjectedVector.z = 0;
+                        break;
+                    case SpatialCardinalScrollDirection.LocalZ:
+                        constrainedProjectedVector.x = 0;
+                        constrainedProjectedVector.y = 0;
+                        break;
+            }
+
+            Debug.Log("Projected vector : <color=green>" + constrainedProjectedVector + "</color>");
+            scrollData.currentProjectedVector = constrainedProjectedVector;
 
             //project additional positions upon the plane defined by the hmdToDeviceInitialVector
 
@@ -776,14 +819,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 // Mandate that scrolling maintain the initial direction, regardless of the user scrolling before/after the trigger origin point; prevent direction flipping
                 projectedAmount = scrollingAfterTriggerOirigin ? projectedAmount : 1 - projectedAmount;
-                scrollData.normalizedLoopingPositionUnconstrained = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
-                scrollData.normalizedLoopingPositionYConstrained = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
+                scrollData.normalizedLoopingPositionUnconstrained = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % scrollLengthRange) * (1 / scrollLengthRange);
+                scrollData.normalizedLoopingPositionYConstrained = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % scrollLengthRange) * (1 / scrollLengthRange);
             }
 
             return scrollData;
         }
 
-        internal SpatialScrollData PerformOriginalSpatialScroll(IProcessSpatialInput caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
+        internal SpatialScrollData PerformOriginalSpatialScroll(IProcessSpatialInput caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float scrollLengthRange, SpatialInputModule.ScrollRepeatType scrollRepeatType, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
         {
             // Continue processing of spatial scrolling for a given caller,
             // Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
@@ -800,7 +843,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             if (scrollData == null)
             {
-                scrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
+                scrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, scrollLengthRange, scrollRepeatType, scrollableItemCount, maxItemCount, centerScrollVisuals);
                 m_SpatialScrollCallers.Add(caller);
                 this.AddRayVisibilitySettings(scrollData.rayOrigin, caller, false, false, 1);
             }
@@ -831,7 +874,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 // Mandate that scrolling maintain the initial direction, regardless of the user scrolling before/after the trigger origin point; prevent direction flipping
                 projectedAmount = scrollingAfterTriggerOirigin ? projectedAmount : 1 - projectedAmount;
-                scrollData.normalizedLoopingPositionUnconstrained = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
+                scrollData.normalizedLoopingPositionUnconstrained = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % scrollLengthRange) * (1 / scrollLengthRange);
             }
 
             return scrollData;
