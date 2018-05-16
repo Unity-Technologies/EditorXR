@@ -68,7 +68,7 @@ GameObject:
   - component: {fileID: 4000011852083516}
   - component: {fileID: 114000010564953552}
   m_Layer: 0
-  m_Name: SpatialUIRay
+  m_Name: SpatialMenuProxyRay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
