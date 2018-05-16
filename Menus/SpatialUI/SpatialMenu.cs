@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_SpatialQuickToggleDuration = 0.25f;
         const float k_WristReturnRotationThreshold = 0.3f;
         const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
-        const float k_SpatialScrollVectorLength = 0.125f;
+        const float k_SpatialScrollVectorLength = 0.25f;  // was 0.125, though felt too short a distance for the Spatial Menu (was better suited for the tools menu implementation)
 
         public enum SpatialinterfaceState
         {
