@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR
     public static class IProcessSpatialInputTypeMethods
     {
         internal delegate SpatialInputModule.SpatialScrollData PerformLocalCardinallyConstrainedSpatialScrollDelegate(IProcessSpatialInput caller, SpatialInputModule.SpatialCardinalScrollDirection cardinalScrollDirection, Node node, Vector3 startingPosition,
-            Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
+            Vector3 currentPosition, float scrollLengthRange, SpatialInputModule.ScrollRepeatType scrollRepeatType, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
 
         internal static PerformLocalCardinallyConstrainedSpatialScrollDelegate performLocalCardinallyConstrainedSpatialScroll { private get; set; }
 
@@ -37,15 +37,15 @@ namespace UnityEditor.Experimental.EditorVR
         /// <param name="node">The node on which to display & perform the spatial scroll</param>
         /// <param name="startingPosition">The initial position of the spatial scroll</param>
         /// <param name="currentPosition">The current/updated position of the spatial scroll</param>
-        /// <param name="repeatingScrollLengthRange">The length at which a scroll action will return a repeating/looping value</param>
+        /// <param name="scrollLengthRange">The length at which a scroll action will return a repeating/looping value</param>
         /// <param name="scrollableItemCount">The number of items being scrolled through with this action</param>
         /// <param name="maxItemCount">The maximum number of items that can be scrolled through for this action</param>
         /// <param name="centerVisuals">If true, expand the scroll line visuals outward in both directions from the scroll start position</param>
         /// <returns>The spatial scroll data for a single scroll action, but an individual caller object</returns>
         public static SpatialInputModule.SpatialScrollData PerformLocalCardinallyConstrainedSpatialScroll(this IProcessSpatialInput obj, SpatialInputModule.SpatialCardinalScrollDirection cardinalScrollDirection, Node node,
-            Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+            Vector3 startingPosition, Vector3 currentPosition, float scrollLengthRange, SpatialInputModule.ScrollRepeatType scrollRepeatType, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
         {
-            return performLocalCardinallyConstrainedSpatialScroll(obj, cardinalScrollDirection, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
+            return performLocalCardinallyConstrainedSpatialScroll(obj, cardinalScrollDirection, node, startingPosition, currentPosition, scrollLengthRange, scrollRepeatType, scrollableItemCount, maxItemCount, centerVisuals);
         }
 
         // Below are previous implementations
@@ -62,19 +62,19 @@ namespace UnityEditor.Experimental.EditorVR
         /// <param name="node">The node on which to display & perform the spatial scroll</param>
         /// <param name="startingPosition">The initial position of the spatial scroll</param>
         /// <param name="currentPosition">The current/updated position of the spatial scroll</param>
-        /// <param name="repeatingScrollLengthRange">The length at which a scroll action will return a repeating/looping value</param>
+        /// <param name="scrollLengthRange">The length at which a scroll action will return a repeating/looping value</param>
         /// <param name="scrollableItemCount">The number of items being scrolled through with this action</param>
         /// <param name="maxItemCount">The maximum number of items that can be scrolled through for this action</param>
         /// <param name="centerVisuals">If true, expand the scroll line visuals outward in both directions from the scroll start position</param>
         /// <returns>The spatial scroll data for a single scroll action, but an individual caller object</returns>
         public static SpatialInputModule.SpatialScrollData PerformOriginalSpatialScroll(this IProcessSpatialInput obj, Node node,
-            Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+            Vector3 startingPosition, Vector3 currentPosition, float scrollLengthRange, SpatialInputModule.ScrollRepeatType scrollRepeatType, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
         {
-            return performOriginalSpatialScroll(obj, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
+            return performOriginalSpatialScroll(obj, node, startingPosition, currentPosition, scrollLengthRange, scrollRepeatType, scrollableItemCount, maxItemCount, centerVisuals);
         }
 
         internal delegate SpatialInputModule.SpatialScrollData PerformSpatialScrollDelegate(IProcessSpatialInput caller, Node node, Vector3 startingPosition,
-           Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
+           Vector3 currentPosition, float scrollLengthRange, SpatialInputModule.ScrollRepeatType scrollRepeatType, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
 
         internal static PerformSpatialScrollDelegate performSpatialScroll { private get; set; }
 
@@ -85,15 +85,15 @@ namespace UnityEditor.Experimental.EditorVR
         /// <param name="node">The node on which to display & perform the spatial scroll</param>
         /// <param name="startingPosition">The initial position of the spatial scroll</param>
         /// <param name="currentPosition">The current/updated position of the spatial scroll</param>
-        /// <param name="repeatingScrollLengthRange">The length at which a scroll action will return a repeating/looping value</param>
+        /// <param name="scrollLengthRange">The length at which a scroll action will return a repeating/looping value</param>
         /// <param name="scrollableItemCount">The number of items being scrolled through with this action</param>
         /// <param name="maxItemCount">The maximum number of items that can be scrolled through for this action</param>
         /// <param name="centerVisuals">If true, expand the scroll line visuals outward in both directions from the scroll start position</param>
         /// <returns>The spatial scroll data for a single scroll action, but an individual caller object</returns>
         public static SpatialInputModule.SpatialScrollData PerformSpatialScroll(this IProcessSpatialInput obj, Node node,
-            Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+            Vector3 startingPosition, Vector3 currentPosition, float scrollLengthRange, SpatialInputModule.ScrollRepeatType scrollRepeatType, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
         {
-            return performSpatialScroll(obj, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
+            return performSpatialScroll(obj, node, startingPosition, currentPosition, scrollLengthRange, scrollRepeatType, scrollableItemCount, maxItemCount, centerVisuals);
         }
 
         internal delegate SpatialInputType GetSpatialInputTypeForNodeDelegate(IDetectSpatialInputType caller, Node node);
