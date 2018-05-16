@@ -65,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
         const float k_SpatialScrollVectorLength = 0.25f;  // was 0.125, though felt too short a distance for the Spatial Menu (was better suited for the tools menu implementation)
 
-        public enum SpatialinterfaceState
+        public enum SpatialInterfaceState
         {
             hidden,
             navigatingTopLevel,
@@ -92,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR
         HapticPulse m_HighlightMenuElementPulse;
 
         static SpatialMenuUI m_SpatialMenuUi;
-        SpatialinterfaceState m_SpatialinterfaceState;
+        SpatialInterfaceState m_SpatialInterfaceState;
 
         bool m_Visible;
         bool m_BeingMoved;
@@ -115,6 +115,7 @@ namespace UnityEditor.Experimental.EditorVR
         // Section name string, corresponding element collection, currentlyHighlightedState
         static readonly List<SpatialMenuData> s_SpatialMenuData = new List<SpatialMenuData>();
 
+        public SpatialMenuUI spatialMenuUI { get { return m_SpatialMenuUi; } }
         /*
         ISpatialMenuProvider highlightedTopLevelMenuProvider
         {
@@ -168,12 +169,12 @@ namespace UnityEditor.Experimental.EditorVR
                 if (m_Visible)
                 {
                     RefreshProviderData();
-                    spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
+                    spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
                     //gameObject.SetActive(true);  MOVED TO SPATIAL UI View
                 }
                 else
                 {
-                    if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent &&
+                    if (m_SpatialInterfaceState == SpatialInterfaceState.navigatingSubMenuContent &&
                         m_HighlightedMenuElements != null &&
                         m_HighlightedMenuElements.Count > 0 &&
                         m_HighlightedMenuElements[m_HighlightedMenuElementPosition] != null &&
@@ -184,28 +185,28 @@ namespace UnityEditor.Experimental.EditorVR
                     }
 
                     this.Pulse(Node.None, m_MenuClosePulse);
-                    spatialinterfaceState = SpatialinterfaceState.hidden;
+                    spatialInterfaceState = SpatialInterfaceState.hidden;
                 }
             }
         }
 
-        SpatialinterfaceState spatialinterfaceState
+        SpatialInterfaceState spatialInterfaceState
         {
             set
             {
-                if (m_SpatialinterfaceState == value)
+                if (m_SpatialInterfaceState == value)
                     return;
 
-                m_SpatialinterfaceState = value;
-                m_SpatialMenuUi.spatialinterfaceState = value;
+                m_SpatialInterfaceState = value;
+                m_SpatialMenuUi.spatialInterfaceState = value;
 
-                switch (m_SpatialinterfaceState)
+                switch (m_SpatialInterfaceState)
                 {
-                    case SpatialinterfaceState.navigatingTopLevel:
+                    case SpatialInterfaceState.navigatingTopLevel:
                         m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
                         SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
                         break;
-                    case SpatialinterfaceState.navigatingSubMenuContent:
+                    case SpatialInterfaceState.navigatingSubMenuContent:
                         SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalY);
                         DisplayHighlightedSubMenuContents();
                         break;
@@ -237,7 +238,14 @@ namespace UnityEditor.Experimental.EditorVR
         public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
 
         // Ray-based members
-        public Transform rayBasedInteractionSource { get { return m_SpatialMenuUi != null ? m_SpatialMenuUi.rayBasedInteractionSource : null; } }
+        public Transform rayBasedInteractionSource
+        {
+            get
+            {
+                Transform source = null;
+                return m_SpatialMenuUi != null ? m_SpatialMenuUi.rayBasedInteractionSource : null;
+            }
+        }
 
         public static readonly List<ISpatialMenuProvider> s_SpatialMenuProviders = new List<ISpatialMenuProvider>();
 
@@ -251,6 +259,11 @@ namespace UnityEditor.Experimental.EditorVR
                 m_BeingMoved = value;
                 m_SpatialMenuUi.beingMoved = value;
             }
+        }
+
+        void ChangeMenuState(SpatialInterfaceState state)
+        {
+            spatialInterfaceState = state;
         }
 
         public class SpatialMenuElement
@@ -300,6 +313,8 @@ namespace UnityEditor.Experimental.EditorVR
                // this.ConnectInterfaces(m_SpatialMenuUi);
                 m_SpatialMenuUi.spatialMenuData = s_SpatialMenuData; // set shared reference to menu name/type, elements, and highlighted state
                 m_SpatialMenuUi.Setup();
+                m_SpatialMenuUi.returnToPreviousMenuLevel = ReturnToPreviousMenuLevel;
+                m_SpatialMenuUi.changeMenuState = ChangeMenuState;
                 SpatialMenuUI.spatialMenuProviders = s_SpatialMenuProviders;
             }
 
@@ -392,25 +407,28 @@ namespace UnityEditor.Experimental.EditorVR
             m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
         }
 
-        void SetSpatialScrollStartingConditions(Vector3 localPosition, Quaternion localRotation)
+        void SetSpatialScrollStartingConditions(Vector3 localPosition, Quaternion localRotation, SpatialInputModule.SpatialCardinalScrollDirection direction, int menuElemenCountOverride = -1)
         {
             node = Node.LeftHand; // TODO: fetch node that initiated the display of the spatial ui
             m_HomeSectionSpatialScrollStartLocalPosition = localPosition;
             m_InitialSpatialLocalRotation = localRotation; // Cache the current starting rotation, current deltaAngle will be calculated relative to this rotation
 
-            if (m_HighlightedMenuElements != null)
+            if (spatialScrollData != null)
+                this.EndSpatialScroll();
+
+            //if (m_HighlightedMenuElements != null)
             {
-                // TODO: set the spatial scroll origin based on the node that initiates the display of the SpatialUI
+                // TODO: set the spatial scroll origin based on the node that initiates the display of the SpatialUI // No needed if we have single UI/view and per-device controllers with their own assigned nodes
                 spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
                 spatialScrollStartPosition = spatialScrollOrigin.position;
-                var elementCount = m_HighlightedMenuElements.Count;
-                spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(SpatialInputModule.SpatialCardinalScrollDirection.LocalY, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, elementCount, elementCount);
+                var elementCount = menuElemenCountOverride != -1 ? menuElemenCountOverride : m_HighlightedMenuElements.Count;
+                spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(direction, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, SpatialInputModule.ScrollRepeatType.Clamped, elementCount, elementCount);
             }
         }
 
         void DisplayHomeSectionContents()
         {
-            spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
+            spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
         }
 
         void DisplayHighlightedSubMenuContents()
@@ -480,26 +498,43 @@ namespace UnityEditor.Experimental.EditorVR
                 consumeControl(m_CurrentSpatialActionMapInput.select);
 
                 //TODO restore this functionality.  It resets the starting position when being moved, but currently breaks when initially opening the menu
-                if (m_SpatialinterfaceState != SpatialinterfaceState.hidden && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - m_CurrentSpatialActionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
+                if (m_SpatialInterfaceState != SpatialInterfaceState.hidden && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - m_CurrentSpatialActionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                     m_HomeSectionSpatialScrollStartLocalPosition = m_CurrentSpatialActionMapInput.localPosition.vector3;
             }
 
             // Detect the initial activation of the relevant Spatial input
             if ((m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.wasJustPressed) ||
-                (m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.isHeld) ||
-                (m_CurrentSpatialActionMapInput.show.isHeld && m_CurrentSpatialActionMapInput.select.wasJustPressed))
+                (m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.isHeld))
             {
-                spatialinterfaceState = SpatialinterfaceState.navigatingTopLevel;
-                SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion);
+                spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
+                m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
                 //Reset();
             }
 
-            if (m_CurrentSpatialActionMapInput.show.isHeld && m_SpatialinterfaceState != SpatialinterfaceState.hidden)
+            if (m_CurrentSpatialActionMapInput.show.isHeld && m_SpatialInterfaceState != SpatialInterfaceState.hidden)
             {
                 m_RotationVelocityTracker.Update(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
-                if (m_RotationVelocityTracker.rotationStrength > 500)
+                if (!m_SpatialMenuUi.transitioningInputModes)
                 {
-                    m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Ray;
+                    if (m_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.Ray && m_RotationVelocityTracker.rotationStrength > 600)
+                    {
+                        spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
+                        spatialScrollStartPosition = spatialScrollOrigin.position;
+                        m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
+                        m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Ray;
+                    }
+                    else if (m_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.Ray)
+                    {
+                        // Transition back to spatial translation mode
+
+                        //if ((spatialScrollStartPosition - m_CurrentSpatialActionMapInput.localPosition.vector3).magnitude > 0.25f)
+                        if (m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
+                        {
+                            m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
+                            //SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
+                        }
+                        //*/
+                    }
                 }
 
                 m_ContinuousDirectionalVelocityTracker.Update(m_CurrentSpatialActionMapInput.localPosition.vector3, Time.unscaledDeltaTime);
@@ -544,16 +579,21 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 */
 
-                if (m_Transitioning && m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
+                if (m_Transitioning && m_SpatialInterfaceState == SpatialInterfaceState.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
-                    SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion);
                     ReturnToPreviousMenuLevel();
                     return;
                 }
 
-                if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingTopLevel && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - m_CurrentSpatialActionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
+                 //TODO : enable after constrained horizontal scrolling is functioning
+                var currentSpatialActionMapLocalPosition = m_CurrentSpatialActionMapInput.localPosition.vector3;
+                //var currentInputMovingForward = Vector3.Dot(currentSpatialActionMapLocalPosition, m_HomeSectionSpatialScrollStartLocalPosition) > 0.5f; // validate the the current position has move away from the user, in a forward direction
+                //Debug.LogError("<color=green>"+ Vector3.Dot(currentSpatialActionMapLocalPosition.normalized, m_HomeSectionSpatialScrollStartLocalPosition.normalized) + "</color>");
+                //if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingTopLevel && currentInputMovingForward && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - currentSpatialActionMapLocalPosition) > kSubMenuNavigationTranslationTriggerThreshold)
+                if (m_SpatialInterfaceState == SpatialInterfaceState.navigatingTopLevel && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - currentSpatialActionMapLocalPosition) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
+                    /*
                     if (m_Transitioning)
                     {
                         var x = Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - m_CurrentSpatialActionMapInput.localPosition.vector3);
@@ -563,6 +603,7 @@ namespace UnityEditor.Experimental.EditorVR
                     }
 
                     return;
+                    */
                 }
 
                 // utilize the YAW rotation of the input device to cycle through menu items
@@ -570,8 +611,35 @@ namespace UnityEditor.Experimental.EditorVR
                 // Will need to consider how to handle a user starting at a steep angle initially, baesd upon how far they scroll in the opposite direction.
                 // In other words, if the user rotates beyond the max estimated threshold, we offset the initial starting angle by that amount, so when returning their rotation to the original extreme angle
                 // They will have offset their "neutral" rotation position, and have newfound room to rotate/advance in the original "extreme" rotation direction
-                if (m_SpatialinterfaceState != SpatialinterfaceState.navigatingSubMenuContent)
+                if (m_SpatialInterfaceState != SpatialInterfaceState.navigatingSubMenuContent)
                 {
+                    //highlightedMenuElements = s_SpatialMenuData[highlightedPosition].spatialMenuElements;
+                    if (true && !m_Transitioning)
+                    {
+                        m_SpatialMenuUi.HighlightSingleElementInHomeMenu(0);
+                        highlightedMenuElements = s_SpatialMenuData[0].spatialMenuElements;
+                    }
+                    else if (m_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.Ray && m_HighlightedMenuElements != null)
+                    {
+                        var menuElementCount = s_SpatialMenuData.Count;
+                        if (menuElementCount == 0)
+                            return;
+
+                        spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(SpatialInputModule.SpatialCardinalScrollDirection.LocalX, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, SpatialInputModule.ScrollRepeatType.Clamped, menuElementCount, menuElementCount);
+                        var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPositionUnconstrained;
+                        if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
+                        {
+                            if (spatialScrollData.highlightedMenuElementPositionUnconstrained != m_HighlightedMenuElementPosition)
+                            {
+                                Debug.LogWarning("<color=purple>changing home menu element highlighted position to : </color>" + spatialScrollData.highlightedMenuElementPositionUnconstrained);
+                                //ebug.LogWarning("<color=green>Performing spatial scrolling of TOP LEVEL / HOME contents</color>");
+                                m_HighlightedMenuElementPosition = spatialScrollData.highlightedMenuElementPositionUnconstrained;
+                                m_SpatialMenuUi.HighlightSingleElementInHomeMenu(spatialScrollData.loopingHighlightedMenuElementPositionXConstrained);
+                            }
+                        }
+                    }
+                }
+/*
                     // The "roll" rotation expected on the z is polled for via the X in the action map...???
                     const float kSectionSpacingBuffer = 0.05f;
                     var localZRotationDelta = Mathf.DeltaAngle(m_InitialSpatialLocalRotation.y, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion.y);//Mathf.Abs(m_InitialSpatialLocalZRotation - currentLocalZRotation);// Mathf.Clamp((m_InitialSpatialLocalZRotation + 1) + currentLocalZRotation, 0f, 2f);
@@ -597,13 +665,13 @@ namespace UnityEditor.Experimental.EditorVR
                         m_SpatialMenuUi.HighlightHomeSectionMenuElement(highlightedPosition);
                     }
                 }
-
-                if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
+*/
+                else if (m_SpatialInterfaceState == SpatialInterfaceState.navigatingSubMenuContent)
                 {
                     if (m_HighlightedMenuElements != null)
                     {
                         var menuElementCount = m_HighlightedMenuElements.Count;
-                        spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(SpatialInputModule.SpatialCardinalScrollDirection.LocalY, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, menuElementCount, menuElementCount);
+                        spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(SpatialInputModule.SpatialCardinalScrollDirection.LocalY, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, SpatialInputModule.ScrollRepeatType.Clamped, menuElementCount, menuElementCount);
                         var normalizedRepeatingPosition = spatialScrollData.normalizedLoopingPositionUnconstrained;
                         if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
                         {
@@ -622,11 +690,11 @@ namespace UnityEditor.Experimental.EditorVR
 
                             //Debug.LogWarning("Performing spatial scrolling of sub-menu contents");
                             m_HighlightedMenuElementPosition = spatialScrollData.highlightedMenuElementPositionUnconstrained;//(int) (menuElementCount * normalizedRepeatingPosition);
-                            m_SpatialMenuUi.HighlightSingleElementInCurrentMenu(spatialScrollData.highlightedMenuElementPositionYConstrained);
+                            m_SpatialMenuUi.HighlightSingleElementInCurrentMenu(spatialScrollData.loopingHighlightedMenuElementPositionYConstrained);
                             //m_SpatialMenuUi.HighlightSingleElementInCurrentMenu(m_HighlightedMenuElementPosition);
                             //m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
                         }
-                        }
+                    }
                 }
 
                 /* Working Z-rotation based cycling through menu elements
