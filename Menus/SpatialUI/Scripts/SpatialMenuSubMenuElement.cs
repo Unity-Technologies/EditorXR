@@ -81,6 +81,7 @@ namespace UnityEditor.Experimental.EditorVR
         bool m_Visible;
 
         public Action selectedAction { get { return m_SelectedAction; } }
+        public Action onHiddenAction { get; set; }
         public Button button { get { return m_Button; } }
 
         public bool visible
@@ -233,6 +234,9 @@ namespace UnityEditor.Experimental.EditorVR
             textTransform.localPosition = textTargetLocalPosition;
             m_CanvasGroup.alpha = targetAlpha;
             m_VisibilityCoroutine = null;
+
+            if (!fadeIn)
+                ObjectUtils.Destroy(gameObject); // TODO: when pooling is in place, don't destroy
         }
 
         IEnumerator AnimateHighlight(bool isHighlighted)

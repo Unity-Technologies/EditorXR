@@ -23,5 +23,7 @@ public interface ISpatialMenuElement
     SpatialMenu.SpatialMenuData parentMenuData { get; set; }
 
     Action correspondingFunction { get; set; }
+
+    Action onHiddenAction { get; set; }
 }
 #endif

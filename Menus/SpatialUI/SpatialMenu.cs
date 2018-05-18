@@ -399,7 +399,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             return;
 
-            DisplayHomeSectionContents();
+            spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
 
             this.Pulse(Node.None, m_MenuOpenPulse);
 
@@ -424,11 +424,6 @@ namespace UnityEditor.Experimental.EditorVR
                 var elementCount = menuElemenCountOverride != -1 ? menuElemenCountOverride : m_HighlightedMenuElements.Count;
                 spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(direction, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, SpatialInputModule.ScrollRepeatType.Clamped, elementCount, elementCount);
             }
-        }
-
-        void DisplayHomeSectionContents()
-        {
-            spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
         }
 
         void DisplayHighlightedSubMenuContents()
@@ -463,7 +458,7 @@ namespace UnityEditor.Experimental.EditorVR
 
             this.Pulse(Node.None, m_NavigateBackPulse);
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
-            DisplayHomeSectionContents();
+            spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
 
             Debug.LogWarning("SpatialMenu : <color=green>Above wrist return threshold</color>");
         }

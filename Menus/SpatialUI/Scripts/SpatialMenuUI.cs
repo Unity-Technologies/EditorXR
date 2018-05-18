@@ -9,6 +9,7 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputNew;
 using UnityEngine.Playables;
 using UnityEngine.UI;
@@ -107,7 +108,11 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
 
     [Header("SurroundingBorderButtons")]
     [SerializeField]
-    Button[] m_BorderButtons;
+    SpatialMenuBackButton[] m_BackButtons;
+
+    [Header("BackButtonContainer")]
+    [SerializeField]
+    CanvasGroup m_BackButtonVisualsCanvasGroup;
 
     bool m_Visible;
     SpatialInterfaceInputMode m_SpatialInterfaceInputMode;
@@ -290,12 +295,20 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         visible = false;
     }
 
-    void OnDestroy()
+    void OnBackButtonHoverEnter()
     {
-        foreach (var button in m_BorderButtons)
-        {
-            button.onClick.RemoveAllListeners();
-        }
+        m_BackButtonVisualsCanvasGroup.alpha = 1f;
+    }
+
+    void OnBackButtonHoverExit()
+    {
+        m_BackButtonVisualsCanvasGroup.alpha = 0f;
+    }
+
+    void OnBackButtonSelected()
+    {
+        OnBackButtonHoverExit();
+        ReturnToPreviousMenuLevel();
     }
 
     public void Setup()
@@ -312,17 +325,19 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
         Reset();
 
-        foreach (var button in m_BorderButtons)
+        foreach (var button in m_BackButtons)
         {
-            button.onClick.AddListener(ReturnToPreviousMenuLevel);
+            button.OnHoverEnter = OnBackButtonHoverEnter;
+            button.OnHoverExit = OnBackButtonHoverExit;
+            button.OnSelected = OnBackButtonSelected;
         }
     }
 
     public void Reset()
     {
         Debug.LogWarning("Resetting state in Spatial menu UI " + m_SpatialInterfaceState);
-        ClearHomeMenuElements();
-        ClearSubMenuElements();
+        ForceClearHomeMenuElements();
+        ForceClearSubMenuElements();
 
         m_InputModeText.text = k_TranslationInputModeName;
         m_Director.playableAsset = m_RevealTimelinePlayable;
@@ -344,9 +359,10 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     {
         Debug.LogWarning("Return to previous menu level");
         returnToPreviousMenuLevel();
+        HideSubMenuElements();
     }
 
-    void ClearHomeMenuElements()
+    void ForceClearHomeMenuElements()
     {
         var homeMenuElementParent = m_HomeMenuLayoutGroup.transform;
         var childrenToDelete = homeMenuElementParent.GetComponentsInChildren<Transform>().Where((x) => x != homeMenuElementParent);
@@ -361,7 +377,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         }
     }
 
-    void ClearSubMenuElements()
+    void ForceClearSubMenuElements()
     {
         var childrenToDelete = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
         var childCount = childrenToDelete.Count();
@@ -372,6 +388,14 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
                 if (child != null && child.gameObject != null)
                     ObjectUtils.Destroy(child.gameObject);
             }
+        }
+    }
+
+    void HideSubMenuElements()
+    {
+        foreach (var element in currentlyDisplayedMenuElements)
+        {
+            element.visible = false;
         }
     }
 
@@ -442,7 +466,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     public void DisplayHighlightedSubMenuContents()
     {
         Debug.LogWarning("Displaying sub-menu elements");
-        ClearHomeMenuElements();
+        ForceClearHomeMenuElements();
         const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
         int subMenuElementCount = 0;
         foreach (var menuData in spatialMenuData)
@@ -603,8 +627,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             this.StopAllCoroutines();
             //HideSubMenu();
             m_Director.Evaluate();
-            ClearHomeMenuElements();
-            ClearSubMenuElements();
+            ForceClearHomeMenuElements();
+            ForceClearSubMenuElements();
             visible = false;
         }
         else if (m_SpatialInterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
@@ -643,7 +667,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
                 {
                     m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
                     m_SubMenuContentsCanvasGroup.alpha = 0f;
-                    ClearSubMenuElements();
+                    ForceClearSubMenuElements();
                     return;
                 }
 

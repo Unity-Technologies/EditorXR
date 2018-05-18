@@ -67,6 +67,7 @@ namespace UnityEditor.Experimental.EditorVR
             get { return m_Visible; }
             set
             {
+                //var originalValue = m_Visible; // compare against default False value as not to destroy when initially spawned
                 if (m_Visible == value)
                     return;
 
@@ -105,6 +106,7 @@ namespace UnityEditor.Experimental.EditorVR
         public Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
         public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
         public Action correspondingFunction { get; set; }
+        public Action onHiddenAction { get; set; }
 
         void Awake()
         {
