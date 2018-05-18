@@ -116,6 +116,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Action<Transform, Action, string, string> Setup { get; set; }
         public Action selected { get; set; }
+        public Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
         public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
         public Action correspondingFunction { get; set; }
 

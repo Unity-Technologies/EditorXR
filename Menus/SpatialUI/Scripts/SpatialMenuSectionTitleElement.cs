@@ -85,16 +85,24 @@ namespace UnityEditor.Experimental.EditorVR
                 m_Highlighted = value;
                 parentMenuData.highlighted = value;
 
+
                 this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHighlight(m_Highlighted));
 
                 //Debug.LogWarning("<color=orange>Highlighting top level menu button : </color>" + m_Text.text);
                 if (m_Highlighted)
+                {
                     this.Pulse(Node.None, m_HighlightPulse);
+                }
+
+                var action = highlightedAction;
+                if (action != null)
+                    action(parentMenuData);
             }
         }
 
         public Action<Transform, Action, string, string> Setup { get; set; }
         public Action selected { get; set; }
+        public Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
         public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
         public Action correspondingFunction { get; set; }
 

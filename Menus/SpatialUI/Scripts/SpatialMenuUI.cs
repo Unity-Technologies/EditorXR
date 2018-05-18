@@ -428,6 +428,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             providerMenuElement.Setup(homeMenuElementParent, () => { }, spatialMenuData[i].spatialMenuName, null);
             currentlyDisplayedMenuElements.Add(providerMenuElement);
             providerMenuElement.selected = SectionTitleButtonSelected;
+            providerMenuElement.highlightedAction = OnButtonHighlighted;
             providerMenuElement.parentMenuData = spatialMenuData[i];
             //m_ProviderToHomeMenuElements[menuData] = providerMenuElement;
         }
@@ -489,6 +490,23 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
     }
 
+    private void OnButtonHighlighted(SpatialMenu.SpatialMenuData menuData)
+    {
+        m_HomeSectionDescription.text = menuData.spatialMenuDescription;
+        const string kNoMenuHighlightedText = "Select a menu option";
+        string highlightedMenuDataText = kNoMenuHighlightedText;
+        foreach (var data in spatialMenuData)
+        {
+            if (data.highlighted)
+            {
+                highlightedMenuDataText = data.spatialMenuDescription;
+                break;
+            }
+        }
+
+        m_HomeSectionDescription.text = highlightedMenuDataText;
+    }
+
     public void HighlightHomeSectionMenuElement(int providerCollectionPosition)
     {
         var highlightedMenuData = spatialMenuData[providerCollectionPosition];
@@ -527,11 +545,15 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
 
             if (i == elementOrderPosition)
+            {
+                m_HomeSectionDescription.text = currentlyDisplayedMenuElements[i].parentMenuData.spatialMenuDescription;
                 Debug.LogWarning("Highlighting home level menu element : " + currentlyDisplayedMenuElements[i].gameObject.name);
+            }
 
             //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
         }
 
+        // TODO unify the spatialMenuData
         m_PreviouslyHighlightedElementOrderPosition = elementOrderPosition;
     }
 

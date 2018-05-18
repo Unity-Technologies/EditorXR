@@ -18,6 +18,8 @@ public interface ISpatialMenuElement
 
     Action selected { get; set; }
 
+    Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
+
     SpatialMenu.SpatialMenuData parentMenuData { get; set; }
 
     Action correspondingFunction { get; set; }
