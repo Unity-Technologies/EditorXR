@@ -110,9 +110,15 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     [SerializeField]
     SpatialMenuBackButton[] m_BackButtons;
 
-    [Header("BackButtonContainer")]
+    [Header("Return To Previous Level Visuals")]
+    [SerializeField]
+    GameObject m_BackButtonVisualsContainer;
+
     [SerializeField]
     CanvasGroup m_BackButtonVisualsCanvasGroup;
+
+    [SerializeField]
+    Transform m_ReturnToPreviousLevelText;
 
     bool m_Visible;
     SpatialInterfaceInputMode m_SpatialInterfaceInputMode;
@@ -131,6 +137,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     Coroutine m_VisibilityCoroutine;
     Coroutine m_InFocusCoroutine;
     Coroutine m_HomeSectionTitlesBackgroundBordersTransitionCoroutine;
+    Coroutine m_ReturnToPreviousLevelTransitionCoroutine;
 
     // Secondary visuals
     int m_PreviouslyHighlightedElementOrderPosition;
@@ -297,17 +304,17 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
 
     void OnBackButtonHoverEnter()
     {
-        m_BackButtonVisualsCanvasGroup.alpha = 1f;
+        this.RestartCoroutine(ref m_ReturnToPreviousLevelTransitionCoroutine, AnimateReturnToPreviousMenuLevelVisuals(true));
     }
 
     void OnBackButtonHoverExit()
     {
-        m_BackButtonVisualsCanvasGroup.alpha = 0f;
+        this.RestartCoroutine(ref m_ReturnToPreviousLevelTransitionCoroutine, AnimateReturnToPreviousMenuLevelVisuals(false));
     }
 
     void OnBackButtonSelected()
     {
-        OnBackButtonHoverExit();
+        this.RestartCoroutine(ref m_ReturnToPreviousLevelTransitionCoroutine, AnimateReturnToPreviousMenuLevelVisuals(false));
         ReturnToPreviousMenuLevel();
     }
 
@@ -788,5 +795,31 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         //m_HomeMenuLayoutGroup.enabled = true;
         m_HomeSectionCanvasGroup.alpha = targetAlpha;
         m_HomeSectionTitlesBackgroundBordersTransitionCoroutine = null;
+    }
+
+    IEnumerator AnimateReturnToPreviousMenuLevelVisuals(bool visible)
+    {
+        m_BackButtonVisualsContainer.SetActive(true);
+
+        const float kHiddenTextLocalPosition = 0.125f;
+        var currentAlpha = m_BackButtonVisualsCanvasGroup.alpha;
+        var targetAlpha = visible ? 1f : 0f;
+        var transitionAmount = 0f;
+        var transitionSubtractMultiplier = 5f;
+        var currentTextLocalPosition = m_ReturnToPreviousLevelText.localPosition;
+        var targetTextLocalPosition = visible ? Vector3.zero : new Vector3(0f, 0f, kHiddenTextLocalPosition); // recede when hiding
+        while (transitionAmount < 1f)
+        {
+            var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+            var newAlpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
+            m_BackButtonVisualsCanvasGroup.alpha = newAlpha;
+            transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+            m_ReturnToPreviousLevelText.localPosition = Vector3.Lerp(currentTextLocalPosition, targetTextLocalPosition, smoothTransition);
+            yield return null;
+        }
+
+        m_BackButtonVisualsContainer.SetActive(visible);
+        m_BackButtonVisualsCanvasGroup.alpha = targetAlpha;
+        m_ReturnToPreviousLevelTransitionCoroutine = null;
     }
 }
