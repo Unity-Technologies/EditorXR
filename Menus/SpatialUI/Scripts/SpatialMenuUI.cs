@@ -129,6 +129,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     float m_HomeSectionTimelineDuration;
     float m_HomeSectionTimelineStoppingTime;
     float m_OriginalHomeSectionTitleTextSpacing;
+    Vector3 m_OriginalSurroundingArrowsContainerLocalPosition;
+    Vector3 m_originalBackButtonIconLocalScale;
 
     // Adaptive Position related fields
     bool m_InFocus;
@@ -327,6 +329,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         //m_SectionNameTexts.Clear();
 
         m_OriginalHomeSectionTitleTextSpacing = m_HomeMenuLayoutGroup.spacing;
+        m_OriginalSurroundingArrowsContainerLocalPosition = m_SurroundingArrowsContainer.localPosition;
 
         m_HomeSectionTimelineDuration = (float) m_RevealTimelinePlayable.duration;
         m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
@@ -338,6 +341,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             button.OnHoverExit = OnBackButtonHoverExit;
             button.OnSelected = OnBackButtonSelected;
         }
+
+        m_originalBackButtonIconLocalScale = m_BackButtons[0].transform.localScale;
     }
 
     public void Reset()
@@ -786,7 +791,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             m_HomeSectionCanvasGroup.alpha = newAlpha;
             m_HomeTextBackgroundInnerCanvasGroup.alpha = newAlpha;
             m_HomeSectionTitlesBackgroundBorderCanvasGroup.alpha = newAlpha;
-            m_SurroundingArrowsContainer.localScale = Vector3.one + (Vector3.one * Mathf.Sin(transitionAmount * 2) * 0.1f);
+            //m_SurroundingArrowsContainer.localScale = Vector3.one + (Vector3.one * Mathf.Sin(transitionAmount * 2) * 0.1f);
             transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
             yield return null;
             //LayoutRebuilder.ForceRebuildLayoutImmediate(m_HomeMenuLayoutGroup.transform as RectTransform);
@@ -801,6 +806,12 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     {
         m_BackButtonVisualsContainer.SetActive(true);
 
+        var currentBackButtonIconSize = m_BackButtons[0].transform.localScale;
+        var targetBackButtonIconLocalScale = visible ? m_originalBackButtonIconLocalScale * 2.5f : m_originalBackButtonIconLocalScale;
+
+        var currentArrowsContainerLocalPosition = m_SurroundingArrowsContainer.localPosition;
+        var targetArrowsContainerLocalPosition = visible ? new Vector3(0f, 0f, -0.02f) : m_OriginalSurroundingArrowsContainerLocalPosition;
+
         const float kHiddenTextLocalPosition = 0.125f;
         var currentAlpha = m_BackButtonVisualsCanvasGroup.alpha;
         var targetAlpha = visible ? 1f : 0f;
@@ -813,8 +824,17 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
             var newAlpha = Mathf.Lerp(currentAlpha, targetAlpha, smoothTransition);
             m_BackButtonVisualsCanvasGroup.alpha = newAlpha;
-            transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
             m_ReturnToPreviousLevelText.localPosition = Vector3.Lerp(currentTextLocalPosition, targetTextLocalPosition, smoothTransition);
+
+            m_SurroundingArrowsContainer.localPosition = Vector3.Lerp(currentArrowsContainerLocalPosition, targetArrowsContainerLocalPosition, smoothTransition);
+
+            var newIconLocalScale = Vector3.Lerp(currentBackButtonIconSize, targetBackButtonIconLocalScale, smoothTransition);
+            foreach (var icon in m_BackButtons)
+            {
+                icon.transform.localScale = newIconLocalScale;
+            }
+
+            transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
             yield return null;
         }
 
