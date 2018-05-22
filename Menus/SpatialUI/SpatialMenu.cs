@@ -475,7 +475,6 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 consumeControl(m_CurrentSpatialActionMapInput.cancel);
                 consumeControl(m_CurrentSpatialActionMapInput.show);
-                consumeControl(m_CurrentSpatialActionMapInput.select);
                 //consumeControl(actionMapInput.localPosition);
                 //consumeControl(actionMapInput.localRotationQuaternion);
 
@@ -501,6 +500,7 @@ namespace UnityEditor.Experimental.EditorVR
             if ((m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.wasJustPressed) ||
                 (m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.isHeld))
             {
+                consumeControl(m_CurrentSpatialActionMapInput.select); // Select should only be consumed upon activation, so other UI can receive select events
                 spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
                 m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
                 //Reset();
@@ -537,7 +537,7 @@ namespace UnityEditor.Experimental.EditorVR
 
                 consumeControl(m_CurrentSpatialActionMapInput.cancel);
                 consumeControl(m_CurrentSpatialActionMapInput.show);
-                consumeControl(m_CurrentSpatialActionMapInput.select);
+                //consumeControl(m_CurrentSpatialActionMapInput.select);
 
                 m_Transitioning = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // duration for which input is not taken into account when menu swapping
                 visible = true;
