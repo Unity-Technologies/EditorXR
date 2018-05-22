@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
@@ -183,4 +183,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif
+

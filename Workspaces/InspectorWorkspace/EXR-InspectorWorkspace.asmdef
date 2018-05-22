@@ -1,0 +1,10 @@
+{
+    "name": "EXR-InspectorWorkspace",
+    "references": [
+        "EXR"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

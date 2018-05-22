@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -442,7 +442,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     }
                 }
             }
-            
+
         }
 
         bool CheckAssignable(GameObject go, bool checkChildren = false)
@@ -817,4 +817,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public void OnResetDirectSelectionState() {}
     }
 }
-#endif
+

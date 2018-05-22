@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEngine;
 
@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors can set the color of the default ray
-    /// </summary>    public interface ISetDefaultRayColor
+    /// </summary>
+    public interface ISetDefaultRayColor
     {
     }
 
@@ -25,4 +26,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

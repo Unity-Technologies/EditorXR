@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using System.Diagnostics;
 
@@ -18,4 +18,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

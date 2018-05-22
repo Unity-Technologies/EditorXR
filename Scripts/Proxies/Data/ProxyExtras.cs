@@ -1,15 +1,14 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-    [CreateAssetMenu(menuName = "EditorVR/ProxyExtras")]
-
     /// <summary>
     /// Spawn additional objects around a proxy node
     /// </summary>
+    [CreateAssetMenu(menuName = "EditorXR/Proxy Extras")]
     sealed class ProxyExtras : ScriptableObject
     {
         [Serializable]
@@ -57,4 +56,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         ProxyExtraData[] m_Extras;
     }
 }
-#endif
+

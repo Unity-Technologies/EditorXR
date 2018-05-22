@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 #if !UNITY_2017_2_OR_NEWER
 #pragma warning disable 649 // "never assigned to" warning
 #endif
@@ -12,7 +12,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DeviceInputModule : MonoBehaviour
+    sealed class DeviceInputModule : MonoBehaviour, ISystemModule
     {
         class InputProcessor
         {
@@ -157,7 +157,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 actionMapInput.autoReinitialize = false;
 
-                // Resetting AMIs cause all AMIs (active or not) that use the same sources to be reset, which causes 
+                // Resetting AMIs cause all AMIs (active or not) that use the same sources to be reset, which causes
                 // problems (e.g. dropping objects because wasJustPressed becomes true when reset)
                 actionMapInput.resetOnActiveChanged = false;
                 actionMapInput.active = true;
@@ -334,7 +334,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     {
                         m_LockedControls.Remove(input[i]);
                     }
-                    
+
                     var customActionMap = processInput as ICustomActionMap;
                     if (customActionMap != null)
                         m_IgnoreLocking.Remove(processor.input);
@@ -343,4 +343,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif
+

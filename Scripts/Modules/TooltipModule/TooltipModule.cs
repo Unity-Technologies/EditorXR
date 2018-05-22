@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : MonoBehaviour, IUsesViewerScale
+    sealed class TooltipModule : MonoBehaviour, ISystemModule, IUsesViewerScale
     {
         const float k_Delay = 0; // In case we want to bring back a delay
         const float k_TransitionDuration = 0.1f;
@@ -362,7 +362,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 m_Tooltips.Remove(tooltip);
 
-                if (tooltipData.tooltipUI)
+                if (gameObject.activeInHierarchy && tooltipData.tooltipUI)
                     StartCoroutine(AnimateHide(tooltip, tooltipData));
             }
         }
@@ -433,4 +433,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif
+

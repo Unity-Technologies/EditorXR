@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class LockModule : MonoBehaviour, IActions, ISelectionChanged
+    sealed class LockModule : MonoBehaviour, ISystemModule, IActions, ISelectionChanged
     {
         class LockModuleAction : IAction, ITooltip
         {
@@ -28,7 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly LockModuleAction m_LockModuleAction = new LockModuleAction();
         public List<IAction> actions { get; private set; }
 
-        // TODO: This should go away once the alternate menu stays open or if locking/unlocking from alternate menu goes 
+        // TODO: This should go away once the alternate menu stays open or if locking/unlocking from alternate menu goes
         // away entirely (e.g. because of HierarchyWorkspace)
         public Action<Transform, GameObject> updateAlternateMenu { private get; set; }
 
@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         float m_HoverDuration;
         const float k_MaxHoverTime = 2.0f;
 
-        void Awake()
+        void OnEnable()
         {
             m_LockModuleAction.execute = ToggleLocked;
             UpdateAction(null);
@@ -143,4 +143,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif
+

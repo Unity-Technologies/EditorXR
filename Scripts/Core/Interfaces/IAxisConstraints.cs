@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 namespace UnityEditor.Experimental.EditorVR
 {
     interface IAxisConstraints
@@ -6,4 +6,4 @@ namespace UnityEditor.Experimental.EditorVR
         AxisFlags constraints { get; }
     }
 }
-#endif
+

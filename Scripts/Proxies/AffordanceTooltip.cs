@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -40,4 +40,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif
+

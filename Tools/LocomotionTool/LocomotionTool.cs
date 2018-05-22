@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -198,7 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             this.RemoveRayVisibilitySettings(rayOrigin, this);
             this.ClearFeedbackRequests();
 
-            if (m_ViewerScaleVisuals)
+            if (m_ViewerScaleVisuals && m_ViewerScaleVisuals.gameObject.activeInHierarchy)
                 ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
         }
 
@@ -918,4 +918,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif
+

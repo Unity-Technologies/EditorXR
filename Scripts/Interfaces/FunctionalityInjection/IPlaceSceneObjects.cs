@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEngine;
 
@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class the ability to place objects in the scene or a MiniWorld
-    /// </summary>    public interface IPlaceSceneObjects
+    /// </summary>
+    public interface IPlaceSceneObjects
     {
     }
 
@@ -27,4 +28,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

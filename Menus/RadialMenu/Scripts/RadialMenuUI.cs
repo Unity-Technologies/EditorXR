@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -360,4 +360,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
@@ -30,4 +30,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

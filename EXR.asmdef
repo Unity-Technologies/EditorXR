@@ -1,0 +1,12 @@
+{
+    "name": "EXR",
+    "references": [
+        "EXR-Dependencies",
+        "SteamVR",
+        "input-prototype",
+        "OVR",
+        "VRLR"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": []
+}

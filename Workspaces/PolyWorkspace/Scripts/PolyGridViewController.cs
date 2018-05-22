@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using ListView;
 using UnityEngine;
 
@@ -272,4 +272,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif
+

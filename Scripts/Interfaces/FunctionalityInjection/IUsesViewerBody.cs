@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEngine;
 
@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to checks that can test against the viewer's body
-    /// </summary>    public interface IUsesViewerBody
+    /// </summary>
+    public interface IUsesViewerBody
     {
     }
 
@@ -34,4 +35,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

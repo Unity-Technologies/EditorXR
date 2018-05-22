@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         bool m_IsOculus;
 
-        protected override void Awake()
+        protected override void OnEnable()
         {
 #if UNITY_2017_2_OR_NEWER
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_RightHandProxyPrefab = m_RightHandTouchProxyPrefab;
             }
 
-            base.Awake();
+            base.OnEnable();
             m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
 
             var proxyHelper = m_LeftHand.GetComponent<ViveProxyHelper>();
@@ -102,4 +102,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Undo", ActionMenuItemAttribute.DefaultActionSectionName, 2)]
@@ -12,4 +12,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif
+

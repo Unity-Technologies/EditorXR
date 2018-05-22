@@ -12,10 +12,20 @@ MonoBehaviour:
   m_Name: EditorVR
   m_EditorClassIdentifier: 
   m_RenderScale: 1
-  m_CopySceneCameraSettings: 1
+  m_CopyExistingCameraSettings: 1
   m_DefaultToolStack:
   - {fileID: 11500000, guid: 882053426a5f76d46b5505d9a20be912, type: 3}
   - {fileID: 11500000, guid: aab8fcc587f237c4cb48fb7bc8a59909, type: 3}
   - {fileID: 11500000, guid: 367f6e7e8089d554ebdb3aff02883660, type: 3}
   - {fileID: 11500000, guid: 49e533569ecea994c856e43af713e5be, type: 3}
   - {fileID: 11500000, guid: 403957a6dcd8bfe4a905881513f309b0, type: 3}
+  m_DefaultToolStackNames:
+  - UnityEditor.Experimental.EditorVR.Tools.TransformTool, EXR, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  - UnityEditor.Experimental.EditorVR.Tools.SelectionTool, EXR, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  - UnityEditor.Experimental.EditorVR.Tools.VacuumTool, EXR, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  - MoveWorkspacesTool, EXR, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - UnityEditor.Experimental.EditorVR.Tools.LocomotionTool, EXR, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null

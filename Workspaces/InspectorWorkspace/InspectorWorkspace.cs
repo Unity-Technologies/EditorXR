@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -61,11 +60,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
             scrollHandleTransform.localPosition = new Vector3(0f, -0.01f, 0f); // Offset from content for collision purposes
 
+#if UNITY_EDITOR
             if (Selection.activeGameObject)
                 OnSelectionChanged();
 
             Undo.postprocessModifications += OnPostprocessModifications;
             Undo.undoRedoPerformed += UpdateCurrentObject;
+#endif
 
             // Propagate initial bounds
             OnBoundsChanged();
@@ -173,6 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
+#if UNITY_EDITOR
         UndoPropertyModification[] OnPostprocessModifications(UndoPropertyModification[] modifications)
         {
             if (!m_SelectedObject || !IncludesCurrentObject(modifications))
@@ -205,6 +207,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             return false;
         }
+#endif
 
         void UpdateCurrentObject(bool fullReload)
         {
@@ -354,6 +357,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             OnButtonClicked(null);
         }
 
+#if UNITY_EDITOR
         protected override void OnDestroy()
         {
             Undo.postprocessModifications -= OnPostprocessModifications;
@@ -365,6 +369,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #endif
             base.OnDestroy();
         }
+#endif
 
         void OnLockButtonClicked(Transform rayOrigin)
         {
@@ -379,4 +384,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif
+

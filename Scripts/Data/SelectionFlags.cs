@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 
 namespace UnityEditor.Experimental.EditorVR.UI
@@ -15,4 +15,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         Direct = 1 << 1
     }
 }
-#endif
+

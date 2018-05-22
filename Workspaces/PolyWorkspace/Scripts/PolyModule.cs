@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Text;
 using UnityEditor.Experimental.EditorVR;
@@ -16,7 +16,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class PolyModule : MonoBehaviour, IWeb
+    public class PolyModule : MonoBehaviour, ISystemModule, IWeb
     {
         class RequestHandler
         {
@@ -99,4 +99,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     }
 }
 #endif
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("SelectParent", ActionMenuItemAttribute.DefaultActionSectionName, 8)]
@@ -22,4 +22,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 #if !UNITY_2017_2_OR_NEWER
 #pragma warning disable 649 // "never assigned to" warning
 #endif
@@ -143,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             var found = false;
             foreach (var w in allWorkspaces)
             {
-                if (w is InspectorWorkspace)
+                if (w is IInspectorWorkspace)
                 {
                     found = true;
                     break;
@@ -293,4 +293,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         protected abstract void CapsLock();
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -91,4 +91,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif
+

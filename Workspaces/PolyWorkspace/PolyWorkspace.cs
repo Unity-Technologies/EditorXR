@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Threading;
@@ -506,4 +506,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     }
 #endif
 }
-#endif
+

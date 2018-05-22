@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEngine;
 
@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors receive a preview origin transform
-    /// </summary>    public interface IGetPreviewOrigin
+    /// </summary>
+    public interface IGetPreviewOrigin
     {
     }
 
@@ -24,4 +25,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

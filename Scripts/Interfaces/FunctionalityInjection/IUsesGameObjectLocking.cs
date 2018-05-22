@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEngine;
 
@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Get access to locking features
-    /// </summary>    public interface IUsesGameObjectLocking
+    /// </summary>
+    public interface IUsesGameObjectLocking
     {
     }
 
@@ -35,4 +36,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

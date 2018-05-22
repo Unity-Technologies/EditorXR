@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -19,4 +19,4 @@ namespace UnityEditor.Experimental.EditorVR
         bool ignoreLocking { get; }
     }
 }
-#endif
+

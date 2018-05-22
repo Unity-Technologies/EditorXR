@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public const float TipDistance = 0.05f;
         public const float MinBrushSize = 0.0025f;
         public const float MaxBrushSize = 0.05f;
-    
+
         public delegate void AnnotationUpdatedCallback(MeshFilter meshFilter);
         public static AnnotationUpdatedCallback AnnotationUpdated;
         public delegate void AnnotationFinishedCallback(MeshFilter meshFilter);
@@ -71,6 +71,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         ActionMap m_ActionMap;
+
+        [SerializeField]
+        GameObject m_AnnotationPointerPrefab;
 
         [SerializeField]
         Material m_AnnotationMaterial;
@@ -307,7 +310,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void SetupBrushUI()
         {
-            m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
+            m_AnnotationPointer = Instantiate(m_AnnotationPointerPrefab, rayOrigin, false).GetComponent<AnnotationPointer>();//ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false));
             m_OriginalAnnotationPointerLocalScale = m_AnnotationPointer.transform.localScale;
             var brushSize = m_Preferences.brushSize;
             m_AnnotationPointer.Resize(brushSize);
@@ -395,8 +398,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Length = 0;
 
             var go = new GameObject(string.Format(k_AnnotationFormatStrig, m_AnnotationHolder.childCount));
+#if UNITY_EDITOR
             Undo.RegisterCreatedObjectUndo(go, "Annotation");
-
+#endif
             var goTrans = go.transform;
             goTrans.SetParent(m_AnnotationHolder);
             goTrans.position = rayOrigin.position;
@@ -604,8 +608,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             this.AddToSpatialHash(go);
 
+#if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
-
+#endif
+            
             if (AnnotationFinished != null)
             {
                 AnnotationFinished(m_CurrentMeshFilter);
@@ -838,4 +844,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif
+

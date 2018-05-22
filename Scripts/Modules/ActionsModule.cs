@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class ActionsModule : MonoBehaviour, IConnectInterfaces
+    sealed class ActionsModule : MonoBehaviour, ISystemModule, IConnectInterfaces
     {
         public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
 
@@ -73,4 +73,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif
+

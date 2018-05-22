@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,12 +14,52 @@ using UnityEngine.InputNew;
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 [assembly: OptionalDependency("UnityEngine.DrivenRectTransformTracker+BlockUndoCCU", "UNDO_PATCH")]
 
+#if !UNITY_EDITOR
+        class EditorPrefs
+        {
+            public static bool GetBool(string key, bool defaultValue)
+            {
+                var value = PlayerPrefs.GetString(key, defaultValue.ToString());
+                bool result;
+                bool.TryParse(value, out result);
+                return result;
+            }
+
+            public static void SetBool(string key, bool value)
+            {
+                PlayerPrefs.SetString(key, value.ToString());
+            }
+
+            public static string GetString(string key, string defaultValue)
+            {
+                return PlayerPrefs.GetString(key, defaultValue);
+            }
+
+            public static string GetString(string key)
+            {
+                return PlayerPrefs.GetString(key);
+            }
+
+            public static void SetString(string key, string value)
+            {
+                PlayerPrefs.SetString(key, value);
+            }
+
+            public static bool HasKey(string key)
+            {
+                return PlayerPrefs.HasKey(key);
+            }
+        }
+#endif
+
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 #if UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR
     [InitializeOnLoad]
+#endif
     [RequiresTag(k_VRPlayerTag)]
-    sealed partial class EditorVR : MonoBehaviour, IConnectInterfaces
+    sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
         const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
@@ -44,7 +84,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static HideFlags defaultHideFlags
         {
-            get { return showGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave; }
+            get
+            {
+                if (Application.isPlaying)
+                    return HideFlags.None;
+                else
+                    return showGameObjects ? HideFlags.DontSaveInEditor : HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
+            }
         }
 
         static bool showGameObjects
@@ -92,9 +138,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static void ResetPreferences()
         {
+#if UNITY_EDITOR
             EditorPrefs.DeleteKey(k_ShowGameObjects);
             EditorPrefs.DeleteKey(k_PreserveLayout);
             EditorPrefs.DeleteKey(k_SerializedPreferences);
+#endif
         }
 
         // Code from the previous static constructor moved here to allow for testability
@@ -104,14 +152,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 s_IsInitialized = true;
 
+#if UNITY_EDITOR
                 if (!PlayerSettings.virtualRealitySupported)
                     Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
+#endif
 
 #if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
                 Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
             }
                 // Add EVR tags and layers if they don't exist
+#if UNITY_EDITOR
                 var tags = TagManager.GetRequiredTags();
                 var layers = TagManager.GetRequiredLayers();
 
@@ -124,9 +175,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 {
                     TagManager.AddLayer(layer);
                 }
+#endif
             }
 
-        void Awake()
+        void Initialize()
         {
 #if UNDO_PATCH
             DrivenRectTransformTracker.BlockUndo = true;
@@ -135,7 +187,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Nested.evr = this; // Set this once for the convenience of all nested classes
             m_DefaultTools = defaultTools;
             SetHideFlags(defaultHideFlags);
+#if UNITY_EDITOR
             ClearDeveloperConsoleIfNecessary();
+#endif
             HandleInitialization();
 
             m_Interfaces = (Interfaces)AddNestedModule(typeof(Interfaces));
@@ -149,8 +203,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
             LateBindNestedModules(nestedClassTypes);
 
-            AddModule<HierarchyModule>();
-            AddModule<ProjectFolderModule>();
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                AddModule<HierarchyModule>();
+                AddModule<ProjectFolderModule>();
+            }
+#endif
 
             var viewer = GetNestedModule<Viewer>();
             viewer.preserveCameraRig = preserveLayout;
@@ -262,6 +321,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         IEnumerator Start()
         {
+            Initialize();
+
             var leftHandFound = false;
             var rightHandFound = false;
 
@@ -284,10 +345,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             while (!viewer.hmdReady)
                 yield return null;
 
+#if UNITY_EDITOR
             GetModule<SerializedPreferencesModule>().SetupWithPreferences(serializedPreferences);
+#endif
             m_HasDeserialized = true;
         }
 
+#if UNITY_EDITOR
         static void ClearDeveloperConsoleIfNecessary()
         {
             var asm = Assembly.GetAssembly(typeof(Editor));
@@ -321,6 +385,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
         }
+#endif
 
         void OnSelectionChanged()
         {
@@ -330,6 +395,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Menus.UpdateAlternateMenuOnSelectionChanged(GetNestedModule<Rays>().lastSelectionRayOrigin);
         }
 
+#if UNITY_EDITOR
         void OnEnable()
         {
             Selection.selectionChanged += OnSelectionChanged;
@@ -339,6 +405,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             Selection.selectionChanged -= OnSelectionChanged;
         }
+#endif
 
         internal void Shutdown()
         {
@@ -498,9 +565,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 child.gameObject.hideFlags = hideFlags;
             }
 
+#if UNITY_EDITOR
             EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
+#endif
         }
 
+#if UNITY_EDITOR
         [PreferenceItem("EditorVR")]
         static void PreferencesGUI()
         {
@@ -531,6 +601,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             EditorGUILayout.EndVertical();
         }
+#endif
 
 #if !INCLUDE_TEXT_MESH_PRO
         static EditorVR()
@@ -567,4 +638,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
     }
 #endif
 }
-#endif
+

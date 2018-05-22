@@ -1,11 +1,12 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provide access to show or hide manipulator(s)
-    /// </summary>    public interface ISetManipulatorsVisible
+    /// </summary>
+    public interface ISetManipulatorsVisible
     {
     }
 
@@ -24,4 +25,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

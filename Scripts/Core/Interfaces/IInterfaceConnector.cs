@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     interface IInterfaceConnector
@@ -7,4 +7,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         void DisconnectInterface(object target, object userData = null);
     }
 }
-#endif
+

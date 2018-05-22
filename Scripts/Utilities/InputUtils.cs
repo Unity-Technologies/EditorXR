@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.InputNew;
@@ -73,4 +73,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif
+

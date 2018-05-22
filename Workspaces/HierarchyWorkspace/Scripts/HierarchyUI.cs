@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
@@ -17,4 +17,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public BaseHandle scrollHandle { get { return m_ScrollHandle; } }
     }
 }
-#endif
+

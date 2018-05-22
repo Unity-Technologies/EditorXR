@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEngine;
 
@@ -41,4 +41,4 @@ namespace UnityEditor.Experimental.EditorVR
         bool dragging { get; }
     }
 }
-#endif
+

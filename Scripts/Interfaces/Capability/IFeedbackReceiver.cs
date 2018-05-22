@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -27,4 +27,4 @@ namespace UnityEditor.Experimental.EditorVR
         void ClearFeedbackRequests(IRequestFeedback caller);
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using System.Globalization;
 using UnityEngine;
@@ -20,8 +20,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <returns>Cloned material</returns>
         public static UnityMaterial GetMaterialClone(Renderer renderer)
         {
+#if UNITY_EDITOR
             // The following is equivalent to renderer.material, but gets rid of the error messages in edit mode
             return renderer.material = UnityObject.Instantiate(renderer.sharedMaterial);
+#else
+            return renderer.material;
+#endif
         }
 
         /// <summary>
@@ -112,4 +116,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
@@ -451,4 +451,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif
+

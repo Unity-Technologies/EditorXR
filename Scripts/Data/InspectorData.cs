@@ -1,12 +1,19 @@
-﻿#if UNITY_EDITOR
+﻿
 using ListView;
 using System.Collections.Generic;
+
+#if !UNITY_EDITOR
+class SerializedObject
+{
+    public UnityEngine.GameObject targetObject;
+}
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
     class InspectorData : ListViewItemNestedData<InspectorData, int>
     {
-#if UNITY_EDITOR
+
         public SerializedObject serializedObject { get; private set; }
 
         public InspectorData(string template, SerializedObject serializedObject, List<InspectorData> children)
@@ -16,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
             index = serializedObject.targetObject.GetInstanceID();
             m_Children = children;
         }
-#endif
+
     }
 }
-#endif
+

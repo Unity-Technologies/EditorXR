@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEngine;
 
@@ -18,10 +18,12 @@ namespace UnityEditor.Experimental.EditorVR.Actions
                 this.DeleteSceneObject(go);
             }
 
+#if UNITY_EDITOR
             UnityEditor.Undo.IncrementCurrentGroup();
+#endif
 
             Selection.activeGameObject = null;
         }
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
@@ -54,4 +54,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public bool reverseForRightHand { get { return m_ReverseForRightHand; } }
     }
 }
-#endif
+

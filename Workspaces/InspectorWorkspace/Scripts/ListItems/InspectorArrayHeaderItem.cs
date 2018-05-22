@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEngine;
 using Button = UnityEditor.Experimental.EditorVR.UI.Button;
 
@@ -24,4 +24,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif
+

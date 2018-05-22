@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
@@ -19,4 +19,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         public abstract void ExecuteAction();
     }
 }
-#endif
+

@@ -1,0 +1,10 @@
+{
+    "name": "EXR-HierarchyWorkspace",
+    "references": [
+        "EXR"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

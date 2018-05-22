@@ -1,11 +1,12 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, INodeToRay, IRayVisibilitySettings
+    public sealed class SpatialHintModule : MonoBehaviour, ISystemModule, IConnectInterfaces, IInstantiateUI,
+        INodeToRay, IRayVisibilitySettings
     {
         public enum SpatialHintStateFlags
         {
@@ -75,7 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         Transform spatialHintContentContainer { get { return m_SpatialHintUI.contentContainer; } }
 
-        void Awake()
+        void OnEnable()
         {
             m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
             this.ConnectInterfaces(m_SpatialHintUI);
@@ -128,4 +129,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif
+

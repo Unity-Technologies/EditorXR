@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
@@ -291,4 +291,4 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif
+

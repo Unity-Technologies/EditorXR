@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class ability to control/perform spatial-scrolling
-    /// 
+    ///
     /// Spatially scrolling allows for directional input-device movement to drive changes/progression of UI
     /// element selection, without the need for additional input beyond the movement of an input-device.
     /// </summary>
@@ -55,4 +55,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

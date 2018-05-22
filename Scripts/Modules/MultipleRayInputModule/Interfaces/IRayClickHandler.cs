@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -11,4 +11,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnRayClick(RayEventData eventData);
     }
 }
-#endif
+

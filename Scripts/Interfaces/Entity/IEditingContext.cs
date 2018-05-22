@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEditor.Experimental.EditorVR.Core;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -35,4 +35,4 @@ namespace UnityEditor.Experimental.EditorVR
         void Dispose();
     }
 }
-#endif
+

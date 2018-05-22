@@ -1,9 +1,9 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    [CreateAssetMenu(menuName = "EditorVR/EditorVR Haptic Pulse", fileName = "NewHapticPulse.asset")]
+    [CreateAssetMenu(menuName = "EditorXR/Haptic Pulse", fileName = "NewHapticPulse.asset")]
     public class HapticPulse : ScriptableObject
     {
         [SerializeField]
@@ -38,4 +38,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public bool fadeOut { get { return m_FadeOut; } }
     }
 }
-#endif
+

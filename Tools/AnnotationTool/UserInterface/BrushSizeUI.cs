@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Menus;
@@ -44,11 +44,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         void Awake()
         {
             localBounds = ObjectUtils.GetBounds(transform);
+#if UNITY_EDITOR
             // We record property modifications on creation and modification of these UI elements, which will look odd when undone
             Undo.postprocessModifications += PostProcessModifications;
+#endif
             m_SliderHandleImage = m_SliderHandle.GetComponent<Image>();
         }
 
+#if UNITY_EDITOR
         UndoPropertyModification[] PostProcessModifications(UndoPropertyModification[] modifications)
         {
             var modificationList = new List<UndoPropertyModification>(modifications);
@@ -60,7 +63,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             return modificationList.ToArray();
         }
-
+#endif
+        
         public void OnSliderValueChanged(float value)
         {
             m_SliderHandle.localScale = Vector3.one * Mathf.Lerp(k_MinSize, k_MaxSize, value);
@@ -80,4 +84,4 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif
+

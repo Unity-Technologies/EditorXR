@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SerializedPreferencesModule : MonoBehaviour
+    sealed class SerializedPreferencesModule : MonoBehaviour, ISystemModule
     {
         List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
         SerializedPreferences m_Preferences;
@@ -157,4 +157,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif
+

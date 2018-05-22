@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR
         public abstract void Reset();
     }
 
-    public class FeedbackModule : MonoBehaviour, ISettingsMenuItemProvider, ISerializePreferences
+    public class FeedbackModule : MonoBehaviour, ISystemModule, ISettingsMenuItemProvider, ISerializePreferences
     {
         [Serializable]
         class Preferences
@@ -204,4 +204,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

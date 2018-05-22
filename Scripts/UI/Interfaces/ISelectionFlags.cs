@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 namespace UnityEditor.Experimental.EditorVR.UI
 {
     /// <summary>
@@ -12,4 +12,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         SelectionFlags selectionFlags { get; set; }
     }
 }
-#endif
+

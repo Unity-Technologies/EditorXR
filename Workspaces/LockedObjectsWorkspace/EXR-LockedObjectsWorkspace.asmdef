@@ -1,0 +1,11 @@
+{
+    "name": "EXR-LockedObjectsWorkspace",
+    "references": [
+        "EXR-HierarchyWorkspace",
+        "EXR"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

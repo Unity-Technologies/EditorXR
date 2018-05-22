@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
@@ -16,4 +16,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         public Collider aboveHeadTrigger { get { return m_AboveHeadTrigger; } }
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 using UnityEngine;
 
@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Make use of the spatial hash
-    /// </summary>    public interface IUsesSpatialHash
+    /// </summary>
+    public interface IUsesSpatialHash
     {
     }
 
@@ -34,4 +35,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

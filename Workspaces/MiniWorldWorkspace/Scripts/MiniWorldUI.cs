@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
@@ -23,4 +23,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         private Transform m_BoundsCube;
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -8,9 +8,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     sealed class TouchProxy : TwoHandedProxyBase
     {
-        protected override void Awake()
+        protected override void OnEnable()
         {
-            base.Awake();
+            base.OnEnable();
             m_InputToEvents = ObjectUtils.AddComponent<OVRTouchInputToEvents>(gameObject);
         }
 
@@ -32,4 +32,4 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif
+

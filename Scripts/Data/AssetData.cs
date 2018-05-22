@@ -40,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
         {
             if (type == "GameObject")
             {
-#if UNITY_EDITOR
+
                 switch (PrefabUtility.GetPrefabType(asset))
                 {
                     case PrefabType.ModelPrefab:
@@ -50,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
                         type = "Prefab";
                         break;
                 }
-#endif
+
             }
         }
     }

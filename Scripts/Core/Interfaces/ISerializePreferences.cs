@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     interface ISerializePreferences
@@ -7,4 +7,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         void OnDeserializePreferences(object obj);
     }
 }
-#endif
+

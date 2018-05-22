@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +8,8 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics,
-        IRayToNode, IContainsVRPlayerCompletely
+    sealed class SelectionModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking, ISelectionChanged,
+        IControlHaptics, IRayToNode, IContainsVRPlayerCompletely
     {
         [SerializeField]
         HapticPulse m_HoverPulse;
@@ -135,10 +135,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (m_GroupMap.TryGetValue(hoveredObject, out groupParent))
                 return groupParent;
 
+#if UNITY_EDITOR
             var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
 
             if (groupRoot)
                 return groupRoot;
+#endif
 
             return null;
         }
@@ -153,4 +155,4 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif
+

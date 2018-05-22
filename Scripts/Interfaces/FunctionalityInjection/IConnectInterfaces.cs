@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using System;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -36,4 +36,4 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
+

@@ -3,6 +3,27 @@ using ListView;
 using System.Collections.Generic;
 using UnityEngine;
 
+#if !UNITY_EDITOR
+  public enum HierarchyType
+  {
+    Assets = 1,
+    GameObjects = 2,
+    Packages = 3,
+  }
+
+class HierarchyProperty
+{
+    public string name;
+    public int instanceID;
+
+    public HierarchyProperty(HierarchyType type)
+    {
+    }
+
+    public void Next() {}
+}
+#endif
+
 namespace UnityEditor.Experimental.EditorVR
 {
     sealed class HierarchyData : ListViewItemNestedData<HierarchyData, int>

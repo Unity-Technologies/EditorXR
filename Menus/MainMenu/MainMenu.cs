@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,7 +120,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        void Awake()
+        void OnEnable()
         {
             m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
             this.ConnectInterfaces(m_MainMenuUI);
@@ -177,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     }
                 }
             }
-            else if (Mathf.Abs(rotationInput) >= kFlickDeltaThreshold 
+            else if (Mathf.Abs(rotationInput) >= kFlickDeltaThreshold
                 && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
             {
                 FlickMenu(rotationInput);
@@ -448,4 +448,4 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif
+

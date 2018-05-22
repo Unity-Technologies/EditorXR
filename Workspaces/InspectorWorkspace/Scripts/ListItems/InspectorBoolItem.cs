@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine.UI;
@@ -41,4 +41,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif
+

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -9,7 +9,9 @@ namespace UnityEditor.Experimental.EditorVR.Actions
     {
         public override void ExecuteAction()
         {
+#if UNITY_EDITOR
             Unsupported.DuplicateGameObjectsUsingPasteboard();
+#endif
             var selection = Selection.transforms;
             var bounds = ObjectUtils.GetBounds(selection);
             foreach (var s in selection)
@@ -26,4 +28,4 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif
+

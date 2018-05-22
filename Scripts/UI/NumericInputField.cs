@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -249,7 +249,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
                 if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
                 {
-#if UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
                     floatVal = ExpressionEvaluator.Evaluate<float>(m_Text);
 #endif
                 }
@@ -264,7 +264,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 int intVal;
                 if (!int.TryParse(m_Text, out intVal))
                 {
-#if UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
                     m_Text = ExpressionEvaluator.Evaluate<int>(m_Text).ToString(k_IntFieldFormatString);
 #endif
                 }
@@ -277,4 +277,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
-#endif
+

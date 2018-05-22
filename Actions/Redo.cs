@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Redo", ActionMenuItemAttribute.DefaultActionSectionName, 1)]
@@ -12,4 +12,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif
