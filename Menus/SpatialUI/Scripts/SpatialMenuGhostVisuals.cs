@@ -110,14 +110,15 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
         m_GhostInputDeviceOriginalLocalPosition = m_GhostInputDeviceContainer.localPosition;
         //spatialProxyRayDriverTransform = m_GhostInputDeviceContainer;
 
-        spatialProxyRayOrigin = ObjectUtils.Instantiate(m_SpatialProxyRayPrefab.gameObject, m_RayContainer.transform).transform;
+        //spatialProxyRayOrigin = ObjectUtils.Instantiate(m_SpatialProxyRayPrefab.gameObject, m_RayContainer.transform).transform;
+        spatialProxyRayOrigin = this.InitializeSpatialProxyRay(m_RayContainer.transform, m_SpatialProxyRayPrefab.gameObject);
         spatialProxyRayOrigin.localPosition = Vector3.zero;
         spatialProxyRayOrigin.localRotation = Quaternion.identity;
         spatialProxyRayOrigin.localScale = Vector3.one;
         spatialProxyRay = spatialProxyRayOrigin.GetComponent<DefaultProxyRay>();
 
-        var tester = spatialProxyRayOrigin.GetComponentInChildren<IntersectionTester>();
-        tester.active = false;
+        //var tester = spatialProxyRayOrigin.GetComponentInChildren<IntersectionTester>();
+        //tester.active = false;
 
         m_SpatialSecondaryVisuals.gameObject.SetActive(false);
         m_RaybasedSecondaryVisuals.gameObject.SetActive(false);
