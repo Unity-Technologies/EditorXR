@@ -21,7 +21,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     const float k_AllowedGazeDivergence = 45f;
 
     readonly string k_TranslationInputModeName = "Spatial Input Mode";
-    readonly string k_RayBasedInputModeName = "Ray-based Input Mode";
+    readonly string k_GhostRayBasedInputModeName = "Ghost Ray-based Input Mode";
+    readonly string k_ExternalRayBasedInputModeName = "External Ray-based Input Mode";
     readonly string k_RotationInputModeName = "Rotation Input Mode";
     readonly string k_BCIInputModeName = "Brain Input Mode";
 
@@ -29,7 +30,8 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     {
         Translation,
         Rotation,
-        Ray,
+        GhostRay,
+        ExternalInputRay,
         BCI
     }
 
@@ -121,6 +123,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     Transform m_ReturnToPreviousLevelText;
 
     bool m_Visible;
+    SpatialInterfaceInputMode m_PreviousSpatialInterfaceInputMode;
     SpatialInterfaceInputMode m_SpatialInterfaceInputMode;
     SpatialinterfaceState m_SpatialInterfaceState;
 
@@ -240,6 +243,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             if (m_SpatialInterfaceInputMode == value)
                 return;
 
+            m_PreviousSpatialInterfaceInputMode = m_SpatialInterfaceInputMode;
             m_SpatialInterfaceInputMode = value;
 
             switch (m_SpatialInterfaceInputMode)
@@ -248,9 +252,13 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
                     m_InputModeText.text = k_TranslationInputModeName;
                     m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
                     break;
-                case SpatialInterfaceInputMode.Ray:
-                    m_InputModeText.text = k_RayBasedInputModeName;
+                case SpatialInterfaceInputMode.GhostRay:
+                    m_InputModeText.text = k_GhostRayBasedInputModeName;
                     m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.ray;
+                    break;
+                case SpatialInterfaceInputMode.ExternalInputRay:
+                    m_InputModeText.text = k_ExternalRayBasedInputModeName;
+                    m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.none;
                     break;
                 case SpatialInterfaceInputMode.BCI:
                     m_InputModeText.text = k_BCIInputModeName;
@@ -419,7 +427,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
     public void UpdateGhostDeviceRotation(Quaternion newRotation)
     {
         // Currently only rotation mode, and ray-based input should update the rotation of the ghost visuals
-        if (spatialInterfaceInputMode == SpatialInterfaceInputMode.Ray)
+        if (spatialInterfaceInputMode == SpatialInterfaceInputMode.GhostRay)
             m_SpatialUIGhostVisuals.UpdateRotation(newRotation);
     }
 
@@ -604,6 +612,12 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
             currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
             //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
         }
+    }
+
+    public void ReturnToPreviousInputMode()
+    {
+        // This is a convenience function that allows for a previous-non-override input state to be restored, if an override input state was previously set (ray-based alternate hand interaction, etc)
+        spatialInterfaceInputMode = m_PreviousSpatialInterfaceInputMode;
     }
 
     void Update()

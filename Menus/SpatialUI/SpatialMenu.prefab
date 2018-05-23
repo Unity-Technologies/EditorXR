@@ -13286,7 +13286,8 @@ MonoBehaviour:
   m_TouchContainer: {fileID: 1425024301944864}
   m_ViveContainer: {fileID: 1687345620845348}
   m_SpatialSecondaryVisuals: {fileID: 224062559185361394}
-  m_RaybasedSecondaryVisuals: {fileID: 224471955885717956}
+  m_GhostRaybasedSecondaryVisuals: {fileID: 224471955885717956}
+  m_TranslationModeSecondaryVisuals: {fileID: 224218191032230842}
 --- !u!114 &114549952638618038
 MonoBehaviour:
   m_ObjectHideFlags: 1

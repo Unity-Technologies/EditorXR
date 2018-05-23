@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.NetworkInformation;
 using TMPro;
 using TMPro.Examples;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -22,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public class SpatialMenu : MonoBehaviour, IProcessSpatialInput, IInstantiateUI, IUsesNode,
-        IUsesRayOrigin, ISelectTool, IConnectInterfaces, IControlHaptics, INodeToRay
+        IUsesRayOrigin, ISelectTool, IConnectInterfaces, IControlHaptics, INodeToRay, IDetectGazeDivergence
     {
         public class SpatialMenuData
         {
@@ -73,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR
         }
 
         [SerializeField]
-        SpatialMenuUI _mSpatialMenuUiPrefab;
+        SpatialMenuUI m_SpatialMenuUiPrefab;
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -214,7 +215,25 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        public Transform rayOrigin { get; set; }
+        Transform m_RayOrigin;
+
+        public Transform rayOrigin
+        {
+            get { return m_RayOrigin; }
+            set
+            {
+                if (m_RayOrigin == value)
+                    return;
+
+                m_RayOrigin = value;
+                // All rayOrigins/devices having spawned a spatial menu are added to this collection
+                // The rayorigins in this collection have their pointing direction compared against the spatial UI's
+                // forward vector, in order to see if a ray origins that ISN'T currently controlling the spatial UI
+                // has begun pointing at the spatial UI, which will override the input typs to ray-based interaction
+                // (taking the opposite hand, and pointing it at the menu)
+                allSpatialMenuRayOrigins.Add(m_RayOrigin);
+            }
+        }
         public Node node { get; set; }
 
         //IMenu interface members
@@ -236,6 +255,9 @@ namespace UnityEditor.Experimental.EditorVR
         public Vector3 spatialScrollStartPosition { get; set; }
         public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
         public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
+
+        // Angular Ray-based detection of all ray-origins having spawned a SpatialMenu controller
+        static readonly List<Transform> allSpatialMenuRayOrigins = new List<Transform>();
 
         // Ray-based members
         public Transform rayBasedInteractionSource
@@ -309,7 +331,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             if (m_SpatialMenuUi == null)
             {
-                m_SpatialMenuUi = this.InstantiateUI(_mSpatialMenuUiPrefab.gameObject, VRView.cameraRig, rayOrigin: rayOrigin).GetComponent<SpatialMenuUI>();
+                m_SpatialMenuUi = this.InstantiateUI(m_SpatialMenuUiPrefab.gameObject, VRView.cameraRig, rayOrigin: rayOrigin).GetComponent<SpatialMenuUI>();
                // this.ConnectInterfaces(m_SpatialMenuUi);
                 m_SpatialMenuUi.spatialMenuData = s_SpatialMenuData; // set shared reference to menu name/type, elements, and highlighted state
                 m_SpatialMenuUi.Setup();
@@ -463,6 +485,20 @@ namespace UnityEditor.Experimental.EditorVR
             Debug.LogWarning("SpatialMenu : <color=green>Above wrist return threshold</color>");
         }
 
+        public bool IsAboveDivergenceThreshold(Transform firstTransform, Transform secondTransform, float divergenceThreshold)
+        {
+            var isAbove = false;
+            var gazeDirection = firstTransform.forward;
+            var testVector = secondTransform.position - firstTransform.position; // Test object to gaze source vector
+            testVector.Normalize(); // Normalize, in order to retain expected dot values
+
+            var divergenceThresholdConvertedToDot = Mathf.Sin(Mathf.Deg2Rad * divergenceThreshold);
+            var angularComparison = Mathf.Abs(Vector3.Dot(testVector, gazeDirection));
+            isAbove = angularComparison < divergenceThresholdConvertedToDot;
+
+            return isAbove;
+        }
+
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             //Debug.Log("processing input in SpatialUI");
@@ -511,14 +547,28 @@ namespace UnityEditor.Experimental.EditorVR
                 m_RotationVelocityTracker.Update(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
                 if (!m_SpatialMenuUi.transitioningInputModes)
                 {
-                    if (m_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.Ray && m_RotationVelocityTracker.rotationStrength > 600)
+                    foreach (var origin in allSpatialMenuRayOrigins)
+                    {
+                        if (origin == null || origin == m_RayOrigin) // Don't compare against the rayOrigin that is currently processing input for the Spatial UI
+                            continue;
+
+                        var isAboveDivergenceThreshold = IsAboveDivergenceThreshold(origin, m_SpatialMenuUi.adaptiveTransform, 45);
+                        Debug.LogError(origin.name + "<color=green> opposite ray origin divergence value : </color>" + isAboveDivergenceThreshold);
+
+                        if (!isAboveDivergenceThreshold)
+                            m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay;
+                        else if (m_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay)
+                            m_SpatialMenuUi.ReturnToPreviousInputMode();
+                    }
+
+                    if (m_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.GhostRay && m_RotationVelocityTracker.rotationStrength > 600)
                     {
                         spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
                         spatialScrollStartPosition = spatialScrollOrigin.position;
                         m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
-                        m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Ray;
+                        m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.GhostRay;
                     }
-                    else if (m_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.Ray)
+                    else if (m_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.GhostRay)
                     {
                         // Transition back to spatial translation mode
 
@@ -614,7 +664,7 @@ namespace UnityEditor.Experimental.EditorVR
                         m_SpatialMenuUi.HighlightSingleElementInHomeMenu(0);
                         highlightedMenuElements = s_SpatialMenuData[0].spatialMenuElements;
                     }
-                    else if (m_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.Ray && m_HighlightedMenuElements != null)
+                    else if (m_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.GhostRay && m_HighlightedMenuElements != null)
                     {
                         var menuElementCount = s_SpatialMenuData.Count;
                         if (menuElementCount == 0)

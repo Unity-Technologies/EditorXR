@@ -11,6 +11,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
 {
     public enum SpatialInteractionType
     {
+        none,
         ray,
         bci,
         touch,
@@ -42,7 +43,10 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
     Transform m_SpatialSecondaryVisuals;
 
     [SerializeField]
-    Transform m_RaybasedSecondaryVisuals;
+    Transform m_GhostRaybasedSecondaryVisuals;
+
+    [SerializeField]
+    Transform m_TranslationModeSecondaryVisuals;
 
     SpatialInteractionType m_SpatialInteractionType;
     Vector3 m_GhostInputDeviceOriginalLocalPosition;
@@ -63,6 +67,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
             var bciVisible = false;
             var touchVisible = false;
             var viveVisible = false;
+            var translationVisualsVisible = false;
             switch (m_SpatialInteractionType)
             {
                 case SpatialInteractionType.ray:
@@ -74,18 +79,21 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
                     bciVisible = true;
                     break;
                 case SpatialInteractionType.touch:
+                    translationVisualsVisible = true;
                     UpdateRotation(Quaternion.identity);
                     SetPositionOffset(Vector3.zero);
                     touchVisible = true;
                     break;
                 case SpatialInteractionType.vive:
+                    translationVisualsVisible = true;
                     UpdateRotation(Quaternion.identity);
                     viveVisible = true;
                     break;
             }
 
             m_SpatialSecondaryVisuals.gameObject.SetActive(false); // disable for now, until touch again supports rotation(touchVisible);
-            m_RaybasedSecondaryVisuals.gameObject.SetActive(rayVisible);
+            m_GhostRaybasedSecondaryVisuals.gameObject.SetActive(rayVisible);
+            m_TranslationModeSecondaryVisuals.gameObject.SetActive(translationVisualsVisible);
 
             m_RayContainer.SetActive(rayVisible);
             m_BCIContainer.SetActive(bciVisible);
@@ -121,7 +129,8 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
         //tester.active = false;
 
         m_SpatialSecondaryVisuals.gameObject.SetActive(false);
-        m_RaybasedSecondaryVisuals.gameObject.SetActive(false);
+        m_GhostRaybasedSecondaryVisuals.gameObject.SetActive(false);
+        m_TranslationModeSecondaryVisuals.gameObject.SetActive(false);
         //spatialProxyRay.SetColor(Color.white);
     }
 
