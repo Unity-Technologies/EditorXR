@@ -50,7 +50,11 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
 
     SpatialInteractionType m_SpatialInteractionType;
     Vector3 m_GhostInputDeviceOriginalLocalPosition;
+    Vector3 m_GhostInputDeviceOriginalLocalScale;
+
+    // Coroutines
     Coroutine m_GhostInputDeviceRepositionCoroutine;
+    Coroutine m_GhostInputDeviceRescaleCoroutine;
 
     public SpatialInteractionType spatialInteractionType
     {
@@ -68,8 +72,12 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
             var touchVisible = false;
             var viveVisible = false;
             var translationVisualsVisible = false;
+            var show = true;
             switch (m_SpatialInteractionType)
             {
+                case SpatialInteractionType.none:
+                    show = false;
+                    break;
                 case SpatialInteractionType.ray:
                     rayVisible = true;
                     SetPositionOffset(Vector3.zero);
@@ -99,6 +107,8 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
             m_BCIContainer.SetActive(bciVisible);
             m_TouchContainer.SetActive(touchVisible);
             m_ViveContainer.SetActive(viveVisible);
+
+            this.RestartCoroutine(ref m_GhostInputDeviceRescaleCoroutine, AnimateGhostInputDeviceScale(show ? m_GhostInputDeviceOriginalLocalScale : Vector3.zero));
         }
     }
 
@@ -116,6 +126,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
     void Awake()
     {
         m_GhostInputDeviceOriginalLocalPosition = m_GhostInputDeviceContainer.localPosition;
+        m_GhostInputDeviceOriginalLocalScale = m_GhostInputDeviceContainer.localScale;
         //spatialProxyRayDriverTransform = m_GhostInputDeviceContainer;
 
         //spatialProxyRayOrigin = ObjectUtils.Instantiate(m_SpatialProxyRayPrefab.gameObject, m_RayContainer.transform).transform;
@@ -195,6 +206,25 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
 
         transitioningModes = false;
         m_GhostInputDeviceRepositionCoroutine = null;
+    }
+
+    IEnumerator AnimateGhostInputDeviceScale(Vector3 targetLocalScale)
+    {
+        transitioningModes = true;
+        var currentLocalScale = m_GhostInputDeviceContainer.localScale;
+        var transitionAmount = 0f;
+        var transitionSubtractMultiplier = 5f;
+        while (transitionAmount < 1f)
+        {
+            var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
+            m_GhostInputDeviceContainer.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, smoothTransition);
+            transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+            yield return null;
+        }
+
+        m_GhostInputDeviceContainer.localScale = targetLocalScale;
+        transitioningModes = false;
+        m_GhostInputDeviceRescaleCoroutine = null;
     }
 
 }
