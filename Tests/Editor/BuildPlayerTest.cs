@@ -33,12 +33,26 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 
         static void TestBuildPlayer(BuildTarget target)
         {
+#if UNITY_2018_1_OR_NEWER
             var output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.BuildScriptsOnly);
 
+            if (output.steps.Length > 0)
+            {
+                foreach (var step in output.steps)
+                    foreach (var message in step.messages)
+                        if(message.content.Contains("target is not supported"))
+                            Assert.Inconclusive("Target platform {0} not installed", target);
+            }
+
+            Assert.AreEqual(0, output.summary.totalErrors);
+# else
+            string output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.BuildScriptsOnly);
+            
             if (output.Contains("target is not supported"))
                 Assert.Inconclusive("Target platform {0} not installed", target);
 
             Assert.IsFalse(output.Contains("error"));
+#endif
         }
 
         [TearDown]
