@@ -1,9 +1,9 @@
 ﻿#if UNITY_EDITOR
 using System;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     sealed class InspectorObjectFieldItem : InspectorPropertyItem
     {
         [SerializeField]
-        Text m_FieldLabel;
+        TextMeshProUGUI m_FieldLabel;
 
         [SerializeField]
         MeshRenderer m_Button;
