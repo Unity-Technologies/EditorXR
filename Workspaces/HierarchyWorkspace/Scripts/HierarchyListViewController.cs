@@ -39,6 +39,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         int m_SelectedRow;
 
+        string m_LastSearchQuery;
+        bool m_HasLockedQuery;
+        bool m_HasFilterQuery;
+
         readonly List<KeyValuePair<Transform, GameObject>> m_HoveredGameObjects = new List<KeyValuePair<Transform, GameObject>>();
 
         public override List<HierarchyData> data
@@ -120,6 +124,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_VisibleItemHeight = 0;
 
+            var searchQuery = getSearchQuery();
+            if (searchQuery != null && searchQuery.CompareTo(m_LastSearchQuery) != 0)
+            {
+                m_LastSearchQuery = searchQuery;
+                m_HasLockedQuery = searchQuery.Contains(lockedQueryString);
+                if (m_HasLockedQuery)
+                    searchQuery = searchQuery.Replace(lockedQueryString, string.Empty).Trim();
+
+                m_HasFilterQuery = !string.IsNullOrEmpty(searchQuery);
+            }
+
             base.UpdateItems();
 
             UpdateDropZones();
@@ -194,83 +209,116 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_VisibleItemHeight += extraSpace;
         }
 
-        protected override void UpdateRecursively(List<HierarchyData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        protected override void UpdateNestedItems(List<HierarchyData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
         {
-            for (int i = 0; i < data.Count; i++)
+            m_UpdateStack.Push(new UpdateData
             {
-                var datum = data[i];
-                var index = datum.index;
-                bool expanded;
-                m_ExpandStates.TryGetValue(index, out expanded);
+                data = data,
+                depth = depth
+            });
 
-                var grabbed = m_GrabbedRows.ContainsKey(index);
+            while (m_UpdateStack.Count > 0)
+            {
+                var stackData = m_UpdateStack.Pop();
+                data = stackData.data;
+                depth = stackData.depth;
 
-                if (grabbed)
+                var i = stackData.index;
+                for (; i < data.Count; i++)
                 {
-                    var item = GetListItem(index);
-                    if (item && item.isStillSettling) // "Hang on" to settle state until grabbed object is settled in the list
-                        doneSettling = false;
-                    continue;
-                }
+                    var datum = data[i];
+                    var index = datum.index;
+                    bool expanded;
+                    m_ExpandStates.TryGetValue(index, out expanded);
 
-                var hasChildren = datum.children != null;
+                    var grabbed = m_GrabbedRows.ContainsKey(index);
 
-                var searchQuery = getSearchQuery();
-
-                var hasLockedQuery = searchQuery.Contains(lockedQueryString);
-                if (hasLockedQuery)
-                    searchQuery = searchQuery.Replace(lockedQueryString, string.Empty).Trim();
-
-                var hasFilterQuery = !string.IsNullOrEmpty(searchQuery);
-
-                var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z;
-
-                if (hasLockedQuery || hasFilterQuery)
-                {
-                    var filterTestPass = true;
-
-                    if (hasLockedQuery)
-                        filterTestPass = this.IsLocked(datum.gameObject);
-
-                    if (hasFilterQuery)
-                        filterTestPass &= datum.types.Any(type => matchesFilter(type));
-
-                    if (!filterTestPass) // If this item doesn't match, then move on to the next item; do not count
+                    if (grabbed)
                     {
-                        Recycle(index);
+                        var item = GetListItem(index);
+                        if (item && item.isStillSettling) // "Hang on" to settle state until grabbed object is settled in the list
+                            doneSettling = false;
+                        continue;
+                    }
+
+                    var hasChildren = datum.children != null;
+
+                    var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z;
+
+                    if (m_HasLockedQuery || m_HasFilterQuery)
+                    {
+                        var filterTestPass = true;
+
+                        if (m_HasLockedQuery)
+                            filterTestPass = this.IsLocked(datum.gameObject);
+
+                        if (m_HasFilterQuery)
+                            filterTestPass &= datum.types.Any(type => matchesFilter(type));
+
+                        if (!filterTestPass) // If this item doesn't match, then move on to the next item; do not count
+                        {
+                            Recycle(index);
+                        }
+                        else
+                        {
+                            if (shouldRecycle)
+                                Recycle(index);
+                            else
+                                UpdateHierarchyItem(datum, order++, ref offset, 0, null, ref doneSettling);
+
+                            offset += itemSize.z;
+                        }
+
+                        if (hasChildren)
+                        {
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = data,
+                                index = i + 1
+                            });
+
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = datum.children
+                            });
+                            break;
+                        }
                     }
                     else
                     {
                         if (shouldRecycle)
                             Recycle(index);
                         else
-                            UpdateHierarchyItem(datum, order++, ref offset, 0, null, ref doneSettling);
+                            UpdateHierarchyItem(datum, order++, ref offset, depth, expanded, ref doneSettling);
 
                         offset += itemSize.z;
-                    }
 
-                    if (hasChildren)
-                        UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling);
-                }
-                else
-                {
-                    if (shouldRecycle)
-                        Recycle(index);
-                    else
-                        UpdateHierarchyItem(datum, order++, ref offset, depth, expanded, ref doneSettling);
+                        if (hasChildren)
+                        {
+                            if (expanded)
+                            {
+                                m_UpdateStack.Push(new UpdateData
+                                {
+                                    data = data,
+                                    depth = depth,
 
-                    offset += itemSize.z;
+                                    index = i + 1
+                                });
 
-                    if (hasChildren)
-                    {
-                        if (expanded)
-                            UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling, depth + 1);
-                        else
+                                m_UpdateStack.Push(new UpdateData
+                                {
+                                    data = datum.children,
+                                    depth = depth + 1
+                                });
+                                break;
+                            }
+
                             RecycleChildren(datum);
-                    }
-                    else
-                    {
-                        m_ExpandStates[index] = false;
+                        }
+                        else
+                        {
+                            m_ExpandStates[index] = false;
+                        }
                     }
                 }
             }

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,11 +12,9 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
-
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-        IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
+        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
     {
         const float k_FastMoveSpeed = 20f;
         const float k_SlowMoveSpeed = 1f;
@@ -28,7 +26,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_MinScale = 0.1f;
         const float k_MaxScale = 1000f;
 
-        const string k_WorldScaleProperty = "_WorldScale";
+        const string k_Crawl = "Crawl";
+        const string k_Rotate = "Rotate";
+        const string k_Blink = "Blink";
+        const string k_Fly = "Fly";
 
         const int k_RotationSegments = 32;
 
@@ -92,10 +93,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         // Allow shared updater to check input values and consume controls
         LocomotionInput m_LocomotionInput;
 
-        Camera m_MainCamera;
-        float m_OriginalNearClipPlane;
-        float m_OriginalFarClipPlane;
-
         Toggle m_FlyToggle;
         Toggle m_BlinkToggle;
         bool m_BlockValueChangedListener;
@@ -108,15 +105,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<ProxyFeedbackRequest> m_RotateFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
 
-
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
-
         public Transform rayOrigin { get; set; }
-
         public Transform cameraRig { private get; set; }
-
         public List<ILinkedObject> linkedObjects { private get; set; }
+        public Node node { private get; set; }
 
         public GameObject settingsMenuItemPrefab
         {
@@ -171,10 +165,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
         }
 
-        public Type proxyType { get; set; }
-
-        public Node node { private get; set; }
-
         void Start()
         {
             if (this.IsSharedUpdater(this) && m_Preferences == null)
@@ -195,12 +185,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_BlinkVisualsGO.transform.parent = rayOrigin;
             m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
             m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
-
-            m_MainCamera = CameraUtils.GetMainCamera();
-            m_OriginalNearClipPlane = m_MainCamera.nearClipPlane;
-            m_OriginalFarClipPlane = m_MainCamera.farClipPlane;
-
-            Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
 
             var viewerScaleObject = ObjectUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
             m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
@@ -320,7 +304,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (!Mathf.Approximately(speedControlValue, 0)) // Consume control to block selection
                 {
                     speed = k_SlowMoveSpeed + speedControlValue * (k_FastMoveSpeed - k_SlowMoveSpeed);
-                    consumeControl(speedControl);
                     HideSpeedFeedback();
                 }
                 else if (m_SpeedFeedback.Count == 0)
@@ -335,6 +318,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 m_Rotating = false;
                 cameraRig.Translate(Quaternion.Inverse(cameraRig.rotation) * rayOrigin.forward * speed * Time.unscaledDeltaTime);
 
+                consumeControl(speedControl); // Consume trigger to block block-select
                 consumeControl(forwardControl);
                 return true;
             }
@@ -537,7 +521,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (blink.isHeld)
             {
                 this.AddRayVisibilitySettings(rayOrigin, this, false, false);
-                var speed = m_LocomotionInput.speed.value;
+                var speedControl = m_LocomotionInput.speed;
+                var speed = speedControl.value;
                 m_BlinkVisuals.extraSpeed = speed;
 
                 if (speed < 0)
@@ -547,6 +532,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 m_BlinkVisuals.visible = true;
 
+                consumeControl(speedControl); // Consume trigger to block block-select
                 consumeControl(blink);
                 return true;
             }
@@ -611,6 +597,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                 consumeControl(otherLocomotionInput.horizontal);
                                 consumeControl(otherLocomotionInput.vertical);
 
+                                // Pre-emptively consume thumbstick press to override UndoMenu
+                                consumeControl(m_LocomotionInput.scaleReset);
+                                consumeControl(otherLocomotionInput.scaleReset);
+
                                 var thisPosition = cameraRig.InverseTransformPoint(rayOrigin.position);
                                 var otherRayOrigin = otherLocomotionTool.rayOrigin;
                                 var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
@@ -661,13 +651,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                                 var scaleReset = m_LocomotionInput.scaleReset;
                                 var scaleResetHeld = scaleReset.isHeld;
-                                if (scaleResetHeld)
-                                    consumeControl(scaleReset);
 
                                 var otherScaleReset = otherLocomotionInput.scaleReset;
                                 var otherScaleResetHeld = otherScaleReset.isHeld;
-                                if (otherScaleResetHeld)
-                                    consumeControl(otherScaleReset);
 
                                 // Press both thumb buttons to reset scale
                                 if (scaleResetHeld && otherScaleResetHeld)
@@ -712,13 +698,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                     midPoint = currentRotation * midPoint * currentScale;
 
                                     cameraRig.position = m_StartPosition + m_StartMidPoint - midPoint;
-                                    cameraRig.localScale = Vector3.one * currentScale;
                                     cameraRig.rotation = currentRotation;
 
-                                    m_MainCamera.nearClipPlane = m_OriginalNearClipPlane * currentScale;
-                                    m_MainCamera.farClipPlane = m_OriginalFarClipPlane * currentScale;
-
-                                    Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / currentScale);
+                                    this.SetViewerScale(currentScale);
                                 }
                                 break;
                             }
@@ -739,9 +721,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ResetViewerScale()
         {
-            cameraRig.localScale = Vector3.one;
-            m_MainCamera.nearClipPlane = m_OriginalNearClipPlane;
-            m_MainCamera.farClipPlane = m_OriginalFarClipPlane;
+            this.SetViewerScale(1f);
             m_ViewerScaleVisuals.gameObject.SetActive(false);
         }
 
@@ -773,7 +753,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             var offset = cameraRig.position - CameraUtils.GetMainCamera().transform.position;
             offset.y = 0;
-            offset += VRView.HeadHeight * Vector3.up * this.GetViewerScale();
+            offset += VRView.headCenteredOrigin * this.GetViewerScale();
 
             targetPosition += offset;
             const float kTargetDuration = 0.05f;
@@ -801,42 +781,51 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = tooltipText
-                    };
-
-                    this.AddFeedbackRequest(request);
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.tooltipText = tooltipText;
                     requests.Add(request);
+                    this.AddFeedbackRequest(request);
                 }
             }
         }
 
         void ShowCrawlFeedback()
         {
-            ShowFeedback(m_CrawlFeedback, "Crawl");
+            ShowFeedback(m_CrawlFeedback, k_Crawl);
         }
 
         void ShowMainButtonFeedback()
         {
-            ShowFeedback(m_MainButtonFeedback, "Blink", m_Preferences.blinkMode ? "Blink" : "Fly");
+            ShowFeedback(m_MainButtonFeedback, k_Blink, m_Preferences.blinkMode ? k_Blink : k_Fly);
         }
 
         void ShowRotateFeedback()
         {
-            ShowFeedback(m_RotateFeedback, "Rotate");
+            ShowFeedback(m_RotateFeedback, k_Rotate);
         }
 
         void ShowAltRotateFeedback()
         {
-            ShowFeedback(m_RotateFeedback, "Blink", "Rotate");
+            ShowFeedback(m_RotateFeedback, k_Blink, k_Rotate);
         }
 
         void ShowScaleFeedback()
         {
-            ShowFeedback(m_ScaleFeedback, "Crawl", "Scale");
+            List<VRInputDevice.VRControl> ids;
+            if (m_Controls.TryGetValue(k_Crawl, out ids))
+            {
+                foreach (var id in ids)
+                {
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.control = id;
+                    request.node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand;
+                    request.tooltipText = "Scale";
+                    m_ScaleFeedback.Add(request);
+                    this.AddFeedbackRequest(request);
+                }
+            }
         }
 
         void ShowResetScaleFeedback()

@@ -1,6 +1,7 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -9,11 +10,17 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
+
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
     sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
-        IRaycast
+        IRaycast, IStandardIgnoreList
     {
         const float k_GroundPlaneScale = 1000f;
 
@@ -236,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public bool widgetEnabled { get; set; }
 
-        public List<Renderer> ignoreList { private get; set; }
+        public List<GameObject> ignoreList { private get; set; }
 
         public GameObject settingsMenuPrefab { get { return m_SettingsMenuPrefab; } }
 
@@ -363,7 +370,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public Transform rayOrigin { get { return null; } }
 
         // Local method use only -- created here to reduce garbage collection
-        readonly List<Renderer> m_CombinedIgnoreList = new List<Renderer>();
+        readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
         Transform[] m_SingleTransformArray = new Transform[1];
 
         void Awake()
@@ -738,7 +745,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var renderers = transforms[i].GetComponentsInChildren<Renderer>();
                 for (var j = 0; j < renderers.Length; j++)
                 {
-                    m_CombinedIgnoreList.Add(renderers[j]);
+                    m_CombinedIgnoreList.Add(renderers[j].gameObject);
                 }
             }
 
@@ -866,8 +873,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void SetupUI()
         {
+#if INCLUDE_TEXT_MESH_PRO
             var snappingEnabledUI = m_SnappingModuleSettingsUI.snappingEnabled;
-            var text = snappingEnabledUI.GetComponentInChildren<Text>();
+            var text = snappingEnabledUI.GetComponentInChildren<TextMeshProUGUI>();
             snappingEnabledUI.isOn = !m_Preferences.disableAll;
             snappingEnabledUI.onValueChanged.AddListener(b =>
             {
@@ -880,6 +888,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var handle = snappingEnabledUI.GetComponent<BaseHandle>();
             handle.hoverStarted += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Enable snapping" : "Disable snapping"; };
             handle.hoverEnded += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Snapping disabled" : "Snapping enabled"; };
+#endif
 
             var groundSnappingUI = m_SnappingModuleSettingsUI.groundSnappingEnabled;
             groundSnappingUI.isOn = m_Preferences.groundSnappingEnabled;
@@ -943,10 +952,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     toggle.graphic.gameObject.SetActive(!m_Preferences.disableAll);
             }
 
-            foreach (var text in m_SnappingModuleSettingsUI.GetComponentsInChildren<Text>(true))
+#if INCLUDE_TEXT_MESH_PRO
+            foreach (var text in m_SnappingModuleSettingsUI.GetComponentsInChildren<TextMeshProUGUI>(true))
             {
                 text.color = m_Preferences.disableAll ? Color.gray : Color.white;
             }
+#endif
         }
 
         void SetSessionGradientMaterial(GradientPair gradientPair)

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
-    sealed class InspectorWorkspace : Workspace, ISelectionChanged
+    sealed class InspectorWorkspace : Workspace, ISelectionChanged, IInspectorWorkspace
     {
         public new static readonly Vector3 DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
@@ -65,13 +65,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 OnSelectionChanged();
 
             Undo.postprocessModifications += OnPostprocessModifications;
-            Undo.undoRedoPerformed += OnUndoRedo;
+            Undo.undoRedoPerformed += UpdateCurrentObject;
 
             // Propagate initial bounds
             OnBoundsChanged();
         }
 
-        void OnUndoRedo()
+        void UpdateCurrentObject()
         {
             UpdateCurrentObject(true);
         }
@@ -333,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var listView = m_InspectorUI.listView;
             var bounds = contentBounds;
             size.y = float.MaxValue; // Add height for dropdowns
-            size.x -= FaceMargin * 2; // Shrink the content width, so that there is space allowed to grab and scroll
+            size.x -= DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
             size.z -= FaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             bounds.size = size;
             listView.size = bounds.size;
@@ -357,7 +357,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override void OnDestroy()
         {
             Undo.postprocessModifications -= OnPostprocessModifications;
-            Undo.undoRedoPerformed -= OnUndoRedo;
+            Undo.undoRedoPerformed -= UpdateCurrentObject;
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.hierarchyChanged -= UpdateCurrentObject;
+#else
+            EditorApplication.hierarchyWindowChanged -= UpdateCurrentObject;
+#endif
             base.OnDestroy();
         }
 
@@ -365,6 +370,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             SetIsLocked();
             OnButtonClicked(rayOrigin);
+        }
+
+        public void UpdateInspector(GameObject obj, bool fullRebuild = false)
+        {
+            if (obj == null || obj == m_SelectedObject)
+                UpdateCurrentObject(fullRebuild);
         }
     }
 }

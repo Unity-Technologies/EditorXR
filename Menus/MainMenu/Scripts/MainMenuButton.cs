@@ -1,24 +1,21 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
+
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class MainMenuButton : MonoBehaviour, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
+    sealed class MainMenuButton : MainMenuSelectable, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
     {
         [SerializeField]
         Button m_Button;
 
-        [SerializeField]
-        Text m_ButtonDescription;
-
-        [SerializeField]
-        Text m_ButtonTitle;
-
-        Color m_OriginalColor;
+        CanvasGroup m_CanvasGroup;
 
         public Button button { get { return m_Button; } }
 
@@ -26,54 +23,52 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public ITooltip tooltip { private get; set; }
 
-        public Type toolType { get; set; }
-
-        public bool selected
-        {
-            set
-            {
-                if (value)
-                {
-                    m_Button.transition = Selectable.Transition.None;
-                    m_Button.targetGraphic.color = m_Button.colors.highlightedColor;
-                }
-                else
-                {
-                    m_Button.transition = Selectable.Transition.ColorTint;
-                    m_Button.targetGraphic.color = m_OriginalColor;
-                }
-            }
-        }
-
         public event Action<Transform, Type, string> hovered;
         public event Action<Transform> clicked;
 
-        void Awake()
+        new void Awake()
         {
+            m_Selectable = m_Button;
             m_OriginalColor = m_Button.targetGraphic.color;
         }
 
-        public void SetData(string name, string description)
+        void Start()
         {
-            m_ButtonTitle.text = name;
-            m_ButtonDescription.text = description;
+            m_CanvasGroup = m_Button.GetComponentInParent<CanvasGroup>();
         }
 
         public void OnRayEnter(RayEventData eventData)
         {
-            if (hovered != null)
-                hovered(eventData.rayOrigin, toolType, m_ButtonDescription.text);
+            if (m_CanvasGroup && !m_CanvasGroup.interactable)
+                return;
+
+#if INCLUDE_TEXT_MESH_PRO
+            if (button.interactable && hovered != null)
+            {
+                var descriptionText = string.Empty;
+                // We can't use ?? because it breaks on destroyed references
+                if (m_Description)
+                    descriptionText = m_Description.text;
+                hovered(eventData.rayOrigin, toolType, descriptionText);
+            }
+#endif
         }
 
         public void OnRayExit(RayEventData eventData)
         {
-            if (hovered != null)
+            if (m_CanvasGroup && !m_CanvasGroup.interactable)
+                return;
+
+            if (button.interactable && hovered != null)
                 hovered(eventData.rayOrigin, null, null);
         }
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            if (clicked != null)
+            if (m_CanvasGroup && !m_CanvasGroup.interactable)
+                return;
+
+            if (button.interactable && clicked != null)
                 clicked(null); // Pass null to perform the selection haptic pulse on both nodes
         }
     }

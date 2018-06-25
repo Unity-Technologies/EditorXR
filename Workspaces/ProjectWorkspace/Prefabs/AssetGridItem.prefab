@@ -133,6 +133,7 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
@@ -147,6 +148,7 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -164,6 +166,7 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
@@ -179,6 +182,7 @@ MeshRenderer:
   m_PreserveUVs: 1
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -245,6 +249,10 @@ MonoBehaviour:
   m_TextPanel: {fileID: 114000012861929906}
   m_Cube: {fileID: 23000013864279834}
   m_Sphere: {fileID: 23000012405634146}
+  m_PositiveAssignmentHighlightMaterial: {fileID: 2100000, guid: df5ea1108c16aab4cbb3f7e8819d620e,
+    type: 2}
+  m_NegativeAssignmentHighlightMaterial: {fileID: 2100000, guid: 4dee6b0693fa1ed4c932e6b3401ceba2,
+    type: 2}
   m_Icon: {fileID: 0}
   m_PreviewObjectTransform: {fileID: 0}
 --- !u!114 &114000011913880262

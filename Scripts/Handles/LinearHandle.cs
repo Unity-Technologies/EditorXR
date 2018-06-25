@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -31,9 +31,16 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
         public AxisFlags constraints { get { return m_Constraints; } }
 
+        // Local method use only -- created here to reduce garbage collection
+        static readonly LinearHandleEventData k_LinearHandleEventData = new LinearHandleEventData(null, false);
+
         protected override HandleEventData GetHandleEventData(RayEventData eventData)
         {
-            return new LinearHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+            k_LinearHandleEventData.rayOrigin = eventData.rayOrigin;
+            k_LinearHandleEventData.direct = UIUtils.IsDirectEvent(eventData);
+            k_LinearHandleEventData.raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition;
+
+            return k_LinearHandleEventData;
         }
 
         void UpdateEventData(LinearHandleEventData eventData, bool setLastPosition = true)

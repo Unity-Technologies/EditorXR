@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -18,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public static readonly Vector3 MinBounds = new Vector3(0.677f, 0f, 0.1f);
 
         public const float FaceMargin = 0.025f;
+        protected float DoubleFaceMargin = FaceMargin * 2;
         public const float HighlightMargin = 0.002f;
 
         [SerializeField]
@@ -39,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         HapticPulse m_ResizePulse;
 
         [SerializeField]
-        HapticPulse m_MovePulse;
+        protected HapticPulse m_MovePulse;
 
         Bounds m_ContentBounds;
         BoxCollider m_OuterCollider;
@@ -50,6 +51,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected WorkspaceUI m_WorkspaceUI;
 
         protected Vector3? m_CustomStartingBounds;
+
+        protected Transform m_LeftRayOrigin;
+        protected Transform m_RightRayOrigin;
 
         public Vector3 minBounds
         {
@@ -132,8 +136,28 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
 
-        public Transform leftRayOrigin { protected get; set; }
-        public Transform rightRayOrigin { protected get; set; }
+        public Transform leftRayOrigin
+        {
+            protected get { return m_LeftRayOrigin; }
+            set
+            {
+                m_LeftRayOrigin = value;
+                leftNode = this.RequestNodeFromRayOrigin(m_LeftRayOrigin);
+            }
+        }
+
+        public Transform rightRayOrigin
+        {
+            protected get { return m_RightRayOrigin; }
+            set
+            {
+                m_RightRayOrigin = value;
+                rightNode = this.RequestNodeFromRayOrigin(m_RightRayOrigin);
+            }
+        }
+
+        protected Node leftNode { get; set; }
+        protected Node rightNode { get; set; }
 
         public virtual void Setup()
         {

@@ -5,7 +5,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Decorates types that need to connect interfaces for spawned objects
-    /// </summary>    public interface IInstantiateUI
+    /// </summary>
+    public interface IInstantiateUI
     {
     }
 

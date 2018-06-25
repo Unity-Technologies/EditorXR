@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: ChangeBrushSize
+  m_Name: Change Brush Size
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 1
@@ -83,7 +83,7 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: ChangeBrushSize
+    name: Change Brush Size
     defaultValue: 0
 --- !u!114 &114000013162093460
 MonoBehaviour:

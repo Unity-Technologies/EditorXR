@@ -12,7 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
 
         List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
-        List<IAction> m_Actions;
+        readonly List<IAction> m_Actions = new List<IAction>();
+        readonly List<IActionsMenu> m_ActionsMenus = new List<IActionsMenu>();
 
         public void RemoveActions(List<IAction> actions)
         {
@@ -28,7 +29,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void SpawnActions()
         {
             IEnumerable<Type> actionTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IAction));
-            m_Actions = new List<IAction>();
             foreach (Type actionType in actionTypes)
             {
                 // Don't treat vanilla actions or tool actions as first class actions
@@ -57,6 +57,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
+        }
+
+        public void AddActionsMenu(IActionsMenu actionsMenu)
+        {
+            m_ActionsMenus.Add(actionsMenu);
+        }
+
+        internal void UpdateAlternateMenuActions()
+        {
+            foreach (var actionsMenu in m_ActionsMenus)
+            {
+                actionsMenu.menuActions = m_MenuActions;
+            }
         }
     }
 }

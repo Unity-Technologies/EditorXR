@@ -1,7 +1,8 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
@@ -26,13 +27,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void OnEnable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.projectChanged += UpdateProjectFolders;
+#else
             EditorApplication.projectWindowChanged += UpdateProjectFolders;
+#endif
             UpdateProjectFolders();
         }
 
         void OnDisable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.projectChanged -= UpdateProjectFolders;
+#else
             EditorApplication.projectWindowChanged -= UpdateProjectFolders;
+#endif
         }
 
         public void AddConsumer(IUsesProjectFolderData consumer)
@@ -144,27 +153,39 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         static AssetData CreateAssetData(HierarchyProperty hp, HashSet<string> assetTypes = null)
         {
-            var type = string.Empty;
+            var typeName = string.Empty;
             if (assetTypes != null)
             {
-                type = AssetDatabase.GetMainAssetTypeAtPath(AssetDatabase.GUIDToAssetPath(hp.guid)).Name;
-                switch (type)
+                var path = AssetDatabase.GUIDToAssetPath(hp.guid);
+                if (Path.GetExtension(path) == ".asset") // Some .assets cause a hitch when getting their type
                 {
-                    case "MonoScript":
-                        type = "Script";
-                        break;
-                    case "SceneAsset":
-                        type = "Scene";
-                        break;
-                    case "AudioMixerController":
-                        type = "AudioMixer";
-                        break;
+                    typeName = "Asset";
+                }
+                else
+                {
+                    var type = AssetDatabase.GetMainAssetTypeAtPath(path);
+                    if (type != null)
+                    {
+                        typeName = type.Name;
+                        switch (typeName)
+                        {
+                            case "MonoScript":
+                                typeName = "Script";
+                                break;
+                            case "SceneAsset":
+                                typeName = "Scene";
+                                break;
+                            case "AudioMixerController":
+                                typeName = "AudioMixer";
+                                break;
+                        }
+                    }
                 }
 
-                assetTypes.Add(type);
+                assetTypes.Add(typeName);
             }
 
-            return new AssetData(hp.name, hp.guid, type);
+            return new AssetData(hp.name, hp.guid, typeName);
         }
     }
 }

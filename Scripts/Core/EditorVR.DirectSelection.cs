@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 ICanGrabObjectMethods.canGrabObject = CanGrabObject;
 
-                IGetPointerLengthMethods.getPointerLength = GetPointerLength;
+                IUsesPointerMethods.getPointerLength = GetPointerLength;
             }
 
             public void ConnectInterface(object target, object userData = null)
@@ -110,8 +110,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 m_DirectSelections.Clear();
 
-                Rays.ForEachProxyDevice(deviceData =>
+                foreach (var deviceData in evr.m_DeviceData)
                 {
+                    var proxy = deviceData.proxy;
+                    if (!proxy.active)
+                        continue;
+
                     var rayOrigin = deviceData.rayOrigin;
                     Vector3 contactPoint;
                     var obj = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
@@ -123,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             contactPoint = contactPoint
                         };
                     }
-                });
+                }
 
                 foreach (var ray in evr.GetNestedModule<MiniWorlds>().rays)
                 {
@@ -190,10 +194,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             void OnObjectsDropped(Transform rayOrigin, Transform[] grabbedObjects)
             {
+                HashSet<Transform> objects;
+                if (!m_GrabbedObjects.TryGetValue(rayOrigin, out objects))
+                    return;
+
                 var sceneObjectModule = evr.GetModule<SceneObjectModule>();
                 var viewer = evr.GetNestedModule<Viewer>();
                 var miniWorlds = evr.GetNestedModule<MiniWorlds>();
-                var objects = m_GrabbedObjects[rayOrigin];
                 var eventObjects = new List<Transform>();
                 foreach (var grabbedObject in grabbedObjects)
                 {

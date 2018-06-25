@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
@@ -44,21 +45,29 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         float m_SmoothingMultiplier = 3;
 
         const string k_HMDOnlyLayer = "HMDOnly";
+        readonly Rect k_DefaultCameraRect = new Rect(0f, 0f, 1f, 1f);
 
         RenderTexture m_RenderTexture;
 
         Vector3 m_Position;
         Quaternion m_Rotation;
+        int m_HMDOnlyLayerMask;
+
+        static readonly List<bool> k_HiddenEnabled = new List<bool>();
 
         /// <summary>
         /// A layer mask that controls what will always render in the HMD and not in the preview
         /// </summary>
-        public int hmdOnlyLayerMask { get { return LayerMask.GetMask(k_HMDOnlyLayer); } }
+        public int hmdOnlyLayerMask { get { return m_HMDOnlyLayerMask; } }
+
+        // Local method use only -- created here to reduce garbage collection
+        static readonly List<Renderer> k_Renderers = new List<Renderer>();
 
         void Awake()
         {
             m_SmoothCamera = GetComponent<Camera>();
             m_SmoothCamera.enabled = false;
+            m_HMDOnlyLayerMask = LayerMask.GetMask(k_HMDOnlyLayer);
         }
 
         void Start()
@@ -70,22 +79,33 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_Rotation = transform.localRotation;
         }
 
+        void OnEnable()
+        {
+            // Snap camera to starting position
+            if (m_VRCamera)
+            {
+                m_Rotation = m_VRCamera.transform.localRotation;
+                m_Position = m_VRCamera.transform.localPosition;
+            }
+        }
+
         void LateUpdate()
         {
             m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
             var vrCameraTexture = m_VRCamera.targetTexture;
             if (vrCameraTexture && (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height))
             {
-                Rect guiRect = new Rect(0f, 0f, vrCameraTexture.width, vrCameraTexture.height);
-                Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
+                var guiRect = new Rect(0f, 0f, vrCameraTexture.width, vrCameraTexture.height);
+                var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
                 VRView.activeView.CreateCameraTargetTexture(ref m_RenderTexture, cameraRect, false);
                 m_RenderTexture.name = "Smooth Camera RT";
             }
+
             m_SmoothCamera.targetTexture = m_RenderTexture;
             m_SmoothCamera.targetDisplay = m_TargetDisplay;
             m_SmoothCamera.cameraType = CameraType.Game;
             m_SmoothCamera.cullingMask &= ~hmdOnlyLayerMask;
-            m_SmoothCamera.rect = new Rect(0f, 0f, 1f, 1f);
+            m_SmoothCamera.rect = k_DefaultCameraRect;
             m_SmoothCamera.stereoTargetEye = StereoTargetEyeMask.None;
             m_SmoothCamera.fieldOfView = m_FieldOfView;
 
@@ -96,12 +116,15 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             transform.localPosition = m_Position - transform.localRotation * Vector3.forward * m_PullBackDistance;
 
             // Don't render any HMD-related visual proxies
-            var hidden = m_VRCamera.GetComponentsInChildren<Renderer>();
-            bool[] hiddenEnabled = new bool[hidden.Length];
-            for (int i = 0; i < hidden.Length; i++)
+            k_Renderers.Clear();
+            m_VRCamera.GetComponentsInChildren(k_Renderers);
+            var count = k_Renderers.Count;
+
+            k_HiddenEnabled.Clear();
+            for (var i = 0; i < count; i++)
             {
-                var h = hidden[i];
-                hiddenEnabled[i] = h.enabled;
+                var h = k_Renderers[i];
+                k_HiddenEnabled.Add(h.enabled);
                 h.enabled = false;
             }
 
@@ -109,9 +132,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_SmoothCamera.Render();
             RenderTexture.active = null;
 
-            for (int i = 0; i < hidden.Length; i++)
+            for (var i = 0; i < count; i++)
             {
-                hidden[i].enabled = hiddenEnabled[i];
+                k_Renderers[i].enabled = k_HiddenEnabled[i];
             }
         }
     }

@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         Vector2 m_Scroll;
         float m_Multiplier = 1;
 
-        [MenuItem("Edit/Project Settings/EditorVR/Haptic Pulses")]
+        [MenuItem("Edit/Project Settings/EditorXR/Haptic Pulses")]
         static void Init()
         {
             GetWindow<HapticPulseEditor>("Haptic Pulse Editor").Show();

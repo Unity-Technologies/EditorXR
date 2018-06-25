@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides custom menu instantiation
-    /// </summary>    public interface IInstantiateMenuUI
+    /// </summary>
+    public interface IInstantiateMenuUI
     {
     }
 

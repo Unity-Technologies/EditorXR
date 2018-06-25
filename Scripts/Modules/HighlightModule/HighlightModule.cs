@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -9,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
     {
-        class HighlightData
+        struct HighlightData
         {
             public float startTime;
             public float duration;
@@ -17,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         const string k_SelectionOutlinePrefsKey = "Scene/Selected Outline";
 
-        static readonly Dictionary<SkinnedMeshRenderer, Mesh> m_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
+        static readonly Dictionary<SkinnedMeshRenderer, Mesh> k_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
 
         [SerializeField]
         Material m_DefaultHighlightMaterial;
@@ -28,8 +29,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly Dictionary<Material, Dictionary<GameObject, HighlightData>> m_Highlights = new Dictionary<Material, Dictionary<GameObject, HighlightData>>();
         readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
 
+        Dictionary<int, IEnumerator> m_Blinking = new Dictionary<int, IEnumerator>();               // instanceID-keyed 
+        Dictionary<GameObject, float> m_LastBlinkStartTimes = new Dictionary<GameObject, float>();
+
         // Local method use only -- created here to reduce garbage collection
-        readonly List<KeyValuePair<Material, GameObject>> m_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
+        static readonly List<KeyValuePair<Material, GameObject>> k_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
+        static readonly List<MeshFilter> k_MeshFilters = new List<MeshFilter>();
+        static readonly List<SkinnedMeshRenderer> k_SkinnedMeshRenderers = new List<SkinnedMeshRenderer>();
 
         public event Func<GameObject, Material, bool> customHighlight
         {
@@ -58,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void LateUpdate()
         {
-            m_HighlightsToRemove.Clear();
+            k_HighlightsToRemove.Clear();
             foreach (var highlight in m_Highlights)
             {
                 var material = highlight.Key;
@@ -74,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     {
                         var visibleTime = Time.time - highlightData.startTime;
                         if (visibleTime > highlightData.duration)
-                            m_HighlightsToRemove.Add(new KeyValuePair<Material, GameObject>(material, go));
+                            k_HighlightsToRemove.Add(new KeyValuePair<Material, GameObject>(material, go));
                     }
 
                     var shouldHighlight = true;
@@ -90,17 +96,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
 
-            foreach (var kvp in m_HighlightsToRemove)
+            foreach (var kvp in k_HighlightsToRemove)
             {
                 var highlights = m_Highlights[kvp.Key];
                 if (highlights.Remove(kvp.Value) && highlights.Count == 0)
                     m_Highlights.Remove(kvp.Key);
             }
+
+            foreach (var kvp in m_Blinking)
+            {
+                kvp.Value.MoveNext();
+            }
         }
 
         static void HighlightObject(GameObject go, Material material)
         {
-            foreach (var meshFilter in go.GetComponentsInChildren<MeshFilter>())
+            k_MeshFilters.Clear();
+            go.GetComponentsInChildren(k_MeshFilters);
+            foreach (var meshFilter in k_MeshFilters)
             {
                 var mesh = meshFilter.sharedMesh;
                 if (meshFilter.sharedMesh == null)
@@ -114,16 +127,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
 
-            foreach (var skinnedMeshRenderer in go.GetComponentsInChildren<SkinnedMeshRenderer>())
+            k_SkinnedMeshRenderers.Clear();
+            go.GetComponentsInChildren(k_SkinnedMeshRenderers);
+            foreach (var skinnedMeshRenderer in k_SkinnedMeshRenderers)
             {
                 if (skinnedMeshRenderer.sharedMesh == null)
                     continue;
 
                 Mesh bakedMesh;
-                if (!m_BakedMeshes.TryGetValue(skinnedMeshRenderer, out bakedMesh))
+                if (!k_BakedMeshes.TryGetValue(skinnedMeshRenderer, out bakedMesh))
                 {
                     bakedMesh = new Mesh();
-                    m_BakedMeshes[skinnedMeshRenderer] = bakedMesh;
+                    k_BakedMeshes[skinnedMeshRenderer] = bakedMesh;
                 }
 
                 skinnedMeshRenderer.BakeMesh(bakedMesh);
@@ -190,11 +205,53 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         highlights.Remove(go);
                 }
 
-                var skinnedMeshRenderer = go.GetComponent<SkinnedMeshRenderer>();
+                var skinnedMeshRenderer = ComponentUtils<SkinnedMeshRenderer>.GetComponent(go);
                 if (skinnedMeshRenderer)
-                    m_BakedMeshes.Remove(skinnedMeshRenderer);
+                    k_BakedMeshes.Remove(skinnedMeshRenderer);
             }
         }
+
+        public IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin, 
+            Material material, bool force, float dutyPercent, float cycleLength)
+        {
+            if (!active)
+            {
+                SetHighlight(go, active, rayOrigin, null, true);
+                m_Blinking.Clear();
+                // using StopAll assumes that we're only allowing one simultaneous blinking highlight
+                StopAllCoroutines();
+                return null;
+            }
+
+            m_LastBlinkStartTimes[go] = Time.time;
+            var onDuration = Mathf.Clamp01(dutyPercent) * cycleLength;
+
+            SetHighlight(go, true, rayOrigin, material, false, onDuration);
+
+            var blinker = BlinkHighlight(go, true, rayOrigin, material, false, onDuration, cycleLength);
+            m_Blinking.Add(go.GetInstanceID(), blinker);
+            return blinker;
+        }
+
+        IEnumerator BlinkHighlight(GameObject go, bool active, Transform rayOrigin, Material material, 
+            bool force, float onTime, float cycleLength)
+        {
+            while (enabled)
+            {
+                float lastBlinkTime;
+                m_LastBlinkStartTimes.TryGetValue(go, out lastBlinkTime);
+
+                var now = Time.time;
+                if (now - lastBlinkTime >= cycleLength)
+                {
+                    m_LastBlinkStartTimes[go] = now;
+                    SetHighlight(go, true, rayOrigin, material, false, onTime);
+                }
+
+                yield return null;
+            }
+        }
+
     }
 }
 #endif

@@ -107,7 +107,7 @@ namespace ConditionalCompilation
                         var dependentClass = t.GetField(kDependentClass).GetValue(typeAttribute) as string;
                         var define = t.GetField(kDefine).GetValue(typeAttribute) as string;
 
-                        if (!string.IsNullOrEmpty(dependentClass) && !string.IsNullOrEmpty(define))
+                        if (!string.IsNullOrEmpty(dependentClass) && !string.IsNullOrEmpty(define) && !dependencies.ContainsKey(dependentClass))
                             dependencies.Add(dependentClass, define);
                     }
                 }

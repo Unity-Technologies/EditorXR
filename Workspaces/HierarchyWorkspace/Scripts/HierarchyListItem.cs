@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -275,7 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             toggleExpanded(data.index);
         }
 
-        protected override void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+        protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
         {
             // handle will be the backing cube, not the whole row object
             var row = handle.transform.parent;
@@ -329,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        protected override void OnGrabDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+        protected override void OnDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
         {
             if (m_DragObject)
             {
@@ -509,8 +509,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 var index = data.index;
                 var gameObject = data.gameObject;
+                Transform transform = null;
+                if (gameObject != null) // In case we are dropping into the scene root
+                    transform = gameObject.transform;
+
                 var dropGameObject = dropData.gameObject;
-                var transform = gameObject.transform;
                 var dropTransform = dropGameObject.transform;
 
                 // OnHierarchyChanged doesn't happen until next frame--delay removal of the extra space

@@ -19,6 +19,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_MinScale = 0.04f;
         const float k_MaxScale = 0.09f;
 
+        static readonly Vector3 k_MinBounds = new Vector3(MinBounds.x, k_YBounds, 0.5f);
+        static readonly Vector3 k_CustomStartingBounds = new Vector3(0.8f, k_YBounds, 0.5f);
+
         bool m_AssetGridDragging;
         bool m_FolderPanelDragging;
 
@@ -95,8 +98,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public override void Setup()
         {
             // Initial bounds must be set before the base.Setup() is called
-            minBounds = new Vector3(MinBounds.x, k_YBounds, 0.5f);
-            m_CustomStartingBounds = new Vector3(0.8f, k_YBounds, 0.5f);
+            minBounds = k_MinBounds;
+            m_CustomStartingBounds = k_CustomStartingBounds;
 
             base.Setup();
 

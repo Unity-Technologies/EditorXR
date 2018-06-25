@@ -1,18 +1,25 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR
 {
     public abstract class FeedbackRequest
     {
         public IRequestFeedback caller;
-        public GameObject settingsMenuItemPrefab { get; private set; }
-        public GameObject settingsMenuItemInstance { get; set; }
+
+        public abstract void Reset();
     }
 
     public class FeedbackModule : MonoBehaviour, ISettingsMenuItemProvider, ISerializePreferences
@@ -50,7 +57,9 @@ namespace UnityEditor.Experimental.EditorVR
                     toggle.isOn = m_Preferences.enabled;
 
                 m_Toggles.Add(toggle);
-                var label = value.GetComponentInChildren<Text>();
+
+#if INCLUDE_TEXT_MESH_PRO
+                var label = value.GetComponentInChildren<TextMeshProUGUI>();
 
                 const string feedbackEnabled = "Feedback enabled";
                 const string feedbackDisabled = "Feedback disabled";
@@ -66,16 +75,20 @@ namespace UnityEditor.Experimental.EditorVR
                 var handle = value.GetComponent<BaseHandle>();
                 handle.hoverStarted += (baseHandle, data) => { label.text = m_Preferences.enabled ? disableFeedback : enableFeedback; };
                 handle.hoverEnded += (baseHandle, data) => { label.text = m_Preferences.enabled ? feedbackEnabled : feedbackDisabled; };
+#endif
             }
         }
 
         public Transform rayOrigin { get { return null; } }
+
+        readonly Dictionary<Type, Queue<FeedbackRequest>> m_FeedbackRequestPool = new Dictionary<Type, Queue<FeedbackRequest>>();
 
         void Awake()
         {
             IRequestFeedbackMethods.addFeedbackRequest = AddFeedbackRequest;
             IRequestFeedbackMethods.removeFeedbackRequest = RemoveFeedbackRequest;
             IRequestFeedbackMethods.clearFeedbackRequests = ClearFeedbackRequests;
+            IRequestFeedbackMethods.getFeedbackRequestObject = GetFeedbackRequestObject;
         }
 
         void Start()
@@ -126,6 +139,8 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 receiver.RemoveFeedbackRequest(request);
             }
+
+            RecycleFeedbackRequestObject(request);
         }
 
         void ClearFeedbackRequests(IRequestFeedback caller)
@@ -137,6 +152,38 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 receiver.ClearFeedbackRequests(caller);
             }
+        }
+
+        FeedbackRequest GetFeedbackRequestObject(Type type)
+        {
+            Queue<FeedbackRequest> pool;
+            if (!m_FeedbackRequestPool.TryGetValue(type, out pool))
+            {
+                pool = new Queue<FeedbackRequest>();
+                m_FeedbackRequestPool[type] = pool;
+            }
+
+            if (pool.Count > 0)
+            {
+                var request = pool.Dequeue();
+                request.Reset();
+                return request;
+            }
+
+            return (FeedbackRequest)Activator.CreateInstance(type);
+        }
+
+        void RecycleFeedbackRequestObject(FeedbackRequest request)
+        {
+            var type = request.GetType();
+            Queue<FeedbackRequest> pool;
+            if (!m_FeedbackRequestPool.TryGetValue(type, out pool))
+            {
+                pool = new Queue<FeedbackRequest>();
+                m_FeedbackRequestPool[type] = pool;
+            }
+
+            pool.Enqueue(request);
         }
 
         public object OnSerializePreferences()

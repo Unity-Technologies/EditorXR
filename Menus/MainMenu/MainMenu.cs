@@ -12,12 +12,14 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace,
-        ICustomActionMap, IUsesMenuOrigins, IUsesProxyType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin
+        ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
+        IRequestFeedback
     {
         const string k_SettingsMenuSectionName = "Settings";
+        const float k_MaxFlickDuration = 0.3f;
 
         [SerializeField]
-        ActionMap m_MainMenuActionMap;
+        ActionMap m_ActionMap;
 
         [SerializeField]
         HapticPulse m_FaceRotationPulse;
@@ -42,17 +44,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         MainMenuUI m_MainMenuUI;
         float m_LastRotationInput;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
+        float m_RotationInputStartValue;
+        float m_RotationInputStartTime;
         readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
         readonly Dictionary<ISettingsMenuProvider, GameObject> m_SettingsMenus = new Dictionary<ISettingsMenuProvider, GameObject>();
         readonly Dictionary<ISettingsMenuItemProvider, GameObject> m_SettingsMenuItems = new Dictionary<ISettingsMenuItemProvider, GameObject>();
+
+        readonly BindingDictionary m_Controls = new BindingDictionary();
 
         public List<Type> menuTools { private get; set; }
         public List<Type> menuWorkspaces { private get; set; }
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
-        public List<ActionMenuData> menuActions { get; set; }
         public Transform targetRayOrigin { private get; set; }
-        public Type proxyType { private get; set; }
         public Node node { get; set; }
 
         public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
@@ -60,10 +64,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Transform rayOrigin { private get; set; }
 
         public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
+        public int priority { get { return 0; } }
 
         public bool focus { get { return m_MainMenuUI.hovering; } }
 
-        public ActionMap actionMap { get { return m_MainMenuActionMap; } }
+        public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
 
         public Transform menuOrigin
@@ -98,13 +103,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (m_MenuHideFlags != value)
                 {
                     m_MenuHideFlags = value;
+                    var visible = value == 0;
                     if (m_MainMenuUI)
                     {
                         var isPermanent = (value & MenuHideFlags.Hidden) != 0;
-                        m_MainMenuUI.visible = value == 0;
-                        if (wasPermanent && value == 0 || wasVisible && isPermanent)
+                        m_MainMenuUI.visible = visible;
+                        if (wasPermanent && visible || wasVisible && isPermanent)
                             SendVisibilityPulse();
                     }
+
+                    if (visible)
+                        ShowFeedback();
+                    else
+                        this.ClearFeedbackRequests();
                 }
             }
         }
@@ -116,6 +127,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
             m_MainMenuUI.menuOrigin = menuOrigin;
             m_MainMenuUI.Setup();
+
+            InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
         }
 
         void Start()
@@ -132,21 +145,51 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var mainMenuInput = (MainMenuInput)input;
             var rotationInput = -mainMenuInput.rotate.rawValue;
 
-            consumeControl(mainMenuInput.rotate);
-            consumeControl(mainMenuInput.blockY);
-
             const float kFlickDeltaThreshold = 0.5f;
-            if ((proxyType != typeof(ViveProxy) && Mathf.Abs(rotationInput) >= kFlickDeltaThreshold && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
-                || mainMenuInput.flickFace.wasJustReleased)
+
+            if (this.GetDeviceType() == DeviceType.Vive)
             {
-                m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
-                this.Pulse(node, m_FaceRotationPulse);
+                if (!Mathf.Approximately(rotationInput, 0f))
+                {
+                    var time = Time.time;
+                    if (Mathf.Approximately(m_LastRotationInput, 0f))
+                    {
+                        // Touch began
+                        m_RotationInputStartValue = rotationInput;
+                        m_RotationInputStartTime = time;
+                    }
+                    else
+                    {
+                        // Touch held
+                        var distance = rotationInput - m_RotationInputStartValue;
+                        var lastDistance = m_LastRotationInput - m_RotationInputStartValue;
+                        if (Mathf.Abs(distance) >= kFlickDeltaThreshold
+                            && Mathf.Abs(lastDistance) < kFlickDeltaThreshold
+                            && time - m_RotationInputStartTime < k_MaxFlickDuration)
+                        {
+                            m_RotationInputStartValue = rotationInput;
+                            m_RotationInputStartTime = time;
+                            if (!m_MainMenuUI.rotating)
+                            {
+                                FlickMenu(distance);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (Mathf.Abs(rotationInput) >= kFlickDeltaThreshold 
+                && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
+            {
+                FlickMenu(rotationInput);
             }
 
-            if (m_MenuHideFlags == 0)
-                consumeControl(mainMenuInput.flickFace);
-
             m_LastRotationInput = rotationInput;
+        }
+
+        void FlickMenu(float rotationInput)
+        {
+            m_MainMenuUI.targetFaceIndex += (int)Mathf.Sign(rotationInput);
+            this.Pulse(node, m_FaceRotationPulse);
         }
 
         void OnDestroy()
@@ -289,6 +332,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 this.PreviewInToolMenuButton(rayOrigin, buttonType, buttonDescription);
         }
 
+        void OnToggleHovered(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+        }
+
         void SendVisibilityPulse()
         {
             this.Pulse(node, m_MenuHideFlags == 0 ? m_HidePulse : m_ShowPulse);
@@ -323,12 +371,29 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             buttonData.sectionName = k_SettingsMenuSectionName;
 
-            CreateFaceButton(buttonData, tooltip, () =>
+            var button = CreateFaceButton(buttonData, tooltip, () =>
             {
                 var instance = m_MainMenuUI.AddSubmenu(k_SettingsMenuSectionName, provider.settingsMenuPrefab);
                 m_SettingsMenus[provider] = instance;
                 provider.settingsMenuInstance = instance;
+                AddToggleHaptics(instance);
             });
+
+            button.hovered += OnButtonHovered;
+            button.clicked += OnButtonClicked;
+        }
+
+        void AddToggleHaptics(GameObject menuInstance)
+        {
+            var toggles = menuInstance.GetComponentsInChildren<MainMenuToggle>();
+            if (toggles != null && toggles.Length > 0)
+            {
+                foreach (var toggle in toggles)
+                {
+                    toggle.hovered += OnToggleHovered;
+                    toggle.clicked += OnButtonClicked;
+                }
+            }
         }
 
         public void RemoveSettingsMenu(ISettingsMenuProvider provider)
@@ -349,6 +414,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var instance = m_MainMenuUI.CreateCustomButton(provider.settingsMenuItemPrefab, k_SettingsMenuSectionName);
             m_SettingsMenuItems[provider] = instance;
             provider.settingsMenuItemInstance = instance;
+            AddToggleHaptics(instance);
         }
 
         public void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider)
@@ -362,6 +428,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_SettingsMenuItems.Remove(provider);
             }
             provider.settingsMenuItemInstance = null;
+        }
+
+        void ShowFeedback()
+        {
+            var tooltipText = this.GetDeviceType() == DeviceType.Vive ? "Swipe to Rotate Menu" : "Rotate Menu";
+            List<VRInputDevice.VRControl> controls;
+            if (m_Controls.TryGetValue("FlickFace", out controls))
+            {
+                foreach (var id in controls)
+                {
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.control = id;
+                    request.node = node;
+                    request.tooltipText = tooltipText;
+                    this.AddFeedbackRequest(request);
+                }
+            }
         }
     }
 }

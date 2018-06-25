@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         SerializedPreferences m_Preferences;
 
         [Serializable]
-        class SerializedPreferences : ISerializationCallbackReceiver
+        internal class SerializedPreferences : ISerializationCallbackReceiver
         {
             [SerializeField]
             SerializedPreferenceItem[] m_Items;
@@ -41,10 +41,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     }
                 }
             }
+
+            public void Remove(Type type)
+            {
+                m_ItemDictionary.Remove(type);
+                m_Items = m_ItemDictionary.Values.ToArray();
+            }
         }
 
         [Serializable]
-        class SerializedPreferenceItem
+        internal class SerializedPreferenceItem
         {
             [SerializeField]
             string m_Name;
@@ -75,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void AddSerializer(ISerializePreferences serializer)
         {
             if (m_Preferences != null)
-                Deserialize(serializer);
+                Deserialize(m_Preferences, serializer);
 
             m_Serializers.Add(serializer);
         }
@@ -87,18 +93,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Serializers.Remove(serializer);
         }
 
-        internal void DeserializePreferences(string serializedPreferences)
+        internal void SetupWithPreferences(string serializedPreferences)
+        {
+            m_Preferences = DeserializePreferences(serializedPreferences, m_Serializers);
+        }
+
+        internal static SerializedPreferences DeserializePreferences(string serializedPreferences, List<ISerializePreferences> serializers = null)
         {
             var preferences = JsonUtility.FromJson<SerializedPreferences>(serializedPreferences);
-            if (preferences != null)
+            if (preferences != null && serializers != null)
             {
-                m_Preferences = preferences;
-
-                foreach (var serializer in m_Serializers)
+                foreach (var serializer in serializers)
                 {
-                    Deserialize(serializer);
+                    Deserialize(preferences, serializer);
                 }
             }
+
+            return preferences;
         }
 
         internal string SerializePreferences()
@@ -131,12 +142,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return JsonUtility.ToJson(m_Preferences);
         }
 
-        void Deserialize(ISerializePreferences serializer)
+        static void Deserialize(SerializedPreferences preferences, ISerializePreferences serializer)
         {
             SerializedPreferenceItem item;
-            if (m_Preferences.items.TryGetValue(serializer.GetType(), out item))
+            if (preferences.items.TryGetValue(serializer.GetType(), out item))
             {
-                var payload = JsonUtility.FromJson(item.payload, Type.GetType(item.payloadType));
+                var type = Type.GetType(item.payloadType);
+                if (type == null)
+                    return;
+
+                var payload = JsonUtility.FromJson(item.payload, type);
                 serializer.OnDeserializePreferences(payload);
             }
         }

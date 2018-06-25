@@ -1,13 +1,19 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
@@ -153,8 +159,10 @@ namespace UnityEditor.Experimental.EditorVR.UI
         [SerializeField]
         CanvasGroup m_CanvasGroup;
 
+#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
-        Text m_Text;
+        TextMeshProUGUI m_Text;
+#endif
 
         [SerializeField]
         Image m_Icon;
@@ -246,6 +254,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             m_IconPressedLocalPosition = m_OriginalIconLocalPosition + Vector3.back * m_IconHighlightedLocalZOffset;
 
             m_Icon.color = m_NormalContentColor;
+#if INCLUDE_TEXT_MESH_PRO
             m_Text.color = m_NormalContentColor;
 
             // Clears/resets any non-sprite content(text) from being displayed if a sprite was set on this button
@@ -253,6 +262,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 SetContent(m_OriginalIconSprite, m_AlternateIconSprite);
             else if (!string.IsNullOrEmpty(m_Text.text))
                 SetContent(m_Text.text);
+#endif
         }
 
         void OnEnable()
@@ -556,7 +566,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
             m_AlternateIconSprite = null;
             iconSprite = null;
             m_Icon.enabled = false;
+#if INCLUDE_TEXT_MESH_PRO
             m_Text.text = displayedText.Substring(0, 2);
+#endif
         }
 
         /// <summary>
@@ -569,7 +581,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
             m_Icon.enabled = true;
             iconSprite = icon;
             m_AlternateIconSprite = alternateIcon;
+#if INCLUDE_TEXT_MESH_PRO
             m_Text.text = string.Empty;
+#endif
         }
 
         GradientPair GetMaterialColors()

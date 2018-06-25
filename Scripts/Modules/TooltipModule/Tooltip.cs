@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-    sealed class Tooltip : MonoBehaviour, ITooltip, ITooltipPlacement
+    internal sealed class Tooltip : MonoBehaviour, ITooltip, ITooltipPlacement
     {
         public string tooltipText
         {

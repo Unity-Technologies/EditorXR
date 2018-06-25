@@ -134,6 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         hash.AddToSpatialHash(grabData.transform.gameObject);
                         grabData.ResetScale();
                     }
+
                     hasPreview = false;
                 }
 
@@ -178,7 +179,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             bool m_MiniWorldIgnoreListDirty = true;
 
             // Local method use only -- created here to reduce garbage collection
-            readonly List<Renderer> m_IgnoreList = new List<Renderer>();
+            static readonly List<Renderer> k_IgnoreList = new List<Renderer>();
+            static readonly List<Renderer> k_Renderers = new List<Renderer>();
 
             public Dictionary<Transform, MiniWorldRay> rays { get { return m_Rays; } }
 
@@ -186,7 +188,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             public MiniWorlds()
             {
+#if UNITY_2018_1_OR_NEWER
+                EditorApplication.hierarchyChanged += OnHierarchyChanged;
+#else
                 EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
+#endif
                 IIsInMiniWorldMethods.isInMiniWorld = IsInMiniWorld;
             }
 
@@ -205,7 +211,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             internal override void OnDestroy()
             {
                 base.OnDestroy();
+#if UNITY_2018_1_OR_NEWER
+                EditorApplication.hierarchyChanged -= OnHierarchyChanged;
+#else
                 EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
+#endif
             }
 
             public void LateBindInterfaceMethods(DirectSelection provider)
@@ -242,10 +252,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             void UpdateMiniWorldIgnoreList()
             {
-                var renderers = evr.GetComponentsInChildren<Renderer>(true);
-                m_IgnoreList.Clear();
+                evr.GetComponentsInChildren(true, k_Renderers);
+                k_IgnoreList.Clear();
 
-                foreach (var r in renderers)
+                foreach (var r in k_Renderers)
                 {
                     if (r.CompareTag(k_VRPlayerTag))
                         continue;
@@ -253,12 +263,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (r.gameObject.layer != LayerMask.NameToLayer("UI") && r.CompareTag(MiniWorldRenderer.ShowInMiniWorldTag))
                         continue;
 
-                    m_IgnoreList.Add(r);
+                    k_IgnoreList.Add(r);
                 }
 
                 foreach (var miniWorld in m_Worlds)
                 {
-                    miniWorld.ignoreList = m_IgnoreList;
+                    miniWorld.ignoreList = k_IgnoreList;
                 }
             }
 
@@ -381,8 +391,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             directSelection.ResumeGrabbers(incomingPreview.node);
                         }
 
-                        miniWorldRay.UpdatePreview(); // Otherwise the object is in the wrong position for a frame
-
                         if (!isContained)
                             m_RayWasContained[originalRayOrigin] = false; //Prevent ray from showing
                     }
@@ -464,26 +472,35 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 // Update ray visibilities
-                Rays.ForEachProxyDevice(data =>
+                foreach (var deviceData in evr.m_DeviceData)
                 {
-                    bool wasContained;
-                    var rayOrigin = data.rayOrigin;
-                    m_RayWasContained.TryGetValue(rayOrigin, out wasContained);
+                    var proxy = deviceData.proxy;
+                    if (!proxy.active)
+                        continue;
 
-                    var isContained = false;
-                    foreach (var miniWorld in m_Worlds)
-                    {
-                        isContained |= miniWorld.Contains(rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin));
-                    }
+                    UpdateRayContaimnent(deviceData);
+                }
+            }
 
-                    if (isContained && !wasContained)
-                        Rays.AddVisibilitySettings(rayOrigin, this, false, true);
+            void UpdateRayContaimnent(DeviceData data)
+            {
+                bool wasContained;
+                var rayOrigin = data.rayOrigin;
+                m_RayWasContained.TryGetValue(rayOrigin, out wasContained);
 
-                    if (!isContained && wasContained)
-                        Rays.RemoveVisibilitySettings(rayOrigin, this);
+                var isContained = false;
+                foreach (var miniWorld in m_Worlds)
+                {
+                    isContained |= miniWorld.Contains(rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin));
+                }
 
-                    m_RayWasContained[rayOrigin] = isContained;
-                });
+                if (isContained && !wasContained)
+                    Rays.AddVisibilitySettings(rayOrigin, this, false, true);
+
+                if (!isContained && wasContained)
+                    Rays.RemoveVisibilitySettings(rayOrigin, this);
+
+                m_RayWasContained[rayOrigin] = isContained;
             }
 
             internal void OnWorkspaceCreated(IWorkspace workspace)

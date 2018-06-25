@@ -3,26 +3,29 @@ using System;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ColorPickerSquareUI : Selectable, IDragHandler, IBeginDragHandler, IEndDragHandler
+namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    bool m_AllowDragEvents;
-
-    public Action onDrag { private get; set; }
-
-    public void OnBeginDrag(PointerEventData eventData)
+    public class ColorPickerSquareUI : Selectable, IDragHandler, IBeginDragHandler, IEndDragHandler
     {
-        m_AllowDragEvents = true;
-    }
+        bool m_AllowDragEvents;
 
-    public void OnDrag(PointerEventData eventData)
-    {
-        if (onDrag != null && m_AllowDragEvents)
-            onDrag();
-    }
+        public Action onDrag { private get; set; }
 
-    public void OnEndDrag(PointerEventData eventData)
-    {
-        m_AllowDragEvents = false;
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            m_AllowDragEvents = true;
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (onDrag != null && m_AllowDragEvents)
+                onDrag();
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            m_AllowDragEvents = false;
+        }
     }
 }
 #endif

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -8,8 +8,6 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
-
     sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale,
         IRequestFeedback, IUsesNode
     {
@@ -61,6 +59,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         var realTime = Time.realtimeSinceStartup;
                         if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
                         {
+                            consumeControl(vacuumInput.vacuum);
+
                             Coroutine coroutine;
                             if (m_VacuumingCoroutines.TryGetValue(vacuumableTransform, out coroutine))
                                 StopCoroutine(coroutine);
@@ -77,13 +77,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         {
                             foreach (var id in kvp.Value)
                             {
-                                var request = new ProxyFeedbackRequest
-                                {
-                                    control = id,
-                                    node = node,
-                                    tooltipText = "Double-tap to summon workspace"
-                                };
-
+                                var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                                request.control = id;
+                                request.node = node;
+                                request.tooltipText = "Double-tap to summon workspace";
                                 m_Feedback.Add(request);
                                 this.AddFeedbackRequest(request);
                             }

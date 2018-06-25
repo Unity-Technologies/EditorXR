@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -201,7 +201,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_HorizontalDrag = false;
         }
 
-        protected override void OnGrabDragStart(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+        protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
         {
             var dragVector = eventData.rayOrigin.position - dragStart;
             var distance = dragVector.magnitude;
@@ -217,7 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        protected override void OnGrabDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
+        protected override void OnDragging(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
         {
             if (m_HorizontalDrag)
                 OnHorizontalDragging(eventData.rayOrigin);

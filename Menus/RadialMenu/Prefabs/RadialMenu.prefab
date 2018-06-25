@@ -161,7 +161,6 @@ MonoBehaviour:
   m_RadialMenuSlotTemplate: {fileID: 114000012271381704, guid: 4872d564ea911b540a7ab701540783ea,
     type: 2}
   m_SlotContainer: {fileID: 4000011673098958}
-  m_SelectionPulse: {fileID: 11400000, guid: d86223b7a32efef4b89034ed0b2b2a29, type: 2}
 --- !u!114 &114000010897832654
 MonoBehaviour:
   m_ObjectHideFlags: 1

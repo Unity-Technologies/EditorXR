@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -19,6 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Local method use only -- created here to reduce garbage collection
         readonly Stack<HierarchyData> m_DataStack = new Stack<HierarchyData>();
         readonly Stack<int> m_SiblingIndexStack = new Stack<int>();
+        static readonly List<Component> k_Components = new List<Component>();
+        static readonly Dictionary<Type, string> k_TypeNames = new Dictionary<Type, string>();
 
         void Awake()
         {
@@ -36,13 +39,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void OnEnable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.hierarchyChanged += UpdateHierarchyData;
+#else
             EditorApplication.hierarchyWindowChanged += UpdateHierarchyData;
+#endif
             UpdateHierarchyData();
         }
 
         void OnDisable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.hierarchyChanged -= UpdateHierarchyData;
+#else
             EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
+#endif
         }
 
         public void OnSelectionChanged()
@@ -215,8 +226,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var go = EditorUtility.InstanceIDToObject(instanceID) as GameObject;
             if (go)
             {
-                var components = go.GetComponents<Component>();
-                foreach (var component in components)
+                go.GetComponents(k_Components);
+                foreach (var component in k_Components)
                 {
                     if (!component)
                         continue;
@@ -224,9 +235,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (component is Transform)
                         continue;
 
-                    var typeName = component.GetType().Name;
+                    string typeName;
                     if (component is MonoBehaviour)
+                    {
                         typeName = "MonoBehaviour";
+                    }
+                    else
+                    {
+                        var type = component.GetType();
+                        if (!k_TypeNames.TryGetValue(type, out typeName))
+                        {
+                            typeName = type.Name;
+                            k_TypeNames[type] = typeName;
+                        }
+                    }
 
                     types.Add(typeName);
                     allTypes.Add(typeName);

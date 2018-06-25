@@ -183,6 +183,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void AddButton(IToolsMenuButton button, Transform buttonTransform)
         {
+            button.interactable = true;
             button.showAllButtons = ShowAllButtons;
             button.hoverExit = ButtonHoverExitPerformed;
             button.maxButtonCount = maxButtonCount;

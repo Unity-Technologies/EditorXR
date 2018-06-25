@@ -51,10 +51,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             const float k_CameraRigTransitionTime = 0.25f;
 
+            const string k_WorldScaleProperty = "_WorldScale";
+
+            // Local method use only -- created here to reduce garbage collection
+            const int k_MaxCollisionCheck = 32;
+            static Collider[] s_CachedColliders = new Collider[k_MaxCollisionCheck];
+
             PlayerBody m_PlayerBody;
             float m_OriginalNearClipPlane;
             float m_OriginalFarClipPlane;
-            readonly List<Renderer> m_VRPlayerObjects = new List<Renderer>();
+            readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
 
             readonly Preferences m_Preferences = new Preferences();
 
@@ -76,6 +82,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 VRView.hmdStatusChange += OnHMDStatusChange;
 
                 preserveCameraRig = true;
+
+                Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
             }
 
             internal override void OnDestroy()
@@ -193,8 +201,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_PlayerBody = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
                 var renderer = m_PlayerBody.GetComponent<Renderer>();
                 evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
-                renderer.GetComponentsInChildren(true, m_VRPlayerObjects);
-                evr.GetModule<SnappingModule>().ignoreList = m_VRPlayerObjects;
+                var playerObjects = m_PlayerBody.GetComponentsInChildren<Renderer>(true);
+                foreach (var playerObject in playerObjects)
+                {
+                    m_VRPlayerObjects.Add(playerObject.gameObject);
+                }
+
+                evr.GetModule<IntersectionModule>().standardIgnoreList.AddRange(m_VRPlayerObjects);
             }
 
             internal bool IsOverShoulder(Transform rayOrigin)
@@ -211,10 +224,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 var radius = DirectSelection.GetPointerLength(rayOrigin);
 
-                var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
-                foreach (var collider in colliders)
+                var totalColliders = Physics.OverlapSphereNonAlloc(rayOrigin.position, radius, s_CachedColliders, -1, QueryTriggerInteraction.Collide);
+
+                for (var colliderIndex = 0; colliderIndex < totalColliders; colliderIndex++)
                 {
-                    if (collider == trigger)
+                    if (s_CachedColliders[colliderIndex] == trigger)
                         return true;
                 }
 
@@ -307,6 +321,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
                 camera.nearClipPlane = m_OriginalNearClipPlane * scale;
                 camera.farClipPlane = m_OriginalFarClipPlane * scale;
+                Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / scale);
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -26,9 +26,16 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         Vector3 m_LastPosition;
         float m_CurrentRadius;
 
+        // Local method use only -- created here to reduce garbage collection
+        static readonly SphereHandleEventData k_SphereHandleEventData = new SphereHandleEventData(null, false);
+
         protected override HandleEventData GetHandleEventData(RayEventData eventData)
         {
-            return new SphereHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitDistance = eventData.pointerCurrentRaycast.distance };
+            k_SphereHandleEventData.rayOrigin = eventData.rayOrigin;
+            k_SphereHandleEventData.direct = UIUtils.IsDirectEvent(eventData);
+            k_SphereHandleEventData.raycastHitDistance = eventData.pointerCurrentRaycast.distance;
+
+            return k_SphereHandleEventData;
         }
 
         protected override void OnHandleDragStarted(HandleEventData eventData)

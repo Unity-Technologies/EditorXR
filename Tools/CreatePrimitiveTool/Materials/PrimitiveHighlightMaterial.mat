@@ -7,11 +7,12 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: PrimitiveHighlightMaterial
-  m_Shader: {fileID: 4800000, guid: 9c58ee7b67645404e9542c09f160ccb9, type: 3}
+  m_Shader: {fileID: 4800000, guid: ec40e7e64c032374b9d0dfa555261f5c, type: 3}
   m_ShaderKeywords: ROTATE_GRADIENT _ALPHAPREMULTIPLY_ON _EMISSION _GLOSSYREFLECTIONS_OFF
     _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
   m_CustomRenderQueue: 9104
   stringTagMap: {}
   disabledShaderPasses: []
@@ -79,7 +80,7 @@ Material:
     - g_flCornerAdjust: 1.3
     - g_flOutlineWidth: 0.003
     m_Colors:
-    - _Color: {r: 1, g: 0.39999998, b: 0, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _ColorBottom: {r: 0, g: 0.76256925, b: 0.83137256, a: 1}
     - _ColorTop: {r: 0, g: 0.79697084, b: 0.83137256, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}

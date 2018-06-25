@@ -38,6 +38,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         public bool capture { get; set; }
 
+        // Local method use only -- created here to reduce garbage collection
+        static readonly object[] k_GrabPixelsArgs = new object[2];
+
         void Start()
         {
             Type windowType = null;
@@ -116,7 +119,10 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                     texture.wrapMode = TextureWrapMode.Repeat;
                 }
 
-                m_GrabPixels.Invoke(m_GuiView, new object[] { texture, rect });
+
+                k_GrabPixelsArgs[0] = texture;
+                k_GrabPixelsArgs[1] = rect;
+                m_GrabPixels.Invoke(m_GuiView, k_GrabPixelsArgs);
             }
         }
 

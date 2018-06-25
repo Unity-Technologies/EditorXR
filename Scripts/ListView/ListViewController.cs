@@ -1,11 +1,14 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
+using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
 namespace ListView
 {
-    public abstract class ListViewController<TData, TItem, TIndex> : ListViewControllerBase, IInstantiateUI, IConnectInterfaces
+    public abstract class ListViewController<TData, TItem, TIndex> : ListViewControllerBase, IInstantiateUI, IConnectInterfaces, IControlHaptics, IRayToNode
         where TData : ListViewItemData<TIndex>
         where TItem : ListViewItem<TData, TIndex>
     {
@@ -29,6 +32,25 @@ namespace ListView
             }
         }
 
+        [Header("Unassigned haptic pulses will not be performed")]
+        [SerializeField]
+        HapticPulse m_ItemClickPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemHoverStartPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemHoverEndPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemDragStartPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemDraggingPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemDragEndPulse;
+
         protected List<TData> m_Data;
 
         protected readonly Dictionary<string, ListViewItemTemplate<TItem>> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate<TItem>>();
@@ -43,10 +65,12 @@ namespace ListView
             {
                 Debug.LogError("No templates!");
             }
+
             foreach (var template in m_Templates)
             {
                 if (m_TemplateDictionary.ContainsKey(template.name))
                     Debug.LogError("Two templates cannot have the same name");
+
                 m_TemplateDictionary[template.name] = new ListViewItemTemplate<TItem>(template);
             }
         }
@@ -159,6 +183,14 @@ namespace ListView
                 item = this.InstantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<TItem>();
                 this.ConnectInterfaces(item);
                 item.Setup(data);
+
+                // Hookup input events for new items.
+                item.hoverStart += OnItemHoverStart;
+                item.hoverEnd += OnItemHoverEnd;
+                item.dragStart += OnItemDragStart;
+                item.dragging += OnItemDragging;
+                item.dragEnd += OnItemDragEnd;
+                item.click += OnItemClicked;
             }
 
             m_ListItems[data.index] = item;
@@ -168,6 +200,42 @@ namespace ListView
             item.getListItem = GetListItem;
 
             return item;
+        }
+
+        public void OnItemHoverStart(Node node)
+        {
+            if (m_ItemHoverStartPulse)
+                this.Pulse(node, m_ItemHoverStartPulse);
+        }
+
+        public void OnItemHoverEnd(Node node)
+        {
+            if (m_ItemHoverEndPulse)
+                this.Pulse(node, m_ItemHoverEndPulse);
+        }
+
+        public void OnItemDragStart(Node node)
+        {
+            if (m_ItemDragStartPulse)
+                this.Pulse(node, m_ItemDragStartPulse);
+        }
+
+        public void OnItemDragging(Node node)
+        {
+            if (m_ItemDraggingPulse)
+                this.Pulse(node, m_ItemDraggingPulse);
+        }
+
+        public void OnItemDragEnd(Node node)
+        {
+            if (m_ItemDragEndPulse)
+                this.Pulse(node, m_ItemDragEndPulse);
+        }
+
+        public void OnItemClicked(Node node)
+        {
+            if (m_ItemClickPulse)
+                this.Pulse(node, m_ItemClickPulse);
         }
     }
 }

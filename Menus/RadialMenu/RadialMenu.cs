@@ -2,18 +2,20 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
-        IControlHaptics, IUsesNode, IConnectInterfaces
+        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IActionsMenu
     {
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
 
         [SerializeField]
-        ActionMap m_RadialMenuActionMap;
+        ActionMap m_ActionMap;
 
         [SerializeField]
         RadialMenuUI m_RadialMenuPrefab;
@@ -32,6 +34,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Transform m_AlternateMenuOrigin;
         MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+
         public event Action<Transform> itemWasSelected;
 
         public Transform rayOrigin { private get; set; }
@@ -43,8 +47,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Node node { get; set; }
 
         public Bounds localBounds { get { return default(Bounds); } }
+        public int priority { get { return 1; } }
 
-        public ActionMap actionMap { get { return m_RadialMenuActionMap; } }
+        public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
 
         public List<ActionMenuData> menuActions
@@ -79,8 +84,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (m_MenuHideFlags != value)
                 {
                     m_MenuHideFlags = value;
+                    var visible = value == 0;
                     if (m_RadialMenuUI)
-                        m_RadialMenuUI.visible = value == 0;
+                        m_RadialMenuUI.visible = visible;
+
+                    if (visible)
+                        ShowFeedback();
+                    else
+                        this.ClearFeedbackRequests();
                 }
             }
         }
@@ -94,13 +105,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_RadialMenuUI.Setup();
             m_RadialMenuUI.buttonHovered += OnButtonHovered;
             m_RadialMenuUI.buttonClicked += OnButtonClicked;
+
+            InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             var radialMenuInput = (RadialMenuInput)input;
             if (radialMenuInput == null || m_MenuHideFlags != 0)
+            {
+                this.ClearFeedbackRequests();
                 return;
+            }
 
             var inputDirection = radialMenuInput.navigate.vector2;
 
@@ -113,8 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
             else
             {
-                m_RadialMenuUI.buttonInputDirection = Vector3.zero;
-                return;
+                m_RadialMenuUI.buttonInputDirection = Vector2.zero;
             }
 
             var selectControl = radialMenuInput.selectItem;
@@ -143,6 +158,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnButtonHovered()
         {
             this.Pulse(node, m_ButtonHoverPulse);
+        }
+
+        void ShowFeedback()
+        {
+            List<VRInputDevice.VRControl> controls;
+            if (m_Controls.TryGetValue("SelectItem", out controls))
+            {
+                foreach (var id in controls)
+                {
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.control = id;
+                    request.node = node;
+                    request.tooltipText = "Select Action (Press to Execute)";
+                    this.AddFeedbackRequest(request);
+                }
+            }
         }
     }
 }

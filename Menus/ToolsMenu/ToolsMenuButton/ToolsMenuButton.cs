@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class ToolsMenuButton : MonoBehaviour, IToolsMenuButton, ITooltip, ITooltipPlacement, ISetTooltipVisibility, ISetCustomTooltipColor
+    sealed class ToolsMenuButton : MonoBehaviour, IToolsMenuButton, ITooltip, ITooltipPlacement, ISetTooltipVisibility
     {
         static Color s_FrameOpaqueColor;
 
@@ -44,23 +44,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Collider[] m_PrimaryButtonColliders;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseButton")]
         GradientButton m_CloseButton;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseButtonContainerCanvasGroup")]
         CanvasGroup m_CloseButtonContainerCanvasGroup;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseInsetMeshRenderer")]
         SkinnedMeshRenderer m_CloseInsetMeshRenderer;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseInsetMaskMeshRenderer")]
         SkinnedMeshRenderer m_CloseInsetMaskMeshRenderer;
 
         [SerializeField]
-        [FormerlySerializedAs("m_CloseButtonColliders")]
         Collider[] m_CloseButtonColliders; // disable for the main menu button & solitary primary tool button
 
         [SerializeField]
@@ -112,7 +107,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Transform rayOrigin { get; set; }
         public Node node { get; set; }
         public ITooltip tooltip { private get; set; } // Overrides text
-        public GradientPair customTooltipHighlightColor { get; set; }
 
         public bool isSelectionTool { get { return m_ToolType != null && m_ToolType == typeof(Tools.SelectionTool); } }
 
@@ -195,11 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public GradientPair gradientPair
         {
             get { return m_GradientPair; }
-            set
-            {
-                m_GradientPair = value;
-                customTooltipHighlightColor = value;
-            }
+            set { m_GradientPair = value; }
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -22,9 +22,16 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
         readonly Dictionary<Transform, Vector3> m_LastDragForwards = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
 
+        // Local method use only -- created here to reduce garbage collection
+        static readonly RadialHandleEventData k_RadialHandleEventData = new RadialHandleEventData(null, false);
+
         protected override HandleEventData GetHandleEventData(RayEventData eventData)
         {
-            return new RadialHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
+            k_RadialHandleEventData.rayOrigin = eventData.rayOrigin;
+            k_RadialHandleEventData.direct = UIUtils.IsDirectEvent(eventData);
+            k_RadialHandleEventData.raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition;
+
+            return k_RadialHandleEventData;
         }
 
         protected override void OnHandleDragStarted(HandleEventData eventData)

@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -10,9 +11,9 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     // Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-    sealed class MultipleRayInputModule : BaseInputModule, IGetPointerLength, IConnectInterfaces
+    sealed class MultipleRayInputModule : BaseInputModule, IUsesPointer, IConnectInterfaces
     {
-        public class RaycastSource : ICustomActionMap
+        public class RaycastSource : ICustomActionMap, IRequestFeedback
         {
             public IProxy proxy; // Needed for checking if proxy is active
             public Transform rayOrigin;
@@ -24,13 +25,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public Func<RaycastSource, bool> isValid;
 
             MultipleRayInputModule m_Owner;
+            readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
 
             public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
 
             public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
 
             public ActionMap actionMap { get { return m_Owner.m_UIActionMap; } }
-
             public bool ignoreLocking { get { return false; } }
 
             public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<RaycastSource, bool> validationCallback)
@@ -74,20 +75,27 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (select.wasJustReleased)
                         m_Owner.OnSelectReleased(this);
 
+                    HideScrollFeedback();
+
                     return;
                 }
 
                 m_Owner.HandlePointerExitAndEnter(eventData, hoveredObject); // Send enter and exit events
 
                 var hasScrollHandler = false;
-                input.active = hasObject && ShouldActivateInput(eventData, currentObject, out hasScrollHandler);
+                var hasInteractable = hasObject && HoveringInteractable(eventData, currentObject, out hasScrollHandler);
 
                 // Proceed only if pointer is interacting with something
-                if (!input.active)
+                if (!hasInteractable)
                 {
                     // If we have an object, the ray is blocked--input should not bleed through
                     if (hasObject && select.wasJustPressed)
                         consumeControl(select);
+
+                    HideScrollFeedback();
+
+                    if (select.wasJustReleased)
+                        m_Owner.OnSelectReleased(this);
 
                     return;
                 }
@@ -123,7 +131,49 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         eventData.scrollDelta = new Vector2(horizontalScrollValue, verticalScrollValue);
                         ExecuteEvents.ExecuteHierarchy(currentObject, eventData, ExecuteEvents.scrollHandler);
                     }
+
+                    if (m_ScrollFeedback.Count == 0)
+                        ShowScrollFeedback();
                 }
+            }
+
+            void ShowFeedback(List<ProxyFeedbackRequest> requests, string controlName, string tooltipText = null)
+            {
+                if (tooltipText == null)
+                    tooltipText = controlName;
+
+                List<VRInputDevice.VRControl> ids;
+                if (m_Owner.m_Controls.TryGetValue(controlName, out ids))
+                {
+                    foreach (var id in ids)
+                    {
+                        var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                        request.node = node;
+                        request.control = id;
+                        request.tooltipText = tooltipText;
+                        requests.Add(request);
+                        this.AddFeedbackRequest(request);
+                    }
+                }
+            }
+
+            void ShowScrollFeedback()
+            {
+                ShowFeedback(m_ScrollFeedback, "VerticalScroll", "Scroll");
+            }
+
+            void HideFeedback(List<ProxyFeedbackRequest> requests)
+            {
+                foreach (var request in requests)
+                {
+                    this.RemoveFeedbackRequest(request);
+                }
+                requests.Clear();
+            }
+
+            void HideScrollFeedback()
+            {
+                HideFeedback(m_ScrollFeedback);
             }
         }
 
@@ -156,6 +206,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public Action<Transform> preProcessRaycastSource { private get; set; }
 
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+
         // Local method use only -- created here to reduce garbage collection
         RayEventData m_TempRayEvent;
 
@@ -165,6 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             s_LayerMask = LayerMask.GetMask("UI");
             m_TempRayEvent = new RayEventData(eventSystem);
+            InputUtils.GetBindingDictionaryFromActionMap(m_UIActionMap, m_Controls);
         }
 
         protected override void OnDestroy()
@@ -204,11 +257,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_EventCamera.farClipPlane = camera.farClipPlane;
         }
 
-        static bool ShouldActivateInput(RayEventData eventData, GameObject currentObject, out bool hasScrollHandler)
+        static bool HoveringInteractable(RayEventData eventData, GameObject currentObject, out bool hasScrollHandler)
         {
             hasScrollHandler = false;
 
-            var selectionFlags = currentObject.GetComponent<ISelectionFlags>();
+            var selectionFlags = ComponentUtils<ISelectionFlags>.GetComponent(currentObject);
             if (selectionFlags != null && selectionFlags.selectionFlags == SelectionFlags.Direct && !UIUtils.IsDirectEvent(eventData))
                 return false;
 

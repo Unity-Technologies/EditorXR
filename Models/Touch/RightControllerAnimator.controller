@@ -333,11 +333,13 @@ AnimatorState:
   m_SpeedParameterActive: 0
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
   m_Motion: {fileID: 20668790}
   m_Tag: 
   m_SpeedParameter: Button 1
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &110249982
 AnimatorState:
   serializedVersion: 5
@@ -356,11 +358,13 @@ AnimatorState:
   m_SpeedParameterActive: 0
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
   m_Motion: {fileID: 20625880}
   m_Tag: 
   m_SpeedParameter: Button 1
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &110266954
 AnimatorState:
   serializedVersion: 5
@@ -379,11 +383,13 @@ AnimatorState:
   m_SpeedParameterActive: 1
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
   m_Motion: {fileID: 20685922}
   m_Tag: 
   m_SpeedParameter: Button 1
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &110284410
 AnimatorState:
   serializedVersion: 5
@@ -402,11 +408,13 @@ AnimatorState:
   m_SpeedParameterActive: 1
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
   m_Motion: {fileID: 20655914}
   m_Tag: 
   m_SpeedParameter: Button 1
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &110290358
 AnimatorState:
   serializedVersion: 5
@@ -425,11 +433,13 @@ AnimatorState:
   m_SpeedParameterActive: 0
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
   m_Motion: {fileID: 20623260}
   m_Tag: 
   m_SpeedParameter: Button 1
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &110292550
 AnimatorState:
   serializedVersion: 5
@@ -448,11 +458,13 @@ AnimatorState:
   m_SpeedParameterActive: 1
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
   m_Motion: {fileID: 7400000, guid: fcc30582c13fb4e4ca8925e0f4eeb009, type: 3}
   m_Tag: 
   m_SpeedParameter: Button 1
   m_MirrorParameter: 
   m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1107 &110704014
 AnimatorStateMachine:
   serializedVersion: 5
@@ -468,9 +480,8 @@ AnimatorStateMachine:
   m_AnyStateTransitions: []
   m_EntryTransitions: []
   m_StateMachineTransitions:
-    data:
-      first: {fileID: 110704014}
-      second: []
+  - first: {fileID: 110704014}
+    second: []
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}
@@ -492,9 +503,8 @@ AnimatorStateMachine:
   m_AnyStateTransitions: []
   m_EntryTransitions: []
   m_StateMachineTransitions:
-    data:
-      first: {fileID: 110707556}
-      second: []
+  - first: {fileID: 110707556}
+    second: []
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}
@@ -516,9 +526,8 @@ AnimatorStateMachine:
   m_AnyStateTransitions: []
   m_EntryTransitions: []
   m_StateMachineTransitions:
-    data:
-      first: {fileID: 110709770}
-      second: []
+  - first: {fileID: 110709770}
+    second: []
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}
@@ -540,9 +549,8 @@ AnimatorStateMachine:
   m_AnyStateTransitions: []
   m_EntryTransitions: []
   m_StateMachineTransitions:
-    data:
-      first: {fileID: 110752400}
-      second: []
+  - first: {fileID: 110752400}
+    second: []
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}
@@ -564,9 +572,8 @@ AnimatorStateMachine:
   m_AnyStateTransitions: []
   m_EntryTransitions: []
   m_StateMachineTransitions:
-    data:
-      first: {fileID: 110790312}
-      second: []
+  - first: {fileID: 110790312}
+    second: []
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}
@@ -588,9 +595,8 @@ AnimatorStateMachine:
   m_AnyStateTransitions: []
   m_EntryTransitions: []
   m_StateMachineTransitions:
-    data:
-      first: {fileID: 110795580}
-      second: []
+  - first: {fileID: 110795580}
+    second: []
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: 50, y: 20, z: 0}
   m_EntryPosition: {x: 50, y: 120, z: 0}

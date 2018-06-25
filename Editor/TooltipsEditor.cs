@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         Vector2 m_Scroll;
         GUIStyle m_ButtonStyle;
 
-        [MenuItem("Edit/Project Settings/EditorVR/Tooltips")]
+        [MenuItem("Edit/Project Settings/EditorXR/Tooltips")]
         static void Init()
         {
             GetWindow<TooltipsEditor>("Tooltip Editor").Show();

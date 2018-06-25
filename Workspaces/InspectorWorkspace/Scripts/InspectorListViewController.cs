@@ -116,45 +116,75 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        protected override void UpdateRecursively(List<InspectorData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        protected override void UpdateNestedItems(List<InspectorData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
         {
-            for (int i = 0; i < data.Count; i++)
+            m_UpdateStack.Push(new UpdateData
             {
-                var datum = data[i];
-                var serializedObject = datum.serializedObject;
-                if (serializedObject == null || serializedObject.targetObject == null)
+                data = data,
+                depth = depth
+            });
+
+            order = m_ListItems.Count - 1;
+            while (m_UpdateStack.Count > 0)
+            {
+                var stackData = m_UpdateStack.Pop();
+                data = stackData.data;
+                depth = stackData.depth;
+
+                var i = stackData.index;
+                for (; i < data.Count; i++)
                 {
-                    Recycle(datum.index);
-                    RecycleChildren(datum);
-                    continue;
-                }
-
-                var index = datum.index;
-                bool expanded;
-                if (!m_ExpandStates.TryGetValue(index, out expanded))
-                    m_ExpandStates[index] = false;
-
-                m_ItemSize = m_TemplateSizes[datum.template];
-                var itemSize = m_ItemSize.Value;
-
-                if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
-                    Recycle(index);
-                else
-                    UpdateItemRecursive(datum, order++, offset, depth, expanded, ref doneSettling);
-
-                offset += itemSize.z;
-
-                if (datum.children != null)
-                {
-                    if (expanded)
-                        UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling, depth + 1);
-                    else
+                    var datum = data[i];
+                    var serializedObject = datum.serializedObject;
+                    if (serializedObject == null || serializedObject.targetObject == null)
+                    {
+                        Recycle(datum.index);
                         RecycleChildren(datum);
+                        continue;
+                    }
+
+                    var index = datum.index;
+                    bool expanded;
+                    if (!m_ExpandStates.TryGetValue(index, out expanded))
+                        m_ExpandStates[index] = false;
+
+                    m_ItemSize = m_TemplateSizes[datum.template];
+                    var itemSize = m_ItemSize.Value;
+
+                    if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
+                        Recycle(index);
+                    else
+                        UpdateInspectorItem(datum, order--, offset, depth, expanded, ref doneSettling);
+
+                    offset += itemSize.z;
+
+                    if (datum.children != null)
+                    {
+                        if (expanded)
+                        {
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = data,
+                                depth = depth,
+
+                                index = i + 1
+                            });
+
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = datum.children,
+                                depth = depth + 1
+                            });
+                            break;
+                        }
+
+                        RecycleChildren(datum);
+                    }
                 }
             }
         }
 
-        void UpdateItemRecursive(InspectorData data, int order, float offset, int depth, bool expanded, ref bool doneSettling)
+        void UpdateInspectorItem(InspectorData data, int order, float offset, int depth, bool expanded, ref bool doneSettling)
         {
             InspectorListItem item;
             if (!m_ListItems.TryGetValue(data.index, out item))
@@ -174,8 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var targetPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
             var targetRotation = Quaternion.identity;
 
-            // order is reversed because Inspector draws bottom-to-top, hence the "0" below
-            UpdateItemTransform(t, 0, targetPosition, targetRotation, dontSettle, ref doneSettling);
+            UpdateItemTransform(t, order, targetPosition, targetRotation, dontSettle, ref doneSettling);
         }
 
         protected override InspectorListItem GetItem(InspectorData listData)

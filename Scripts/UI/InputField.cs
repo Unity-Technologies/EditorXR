@@ -5,8 +5,10 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -14,42 +16,47 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-    abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale
+    abstract class InputField : Selectable, ISelectionFlags, IUsesViewerScale, IAllWorkspaces
     {
-        const float k_MoveKeyboardTime = 0.2f;
-
         public SelectionFlags selectionFlags
         {
             get { return m_SelectionFlags; }
             set { m_SelectionFlags = value; }
         }
 
-        [SerializeField]
-        [FlagsProperty]
-        protected SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
-
-        public Func<KeyboardUI> spawnKeyboard;
-        protected KeyboardUI m_Keyboard;
-
         [Serializable]
         public class OnChangeEvent : UnityEvent<string>
         {
         }
 
-        public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
+        const float k_MoveKeyboardTime = 0.2f;
 
         [SerializeField]
-        private OnChangeEvent m_OnValueChanged = new OnChangeEvent();
+        [FlagsProperty]
+        SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
 
         [SerializeField]
-        protected Text m_TextComponent;
+        OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
         [SerializeField]
-        private int m_CharacterLimit = 10;
+        Text m_TextComponent;
 
-        private bool m_KeyboardOpen;
+        [SerializeField]
+        int m_CharacterLimit = 10;
+
+        [HideInInspector]
+        [SerializeField] // Serialized so that this remains set after cloning
+        protected string m_Text = string.Empty;
+
+        bool m_KeyboardOpen;
 
         Coroutine m_MoveKeyboardCoroutine;
+
+        protected KeyboardUI m_Keyboard;
+
+        public Func<KeyboardUI> spawnKeyboard { private get; set; }
+
+        public OnChangeEvent onValueChanged { get { return m_OnValueChanged; } }
 
         public virtual string text
         {
@@ -66,9 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             }
         }
 
-        [HideInInspector]
-        [SerializeField] // Serialized so that this remains set after cloning
-        protected string m_Text = string.Empty;
+        public List<IWorkspace> allWorkspaces { private get; set; }
 
         protected override void OnEnable()
         {
@@ -102,6 +107,13 @@ namespace UnityEditor.Experimental.EditorVR.UI
             // Don't do base functionality
         }
 
+        protected override void OnDisable()
+        {
+            // hide the keyboard if there are 0 open inspectors or the selection is null
+            if (m_KeyboardOpen && (Selection.activeObject == null || !FindAnyOpenInspector()))
+                CloseKeyboard(true);
+        }
+
         protected void SendOnValueChangedAndUpdateLabel()
         {
             SendOnValueChanged();
@@ -118,6 +130,27 @@ namespace UnityEditor.Experimental.EditorVR.UI
         {
             if (m_TextComponent != null && m_TextComponent.font != null)
                 m_TextComponent.text = m_Text;
+        }
+
+        /// <summary>
+        /// Check if any Inspector workspaces are still open
+        /// </summary>
+        protected bool FindAnyOpenInspector()
+        {
+            if (allWorkspaces == null || allWorkspaces.Count == 0)
+                return false;
+
+            var found = false;
+            foreach (var w in allWorkspaces)
+            {
+                if (w is InspectorWorkspace)
+                {
+                    found = true;
+                    break;
+                }
+            }
+
+            return found;
         }
 
         /// <summary>

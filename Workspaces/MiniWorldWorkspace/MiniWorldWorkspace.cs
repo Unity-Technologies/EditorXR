@@ -2,7 +2,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -13,7 +15,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
-    sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace
+    sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRequestFeedback, IControlHaptics, IRayToNode
     {
         class MiniWorldTooltip : ITooltip
         {
@@ -34,6 +36,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         static readonly float k_LocatePlayerArrowOffset = 0.05f;
 
         const float k_InitReferenceScale = 15f; // We want to see a big region by default
+
+        const string k_LeftActionString = "Move Resize Left";
+        const string k_RightActionString = "Move Resize Right";
+
+        const string k_MoveFeedbackString = "Move Miniworld View";
+        const string k_ScaleFeedbackString = "Scale Miniworld View";
 
         // Scales larger or smaller than this spam errors in the console
         const float k_MinScale = 0.01f;
@@ -57,6 +65,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         GameObject m_ZoomSliderPrefab;
+
+        [SerializeField]
+        HapticPulse m_EnterExitPulse;
 
         [Serializable]
         class Preferences
@@ -105,7 +116,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Vector3 m_StartDirection;
         float m_StartYaw;
 
+        // Bools denoting that a given proxy/rayOrigin is contained/inside of the workpace bounds.  Used for haptis.
+        bool m_LeftRayOriginContained;
+        bool m_RightRayOriginContained;
+
         Coroutine m_UpdateLocationCoroutine;
+
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+        readonly List<ProxyFeedbackRequest> m_LeftMoveFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_RightMoveFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_LeftScaleFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_RightScaleFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_SuppressFeedback = new List<ProxyFeedbackRequest>();
 
         public IMiniWorld miniWorld
         {
@@ -240,31 +262,87 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public override void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            if (m_Controls.Count == 0)
+                InputUtils.GetBindingDictionaryFromActionMap(input.actionMap, m_Controls);
+
             base.ProcessInput(input, consumeControl);
             var workspaceInput = (WorkspaceInput)input;
 
             var leftControl = workspaceInput.miniWorldPanZoomLeft;
-            if (leftControl.wasJustPressed && miniWorld.Contains(leftRayOrigin.position))
+            var leftContained = miniWorld.Contains(leftRayOrigin.position);
+            var rightControl = workspaceInput.miniWorldPanZoomRight;
+            var rightContained = miniWorld.Contains(rightRayOrigin.position);
+
+            if (leftContained && !m_LeftRayOriginContained)
+                this.Pulse(leftNode, m_EnterExitPulse);
+            else if (!leftContained && m_LeftRayOriginContained)
+                this.Pulse(leftNode, m_EnterExitPulse);
+
+            if (rightContained && !m_RightRayOriginContained)
+                this.Pulse(rightNode, m_EnterExitPulse);
+            else if (!rightContained && m_RightRayOriginContained)
+                this.Pulse(rightNode, m_EnterExitPulse);
+
+            m_LeftRayOriginContained = leftContained;
+            m_RightRayOriginContained = rightContained;
+
+            if (leftControl.isHeld && rightControl.isHeld)
+                ShowSuppressFeedback();
+            else
+                HideSuppressFeedback();
+
+            if (leftContained)
             {
-                OnPanZoomDragStarted(leftRayOrigin);
-                consumeControl(leftControl);
+                if (m_LeftMoveFeedback.Count == 0)
+                    ShowLeftMoveFeedback();
+
+                if (rightContained && rightControl.isHeld && m_LeftScaleFeedback.Count == 0)
+                    ShowLeftScaleFeedback();
+
+                if (leftControl.wasJustPressed)
+                {
+                    OnPanZoomDragStarted(leftRayOrigin);
+                    consumeControl(leftControl);
+                }
+            }
+            else
+            {
+                HideLeftMoveFeedback();
             }
 
-            var rightControl = workspaceInput.miniWorldPanZoomRight;
-            if (rightControl.wasJustPressed && miniWorld.Contains(rightRayOrigin.position))
+            if (rightContained)
             {
-                OnPanZoomDragStarted(rightRayOrigin);
-                consumeControl(rightControl);
+                if (m_RightMoveFeedback.Count == 0)
+                    ShowRightFeedback();
+
+                if (leftContained && leftControl.isHeld && m_RightScaleFeedback.Count == 0)
+                    ShowRightScaleFeedback();
+
+                if (rightControl.wasJustPressed)
+                {
+                    OnPanZoomDragStarted(rightRayOrigin);
+                    consumeControl(rightControl);
+                }
+            }
+            else
+            {
+                HideRightMoveFeedback();
             }
 
             if (leftControl.isHeld || rightControl.isHeld)
                 OnPanZoomDragging();
 
             if (leftControl.wasJustReleased)
+            {
                 OnPanZoomDragEnded(leftRayOrigin);
+                HideRightScaleFeedback();
+            }
 
             if (rightControl.wasJustReleased)
+            {
                 OnPanZoomDragEnded(rightRayOrigin);
+                HideLeftScaleFeedback();
+            }
         }
 
         protected override void OnBoundsChanged()
@@ -357,11 +435,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 referenceTransform.position = m_StartPosition - m_StartOffset * scaleFactor
                     + (m_StartMidPoint - worldMidPoint) * currentScale;
+
+                this.Pulse(Node.LeftHand, m_MovePulse);
+                this.Pulse(Node.RightHand, m_MovePulse);
             }
             else
             {
                 referenceTransform.position = m_StartPosition + referenceTransform.rotation
                     * Vector3.Scale(m_StartMidPoint - firstRayPosition, referenceTransform.localScale);
+
+                this.Pulse(this.RequestNodeFromRayOrigin(m_Rays[0]), m_MovePulse);
             }
         }
 
@@ -430,6 +513,85 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             ObjectUtils.Destroy(m_GridMaterial);
             base.OnDestroy();
+        }
+
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, Node node, string controlName, string tooltipText, bool suppressExisting = false)
+        {
+            List<VRInputDevice.VRControl> ids;
+            if (m_Controls.TryGetValue(controlName, out ids))
+            {
+                foreach (var id in ids)
+                {
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.priority = 1;
+                    request.tooltipText = tooltipText;
+                    request.suppressExisting = suppressExisting;
+                    requests.Add(request);
+                    this.AddFeedbackRequest(request);
+                }
+            }
+        }
+
+        void ShowLeftMoveFeedback()
+        {
+            ShowFeedback(m_LeftMoveFeedback, Node.LeftHand, k_LeftActionString, k_MoveFeedbackString);
+        }
+
+        void ShowRightFeedback()
+        {
+            ShowFeedback(m_RightMoveFeedback, Node.RightHand, k_RightActionString, k_MoveFeedbackString);
+        }
+
+        void ShowLeftScaleFeedback()
+        {
+            ShowFeedback(m_LeftScaleFeedback, Node.LeftHand, k_LeftActionString, k_ScaleFeedbackString);
+        }
+
+        void ShowRightScaleFeedback()
+        {
+            ShowFeedback(m_RightScaleFeedback, Node.RightHand, k_RightActionString, k_ScaleFeedbackString);
+        }
+
+        void ShowSuppressFeedback()
+        {
+            ShowFeedback(m_SuppressFeedback, Node.LeftHand, k_LeftActionString, null, true);
+            ShowFeedback(m_SuppressFeedback, Node.RightHand, k_RightActionString, null, true);
+        }
+
+        void HideFeedback(List<ProxyFeedbackRequest> requests)
+        {
+            foreach (var request in requests)
+            {
+                this.RemoveFeedbackRequest(request);
+            }
+            requests.Clear();
+        }
+
+        void HideLeftMoveFeedback()
+        {
+            HideFeedback(m_LeftMoveFeedback);
+        }
+
+        void HideRightMoveFeedback()
+        {
+            HideFeedback(m_RightMoveFeedback);
+        }
+
+        void HideLeftScaleFeedback()
+        {
+            HideFeedback(m_LeftScaleFeedback);
+        }
+
+        void HideRightScaleFeedback()
+        {
+            HideFeedback(m_RightScaleFeedback);
+        }
+
+        void HideSuppressFeedback()
+        {
+            HideFeedback(m_SuppressFeedback);
         }
     }
 }

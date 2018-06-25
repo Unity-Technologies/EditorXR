@@ -4,7 +4,7 @@ using System;
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
-    /// Which axes are constrained
+    /// Used to specify a combination of 3D axes
     /// </summary>
     [Flags]
     public enum AxisFlags

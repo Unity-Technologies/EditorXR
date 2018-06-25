@@ -34,14 +34,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                     };
                                     menuActions.Add(actionMenuData);
                                 }
-                                Menus.UpdateAlternateMenuActions();
+                                actionsModule.UpdateAlternateMenuActions();
                             }
                         };
                     }
 
-                    var alternateMenu = target as IAlternateMenu;
-                    if (alternateMenu != null)
-                        alternateMenu.menuActions = menuActions;
+                    var actionsMenu = target as IActionsMenu;
+                    if (actionsMenu != null)
+                    {
+                        actionsMenu.menuActions = menuActions;
+                        actionsModule.AddActionsMenu(actionsMenu);
+                    }
                 }
             }
 
@@ -53,7 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var evrActionsModule = evr.GetModule<ActionsModule>();
 
                     evrActionsModule.RemoveActions(toolActions.actions);
-                    Menus.UpdateAlternateMenuActions();
+                    evrActionsModule.UpdateAlternateMenuActions();
                 }
             }
         }

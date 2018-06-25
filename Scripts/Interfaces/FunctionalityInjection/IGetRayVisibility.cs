@@ -6,7 +6,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to checks that can test whether parts of the default ray are visible
-    /// </summary>    public interface IGetRayVisibility
+    /// </summary>
+    public interface IGetRayVisibility
     {
     }
 
@@ -35,3 +36,4 @@ namespace UnityEditor.Experimental.EditorVR
     }
 }
 #endif
+

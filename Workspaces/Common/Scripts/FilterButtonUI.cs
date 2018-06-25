@@ -1,10 +1,14 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Button = UnityEditor.Experimental.EditorVR.UI.Button;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -30,22 +34,29 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         Image m_TextPanel;
 
-        Transform m_InteractingRayOrigin;
-
-        public Text text
-        {
-            get { return m_Text; }
-        }
-
+#if INCLUDE_TEXT_MESH_PRO
+        [SerializeField]
+        TextMeshProUGUI m_Text;
+#else
         [SerializeField]
         Text m_Text;
+#endif
+
+        Transform m_InteractingRayOrigin;
+
+#if INCLUDE_TEXT_MESH_PRO
+        public TextMeshProUGUI text { get { return m_Text; } }
+#else
+        public Text text { get; set; }
+#endif
 
         public Color color
         {
             set
             {
-                m_Eye.color = value;
                 m_Text.color = value;
+                if (m_Eye)
+                    m_Eye.color = value;
             }
         }
 
@@ -64,18 +75,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            var c = m_EyePanel.color;
+            var c = m_TextPanel.color;
             c.a = k_HoverAlpha;
-            m_EyePanel.color = c;
             m_TextPanel.color = c;
+
+            if (m_EyePanel)
+                m_EyePanel.color = c;
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            var c = m_EyePanel.color;
+            var c = m_TextPanel.color;
             c.a = k_NormalAlpha;
-            m_EyePanel.color = c;
             m_TextPanel.color = c;
+            if (m_EyePanel)
+                m_EyePanel.color = c;
         }
 
         public void OnRayEnter(RayEventData eventData)

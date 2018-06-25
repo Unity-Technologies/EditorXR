@@ -28,6 +28,8 @@ namespace UnityEditor.Experimental.EditorVR
         /// The local bounds of this menu
         /// </summary>
         Bounds localBounds { get; }
+
+        int priority { get; }
     }
 }
 #endif

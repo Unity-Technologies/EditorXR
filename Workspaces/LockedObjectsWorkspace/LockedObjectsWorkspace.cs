@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -24,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (m_BaseSearchQuery != query)
                 {
                     m_BaseSearchQuery = query;
-                    m_CachedSearchQuery = string.Format("{0} {1}", m_BaseSearchQuery, k_LockedQuery);
+                    m_CachedSearchQuery = string.Format("{0} {1}", m_BaseSearchQuery, k_Locked);
                 }
 
                 return m_CachedSearchQuery;
@@ -42,9 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     m_FilterUI.filterList = value;
             }
         }
-
-        public Action<GameObject, bool> setLocked { get; set; }
-        public Func<GameObject, bool> isLocked { get; set; }
 
         public override void Setup()
         {
@@ -69,12 +65,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void UnlockAll(List<HierarchyData> hierarchyData)
         {
-            if (hierarchyData == null)
+            if (hierarchyData == null || hierarchyData.Count == 0)
                 return;
+
+            if (!hierarchyData[0].gameObject)
+                hierarchyData = hierarchyData[0].children;
 
             foreach (var hd in hierarchyData)
             {
-                setLocked(hd.gameObject, false);
+                this.SetLocked(hd.gameObject, false);
 
                 UnlockAll(hd.children);
             }

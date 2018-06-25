@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,7 +23,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         static HideFlags s_HideFlags = HideFlags.DontSave;
 
-        public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, bool runInEditMode = true, bool active = true)
+        // Local method use only -- created here to reduce garbage collection
+        static readonly List<Renderer> k_Renderers = new List<Renderer>();
+        static readonly List<Transform> k_Transforms = new List<Transform>();
+
+        public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true,
+            bool runInEditMode = true, bool active = true)
         {
             var go = UnityObject.Instantiate(prefab, parent, worldPositionStays);
             if (worldPositionStays)
@@ -42,21 +47,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
 
             return go;
-        }
-
-        public static void RemoveAllChildren(GameObject obj)
-        {
-            var children = new List<GameObject>();
-            foreach (Transform child in obj.transform)
-                children.Add(child.gameObject);
-
-            foreach (var child in children)
-                UnityObject.Destroy(child);
-        }
-
-        public static bool IsInLayer(GameObject o, string s)
-        {
-            return o.layer == LayerMask.NameToLayer(s);
         }
 
         /// <summary>
@@ -83,12 +73,14 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return empty;
         }
 
-        public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true) where T : Component
+        public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true)
+            where T : Component
         {
             return (T)CreateGameObjectWithComponent(typeof(T), parent, worldPositionStays);
         }
 
-        public static Component CreateGameObjectWithComponent(Type type, Transform parent = null, bool worldPositionStays = true)
+        public static Component CreateGameObjectWithComponent(Type type, Transform parent = null,
+            bool worldPositionStays = true)
         {
 #if UNITY_EDITOR
             var component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type).GetComponent(type);
@@ -102,19 +94,32 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return component;
         }
 
-        public static void SetLayerRecursively(GameObject root, int layer)
+        public static Bounds GetBounds(List<GameObject> gameObjects)
         {
-            var transforms = root.GetComponentsInChildren<Transform>();
-            for (var i = 0; i < transforms.Length; i++)
-                transforms[i].gameObject.layer = layer;
+            Bounds? bounds = null;
+            foreach (var gameObject in gameObjects)
+            {
+                var goBounds = GetBounds(gameObject.transform);
+                if (!bounds.HasValue)
+                {
+                    bounds = goBounds;
+                }
+                else
+                {
+                    goBounds.Encapsulate(bounds.Value);
+                    bounds = goBounds;
+                }
+            }
+
+            return bounds ?? new Bounds();
         }
 
         public static Bounds GetBounds(Transform[] transforms)
         {
             Bounds? bounds = null;
-            foreach (var go in transforms)
+            foreach (var t in transforms)
             {
-                var goBounds = GetBounds(go);
+                var goBounds = GetBounds(t);
                 if (!bounds.HasValue)
                 {
                     bounds = goBounds;
@@ -130,24 +135,44 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         public static Bounds GetBounds(Transform transform)
         {
-            var b = new Bounds(transform.position, Vector3.zero);
-            var renderers = transform.GetComponentsInChildren<Renderer>();
-            for (int i = 0; i < renderers.Length; i++)
-            {
-                var r = renderers[i];
-                if (r.bounds.size != Vector3.zero)
-                    b.Encapsulate(r.bounds);
-            }
+            k_Renderers.Clear();
+            transform.GetComponentsInChildren(k_Renderers);
+            var b = GetBounds(k_Renderers);
 
             // As a fallback when there are no bounds, collect all transform positions
             if (b.size == Vector3.zero)
             {
-                var transforms = transform.GetComponentsInChildren<Transform>();
-                foreach (var t in transforms)
+                k_Transforms.Clear();
+                transform.GetComponentsInChildren(k_Transforms);
+
+                if (k_Transforms.Count > 0)
+                    b.center = k_Transforms[0].position;
+
+                foreach (var t in k_Transforms)
+                {
                     b.Encapsulate(t.position);
+                }
             }
 
             return b;
+        }
+
+        public static Bounds GetBounds(List<Renderer> renderers)
+        {
+            if (renderers.Count > 0)
+            {
+                var first = renderers[0];
+                var b = new Bounds(first.transform.position, Vector3.zero);
+                foreach (var r in renderers)
+                {
+                    if (r.bounds.size != Vector3.zero)
+                        b.Encapsulate(r.bounds);
+                }
+
+                return b;
+            }
+
+            return default(Bounds);
         }
 
         public static void SetRunInEditModeRecursively(GameObject go, bool enabled)
@@ -179,6 +204,15 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return component;
         }
 
+        public static T CopyComponent<T>(T sourceComponent, GameObject targetGameObject) where T : Component
+        {
+            var sourceType = sourceComponent.GetType();
+            var clonedTargetComponent = AddComponent(sourceType, targetGameObject);
+            EditorUtility.CopySerialized(sourceComponent, clonedTargetComponent);
+
+            return (T)clonedTargetComponent;
+        }
+
         static IEnumerable<Type> GetAssignableTypes(Type type, Func<Type, bool> predicate = null)
         {
             var list = new List<Type>();
@@ -202,8 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 }
                 catch (ReflectionTypeLoadException)
                 {
-                    // Skip any assemblies that don't load properly
-                    continue;
+                    // Skip any assemblies that don't load properly -- suppress errors
                 }
             }
         }
@@ -234,7 +267,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return Enumerable.Empty<Type>();
         }
 
-        public static void Destroy(UnityObject o, float t = 0f)
+        public static void Destroy(UnityObject o, float t = 0f, bool withUndo = false)
         {
             if (Application.isPlaying)
             {
@@ -244,20 +277,30 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             else
             {
                 if (Mathf.Approximately(t, 0f))
-                    UnityObject.DestroyImmediate(o);
+                {
+                    if (withUndo)
+                        Undo.DestroyObjectImmediate(o);
+                    else
+                        UnityObject.DestroyImmediate(o);
+                }
                 else
+                {
                     VRView.StartCoroutine(DestroyInSeconds(o, t));
+                }
             }
 #endif
         }
 
-        static IEnumerator DestroyInSeconds(UnityObject o, float t)
+        static IEnumerator DestroyInSeconds(UnityObject o, float t, bool withUndo = false)
         {
             var startTime = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup <= startTime + t)
                 yield return null;
 
-            UnityObject.DestroyImmediate(o);
+            if (withUndo)
+                Undo.DestroyObjectImmediate(o);
+            else
+                UnityObject.DestroyImmediate(o);
         }
 
         /// <summary>

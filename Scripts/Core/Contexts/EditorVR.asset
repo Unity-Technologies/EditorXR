@@ -11,6 +11,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bcb87ab5055bd3498c8b75ba8ccde1c, type: 3}
   m_Name: EditorVR
   m_EditorClassIdentifier: 
+  m_RenderScale: 1
+  m_CopyMainCameraSettings: 1
+  m_CopyMainCameraImageEffectsToHmd: 1
+  m_CopyMainCameraImageEffectsToPresentationCamera: 1
   m_DefaultToolStack:
   - {fileID: 11500000, guid: 882053426a5f76d46b5505d9a20be912, type: 3}
   - {fileID: 11500000, guid: aab8fcc587f237c4cb48fb7bc8a59909, type: 3}

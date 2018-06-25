@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -122,7 +122,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             if (m_VisibilitySettings.Count > 0)
             {
-                var maxPriority = m_VisibilitySettings.Select(setting => setting.Value.priority).Max();
+                var maxPriority = 0;
+                foreach (var kvp in m_VisibilitySettings)
+                {
+                    var priority = kvp.Value.priority;
+                    if (priority > maxPriority)
+                        maxPriority = priority;
+                }
+
                 foreach (var kvp in m_VisibilitySettings)
                 {
                     var settings = kvp.Value;

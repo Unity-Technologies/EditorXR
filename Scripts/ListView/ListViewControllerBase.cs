@@ -201,7 +201,8 @@ namespace ListView
                 t.localRotation = targetRotation;
             }
 
-            t.SetSiblingIndex(order);
+            if (t.GetSiblingIndex() != order)
+                t.SetSiblingIndex(order);
         }
 
         protected virtual Vector3 GetObjectSize(GameObject g)

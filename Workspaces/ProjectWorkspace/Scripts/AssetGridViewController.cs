@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using ListView;
@@ -39,6 +39,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
 
+        Action<AssetGridItem> m_OnRecyleComplete;
+
         public Func<string, bool> matchesFilter { private get; set; }
 
         protected override float listHeight
@@ -48,7 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (m_NumPerRow == 0)
                     return 0;
 
-                return Mathf.CeilToInt(m_Data.Count / m_NumPerRow) * itemSize.z;
+                var numRows = Mathf.CeilToInt(m_Data.Count / m_NumPerRow);
+                return Mathf.Clamp(numRows, 1, Int32.MaxValue) * itemSize.z;
             }
         }
 
@@ -69,6 +72,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 base.size = value;
                 m_LastHiddenItemOffset = Mathf.Infinity;
             }
+        }
+
+        void Awake()
+        {
+            m_OnRecyleComplete = OnRecycleComplete;
         }
 
         protected override void Setup()
@@ -103,6 +111,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 if (m_Data.Count % m_NumPerRow == 0)
                     m_ScrollReturn += itemSize.z;
+            }
+            // if we only have one row, snap back as soon as that row would be hidden
+            else if (listHeight == itemSize.z && -m_ScrollOffset > 0)
+            {
+                m_ScrollReturn = itemSize.z / 2;
             }
         }
 
@@ -153,11 +166,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_ListItems.Remove(index);
 
-            item.SetVisibility(false, gridItem =>
-            {
-                item.gameObject.SetActive(false);
-                m_TemplateDictionary[data.template].pool.Add(item);
-            });
+            item.SetVisibility(false, m_OnRecyleComplete);
+        }
+
+        void OnRecycleComplete(AssetGridItem gridItem)
+        {
+            gridItem.gameObject.SetActive(false);
+            m_TemplateDictionary[gridItem.data.template].pool.Add(gridItem);
         }
 
         protected override void UpdateVisibleItem(AssetData data, int order, float offset, ref bool doneSettling)
@@ -198,13 +213,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, k_PositionFollow);
             t.localRotation = Quaternion.identity;
 
-            t.SetSiblingIndex(order);
+            if (t.GetSiblingIndex() != order)
+                t.SetSiblingIndex(order);
         }
 
         protected override AssetGridItem GetItem(AssetData data)
         {
-            const float kJitterMargin = 0.125f;
-            if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * kJitterMargin) // Avoid jitter while scrolling rows in and out of view
+            const float jitterMargin = 0.125f;
+            if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * jitterMargin) // Avoid jitter while scrolling rows in and out of view
                 return null;
 
             // If this AssetData hasn't fetched its asset yet, do so now

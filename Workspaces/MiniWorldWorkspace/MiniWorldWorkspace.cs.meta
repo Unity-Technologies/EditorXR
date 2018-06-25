@@ -1,8 +1,9 @@
 fileFormatVersion: 2
 guid: aab2ab33b5d370b4889c8004fceb7843
-timeCreated: 1497580319
+timeCreated: 1510825161
 licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
   - m_BasePrefab: {fileID: 1000011022840156, guid: 3a2153f70c365c540a3703c4cf22bc45,
@@ -14,8 +15,6 @@ MonoImporter:
       type: 2}
   - m_ResizePulse: {fileID: 11400000, guid: daa1fd8c3e222aa4db108e0a2b0f7a7d, type: 2}
   - m_MovePulse: {fileID: 11400000, guid: 83427d10dc20237408e0246b4b672682, type: 2}
-  - m_FrameHoverPulse: {fileID: 11400000, guid: 7eda595fb79c2124fb4ea55f6253a847,
-      type: 2}
   - m_ContentPrefab: {fileID: 1000012496997414, guid: 1c661791d5dcbf640809b4e15a35395d,
       type: 2}
   - m_RecenterUIPrefab: {fileID: 1000011166056430, guid: 5a75f0f2ee760e74da2620e87db7cdd5,
@@ -26,6 +25,7 @@ MonoImporter:
       type: 2}
   - m_ZoomSliderPrefab: {fileID: 1000011177834630, guid: 41f89a1e8d8d49f4f861f7cb581c1227,
       type: 2}
+  - m_EnterExitPulse: {fileID: 11400000, guid: 75933c4822b17d4408332fdb3a353435, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 RaycastHit hit;
                 if (TestRay(collisionTester, transform, ray, out hit))
                 {
-                    GizmoModule.instance.DrawSphere(hit.point, 0.05f, Color.cyan);
+                    //GizmoModule.instance.DrawSphere(hit.point, 0.05f, Color.cyan);
                     collisionPoint = hit.point;
                     return true;
                 }
@@ -196,13 +196,102 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="hit">Info about the raycast hit</param>
         /// <param name="maxDistance">Maximum distance at which a hit can occur</param>
         /// <returns>The result of whether the ray intersects with the object</returns>
-        public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray, out RaycastHit hit, float maxDistance = Mathf.Infinity)
+        public static bool TestRay(MeshCollider collisionTester, Transform obj, Ray ray, out RaycastHit hit,
+            float maxDistance = Mathf.Infinity)
         {
             ray.origin = obj.InverseTransformPoint(ray.origin);
             ray.direction = obj.InverseTransformVector(ray.direction);
             maxDistance = obj.InverseTransformVector(ray.direction * maxDistance).magnitude;
 
             return collisionTester.Raycast(ray, out hit, maxDistance);
+        }
+
+        /// <summary>
+        /// Tests a box against a collider
+        /// </summary>
+        /// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+        /// <param name="obj">The object to test collision on</param>
+        /// <param name="center">The center of the box</param>
+        /// <param name="halfExtents">Half the size of the box in each dimension</param>
+        /// <param name="orientation">The rotation of the box</param>
+        /// <returns>The result of whether the box intersects with the object</returns>
+        public static bool TestBox(MeshCollider collisionTester, Transform obj, Vector3 center, Vector3 halfExtents, Quaternion orientation)
+        {
+            center = obj.InverseTransformPoint(center);
+            halfExtents = Vector3.Scale(halfExtents, obj.lossyScale.Inverse());
+            orientation = Quaternion.Inverse(obj.rotation) * orientation;
+
+            foreach (var intersection in Physics.OverlapBox(center, halfExtents, orientation))
+            {
+                if (intersection.gameObject == collisionTester.gameObject)
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Tests a sphere against a collider
+        /// </summary>
+        /// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
+        /// <param name="obj">The object to test collision on</param>
+        /// <param name="center">The center of the sphere</param>
+        /// <param name="radius">The radius of the sphere</param>
+        /// <returns>The result of whether the sphere intersects with the object</returns>
+        public static bool TestSphere(MeshCollider collisionTester, Transform obj, Vector3 center, float radius)
+        {
+            if (obj.lossyScale == Vector3.zero)
+                return false;
+
+            //Because our sphere check cannot be non-uniformly scaled, transform the test object instead
+            var testerTransform = collisionTester.transform;
+            testerTransform.position = obj.position;
+            testerTransform.rotation = obj.rotation;
+
+            //Negative scales cause mesh read errors
+            var objScale = obj.lossyScale;
+            UndoInverseScale(ref objScale.x, ref center, obj);
+            UndoInverseScale(ref objScale.y, ref center, obj);
+            UndoInverseScale(ref objScale.z, ref center, obj);
+
+            //Zero scales cause mesh read errors
+            PadZeroScale(ref objScale.x);
+            PadZeroScale(ref objScale.y);
+            PadZeroScale(ref objScale.z);
+
+            testerTransform.localScale = objScale;
+
+            var overlaps = Physics.OverlapSphere(center, radius);
+
+            testerTransform.position = Vector3.zero;
+            testerTransform.localScale = Vector3.one;
+            testerTransform.rotation = Quaternion.identity;
+
+            foreach (var intersection in overlaps)
+            {
+                if (intersection.gameObject == collisionTester.gameObject)
+                    return true;
+            }
+
+            return false;
+        }
+
+        static void UndoInverseScale(ref float scale, ref Vector3 center, Transform obj)
+        {
+            if (scale < 0)
+            {
+                scale *= -1;
+                var offset = center - obj.position;
+                offset = Quaternion.AngleAxis(180, obj.up) * offset;
+                center = obj.position + offset;
+            }
+        }
+
+        static void PadZeroScale(ref float scale)
+        {
+            const float epsilon = 1e-5f;
+            if (Mathf.Approximately(scale, 0))
+                scale = epsilon;
         }
 
         public static void SetupCollisionTester(MeshCollider collisionTester, Transform obj)

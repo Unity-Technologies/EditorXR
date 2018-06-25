@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -10,8 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
     class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
     {
-        protected const string k_LockedQuery = "t:" + k_Locked;
-        const string k_Locked = "Locked";
+        protected const string k_Locked = "Locked";
 
         [SerializeField]
         GameObject m_ContentPrefab;
@@ -72,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
             m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
-            m_HierarchyUI.listView.lockedQueryString = k_LockedQuery;
+            m_HierarchyUI.listView.lockedQueryString = k_Locked;
             hierarchyData = m_HierarchyData;
 
             if (m_FilterPrefab)
@@ -150,8 +149,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var size = contentBounds.size;
             var listView = m_HierarchyUI.listView;
             size.y = float.MaxValue; // Add height for dropdowns
-            size.x -= FaceMargin * 2; // Shrink the content width, so that there is space allowed to grab and scroll
-            size.z -= FaceMargin * 2; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
+            size.x -= DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
+            size.z -= DoubleFaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             listView.size = size;
         }
 

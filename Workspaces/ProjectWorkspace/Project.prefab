@@ -237,6 +237,7 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
@@ -252,6 +253,7 @@ MeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -269,6 +271,7 @@ MeshRenderer:
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
@@ -284,6 +287,7 @@ MeshRenderer:
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
   m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
@@ -386,6 +390,12 @@ MonoBehaviour:
   m_ScrollPulse: {fileID: 11400000, guid: 77319cd620700db49a9223c7305480f9, type: 2}
   m_SettleSpeed: 0.3
   m_ScrollSpeed: 0.3
+  m_ItemClickPulse: {fileID: 0}
+  m_ItemHoverStartPulse: {fileID: 0}
+  m_ItemHoverEndPulse: {fileID: 0}
+  m_ItemDragStartPulse: {fileID: 0}
+  m_ItemDraggingPulse: {fileID: 0}
+  m_ItemDragEndPulse: {fileID: 0}
   m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
   m_ExpandArrowMaterial: {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247,
     type: 2}
@@ -401,7 +411,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
-  m_HandleTip: {fileID: 0}
   m_OrientDragPlaneToRay: 0
   m_Constraints: 0
 --- !u!114 &114000011829900818
@@ -441,6 +450,15 @@ MonoBehaviour:
   m_ScrollPulse: {fileID: 11400000, guid: 77319cd620700db49a9223c7305480f9, type: 2}
   m_SettleSpeed: 0.3
   m_ScrollSpeed: 0.3
+  m_ItemClickPulse: {fileID: 11400000, guid: 72c68844f1d53f549976daae6a207100, type: 2}
+  m_ItemHoverStartPulse: {fileID: 11400000, guid: d71c4adadeb37984aa5f37d8c0096997,
+    type: 2}
+  m_ItemHoverEndPulse: {fileID: 0}
+  m_ItemDragStartPulse: {fileID: 11400000, guid: 0df1c3251269d8a41a11a33faf676222,
+    type: 2}
+  m_ItemDraggingPulse: {fileID: 11400000, guid: 5ccd598d3356a834e87a36e7111cb173,
+    type: 2}
+  m_ItemDragEndPulse: {fileID: 11400000, guid: 64a535853bdb5b24f8d196dedeea8cba, type: 2}
   m_ScaleFactor: 0.056
   m_IconTypes:
   - Scene
@@ -472,7 +490,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_SelectionFlags: 3
-  m_HandleTip: {fileID: 0}
   m_OrientDragPlaneToRay: 0
   m_Constraints: 0
 --- !u!114 &114000013337603310

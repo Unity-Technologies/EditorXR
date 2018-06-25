@@ -5,7 +5,10 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
-    using BindingDictionary = Dictionary<string, List<VRInputDevice.VRControl>>;
+    public class BindingDictionary : Dictionary<string, List<VRInputDevice.VRControl>>
+    {
+    }
+
     /// <summary>
     /// Input related EditorVR utilities
     /// </summary>

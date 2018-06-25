@@ -460,6 +460,7 @@ MonoBehaviour:
   m_ColorPicker: {fileID: 114000012154235052}
   m_SliderBackground: {fileID: 114000010107362308}
   m_Picker: {fileID: 224000013852143400}
+  m_PickerBounds: {fileID: 0}
   m_ColorPickerSquare: {fileID: 114000011102508162}
 --- !u!222 &222000010561662458
 CanvasRenderer:

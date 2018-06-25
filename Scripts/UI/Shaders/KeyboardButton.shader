@@ -12,6 +12,8 @@
 		Tags{ "Queue" = "Transparent+1" "LightMode" = "Always" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" "RenderType" = "Transparent" }
 		ZWrite On
 		ZTest Always
+		Fog {Mode Off}
+		Lighting Off
 		Blend SrcAlpha OneMinusSrcAlpha
 
 		Stencil

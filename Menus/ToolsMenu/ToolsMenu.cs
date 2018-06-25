@@ -1,17 +1,19 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI,
-        IControlHaptics, IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin
+    sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
+        IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
+        IRequestFeedback
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
@@ -20,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Sprite m_MainMenuIcon;
 
         [SerializeField]
-        ActionMap m_MainMenuActionMap;
+        ActionMap m_ActionMap;
 
         [SerializeField]
         ToolsMenuUI m_ToolsMenuPrefab;
@@ -41,6 +43,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Vector3 m_SpatialScrollStartPosition;
         ToolsMenuUI m_ToolsMenuUI;
 
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+        readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_MenuFeedback = new List<ProxyFeedbackRequest>();
+
         public Transform menuOrigin { get; set; }
 
         List<IToolsMenuButton> buttons { get { return m_ToolsMenuUI.buttons; } }
@@ -56,7 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Transform alternateMenuOrigin { get; set; }
         public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 
-        public ActionMap actionMap { get { return m_MainMenuActionMap; } }
+        public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
 
         public Transform rayOrigin { get; set; }
@@ -70,6 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             setButtonForType = CreateToolsMenuButton;
             deleteToolsMenuButton = DeleteToolsMenuButton;
+            InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
         }
 
         void OnDestroy()
@@ -155,6 +162,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_ToolsMenuUI.allButtonsVisible = false;
             }
 
+            if (toolslMenuInput.show.wasJustPressed)
+                ShowScrollFeedback();
+
+            if (toolslMenuInput.show.wasJustReleased)
+                HideScrollFeedback();
+
             if (spatialScrollData == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld) && toolslMenuInput.select.wasJustPressed)
             {
                 m_SpatialScrollStartPosition = alternateMenuOrigin.position;
@@ -166,6 +179,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 // Assign initial SpatialScrollData; begin scroll
                 spatialScrollData = this.PerformSpatialScroll(node, m_SpatialScrollStartPosition, alternateMenuOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+
+                HideScrollFeedback();
+                ShowMenuFeedback();
             }
             else if (spatialScrollData != null && toolslMenuInput.show.isHeld)
             {
@@ -245,8 +261,56 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void CloseMenu()
         {
+            this.ClearFeedbackRequests();
             this.Pulse(node, m_HidingPulse);
             this.EndSpatialScroll(); // Free the spatial scroll data owned by this object
+        }
+
+        void ShowFeedback(List<ProxyFeedbackRequest> requests, string controlName, string tooltipText = null)
+        {
+            if (tooltipText == null)
+                tooltipText = controlName;
+
+            List<VRInputDevice.VRControl> ids;
+            if (m_Controls.TryGetValue(controlName, out ids))
+            {
+                foreach (var id in ids)
+                {
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.priority = 1;
+                    request.tooltipText = tooltipText;
+                    requests.Add(request);
+                    this.AddFeedbackRequest(request);
+                }
+            }
+        }
+
+        void ShowScrollFeedback()
+        {
+            ShowFeedback(m_ScrollFeedback, "select", "Scroll to Change Tool");
+        }
+
+        void ShowMenuFeedback()
+        {
+            ShowFeedback(m_MenuFeedback, "select", "Remove Tool");
+            ShowFeedback(m_MenuFeedback, "cancel", "Cancel Scrolling");
+            ShowFeedback(m_MenuFeedback, "show", "Release to Select Tool");
+        }
+
+        void HideFeedback(List<ProxyFeedbackRequest> requests)
+        {
+            foreach (var request in requests)
+            {
+                this.RemoveFeedbackRequest(request);
+            }
+            requests.Clear();
+        }
+
+        void HideScrollFeedback()
+        {
+            HideFeedback(m_ScrollFeedback);
         }
     }
 }

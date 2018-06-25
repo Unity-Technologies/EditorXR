@@ -69,6 +69,8 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
         }
         else
         {
+            consumeControl(action);
+
             var throwDownTriggered = false;
             if (ThrowingDown() && action.wasJustReleased)
             {
@@ -133,9 +135,9 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 
     void UpdateWorkspaceScales()
     {
-        for (int i = 0; i < allWorkspaces.Count; i++)
+        for (int i = 0; i < m_Workspaces.Count; i++)
         {
-            var workspaceTransform = allWorkspaces[i].transform;
+            var workspaceTransform = m_Workspaces[i].transform;
 
             var targetScale = m_WorkspaceLocalScales[i] * m_TargetScale;
 

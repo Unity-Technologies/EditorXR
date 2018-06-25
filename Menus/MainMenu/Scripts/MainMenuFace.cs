@@ -2,11 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -20,8 +27,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         CanvasGroup m_CanvasGroup;
 
+#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
-        Text m_FaceTitle;
+        TextMeshProUGUI m_FaceTitle;
+#endif
 
         [SerializeField]
         Transform m_GridTransform;
@@ -60,7 +69,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        public string title { set { m_FaceTitle.text = value; } }
+        public string title
+        {
+            set
+            {
+#if INCLUDE_TEXT_MESH_PRO
+                m_FaceTitle.text = value;
+#endif
+            }
+        }
 
         public bool visible { set { this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(value)); } }
 
@@ -164,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             visible = false;
         }
 
-        public void RemoveSubmenu()
+        public void RemoveSubmenu(Transform rayOrigin)
         {
             var target = m_Submenus.Pop();
             target.SetActive(false);
