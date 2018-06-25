@@ -13,7 +13,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_RenderScale: 1
   m_CopyMainCameraSettings: 1
-  m_CopyMainCameraImageEffects: 1
+  m_CopyMainCameraImageEffectsToHmd: 1
+  m_CopyMainCameraImageEffectsToPresentationCamera: 1
   m_DefaultToolStack:
   - {fileID: 11500000, guid: 882053426a5f76d46b5505d9a20be912, type: 3}
   - {fileID: 11500000, guid: aab8fcc587f237c4cb48fb7bc8a59909, type: 3}

@@ -20,9 +20,14 @@ namespace UnityEditor.Experimental.EditorVR
         bool copyMainCameraSettings { get; }
 
         /// <summary>
-        /// Bool denotes that the scene's enabled Main Camera image effects should be cloned on the EditorXR runtime camera
+        /// Bool denotes that the scene's enabled Main Camera image effects should be cloned on the EditorXR HMD camera
         /// </summary>
-        bool copyMainCameraImageEffects { get; }
+        bool copyMainCameraImageEffectsToHMD { get; }
+
+        /// <summary>
+        /// Bool denotes that the scene's enabled Main Camera image effects should be cloned on the EditorXR presentation camera
+        /// </summary>
+        bool copyMainCameraImageEffectsToPresentationCamera { get; }
 
         /// <summary>
         /// Bool denotes that the EditorVR instance exists, having already been created in Setup()
