@@ -1,5 +1,7 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
@@ -36,7 +38,19 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             return component;
         }
+
+        public static MethodInfo GetMethodRecursively(this Type type, string name, BindingFlags bindingAttr)
+        {
+            var method = type.GetMethod(name, bindingAttr);
+            if (method != null)
+                return method;
+
+            var baseType = type.BaseType;
+            if (baseType != null)
+                method = type.BaseType.GetMethodRecursively(name, bindingAttr);
+
+            return method;
+        }
     }
 }
-
 #endif

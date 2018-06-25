@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -144,7 +145,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             s_ExistingSceneMainCamera = Camera.main;
             // TODO: Copy camera settings when changing contexts
-            if (EditingContextManager.defaultContext.copyExistingCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+            var defaultContext = EditingContextManager.defaultContext;
+            if (defaultContext.copyMainCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
             {
                 GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
                 m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
@@ -174,12 +176,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_Camera.farClipPlane = farClipPlane;
             }
 
-            if (s_ExistingSceneMainCamera)
-            {
-                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
-                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
-            }
-
             m_Camera.enabled = false;
             m_Camera.cameraType = CameraType.VR;
             m_Camera.useOcclusionCulling = false;
@@ -188,6 +184,35 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_Camera.transform.parent = m_CameraRig;
             m_CameraRig.position = headCenteredOrigin;
             m_CameraRig.rotation = Quaternion.identity;
+
+            if (s_ExistingSceneMainCamera && defaultContext.copyMainCameraImageEffects)
+            {
+                var cameraGameObject = m_Camera.gameObject;
+                var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>();
+                var enabledPotentialImageEffects = potentialImageEffects.Where(x => x != null && x.enabled);
+                var targetMethodNames = new [] {"OnRenderImage", "OnPreRender", "OnPostRender"};
+                var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                foreach (var potentialImageEffect in enabledPotentialImageEffects)
+                {
+                    var componentInstanceType = potentialImageEffect.GetType();
+                    var targetMethodFound = false;
+                    for (int i = 0; i < targetMethodNames.Length; ++i)
+                    {
+                        // Check base type for target methods
+                        targetMethodFound = componentInstanceType.GetMethodRecursively(targetMethodNames[i], bindingFlags) != null;
+
+                        if (targetMethodFound)
+                            break;
+                    }
+
+                    // Copying of certain image effects can cause Unity to crash when copied
+                    if (targetMethodFound)
+                        ObjectUtils.CopyComponent(potentialImageEffect, cameraGameObject);
+                }
+
+                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
+                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
+            }
 
             m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
             m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
