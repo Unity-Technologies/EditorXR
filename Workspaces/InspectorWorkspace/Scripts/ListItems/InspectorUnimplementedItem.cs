@@ -1,15 +1,15 @@
 ﻿#if UNITY_EDITOR
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorUnimplementedItem : InspectorPropertyItem
     {
         [SerializeField]
-        Text m_TypeLabel;
+        TextMeshProUGUI m_TypeLabel;
 
         public override void Setup(InspectorData data)
         {
