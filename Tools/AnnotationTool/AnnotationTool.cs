@@ -33,6 +33,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             [SerializeField]
             float m_BrushSize = MinBrushSize;
 
+            [SerializeField]
+            bool m_PressureSensitive = true;
+
+            [SerializeField]
+            float m_PressureSmoothing = 0.0f;
+
             public bool meshGroupingMode
             {
                 get { return m_MeshGroupingMode; }
@@ -50,6 +56,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 get { return m_BrushSize; }
                 set { m_BrushSize = value; }
             }
+
+            public bool pressureSensitive
+            {
+                get { return m_PressureSensitive; }
+                set { m_PressureSensitive = value; }
+            }
+
+            public float pressureSmoothing
+            {
+                get { return m_PressureSmoothing; }
+                set { m_PressureSmoothing = Mathf.Clamp01(value); }
+            }
         }
 
         const float k_MinDistance = 0.003f;
@@ -63,7 +81,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public const float TipDistance = 0.05f;
         public const float MinBrushSize = 0.0025f;
         public const float MaxBrushSize = 0.05f;
-    
+
+        const float k_MinDrawStrength = 0.05f;
+        const float k_DrawPressureScale = (1.0f/(1.0f - k_MinDrawStrength));
+
         public delegate void AnnotationUpdatedCallback(MeshFilter meshFilter);
         public static AnnotationUpdatedCallback AnnotationUpdated;
         public delegate void AnnotationFinishedCallback(MeshFilter meshFilter);
@@ -114,6 +135,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Toggle m_TransformToggle;
         Toggle m_MeshToggle;
         bool m_BlockValueChangedListener;
+
+        bool m_WasDrawing = false;
+        float m_DrawStrength = 0.0f;
 
         public bool primary { private get; set; }
         public Transform rayOrigin { get; set; }
@@ -475,7 +499,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 m_Length += distance;
             }
 
-            var brushSize = m_Preferences.brushSize * viewerScale;
+            var brushSize = m_Preferences.brushSize * viewerScale * m_DrawStrength;
             InterpolatePointsIfNeeded(localPoint, upVector, brushSize);
 
             m_Points.Add(localPoint);
@@ -694,7 +718,24 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var annotationInput = (AnnotationInput)input;
 
             var draw = annotationInput.draw;
-            var isHeld = draw.isHeld;
+
+            var isOverUI = this.IsHoveringOverUI(rayOrigin);
+
+            var isHeld = false;
+            
+
+            // We can only start drawing if we're not over UI
+            if (!isOverUI || m_WasDrawing)
+            {
+                isHeld = (draw.rawValue > k_MinDrawStrength);
+                m_DrawStrength = (draw.rawValue - k_MinDrawStrength) * k_DrawPressureScale;
+            }
+            
+            var isPressed = !m_WasDrawing && isHeld;
+            var isReleased = m_WasDrawing && !isHeld;
+            m_WasDrawing = isHeld;
+
+
             if (primary)
             {
                 if (!Mathf.Approximately(annotationInput.changeBrushSize.value, 0))
@@ -704,7 +745,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     consumeControl(annotationInput.vertical);
                 }
 
-                if (draw.wasJustPressed)
+                if (isPressed)
                 {
                     SetupAnnotation();
                     consumeControl(draw);
@@ -716,7 +757,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     consumeControl(draw);
                 }
 
-                if (draw.wasJustReleased)
+                if (isReleased)
                 {
                     FinalizeMesh();
                     consumeControl(draw);
@@ -726,7 +767,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (isHeld)
                 return;
 
-            var isOverUI = this.IsHoveringOverUI(rayOrigin);
+            
             if (isOverUI != m_WasOverUI)
             {
                 m_WasOverUI = isOverUI;
