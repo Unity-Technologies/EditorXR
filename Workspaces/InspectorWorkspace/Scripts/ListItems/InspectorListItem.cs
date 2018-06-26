@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -121,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 
             // Texts need a specific shader
-            var texts = GetComponentsInChildren<Text>(true);
+            var texts = GetComponentsInChildren<TextMeshProUGUI>(true);
             foreach (var text in texts)
             {
                 text.material = textMaterial;
