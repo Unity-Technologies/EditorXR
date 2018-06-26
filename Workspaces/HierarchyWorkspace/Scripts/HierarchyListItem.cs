@@ -317,7 +317,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_ExpandArrowRenderer.sharedMaterial = m_NoClipExpandArrow;
             m_CubeRenderer.sharedMaterial = m_NoClipBackingCube;
             m_Text.transform.localRotation = Quaternion.AngleAxis(90, Vector3.right);
-            m_Text.material = m_NoClipText;
+            m_Text.fontMaterial = m_NoClipText;
 
             m_DropZone.gameObject.SetActive(false);
             m_Cube.GetComponent<Collider>().enabled = false;
