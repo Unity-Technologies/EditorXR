@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -33,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_CheckAssignDelayTime = 0.125f;
 
         [SerializeField]
-        Text m_Text;
+        TextMeshProUGUI m_Text;
 
         [SerializeField]
         BaseHandle m_Handle;

@@ -1,10 +1,10 @@
 ﻿#if UNITY_EDITOR
 using ListView;
 using System;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
         const float k_ExpandArrowRotateSpeed = 0.4f;
 
         [SerializeField]
-        Text m_Text;
+        TextMeshProUGUI m_Text;
 
         [SerializeField]
         BaseHandle m_Cube;
@@ -81,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         public void SetMaterials(Material textMaterial, Material expandArrowMaterial)
         {
-            m_Text.material = textMaterial;
+            m_Text.fontMaterial = textMaterial;
             m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
         }
 
