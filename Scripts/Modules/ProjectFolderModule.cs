@@ -109,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 hp.SetSearchFilter("t:object", 0);
             }
             var name = hp.name;
-            var guid = hp.guid;
+            var guid = hp.guid.GetHashCode();
             var depth = hp.depth;
             var folderList = new List<FolderData>();
             var assetList = new List<AssetData>();

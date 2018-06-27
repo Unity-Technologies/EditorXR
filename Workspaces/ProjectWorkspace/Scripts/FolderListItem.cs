@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-    sealed class FolderListItem : ListViewItem<FolderData, string>
+    sealed class FolderListItem : ListViewItem<FolderData, int>
     {
         const float k_Margin = 0.01f;
         const float k_Indent = 0.02f;
@@ -49,8 +49,8 @@ namespace UnityEditor.Experimental.EditorVR.Data
             get { return m_CubeRenderer.sharedMaterial; }
         }
 
-        public Action<string> toggleExpanded { private get; set; }
-        public Action<string> selectFolder { private get; set; }
+        public Action<int> toggleExpanded { private get; set; }
+        public Action<int> selectFolder { private get; set; }
 
         public override void Setup(FolderData listData)
         {

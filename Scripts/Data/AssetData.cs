@@ -5,9 +5,11 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-    sealed class AssetData : ListViewItemData<string>
+    sealed class AssetData : ListViewItemData<int>
     {
         const string k_TemplateName = "AssetGridItem";
+
+        public string guid { get; private set; }
 
         public string name { get; private set; }
 
@@ -31,7 +33,8 @@ namespace UnityEditor.Experimental.EditorVR.Data
         public AssetData(string name, string guid, string type)
         {
             template = k_TemplateName;
-            index = guid;
+            index = guid.GetHashCode();
+            this.guid = guid;
             this.name = name;
             this.type = type;
         }
