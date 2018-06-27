@@ -1,9 +1,11 @@
-﻿Shader "EditorVR/Custom/List Clip"
+﻿Shader "EditorVR/Custom/List Clip Standard"
 {
 	Properties
 	{
 		_Color ("Color", Color) = (1,1,1,1)
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
+		_Glossiness ("Smoothness", Range(0,1)) = 0.5
+		_Metallic ("Metallic", Range(0,1)) = 0.0
 		_ClipExtents("Clip Extents", Vector) = (1,1,1,0)
 		_StencilRef("StencilRef", Int) = 3
 	}
@@ -35,6 +37,9 @@
 		#include "ListClip.cginc"
 
 		sampler2D _MainTex;
+
+		half _Glossiness;
+		half _Metallic;
 		fixed4 _Color;
 
 		void vert(inout appdata_full v, out Input o)
@@ -49,7 +54,9 @@
 
 			fixed4 c = tex2D(_MainTex, IN.uv_MainTex);
 			c *= _Color * c.a;
-			o.Emission = c.rgb;
+			o.Albedo = c.rgb;
+            o.Metallic = _Metallic;
+            o.Smoothness = _Glossiness;
 		}
 		ENDCG
 	}

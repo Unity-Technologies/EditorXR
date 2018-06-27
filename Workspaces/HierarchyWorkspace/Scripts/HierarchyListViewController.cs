@@ -31,6 +31,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         Material m_UnlockIconMaterial;
 
+        [SerializeField]
+        Material m_SceneIconDarkMaterial;
+
+        [SerializeField]
+        Material m_SceneIconWhiteMaterial;
+
         Material m_TopDropZoneMaterial;
         Material m_BottomDropZoneMaterial;
         float m_DropZoneAlpha;
@@ -89,6 +95,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             base.Setup();
 
             m_TextMaterial = Instantiate(m_TextMaterial);
+            m_SceneIconDarkMaterial = Instantiate(m_SceneIconDarkMaterial);
+            m_SceneIconWhiteMaterial = Instantiate(m_SceneIconWhiteMaterial);
             m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
             m_LockIconMaterial = Instantiate(m_LockIconMaterial);
             m_UnlockIconMaterial = Instantiate(m_UnlockIconMaterial);
@@ -118,6 +126,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             var parentMatrix = transform.worldToLocalMatrix;
             SetMaterialClip(m_TextMaterial, parentMatrix);
+            SetMaterialClip(m_SceneIconDarkMaterial, parentMatrix);
+            SetMaterialClip(m_SceneIconWhiteMaterial, parentMatrix);
             SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
             SetMaterialClip(m_LockIconMaterial, parentMatrix);
             SetMaterialClip(m_UnlockIconMaterial, parentMatrix);
@@ -327,7 +337,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override HierarchyListItem GetItem(HierarchyData data)
         {
             var item = base.GetItem(data);
-            item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial, m_UnlockIconMaterial);
+            item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial, m_UnlockIconMaterial,
+                m_SceneIconDarkMaterial, m_SceneIconWhiteMaterial);
             item.selectRow = SelectRow;
 
             item.setRowGrabbed = SetRowGrabbed;

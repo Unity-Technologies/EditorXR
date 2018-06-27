@@ -183,6 +183,7 @@ MeshRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 1fde8821607e83d4f8a2a3623c6660ac, type: 2}
   m_StaticBatchInfo:
@@ -217,6 +218,7 @@ MeshRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 1fde8821607e83d4f8a2a3623c6660ac, type: 2}
   m_StaticBatchInfo:
@@ -251,6 +253,7 @@ MeshRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RenderingLayerMask: 4294967295
   m_Materials: []
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -360,13 +363,23 @@ MonoBehaviour:
   m_ScrollPulse: {fileID: 11400000, guid: 77319cd620700db49a9223c7305480f9, type: 2}
   m_SettleSpeed: 0.3
   m_ScrollSpeed: 0.3
+  m_ItemClickPulse: {fileID: 0}
+  m_ItemHoverStartPulse: {fileID: 0}
+  m_ItemHoverEndPulse: {fileID: 0}
+  m_ItemDragStartPulse: {fileID: 0}
+  m_ItemDraggingPulse: {fileID: 0}
+  m_ItemDragEndPulse: {fileID: 0}
   m_TopDropZone: {fileID: 114000012826007938}
   m_BottomDropZone: {fileID: 114000012340426484}
-  m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
+  m_TextMaterial: {fileID: 2100000, guid: 18b3c8b3b6f8e1b4288e427b6a8aee60, type: 2}
   m_ExpandArrowMaterial: {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247,
     type: 2}
   m_LockIconMaterial: {fileID: 2100000, guid: 133d73ce519075640aaca427a72a9cf5, type: 2}
   m_UnlockIconMaterial: {fileID: 2100000, guid: ef2b944e310d49546905b735bae7c627,
+    type: 2}
+  m_SceneIconDarkMaterial: {fileID: 2100000, guid: 58fd5dea52dc7ff43976faae029f7611,
+    type: 2}
+  m_SceneIconWhiteMaterial: {fileID: 2100000, guid: ca3360457463dd74681834a3fdc62d2e,
     type: 2}
 --- !u!114 &114000011690277160
 MonoBehaviour:
