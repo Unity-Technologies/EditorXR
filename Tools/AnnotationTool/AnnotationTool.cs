@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -138,6 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         bool m_WasDrawing = false;
         float m_DrawStrength = 0.0f;
+        SmoothFloat m_SmoothInput = new SmoothFloat();
 
         public bool primary { private get; set; }
         public Transform rayOrigin { get; set; }
@@ -252,6 +254,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             Selection.activeGameObject = null;
 
             SetupPreferences();
+
+            m_SmoothInput.Reset(0.0f);
 
             if (primary)
             {
@@ -526,7 +530,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     var halfPoint = (lastPoint + localPoint) / 2f;
                     m_Points.Add(halfPoint);
 
-                    var halfUp = (m_UpVectors.Last() + upVector) / 2f;
+                    var halfUp = (m_UpVectors.Last() + upVector).normalized;
                     m_UpVectors.Add(halfUp);
 
                     var halfRadius = (m_Widths.Last() + brushSize) / 2f;
@@ -574,9 +578,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 var width = m_Widths[i];
 
-                width *= Math.Min(Mathf.Sqrt(distance / width), 1);
-                var endDistance = m_Length - distance;
-                width *= Math.Min(Mathf.Sqrt(endDistance / width), 1);
+                if (!m_Preferences.pressureSensitive)
+                {
+                    width *= Math.Min(Mathf.Sqrt(distance / width), 1);
+                    var endDistance = m_Length - distance;
+                    width *= Math.Min(Mathf.Sqrt(endDistance / width), 1);
+                }
 
                 var upVector = m_UpVectors[i];
                 var top = point - upVector * width;
@@ -722,19 +729,30 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var isOverUI = this.IsHoveringOverUI(rayOrigin);
 
             var isHeld = false;
-            
+
+            var rawInput = draw.rawValue;
+            m_SmoothInput.Update(rawInput, Time.smoothDeltaTime);
 
             // We can only start drawing if we're not over UI
             if (!isOverUI || m_WasDrawing)
             {
-                isHeld = (draw.rawValue > k_MinDrawStrength);
-                m_DrawStrength = (draw.rawValue - k_MinDrawStrength) * k_DrawPressureScale;
+                if (!m_Preferences.pressureSensitive)
+                {
+                    isHeld = draw.isHeld;
+                    m_DrawStrength = 1.0f;
+                }
+                else
+                {
+                    var drawInput = Mathf.Lerp(rawInput, Mathf.Clamp01(m_SmoothInput.PredictedValue), 1.0f);// m_Preferences.pressureSmoothing);
+                    isHeld = (drawInput > k_MinDrawStrength);
+ 
+                    m_DrawStrength = (drawInput - k_MinDrawStrength) * k_DrawPressureScale;
+                }
             }
             
             var isPressed = !m_WasDrawing && isHeld;
             var isReleased = m_WasDrawing && !isHeld;
             m_WasDrawing = isHeld;
-
 
             if (primary)
             {
