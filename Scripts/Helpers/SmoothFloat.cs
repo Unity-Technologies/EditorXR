@@ -119,6 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             }
 
             var currentOffset = newValue - m_LastValue;
+            m_LastValue = newValue;
 
             // Add new data to the current sample
             m_Samples[m_CurrentSampleIndex].offset += currentOffset;

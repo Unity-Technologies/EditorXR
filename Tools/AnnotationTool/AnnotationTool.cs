@@ -6,24 +6,21 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [MainMenuItem("Annotation", "Create", "Draw in 3D")]
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
-        IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
-        IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback, IConnectInterfaces
+        IInstantiateUI, IInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
+        IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
+        IUsesNode, IRequestFeedback, IConnectInterfaces, ISelectTool
     {
         [Serializable]
-        class Preferences
+        public class Preferences
         {
             [SerializeField]
             bool m_MeshGroupingMode;
@@ -101,10 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         GameObject m_BrushSizePrefab;
 
         [SerializeField]
-        GameObject m_ColorPickerActivatorPrefab;
-
-        [SerializeField]
-        GameObject m_SettingsMenuItemPrefab;
+        AnnotationContextMenu m_MenuPrefab;
 
         Action<float> m_BrushSizeChanged;
 
@@ -120,7 +114,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Mesh m_CurrentMesh;
         Matrix4x4 m_WorldToLocalMesh;
 
-        ColorPickerUI m_ColorPicker;
         BrushSizeUI m_BrushSizeUI;
 
         Transform m_AnnotationRoot;
@@ -131,11 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Coroutine m_AnnotationPointerVisibilityCoroutine;
         bool m_WasOverUI;
 
-        GameObject m_ColorPickerActivator;
-
-        Toggle m_TransformToggle;
-        Toggle m_MeshToggle;
-        bool m_BlockValueChangedListener;
+        GameObject m_ToolMenu;
 
         bool m_WasDrawing = false;
         float m_DrawStrength = 0.0f;
@@ -143,7 +132,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public bool primary { private get; set; }
         public Transform rayOrigin { get; set; }
-        public List<Transform> otherRayOrigins { private get; set; }
 
         public Transform menuOrigin { private get; set; }
         public Transform alternateMenuOrigin { private get; set; }
@@ -153,56 +141,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public List<ILinkedObject> linkedObjects { private get; set; }
         public Node node { private get; set; }
-
-        public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
-
-        public GameObject settingsMenuItemInstance
-        {
-            set
-            {
-                if (value == null)
-                {
-                    m_TransformToggle = null;
-                    m_MeshToggle = null;
-                    return;
-                }
-
-                var defaultToggleGroup = value.GetComponentInChildren<DefaultToggleGroup>();
-                foreach (var toggle in value.GetComponentsInChildren<Toggle>())
-                {
-                    if (toggle == defaultToggleGroup.defaultToggle)
-                    {
-                        m_TransformToggle = toggle;
-                        toggle.onValueChanged.AddListener(isOn =>
-                        {
-                            if (m_BlockValueChangedListener)
-                                return;
-
-                            // m_Preferences on all instances refer to a single preferences object
-                            m_Preferences.meshGroupingMode = !isOn;
-                            foreach (var linkedObject in linkedObjects)
-                            {
-                                var annotationTool = (AnnotationTool)linkedObject;
-                                if (annotationTool != this)
-                                {
-                                    annotationTool.m_BlockValueChangedListener = true;
-
-                                    //linkedObject.m_ToggleGroup.NotifyToggleOn(isOn ? m_FlyToggle : m_BlinkToggle);
-                                    // HACK: Toggle Group claims these toggles are not a part of the group
-                                    annotationTool.m_TransformToggle.isOn = isOn;
-                                    annotationTool.m_MeshToggle.isOn = !isOn;
-                                    annotationTool.m_BlockValueChangedListener = false;
-                                }
-                            }
-                        });
-                    }
-                    else
-                    {
-                        m_MeshToggle = toggle;
-                    }
-                }
-            }
-        }
 
         void OnDestroy()
         {
@@ -214,22 +152,25 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (rayOrigin)
                 this.RemoveRayVisibilitySettings(rayOrigin, this);
 
-            if (m_ColorPicker)
-                ObjectUtils.Destroy(m_ColorPicker.gameObject);
-
             if (m_BrushSizeUI)
             {
                 this.DisconnectInterfaces(m_BrushSizeUI, rayOrigin);
                 ObjectUtils.Destroy(m_BrushSizeUI.gameObject);
             }
 
-            if (m_ColorPickerActivator)
-                ObjectUtils.Destroy(m_ColorPickerActivator);
+            if (m_ToolMenu)
+                ObjectUtils.Destroy(m_ToolMenu);
 
             if (m_AnnotationPointer)
                 ObjectUtils.Destroy(m_AnnotationPointer.gameObject);
 
             this.ClearFeedbackRequests();
+        }
+
+        void Close()
+        {
+            Debug.Log("Close");
+            this.SelectTool(rayOrigin, GetType());
         }
 
         void CleanUpNames()
@@ -263,29 +204,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 SetupBrushUI();
                 HandleBrushSize(m_Preferences.brushSize);
 
-                m_ColorPickerActivator = this.InstantiateUI(m_ColorPickerActivatorPrefab);
-                var otherRayOrigin = otherRayOrigins.First();
-                var otherAltMenu = this.GetCustomAlternateMenuOrigin(otherRayOrigin);
-
-                const float UIOffset = 0.1f;
-                var colorPickerActivatorTransform = m_ColorPickerActivator.transform;
-                colorPickerActivatorTransform.SetParent(otherAltMenu);
-                colorPickerActivatorTransform.localRotation = Quaternion.identity;
-                colorPickerActivatorTransform.localPosition = (node == Node.LeftHand ? Vector3.left : Vector3.right) * UIOffset;
-                colorPickerActivatorTransform.localScale = Vector3.one;
-
-                var activator = m_ColorPickerActivator.GetComponentInChildren<ColorPickerActivator>();
-
-                m_ColorPicker = activator.GetComponentInChildren<ColorPickerUI>(true);
-                m_ColorPicker.onHideCalled = HideColorPicker;
-                m_ColorPicker.toolRayOrigin = rayOrigin;
-                m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
-                OnColorPickerValueChanged(m_Preferences.annotationColor);
-
-                activator.node = node;
-                activator.rayOrigin = otherRayOrigin;
-                activator.showColorPicker = ShowColorPicker;
-                activator.hideColorPicker = HideColorPicker;
+                m_ToolMenu = this.InstantiateMenuUI(rayOrigin, m_MenuPrefab);
+                var contextMenu = m_ToolMenu.GetComponent<AnnotationContextMenu>();
+                this.ConnectInterfaces(contextMenu, rayOrigin);
+                contextMenu.close = Close;
+                contextMenu.colorChanged = OnAnnotationColorChanged;
+                OnAnnotationColorChanged(m_Preferences.annotationColor);
+                contextMenu.preferences = m_Preferences;
 
                 var controls = new BindingDictionary();
                 InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, controls);
@@ -321,11 +246,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     ((AnnotationTool)linkedObject).m_Preferences = m_Preferences;
                 }
 
-                if (m_Preferences != null)
+                if (m_Preferences != null && m_ToolMenu != null)
                 {
-                    //Setting toggles on this tool's menu will set them on other tool menus
-                    m_MeshToggle.isOn = m_Preferences.meshGroupingMode;
-                    m_TransformToggle.isOn = !m_Preferences.meshGroupingMode;
+                    var contextMenu = m_ToolMenu.GetComponent<AnnotationContextMenu>();
+                    contextMenu.preferences = m_Preferences;
                 }
             }
 
@@ -359,27 +283,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_BrushSizeChanged = m_BrushSizeUI.ChangeSliderValue;
         }
 
-        void ShowColorPicker(Transform otherRayOrigin)
+        void OnAnnotationColorChanged(Color color)
         {
-            if (!m_ColorPicker.enabled)
-                m_ColorPicker.Show();
-
-            m_AnnotationPointer.gameObject.SetActive(false);
-        }
-
-        void HideColorPicker()
-        {
-            if (m_ColorPicker && m_ColorPicker.enabled)
-            {
-                m_ColorPicker.Hide();
-                m_AnnotationPointer.gameObject.SetActive(true);
-            }
-        }
-
-        void OnColorPickerValueChanged(Color color)
-        {
-            m_Preferences.annotationColor = color;
-
             const float annotationPointerAlpha = 0.75f;
             color.a = annotationPointerAlpha;
             m_AnnotationPointer.SetColor(color);
@@ -743,7 +648,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
                 else
                 {
-                    var drawInput = Mathf.Lerp(rawInput, Mathf.Clamp01(m_SmoothInput.PredictedValue), 1.0f);// m_Preferences.pressureSmoothing);
+                    var drawInput = Mathf.Lerp(rawInput, m_SmoothInput.PredictedValue, m_Preferences.pressureSmoothing);
                     isHeld = (drawInput > k_MinDrawStrength);
  
                     m_DrawStrength = (drawInput - k_MinDrawStrength) * k_DrawPressureScale;
