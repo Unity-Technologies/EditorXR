@@ -16,6 +16,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         GameObject m_PlayerModelPrefab;
 
         [SerializeField]
+        GameObject m_PlayerFloorPrefab;
+
+        [SerializeField]
         GameObject m_PreviewCameraPrefab;
 
         class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces
@@ -58,6 +61,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             static Collider[] s_CachedColliders = new Collider[k_MaxCollisionCheck];
 
             PlayerBody m_PlayerBody;
+            PlayerFloor m_PlayerFloor;
+
             float m_OriginalNearClipPlane;
             float m_OriginalFarClipPlane;
             readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
@@ -96,6 +101,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 cameraRig.transform.parent = null;
 
                 ObjectUtils.Destroy(m_PlayerBody.gameObject);
+                ObjectUtils.Destroy(m_PlayerFloor.gameObject);
 
                 if (customPreviewCamera != null)
                     ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -194,6 +200,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (customPreviewCamera != null)
                     customPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
+            }
+
+            internal void AddPlayerFloor()
+            {
+                m_PlayerFloor = ObjectUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false).GetComponent<PlayerFloor>();
+                var renderer = m_PlayerBody.GetComponent<Renderer>();
+                evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
+                var playerObjects = m_PlayerFloor.GetComponentsInChildren<Renderer>(true);
+                foreach (var playerObject in playerObjects)
+                {
+                    m_VRPlayerObjects.Add(playerObject.gameObject);
+                }
+
+                evr.GetModule<IntersectionModule>().standardIgnoreList.AddRange(m_VRPlayerObjects);
             }
 
             internal void AddPlayerModel()

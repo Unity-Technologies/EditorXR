@@ -253,7 +253,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
 
             viewer.AddPlayerModel();
-
+            viewer.AddPlayerFloor();
             GetNestedModule<Rays>().CreateAllProxies();
 
             // In case we have anything selected at start, set up manipulators, inspector, etc.
