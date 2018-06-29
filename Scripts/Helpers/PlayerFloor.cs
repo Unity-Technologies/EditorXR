@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         void Update()
         {
             floorPosition.x = m_Camera.position.x;
-            floorPosition.z = m_Camera.position.z - 0.2f;
+            floorPosition.z = m_Camera.position.z - 0.2f * this.GetViewerScale();
             floorPosition.y = m_CameraRig.transform.position.y;
             floorPosition -= VRView.headCenteredOrigin * this.GetViewerScale();
             transform.position = floorPosition;
