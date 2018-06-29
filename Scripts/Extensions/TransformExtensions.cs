@@ -26,20 +26,22 @@ namespace UnityEditor.Experimental.EditorVR.Extensions
         public static Vector3 XZForward(this Transform target)
         {
             var forward = target.forward;
-            if ((forward.y * forward.y) >= 0.5f)
+            var up = forward.y;
+            const float mid = 0.5f;
+            const float min = 0.0f;
+            if ((up * up) >= mid)
             {
-                forward = -target.up * Mathf.Sign(forward.y);
+                forward = -target.up * Mathf.Sign(up);
             }
-            else
+            else if (target.up.y < min)
             {
-                if (target.up.y < 0.0f)
-                {
-                    forward = -forward;
-                }
+                forward = -forward;
             }
-            forward.y = 0.0f;
+
+            up = 0.0f;
             return forward.normalized;
         }
     }
+
 }
 #endif
