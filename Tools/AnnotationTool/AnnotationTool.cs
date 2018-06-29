@@ -169,7 +169,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void Close()
         {
-            Debug.Log("Close");
             this.SelectTool(rayOrigin, GetType());
         }
 
@@ -211,6 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 contextMenu.colorChanged = OnAnnotationColorChanged;
                 OnAnnotationColorChanged(m_Preferences.annotationColor);
                 contextMenu.preferences = m_Preferences;
+                contextMenu.toolRayOrigin = rayOrigin;
 
                 var controls = new BindingDictionary();
                 InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, controls);

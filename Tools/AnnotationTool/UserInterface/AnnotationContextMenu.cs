@@ -10,6 +10,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     sealed class AnnotationContextMenu : MonoBehaviour, IMenu
     {
         [SerializeField]
+        Button m_CloseButton;
+
+        [SerializeField]
         Toggle m_GroupToggleMesh;
         [SerializeField]
         Toggle m_GroupToggleTransform;
@@ -30,6 +33,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public Action close;
         public Action<Color> colorChanged;
+
+        public Transform toolRayOrigin
+        {
+            set { m_ColorPicker.toolRayOrigin = value; }
+        }
 
         public Bounds localBounds { get; private set; }
         public int priority { get { return 1; } }
@@ -65,11 +73,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             localBounds = ObjectUtils.GetBounds(transform);
 
-            // Link up the toggle buttons
+            // Link up the UI Controls
+            m_CloseButton.onClick.AddListener(Close);
             m_GroupToggleMesh.onValueChanged.AddListener(GroupToggleEventMesh);
             m_GroupToggleTransform.onValueChanged.AddListener(GroupToggleEventTransform);
             m_PressureToggleOn.onValueChanged.AddListener(PressureToggleEventOn);
             m_PressureToggleOff.onValueChanged.AddListener(PressureToggleEventOff);
+
+            m_PressureSlider.onValueChanged.AddListener(PressureSliderChanged);
+
             m_ColorPicker.onColorPicked = ColorPickerChanged;
         }
 
@@ -164,7 +176,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             UpdatePressureToggle();
         }
 
-        public void PressureSliderChanged(float value)
+        void PressureSliderChanged(float value)
         {
             if (m_InsideUIUpdate)
                 return;
