@@ -7,7 +7,7 @@ using UnityEditor.Experimental.EditorVR.Extensions;
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
     [ExecuteInEditMode]
-    public class PlayerFloor : MonoBehaviour
+    public class PlayerFloor : MonoBehaviour, IUsesViewerScale
     {
         Vector3 floorPosition;
         Quaternion floorRotation;
@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             floorPosition.x = m_Camera.position.x;
             floorPosition.z = m_Camera.position.z - 0.2f;
             floorPosition.y = m_CameraRig.transform.position.y;
-            floorPosition -= VRView.headCenteredOrigin;
+            floorPosition -= VRView.headCenteredOrigin * this.GetViewerScale();
             transform.position = floorPosition;
             transform.forward = m_Camera.transform.XZForward();
         }
