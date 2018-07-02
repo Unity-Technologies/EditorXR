@@ -11,7 +11,7 @@ MonoImporter:
       type: 2}
   - m_PlayerModelPrefab: {fileID: 1000013280737546, guid: 3dbbb2baa83f3994e94fe56a60c73252,
       type: 2}
-  - m_PlayerFloorPrefab: {fileID: 1888626590568660, guid: b904665d3c595934b8950ea7c2a51972,
+  - m_PlayerFloorPrefab: {fileID: 1661810458876620, guid: 5310729443774f7459a9b0dab4941ed6,
       type: 2}
   - m_PreviewCameraPrefab: {fileID: 1000010893495554, guid: 66d2f6b9efc6b7842bea782607a65bd2,
       type: 2}
