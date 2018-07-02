@@ -240,6 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             };
 
             AddModule<HapticsModule>();
+            AddModule<GazeDivergenceModule>();
             AddModule<SpatialHintModule>();
             AddModule<SpatialScrollModule>();
 
