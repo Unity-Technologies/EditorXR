@@ -1,3 +1,5 @@
+#define NEW_WAY
+
 #if UNITY_EDITOR
 using System;
 using System.Collections;
@@ -7,6 +9,7 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.Experimental.LowLevel;
 using UnityEngine.XR;
 
 #if ENABLE_STEAMVR_INPUT
@@ -24,6 +27,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static Camera s_ExistingSceneMainCamera;
         static bool s_ExistingSceneMainCameraEnabledState;
+
+        private static RenderCamera renderHelper;
 
         DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
@@ -143,6 +148,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             Assert.IsNull(s_ActiveView, "Only one EditorXR should be active");
 
+#if NEW_WAY
+            EditorApplication.SetRunInEditMode(true);
+#endif
+
             autoRepaintOnSceneChange = true;
             s_ActiveView = this;
             const float nearClipPlane = 0.01f;
@@ -212,6 +221,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
             Camera.SetupCurrent(currentCamera);
 
+            var renderHelpr = new GameObject("render helper");
+            renderHelper = renderHelpr.AddComponent<RenderCamera>();
+            renderHelper.cam = m_Camera;
+            renderHelper.runInEditMode = true;
+
             if (viewEnabled != null)
                 viewEnabled();
         }
@@ -263,6 +277,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (s_ExistingSceneMainCamera)
                 s_ExistingSceneMainCamera.enabled = s_ExistingSceneMainCameraEnabledState;
+
+            ObjectUtils.Destroy(renderHelper.gameObject);
+
+#if NEW_WAY
+            EditorApplication.SetRunInEditMode(false);
+#endif
         }
 
         void UpdateCameraTransform()
@@ -340,7 +360,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             m_Camera.cullingMask = m_CullingMask.HasValue ? m_CullingMask.Value.value : UnityEditor.Tools.visibleLayers;
 
+#if !NEW_WAY
             DoDrawCamera(guiRect);
+#else
+            renderHelper.rect = guiRect;
+#endif
 
             Event e = Event.current;
             if (m_ShowDeviceView)
@@ -381,9 +405,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 #endif
 
-            #if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
                 GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-            #endif
+#endif
 
             UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
@@ -391,9 +415,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
-            #if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
                 GL.sRGBWrite = false;
-            #endif
+#endif
         }
 
         private void Update()
