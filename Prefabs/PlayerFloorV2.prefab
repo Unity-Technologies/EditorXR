@@ -221,7 +221,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 224031031266101664}
-  - component: {fileID: 114819756679057214}
   - component: {fileID: 223702783017298422}
   - component: {fileID: 225614158785564512}
   m_Layer: 0
@@ -625,18 +624,6 @@ MonoBehaviour:
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 2
---- !u!114 &114819756679057214
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1888626590568660}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a2fa127af5df184d9d5f70814289ff2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_CanvasGroup: {fileID: 0}
 --- !u!114 &114931680131266172
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -710,7 +697,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_text: Foot Level
+  m_text: Floor Level
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 21452896fabdc4e4ea06c09c6ac05c9e, type: 2}
   m_sharedMaterial: {fileID: 21178144113792296, guid: 21452896fabdc4e4ea06c09c6ac05c9e,
@@ -778,7 +765,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_textInfo:
     textComponent: {fileID: 114984697979050060}
-    characterCount: 10
+    characterCount: 11
     spriteCount: 0
     spaceCount: 1
     wordCount: 2
