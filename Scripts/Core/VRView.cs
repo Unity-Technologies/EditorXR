@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -37,7 +38,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set
             {
                 if (s_ActiveView != null)
+                {
+                    if (!s_ActiveView.m_CustomPreviewCamera && EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
+                        CopyImagesEffectsToCamera(value);
+
                     s_ActiveView.m_CustomPreviewCamera = value;
+            }
             }
             get
             {
@@ -162,7 +168,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 s_ExistingSceneMainCamera = Camera.main;
 
                 // TODO: Copy camera settings when changing contexts
-                if (EditingContextManager.defaultContext.copyExistingCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+            var defaultContext = EditingContextManager.defaultContext;
+            if (defaultContext.copyMainCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
                 {
                     GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, hideFlags);
                     camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
@@ -193,16 +200,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     camera.farClipPlane = farClipPlane;
                 }
 
-                if (s_ExistingSceneMainCamera)
-                {
-                    s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
-                    s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
-                }
-
                 camera.enabled = false;
                 camera.cameraType = CameraType.VR;
                 camera.useOcclusionCulling = false;
 
+            if (s_ExistingSceneMainCamera && defaultContext.copyMainCameraImageEffectsToHMD)
+            {
+                CopyImagesEffectsToCamera(m_Camera);
+
+                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
+                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
+            }
                 rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", hideFlags, typeof(EditorMonoBehaviour));
             }
 #endif
@@ -238,6 +246,31 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (viewEnabled != null)
                 viewEnabled();
+        }
+
+        static void CopyImagesEffectsToCamera(Camera targetCamera)
+        {
+            var targetCameraGO = targetCamera.gameObject;
+            var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>();
+            var enabledPotentialImageEffects = potentialImageEffects.Where(x => x != null && x.enabled);
+            var targetMethodNames = new [] {"OnRenderImage", "OnPreRender", "OnPostRender"};
+            var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+            foreach (var potentialImageEffect in enabledPotentialImageEffects)
+            {
+                var componentInstanceType = potentialImageEffect.GetType();
+                var targetMethodFound = false;
+                for (int i = 0; i < targetMethodNames.Length; ++i)
+                {
+                    targetMethodFound = componentInstanceType.GetMethodRecursively(targetMethodNames[i], bindingFlags) != null;
+
+                    if (targetMethodFound)
+                        break;
+                }
+
+                // Copying of certain image effects can cause Unity to crash when copied
+                if (targetMethodFound)
+                    ObjectUtils.CopyComponent(potentialImageEffect, targetCameraGO);
+            }
         }
 
         public void OnDisable()
@@ -346,7 +379,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (e.type == EventType.Repaint)
                 {
+#if UNITY_2018_1_OR_NEWER
+                    GL.sRGBWrite = false;
+#else
                     GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+#endif
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
                     GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
                     GL.sRGBWrite = false;
@@ -376,12 +413,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 #endif
 
+            #if UNITY_2018_1_OR_NEWER
+                GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+            #endif
+
             UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
             {
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
+            #if UNITY_2018_1_OR_NEWER
+                GL.sRGBWrite = false;
+            #endif
         }
 
         private void Update()
