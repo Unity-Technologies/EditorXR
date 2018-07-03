@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
     public class PlayerFloor : MonoBehaviour, IUsesViewerScale, IDetectGazeDivergence
     {
         const float k_XOffset = 0.05f;
-        const float k_ZOffset = 0.2f;
+        const float k_ZOffset = 0.025f;
 
         [SerializeField]
         CanvasGroup m_CanvasGroup;
