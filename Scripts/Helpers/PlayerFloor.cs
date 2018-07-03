@@ -4,6 +4,7 @@ using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
@@ -15,6 +16,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         [SerializeField]
         CanvasGroup m_CanvasGroup;
+
+        [SerializeField]
+        Image m_BorderImage;
 
         Vector3 m_FloorPosition;
         Transform m_Camera;
@@ -34,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         void Update()
         {
-            const float kLerpMultiplier = 4f;
+            const float kLerpMultiplier = 6f;
             var currentScale = this.GetViewerScale();
             m_FloorPosition.x = m_Camera.position.x + k_XOffset * currentScale;
             m_FloorPosition.z = m_Camera.position.z - k_ZOffset * currentScale;
@@ -45,26 +49,29 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_CameraForwardCurrent = Vector3.Lerp(m_CameraForwardCurrent, m_CameraForwardTarget, Time.unscaledDeltaTime * kLerpMultiplier);
             transform.forward = m_CameraForwardCurrent;
 
-            const float kAllowedDegreeOfGazeDivergence = 10f;
-            var visible = this.IsAboveDivergenceThreshold(transform, kAllowedDegreeOfGazeDivergence);
-            //Debug.LogWarning("<color=yellow> Out of FOV : </color>" + visible);
+            const float kAllowedDegreeOfGazeDivergence = 25f;
+            var isAboveDivergenceThreshold = this.IsAboveDivergenceThreshold(transform, kAllowedDegreeOfGazeDivergence);
 
-            if (m_Visible != visible)
-                this.RestartCoroutine(ref m_AnimationVisibilityCoroutine, UpdateVisibility(visible));
+            if (m_Visible != isAboveDivergenceThreshold)
+                this.RestartCoroutine(ref m_AnimationVisibilityCoroutine, UpdateVisibility(isAboveDivergenceThreshold));
         }
 
-        IEnumerator UpdateVisibility(bool visible)
+        IEnumerator UpdateVisibility(bool hidden)
         {
-            m_Visible = visible;
+            m_Visible = hidden;
 
-            const float kDurationMultiplier = 1.5f;
+            const float kHidingSpeedMultiplier = 4f;
+            const float kShowingSpeedMultiplier = 0.5f;
+            var durationMultiplier = hidden ? kHidingSpeedMultiplier : kShowingSpeedMultiplier;
             var currentCanvasGroupAlpha = m_CanvasGroup.alpha;
-            var targetCanvasGroupAlpha = visible ? 0f : 1f;
+            var targetCanvasGroupAlpha = hidden ? 0f : 1f;
             var amount = 0f;
             while (amount < 1f)
             {
-                var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount += Time.unscaledDeltaTime * kDurationMultiplier);
-                m_CanvasGroup.alpha = Mathf.Lerp(currentCanvasGroupAlpha, targetCanvasGroupAlpha, shapedAmount);
+                var shapedAmount = MathUtilsExt.SmoothInOutLerpFloat(amount += Time.unscaledDeltaTime * durationMultiplier);
+                var targetZeroOneLerpValue = Mathf.Lerp(currentCanvasGroupAlpha, targetCanvasGroupAlpha, shapedAmount);
+                m_CanvasGroup.alpha = targetZeroOneLerpValue;
+                m_BorderImage.fillAmount = targetZeroOneLerpValue;
                 yield return null;
             }
 
