@@ -221,10 +221,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
             Camera.SetupCurrent(currentCamera);
 
+#if NEW_WAY
             var renderHelpr = new GameObject("render helper");
             renderHelper = renderHelpr.AddComponent<RenderCamera>();
             renderHelper.cam = m_Camera;
             renderHelper.runInEditMode = true;
+#endif
 
             if (viewEnabled != null)
                 viewEnabled();
@@ -363,7 +365,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if !NEW_WAY
             DoDrawCamera(guiRect);
 #else
-            renderHelper.rect = guiRect;
+            //renderHelper.rect = guiRect;
 #endif
 
             Event e = Event.current;
@@ -420,22 +422,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
         }
 
-        private void Update()
-        {
-            // If code is compiling, then we need to clean up the window resources before classes get re-initialized
-            if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode)
-            {
-                Close();
-                return;
-            }
+        //private void Update()
+        //{
+        //    // If code is compiling, then we need to clean up the window resources before classes get re-initialized
+        //    if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode)
+        //    {
+        //        Close();
+        //        return;
+        //    }
 
-            // Our camera is disabled, so it doesn't get automatically updated to HMD values until it renders
-            UpdateCameraTransform();
+        //    // Our camera is disabled, so it doesn't get automatically updated to HMD values until it renders
+        //    UpdateCameraTransform();
 
-            UpdateHMDStatus();
+        //    UpdateHMDStatus();
 
-            SetSceneViewsAutoRepaint(false);
-        }
+        //    SetSceneViewsAutoRepaint(false);
+        //}
 
         void UpdateHMDStatus()
         {
