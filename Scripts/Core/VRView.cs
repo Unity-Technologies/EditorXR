@@ -206,7 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (s_ExistingSceneMainCamera && defaultContext.copyMainCameraImageEffectsToHMD)
             {
-                CopyImagesEffectsToCamera(m_Camera);
+                CopyImagesEffectsToCamera(viewerCamera);
 
                 s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
                 s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
