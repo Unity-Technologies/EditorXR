@@ -459,18 +459,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void PreviewMaterialOnSelection(GameObject selection)
         {
-            if (data.type == "Material")
-            {
-                k_SelectionRenderers.Clear();
-                k_SelectionOriginalMaterials.Clear();
-                selection.GetComponentsInChildren(k_SelectionRenderers);
+            if (data.type != "Material" || selection == null)
+                return;
 
-                var material = (Material)data.asset;
-                foreach (var renderer in k_SelectionRenderers)
-                {
-                    k_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
-                    renderer.sharedMaterial = material;
-                }
+            k_SelectionRenderers.Clear();
+            k_SelectionOriginalMaterials.Clear();
+            selection.GetComponentsInChildren(k_SelectionRenderers);
+
+            var material = (Material)data.asset;
+            foreach (var renderer in k_SelectionRenderers)
+            {
+                k_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
+                renderer.sharedMaterial = material;
             }
         }
 
