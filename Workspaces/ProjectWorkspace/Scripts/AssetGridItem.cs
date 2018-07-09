@@ -90,8 +90,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         // positive means it can be assigned, 0 means it hasn't yet been checked
         readonly Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
 
-        static readonly List<Renderer> k_SelectionRenderers = new List<Renderer>();
-        static readonly Dictionary<Renderer, Material> k_SelectionOriginalMaterials = new Dictionary<Renderer, Material>();
+        readonly List<Renderer> m_SelectionRenderers = new List<Renderer>();
+        readonly Dictionary<Renderer, Material> m_SelectionOriginalMaterials = new Dictionary<Renderer, Material>();
 
         public GameObject icon
         {
@@ -462,32 +462,33 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (data.type != "Material" || selection == null)
                 return;
 
-            k_SelectionRenderers.Clear();
-            k_SelectionOriginalMaterials.Clear();
-            selection.GetComponentsInChildren(k_SelectionRenderers);
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
+
+            selection.GetComponentsInChildren(m_SelectionRenderers);
 
             var material = (Material)data.asset;
-            foreach (var renderer in k_SelectionRenderers)
+            foreach (var renderer in m_SelectionRenderers)
             {
-                k_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
+                m_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
                 renderer.sharedMaterial = material;
             }
         }
 
         void RestoreOriginalSelectionMaterials()
         {
-            if (k_SelectionRenderers.Count < 1)
+            if (m_SelectionRenderers.Count < 1)
                 return;
 
-            foreach (var renderer in k_SelectionRenderers)
+            foreach (var renderer in m_SelectionRenderers)
             {
                 Material originalMaterial;
-                if (k_SelectionOriginalMaterials.TryGetValue(renderer, out originalMaterial))
+                if (m_SelectionOriginalMaterials.TryGetValue(renderer, out originalMaterial))
                     renderer.sharedMaterial = originalMaterial;
             }
 
-            k_SelectionRenderers.Clear();
-            k_SelectionOriginalMaterials.Clear();
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
         }
 
         bool CheckAssignable(GameObject go, bool checkChildren = false)
