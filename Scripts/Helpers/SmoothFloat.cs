@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
@@ -12,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         /// The time period that the input values are averaged over
         /// </summary>
         const float k_Period = 0.125f;
-        const float k_HalfPeriod = k_Period*0.5f;
+        const float k_HalfPeriod = k_Period * 0.5f;
 
         // <summary>
         /// The number of discrete steps to store input samples in
@@ -22,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         /// <summary>
         /// The time period stored within a single step sample
         /// </summary>
-        const float k_SamplePeriod = k_Period/k_Steps;
+        const float k_SamplePeriod = k_Period / k_Steps;
 
         /// <summary>
         /// Weight to use for the most recent input sample, when doing prediction
@@ -34,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         /// If we are doing prediction, the time period we average over is stretched out
         /// to simulate having more data than we've actually recorded
         /// </summary>
-        const float k_PredictedPeriod = k_Period + k_SamplePeriod*k_AdditiveWeight;
+        const float k_PredictedPeriod = k_Period + k_SamplePeriod * k_AdditiveWeight;
 
         /// <summary>
         /// We need to keep one extra sample in our sample buffer to have a smooth transition
@@ -77,8 +78,8 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         float m_LastValue = 0.0f;
 
         // Output data
-        public float Speed { get; private set; }
-        public float PredictedValue { get; private set; }
+        public float speed { get; private set; }
+        public float predictedValue { get; private set; }
 
         /// <summary>
         /// Sets the Smoothed Float value to a 'known' linear state
@@ -90,11 +91,10 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_LastValue = currentValue;
 
             // Set new 'current' values that imply a held/steady float
-            Speed = 0.0f;
-            PredictedValue = m_LastValue;
-            
-            // Reset the sample array
+            speed = 0.0f;
+            predictedValue = m_LastValue;
 
+            // Reset the sample array
             m_CurrentSampleIndex = 0;
             m_Samples[0] = new Sample { value = currentValue, offset = 0.0f, time = k_Period };
         }
@@ -124,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             // Add new data to the current sample
             m_Samples[m_CurrentSampleIndex].offset += currentOffset;
             m_Samples[m_CurrentSampleIndex].time += timeSlice;
-            
+
             // Accumulate and generate our new smooth, predicted float values
             var combinedSample = new Sample();
             var sampleIndex = m_CurrentSampleIndex;
@@ -136,6 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 combinedSample.Accumulate(ref m_Samples[sampleIndex], overTimeScalar);
                 sampleIndex = (sampleIndex + 1) % k_SampleLength;
             }
+
             var oldestValue = combinedSample.value;
 
             // Another accumulation step to weight the most recent values stronger for prediction
@@ -149,9 +150,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             }
 
             // Our combo sample is ready to be used to generate smooth output
-            Speed = combinedSample.offset / combinedSample.time;
+            speed = combinedSample.offset / combinedSample.time;
 
-            PredictedValue = oldestValue + Speed * k_SamplePeriod;
+            predictedValue = oldestValue + speed * k_SamplePeriod;
 
             // If the current sample is full, clear out the oldest sample and make that the new current sample
             if (m_Samples[m_CurrentSampleIndex].time < k_SamplePeriod)
@@ -165,4 +166,4 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         }
     }
 }
-
+#endif

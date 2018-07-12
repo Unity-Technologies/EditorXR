@@ -648,7 +648,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
                 else
                 {
-                    var drawInput = Mathf.Lerp(rawInput, m_SmoothInput.PredictedValue, m_Preferences.pressureSmoothing);
+                    var drawInput = Mathf.Lerp(rawInput, m_SmoothInput.predictedValue, m_Preferences.pressureSmoothing);
                     isHeld = (drawInput > k_MinDrawStrength);
  
                     m_DrawStrength = (drawInput - k_MinDrawStrength) * k_DrawPressureScale;
