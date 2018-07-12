@@ -480,7 +480,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 var point = m_Points[i];
                 var segment = point - lastPoint;
-
                 var width = m_Widths[i];
 
                 if (!m_Preferences.pressureSensitive)
@@ -531,7 +530,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             m_CurrentMesh.RecalculateBounds();
             m_CurrentMesh.RecalculateNormals();
-
             m_CurrentMesh.UploadMeshData(false);
 
             CenterHolder();
@@ -654,7 +652,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     m_DrawStrength = (drawInput - k_MinDrawStrength) * k_DrawPressureScale;
                 }
             }
-            
+
             var isPressed = !m_WasDrawing && isHeld;
             var isReleased = m_WasDrawing && !isHeld;
             m_WasDrawing = isHeld;
@@ -760,7 +758,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 var mesh = new Mesh();
                 mesh.CombineMeshes(combines.ToArray(), false, true);
                 group.AddComponent<MeshFilter>().sharedMesh = mesh;
-
                 group.AddComponent<MeshRenderer>().sharedMaterials = materials.ToArray();
 
                 this.AddToSpatialHash(group);
