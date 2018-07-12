@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -14,11 +14,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         Toggle m_GroupToggleMesh;
+
         [SerializeField]
         Toggle m_GroupToggleTransform;
 
         [SerializeField]
         Toggle m_PressureToggleOn;
+
         [SerializeField]
         Toggle m_PressureToggleOff;
 
@@ -31,13 +33,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         [SerializeField]
         Slider m_ColorSlider;
 
+        AnnotationTool.Preferences m_Preferences;
+        bool m_InsideUIUpdate;
+
         public Action close;
         public Action<Color> colorChanged;
 
-        public Transform toolRayOrigin
-        {
-            set { m_ColorPicker.toolRayOrigin = value; }
-        }
+        public Transform toolRayOrigin { set { m_ColorPicker.toolRayOrigin = value; } }
 
         public Bounds localBounds { get; private set; }
         public int priority { get { return 1; } }
@@ -50,10 +52,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 UpdatePreferences();
             }
         }
-
-        AnnotationTool.Preferences m_Preferences;
-
-        bool m_InsideUIUpdate = false;
 
         public MenuHideFlags menuHideFlags
         {
@@ -68,7 +66,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             close();
         }
 
-
         void Awake()
         {
             localBounds = ObjectUtils.GetBounds(transform);
@@ -79,9 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_GroupToggleTransform.onValueChanged.AddListener(GroupToggleEventTransform);
             m_PressureToggleOn.onValueChanged.AddListener(PressureToggleEventOn);
             m_PressureToggleOff.onValueChanged.AddListener(PressureToggleEventOff);
-
             m_PressureSlider.onValueChanged.AddListener(PressureSliderChanged);
-
             m_ColorPicker.onColorPicked = ColorPickerChanged;
         }
 
@@ -137,6 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 m_Preferences.meshGroupingMode = isOn;
             }
+
             UpdateGroupToggle();
         }
 
@@ -149,6 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 m_Preferences.meshGroupingMode = !isOn;
             }
+
             UpdateGroupToggle();
         }
 
@@ -161,6 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 m_Preferences.pressureSensitive = isOn;
             }
+
             UpdatePressureToggle();
         }
 
@@ -173,6 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 m_Preferences.pressureSensitive = !isOn;
             }
+
             UpdatePressureToggle();
         }
 
@@ -185,6 +184,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 m_Preferences.pressureSmoothing = value;
             }
+
             UpdatePressureSlider();
         }
 
@@ -197,6 +197,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 m_Preferences.annotationColor = color;
             }
+
             colorChanged(color);
         }
     }
