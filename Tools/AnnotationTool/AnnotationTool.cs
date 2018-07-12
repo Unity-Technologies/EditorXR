@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             bool m_PressureSensitive = true;
 
             [SerializeField]
-            float m_PressureSmoothing = 0.0f;
+            float m_PressureSmoothing;
 
             public bool meshGroupingMode
             {
@@ -126,8 +126,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         GameObject m_ToolMenu;
 
-        bool m_WasDrawing = false;
-        float m_DrawStrength = 0.0f;
+        bool m_WasDrawing;
+        float m_DrawStrength;
         SmoothFloat m_SmoothInput = new SmoothFloat();
 
         public bool primary { private get; set; }
