@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var gazeRotationDifference = Quaternion.Angle(currentGazeSourceRotation, m_PreviousGazeRotation);
             gazeRotationDifference *= gazeRotationDifference; // Square the difference for intended response curve/shape
             m_GazeVelocity = m_GazeVelocity + gazeRotationDifference * Time.unscaledDeltaTime;
-            m_GazeVelocity = Mathf.Clamp01(m_GazeVelocity -= Time.unscaledDeltaTime);
+            m_GazeVelocity = Mathf.Clamp01(m_GazeVelocity - Time.unscaledDeltaTime);
             m_PreviousGazeRotation = currentGazeSourceRotation; // Cache the previous camera rotation
         }
 
