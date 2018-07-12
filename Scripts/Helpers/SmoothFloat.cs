@@ -72,10 +72,10 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         // We don't need to store the 'end' index in our array, as when we reset we always
         // make sure the frame time in that reset sample is the maximum we need
         int m_CurrentSampleIndex = -1;
-        Sample[] m_Samples = new Sample[k_SampleLength];
+        readonly Sample[] m_Samples = new Sample[k_SampleLength];
 
         // Previous-frame history for integrating velocity
-        float m_LastValue = 0.0f;
+        float m_LastValue;
 
         // Output data
         public float speed { get; private set; }
@@ -122,8 +122,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_LastValue = newValue;
 
             // Add new data to the current sample
-            m_Samples[m_CurrentSampleIndex].offset += currentOffset;
-            m_Samples[m_CurrentSampleIndex].time += timeSlice;
+            var currentSample = m_Samples[m_CurrentSampleIndex];
+            currentSample.offset += currentOffset;
+            currentSample.time += timeSlice;
 
             // Accumulate and generate our new smooth, predicted float values
             var combinedSample = new Sample();
@@ -141,11 +142,10 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
             // Another accumulation step to weight the most recent values stronger for prediction
             sampleIndex = m_CurrentSampleIndex;
-            while (combinedSample.time < k_PredictedPeriod)
+            while (combinedSample.time < k_PredictedPeriod) // combinedSample's time is altered in the Accumulate call below
             {
                 var overTimeScalar = Mathf.Clamp01((k_PredictedPeriod - combinedSample.time) / m_Samples[sampleIndex].time);
-
-                combinedSample.Accumulate(ref m_Samples[sampleIndex], overTimeScalar);
+                combinedSample.Accumulate(ref m_Samples[sampleIndex], overTimeScalar); // adjusts sample's time+offset values
                 sampleIndex = (sampleIndex + 1) % k_SampleLength;
             }
 
@@ -155,13 +155,13 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             predictedValue = oldestValue + speed * k_SamplePeriod;
 
             // If the current sample is full, clear out the oldest sample and make that the new current sample
-            if (m_Samples[m_CurrentSampleIndex].time < k_SamplePeriod)
+            if (currentSample.time < k_SamplePeriod)
             {
                 return;
             }
 
-            m_Samples[m_CurrentSampleIndex].value = newValue;
-            m_CurrentSampleIndex = ((m_CurrentSampleIndex - 1) + k_SampleLength) % k_SampleLength;
+            currentSample.value = newValue;
+            m_CurrentSampleIndex = (m_CurrentSampleIndex - 1 + k_SampleLength) % k_SampleLength;
             m_Samples[m_CurrentSampleIndex] = new Sample();
         }
     }
