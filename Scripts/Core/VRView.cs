@@ -381,9 +381,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 #endif
 
-            #if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
                 GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-            #endif
+#endif
 
             UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
@@ -391,9 +391,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
-            #if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
                 GL.sRGBWrite = false;
-            #endif
+#endif
         }
 
         private void Update()
