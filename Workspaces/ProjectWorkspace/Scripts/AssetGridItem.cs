@@ -450,6 +450,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     {
                         var assignable = CheckAssignable(selection);
                         SetAssignableHighlight(selection, rayOrigin, assignable);
+
                         if (assignable)
                             PreviewMaterialOnSelection(selection);
                     }
