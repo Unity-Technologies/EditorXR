@@ -122,9 +122,8 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_LastValue = newValue;
 
             // Add new data to the current sample
-            var currentSample = m_Samples[m_CurrentSampleIndex];
-            currentSample.offset += currentOffset;
-            currentSample.time += timeSlice;
+            m_Samples[m_CurrentSampleIndex].offset += currentOffset;
+            m_Samples[m_CurrentSampleIndex].time += timeSlice;
 
             // Accumulate and generate our new smooth, predicted float values
             var combinedSample = new Sample();
@@ -155,12 +154,12 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             predictedValue = oldestValue + speed * k_SamplePeriod;
 
             // If the current sample is full, clear out the oldest sample and make that the new current sample
-            if (currentSample.time < k_SamplePeriod)
+            if (m_Samples[m_CurrentSampleIndex].time < k_SamplePeriod)
             {
                 return;
             }
 
-            currentSample.value = newValue;
+            m_Samples[m_CurrentSampleIndex].value = newValue;
             m_CurrentSampleIndex = (m_CurrentSampleIndex - 1 + k_SampleLength) % k_SampleLength;
             m_Samples[m_CurrentSampleIndex] = new Sample();
         }
