@@ -1,7 +1,7 @@
 ﻿#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
-    [ActionMenuItem("Play", addToSpatialMenu: false)]
+    [ActionMenuItem("Play")]
     sealed class Play : BaseAction
     {
         public override void ExecuteAction()

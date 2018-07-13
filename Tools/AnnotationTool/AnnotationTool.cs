@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -18,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback, IConnectInterfaces, ISpatialMenuCustomDescription
+        IUsesNode, IRequestFeedback, IConnectInterfaces
     {
         [Serializable]
         class Preferences
@@ -58,7 +59,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const string k_AnnotationFormatStrig = "Annotation {0}";
         const string k_MainHolderName = "Annotations";
         const string k_MeshName = "Annotation";
-        const string k_SpatialMenuDescription = "Annotate objects & draw in your scene";
 
         public const float TipDistance = 0.05f;
         public const float MinBrushSize = 0.0025f;
@@ -123,12 +123,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform alternateMenuOrigin { private get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreActionMapInputLocking { get { return false; } }
+        public bool ignoreLocking { get { return false; } }
 
         public List<ILinkedObject> linkedObjects { private get; set; }
         public Node node { private get; set; }
-
-        public string spatialMenuCustomDescription { get { return k_SpatialMenuDescription; } }
 
         public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 

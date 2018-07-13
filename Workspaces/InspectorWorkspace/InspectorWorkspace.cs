@@ -358,7 +358,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             Undo.postprocessModifications -= OnPostprocessModifications;
             Undo.undoRedoPerformed -= UpdateCurrentObject;
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.hierarchyChanged -= UpdateCurrentObject;
+#else
             EditorApplication.hierarchyWindowChanged -= UpdateCurrentObject;
+#endif
             base.OnDestroy();
         }
 

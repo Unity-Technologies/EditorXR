@@ -39,6 +39,11 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
         public float shakeStrength { get; private set; }
 
         /// <summary>
+        /// The direction this object is shaking in this frame
+        /// </summary>
+        public Vector3 shakeAxis { get; private set; }
+
+        /// <summary>
         /// Initializes the shake tracker's history storage and stabilizes it at its current position
         /// </summary>
         /// <param name="startPoint"></param>
@@ -81,6 +86,7 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
 
             // Update positions and distance value
             var currentOffset = newPosition - m_LastPosition;
+            shakeAxis = currentOffset.normalized;
             var newDistance = currentOffset.magnitude;
 
             m_LastPosition = newPosition;

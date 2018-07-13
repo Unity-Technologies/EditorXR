@@ -40,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly FeedbackDictionary m_FeedbackRequests = new FeedbackDictionary();
 
         public ActionMap actionMap { get { return m_ProxyActionMap; } }
-        public bool ignoreActionMapInputLocking { get { return true; } }
+        public bool ignoreLocking { get { return true; } }
 
         public Node node { private get; set; }
 

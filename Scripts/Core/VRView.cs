@@ -347,7 +347,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (e.type == EventType.Repaint)
                 {
+#if UNITY_2018_1_OR_NEWER
+                    GL.sRGBWrite = false;
+#else
                     GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+#endif
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
                     GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
                     GL.sRGBWrite = false;
@@ -377,12 +381,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 #endif
 
+            #if UNITY_2018_1_OR_NEWER
+                GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+            #endif
+
             UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
             {
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
+            #if UNITY_2018_1_OR_NEWER
+                GL.sRGBWrite = false;
+            #endif
         }
 
         private void Update()

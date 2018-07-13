@@ -27,13 +27,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void OnEnable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.projectChanged += UpdateProjectFolders;
+#else
             EditorApplication.projectWindowChanged += UpdateProjectFolders;
+#endif
             UpdateProjectFolders();
         }
 
         void OnDisable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.projectChanged -= UpdateProjectFolders;
+#else
             EditorApplication.projectWindowChanged -= UpdateProjectFolders;
+#endif
         }
 
         public void AddConsumer(IUsesProjectFolderData consumer)

@@ -134,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreActionMapInputLocking { get { return false; } }
+        public bool ignoreLocking { get { return false; } }
 
         public Transform leftRayOrigin
         {

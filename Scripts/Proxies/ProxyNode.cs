@@ -406,7 +406,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// The transform that the display/preview objects will be parented under
         /// </summary>
         public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
-
         void Awake()
         {
             // Don't allow setup if affordances are invalid
