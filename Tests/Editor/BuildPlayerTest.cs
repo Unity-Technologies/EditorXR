@@ -50,7 +50,6 @@ namespace UnityEditor.Experimental.EditorVR.Tests
             Assert.AreEqual(0, output.summary.totalErrors);
 # else
             string output = BuildPipeline.BuildPlayer(EditorBuildSettings.scenes, "Temp/" + target, target, BuildOptions.BuildScriptsOnly);
-
             if (output.Contains("target is not supported"))
                 Assert.Inconclusive("Target platform {0} not installed", target);
 
