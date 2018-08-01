@@ -244,6 +244,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         // Action Map interface members
         public ActionMap actionMap { get { return m_ActionMap; } set { m_ActionMap = value; } }
+        public bool ignoreLocking { get; private set; }
         public bool ignoreActionMapInputLocking { get; private set; }
 
         // IDetectSpatialInput implementation
