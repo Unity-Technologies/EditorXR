@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: d818a287c7a023a4c9b2217c28323e72
+timeCreated: 18446744011573954816
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - instructions: {instanceID: 0}
+  - ringPrefab: {fileID: 1016627027887716, guid: 86c24572a2f561c40acaeda68c064c43,
+      type: 2}
+  - ring: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
