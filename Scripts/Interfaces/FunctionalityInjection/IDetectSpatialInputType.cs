@@ -1,7 +1,5 @@
 ﻿#if UNITY_EDITOR
-using System;
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {

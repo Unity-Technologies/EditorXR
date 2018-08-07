@@ -1,22 +1,13 @@
 ﻿#if UNITY_EDITOR
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.NetworkInformation;
-using TMPro;
-using TMPro.Examples;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Proxies;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Playables;
-using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 namespace UnityEditor.Experimental.EditorVR

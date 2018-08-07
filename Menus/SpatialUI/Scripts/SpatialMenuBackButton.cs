@@ -17,7 +17,6 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Action OnSelected { get; set; }
 
-
         public void OnRayEnter(RayEventData eventData)
         {
             if (OnHoverEnter != null)

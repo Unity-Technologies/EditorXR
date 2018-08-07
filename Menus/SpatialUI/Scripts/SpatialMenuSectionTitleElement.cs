@@ -36,9 +36,6 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         float m_HighlightedZOffset = -0.005f;
 
-        //[SerializeField]
-        //Image m_BackgroundImage;
-
         [Header("Haptic Pulses")]
         [SerializeField]
         HapticPulse m_HighlightPulse;

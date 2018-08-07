@@ -1,16 +1,14 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEditor.Experimental.EditorVR;
-using UnityEditor.Experimental.EditorVR.Actions;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputNew;
 using UnityEngine.Playables;
 using UnityEngine.UI;
 using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialMenu.SpatialInterfaceState;
@@ -857,3 +855,4 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
         m_ReturnToPreviousLevelTransitionCoroutine = null;
     }
 }
+#endif
