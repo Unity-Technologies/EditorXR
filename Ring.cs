@@ -4,13 +4,18 @@ using UnityEngine;
 using TMPro;
 
 public class Ring : MonoBehaviour {
-
-    public Transform ringTr;
-    public TextMeshProUGUI text;
-    public TextMeshProUGUI coords;
-    public float fadeAwaySpeed = 1f;
-    public float fadeInSpeed = 5f;
-    public LineRenderer lineA, lineB;
+    [SerializeField]
+    Transform ringTr;
+    [SerializeField]
+    TextMeshProUGUI text;
+    [SerializeField]
+    TextMeshProUGUI coords;
+    [SerializeField]
+    float fadeAwaySpeed = 1f;
+    [SerializeField]
+    float fadeInSpeed = 5f;
+    [SerializeField]
+    LineRenderer lineA, lineB;
 
     Material m_ringMat;
     float m_initAltitude;

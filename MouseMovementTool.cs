@@ -13,16 +13,9 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class MouseMovementTool : MonoBehaviour, ITool, ILocomotor, IRayVisibilitySettings,
-        /*ICustomActionMap,*/ ILinkedObject, IUsesViewerScale,
+        /*ICustomActionMap, ILinkedObject,*/ IUsesViewerScale,
         IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback
     {
-        public List<ILinkedObject> linkedObjects
-        {
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
 
         public Transform cameraRig
         {
@@ -34,87 +27,71 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 throw new NotImplementedException();
             }
         }
+        [SerializeField]
+        GameObject m_instructions;
+        [SerializeField]
+        float m_movementMultiplier = .1f;
+        [SerializeField]
+        GameObject m_ringPrefab;
+        [SerializeField]
+        Ring m_ring;
 
-        //public ActionMap actionMap
-        //{
-        //    get
-        //    {
-        //        throw new NotImplementedException();
-        //    }
-        //}
-
-        public bool ignoreLocking
+        void Start()
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        //public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
-        public GameObject instructions;
-        public float movementMultiplier = .1f;
-        public GameObject ringPrefab;
-        public Ring ring;
-
-        private void ToggleInstructions()
-        {
-            if(instructions)
-                instructions.SetActive(!instructions.activeSelf);
-        }
-
-        private void Start()
-        {
-            GameObject instance = Instantiate(ringPrefab, cameraRig, false);
+            GameObject instance = Instantiate(m_ringPrefab, cameraRig, false);
             instance.transform.localPosition = new Vector3(0f, -0.09f, 0.18f);
-            ring = instance.GetComponent<Ring>();
+            m_ring = instance.GetComponent<Ring>();
         }
 
-        private void FixedUpdate()
+        void FixedUpdate()
         {
+            bool k_mouse0 = UnityEngine.Input.GetMouseButton(0);
+            bool k_mouse0down = UnityEngine.Input.GetMouseButtonDown(0);
+            bool k_mouse1 = UnityEngine.Input.GetMouseButton(1);
+            bool k_mouse1down = UnityEngine.Input.GetMouseButtonDown(1);
 
-            if (UnityEngine.Input.GetMouseButtonDown(0) && UnityEngine.Input.GetMouseButtonDown(1) ||
-           UnityEngine.Input.GetMouseButton(0) && UnityEngine.Input.GetMouseButtonDown(1) ||
-           UnityEngine.Input.GetMouseButtonDown(0) && UnityEngine.Input.GetMouseButton(1))
+            if (k_mouse0down && k_mouse1down ||
+           k_mouse0 && k_mouse1down ||
+           k_mouse0down && k_mouse1)
             {
                 ToggleInstructions();
             }
-            if (UnityEngine.Input.GetMouseButton(0))
+            if (k_mouse0)
             {
-                Vector3 forward = Vector3.Scale(cameraRig.forward, new Vector3(1f, 0f, 1f)).normalized;
-                Vector3 right = Vector3.Scale(cameraRig.right, new Vector3(1f, 0f, 1f)).normalized;
-                Vector3 delta = (UnityEngine.Input.GetAxis("Mouse X") * right + UnityEngine.Input.GetAxis("Mouse Y") * forward) * movementMultiplier;
-                //Debug.Log(delta.normalized);
+                const string k_mouseX = "Mouse X";
+                const string k_mouseY = "Mouse Y";
+
+                Vector3 k_forward = Vector3.Scale(cameraRig.forward, new Vector3(1f, 0f, 1f)).normalized;
+                Vector3 k_right = Vector3.Scale(cameraRig.right, new Vector3(1f, 0f, 1f)).normalized;
+                Vector3 delta = (UnityEngine.Input.GetAxis(k_mouseX) * k_right + UnityEngine.Input.GetAxis(k_mouseY) * k_forward) * m_movementMultiplier;
+                
                 cameraRig.position += delta;
 
-                //Update trackball
-                //ball.rotation = Quaternion.AngleAxis(-UnityEngine.Input.GetAxis("Mouse X") * movementMultiplier * 10f, trackball.forward)
-                //    * Quaternion.AngleAxis(UnityEngine.Input.GetAxis("Mouse Y") * movementMultiplier * 10f, trackball.right) * ball.rotation;
-
-                //Send info to Ring
-                ring.SetEffectWorldDirection(delta.normalized);
+                m_ring.SetEffectWorldDirection(delta.normalized);
             }
 
             float deltaScroll = UnityEngine.Input.mouseScrollDelta.y;
             cameraRig.position += deltaScroll * Vector3.up * 0.1f;
             if (deltaScroll != 0f)
             {
-                //Send info to Ring
-                ring.SetEffectCore();
+                m_ring.SetEffectCore();
                 if (deltaScroll > 0f)
                 {
-                    ring.SetEffectCoreUp();
+                    m_ring.SetEffectCoreUp();
                 }
                 else
                 {
-                    ring.SetEffectCoreDown();
+                    m_ring.SetEffectCoreDown();
                 }
             }
         }
-}
+
+        void ToggleInstructions()
+        {
+            if (m_instructions)
+                m_instructions.SetActive(!m_instructions.activeSelf);
+        }
+
+    }
 }
 #endif
