@@ -83,7 +83,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<GameObject> m_BlockSelectHoverGameObjects = new List<GameObject>();
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
+
 
         public Transform rayOrigin { get; set; }
         public Node node { private get; set; }

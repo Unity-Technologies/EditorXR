@@ -13,9 +13,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Collection housing objects whose scroll data is being processed
         readonly List<IControlSpatialScrolling> m_ScrollCallers = new List<IControlSpatialScrolling>();
 
-        public class SpatialScrollData : INodeToRay
+        public class SpatialScrollDataDeprecated : INodeToRay
         {
-            public SpatialScrollData(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
+            public SpatialScrollDataDeprecated(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
             {
                 this.caller = caller;
                 this.node = node;
@@ -104,30 +104,30 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
+        internal SpatialScrollDataDeprecated PerformScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
         {
             // Continue processing of spatial scrolling for a given caller,
             // Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
-            SpatialScrollData scrollData = null;
+            SpatialScrollDataDeprecated scrollDataDeprecated = null;
             foreach (var scroller in m_ScrollCallers)
             {
                 if (scroller == caller)
                 {
-                    scrollData = scroller.spatialScrollData;
-                    scrollData.UpdateExistingScrollData(currentPosition);
+                    scrollDataDeprecated = scroller.SpatialScrollDataDeprecated;
+                    scrollDataDeprecated.UpdateExistingScrollData(currentPosition);
                     break;
                 }
             }
 
-            if (scrollData == null)
+            if (scrollDataDeprecated == null)
             {
-                scrollData = new SpatialScrollData(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
+                scrollDataDeprecated = new SpatialScrollDataDeprecated(caller, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerScrollVisuals);
                 m_ScrollCallers.Add(caller);
-                this.AddRayVisibilitySettings(scrollData.rayOrigin, caller, false, false, 1);
+                this.AddRayVisibilitySettings(scrollDataDeprecated.rayOrigin, caller, false, false, 1);
             }
 
             var directionVector = currentPosition - startingPosition;
-            if (scrollData.spatialDirection == null)
+            if (scrollDataDeprecated.spatialDirection == null)
             {
                 var newDirectionVectorThreshold = 0.0175f; // Initial magnitude beyond which spatial scrolling will be evaluated
                 newDirectionVectorThreshold *= this.GetViewerScale();
@@ -138,24 +138,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 const float kPulseOnAmount = 1f;
                 const float kPulseOffAmount = 0f;
                 var repeatingPulseAmount = Mathf.Sin(Time.realtimeSinceStartup * kPulseSpeedMultiplier) > kPulseThreshold ? kPulseOnAmount : kPulseOffAmount; // Perform an on/off repeating pulse while waiting for the drag threshold to be crossed
-                scrollData.dragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set value representing how much of the pre-scroll drag amount has occurred
+                scrollDataDeprecated.dragDistance = dragMagnitude > 0 ? dragPercentage : 0f; // Set value representing how much of the pre-scroll drag amount has occurred
                 this.Pulse(node, m_ActivationPulse, repeatingPulseAmount, repeatingPulseAmount);
                 if (dragMagnitude > newDirectionVectorThreshold)
-                    scrollData.spatialDirection = directionVector; // Initialize vector defining the spatial scroll direction
+                    scrollDataDeprecated.spatialDirection = directionVector; // Initialize vector defining the spatial scroll direction
             }
             else
             {
-                var spatialDirection = scrollData.spatialDirection.Value;
+                var spatialDirection = scrollDataDeprecated.spatialDirection.Value;
                 var scrollingAfterTriggerOirigin = Vector3.Dot(directionVector, spatialDirection) >= 0; // Detect that the user is scrolling forward from the trigger origin point
                 var projectionVector = scrollingAfterTriggerOirigin ? spatialDirection : spatialDirection + spatialDirection;
                 var projectedAmount = Vector3.Project(directionVector, projectionVector).magnitude / this.GetViewerScale();
 
                 // Mandate that scrolling maintain the initial direction, regardless of the user scrolling before/after the trigger origin point; prevent direction flipping
                 projectedAmount = scrollingAfterTriggerOirigin ? projectedAmount : 1 - projectedAmount;
-                scrollData.normalizedLoopingPosition = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
+                scrollDataDeprecated.normalizedLoopingPosition = (Mathf.Abs(projectedAmount * (maxItemCount / scrollableItemCount)) % repeatingScrollLengthRange) * (1 / repeatingScrollLengthRange);
             }
 
-            return scrollData;
+            return scrollDataDeprecated;
         }
 
         internal void EndScroll(IControlSpatialScrolling caller)
@@ -167,9 +167,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 if (scroller == caller)
                 {
-                    this.RemoveRayVisibilitySettings(caller.spatialScrollData.rayOrigin, caller);
+                    this.RemoveRayVisibilitySettings(caller.SpatialScrollDataDeprecated.rayOrigin, caller);
                     this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
-                    caller.spatialScrollData = null; // clear reference to the previously used scrollData
+                    caller.SpatialScrollDataDeprecated = null; // clear reference to the previously used scrollData
                     m_ScrollCallers.Remove(caller);
                     return;
                 }

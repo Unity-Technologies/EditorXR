@@ -16,15 +16,38 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// The data defining a spatial scroll operation
         /// </summary>
-        SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
+        SpatialScrollModule.SpatialScrollDataDeprecated SpatialScrollDataDeprecated { get; set; }
+        /*
+        /// <summary>
+        /// The transform, whose world position will be utilized as the starting position for spatial scroll processing/evaluation
+        /// </summary>
+        Transform spatialScrollOrigin { get; }
+
+        /// <summary>
+        /// The cached worldspace position at which a spatial scroll is initiated
+        /// This position is evaluated for distance/magnitude divergence as the spatialScrollOrigin is dragged away from this cached position
+        /// </summary>
+        Vector3 spatialScrollStartPosition { get; }
+
+        /// <summary>
+        /// The window of time, added to Time.realtimeSinceStartup, during which a quick start, then stop of a spatial scroll can perform a custom "quick" action/toggle
+        /// </summary>
+        float spatialQuickToggleDuration { get; }
+
+        /// <summary>
+        /// When a brief start, then immediate stop/end of a spatial scroll occurs before this duration, support a custom "quick" action
+        /// This action should be set upon the start of a spatial scroll action as "Time.realtimeSinceStartup + quickToggleDuration"
+        /// </summary>
+        float allowSpatialQuickToggleActionBeforeThisTime { get; }
+        */
     }
 
     public static class IControlSpatialScrollingMethods
     {
-        internal delegate SpatialScrollModule.SpatialScrollData PerformSpatialScrollDelegate(IControlSpatialScrolling caller, Node node, Vector3 startingPosition,
+        internal delegate SpatialScrollModule.SpatialScrollDataDeprecated PerformSpatialScrollDelegateDeprecated(IControlSpatialScrolling caller, Node node, Vector3 startingPosition,
             Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true);
 
-        internal static PerformSpatialScrollDelegate performSpatialScroll { private get; set; }
+        internal static PerformSpatialScrollDelegateDeprecated performSpatialScrollDeprecated { private get; set; }
         internal static Action<IControlSpatialScrolling> endSpatialScroll { private get; set; }
 
         /// <summary>
@@ -39,10 +62,10 @@ namespace UnityEditor.Experimental.EditorVR
         /// <param name="maxItemCount">The maximum number of items that can be scrolled through for this action</param>
         /// <param name="centerVisuals">If true, expand the scroll line visuals outward in both directions from the scroll start position</param>
         /// <returns>The spatial scroll data for a single scroll action, but an individual caller object</returns>
-        public static SpatialScrollModule.SpatialScrollData PerformSpatialScroll(this IControlSpatialScrolling obj, Node node,
+        public static SpatialScrollModule.SpatialScrollDataDeprecated PerformSpatialScrollDeprecated(this IControlSpatialScrolling obj, Node node,
             Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
         {
-            return performSpatialScroll(obj, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
+            return performSpatialScrollDeprecated(obj, node, startingPosition, currentPosition, repeatingScrollLengthRange, scrollableItemCount, maxItemCount, centerVisuals);
         }
 
         /// <summary>

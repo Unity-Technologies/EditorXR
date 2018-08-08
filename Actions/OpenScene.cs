@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
-    [ActionMenuItem("OpenScene", "Scene")]
+    [ActionMenuItem("OpenScene", "Scene", addToSpatialMenu: false)]
     sealed class OpenScene : BaseAction
     {
         public override void ExecuteAction()
