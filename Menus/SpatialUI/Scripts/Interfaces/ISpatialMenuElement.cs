@@ -1,29 +1,31 @@
 ﻿#if UNITY_EDITOR
 using System;
-using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.UI;
 
-public interface ISpatialMenuElement
+namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    GameObject gameObject { get; }
+    public interface ISpatialMenuElement
+    {
+        GameObject gameObject { get; }
 
-    bool highlighted { set; }
+        bool highlighted { set; }
 
-    bool visible { set; }
+        bool visible { set; }
 
-    Button button { get; }
+        Button button { get; }
 
-    Action <Transform, Action, string, string> Setup { get; }
+        Action<Transform, Action, string, string> Setup { get; }
 
-    Action selected { get; set; }
+        Action selected { get; set; }
 
-    Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
+        Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
 
-    SpatialMenu.SpatialMenuData parentMenuData { get; set; }
+        SpatialMenu.SpatialMenuData parentMenuData { get; set; }
 
-    Action correspondingFunction { get; set; }
+        Action correspondingFunction { get; set; }
 
-    Action onHiddenAction { get; set; }
+        Action onHiddenAction { get; set; }
+    }
 }
 #endif
