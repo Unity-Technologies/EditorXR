@@ -1,8 +1,9 @@
 ﻿Shader "EditorVR/SpatialUI/SpatialUIBackground"
 {
-	Properties
-	{
+    Properties
+    {
         _Color("Main Color", Color) = (1,1,1,1)
+        _MainTex("Albedo", 2D) = "white" {}
     }
 
     SubShader
@@ -25,28 +26,35 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+
             uniform half4 _Color;
+            sampler2D _MainTex;
  
             struct vertexInput
             {
                 float4 position: POSITION;
+                float2 texcoord: TEXCOORD0;
             };
  
             struct v2f
             {
                 float4 pos : SV_POSITION;
+                half2 texcoord: TEXCOORD0;
             };
  
             v2f vert(vertexInput input)
             {
-                v2f o;
-                o.pos = UnityObjectToClipPos(input.position);
-                return o;
+                v2f output;
+                output.pos = UnityObjectToClipPos(input.position);
+                output.texcoord = input.texcoord;
+                return output;
             }
  
             half4 frag(v2f input) : COLOR
             {
-                return _Color;
+                half4 color = tex2D(_MainTex, input.texcoord) * _Color;
+
+                return color;
             } 
             ENDCG
         }
