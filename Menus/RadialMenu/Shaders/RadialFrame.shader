@@ -37,8 +37,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 
 		[Enum(UV0,0,UV1,1)] _UVSec ("UV Set for secondary textures", Float) = 0
 
-
-		// Blending state
 		[HideInInspector] _Mode ("__mode", Float) = 0.0
 		[HideInInspector] _SrcBlend ("__src", Float) = 1.0
 		[HideInInspector] _DstBlend ("__dst", Float) = 0.0
@@ -60,7 +58,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 			Comp NotEqual
 		}
 
-		// ------------------------------------------------------------------
 		//  Base forward pass (directional light, emission, lightmaps, ...)
 		Pass
 		{
@@ -74,8 +71,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 			CGPROGRAM
 			#pragma target 3.0
 
-			// -------------------------------------
-
 			#pragma shader_feature _NORMALMAP
 			#pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature _EMISSION
@@ -85,16 +80,14 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 			#pragma shader_feature _ _SPECULARHIGHLIGHTS_OFF
 			#pragma shader_feature _ _GLOSSYREFLECTIONS_OFF
 			#pragma shader_feature _PARALLAXMAP
-
 			#pragma multi_compile_fwdbase
-
 			#pragma vertex vertBase
 			#pragma fragment fragBase
 			#include "UnityStandardCoreForward.cginc"
 
 			ENDCG
 		}
-		// ------------------------------------------------------------------
+
 		//  Additive forward pass (one light per pass)
 		Pass
 		{
@@ -108,9 +101,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 			CGPROGRAM
 			#pragma target 3.0
 
-			// -------------------------------------
-
-
 			#pragma shader_feature _NORMALMAP
 			#pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma shader_feature _METALLICGLOSSMAP
@@ -121,14 +111,13 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 
 			#pragma multi_compile_fwdadd_fullshadows
 
-
 			#pragma vertex vertAdd
 			#pragma fragment fragAdd
 			#include "UnityStandardCoreForward.cginc"
 
 			ENDCG
 		}
-		// ------------------------------------------------------------------
+
 		//  Shadow rendering pass
 		Pass
 		{
@@ -139,10 +128,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 
 			CGPROGRAM
 			#pragma target 3.0
-
-			// -------------------------------------
-
-
 			#pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
 			#pragma multi_compile_shadowcaster
 
@@ -163,9 +148,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 			CGPROGRAM
 			#pragma target 3.0
 			#pragma exclude_renderers nomrt
-
-
-			// -------------------------------------
 
 			#pragma shader_feature _NORMALMAP
 			#pragma shader_feature _ _ALPHATEST_ON _ALPHABLEND_ON _ALPHAPREMULTIPLY_ON
@@ -189,7 +171,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 			ENDCG
 		}
 
-		// ------------------------------------------------------------------
 		// Extracts information for lightmapping, GI (emission, albedo, ...)
 		// This pass it not used during regular rendering.
 		Pass
