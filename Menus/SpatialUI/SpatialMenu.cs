@@ -343,7 +343,7 @@ namespace UnityEditor.Experimental.EditorVR
                     // Prevent menus/tools/etc that are instantiated multiple times from adding their contents to the Spatial Menu
                     if (!s_SpatialMenuData.Where(existingData => String.Equals(existingData.spatialMenuName, menuData.spatialMenuName)).Any())
                     {
-                        Debug.LogWarning("Adding a spatial menu collection of type : " + menuData.spatialMenuName);
+                        Debug.Log("Adding a spatial menu collection of type : " + menuData.spatialMenuName);
                         s_SpatialMenuData.Add(menuData);
                     }
                 }
@@ -544,7 +544,7 @@ namespace UnityEditor.Experimental.EditorVR
                             continue;
 
                         var isAboveDivergenceThreshold = IsAboveDivergenceThreshold(origin, m_SpatialMenuUi.adaptiveTransform, 45);
-                        Debug.LogError(origin.name + "<color=green> opposite ray origin divergence value : </color>" + isAboveDivergenceThreshold);
+                        Debug.Log(origin.name + "<color=green> opposite ray origin divergence value : </color>" + isAboveDivergenceThreshold);
 
                         if (!isAboveDivergenceThreshold)
                             m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay;

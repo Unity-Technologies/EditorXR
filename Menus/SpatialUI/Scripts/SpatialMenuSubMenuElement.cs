@@ -210,7 +210,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         IEnumerator AnimateVisibility(bool fadeIn)
         {
-            Debug.LogError("Animating visible of submenu button : " + fadeIn);
+            Debug.Log("Animating visiblity of submenu button : " + fadeIn);
             var currentAlpha = fadeIn ? 0f : m_CanvasGroup.alpha;
             var targetAlpha = fadeIn ? 1f : 0f;
             var alphaTransitionAmount = 0f;

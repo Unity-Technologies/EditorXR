@@ -206,7 +206,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
                 //gameObject.SetActive(true);
 
             m_SpatialInterfaceState = value;
-            Debug.LogError("Switching spatial menu state to " + m_SpatialInterfaceState);
+            Debug.LogWarning("Switching spatial menu state to " + m_SpatialInterfaceState);
 
             switch (m_SpatialInterfaceState)
             {
@@ -353,7 +353,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
 
     public void Reset()
     {
-        Debug.LogWarning("Resetting state in Spatial menu UI " + m_SpatialInterfaceState);
+        Debug.Log("Resetting state in Spatial menu UI " + m_SpatialInterfaceState);
         ForceClearHomeMenuElements();
         ForceClearSubMenuElements();
 
@@ -483,7 +483,7 @@ public class SpatialMenuUI : MonoBehaviour, IAdaptPosition, IConnectInterfaces, 
 
     public void DisplayHighlightedSubMenuContents()
     {
-        Debug.LogWarning("Displaying sub-menu elements");
+        Debug.Log("Displaying sub-menu elements");
         ForceClearHomeMenuElements();
         const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
         int subMenuElementCount = 0;

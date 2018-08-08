@@ -118,7 +118,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void Select()
         {
-            Debug.LogError("Selected called in spatial menu sectio title element :" + m_Text.text);
+            Debug.Log("Selected called in spatial menu sectio title element :" + m_Text.text);
             if (selected != null)
                 selected();
         }
