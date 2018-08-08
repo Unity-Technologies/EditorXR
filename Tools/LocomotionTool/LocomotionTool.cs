@@ -8,6 +8,7 @@ using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -697,7 +698,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                     var currentRotation = Quaternion.AngleAxis(currentYaw, Vector3.up);
                                     midPoint = currentRotation * midPoint * currentScale;
 
-                                    cameraRig.position = m_StartPosition + m_StartMidPoint - midPoint;
+                                    var pos = m_StartPosition + m_StartMidPoint - midPoint;
+                                    if (pos != null)
+                                        cameraRig.position = pos;
+
                                     cameraRig.rotation = currentRotation;
 
                                     this.SetViewerScale(currentScale);
