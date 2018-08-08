@@ -73,8 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             get { return m_Actions; }
             set
             {
-                m_Actions = value;
-                if (m_Actions != null)
+                if (value != null)
                 {
                     m_Actions = value
                         .Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
