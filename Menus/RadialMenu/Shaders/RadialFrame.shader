@@ -138,7 +138,7 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 
             ENDCG
         }
-        // ------------------------------------------------------------------
+
         //  Deferred pass
         Pass
         {
