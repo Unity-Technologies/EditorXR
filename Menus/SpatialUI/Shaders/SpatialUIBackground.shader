@@ -34,12 +34,14 @@
             {
                 float4 position: POSITION;
                 float2 texcoord: TEXCOORD0;
+                float4 color : COLOR;
             };
  
             struct v2f
             {
                 float4 pos : SV_POSITION;
                 half2 texcoord: TEXCOORD0;
+                float4 color : COLOR;
             };
  
             v2f vert(vertexInput input)
@@ -47,15 +49,16 @@
                 v2f output;
                 output.pos = UnityObjectToClipPos(input.position);
                 output.texcoord = input.texcoord;
+                output.color = input.color;
                 return output;
             }
  
             half4 frag(v2f input) : COLOR
             {
                 half4 color = tex2D(_MainTex, input.texcoord) * _Color;
-
+                color.a *= input.color.a;
                 return color;
-            } 
+            }
             ENDCG
         }
     }
