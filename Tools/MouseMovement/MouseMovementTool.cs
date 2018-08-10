@@ -19,6 +19,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         [SerializeField]
         GameObject m_RingPrefab;
 
+        [SerializeField]
+        GameObject m_Hole;
+
         Ring m_Ring;
 
         static readonly Vector3 ringOffset = new Vector3(0f, -0.09f, 0.18f);
@@ -27,6 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             GameObject instance = Instantiate(m_RingPrefab, cameraRig, false);
             instance.transform.localPosition = ringOffset;
+            GameObject instanceHole = Instantiate(m_Hole, cameraRig, false);
+            instance.transform.localPosition = new Vector3(0f, 0f, .4f);
             m_Ring = instance.GetComponent<Ring>();
         }
 
