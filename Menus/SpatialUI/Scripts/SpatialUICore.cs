@@ -9,12 +9,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// </summary>
     public abstract class SpatialUICore : MonoBehaviour
     {
+        public enum SpatialInterfaceInputMode
+        {
+            Translation,
+            Rotation,
+            GhostRay,
+            ExternalInputRay,
+            BCI
+        }
+
         [Header("Prefabs")]
         [SerializeField]
-        GameObject m_SectionTitleElementPrefab;
+        protected GameObject m_SectionTitleElementPrefab;
 
         [SerializeField]
-        GameObject m_SubMenuElementPrefab;
+        protected GameObject m_SubMenuElementPrefab;
 
         protected SpatialUIToggle m_SpatialPinToggle { get; set; }
     }
