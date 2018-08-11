@@ -57,7 +57,7 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
         const float k_SpatialScrollVectorLength = 0.25f;  // was 0.125, though felt too short a distance for the Spatial Menu (was better suited for the tools menu implementation)
 
-        public enum SpatialInterfaceState
+        public enum SpatialMenuState
         {
             hidden,
             navigatingTopLevel,
@@ -84,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR
         HapticPulse m_HighlightMenuElementPulse;
 
         static SpatialMenuUI m_SpatialMenuUi;
-        SpatialInterfaceState m_SpatialInterfaceState;
+        SpatialMenuState m_SpatialMenuState;
 
         bool m_Visible;
         bool m_BeingMoved;
@@ -161,12 +161,12 @@ namespace UnityEditor.Experimental.EditorVR
                 if (m_Visible)
                 {
                     RefreshProviderData();
-                    spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
+                    spatialMenuState = SpatialMenuState.navigatingTopLevel;
                     //gameObject.SetActive(true);  MOVED TO SPATIAL UI View
                 }
                 else
                 {
-                    if (m_SpatialInterfaceState == SpatialInterfaceState.navigatingSubMenuContent &&
+                    if (m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent &&
                         m_HighlightedMenuElements != null &&
                         m_HighlightedMenuElements.Count > 0 &&
                         m_HighlightedMenuElements[m_HighlightedMenuElementPosition] != null &&
@@ -177,28 +177,28 @@ namespace UnityEditor.Experimental.EditorVR
                     }
 
                     this.Pulse(Node.None, m_MenuClosePulse);
-                    spatialInterfaceState = SpatialInterfaceState.hidden;
+                    spatialMenuState = SpatialMenuState.hidden;
                 }
             }
         }
 
-        SpatialInterfaceState spatialInterfaceState
+        SpatialMenuState spatialMenuState
         {
             set
             {
-                if (m_SpatialInterfaceState == value)
+                if (m_SpatialMenuState == value)
                     return;
 
-                m_SpatialInterfaceState = value;
-                m_SpatialMenuUi.spatialInterfaceState = value;
+                m_SpatialMenuState = value;
+                m_SpatialMenuUi.spatialMenuState = value;
 
-                switch (m_SpatialInterfaceState)
+                switch (m_SpatialMenuState)
                 {
-                    case SpatialInterfaceState.navigatingTopLevel:
+                    case SpatialMenuState.navigatingTopLevel:
                         m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
                         SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
                         break;
-                    case SpatialInterfaceState.navigatingSubMenuContent:
+                    case SpatialMenuState.navigatingSubMenuContent:
                         SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalY);
                         DisplayHighlightedSubMenuContents();
                         break;
@@ -274,9 +274,9 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        void ChangeMenuState(SpatialInterfaceState state)
+        void ChangeMenuState(SpatialMenuState state)
         {
-            spatialInterfaceState = state;
+            spatialMenuState = state;
         }
 
         public class SpatialMenuElement
@@ -412,7 +412,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             return;
 
-            spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
+            spatialMenuState = SpatialMenuState.navigatingTopLevel;
 
             this.Pulse(Node.None, m_MenuOpenPulse);
 
@@ -466,12 +466,12 @@ namespace UnityEditor.Experimental.EditorVR
 
         void ReturnToPreviousMenuLevel()
         {
-            if (m_SpatialInterfaceState == SpatialInterfaceState.navigatingSubMenuContent)
+            if (m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent)
                 SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
 
             this.Pulse(Node.None, m_NavigateBackPulse);
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
-            spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
+            spatialMenuState = SpatialMenuState.navigatingTopLevel;
 
             Debug.LogWarning("SpatialMenu : <color=green>Above wrist return threshold</color>");
         }
@@ -519,7 +519,7 @@ namespace UnityEditor.Experimental.EditorVR
                 consumeControl(m_CurrentSpatialActionMapInput.select);
 
                 //TODO restore this functionality.  It resets the starting position when being moved, but currently breaks when initially opening the menu
-                if (m_SpatialInterfaceState != SpatialInterfaceState.hidden && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - m_CurrentSpatialActionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
+                if (m_SpatialMenuState != SpatialMenuState.hidden && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - m_CurrentSpatialActionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                     m_HomeSectionSpatialScrollStartLocalPosition = m_CurrentSpatialActionMapInput.localPosition.vector3;
             }
 
@@ -528,12 +528,12 @@ namespace UnityEditor.Experimental.EditorVR
                 (m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.isHeld))
             {
                 consumeControl(m_CurrentSpatialActionMapInput.select); // Select should only be consumed upon activation, so other UI can receive select events
-                spatialInterfaceState = SpatialInterfaceState.navigatingTopLevel;
+                spatialMenuState = SpatialMenuState.navigatingTopLevel;
                 m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
                 //Reset();
             }
 
-            if (m_CurrentSpatialActionMapInput.show.isHeld && m_SpatialInterfaceState != SpatialInterfaceState.hidden)
+            if (m_CurrentSpatialActionMapInput.show.isHeld && m_SpatialMenuState != SpatialMenuState.hidden)
             {
                 m_RotationVelocityTracker.Update(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
                 if (!m_SpatialMenuUi.transitioningInputModes)
@@ -615,7 +615,7 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 */
 
-                if (m_Transitioning && m_SpatialInterfaceState == SpatialInterfaceState.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
+                if (m_Transitioning && m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
                     ReturnToPreviousMenuLevel();
@@ -627,7 +627,7 @@ namespace UnityEditor.Experimental.EditorVR
                 //var currentInputMovingForward = Vector3.Dot(currentSpatialActionMapLocalPosition, m_HomeSectionSpatialScrollStartLocalPosition) > 0.5f; // validate the the current position has move away from the user, in a forward direction
                 //Debug.LogError("<color=green>"+ Vector3.Dot(currentSpatialActionMapLocalPosition.normalized, m_HomeSectionSpatialScrollStartLocalPosition.normalized) + "</color>");
                 //if (m_SpatialinterfaceState == SpatialinterfaceState.navigatingTopLevel && currentInputMovingForward && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - currentSpatialActionMapLocalPosition) > kSubMenuNavigationTranslationTriggerThreshold)
-                if (m_SpatialInterfaceState == SpatialInterfaceState.navigatingTopLevel && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - currentSpatialActionMapLocalPosition) > kSubMenuNavigationTranslationTriggerThreshold)
+                if (m_SpatialMenuState == SpatialMenuState.navigatingTopLevel && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - currentSpatialActionMapLocalPosition) > kSubMenuNavigationTranslationTriggerThreshold)
                 {
                     /*
                     if (m_Transitioning)
@@ -647,7 +647,7 @@ namespace UnityEditor.Experimental.EditorVR
                 // Will need to consider how to handle a user starting at a steep angle initially, baesd upon how far they scroll in the opposite direction.
                 // In other words, if the user rotates beyond the max estimated threshold, we offset the initial starting angle by that amount, so when returning their rotation to the original extreme angle
                 // They will have offset their "neutral" rotation position, and have newfound room to rotate/advance in the original "extreme" rotation direction
-                if (m_SpatialInterfaceState != SpatialInterfaceState.navigatingSubMenuContent)
+                if (m_SpatialMenuState != SpatialMenuState.navigatingSubMenuContent)
                 {
                     //highlightedMenuElements = s_SpatialMenuData[highlightedPosition].spatialMenuElements;
                     if (true && !m_Transitioning)
@@ -702,7 +702,7 @@ namespace UnityEditor.Experimental.EditorVR
                     }
                 }
 */
-                else if (m_SpatialInterfaceState == SpatialInterfaceState.navigatingSubMenuContent)
+                else if (m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent)
                 {
                     if (m_HighlightedMenuElements != null)
                     {

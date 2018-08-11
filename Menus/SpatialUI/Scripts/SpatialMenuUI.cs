@@ -10,11 +10,10 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Playables;
 using UnityEngine.UI;
-using SpatialinterfaceState = UnityEditor.Experimental.EditorVR.SpatialMenu.SpatialInterfaceState;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    public class SpatialMenuUI : SpatialUICore, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
+    public sealed class SpatialMenuUI : SpatialUICore, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
     {
         const float k_DistanceOffset = 0.75f;
         const float k_AllowedGazeDivergence = 45f;
@@ -24,15 +23,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         readonly string k_ExternalRayBasedInputModeName = "External Ray-based Input Mode";
         readonly string k_RotationInputModeName = "Rotation Input Mode";
         readonly string k_BCIInputModeName = "Brain Input Mode";
-
-        public enum SpatialInterfaceInputMode
-        {
-            Translation,
-            Rotation,
-            GhostRay,
-            ExternalInputRay,
-            BCI
-        }
 
         [Header("Common UI")]
         [SerializeField]
@@ -124,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         bool m_Visible;
         SpatialInterfaceInputMode m_PreviousSpatialInterfaceInputMode;
         SpatialInterfaceInputMode m_SpatialInterfaceInputMode;
-        SpatialinterfaceState m_SpatialInterfaceState;
+        SpatialMenu.SpatialMenuState m_SpatialMenuState;
 
         Vector3 m_HomeTextBackgroundOriginalLocalScale;
         Vector3 m_HomeBackgroundOriginalLocalScale;
@@ -157,7 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         // Core SpatialUI interface implementation
         // All SpatialUI elements, be it this SpatialMenu, or a SpatialContextUI popup, etc, will implement this core functionality
-        public SpatialUIToggle m_SpatialPinToggle { get; set; }
+        // public SpatialUIToggle m_SpatialPinToggle { get; set; }
 
         // Adaptive position related members
         public Transform adaptiveTransform { get { return transform; } }
@@ -174,7 +164,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         // SpatialMenu actions/delegates/funcs
         public Action returnToPreviousMenuLevel { get; set; }
-        public Action<SpatialinterfaceState> changeMenuState { get; set; }
+        public Action<SpatialMenu.SpatialMenuState> changeMenuState { get; set; }
 
         bool visible
         {
@@ -190,39 +180,39 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 resetAdaptivePosition = m_Visible;
 
                 if (!m_Visible)
-                    spatialInterfaceState = SpatialinterfaceState.hidden;
+                    spatialMenuState = SpatialMenu.SpatialMenuState.hidden;
             }
         }
 
         //public ISpatialMenuProvider highlightedTopLevelMenuProvider { private get; set; }
-        public SpatialinterfaceState spatialInterfaceState
+        public SpatialMenu.SpatialMenuState spatialMenuState
         {
             set
             {
                 // If the previous state was hidden, reset the state of the UI
-                if (m_SpatialInterfaceState == SpatialinterfaceState.hidden && value == SpatialinterfaceState.navigatingTopLevel)
+                if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.hidden && value == SpatialMenu.SpatialMenuState.navigatingTopLevel)
                     Reset();
 
-                if (m_SpatialInterfaceState == value)
+                if (m_SpatialMenuState == value)
                     return;
 
                 // If the previous state was Hidden & this object was disabled, enable the UI gameobject
                 //if (m_SpatialinterfaceState == SpatialinterfaceState.hidden && !gameObject.activeSelf)
                     //gameObject.SetActive(true);
 
-                m_SpatialInterfaceState = value;
-                Debug.LogWarning("Switching spatial menu state to " + m_SpatialInterfaceState);
+                m_SpatialMenuState = value;
+                Debug.LogWarning("Switching spatial menu state to " + m_SpatialMenuState);
 
-                switch (m_SpatialInterfaceState)
+                switch (m_SpatialMenuState)
                 {
-                    case SpatialinterfaceState.navigatingTopLevel:
+                    case SpatialMenu.SpatialMenuState.navigatingTopLevel:
                         visible = true;
                         DisplayHomeSectionContents();
                         break;
-                    case SpatialinterfaceState.navigatingSubMenuContent:
+                    case SpatialMenu.SpatialMenuState.navigatingSubMenuContent:
                         DisplayHighlightedSubMenuContents();
                         break;
-                    case SpatialinterfaceState.hidden:
+                    case SpatialMenu.SpatialMenuState.hidden:
                         foreach (var element in currentlyDisplayedMenuElements)
                         {
                             // Perform animated hiding of elements
@@ -358,7 +348,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void Reset()
         {
-            Debug.Log("Resetting state in Spatial menu UI " + m_SpatialInterfaceState);
+            Debug.Log("Resetting state in Spatial menu UI " + m_SpatialMenuState);
             ForceClearHomeMenuElements();
             ForceClearSubMenuElements();
 
@@ -483,7 +473,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void SectionTitleButtonSelected()
         {
-            changeMenuState(SpatialinterfaceState.navigatingSubMenuContent);
+            changeMenuState(SpatialMenu.SpatialMenuState.navigatingSubMenuContent);
         }
 
         public void DisplayHighlightedSubMenuContents()
@@ -632,7 +622,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             m_HomeMenuLayoutGroup.spacing = 1 % Time.unscaledDeltaTime * 0.01f; // Don't ask... horizontal layout group refused to play nicely without this... b'cause magic mysetery something
             //Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
-            if (m_SpatialInterfaceState == SpatialinterfaceState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
+            if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
             {
                 //Debug.LogWarning("<color=orange>Hiding spatial menu UI</color>");
                 // Performed an animated hide of any currently displayed UI
@@ -660,7 +650,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 ForceClearSubMenuElements();
                 visible = false;
             }
-            else if (m_SpatialInterfaceState == SpatialinterfaceState.navigatingSubMenuContent)
+            else if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.navigatingSubMenuContent)
             {
                 // Scale background based on number of sub-menu elements
                 var targetScale = highlightedMenuElements != null ? highlightedMenuElements.Count * 1.05f : 1f;
@@ -685,7 +675,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     m_SubMenuContentsCanvasGroup.alpha = 1f;
                 }
             }
-            else if (m_SpatialInterfaceState == SpatialinterfaceState.navigatingTopLevel)
+            else if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.navigatingTopLevel)
             {
                 //Debug.LogWarning("SpatialUI : <color=green>Navigating top level content</color>");
                 var targetScale = 1f;
