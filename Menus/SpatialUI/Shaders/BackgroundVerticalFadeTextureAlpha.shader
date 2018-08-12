@@ -10,6 +10,7 @@
         //_StencilRef("StencilRef", Int) = 3
 		_GradientSize("Vertical Gradient Size", Range(0, 6)) = 2
 		_HorizontalGradientSize("Horizontal Gradient Size", Range(0, 1)) = 0.5
+		_BlurNoise("Blur Noise Amount", Range(-1, 1)) = 1
         //[Toggle] _StencilFailZero("Stencil Fail Zero", Float) = 0
     }
 
@@ -40,7 +41,7 @@
 
                     #pragma vertex vert
                     #pragma fragment frag
-                    #pragma fragmentoption ARB_precision_hint_fastest
+                    //#pragma fragmentoption ARB_precision_hint_fastest
                     #include "UnityCG.cginc"
 
                     struct appdata_t
@@ -63,6 +64,8 @@
                     float _VerticalOffset;
                     float _WorldScale;
 					half _GradientSize;
+					sampler2D _MainTex;
+					half _BlurNoise;
 
                     v2f vert(appdata_t v)
                     {
@@ -93,21 +96,37 @@
                         float4 sum = half4(0,0,0,0);
                         #define GrabAndOffset(weight,kernelX) tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x + _GrabTexture_TexelSize.x * kernelX * (positionAdjustedBlur * input.yPos), input.grab.y, input.grab.z, input.grab.w))) * weight
 
+						half4 color = tex2D(_MainTex, input.cleanUV);
+						//half noiseSampledTextureAmount = 0.5 + color.r - 0.00125;
+						half noiseSampledTextureAmount = 1 + color.r - 0.125 * dot(input.cleanUV, float2(0.5, 0.5));
+
+						half blurAdjustmentModifier = _BlurNoise * 0.25;
 						float adjustedBlur = 1;// - uvPos * 2;// * (input.cleanUV.y);
 						half adjustedBlurKernel = input.cleanUV.y;
-                        sum += GrabAndOffset(0.02 * adjustedBlur, -6.0);
-                        sum += GrabAndOffset(0.04 * adjustedBlur, -5.0);
-                        sum += GrabAndOffset(0.06 * adjustedBlur, -4.0);
-                        sum += GrabAndOffset(0.08 * adjustedBlur, -3.0);
-                        sum += GrabAndOffset(0.10 * adjustedBlur, -2.0);
-                        sum += GrabAndOffset(0.12 * adjustedBlur, -1.0);
+                        sum += GrabAndOffset(0.02 * adjustedBlur, -6.0 * noiseSampledTextureAmount);
+                        noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+						sum += GrabAndOffset(0.04 * adjustedBlur, -5.0 * noiseSampledTextureAmount);
+                        noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+						sum += GrabAndOffset(0.06 * adjustedBlur, -4.0 * noiseSampledTextureAmount);
+						noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+                        sum += GrabAndOffset(0.08 * adjustedBlur, -3.0 * noiseSampledTextureAmount);
+						noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+                        sum += GrabAndOffset(0.10 * adjustedBlur, -2.0 * noiseSampledTextureAmount);
+						noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+                        sum += GrabAndOffset(0.12 * adjustedBlur, -1.0 * noiseSampledTextureAmount);
+						noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
                         sum += GrabAndOffset(0.14 * adjustedBlur, 0.0);
-                        sum += GrabAndOffset(0.12 * adjustedBlur, +1.0);
-                        sum += GrabAndOffset(0.10 * adjustedBlur, +2.0);
-                        sum += GrabAndOffset(0.08 * adjustedBlur, +3.0);
-                        sum += GrabAndOffset(0.06 * adjustedBlur, +4.0);
-                        sum += GrabAndOffset(0.04 * adjustedBlur, +5.0);
-                        sum += GrabAndOffset(0.02 * adjustedBlur, +6.0);
+                        sum += GrabAndOffset(0.12 * adjustedBlur, 1.0 * noiseSampledTextureAmount);
+						noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+                        sum += GrabAndOffset(0.10 * adjustedBlur, 2.0 * noiseSampledTextureAmount);
+						noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+                        sum += GrabAndOffset(0.08 * adjustedBlur, 3.0 * noiseSampledTextureAmount);
+						noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+                        sum += GrabAndOffset(0.06 * adjustedBlur, 4.0 * noiseSampledTextureAmount);
+						noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+                        sum += GrabAndOffset(0.04 * adjustedBlur, 5.0 * noiseSampledTextureAmount);
+						noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+                        sum += GrabAndOffset(0.02 * adjustedBlur, +6.0 * noiseSampledTextureAmount);
 
 						//float t = length(float2(0.5, 0.5) - input.grab.xy);// * 1.41421356237;
 						//sum.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);
@@ -136,7 +155,7 @@
 				CGPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
-                #pragma fragmentoption ARB_precision_hint_fastest
+                //#pragma fragmentoption ARB_precision_hint_fastest
                 #include "UnityCG.cginc"
 
                 struct appdata_t
@@ -159,18 +178,20 @@
                 float _VerticalOffset;
                 float _WorldScale;
 				half _GradientSize;
+				sampler2D _MainTex;
+				half _BlurNoise;
 
                 v2f vert(appdata_t v)
                 {
                     v2f output;
                     output.position = UnityObjectToClipPos(v.position);
-    #if UNITY_UV_STARTS_AT_TOP
+#if UNITY_UV_STARTS_AT_TOP
                     float sign = -1.0;
                     output.yPos = v.texcoord.y;
-    #else
+#else
                     float sign = 1.0;
                     output.yPos = -v.texcoord.y;
-    #endif
+#endif
                     output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
                     output.grab.zw = output.position.zw;
                     output.grab *= _WorldScale;
@@ -189,19 +210,36 @@
                     half4 sum = half4(0,0,0,0);
                     #define GrabAndOffset(weight,kernelY) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (positionAdjustedBlur * input.yPos + _VerticalOffset), input.grab.z, input.grab.w))) * weight
 
-                    sum += GrabAndOffset(0.02, -6.0);
-                    sum += GrabAndOffset(0.04, -5.0);
-                    sum += GrabAndOffset(0.06, -4.0);
-                    sum += GrabAndOffset(0.08, -3.0);
-                    sum += GrabAndOffset(0.10, -2.0);
-                    sum += GrabAndOffset(0.12, -1.0);
-                    sum += GrabAndOffset(0.14,  0.0);
-                    sum += GrabAndOffset(0.12, +1.0);
-                    sum += GrabAndOffset(0.10, +2.0);
-                    sum += GrabAndOffset(0.08, +3.0);
-                    sum += GrabAndOffset(0.06, +4.0);
-                    sum += GrabAndOffset(0.04, +5.0);
-                    sum += GrabAndOffset(0.02, +6.0);
+                    half4 color = tex2D(_MainTex, input.cleanUV);
+					half noiseSampledTextureAmount = 1 + color.g - 0.125 * dot(input.cleanUV, float2(0.5, 0.5));
+
+					float adjustedBlur = 1;// - uvPos * 2;// * (input.cleanUV.y);
+					half blurAdjustmentModifier = _BlurNoise * 0.25;
+					half adjustedBlurKernel = input.cleanUV.y;
+                    sum += GrabAndOffset(0.02 * adjustedBlur, -6.0 * noiseSampledTextureAmount);
+                    noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+					sum += GrabAndOffset(0.04 * adjustedBlur, -5.0 * noiseSampledTextureAmount);
+                    noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+					sum += GrabAndOffset(0.06 * adjustedBlur, -4.0 * noiseSampledTextureAmount);
+					noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+                    sum += GrabAndOffset(0.08 * adjustedBlur, -3.0 * noiseSampledTextureAmount);
+					noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+                    sum += GrabAndOffset(0.10 * adjustedBlur, -2.0 * noiseSampledTextureAmount);
+					noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+                    sum += GrabAndOffset(0.12 * adjustedBlur, -1.0 * noiseSampledTextureAmount);
+					noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+                    sum += GrabAndOffset(0.14 * adjustedBlur, 0.0);
+                    sum += GrabAndOffset(0.12 * adjustedBlur, +1.0 * noiseSampledTextureAmount);
+					noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+                    sum += GrabAndOffset(0.10 * adjustedBlur, +2.0 * noiseSampledTextureAmount);
+					noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+                    sum += GrabAndOffset(0.08 * adjustedBlur, +3.0 * noiseSampledTextureAmount);
+					noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+                    sum += GrabAndOffset(0.06 * adjustedBlur, +4.0 * noiseSampledTextureAmount);
+					noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
+                    sum += GrabAndOffset(0.04 * adjustedBlur, +5.0 * noiseSampledTextureAmount);
+					noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
+                    sum += GrabAndOffset(0.02 * adjustedBlur, +6.0 * noiseSampledTextureAmount);
 
 					//float t = length(input.grab - float2(0.5, 0.5)) * 1.41421356237;
 					//sum.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);
@@ -209,6 +247,7 @@
 					//sum.a = 0;
 					//float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);
 					float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);// - pow((uvPos * 2), _GradientSize);
+					//sum.a = 0;// clamp(0, 1 - pow((uvPos * 2), _GradientSize * (_Blur / 10)), fadeFromBorderAmount);
 					sum.a = clamp(0, 1 - pow((uvPos * 2), _GradientSize * (_Blur / 10)), fadeFromBorderAmount);
 
                     return sum;
