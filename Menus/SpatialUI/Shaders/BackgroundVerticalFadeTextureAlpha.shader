@@ -35,6 +35,7 @@
 
                 Pass
                 {
+					Name "SpatialUIBlurHorizontal"
                     CGPROGRAM
 
                     #pragma vertex vert
@@ -117,7 +118,7 @@
 						//sum.a = clamp(0, 1, 1 - (uvPos * 2));
 						float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);
 						//sum.a = 0;// fadeFromBorderAmount;
-						sum.a = clamp(0, 1-pow((uvPos * 2), _GradientSize), fadeFromBorderAmount);
+						sum.a = clamp(0, 1 - pow((uvPos * 2), _GradientSize * (_Blur / 10)), fadeFromBorderAmount);
 
 						//sum.rgb *= -10;
 
@@ -130,7 +131,9 @@
 
             Pass
             {
-                CGPROGRAM
+				Name "SpatialUIBlurVertical"
+                
+				CGPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
                 #pragma fragmentoption ARB_precision_hint_fastest
@@ -206,7 +209,7 @@
 					//sum.a = 0;
 					//float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);
 					float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);// - pow((uvPos * 2), _GradientSize);
-					sum.a = clamp(0, 1-pow((uvPos * 2), _GradientSize), fadeFromBorderAmount);
+					sum.a = clamp(0, 1 - pow((uvPos * 2), _GradientSize * (_Blur / 10)), fadeFromBorderAmount);
 
                     return sum;
                 }
