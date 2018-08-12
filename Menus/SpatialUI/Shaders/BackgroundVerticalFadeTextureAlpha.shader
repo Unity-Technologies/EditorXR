@@ -8,7 +8,7 @@
         _MainTex("Noise Texture", 2D) = "white" {}
         _Alpha("Alpha", Range(0, 1)) = 1
         //_StencilRef("StencilRef", Int) = 3
-		_GradientSize("Vertical Gradient Size", Range(0, 1)) = 0.5
+		_GradientSize("Vertical Gradient Size", Range(0, 6)) = 2
 		_HorizontalGradientSize("Horizontal Gradient Size", Range(0, 1)) = 0.5
         //[Toggle] _StencilFailZero("Stencil Fail Zero", Float) = 0
     }
@@ -92,7 +92,7 @@
                         float4 sum = half4(0,0,0,0);
                         #define GrabAndOffset(weight,kernelX) tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x + _GrabTexture_TexelSize.x * kernelX * (positionAdjustedBlur * input.yPos), input.grab.y, input.grab.z, input.grab.w))) * weight
 
-						float adjustedBlur = 1 - uvPos * 2;// * (input.cleanUV.y);
+						float adjustedBlur = 1;// - uvPos * 2;// * (input.cleanUV.y);
 						half adjustedBlurKernel = input.cleanUV.y;
                         sum += GrabAndOffset(0.02 * adjustedBlur, -6.0);
                         sum += GrabAndOffset(0.04 * adjustedBlur, -5.0);
@@ -115,7 +115,9 @@
 						//sum.a = lerp(0, 1, uvPos - 0.5);// t  - pow(t, 10));
 
 						//sum.a = clamp(0, 1, 1 - (uvPos * 2));
-						sum.a = 1 - clamp(0, 1, uvPos * 2) * 1;
+						float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);
+						//sum.a = 0;// fadeFromBorderAmount;
+						sum.a = clamp(0, 1-pow((uvPos * 2), _GradientSize), fadeFromBorderAmount);
 
 						//sum.rgb *= -10;
 
@@ -145,6 +147,7 @@
                     float4 position : POSITION;
                     float4 grab : TEXCOORD0;
                     float yPos : FLOAT;
+					float2 cleanUV : TEXCOORD2;
                 };
 
                 sampler2D _GrabTexture;
@@ -168,13 +171,20 @@
                     output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
                     output.grab.zw = output.position.zw;
                     output.grab *= _WorldScale;
+
+					output.cleanUV = v.texcoord;
                     return output;
                 }
 
                 half4 frag(v2f input) : COLOR
                 {
+					float uvPos = length(input.cleanUV - float2(0.5, 0.5));// * 1.41421356237;
+					float xAdjustedPosition = pow(input.cleanUV.x * (1 - input.cleanUV.x) * 3, 1);
+					float yAdjustedPosition = (1 - input.cleanUV.y);
+					half positionAdjustedBlur = _Blur * yAdjustedPosition * xAdjustedPosition;
+
                     half4 sum = half4(0,0,0,0);
-                    #define GrabAndOffset(weight,kernelY) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (_Blur * input.yPos + _VerticalOffset), input.grab.z, input.grab.w))) * weight
+                    #define GrabAndOffset(weight,kernelY) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (positionAdjustedBlur * input.yPos + _VerticalOffset), input.grab.z, input.grab.w))) * weight
 
                     sum += GrabAndOffset(0.02, -6.0);
                     sum += GrabAndOffset(0.04, -5.0);
@@ -190,10 +200,13 @@
                     sum += GrabAndOffset(0.04, +5.0);
                     sum += GrabAndOffset(0.02, +6.0);
 
-					float t = length(input.grab - float2(0.5, 0.5)) * 1.41421356237;
-					sum.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);
+					//float t = length(input.grab - float2(0.5, 0.5)) * 1.41421356237;
+					//sum.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);
 
-					sum.a = 0;
+					//sum.a = 0;
+					//float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);
+					float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);// - pow((uvPos * 2), _GradientSize);
+					sum.a = clamp(0, 1-pow((uvPos * 2), _GradientSize), fadeFromBorderAmount);
 
                     return sum;
                 }
