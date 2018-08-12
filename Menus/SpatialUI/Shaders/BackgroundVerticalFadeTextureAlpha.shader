@@ -7,27 +7,27 @@
         _VerticalOffset("Offset", Range(-1, 1)) = 1
         _MainTex("Noise Texture", 2D) = "white" {}
         _Alpha("Alpha", Range(0, 1)) = 1
-        _StencilRef("StencilRef", Int) = 3
+        //_StencilRef("StencilRef", Int) = 3
 		_GradientSize("Vertical Gradient Size", Range(0, 1)) = 0.5
 		_HorizontalGradientSize("Horizontal Gradient Size", Range(0, 1)) = 0.5
-        [Toggle] _StencilFailZero("Stencil Fail Zero", Float) = 0
+        //[Toggle] _StencilFailZero("Stencil Fail Zero", Float) = 0
     }
 
         Category
         {
-            Tags{ "Queue" = "Overlay+5102" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
+            Tags{ "Queue" = "Overlay+5600" "LightMode" = "Always" "IgnoreProjector" = "True" "RenderType" = "Transparent" }
             ZWrite On
             ZTest LEqual
             Lighting Off
             Blend SrcAlpha OneMinusSrcAlpha
 
-            Stencil
-            {
-                Ref [_StencilRef]
-                Comp NotEqual
-                Pass Zero
-                Fail [_StencilFailZero]
-            }
+            //Stencil
+            //{
+                //Ref [_StencilRef]
+                //Comp NotEqual
+                //Pass Zero
+                //Fail [_StencilFailZero]
+            //}
 
             SubShader
             {
@@ -36,6 +36,7 @@
                 Pass
                 {
                     CGPROGRAM
+
                     #pragma vertex vert
                     #pragma fragment frag
                     #pragma fragmentoption ARB_precision_hint_fastest
@@ -44,7 +45,7 @@
                     struct appdata_t
                     {
                         float4 position : POSITION;
-                        float2 texcoord: TEXCOORD0;
+                        float2 texcoord : TEXCOORD0;
                     };
 
                     struct v2f
@@ -52,6 +53,7 @@
                         float4 position : POSITION;
                         float4 grab : TEXCOORD0;
                         float yPos : FLOAT;
+						float2 cleanUV : TEXCOORD2;
                     };
 
                     sampler2D _GrabTexture;
@@ -75,30 +77,47 @@
                         output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
                         output.grab.zw = output.position.zw;
                         output.grab *= _WorldScale;
+
+						output.cleanUV = v.texcoord;// float2(v.texcoord.x, v.texcoord.y * sign);// float2(output.position.x, output.position.y * sign);
                         return output;
                     }
 
                     half4 frag(v2f input) : COLOR
                     {
-                        half4 sum = half4(0,0,0,0);
-                        #define GrabAndOffset(weight,kernelX) tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x + _GrabTexture_TexelSize.x * kernelX * (_Blur * input.yPos), input.grab.y, input.grab.z, input.grab.w))) * weight
+						float uvPos = length(input.cleanUV - float2(0.5, 0.5));// * 1.41421356237;
+						float xAdjustedPosition = pow(input.cleanUV.x * (1 - input.cleanUV.x) * 3, 1);
+						float yAdjustedPosition = (1 - input.cleanUV.y);
+						half positionAdjustedBlur = _Blur * yAdjustedPosition * xAdjustedPosition;
 
-                        sum += GrabAndOffset(0.02, -6.0);
-                        sum += GrabAndOffset(0.04, -5.0);
-                        sum += GrabAndOffset(0.06, -4.0);
-                        sum += GrabAndOffset(0.08, -3.0);
-                        sum += GrabAndOffset(0.10, -2.0);
-                        sum += GrabAndOffset(0.12, -1.0);
-                        sum += GrabAndOffset(0.14, 0.0);
-                        sum += GrabAndOffset(0.12, +1.0);
-                        sum += GrabAndOffset(0.10, +2.0);
-                        sum += GrabAndOffset(0.08, +3.0);
-                        sum += GrabAndOffset(0.06, +4.0);
-                        sum += GrabAndOffset(0.04, +5.0);
-                        sum += GrabAndOffset(0.02, +6.0);
+                        float4 sum = half4(0,0,0,0);
+                        #define GrabAndOffset(weight,kernelX) tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x + _GrabTexture_TexelSize.x * kernelX * (positionAdjustedBlur * input.yPos), input.grab.y, input.grab.z, input.grab.w))) * weight
 
-						float t = length(input.grab - float2(0.5, 0.5)) * 1.41421356237;
-						sum.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);
+						float adjustedBlur = 1 - uvPos * 2;// * (input.cleanUV.y);
+						half adjustedBlurKernel = input.cleanUV.y;
+                        sum += GrabAndOffset(0.02 * adjustedBlur, -6.0);
+                        sum += GrabAndOffset(0.04 * adjustedBlur, -5.0);
+                        sum += GrabAndOffset(0.06 * adjustedBlur, -4.0);
+                        sum += GrabAndOffset(0.08 * adjustedBlur, -3.0);
+                        sum += GrabAndOffset(0.10 * adjustedBlur, -2.0);
+                        sum += GrabAndOffset(0.12 * adjustedBlur, -1.0);
+                        sum += GrabAndOffset(0.14 * adjustedBlur, 0.0);
+                        sum += GrabAndOffset(0.12 * adjustedBlur, +1.0);
+                        sum += GrabAndOffset(0.10 * adjustedBlur, +2.0);
+                        sum += GrabAndOffset(0.08 * adjustedBlur, +3.0);
+                        sum += GrabAndOffset(0.06 * adjustedBlur, +4.0);
+                        sum += GrabAndOffset(0.04 * adjustedBlur, +5.0);
+                        sum += GrabAndOffset(0.02 * adjustedBlur, +6.0);
+
+						//float t = length(float2(0.5, 0.5) - input.grab.xy);// * 1.41421356237;
+						//sum.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);
+						
+						//float t = length(input.cleanUV - float2(0.5, 0.5));// * 1.41421356237;
+						//sum.a = lerp(0, 1, uvPos - 0.5);// t  - pow(t, 10));
+
+						//sum.a = clamp(0, 1, 1 - (uvPos * 2));
+						sum.a = 1;// clamp(0, 1, 1 - (uvPos * 2)) * 4;
+
+						//sum.rgb *= -10;
 
                         return sum;
                     }
@@ -174,6 +193,8 @@
 					float t = length(input.grab - float2(0.5, 0.5)) * 1.41421356237;
 					sum.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);
 
+					sum.a = 0;
+
                     return sum;
                 }
                 ENDCG
@@ -241,6 +262,8 @@
 					float t = length(i.grab - float2(0.5, 0.5)) * 1.41421356237;
 					half4 combinedColor = col * tint;
 					combinedColor.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);;
+
+					combinedColor.a = 0;
 
 					return combinedColor;
                 }
