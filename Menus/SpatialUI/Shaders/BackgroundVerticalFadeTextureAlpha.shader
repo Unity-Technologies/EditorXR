@@ -115,7 +115,7 @@
 						//sum.a = lerp(0, 1, uvPos - 0.5);// t  - pow(t, 10));
 
 						//sum.a = clamp(0, 1, 1 - (uvPos * 2));
-						sum.a = 1;// clamp(0, 1, 1 - (uvPos * 2)) * 4;
+						sum.a = 1 - clamp(0, 1, uvPos * 2) * 1;
 
 						//sum.rgb *= -10;
 
