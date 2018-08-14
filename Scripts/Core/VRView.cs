@@ -128,6 +128,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public Rect guiRect { get; private set; }
 
+        public static Vector2 MouseDelta;
+        public static Vector2 MouseScrollDelta;
+        public static bool LeftMouseButtonHeld;
+        public static bool RightMouseButtonHeld;
+
         public static Coroutine StartCoroutine(IEnumerator routine)
         {
             if (s_ActiveView && s_ActiveView.m_CameraRig)
@@ -342,7 +347,38 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             DoDrawCamera(guiRect);
 
-            Event e = Event.current;
+            MouseScrollDelta = Vector2.zero;
+            var e = Event.current;
+            MouseDelta = e.delta;
+            switch (e.type)
+            {
+                case EventType.ScrollWheel:
+                    MouseScrollDelta = e.delta;
+                    break;
+                case EventType.MouseDown:
+                    switch (e.button)
+                    {
+                        case 0:
+                            LeftMouseButtonHeld = true;
+                            break;
+                        case 1:
+                            RightMouseButtonHeld = true;
+                            break;
+                    }
+                    break;
+                case EventType.MouseUp:
+                    switch (e.button)
+                    {
+                        case 0:
+                            LeftMouseButtonHeld = false;
+                            break;
+                        case 1:
+                            RightMouseButtonHeld = false;
+                            break;
+                    }
+                    break;
+            }
+
             if (m_ShowDeviceView)
             {
                 if (e.type == EventType.Repaint)
