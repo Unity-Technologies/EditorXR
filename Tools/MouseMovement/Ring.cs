@@ -1,12 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEditor.Experimental.EditorVR.Utilities;
 
-public class Ring : MonoBehaviour 
-
+public class Ring : MonoBehaviour
 {
-
     [SerializeField]
     Transform ringTr;
 
@@ -37,11 +34,11 @@ public class Ring : MonoBehaviour
     float m_LineLength;
     float m_LineOffset;
 
-    void Start () 
-
+    void Start()
     {
         m_InitAltitude = transform.position.y;
-        m_RingMat = ringTr.GetComponent<MeshRenderer>().material;
+
+        m_RingMat = MaterialUtils.GetMaterialClone(ringTr.GetComponent<MeshRenderer>());
         m_OrigGradient = new Gradient();
         m_OrigGradient.SetKeys(lineA.colorGradient.colorKeys, lineA.colorGradient.alphaKeys);
         m_CurrentGradient = new Gradient();
@@ -49,20 +46,15 @@ public class Ring : MonoBehaviour
 
         m_LineLength = lineA.GetPosition(1).y;
         m_LineOffset = lineA.GetPosition(0).y;
-
     }
 
-    void Update () 
-
+    void Update ()
     {
-     
         m_Intensity = Mathf.Max(0f, m_Intensity - fadeAwaySpeed * Time.deltaTime);
         m_IntensityCore = Mathf.Max(0f, m_IntensityCore - fadeAwaySpeed * Time.deltaTime);
         m_IntensityCoreUp = Mathf.Max(0f, m_IntensityCoreUp - fadeAwaySpeed/2f * Time.deltaTime);
         m_IntensityCoreDown = Mathf.Max(0f, m_IntensityCoreDown - fadeAwaySpeed/2f * Time.deltaTime);
 
-
- 
         float kAltitude = transform.position.y - m_InitAltitude;
         text.text = kAltitude.ToString("0.00") + " m";
         Vector3 pos = transform.position;
@@ -98,9 +90,7 @@ public class Ring : MonoBehaviour
     }
 
     public void SetEffectWorldDirection(Vector3 movdir)
-
     {
-
         if (movdir.sqrMagnitude > 0f)
         {
             ringTr.rotation = Quaternion.LookRotation(movdir);
@@ -109,20 +99,22 @@ public class Ring : MonoBehaviour
     }
 
     public void SetEffectCore()
-
     {
             m_IntensityCore = Mathf.Min(1f, m_IntensityCore + fadeInSpeed * Time.deltaTime);
     }
 
     public void SetEffectCoreUp()
-
     {
         m_IntensityCoreUp = Mathf.Min(1f, m_IntensityCoreUp + fadeInSpeed * Time.deltaTime);
     }
 
     public void SetEffectCoreDown()
-
     {
         m_IntensityCoreDown = Mathf.Min(1f, m_IntensityCoreDown + fadeInSpeed * Time.deltaTime);
+    }
+
+    void OnDestroy()
+    {
+        ObjectUtils.Destroy(m_RingMat);
     }
 }
