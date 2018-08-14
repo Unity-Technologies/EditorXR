@@ -352,6 +352,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             // These components were allocating memory every frame and aren't currently used in EditorVR
             ObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
+            ObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
             ObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
             ObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
         }
