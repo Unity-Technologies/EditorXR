@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
+        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode, IInstantiateUI
     {
         const float k_FastMoveSpeed = 20f;
         const float k_SlowMoveSpeed = 1f;
@@ -189,6 +189,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     ((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
                 }
+
+                var instance = this.InstantiateUI(m_RingPrefab, cameraRig, false);
+                m_Ring = instance.GetComponent<Ring>();
             }
 
             m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
@@ -204,16 +207,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             viewerScaleObject.SetActive(false);
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
-
-            var instance = ObjectUtils.Instantiate(m_RingPrefab, cameraRig, false);
-            m_Ring = instance.GetComponent<Ring>();
         }
 
         void SetRingPosition()
         {
+            if (!this.IsSharedUpdater(this))
+                return;
+
             var cameraTransform = CameraUtils.GetMainCamera().transform;
-            m_Ring.transform.localPosition = cameraTransform.localPosition
-                + MathUtilsExt.ConstrainYawRotation(cameraTransform.localRotation) * k_RingOffset;
+            var cameraYaw = MathUtilsExt.ConstrainYawRotation(cameraTransform.localRotation);
+            var ringTransform = m_Ring.transform;
+            ringTransform.localPosition = cameraTransform.localPosition + cameraYaw * k_RingOffset;
+            ringTransform.localRotation = cameraYaw;
         }
 
         void OnDestroy()
@@ -276,7 +281,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 cameraRig.position += delta;
 
-                if (delta.normalized != Vector3.zero)
+                if (this.IsSharedUpdater(this) && delta.normalized != Vector3.zero)
                 {
                     m_RingDirection = Vector3.Lerp(m_RingDirection, delta.normalized, k_RingDirectionSmoothing);
 
@@ -291,8 +296,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var deltaScroll = VRView.MouseScrollDelta.y;
             cameraRig.position += deltaScroll * Vector3.up * 0.1f;
 
-            if (!Mathf.Approximately(deltaScroll, 0f))
+            if (this.IsSharedUpdater(this) && !Mathf.Approximately(deltaScroll, 0f))
             {
+                if (!m_Ring.coreVisible)
+                    SetRingPosition();
+
                 m_Ring.SetEffectCore();
 
                 if (deltaScroll > 0f)

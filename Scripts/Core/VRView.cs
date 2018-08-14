@@ -131,6 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public static Vector2 MouseDelta;
         public static Vector2 MouseScrollDelta;
         public static bool LeftMouseButtonHeld;
+        public static bool MiddleMouseButtonHeld;
         public static bool RightMouseButtonHeld;
 
         public static Coroutine StartCoroutine(IEnumerator routine)
@@ -364,6 +365,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         case 1:
                             RightMouseButtonHeld = true;
                             break;
+                        case 2:
+                            MiddleMouseButtonHeld = true;
+                            break;
                     }
                     break;
                 case EventType.MouseUp:
@@ -374,6 +378,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             break;
                         case 1:
                             RightMouseButtonHeld = false;
+                            break;
+                        case 2:
+                            MiddleMouseButtonHeld = false;
                             break;
                     }
                     break;
