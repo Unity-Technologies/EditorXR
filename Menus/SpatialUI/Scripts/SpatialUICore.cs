@@ -18,13 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             BCI
         }
 
-        [Header("Prefabs")]
-        [SerializeField]
-        protected GameObject m_SectionTitleElementPrefab;
-
-        [SerializeField]
-        protected GameObject m_SubMenuElementPrefab;
-
+        //[Header("Prefabs")]
         protected SpatialUIToggle m_SpatialPinToggle { get; set; }
     }
 }
