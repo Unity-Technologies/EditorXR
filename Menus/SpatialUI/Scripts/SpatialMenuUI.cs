@@ -112,7 +112,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Transform m_ReturnToPreviousLevelText;
 
         [SerializeField]
+        Renderer m_ReturnToPreviousBackgroundRenderer;
+
         Transform m_ReturnToPreviousBackground;
+        Material m_ReturnToPreviousBackgroundMaterial;
 
         bool m_Visible;
         SpatialInterfaceInputMode m_PreviousSpatialInterfaceInputMode;
@@ -306,6 +309,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void Start()
         {
             visible = false;
+            m_ReturnToPreviousBackground = m_ReturnToPreviousBackgroundRenderer.transform;
+            m_ReturnToPreviousBackgroundMaterial = MaterialUtils.GetMaterialClone(m_ReturnToPreviousBackgroundRenderer);
         }
 
         void OnBackButtonHoverEnter()
@@ -844,7 +849,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     icon.transform.localScale = newIconLocalScale;
                 }
 
-                m_ReturnToPreviousBackground.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, smoothTransition);
+                //m_ReturnToPreviousBackground.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, smoothTransition);
+                m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", smoothTransition * 10);
 
                 transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
                 yield return null;
