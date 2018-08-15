@@ -13,7 +13,6 @@ MonoImporter:
       type: 2}
   - m_RingPrefab: {fileID: 1016627027887716, guid: 86c24572a2f561c40acaeda68c064c43,
       type: 2}
-  - m_Hole: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

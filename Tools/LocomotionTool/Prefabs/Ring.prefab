@@ -511,6 +511,8 @@ MonoBehaviour:
   m_CoordinatesText: {fileID: 114490602417851340}
   m_FadeAwaySpeed: 1
   m_FadeInSpeed: 5
+  m_CoreFadeAwaySpeed: 1.5
+  m_CoreFadeInSpeed: 10
   m_LineA: {fileID: 120104367754099358}
   m_LineB: {fileID: 120365078463437576}
 --- !u!120 &120104367754099358
