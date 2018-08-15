@@ -1,4 +1,4 @@
-﻿Shader "EditorVR/SpatialUI/BackgroundVerticalFadeTextureAlpha"
+﻿Shader "EditorVR/SpatialUI/BackgroundOverlayBlur"
 {
     Properties
     {

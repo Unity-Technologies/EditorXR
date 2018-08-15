@@ -111,6 +111,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         Transform m_ReturnToPreviousLevelText;
 
+        [SerializeField]
+        Transform m_ReturnToPreviousBackground;
+
         bool m_Visible;
         SpatialInterfaceInputMode m_PreviousSpatialInterfaceInputMode;
         SpatialInterfaceInputMode m_SpatialInterfaceInputMode;
@@ -840,6 +843,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 {
                     icon.transform.localScale = newIconLocalScale;
                 }
+
+                m_ReturnToPreviousBackground.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, smoothTransition);
 
                 transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
                 yield return null;
