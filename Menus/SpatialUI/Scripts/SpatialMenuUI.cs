@@ -311,6 +311,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             visible = false;
             m_ReturnToPreviousBackground = m_ReturnToPreviousBackgroundRenderer.transform;
             m_ReturnToPreviousBackgroundMaterial = MaterialUtils.GetMaterialClone(m_ReturnToPreviousBackgroundRenderer);
+            m_ReturnToPreviousBackgroundRenderer.material = m_ReturnToPreviousBackgroundMaterial;
+            m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", 0);
         }
 
         void OnBackButtonHoverEnter()
@@ -850,7 +852,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 }
 
                 //m_ReturnToPreviousBackground.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, smoothTransition);
-                m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", smoothTransition * 10);
+                m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", newAlpha * 10);
 
                 transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
                 yield return null;

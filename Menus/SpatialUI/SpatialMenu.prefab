@@ -8328,7 +8328,7 @@ Transform:
   m_GameObject: {fileID: 1700245641566830}
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0.038}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_Children: []
   m_Father: {fileID: 224815385255047506}
   m_RootOrder: 6
@@ -16685,7 +16685,7 @@ MonoBehaviour:
   m_BackButtonVisualsContainer: {fileID: 1379329578636810}
   m_BackButtonVisualsCanvasGroup: {fileID: 225780937225563892}
   m_ReturnToPreviousLevelText: {fileID: 224447873391472764}
-  m_ReturnToPreviousBackground: {fileID: 4739251096752402}
+  m_ReturnToPreviousBackgroundRenderer: {fileID: 23071393728006646}
 --- !u!114 &114973295192596792
 MonoBehaviour:
   m_ObjectHideFlags: 1
