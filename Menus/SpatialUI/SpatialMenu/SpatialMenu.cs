@@ -165,6 +165,7 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 else
                 {
+                    ReturnToPreviousMenuLevel(); // TODO: verify that this needs to be called, or can be replaced by a core set of referenced functionality
                     if (m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent &&
                         m_HighlightedMenuElements != null &&
                         m_HighlightedMenuElements.Count > 0 &&
@@ -624,7 +625,7 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 */
 
-                if (m_Transitioning && m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
+                if (m_Transitioning && m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 10.08f) // TODO: return to 0.08f
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
                     ReturnToPreviousMenuLevel();
@@ -713,6 +714,13 @@ namespace UnityEditor.Experimental.EditorVR
 */
                 else if (m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent)
                 {
+                    if (m_CurrentSpatialActionMapInput.cancel.isHeld)
+                    {
+                        Debug.LogWarning("Cancel button was just presset on node : " + node);
+                        ReturnToPreviousMenuLevel();
+                        return;
+                    }
+
                     if (m_HighlightedMenuElements != null)
                     {
                         var menuElementCount = m_HighlightedMenuElements.Count;
