@@ -3,7 +3,13 @@ guid: 7ce978cf4f87e284fac6a90a46de8b72
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - m_AdaptivePositionPulse: {fileID: 11400000, guid: 7c58db3db2e44854d86c9bb5bd94e6df,
+      type: 2}
+  - m_HighlightUIElementPulse: {fileID: 11400000, guid: 8a40320bd3d9301459e26bf8738e37d5,
+      type: 2}
+  - m_SustainedHoverUIElementPulse: {fileID: 11400000, guid: ee3076deadaac0745b2d123bff3ecbff,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
