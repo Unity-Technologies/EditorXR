@@ -1,7 +1,7 @@
-using UnityEngine;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
 public class Ring : MonoBehaviour
 {
@@ -13,6 +13,15 @@ public class Ring : MonoBehaviour
 
     [SerializeField]
     TextMeshPro m_CoordinatesText;
+
+    [SerializeField]
+    Renderer m_CoordinatesRenderer;
+
+    [SerializeField]
+    Renderer m_RingRenderer;
+
+    [SerializeField]
+    Renderer m_ElevationTextRenderer;
 
     [SerializeField]
     float m_FadeAwaySpeed = 1f;
@@ -66,10 +75,11 @@ public class Ring : MonoBehaviour
 
     void Update()
     {
-        m_Intensity = Mathf.Max(0f, m_Intensity - m_FadeAwaySpeed * Time.deltaTime);
-        m_IntensityCore = Mathf.Max(0f, m_IntensityCore - m_CoreFadeAwaySpeed * Time.deltaTime);
-        m_IntensityCoreUp = Mathf.Max(0f, m_IntensityCoreUp - m_CoreFadeAwaySpeed * Time.deltaTime);
-        m_IntensityCoreDown = Mathf.Max(0f, m_IntensityCoreDown - m_CoreFadeAwaySpeed * Time.deltaTime);
+        var deltaTime = Time.deltaTime;
+        m_Intensity = Mathf.Max(0f, m_Intensity - m_FadeAwaySpeed * deltaTime);
+        m_IntensityCore = Mathf.Max(0f, m_IntensityCore - m_CoreFadeAwaySpeed * deltaTime);
+        m_IntensityCoreUp = Mathf.Max(0f, m_IntensityCoreUp - m_CoreFadeAwaySpeed * deltaTime);
+        m_IntensityCoreDown = Mathf.Max(0f, m_IntensityCoreDown - m_CoreFadeAwaySpeed * deltaTime);
 
         var altitude = transform.position.y - m_InitAltitude;
         m_EleveationText.text = string.Format("{0:F2} m", altitude);
@@ -77,12 +87,14 @@ public class Ring : MonoBehaviour
         position = new Vector3(position.x, position.y - m_InitAltitude, position.x);
         m_CoordinatesText.text = string.Format("x:{0:F2} y:{1:F2} z:{2:F3}", position.x, position.y, position.z);
 
-
         m_RingMat.SetFloat(m_IntensityHash, m_Intensity);
 
-        for (var i = 0; i < m_OrigGradient.alphaKeys.Length; i++)
+        var alphaKeys = m_OrigGradient.alphaKeys;
+        var currentAlphaKeys = m_CurrentGradient.alphaKeys;
+        var alphaKeysLength = alphaKeys.Length; 
+        for (var i = 0; i < alphaKeysLength; i++)
         {
-            m_AlphaKeys[i] = new GradientAlphaKey(m_OrigGradient.alphaKeys[i].alpha * m_IntensityCore, m_CurrentGradient.alphaKeys[i].time);
+            m_AlphaKeys[i] = new GradientAlphaKey(alphaKeys[i].alpha * m_IntensityCore, currentAlphaKeys[i].time);
         }
 
         m_CurrentGradient.SetKeys(m_OrigGradient.colorKeys, m_AlphaKeys);
@@ -90,8 +102,9 @@ public class Ring : MonoBehaviour
         m_LineA.colorGradient = m_CurrentGradient;
         m_LineB.colorGradient = m_CurrentGradient;
 
-        m_LineA.SetPosition(1, new Vector3(0f, Mathf.Max(m_LineOffset, m_LineLength * m_IntensityCore * m_IntensityCoreUp, 0f)));
-        m_LineB.SetPosition(1, new Vector3(0f, -Mathf.Max(m_LineOffset, m_LineLength * m_IntensityCore * m_IntensityCoreDown, 0f)));
+        var lineLength = m_LineLength * m_IntensityCore;
+        m_LineA.SetPosition(1, new Vector3(0f, Mathf.Max(m_LineOffset, lineLength * m_IntensityCoreUp, 0f)));
+        m_LineB.SetPosition(1, new Vector3(0f, -Mathf.Max(m_LineOffset, lineLength * m_IntensityCoreDown, 0f)));
 
         m_EleveationText.color = new Color(1f, 1f, 1f, m_IntensityCore);
         m_CoordinatesText.color = new Color(1f, 1f, 1f, Mathf.Max(m_IntensityCore, m_Intensity));
@@ -100,6 +113,15 @@ public class Ring : MonoBehaviour
             m_CoordinatesText.enabled = !m_CoordinatesText.enabled;
 
         m_MouseWasHeld = VRView.MiddleMouseButtonHeld;
+
+        var ringEnabled = !Mathf.Approximately(m_Intensity, 0f);
+        m_RingRenderer.enabled = ringEnabled;
+        m_CoordinatesRenderer.enabled = ringEnabled;
+
+        var coreEnabled = !Mathf.Approximately(m_IntensityCore, 0f);
+        m_LineA.enabled = coreEnabled;
+        m_LineB.enabled = coreEnabled;
+        m_ElevationTextRenderer.enabled = coreEnabled;
     }
 
     public void SetEffectWorldDirection(Vector3 movdir)

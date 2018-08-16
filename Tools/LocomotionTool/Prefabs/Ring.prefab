@@ -509,6 +509,9 @@ MonoBehaviour:
   m_RingTransform: {fileID: 4972223272525874}
   m_EleveationText: {fileID: 114033411654485852}
   m_CoordinatesText: {fileID: 114490602417851340}
+  m_CoordinatesRenderer: {fileID: 23841250678452536}
+  m_RingRenderer: {fileID: 23246761121398968}
+  m_ElevationTextRenderer: {fileID: 23871069099155120}
   m_FadeAwaySpeed: 1
   m_FadeInSpeed: 5
   m_CoreFadeAwaySpeed: 1.5

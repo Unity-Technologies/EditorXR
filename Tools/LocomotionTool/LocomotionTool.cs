@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode, IInstantiateUI
+        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
     {
         const float k_FastMoveSpeed = 20f;
         const float k_SlowMoveSpeed = 1f;
@@ -28,6 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         const float k_RingDirectionSmoothing = 0.5f;
         const float k_MouseMovementMultiplier = 0.01f;
+        const float k_MouseScrollMultiplier = 0.01f;
         const float k_MouseRotationMultiplier = 0.05f;
 
         const string k_Crawl = "Crawl";
@@ -190,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     ((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
                 }
 
-                var instance = this.InstantiateUI(m_RingPrefab, cameraRig, false);
+                var instance = ObjectUtils.Instantiate(m_RingPrefab, cameraRig, false);
                 m_Ring = instance.GetComponent<Ring>();
             }
 
@@ -274,7 +275,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (!m_MouseWasHeld)
                     SetRingPosition();
 
-                var forward = Vector3.Scale(cameraRig.forward, new Vector3(1f, 0f, 1f)).normalized;
+                var xzConstrain = new Vector3(1f, 0f, 1f);
+                var forward = Vector3.Scale(cameraRig.forward, xzConstrain).normalized;
                 var right = new Vector3(-forward.z, 0f, forward.x);
                 var delta = (mouseDelta.x * right + mouseDelta.y * forward)
                     * k_MouseMovementMultiplier;
@@ -294,7 +296,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 cameraRig.rotation *= Quaternion.AngleAxis(mouseDelta.x * k_MouseRotationMultiplier, Vector3.up);
 
             var deltaScroll = VRView.MouseScrollDelta.y;
-            cameraRig.position += deltaScroll * Vector3.up * 0.1f;
+            cameraRig.position += deltaScroll * Vector3.up * k_MouseScrollMultiplier;
 
             if (this.IsSharedUpdater(this) && !Mathf.Approximately(deltaScroll, 0f))
             {
