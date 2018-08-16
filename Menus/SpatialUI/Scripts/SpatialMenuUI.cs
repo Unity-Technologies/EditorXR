@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -13,7 +14,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    public sealed class SpatialMenuUI : SpatialUICore, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
+    public sealed class SpatialMenuUI : SpatialUICore, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults, IControlHaptics
     {
         const float k_DistanceOffset = 0.75f;
         const float k_AllowedGazeDivergence = 45f;
@@ -758,6 +759,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 var delayBeforeReveal = 0.5f;
                 while (delayBeforeReveal > 0)
                 {
+                    this.Pulse(Node.None, m_AdaptivePositionPulse);
                     // Pause before revealing
                     delayBeforeReveal -= Time.unscaledDeltaTime;
                     yield return null;
@@ -821,6 +823,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         IEnumerator AnimateReturnToPreviousMenuLevelVisuals(bool visible)
         {
+            if (visible)
+                this.Pulse(Node.None, m_HighlightUIElementPulse);
+
             m_BackButtonVisualsContainer.SetActive(true);
 
             var currentBackButtonIconSize = m_BackButtons[0].transform.localScale;
@@ -855,11 +860,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", newAlpha * 10);
 
                 transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                // Perform the sustained pulse here, in order to have a proper blending between the initial hover pulse, and the sustained (on hover) pulse
+                this.Pulse(Node.None, m_SustainedHoverUIElementPulse);
                 yield return null;
             }
 
             m_BackButtonVisualsContainer.SetActive(visible);
             m_BackButtonVisualsCanvasGroup.alpha = targetAlpha;
+
+            while (visible)
+            {
+                // Maintain the sustained pulse while hovering the back button
+                this.Pulse(Node.None, m_SustainedHoverUIElementPulse);
+                yield return null;
+            }
+
             m_ReturnToPreviousLevelTransitionCoroutine = null;
         }
     }
