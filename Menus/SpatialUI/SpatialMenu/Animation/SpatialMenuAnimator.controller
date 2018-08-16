@@ -5,7 +5,7 @@ AnimatorController:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: SpatialUIAnimator
+  m_Name: SpatialMenuAnimator
   serializedVersion: 5
   m_AnimatorParameters: []
   m_AnimatorLayers:
