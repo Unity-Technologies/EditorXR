@@ -507,8 +507,8 @@ namespace UnityEditor.Experimental.EditorVR
             // This block is only processed after a frame with both trigger buttons held has been detected
             if (spatialScrollData != null && m_CurrentSpatialActionMapInput.cancel.wasJustPressed)
             {
-                consumeControl(m_CurrentSpatialActionMapInput.cancel);
-                consumeControl(m_CurrentSpatialActionMapInput.show);
+                ConsumeControls(consumeControl);
+
                 //consumeControl(actionMapInput.localPosition);
                 //consumeControl(actionMapInput.localRotationQuaternion);
 
@@ -536,7 +536,8 @@ namespace UnityEditor.Experimental.EditorVR
             if ((m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.wasJustPressed) ||
                 (m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.isHeld))
             {
-                consumeControl(m_CurrentSpatialActionMapInput.select); // Select should only be consumed upon activation, so other UI can receive select events
+                ConsumeControls(consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
+
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
                 m_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
                 //Reset();
@@ -585,8 +586,7 @@ namespace UnityEditor.Experimental.EditorVR
                 m_ContinuousDirectionalVelocityTracker.Update(m_CurrentSpatialActionMapInput.localPosition.vector3, Time.unscaledDeltaTime);
                 //Debug.Log("<color=green>Continuous Direction strength " + m_ContinuousDirectionalVelocityTracker.directionalDivergence + "</color>");
 
-                consumeControl(m_CurrentSpatialActionMapInput.cancel);
-                consumeControl(m_CurrentSpatialActionMapInput.show);
+                ConsumeControls(consumeControl, false);
                 //consumeControl(m_CurrentSpatialActionMapInput.select);
 
                 m_Transitioning = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // duration for which input is not taken into account when menu swapping
@@ -843,6 +843,18 @@ namespace UnityEditor.Experimental.EditorVR
                 CloseMenu();
             }
             */
+        }
+
+        void ConsumeControls(ConsumeControlDelegate consumeControl, bool consumeSelection = true)
+        {
+            consumeControl(m_CurrentSpatialActionMapInput.cancel);
+            consumeControl(m_CurrentSpatialActionMapInput.show);
+
+            if (!consumeSelection)
+                return;
+
+            consumeControl(m_CurrentSpatialActionMapInput.confirm);
+            consumeControl(m_CurrentSpatialActionMapInput.select);
         }
     }
 }
