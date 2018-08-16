@@ -80,14 +80,13 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         HapticPulse m_NavigateBackPulse;
 
-        [SerializeField]
-        HapticPulse m_HighlightMenuElementPulse;
+        HapticPulse m_HighlightMenuElementPulse; // Fetched from SpatialUICore(SpatialMenuUI)
 
         static SpatialMenuUI m_SpatialMenuUi;
         SpatialMenuState m_SpatialMenuState;
 
         bool m_Visible;
-        bool m_BeingMoved;
+        //bool m_BeingMoved;
         Vector3 m_HomeSectionSpatialScrollStartLocalPosition;
         bool m_Transitioning;
         //ISpatialMenuProvider m_HighlightedTopLevelMenuProvider;
@@ -262,6 +261,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         public static readonly List<ISpatialMenuProvider> s_SpatialMenuProviders = new List<ISpatialMenuProvider>();
 
+        /*
         public bool beingMoved
         {
             set
@@ -271,8 +271,12 @@ namespace UnityEditor.Experimental.EditorVR
 
                 m_BeingMoved = value;
                 m_SpatialMenuUi.beingMoved = value;
+
+                if (m_BeingMoved)
+                    this.Pulse(Node.None, m_MenuOpenPulse);
             }
         }
+        */
 
         void ChangeMenuState(SpatialMenuState state)
         {
@@ -329,6 +333,9 @@ namespace UnityEditor.Experimental.EditorVR
                 m_SpatialMenuUi.returnToPreviousMenuLevel = ReturnToPreviousMenuLevel;
                 m_SpatialMenuUi.changeMenuState = ChangeMenuState;
                 SpatialMenuUI.spatialMenuProviders = s_SpatialMenuProviders;
+
+                // Certain core/common SpatialUICore elements are retrieved from SpatialMenuUI(deriving from Core)
+                m_HighlightMenuElementPulse = m_SpatialMenuUi.highlightUIElementPulse;
             }
 
             visible = false;
@@ -512,6 +519,7 @@ namespace UnityEditor.Experimental.EditorVR
                 */
             }
 
+            /* Handled in the SpatialMenuUI now
             // Prevent input processing while moving
             if (m_BeingMoved)
             {
@@ -522,6 +530,7 @@ namespace UnityEditor.Experimental.EditorVR
                 if (m_SpatialMenuState != SpatialMenuState.hidden && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - m_CurrentSpatialActionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                     m_HomeSectionSpatialScrollStartLocalPosition = m_CurrentSpatialActionMapInput.localPosition.vector3;
             }
+            */
 
             // Detect the initial activation of the relevant Spatial input
             if ((m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.wasJustPressed) ||
