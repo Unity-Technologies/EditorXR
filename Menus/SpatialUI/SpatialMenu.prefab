@@ -7674,7 +7674,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1789767321393858}
   m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
-  m_LocalPosition: {x: 4.72, y: 21.6, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224722201347996720}
@@ -8359,7 +8359,7 @@ Transform:
   m_GameObject: {fileID: 1700245641566830}
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0.038}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalScale: {x: 0.5, y: 2, z: 0.5}
   m_Children: []
   m_Father: {fileID: 224815385255047506}
   m_RootOrder: 6
@@ -16726,6 +16726,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9dfe219337f521f4fb2ffd308d7239cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_AdaptivePositionPulse: {fileID: 11400000, guid: 7c58db3db2e44854d86c9bb5bd94e6df,
+    type: 2}
+  m_HighlightUIElementPulse: {fileID: 11400000, guid: 8a40320bd3d9301459e26bf8738e37d5,
+    type: 2}
+  m_SustainedHoverUIElementPulse: {fileID: 11400000, guid: ee3076deadaac0745b2d123bff3ecbff,
+    type: 2}
   m_MainCanvasGroup: {fileID: 225156185928477662}
   m_Background: {fileID: 224190174565545938}
   m_InputModeText: {fileID: 114005941796262990}
