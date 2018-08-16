@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1efd705dfe960584581b3390e04777f1, type: 3}
-  m_Name: SpatialInterfaceMenuClosePulse
+  m_Name: SpatialUIMenuClosePulse
   m_EditorClassIdentifier: 
   m_Duration: 0.25
   m_Intensity: 0.25
