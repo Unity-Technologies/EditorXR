@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
-    public class SpatialMenu : MonoBehaviour, IProcessSpatialInput, IInstantiateUI, IUsesNode,
+    public sealed class SpatialMenu : MonoBehaviour, IProcessSpatialInput, IInstantiateUI, IUsesNode,
         IUsesRayOrigin, ISelectTool, IConnectInterfaces, IControlHaptics, INodeToRay, IDetectGazeDivergence
     {
         public class SpatialMenuData
@@ -60,6 +60,9 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_WristReturnRotationThreshold = 0.3f;
         const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
         const float k_SpatialScrollVectorLength = 0.25f;  // was 0.125, though felt too short a distance for the Spatial Menu (was better suited for the tools menu implementation)
+
+        static bool s_SelectionOutlineWasEnabledOnStart;
+        static bool s_SelectionWireframeWasEnabledOnStart;
 
         public enum SpatialMenuState
         {
@@ -166,6 +169,23 @@ namespace UnityEditor.Experimental.EditorVR
                     RefreshProviderData();
                     spatialMenuState = SpatialMenuState.navigatingTopLevel;
                     //gameObject.SetActive(true);  MOVED TO SPATIAL UI View
+
+                    var sceneViewCameras = SceneView.GetAllSceneCameras();
+                    var sceneView = SceneView.currentDrawingSceneView;
+                    SceneView.SceneViewState outlinesDisabledState = new SceneView.SceneViewState(sceneView.sceneViewState);
+                    Shader.SetGlobalFloatArray("_BlurDirection", new float[]{0, 100});
+                    Shader.SetGlobalColor("_OutlineColor", Color.clear);
+                    Shader.SetGlobalFloatArray("_MainTex_TexelSize", new float[]{0,0,0,0});
+                    Shader.SetGlobalFloat("_ObjectId", -1);
+                    //outlinesDisabledState.
+                    //AnnotationInput.
+                    //sceneView.sceneViewState = new SceneView.SceneViewState();
+                    
+                    //foreach (var sceneView in sceneViews)
+                    //{
+                        //sceneview
+                    //}
+                    //SceneView.SceneViewState = new 
                 }
                 else
                 {
@@ -182,6 +202,10 @@ namespace UnityEditor.Experimental.EditorVR
 
                     this.Pulse(Node.None, m_MenuClosePulse);
                     spatialMenuState = SpatialMenuState.hidden;
+
+                    Shader.SetGlobalFloatArray("_BlurDirection", new float[]{10, 0});
+                    Shader.SetGlobalColor("_OutlineColor", Color.red);
+                    Shader.SetGlobalFloatArray("_MainTex_TexelSize", new float[]{1,1,1,1});
                 }
             }
         }
@@ -313,37 +337,126 @@ namespace UnityEditor.Experimental.EditorVR
         public void Setup()
         {
             CreateUI();
-
-            // Disable the selection outline in the SceneView gizmos (popup)
-            var Annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
-            var asm = Assembly.GetAssembly(typeof(Editor));
-            var type = asm.GetType("UnityEditor.AnnotationUtility");
-            if (type != null)
-            {
-                type.InvokeMember("showSelectionOutline",
-                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
-                    Type.DefaultBinder, Annotation, new object[] { false });
-            }
         }
 
         void OnDestroy()
         {
-            // Enable the selection outline in the SceneView gizmos (popup)
+            // Reset the applicable selection gizmo (SceneView) states
+            SetSceneViewGizmoStates(s_SelectionOutlineWasEnabledOnStart, s_SelectionWireframeWasEnabledOnStart);
+        }
+
+        void SetSceneState()
+        {
+            /*
+            HashSet<int> classIdsToToggle = new HashSet<int>
+            {
+                4, // Transform
+                20, // Camera
+                54, // rigidbody
+                82, // AudioSource
+                108 // light
+            };
+
+            k_ClassIconEnabledStates.Clear();
             var Annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
+            var ClassId = Annotation.GetField("classID");
+            var ScriptClass = Annotation.GetField("scriptClass");
             var asm = Assembly.GetAssembly(typeof(Editor));
             var type = asm.GetType("UnityEditor.AnnotationUtility");
             if (type != null)
             {
-                type.InvokeMember("showSelectionOutline",
-                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
-                    Type.DefaultBinder, Annotation, new object[] { true });
+                MethodInfo getAnnotations =
+                    type.GetMethod("GetAnnotations", BindingFlags.Static | BindingFlags.NonPublic);
+                MethodInfo setIconEnabled =
+                    type.GetMethod("SetIconEnabled", BindingFlags.Static | BindingFlags.NonPublic);
+                PropertyInfo setSelectionOutlinesEnabled = type.GetProperty("showSelectionOutline", BindingFlags.Static | BindingFlags.NonPublic);
+
+
+                var annotations = (Array)getAnnotations.Invoke(null, null);
+                foreach (var a in annotations)
+                {
+                    int classId = (int)ClassId.GetValue(a);
+                    if (classIdsToToggle.Contains(classId))
+                    {
+                        var iconEnabledField = Annotation.GetField("iconEnabled");
+                        var iconEnabled = (int)iconEnabledField.GetValue(a);
+                        string scriptClass = (string)ScriptClass.GetValue(a);
+                        k_ClassIconEnabledStates.Add(classId, new KeyValuePair<string, bool>(scriptClass, iconEnabled == 1));
+                        setIconEnabled.Invoke(null, new object[] { classId, scriptClass, 0 });
+
+                        var gizmoEnabledField = Annotation.GetField("gizmoEnabled");
+                        var gizmoEnabled = (int)gizmoEnabledField.GetValue(a);
+                        scriptClass = (string)ScriptClass.GetValue(a);
+                        k_ClassIconEnabledStates.Add(classId, new KeyValuePair<string, bool>(scriptClass, iconEnabled == 1));
+                        setIconEnabled.Invoke(null, new object[] { classId, scriptClass, 0 });
+
+                        setSelectionOutlinesEnabled.SetValue(null, new object[] { classId, scriptClass, 0 }, null);
+                    }
+                }
+
+                //var asm = Assembly.GetAssembly(typeof(Editor));
+                //var type = asm.GetType("UnityEditor.AnnotationUtility");
+                if (type != null)
+                {
+                    foreach (var kvp in k_ClassIconEnabledStates)
+                    {
+                        var classId = kvp.Key;
+                        var innerKvp = kvp.Value;
+                        var scriptClass = innerKvp.Key;
+                        var enabled = innerKvp.Value;
+                        //setIconEnabled.Invoke(null, new object[] { classId, scriptClass, enabled ? 1 : 0 });
+                        //setSelectionOutlinesEnabled.SetValue(null, new object[] { classId, scriptClass, 0 }, 0);
+                    }
+                }
             }
+            */
         }
-        
-        
 
         void Update()
         {
+            
+
+            return;
+
+            /*
+            foreach (var property in properties)
+            {
+            }
+
+            property.SetValue(obj, iterator.floatValue, null);
+            */
+
+            //var executingAssembly = Assembly.GetExecutingAssembly();
+            //var annotationUtilType = executingAssembly.GetType("UnityEditor.AnnotationUtility", true, false);
+
+            //var typeByStringName = Type.GetType("AnnotationUtility");
+            //PropertyInfo method = typeByStringName.GetProperty("showSelectionOutline", BindingFlags.Static);
+
+            var innerType = Assembly.GetExecutingAssembly().GetTypes().First(t => t.Name == "UnityEditor.AnnotationUtility");
+
+            var innerObject = Activator.CreateInstance(innerType);
+            innerType.GetMethod("InnerTest", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(innerObject, new object[] { });
+
+            //var namedTyped = typeof(UnityEditor.AnnotationUtility).FullName;
+
+            /*
+            var assemblyTypes = Assembly.GetExecutingAssembly().GetTypes();//.Where(t => t.Name == "AnnotationUtility");
+            var type = assemblyTypes.First(t => t.Name == "AnnotationUtility");
+            var staticMethodInfo = type.GetProperties();// .GetProperty("showSelectionOutline");
+            foreach (var prop in staticMethodInfo)
+            {
+                Debug.Log(prop.Name);
+            }
+            */
+
+            //staticMethodInfo.SetValue(innerType, false, null);
+
+            Shader.SetGlobalFloatArray("_BlurDirection", new float[]{0, 100});
+            Shader.SetGlobalColor("_OutlineColor", Color.clear);
+            Shader.SetGlobalFloatArray("_MainTex_TexelSize", new float[]{0,0,0,0});
+            Shader.SetGlobalFloat("_ObjectId", -1);
+
             return;
             if (m_SpatialMenuUi != null && m_SpatialMenuUi.directorBeyondHomeSectionDuration)
             {
@@ -368,9 +481,55 @@ namespace UnityEditor.Experimental.EditorVR
 
                 // Certain core/common SpatialUICore elements are retrieved from SpatialMenuUI(deriving from Core)
                 m_HighlightMenuElementPulse = m_SpatialMenuUi.highlightUIElementPulse;
+
+                CacheAndSetSceneViewGizmos();
             }
 
             visible = false;
+        }
+
+        void CacheAndSetSceneViewGizmos()
+        {
+            // Disable the selection outline in the SceneView gizmos (popup)
+            var annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
+            var asm = Assembly.GetAssembly(typeof(Editor));
+            var type = asm.GetType("UnityEditor.AnnotationUtility");
+            if (type != null)
+            {
+                var currentSelectionOutlineProperty = type.GetProperty("showSelectionOutline", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
+                var currentSelectionOutlineValue = currentSelectionOutlineProperty.GetValue(type, null);
+                if (currentSelectionOutlineValue != null)
+                    s_SelectionOutlineWasEnabledOnStart = (bool) currentSelectionOutlineValue;
+
+                Debug.LogError("current Selection Outline Value" + currentSelectionOutlineValue + " <--");
+
+                var currentSelectionWireProperty = type.GetProperty("showSelectionWire", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
+                var currentSelectionWireValue = currentSelectionWireProperty.GetValue(type, null);
+                if (currentSelectionWireValue != null)
+                    s_SelectionWireframeWasEnabledOnStart = (bool) currentSelectionWireValue;
+
+                Debug.LogError("current Selection Wireframe Value" + currentSelectionWireValue + " <--");
+
+                SetSceneViewGizmoStates();
+            }
+        }
+
+        void SetSceneViewGizmoStates(bool selectionOutlineEnabled = false, bool selectionWireEnabled = false)
+        {
+            // Disable the selection outline in the SceneView gizmos (popup)
+            var annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
+            var asm = Assembly.GetAssembly(typeof(Editor));
+            var type = asm.GetType("UnityEditor.AnnotationUtility");
+            if (type != null)
+            {
+                type.InvokeMember("showSelectionOutline",
+                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
+                    Type.DefaultBinder, annotation, new object[] { selectionOutlineEnabled });
+
+                type.InvokeMember("showSelectionWire",
+                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
+                    Type.DefaultBinder, annotation, new object[] { selectionWireEnabled });
+            }
         }
 
         void RefreshProviderData()
