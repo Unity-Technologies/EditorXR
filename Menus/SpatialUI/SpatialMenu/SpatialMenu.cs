@@ -1,11 +1,15 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
+using UnityEditor.SceneManagement;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.InputNew;
 using Random = UnityEngine.Random;
@@ -144,7 +148,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        private bool visible
+        bool visible
         {
             get { return m_Visible; }
 
@@ -309,7 +313,34 @@ namespace UnityEditor.Experimental.EditorVR
         public void Setup()
         {
             CreateUI();
+
+            // Disable the selection outline in the SceneView gizmos (popup)
+            var Annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
+            var asm = Assembly.GetAssembly(typeof(Editor));
+            var type = asm.GetType("UnityEditor.AnnotationUtility");
+            if (type != null)
+            {
+                type.InvokeMember("showSelectionOutline",
+                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
+                    Type.DefaultBinder, Annotation, new object[] { false });
+            }
         }
+
+        void OnDestroy()
+        {
+            // Enable the selection outline in the SceneView gizmos (popup)
+            var Annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
+            var asm = Assembly.GetAssembly(typeof(Editor));
+            var type = asm.GetType("UnityEditor.AnnotationUtility");
+            if (type != null)
+            {
+                type.InvokeMember("showSelectionOutline",
+                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
+                    Type.DefaultBinder, Annotation, new object[] { true });
+            }
+        }
+        
+        
 
         void Update()
         {
