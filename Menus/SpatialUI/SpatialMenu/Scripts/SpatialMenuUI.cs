@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    public sealed class SpatialMenuUI : SpatialUICore, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults, IControlHaptics
+    public sealed class SpatialMenuUI : SpatialUICore, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
     {
         const float k_DistanceOffset = 0.75f;
         const float k_AllowedGazeDivergence = 45f;
@@ -185,6 +185,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 gameObject.SetActive(m_Visible);
                 allowAdaptivePositioning = m_Visible;
                 resetAdaptivePosition = m_Visible;
+
+                // Block normal intersection testing while interacting with SpatialUI
+                // TODO: Only block input for input devices directly interacting with SpatialUI
+                this.PreventInputIntersection(m_Visible);
 
                 if (!m_Visible)
                     spatialMenuState = SpatialMenu.SpatialMenuState.hidden;
