@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -38,14 +37,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         protected List<Node> controllingNodes { get; set; }
 
+
         public void addControllingNode(Node node)
         {
+            if (controllingNodes.Contains(node))
+                return;
+
+            controllingNodes.Add(node);
+
             // Set priority to 10, in order to suppress any standard ray visibility settings from overriding
             this.AddRayVisibilitySettings(this.RequestRayOriginFromNode(node), this, false, false, 10);
         }
 
         public void removeControllingNode(Node node)
         {
+            if (!controllingNodes.Contains(node))
+                return;
+
+            controllingNodes.Remove(node);
+
             this.RemoveRayVisibilitySettings(this.RequestRayOriginFromNode(node), this);
         }
     }
