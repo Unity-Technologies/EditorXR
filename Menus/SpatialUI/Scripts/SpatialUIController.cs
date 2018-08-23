@@ -93,14 +93,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (currentSelectionOutlineValue != null)
                     s_SelectionOutlineWasEnabledOnStart = (bool) currentSelectionOutlineValue;
 
-                Debug.LogError("current Selection Outline Value" + currentSelectionOutlineValue + " <--");
-
                 var currentSelectionWireProperty = type.GetProperty("showSelectionWire", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
                 var currentSelectionWireValue = currentSelectionWireProperty.GetValue(type, null);
                 if (currentSelectionWireValue != null)
                     s_SelectionWireframeWasEnabledOnStart = (bool) currentSelectionWireValue;
-
-                Debug.LogError("current Selection Wireframe Value" + currentSelectionWireValue + " <--");
             }
         }
 
