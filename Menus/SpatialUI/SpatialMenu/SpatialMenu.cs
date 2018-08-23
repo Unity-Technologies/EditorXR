@@ -62,8 +62,6 @@ namespace UnityEditor.Experimental.EditorVR
         const float k_SpatialScrollVectorLength = 0.25f;  // was 0.125, though felt too short a distance for the Spatial Menu (was better suited for the tools menu implementation)
 
         static SpatialMenuUI s_SpatialMenuUi;
-        static bool s_SelectionOutlineWasEnabledOnStart;
-        static bool s_SelectionWireframeWasEnabledOnStart;
 
         public enum SpatialMenuState
         {
@@ -238,7 +236,7 @@ namespace UnityEditor.Experimental.EditorVR
                         DisplayHighlightedSubMenuContents();
                         break;
                     case SpatialMenuState.hidden:
-                        SetSceneViewGizmoStates(s_SelectionOutlineWasEnabledOnStart, s_SelectionWireframeWasEnabledOnStart);
+                        sceneViewGizmosVisible = true;
                         break;
                 }
             }
@@ -371,7 +369,7 @@ namespace UnityEditor.Experimental.EditorVR
         void OnDestroy()
         {
             // Reset the applicable selection gizmo (SceneView) states
-            SetSceneViewGizmoStates(s_SelectionOutlineWasEnabledOnStart, s_SelectionWireframeWasEnabledOnStart);
+            sceneViewGizmosVisible = true;
         }
 
         void SetSceneState()
@@ -510,35 +508,9 @@ namespace UnityEditor.Experimental.EditorVR
 
                 // Certain core/common SpatialUICore elements are retrieved from SpatialMenuUI(deriving from Core)
                 m_HighlightMenuElementPulse = s_SpatialMenuUi.highlightUIElementPulse;
-
-                CacheSceneViewGizmoStates();
             }
 
             visible = false;
-        }
-
-        void CacheSceneViewGizmoStates()
-        {
-            // Disable the selection outline in the SceneView gizmos (popup)
-            var annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
-            var asm = Assembly.GetAssembly(typeof(Editor));
-            var type = asm.GetType("UnityEditor.AnnotationUtility");
-            if (type != null)
-            {
-                var currentSelectionOutlineProperty = type.GetProperty("showSelectionOutline", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
-                var currentSelectionOutlineValue = currentSelectionOutlineProperty.GetValue(type, null);
-                if (currentSelectionOutlineValue != null)
-                    s_SelectionOutlineWasEnabledOnStart = (bool) currentSelectionOutlineValue;
-
-                Debug.LogError("current Selection Outline Value" + currentSelectionOutlineValue + " <--");
-
-                var currentSelectionWireProperty = type.GetProperty("showSelectionWire", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
-                var currentSelectionWireValue = currentSelectionWireProperty.GetValue(type, null);
-                if (currentSelectionWireValue != null)
-                    s_SelectionWireframeWasEnabledOnStart = (bool) currentSelectionWireValue;
-
-                Debug.LogError("current Selection Wireframe Value" + currentSelectionWireValue + " <--");
-            }
         }
 
         void RefreshProviderData()
@@ -738,7 +710,7 @@ namespace UnityEditor.Experimental.EditorVR
                 ConsumeControls(consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
 
                 // Hide the scene view Gizmo UI that draws SpatialMenu outlines and 
-                SetSceneViewGizmoStates();
+                sceneViewGizmosVisible = false;
 
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
                 s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
