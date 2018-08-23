@@ -972,9 +972,9 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4527969265960412}
-  - component: {fileID: 222066285404052190}
   - component: {fileID: 33947068209222504}
   - component: {fileID: 23229450323539760}
+  - component: {fileID: 65606694971233430}
   m_Layer: 5
   m_Name: BackgroundBlurOverlay
   m_TagString: Untagged
@@ -3884,7 +3884,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4383374797326700}
-  - component: {fileID: 222232845118825378}
   - component: {fileID: 33928354841272442}
   - component: {fileID: 23379497321438040}
   m_Layer: 5
@@ -4159,16 +4158,16 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4739251096752402}
-  - component: {fileID: 222770786334716198}
   - component: {fileID: 33989077769578214}
   - component: {fileID: 23071393728006646}
+  - component: {fileID: 65625413401782078}
   m_Layer: 5
   m_Name: ReturnBlurOverlay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1701284834424146
 GameObject:
   m_ObjectHideFlags: 1
@@ -9985,6 +9984,30 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.0049, y: 0.01356, z: 0.0297}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!65 &65606694971233430
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1167666850991522}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 2, y: 0, z: 2.0000007}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!65 &65625413401782078
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1700245641566830}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 2, y: 0, z: 2.0000005}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!65 &65720627023004526
 BoxCollider:
@@ -17715,12 +17738,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1589831169240058}
---- !u!222 &222066285404052190
-CanvasRenderer:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1167666850991522}
 --- !u!222 &222070966549296146
 CanvasRenderer:
   m_ObjectHideFlags: 1
@@ -17895,12 +17912,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1754708709669074}
---- !u!222 &222232845118825378
-CanvasRenderer:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1639457602434946}
 --- !u!222 &222235524931967962
 CanvasRenderer:
   m_ObjectHideFlags: 1
@@ -18327,12 +18338,6 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1261965513315882}
---- !u!222 &222770786334716198
-CanvasRenderer:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1700245641566830}
 --- !u!222 &222776782355601736
 CanvasRenderer:
   m_ObjectHideFlags: 1
@@ -18648,9 +18653,9 @@ RectTransform:
   m_Father: {fileID: 224500006906110670}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 0.5, y: -0.5}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1, y: 0.055}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224045947018169760
