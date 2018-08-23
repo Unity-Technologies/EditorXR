@@ -17,7 +17,7 @@ using Random = UnityEngine.Random;
 namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
-    public sealed class SpatialMenu : MonoBehaviour, IProcessSpatialInput, IInstantiateUI, IUsesNode,
+    public sealed class SpatialMenu : SpatialUIController, IProcessSpatialInput, IInstantiateUI, IUsesNode,
         IUsesRayOrigin, ISelectTool, IConnectInterfaces, IControlHaptics, INodeToRay, IDetectGazeDivergence
     {
         public class SpatialMenuData
@@ -151,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        private bool visible
+        bool visible
         {
             get { return m_Visible; }
 
@@ -170,6 +170,7 @@ namespace UnityEditor.Experimental.EditorVR
                     spatialMenuState = SpatialMenuState.navigatingTopLevel;
                     //gameObject.SetActive(true);  MOVED TO SPATIAL UI View
 
+                    /*
                     var sceneViewCameras = SceneView.GetAllSceneCameras();
                     var sceneView = SceneView.currentDrawingSceneView;
                     SceneView.SceneViewState outlinesDisabledState = new SceneView.SceneViewState(sceneView.sceneViewState);
@@ -177,6 +178,7 @@ namespace UnityEditor.Experimental.EditorVR
                     Shader.SetGlobalColor("_OutlineColor", Color.clear);
                     Shader.SetGlobalFloatArray("_MainTex_TexelSize", new float[]{0,0,0,0});
                     Shader.SetGlobalFloat("_ObjectId", -1);
+                    */
                     //outlinesDisabledState.
                     //AnnotationInput.
                     //sceneView.sceneViewState = new SceneView.SceneViewState();
@@ -190,6 +192,7 @@ namespace UnityEditor.Experimental.EditorVR
                 else
                 {
                     ReturnToPreviousMenuLevel(); // TODO: verify that this needs to be called, or can be replaced by a core set of referenced functionality
+
                     if (m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent &&
                         m_HighlightedMenuElements != null &&
                         m_HighlightedMenuElements.Count > 0 &&
@@ -205,9 +208,11 @@ namespace UnityEditor.Experimental.EditorVR
 
                     spatialScrollOrigin = null;
                     node = Node.None;
+                    /*
                     Shader.SetGlobalFloatArray("_BlurDirection", new float[]{10, 0});
                     Shader.SetGlobalColor("_OutlineColor", Color.red);
                     Shader.SetGlobalFloatArray("_MainTex_TexelSize", new float[]{1,1,1,1});
+                    */
                 }
             }
         }
@@ -231,6 +236,9 @@ namespace UnityEditor.Experimental.EditorVR
                     case SpatialMenuState.navigatingSubMenuContent:
                         SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalY);
                         DisplayHighlightedSubMenuContents();
+                        break;
+                    case SpatialMenuState.hidden:
+                        SetSceneViewGizmoStates(s_SelectionOutlineWasEnabledOnStart, s_SelectionWireframeWasEnabledOnStart);
                         break;
                 }
             }
@@ -266,13 +274,13 @@ namespace UnityEditor.Experimental.EditorVR
                 if (value == m_Node)
                     return;
 
-                if (value != Node.None)
+                if (value != Node.None && s_SpatialMenuUi != null)
                 {
-                    s_SpatialMenuUi.removeControllingNode(m_Node);
-
-                    m_Node = value;
-                    s_SpatialMenuUi.addControllingNode(m_Node);
+                    removeControllingNode(m_Node);
+                    addControllingNode(value);
                 }
+
+                m_Node = value;
             }
         }
 
@@ -503,13 +511,13 @@ namespace UnityEditor.Experimental.EditorVR
                 // Certain core/common SpatialUICore elements are retrieved from SpatialMenuUI(deriving from Core)
                 m_HighlightMenuElementPulse = s_SpatialMenuUi.highlightUIElementPulse;
 
-                CacheAndSetSceneViewGizmos();
+                CacheSceneViewGizmoStates();
             }
 
             visible = false;
         }
 
-        void CacheAndSetSceneViewGizmos()
+        void CacheSceneViewGizmoStates()
         {
             // Disable the selection outline in the SceneView gizmos (popup)
             var annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
@@ -530,26 +538,6 @@ namespace UnityEditor.Experimental.EditorVR
                     s_SelectionWireframeWasEnabledOnStart = (bool) currentSelectionWireValue;
 
                 Debug.LogError("current Selection Wireframe Value" + currentSelectionWireValue + " <--");
-
-                SetSceneViewGizmoStates();
-            }
-        }
-
-        void SetSceneViewGizmoStates(bool selectionOutlineEnabled = false, bool selectionWireEnabled = false)
-        {
-            // Disable the selection outline in the SceneView gizmos (popup)
-            var annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
-            var asm = Assembly.GetAssembly(typeof(Editor));
-            var type = asm.GetType("UnityEditor.AnnotationUtility");
-            if (type != null)
-            {
-                type.InvokeMember("showSelectionOutline",
-                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
-                    Type.DefaultBinder, annotation, new object[] { selectionOutlineEnabled });
-
-                type.InvokeMember("showSelectionWire",
-                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
-                    Type.DefaultBinder, annotation, new object[] { selectionWireEnabled });
             }
         }
 
@@ -748,6 +736,9 @@ namespace UnityEditor.Experimental.EditorVR
                 (m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.isHeld))
             {
                 ConsumeControls(consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
+
+                // Hide the scene view Gizmo UI that draws SpatialMenu outlines and 
+                SetSceneViewGizmoStates();
 
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
                 s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
