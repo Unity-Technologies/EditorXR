@@ -2,7 +2,6 @@
 using System.Collections;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -163,7 +162,8 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
         if (m_SpatialInteractionType == SpatialInteractionType.ray)
             newGhostInputDevicePosition = m_GhostInputDeviceOriginalLocalPosition - Vector3.forward * 0.325f;
 
-        this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newGhostInputDevicePosition));
+        if (gameObject.activeSelf)
+            this.RestartCoroutine(ref m_GhostInputDeviceRepositionCoroutine, AnimateGhostInputDevicePosition(newGhostInputDevicePosition));
     }
 
     /*
