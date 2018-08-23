@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
+using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -21,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         static bool s_SelectionOutlineWasEnabledOnStart;
         static bool s_SelectionWireframeWasEnabledOnStart;
 
-        List<Node> controllingNodes { get; set; }
+        readonly List<Node> controllingNodes = new List<Node>();
 
         protected bool sceneViewGizmosVisible
         {
@@ -121,6 +122,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
                     Type.DefaultBinder, annotation, selectionOutlineEnabledBoxedBool);
             }
+        }
+
+        protected static void ConsumeControls(SpatialMenuInput spatialMenuActionMapInput, ConsumeControlDelegate consumeControl, bool consumeSelection = true)
+        {
+            consumeControl(spatialMenuActionMapInput.cancel);
+            consumeControl(spatialMenuActionMapInput.show);
+
+            if (!consumeSelection)
+                return;
+
+            consumeControl(spatialMenuActionMapInput.confirm);
+            consumeControl(spatialMenuActionMapInput.select);
         }
     }
 }
