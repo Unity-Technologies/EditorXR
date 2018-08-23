@@ -154,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var spatialMenu = ObjectUtils.AddComponent<SpatialMenu>(evr.gameObject);// menus.SpawnMenu<SpatialMenu>(rayOrigin);
                     this.ConnectInterfaces(spatialMenu, rayOrigin);
                     spatialMenu.Setup();
-                    // Only setup the single/shared spatial ray source if this is the first time the spatial menu was setup
+                    // Only setup the single/shared decoupled spatial ray source if this is the first time the spatial menu was setup
                     if (!multiRayInputModule.SourceAlreadyAdded(spatialMenu.rayBasedInteractionSource))
                         multiRayInputModule.AddRaycastSource(proxy, deviceData.node, spatialMenu.rayBasedInteractionSource);
 
