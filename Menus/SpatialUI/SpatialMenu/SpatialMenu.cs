@@ -613,7 +613,9 @@ namespace UnityEditor.Experimental.EditorVR
                 // TODO: set the spatial scroll origin based on the node that initiates the display of the SpatialUI // No needed if we have single UI/view and per-device controllers with their own assigned nodes
                 spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
                 spatialScrollStartPosition = spatialScrollOrigin.position;
-                var elementCount = menuElemenCountOverride != -1 ? menuElemenCountOverride : m_HighlightedMenuElements.Count;
+
+                var highlightedMenuElementsCount = m_HighlightedMenuElements != null ? m_HighlightedMenuElements.Count : 0;
+                var elementCount = menuElemenCountOverride != -1 ? menuElemenCountOverride : highlightedMenuElementsCount;
                 spatialScrollData = this.PerformLocalCardinallyConstrainedSpatialScroll(direction, node, spatialScrollStartPosition, spatialScrollOrigin.position, k_SpatialScrollVectorLength, SpatialInputModule.ScrollRepeatType.Clamped, elementCount, elementCount);
             }
         }
