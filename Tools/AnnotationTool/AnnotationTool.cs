@@ -692,7 +692,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             return triangles;
         }
 
-        // LOOK IN HERE DUMBASS
+        // TODO - LOOK IN HERE DUMBASS, if your action starts as left or right, brush size should adjust.
+        // if it doesn't, spatial UI should consume and brush shouldn't change
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             var annotationInput = (AnnotationInput)input;

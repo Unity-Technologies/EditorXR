@@ -720,6 +720,9 @@ namespace UnityEditor.Experimental.EditorVR
                 //Reset();
             }
 
+
+            // isHeld goes false right when you go below 0.5.  this is the check for 'up-click' on the pad / stick
+            // TODO - we also need to invent the definition of 'released'.  some combo of Isheld = false & below minimum x/y deadzone for a time
             if ((m_CurrentSpatialActionMapInput.showSpatialMenu.positive.isHeld || m_CurrentSpatialActionMapInput.show.isHeld) && m_SpatialMenuState != SpatialMenuState.hidden)
             {
                 m_RotationVelocityTracker.Update(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
