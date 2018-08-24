@@ -25,6 +25,7 @@ MonoBehaviour:
   - {fileID: 114971311725607160}
   - {fileID: 114038252636922082}
   - {fileID: 114386344967141356}
+  - {fileID: 114128505005920440}
   m_ControlSchemes:
   - m_Name: SpatialMenuInput
     m_DeviceSlots:
@@ -148,6 +149,15 @@ MonoBehaviour:
       sensitivity: 1000
       snap: 1
       primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 1
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
   m_MapTypeName: SpatialMenuInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   m_CustomNamespace: 
@@ -170,6 +180,26 @@ MonoBehaviour:
       m_TypeName: UnityEngine.InputNew.Vector3InputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
     name: localPosition
+    defaultValue: 0
+--- !u!114 &114128505005920440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: showDirectionalTrigger
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 13
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: showDirectionalTrigger
     defaultValue: 0
 --- !u!114 &114174747458807318
 MonoBehaviour:
