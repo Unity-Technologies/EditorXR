@@ -845,7 +845,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var currentAlpha = m_BackButtonVisualsCanvasGroup.alpha;
             var targetAlpha = visible ? 1f : 0f;
             var transitionAmount = 0f;
-            var transitionSubtractMultiplier = 5f;
+            var transitionSpeedMultiplier = visible ? 10f : 5f; // Faster when revealing, slower when hiding
             var currentTextLocalPosition = m_ReturnToPreviousLevelText.localPosition;
             var targetTextLocalPosition = visible ? Vector3.zero : new Vector3(0f, 0f, kHiddenTextLocalPosition); // recede when hiding
             while (transitionAmount < 1f)
@@ -866,7 +866,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 //m_ReturnToPreviousBackground.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, smoothTransition);
                 m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", newAlpha * 10);
 
-                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                transitionAmount += Time.deltaTime * transitionSpeedMultiplier;
                 // Perform the sustained pulse here, in order to have a proper blending between the initial hover pulse, and the sustained (on hover) pulse
                 this.Pulse(Node.None, m_SustainedHoverUIElementPulse);
                 yield return null;
