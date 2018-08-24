@@ -942,12 +942,12 @@ GameObject:
   - component: {fileID: 114421724771701628}
   - component: {fileID: 114160151700793536}
   m_Layer: 5
-  m_Name: RightArrowIcon
+  m_Name: RightArrowIcon-Delete
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1166221615258474
 GameObject:
   m_ObjectHideFlags: 1
@@ -2324,12 +2324,12 @@ GameObject:
   - component: {fileID: 114477071796311328}
   - component: {fileID: 114497009440139368}
   m_Layer: 5
-  m_Name: TopArrowIcon
+  m_Name: TopArrowIcon-Delete
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1391696472869836
 GameObject:
   m_ObjectHideFlags: 1
@@ -4358,12 +4358,12 @@ GameObject:
   - component: {fileID: 114325812182594062}
   - component: {fileID: 114105191186344806}
   m_Layer: 5
-  m_Name: LeftArrowIcon
+  m_Name: LeftArrowIcon-Delete
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1734939707706872
 GameObject:
   m_ObjectHideFlags: 1
@@ -12342,7 +12342,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1730997599328186}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 1392445389, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
@@ -13198,7 +13198,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1166111979364004}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 1392445389, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
@@ -13455,7 +13455,7 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1391550003226712}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 1392445389, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
