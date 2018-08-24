@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// Mandates that derived classes implement core SpatialUI implementation
     /// The SpatialMenu is the first robust implementation, SpatialContextUI is planned to derive from core
     /// </summary>
-    public abstract class SpatialUICore : MonoBehaviour, IControlHaptics, IControlInputIntersection,
+    public abstract class SpatialUIView : MonoBehaviour, IControlHaptics, IControlInputIntersection,
         INodeToRay
     {
         public enum SpatialInterfaceInputMode

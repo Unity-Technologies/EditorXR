@@ -3,7 +3,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     // A SpatialContextUI demo class
     // Used to test the extraction of common SpatialUI logic separate from the SpatialMenu
-    public class SpatialUIPanelDemo : SpatialUICore
+    public class SpatialUIPanelDemo : SpatialUIView
     {
 
     }
