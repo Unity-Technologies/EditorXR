@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    public sealed class SpatialMenuUI : SpatialUICore, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
+    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
     {
         const float k_DistanceOffset = 0.75f;
         const float k_AllowedGazeDivergence = 45f;
