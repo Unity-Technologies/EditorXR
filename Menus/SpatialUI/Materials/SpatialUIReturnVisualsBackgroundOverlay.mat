@@ -59,6 +59,7 @@ Material:
     - _Alpha: 0
     - _Blur: 10
     - _BlurNoise: 0
+    - _BlurNoiseAmount: 0.02
     - _BumpScale: 1
     - _ColorMask: 15
     - _Cutoff: 0.5
