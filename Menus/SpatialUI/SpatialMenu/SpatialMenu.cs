@@ -728,9 +728,12 @@ namespace UnityEditor.Experimental.EditorVR
                         if (origin == null || origin == m_RayOrigin) // Don't compare against the rayOrigin that is currently processing input for the Spatial UI
                             continue;
 
+                        // Compare the angular differnce between the spatialUI's transform, and ANY spatial menu ray origin
                         var isAboveDivergenceThreshold = IsAboveDivergenceThreshold(origin, s_SpatialMenuUi.adaptiveTransform, 45);
+
                         Debug.Log(origin.name + "<color=green> opposite ray origin divergence value : </color>" + isAboveDivergenceThreshold);
 
+                        // If BELOW the threshold, thus a ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
                         if (!isAboveDivergenceThreshold)
                             s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay;
                         else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay)
