@@ -8,7 +8,8 @@
         //_StencilRef("StencilRef", Int) = 3
         _GradientSize("Gradient Size", Range(0, 6)) = 2
         _MainTex("Noise Texture (REQUIRED for Blur Noise)", 2D) = "white" {}
-        _BlurNoise("Blur Noise Amount", Range(-1, 1)) = 1
+        _BlurNoise("Blur Noise Direction", Range(-1, 1)) = 1 // TODO <-- remove
+        _BlurNoiseAmount("Blur Noise Amount", Range(-5, 5)) = 0.125
         //[Toggle] _StencilFailZero("Stencil Fail Zero", Float) = 0
     }
 
@@ -64,6 +65,7 @@
                     half _GradientSize;
                     sampler2D _MainTex;
                     half _BlurNoise;
+					half _BlurNoiseAmount;
 
                     v2f vert(appdata_t v)
                     {
@@ -96,7 +98,7 @@
 
                         half4 color = tex2D(_MainTex, input.cleanUV);
                         //half noiseSampledTextureAmount = 0.5 + color.r - 0.00125;
-                        half noiseSampledTextureAmount = 1 + color.r - 0.125 * dot(input.cleanUV, float2(0.5, 0.5));
+                        half noiseSampledTextureAmount = 1 + color.r - _BlurNoiseAmount * dot(input.cleanUV, float2(0.5, 0.5));
 
                         half blurAdjustmentModifier = _BlurNoise * 0.25;
                         float adjustedBlur = 1;// - uvPos * 2;// * (input.cleanUV.y);
@@ -177,6 +179,7 @@
                 half _GradientSize;
                 sampler2D _MainTex;
                 half _BlurNoise;
+				half _BlurNoiseAmount;
 
                 v2f vert(appdata_t v)
                 {
@@ -208,7 +211,7 @@
                     #define GrabAndOffset(weight,kernelY) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (positionAdjustedBlur * input.yPos + _VerticalOffset), input.grab.z, input.grab.w))) * weight
 
                     half4 color = tex2D(_MainTex, input.cleanUV);
-                    half noiseSampledTextureAmount = 1 + color.g - 0.125 * dot(input.cleanUV, float2(0.5, 0.5));
+                    half noiseSampledTextureAmount = 1 + color.g - _BlurNoiseAmount * dot(input.cleanUV, float2(0.5, 0.5));
 
                     float adjustedBlur = 1;// - uvPos * 2;// * (input.cleanUV.y);
                     half blurAdjustmentModifier = _BlurNoise * 0.25;
