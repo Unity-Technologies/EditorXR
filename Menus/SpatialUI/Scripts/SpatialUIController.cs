@@ -121,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         protected static void ConsumeControls(SpatialMenuInput spatialMenuActionMapInput, ConsumeControlDelegate consumeControl, bool consumeSelection = true)
         {
             consumeControl(spatialMenuActionMapInput.cancel);
-            consumeControl(spatialMenuActionMapInput.show);
+            consumeControl(spatialMenuActionMapInput.showMenu);
 
             if (!consumeSelection)
                 return;

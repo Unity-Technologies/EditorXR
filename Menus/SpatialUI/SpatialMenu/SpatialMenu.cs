@@ -180,12 +180,12 @@ namespace UnityEditor.Experimental.EditorVR
                     //outlinesDisabledState.
                     //AnnotationInput.
                     //sceneView.sceneViewState = new SceneView.SceneViewState();
-                    
+
                     //foreach (var sceneView in sceneViews)
                     //{
                         //sceneview
                     //}
-                    //SceneView.SceneViewState = new 
+                    //SceneView.SceneViewState = new
                 }
                 else
                 {
@@ -441,7 +441,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void Update()
         {
-            
+
 
             return;
 
@@ -706,13 +706,11 @@ namespace UnityEditor.Experimental.EditorVR
             */
 
             // Detect the initial activation of the relevant Spatial input
-            if ( m_CurrentSpatialActionMapInput.showSpatialMenu.positive.isHeld ||
-                m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.wasJustPressed ||
-                m_CurrentSpatialActionMapInput.show.wasJustPressed && m_CurrentSpatialActionMapInput.select.isHeld)
+            if (m_CurrentSpatialActionMapInput.showMenu.positive.wasJustPressed)
             {
                 ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
 
-                // Hide the scene view Gizmo UI that draws SpatialMenu outlines and 
+                // Hide the scene view Gizmo UI that draws SpatialMenu outlines and
                 sceneViewGizmosVisible = false;
 
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
@@ -720,10 +718,9 @@ namespace UnityEditor.Experimental.EditorVR
                 //Reset();
             }
 
-
             // isHeld goes false right when you go below 0.5.  this is the check for 'up-click' on the pad / stick
             // TODO - we also need to invent the definition of 'released'.  some combo of Isheld = false & below minimum x/y deadzone for a time
-            if ((m_CurrentSpatialActionMapInput.showSpatialMenu.positive.isHeld || m_CurrentSpatialActionMapInput.show.isHeld) && m_SpatialMenuState != SpatialMenuState.hidden)
+            if (m_CurrentSpatialActionMapInput.showMenu.positive.isHeld && m_SpatialMenuState != SpatialMenuState.hidden)
             {
                 m_RotationVelocityTracker.Update(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
                 if (!s_SpatialMenuUi.transitioningInputModes)
@@ -951,7 +948,7 @@ namespace UnityEditor.Experimental.EditorVR
                 return;
             }
 
-            if (!m_CurrentSpatialActionMapInput.showSpatialMenu.positive.isHeld && !m_CurrentSpatialActionMapInput.show.isHeld && !m_CurrentSpatialActionMapInput.select.isHeld)
+            if (!m_CurrentSpatialActionMapInput.showMenu.positive.isHeld)
             {
                 visible = false;
                 return;

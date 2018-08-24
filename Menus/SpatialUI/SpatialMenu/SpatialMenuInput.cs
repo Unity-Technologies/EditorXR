@@ -7,7 +7,7 @@ namespace UnityEngine.InputNew
 	public class SpatialMenuInput : ActionMapInput {
 		public SpatialMenuInput (ActionMap actionMap) : base (actionMap) { }
 		
-		public ButtonInputControl @show { get { return (ButtonInputControl)this[0]; } }
+		public ButtonInputControl @grip { get { return (ButtonInputControl)this[0]; } }
 		public ButtonInputControl @select { get { return (ButtonInputControl)this[1]; } }
 		public ButtonInputControl @cancel { get { return (ButtonInputControl)this[2]; } }
 		public AxisInputControl @localRotationX { get { return (AxisInputControl)this[3]; } }
@@ -20,6 +20,6 @@ namespace UnityEngine.InputNew
 		public AxisInputControl @localPositionZ { get { return (AxisInputControl)this[10]; } }
 		public Vector3InputControl @localPosition { get { return (Vector3InputControl)this[11]; } }
 		public ButtonInputControl @confirm { get { return (ButtonInputControl)this[12]; } }
-		public AxisInputControl @showSpatialMenu { get { return (AxisInputControl)this[13]; } }
+		public AxisInputControl @showMenu { get { return (AxisInputControl)this[13]; } }
 	}
 }
