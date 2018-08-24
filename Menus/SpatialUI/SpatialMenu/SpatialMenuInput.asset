@@ -190,7 +190,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: showDirectionalTrigger
+  m_Name: showMenu
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 13
@@ -199,7 +199,7 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: showDirectionalTrigger
+    name: showMenu
     defaultValue: 0
 --- !u!114 &114174747458807318
 MonoBehaviour:
@@ -370,7 +370,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
-  m_Name: show
+  m_Name: grip
   m_EditorClassIdentifier: 
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 0
@@ -379,7 +379,7 @@ MonoBehaviour:
     controlType:
       m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
-    name: show
+    name: grip
     defaultValue: 0
 --- !u!114 &114892861181435544
 MonoBehaviour:
