@@ -225,6 +225,8 @@ namespace UnityEditor.Experimental.EditorVR
                 m_SpatialMenuState = value;
                 s_SpatialMenuUi.spatialMenuState = value;
 
+                m_RotationVelocityTracker.Initialize(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion);
+
                 switch (m_SpatialMenuState)
                 {
                     case SpatialMenuState.navigatingTopLevel:
@@ -258,7 +260,9 @@ namespace UnityEditor.Experimental.EditorVR
                 // forward vector, in order to see if a ray origins that ISN'T currently controlling the spatial UI
                 // has begun pointing at the spatial UI, which will override the input typs to ray-based interaction
                 // (taking the opposite hand, and pointing it at the menu)
-                allSpatialMenuRayOrigins.Add(m_RayOrigin);
+
+                if (!allSpatialMenuRayOrigins.Contains(m_RayOrigin))
+                    allSpatialMenuRayOrigins.Add(m_RayOrigin);
             }
         }
 
@@ -742,6 +746,7 @@ namespace UnityEditor.Experimental.EditorVR
 
                     if (s_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.GhostRay && m_RotationVelocityTracker.rotationStrength > 600)
                     {
+                        m_RotationVelocityTracker.Initialize(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion);
                         spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
                         spatialScrollStartPosition = spatialScrollOrigin.position;
                         m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
@@ -754,7 +759,8 @@ namespace UnityEditor.Experimental.EditorVR
                         //if ((spatialScrollStartPosition - m_CurrentSpatialActionMapInput.localPosition.vector3).magnitude > 0.25f)
                         if (m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
                         {
-                            s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
+                            // TODO fix logic handling for translation beyond a threshold over time, aka directionalDivergence, to handoff back to translation/spatial input
+                            //s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
                             //SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
                         }
                         //*/
