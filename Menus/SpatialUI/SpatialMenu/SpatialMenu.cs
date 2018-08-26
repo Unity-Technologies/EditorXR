@@ -276,12 +276,6 @@ namespace UnityEditor.Experimental.EditorVR
                 if (value == m_Node)
                     return;
 
-                if (value != Node.None && s_SpatialMenuUi != null)
-                {
-                    removeControllingNode(m_Node);
-                    addControllingNode(value);
-                }
-
                 m_Node = value;
             }
         }
@@ -308,16 +302,6 @@ namespace UnityEditor.Experimental.EditorVR
 
         // Angular Ray-based detection of all ray-origins having spawned a SpatialMenu controller
         static readonly List<Transform> allSpatialMenuRayOrigins = new List<Transform>();
-
-        // Ray-based members
-        public Transform rayBasedInteractionSource
-        {
-            get
-            {
-                Transform source = null;
-                return s_SpatialMenuUi != null ? s_SpatialMenuUi.rayBasedInteractionSource : null;
-            }
-        }
 
         public static readonly List<ISpatialMenuProvider> s_SpatialMenuProviders = new List<ISpatialMenuProvider>();
 
@@ -376,128 +360,6 @@ namespace UnityEditor.Experimental.EditorVR
             sceneViewGizmosVisible = true;
         }
 
-        void SetSceneState()
-        {
-            /*
-            HashSet<int> classIdsToToggle = new HashSet<int>
-            {
-                4, // Transform
-                20, // Camera
-                54, // rigidbody
-                82, // AudioSource
-                108 // light
-            };
-
-            k_ClassIconEnabledStates.Clear();
-            var Annotation = Type.GetType("UnityEditor.Annotation, UnityEditor");
-            var ClassId = Annotation.GetField("classID");
-            var ScriptClass = Annotation.GetField("scriptClass");
-            var asm = Assembly.GetAssembly(typeof(Editor));
-            var type = asm.GetType("UnityEditor.AnnotationUtility");
-            if (type != null)
-            {
-                MethodInfo getAnnotations =
-                    type.GetMethod("GetAnnotations", BindingFlags.Static | BindingFlags.NonPublic);
-                MethodInfo setIconEnabled =
-                    type.GetMethod("SetIconEnabled", BindingFlags.Static | BindingFlags.NonPublic);
-                PropertyInfo setSelectionOutlinesEnabled = type.GetProperty("showSelectionOutline", BindingFlags.Static | BindingFlags.NonPublic);
-
-
-                var annotations = (Array)getAnnotations.Invoke(null, null);
-                foreach (var a in annotations)
-                {
-                    int classId = (int)ClassId.GetValue(a);
-                    if (classIdsToToggle.Contains(classId))
-                    {
-                        var iconEnabledField = Annotation.GetField("iconEnabled");
-                        var iconEnabled = (int)iconEnabledField.GetValue(a);
-                        string scriptClass = (string)ScriptClass.GetValue(a);
-                        k_ClassIconEnabledStates.Add(classId, new KeyValuePair<string, bool>(scriptClass, iconEnabled == 1));
-                        setIconEnabled.Invoke(null, new object[] { classId, scriptClass, 0 });
-
-                        var gizmoEnabledField = Annotation.GetField("gizmoEnabled");
-                        var gizmoEnabled = (int)gizmoEnabledField.GetValue(a);
-                        scriptClass = (string)ScriptClass.GetValue(a);
-                        k_ClassIconEnabledStates.Add(classId, new KeyValuePair<string, bool>(scriptClass, iconEnabled == 1));
-                        setIconEnabled.Invoke(null, new object[] { classId, scriptClass, 0 });
-
-                        setSelectionOutlinesEnabled.SetValue(null, new object[] { classId, scriptClass, 0 }, null);
-                    }
-                }
-
-                //var asm = Assembly.GetAssembly(typeof(Editor));
-                //var type = asm.GetType("UnityEditor.AnnotationUtility");
-                if (type != null)
-                {
-                    foreach (var kvp in k_ClassIconEnabledStates)
-                    {
-                        var classId = kvp.Key;
-                        var innerKvp = kvp.Value;
-                        var scriptClass = innerKvp.Key;
-                        var enabled = innerKvp.Value;
-                        //setIconEnabled.Invoke(null, new object[] { classId, scriptClass, enabled ? 1 : 0 });
-                        //setSelectionOutlinesEnabled.SetValue(null, new object[] { classId, scriptClass, 0 }, 0);
-                    }
-                }
-            }
-            */
-        }
-
-        void Update()
-        {
-            
-
-            return;
-
-            /*
-            foreach (var property in properties)
-            {
-            }
-
-            property.SetValue(obj, iterator.floatValue, null);
-            */
-
-            //var executingAssembly = Assembly.GetExecutingAssembly();
-            //var annotationUtilType = executingAssembly.GetType("UnityEditor.AnnotationUtility", true, false);
-
-            //var typeByStringName = Type.GetType("AnnotationUtility");
-            //PropertyInfo method = typeByStringName.GetProperty("showSelectionOutline", BindingFlags.Static);
-
-            var innerType = Assembly.GetExecutingAssembly().GetTypes().First(t => t.Name == "UnityEditor.AnnotationUtility");
-
-            var innerObject = Activator.CreateInstance(innerType);
-            innerType.GetMethod("InnerTest", BindingFlags.Instance | BindingFlags.NonPublic)
-                .Invoke(innerObject, new object[] { });
-
-            //var namedTyped = typeof(UnityEditor.AnnotationUtility).FullName;
-
-            /*
-            var assemblyTypes = Assembly.GetExecutingAssembly().GetTypes();//.Where(t => t.Name == "AnnotationUtility");
-            var type = assemblyTypes.First(t => t.Name == "AnnotationUtility");
-            var staticMethodInfo = type.GetProperties();// .GetProperty("showSelectionOutline");
-            foreach (var prop in staticMethodInfo)
-            {
-                Debug.Log(prop.Name);
-            }
-            */
-
-            //staticMethodInfo.SetValue(innerType, false, null);
-
-            Shader.SetGlobalFloatArray("_BlurDirection", new float[]{0, 100});
-            Shader.SetGlobalColor("_OutlineColor", Color.clear);
-            Shader.SetGlobalFloatArray("_MainTex_TexelSize", new float[]{0,0,0,0});
-            Shader.SetGlobalFloat("_ObjectId", -1);
-
-            return;
-            if (s_SpatialMenuUi != null && s_SpatialMenuUi.directorBeyondHomeSectionDuration)
-            {
-                //StopAllCoroutines();
-                //HideSubMenu();
-                //allowAdaptivePositioning = false;
-                //gameObject.SetActive(m_Visible);
-            }
-        }
-
         void CreateUI()
         {
             if (s_SpatialMenuUi == null)
@@ -535,27 +397,12 @@ namespace UnityEditor.Experimental.EditorVR
 
         public static void AddProvider(ISpatialMenuProvider provider)
         {
-            //Type providerType = provider.GetType();
-
             if (s_SpatialMenuProviders.Contains(provider))
             {
                 Debug.LogWarning("Cannot add multiple menus of the same type to the SpatialUI");
                 return;
             }
 
-            /*
-            foreach (var collectionsProvider in s_SpatialMenuProviders)
-            {
-                var type = collectionsProvider.GetType();
-                if (type == providerType)
-                {
-                    Debug.LogWarning("Cannot add multiple menus of the same type to the SpatialUI");
-                    return;
-                }
-            }
-            */
-
-            //Debug.LogWarning("Adding a provider");
             s_SpatialMenuProviders.Add(provider);
 
             //if (provider.spatialMenuData.Count == 0)
@@ -725,46 +572,43 @@ namespace UnityEditor.Experimental.EditorVR
             if (m_CurrentSpatialActionMapInput.showMenu.positive.isHeld && m_SpatialMenuState != SpatialMenuState.hidden)
             {
                 m_RotationVelocityTracker.Update(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
-                if (!s_SpatialMenuUi.transitioningInputModes)
+                foreach (var origin in allSpatialMenuRayOrigins)
                 {
-                    foreach (var origin in allSpatialMenuRayOrigins)
+                    if (origin == null || origin == m_RayOrigin) // Don't compare against the rayOrigin that is currently processing input for the Spatial UI
+                        continue;
+
+                    // Compare the angular differnce between the spatialUI's transform, and ANY spatial menu ray origin
+                    var isAboveDivergenceThreshold = IsAboveDivergenceThreshold(origin, s_SpatialMenuUi.adaptiveTransform, 45);
+
+                    Debug.Log(origin.name + "<color=green> opposite ray origin divergence value : </color>" + isAboveDivergenceThreshold);
+
+                    // If BELOW the threshold, thus a ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
+                    if (!isAboveDivergenceThreshold)
+                        s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay;
+                    else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay)
+                        s_SpatialMenuUi.ReturnToPreviousInputMode();
+                }
+
+                if (s_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.GhostRay && m_RotationVelocityTracker.rotationStrength > 600)
+                {
+                    m_RotationVelocityTracker.Initialize(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion);
+                    spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
+                    spatialScrollStartPosition = spatialScrollOrigin.position;
+                    m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
+                    s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.GhostRay;
+                }
+                else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.GhostRay)
+                {
+                    // Transition back to spatial translation mode
+
+                    //if ((spatialScrollStartPosition - m_CurrentSpatialActionMapInput.localPosition.vector3).magnitude > 0.25f)
+                    if (m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
                     {
-                        if (origin == null || origin == m_RayOrigin) // Don't compare against the rayOrigin that is currently processing input for the Spatial UI
-                            continue;
-
-                        // Compare the angular differnce between the spatialUI's transform, and ANY spatial menu ray origin
-                        var isAboveDivergenceThreshold = IsAboveDivergenceThreshold(origin, s_SpatialMenuUi.adaptiveTransform, 45);
-
-                        Debug.Log(origin.name + "<color=green> opposite ray origin divergence value : </color>" + isAboveDivergenceThreshold);
-
-                        // If BELOW the threshold, thus a ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
-                        if (!isAboveDivergenceThreshold)
-                            s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay;
-                        else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay)
-                            s_SpatialMenuUi.ReturnToPreviousInputMode();
+                        // TODO fix logic handling for translation beyond a threshold over time, aka directionalDivergence, to handoff back to translation/spatial input
+                        //s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
+                        //SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
                     }
-
-                    if (s_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.GhostRay && m_RotationVelocityTracker.rotationStrength > 600)
-                    {
-                        m_RotationVelocityTracker.Initialize(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion);
-                        spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
-                        spatialScrollStartPosition = spatialScrollOrigin.position;
-                        m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
-                        s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.GhostRay;
-                    }
-                    else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.GhostRay)
-                    {
-                        // Transition back to spatial translation mode
-
-                        //if ((spatialScrollStartPosition - m_CurrentSpatialActionMapInput.localPosition.vector3).magnitude > 0.25f)
-                        if (m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
-                        {
-                            // TODO fix logic handling for translation beyond a threshold over time, aka directionalDivergence, to handoff back to translation/spatial input
-                            //s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
-                            //SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
-                        }
-                        //*/
-                    }
+                    //*/
                 }
 
                 m_ContinuousDirectionalVelocityTracker.Update(m_CurrentSpatialActionMapInput.localPosition.vector3, Time.unscaledDeltaTime);
@@ -796,7 +640,6 @@ namespace UnityEditor.Experimental.EditorVR
 
                 var inputLocalRotation = m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion;
                 var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
-                s_SpatialMenuUi.UpdateGhostDeviceRotation(ghostDeviceRotation);
 
                 /*
                 if (m_Transitioning && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
