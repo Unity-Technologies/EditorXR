@@ -85,10 +85,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         PlayableAsset m_RevealTimelinePlayable;
 
-        [Header("Ghost Input Device")]
-        [SerializeField]
-        SpatialMenuGhostVisuals m_SpatialUIGhostVisuals;
-
         [Header("Secondary Visuals")]
         [SerializeField]
         Transform m_SurroundingArrowsContainer;
@@ -252,17 +248,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 {
                     case SpatialInterfaceInputMode.Translation:
                         m_InputModeText.text = k_TranslationInputModeName;
-                        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
                         break;
                     case SpatialInterfaceInputMode.ExternalInputRay:
                         m_InputModeText.text = k_ExternalRayBasedInputModeName;
-                        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.none;
                         break;
                 }
             }
         }
-
-        public bool transitioningInputModes { get { return m_SpatialUIGhostVisuals.transitioningModes; } }
 
         public bool inFocus
         {
@@ -298,8 +290,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         //public GameObject subMenuElementPrefab { get { return m_SubMenuElementPrefab; } }
 
         public Transform subMenuContainer { get { return m_SubMenuContainer; } }
-
-        public Transform rayBasedInteractionSource { get { return m_SpatialUIGhostVisuals.spatialProxyRayOrigin; } }
 
         void Start()
         {
@@ -370,7 +360,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             // Hack that fixes the home section menu element positions not being recalculated when first revealed
             //m_HomeMenuLayoutGroup.enabled = false;
             //m_HomeMenuLayoutGroup.enabled = true;
-            m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
         }
 
         void ReturnToPreviousMenuLevel()
@@ -422,13 +411,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         }
 
-        public void UpdateGhostDeviceRotation(Quaternion newRotation)
-        {
-            // Currently only rotation mode, and ray-based input should update the rotation of the ghost visuals
-            if (spatialInterfaceInputMode == SpatialInterfaceInputMode.GhostRay)
-                m_SpatialUIGhostVisuals.UpdateRotation(newRotation);
-        }
-
         public void UpdateDirector()
         {
             if (m_Director.time <= m_HomeSectionTimelineStoppingTime)
@@ -450,8 +432,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void DisplayHomeSectionContents()
         {
-            m_SpatialUIGhostVisuals.SetPositionOffset(Vector3.zero);
-            m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
             this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(true));
 
             // Proxy sub-menu/dynamicHUD menu element(s) display
@@ -527,7 +507,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
 
             var newGhostInputDevicePositionOffset = new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
-            m_SpatialUIGhostVisuals.SetPositionOffset(newGhostInputDevicePositionOffset);
             m_HomeSectionDescription.gameObject.SetActive(false);
             this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
         }
@@ -623,11 +602,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void Update()
         {
-            var selectionRayOrigin = m_SpatialUIGhostVisuals.transform;
-            var hover = this.GetFirstGameObject(selectionRayOrigin);
-            if (hover != null)
-                Debug.LogError("<color=green>!!!!!!!!!!!!!!!!!!!!!!!!!!!</color>");
-
             m_HomeMenuLayoutGroup.spacing = 1 % Time.unscaledDeltaTime * 0.01f; // Don't ask... horizontal layout group refused to play nicely without this... b'cause magic mysetery something
             //Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
             if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
