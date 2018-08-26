@@ -130,6 +130,23 @@ namespace UnityEditor.Experimental.EditorVR
             m_Button.onClick.AddListener(Select);
         }
 
+        void OnEnable()
+        {
+            // Cacheing position here, as layout groups were altering the position when originally cacheing in Start()
+            m_TextOriginalLocalPosition = m_Text.transform.localPosition;
+
+            if (m_TopBorder != null && m_BottomBorder != null)
+            {
+                m_OriginalBordersLocalScale = m_TopBorder.localScale;
+                m_BordersOriginalAlpha = m_BordersCanvasGroup.alpha;
+            }
+        }
+
+        void OnDisable()
+        {
+            StopAllCoroutines();
+        }
+
         void OnDestroy()
         {
             m_Button.onClick.RemoveAllListeners();
@@ -192,23 +209,6 @@ namespace UnityEditor.Experimental.EditorVR
             // Tooltip text related
             m_TooltipVisualsCanvasGroup.alpha = 0;
             m_TooltipText.text = toolTipText;
-        }
-
-        void OnEnable()
-        {
-            // Cacheing position here, as layout groups were altering the position when originally cacheing in Start()
-            m_TextOriginalLocalPosition = m_Text.transform.localPosition;
-
-            if (m_TopBorder != null && m_BottomBorder != null)
-            {
-                m_OriginalBordersLocalScale = m_TopBorder.localScale;
-                m_BordersOriginalAlpha = m_BordersCanvasGroup.alpha;
-            }
-        }
-
-        void OnDisable()
-        {
-            StopAllCoroutines();
         }
 
         IEnumerator AnimateVisibility(bool fadeIn)
