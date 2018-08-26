@@ -30,8 +30,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         protected bool sceneViewGizmosVisible
         {
-            get { return s_SceneViewGizmosInOriginalState; }
-
             set
             {
                 if (s_SceneViewGizmosInOriginalState == value)
@@ -55,33 +53,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        // TODO: add into separate branch handling dynamic focus changes of inputs
-        protected void addControllingNode(Node node)
-        {
-            if (controllingNodes.Contains(node))
-                return;
-
-            controllingNodes.Add(node);
-
-            // Set priority to 10, in order to suppress any standard ray visibility settings from overriding
-            this.AddRayVisibilitySettings(this.RequestRayOriginFromNode(node), this, false, false, 10);
-
-            Debug.LogWarning("HIDING ray for node : " + node.ToString());
-        }
-
-        // TODO: remove into separate branch handling dynamic focus changes of inputs
-        protected void removeControllingNode(Node node)
-        {
-            if (!controllingNodes.Contains(node))
-                return;
-
-            controllingNodes.Remove(node);
-
-            this.RemoveRayVisibilitySettings(this.RequestRayOriginFromNode(node), this);
-
-            Debug.LogWarning("SHOWING ray for node : " + node.ToString());
-        }
-
         static void CacheSceneViewGizmoStates()
         {
             // Cache the selection-outline & selection-wireframe in the SceneView gizmo states
@@ -95,12 +66,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 var currentSelectionOutlineProperty = s_SceneViewGizmoAnnotationUtilityType.GetProperty(s_SelectionOutlineProperty, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
                 var currentSelectionOutlineValue = currentSelectionOutlineProperty.GetValue(s_SceneViewGizmoAnnotationUtilityType, null);
                 if (currentSelectionOutlineValue != null)
-                    s_SelectionOutlineWasEnabledOnStart = (bool) currentSelectionOutlineValue;
+                    s_SelectionOutlineWasEnabledOnStart = (bool)currentSelectionOutlineValue;
 
                 var currentSelectionWireProperty = s_SceneViewGizmoAnnotationUtilityType.GetProperty(s_SelectionWireframeProperty, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
                 var currentSelectionWireValue = currentSelectionWireProperty.GetValue(s_SceneViewGizmoAnnotationUtilityType, null);
                 if (currentSelectionWireValue != null)
-                    s_SelectionWireframeWasEnabledOnStart = (bool) currentSelectionWireValue;
+                    s_SelectionWireframeWasEnabledOnStart = (bool)currentSelectionWireValue;
             }
         }
 
