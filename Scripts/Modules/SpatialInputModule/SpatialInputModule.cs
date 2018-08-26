@@ -22,25 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         StateChangedThisFrame = 1 << 7,
     }
 
-    [Flags]
-    public enum SpatialInputTypeAdvanced
-    {
-        None = 0, // 0
-        X = 1 << 0, // 1 / Allow for flag-based polling of which axis' are involved in either a drag or rotation.
-        Y = 1 << 1, // 2 / Euler's used in order to allow for polling either for translation or rotation
-        Z = 1 << 2, // 4
-        DragTranslation = 1 << 3, // 8
-        SingleAxisRotation = (X ^ Y ^ Z), // Validate that only one axis is being rotated
-        FreeRotation = (X & Y) | (Z & Y) | (Z & X) + 1 << 4, // Can be either 0/1. Detect at least two axis' crossing their local rotation threshold, triggers ray-based selection
-        YawLeft = 1 << 5,
-        YawRight = 1 << 6,
-        PitchForward = 1 << 7,
-        PitchBackward = 1 << 8,
-        RollLeft = 1 << 9,
-        RollRight = 1 << 10,
-        StateChangedThisFrame = 1 << 11,
-    }
-
     public sealed class SpatialInputModule : MonoBehaviour, IRayVisibilitySettings, IUsesViewerScale, IControlHaptics, IControlSpatialHinting
     {
         public enum SpatialCardinalScrollDirection
