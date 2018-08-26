@@ -552,12 +552,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
 
                 if (currentlyDisplayedMenuElements.Count > i && currentlyDisplayedMenuElements[i] != null)
+                {
                     currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
 
-                if (i == elementOrderPosition)
-                {
-                    m_HomeSectionDescription.text = currentlyDisplayedMenuElements[i].parentMenuData.spatialMenuDescription;
-                    Debug.LogWarning("Highlighting home level menu element : " + currentlyDisplayedMenuElements[i].gameObject.name);
+                    if (i == elementOrderPosition)
+                    {
+                        m_HomeSectionDescription.text = currentlyDisplayedMenuElements[i].parentMenuData.spatialMenuDescription;
+                        Debug.LogWarning("Highlighting home level menu element : " + currentlyDisplayedMenuElements[i].gameObject.name);
+                    }
                 }
 
                 //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
