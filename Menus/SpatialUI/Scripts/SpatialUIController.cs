@@ -1,6 +1,5 @@
 ﻿#if UNITY_EDITOR
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -16,7 +15,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         // Pre-box bools to avoid allocation when setting them via reflection
         static object[] boxedTrueBool = new object[] {true};
         static object[] boxedFalseBool = new object[] {false};
-
         static bool s_Initialized;
         static bool s_SceneViewGizmosInOriginalState = true;
         static bool s_SelectionOutlineWasEnabledOnStart;
@@ -25,8 +23,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         static Type s_AnnotationUtilityType;
         static string s_SelectionOutlineProperty = "showSelectionOutline";
         static string s_SelectionWireframeProperty = "showSelectionWire";
-
-        readonly List<Node> controllingNodes = new List<Node>();
 
         protected bool sceneViewGizmosVisible
         {
