@@ -89,9 +89,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         Transform m_SurroundingArrowsContainer;
 
-        [SerializeField]
-        SpatialMenuTranslationVisuals m_SpatialMenuTranslationVisuals;
-
         [Header("SurroundingBorderButtons")]
         [SerializeField]
         SpatialMenuBackButton[] m_BackButtons;
@@ -169,7 +166,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         bool visible
         {
-            get { return m_Visible; }
             set
             {
                 if (m_Visible == value)
@@ -179,6 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 gameObject.SetActive(m_Visible);
                 allowAdaptivePositioning = m_Visible;
                 resetAdaptivePosition = m_Visible;
+                m_BackButtonVisualsContainer.SetActive(false);
 
                 // Block normal intersection testing while interacting with SpatialUI
                 // TODO: Only block input for input devices directly interacting with SpatialUI
@@ -339,6 +336,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
 
             m_originalBackButtonIconLocalScale = m_BackButtons[0].transform.localScale;
+            visible = false;
         }
 
         public void Reset()
@@ -546,24 +544,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void HighlightSingleElementInHomeMenu(int elementOrderPosition)
         {
-            if (elementOrderPosition > m_PreviouslyHighlightedElementOrderPosition)
-            {
-                m_SpatialMenuTranslationVisuals.leftArrowHighlighted = false;
-                m_SpatialMenuTranslationVisuals.rightArrowHighlighted = true;
-            }
-            else
-            {
-                m_SpatialMenuTranslationVisuals.leftArrowHighlighted = true;
-                m_SpatialMenuTranslationVisuals.rightArrowHighlighted = false;
-            }
-
             //Debug.Log("<color=blue>HighlightSingleElementInCurrentMenu in SpatialMenuUI : " + elementOrderPosition + "</color>");
             var menuElementCount = 3;// highlightedMenuElements.Count;
             for (int i = 0; i < menuElementCount; ++i)
             {
 
                 //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
-                currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
+
+                if (currentlyDisplayedMenuElements.Count > i && currentlyDisplayedMenuElements[i] != null)
+                    currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
 
                 if (i == elementOrderPosition)
                 {
