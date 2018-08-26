@@ -17,8 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             Translation,
             Rotation,
             GhostRay,
-            ExternalInputRay,
-            BCI
+            ExternalInputRay
         }
 
         [Header("Haptic Pulses")]
