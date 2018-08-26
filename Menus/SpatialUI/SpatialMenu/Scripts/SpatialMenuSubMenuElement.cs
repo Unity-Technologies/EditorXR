@@ -149,6 +149,8 @@ namespace UnityEditor.Experimental.EditorVR
         {
             if (selected != null)
                 selected();
+
+            highlighted = false;
         }
 
         public void SetupInternal(Transform parentTransform, Action selectedAction, String displayedText = null, string toolTipText = null)
