@@ -127,7 +127,6 @@ GameObject:
   - component: {fileID: 224862668140068734}
   - component: {fileID: 222386589853279848}
   - component: {fileID: 114358562692735158}
-  - component: {fileID: 114194490353985554}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -215,7 +214,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -258,34 +257,6 @@ MonoBehaviour:
   m_HighlightPulse: {fileID: 11400000, guid: 8a40320bd3d9301459e26bf8738e37d5, type: 2}
   m_TooltipDisplayPulse: {fileID: 11400000, guid: 59e74aae0e677f442a3b53128741861e,
     type: 2}
---- !u!114 &114194490353985554
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1538253316492442}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b7a9df544ea7234aab8eabdf5255edc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Text: {fileID: 114358562692735158}
-  m_Icon: {fileID: 0}
-  m_CanvasGroup: {fileID: 0}
-  m_TransitionDuration: 0.75
-  m_FadeInZOffset: 0
-  m_HighlightedZOffset: -0.005
-  m_BackgroundImage: {fileID: 0}
-  m_BordersCanvasGroup: {fileID: 0}
-  m_TopBorder: {fileID: 0}
-  m_BottomBorder: {fileID: 0}
-  m_DisplayTooltip: 0
-  m_TooltipVisualsCanvasGroup: {fileID: 0}
-  m_TooltipText: {fileID: 0}
-  m_ExpandedTooltipHeight: 52
-  m_TooltipTransitionDuration: 1
-  m_HighlightPulse: {fileID: 0}
-  m_TooltipDisplayPulse: {fileID: 0}
 --- !u!114 &114249040244160594
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -573,7 +544,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -977,7 +948,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0.5, y: 0}
   m_SizeDelta: {x: 1, y: 0.055}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &225100020260099514
@@ -1001,7 +972,7 @@ CanvasGroup:
   m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 1
+  m_IgnoreParentGroups: 0
 --- !u!225 &225639405368719760
 CanvasGroup:
   m_ObjectHideFlags: 1
