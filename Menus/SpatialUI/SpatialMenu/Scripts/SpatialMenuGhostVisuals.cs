@@ -11,10 +11,8 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
     public enum SpatialInteractionType
     {
         none,
+        controller,
         ray,
-        bci,
-        touch,
-        vive
     }
 
     const float k_SpatialRayLength = 1f;
@@ -29,13 +27,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
     GameObject m_RayContainer;
 
     [SerializeField]
-    GameObject m_BCIContainer;
-
-    [SerializeField]
-    GameObject m_TouchContainer;
-
-    [SerializeField]
-    GameObject m_ViveContainer;
+    GameObject m_TranslationVisualsContainer;
 
     [Header("Accompanying Visual Elements")]
     [SerializeField]
@@ -67,9 +59,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
             //m_GhostInputDeviceContainer.localPosition = m_GhostInputDeviceOriginalLocalPosition;
 
             var rayVisible = false;
-            var bciVisible = false;
             var touchVisible = false;
-            var viveVisible = false;
             var translationVisualsVisible = false;
             var show = true;
             switch (m_SpatialInteractionType)
@@ -81,20 +71,11 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
                     rayVisible = true;
                     SetPositionOffset(Vector3.zero);
                     break;
-                case SpatialInteractionType.bci:
-                    UpdateRotation(Quaternion.identity);
-                    bciVisible = true;
-                    break;
-                case SpatialInteractionType.touch:
+                case SpatialInteractionType.controller:
                     translationVisualsVisible = true;
                     UpdateRotation(Quaternion.identity);
                     SetPositionOffset(Vector3.zero);
                     touchVisible = true;
-                    break;
-                case SpatialInteractionType.vive:
-                    translationVisualsVisible = true;
-                    UpdateRotation(Quaternion.identity);
-                    viveVisible = true;
                     break;
             }
 
@@ -103,9 +84,7 @@ public class SpatialMenuGhostVisuals : MonoBehaviour, ISpatialProxyRay, IUsesVie
             m_TranslationModeSecondaryVisuals.gameObject.SetActive(translationVisualsVisible);
 
             m_RayContainer.SetActive(rayVisible);
-            m_BCIContainer.SetActive(bciVisible);
-            m_TouchContainer.SetActive(touchVisible);
-            m_ViveContainer.SetActive(viveVisible);
+            m_TranslationVisualsContainer.SetActive(touchVisible);
 
             this.RestartCoroutine(ref m_GhostInputDeviceRescaleCoroutine, AnimateGhostInputDeviceScale(show ? m_GhostInputDeviceOriginalLocalScale : Vector3.zero));
         }
