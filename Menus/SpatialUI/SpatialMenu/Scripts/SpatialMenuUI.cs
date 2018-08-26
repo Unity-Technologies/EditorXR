@@ -20,10 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const float k_AllowedGazeDivergence = 45f;
 
         readonly string k_TranslationInputModeName = "Spatial Input Mode";
-        readonly string k_GhostRayBasedInputModeName = "Ghost Ray-based Input Mode";
         readonly string k_ExternalRayBasedInputModeName = "External Ray-based Input Mode";
         readonly string k_RotationInputModeName = "Rotation Input Mode";
-        readonly string k_BCIInputModeName = "Brain Input Mode";
 
         [Header("Common UI")]
         [SerializeField]
@@ -256,17 +254,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         m_InputModeText.text = k_TranslationInputModeName;
                         m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.touch;
                         break;
-                    case SpatialInterfaceInputMode.GhostRay:
-                        m_InputModeText.text = k_GhostRayBasedInputModeName;
-                        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.ray;
-                        break;
                     case SpatialInterfaceInputMode.ExternalInputRay:
                         m_InputModeText.text = k_ExternalRayBasedInputModeName;
                         m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.none;
-                        break;
-                    case SpatialInterfaceInputMode.BCI:
-                        m_InputModeText.text = k_BCIInputModeName;
-                        m_SpatialUIGhostVisuals.spatialInteractionType = SpatialMenuGhostVisuals.SpatialInteractionType.bci;
                         break;
                 }
             }
