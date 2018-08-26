@@ -464,7 +464,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             Debug.Log("Displaying sub-menu elements");
             ForceClearHomeMenuElements();
             const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
-            int subMenuElementCount = 0;
             foreach (var menuData in spatialMenuData)
             {
                 if (menuData.highlighted)
@@ -482,7 +481,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                     foreach (var subMenuElement in menuData.spatialMenuElements)
                     {
-                        ++subMenuElementCount;
                         var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
                         var providerMenuElement = instantiatedPrefab.GetComponent<ISpatialMenuElement>();
                         this.ConnectInterfaces(providerMenuElement);
@@ -504,7 +502,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 //menuData.Value.gameObject.SetActive(false);
             }
 
-            var newGhostInputDevicePositionOffset = new Vector3(0f, subMenuElementHeight * subMenuElementCount, 0f);
             m_HomeSectionDescription.gameObject.SetActive(false);
             this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
         }
