@@ -584,31 +584,9 @@ namespace UnityEditor.Experimental.EditorVR
 
                     // If BELOW the threshold, thus a ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
                     if (!isAboveDivergenceThreshold)
-                        s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay;
-                    else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.ExternalInputRay)
+                        s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Ray;
+                    else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.Ray)
                         s_SpatialMenuUi.ReturnToPreviousInputMode();
-                }
-
-                if (s_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.GhostRay && m_RotationVelocityTracker.rotationStrength > 600)
-                {
-                    m_RotationVelocityTracker.Initialize(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion);
-                    spatialScrollOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
-                    spatialScrollStartPosition = spatialScrollOrigin.position;
-                    m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
-                    s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.GhostRay;
-                }
-                else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialMenuUI.SpatialInterfaceInputMode.GhostRay)
-                {
-                    // Transition back to spatial translation mode
-
-                    //if ((spatialScrollStartPosition - m_CurrentSpatialActionMapInput.localPosition.vector3).magnitude > 0.25f)
-                    if (m_ContinuousDirectionalVelocityTracker.directionalDivergence > 0.08f)
-                    {
-                        // TODO fix logic handling for translation beyond a threshold over time, aka directionalDivergence, to handoff back to translation/spatial input
-                        //s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
-                        //SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
-                    }
-                    //*/
                 }
 
                 m_ContinuousDirectionalVelocityTracker.Update(m_CurrentSpatialActionMapInput.localPosition.vector3, Time.unscaledDeltaTime);
