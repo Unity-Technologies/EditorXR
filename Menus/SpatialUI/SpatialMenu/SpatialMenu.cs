@@ -230,6 +230,7 @@ namespace UnityEditor.Experimental.EditorVR
                 switch (m_SpatialMenuState)
                 {
                     case SpatialMenuState.navigatingTopLevel:
+                        s_SpatialMenuUi.spatialMenuState = SpatialMenuState.navigatingTopLevel;
                         m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
                         SetSpatialScrollStartingConditions(m_CurrentSpatialActionMapInput.localPosition.vector3, m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, SpatialInputModule.SpatialCardinalScrollDirection.LocalX, 3);
                         break;
@@ -564,6 +565,7 @@ namespace UnityEditor.Experimental.EditorVR
                 // Hide the scene view Gizmo UI that draws SpatialMenu outlines and 
                 sceneViewGizmosVisible = false;
 
+                m_MenuEntranceStartTime = Time.realtimeSinceStartup;
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
                 s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
                 //Reset();
