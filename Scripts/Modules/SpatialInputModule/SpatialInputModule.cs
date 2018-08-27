@@ -465,7 +465,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     switch (spatialInputData.spatialInputType)
                     {
                         case SpatialInputType.DragTranslation:
-                            isNodeRotatingSingleAxisOrFreely(spatialInputData);
+                            //isNodeRotatingSingleAxisOrFreely(spatialInputData);
                             break;
                         case SpatialInputType.None:
                             isNodeTranslating(spatialInputData);
@@ -496,39 +496,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             */
 
             return aboveMagnitudeDeltaThreshold;
-        }
-
-        bool isNodeRotatingSingleAxisOrFreely(SpatialInputReceiverData nodeReceiverData)
-        {
-            // Test each individual axis delta for residing below the given threshold
-            // If more than 1 tests beyond the threshold, set isTorationFreely to true, and isTranslating to false, then return false here
-
-            // Ordered by usage priority Z(roll), X(pitch), then Y(yaw)
-            // test z
-            // test X
-            // test Y
-
-            // Prioritize Z rotation, then X, then Y
-            var simultaneousAxisRotationCount = 0;
-            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeReceiverData.initialLocalRotation.z, nodeReceiverData.CurrenLocalZRotation) ? 1 : 0;
-            simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeReceiverData.initialLocalRotation.x, nodeReceiverData.CurrenLocalXRotation) ? 1 : 0;
-
-            // don't perform if this is going to be evaluated as a free rotation, due to multi-axis threshold crossing having already occurred
-            if (simultaneousAxisRotationCount < 2)
-                simultaneousAxisRotationCount += PerformSingleAxisRotationTest(nodeReceiverData.initialLocalRotation.y, nodeReceiverData.CurrenLocalYRotation) ? 1 : 0;
-
-            switch (simultaneousAxisRotationCount)
-            {
-                    case 1:
-                        nodeReceiverData.spatialInputType = SpatialInputType.SingleAxisRotation;
-                        break;
-                    case 2:
-                    case 3:
-                        nodeReceiverData.spatialInputType = SpatialInputType.FreeRotation;
-                        break;
-            }
-
-            return simultaneousAxisRotationCount == 1;
         }
 
         // Perform a constant haptic for translation/dragging
