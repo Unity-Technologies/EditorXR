@@ -14,12 +14,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     [Flags]
     public enum SpatialInputType
     {
-        None = 0, // 0
-        DragTranslation = 1 << 3, // 8
-        SingleAxisRotation = 1 << 4, // Validate that only one axis is being rotated
-        FreeRotation = 1 << 5, // Can be either 0/1. Detect at least two axis' crossing their local rotation threshold, triggers ray-based selection
-        CardinalConstrainedTanslation = 1 << 6,
-        StateChangedThisFrame = 1 << 7,
+        None = 0,
+        DragTranslation = 1 << 3,
+        StateChangedThisFrame = 1 << 7
     }
 
     public sealed class SpatialInputModule : MonoBehaviour, IRayVisibilitySettings, IUsesViewerScale, IControlHaptics, IControlSpatialHinting
@@ -470,16 +467,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         case SpatialInputType.DragTranslation:
                             isNodeRotatingSingleAxisOrFreely(spatialInputData);
                             break;
-                        case SpatialInputType.SingleAxisRotation:
-                            isNodeTranslating(spatialInputData);
-                            break;
                         case SpatialInputType.None:
-                        case SpatialInputType.FreeRotation:
-                            if (isNodeRotatingSingleAxisOrFreely(spatialInputData))
-                                continue;
-
                             isNodeTranslating(spatialInputData);
-
                             break;
                     }
                 }
