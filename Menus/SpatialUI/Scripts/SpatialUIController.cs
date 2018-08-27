@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// <summary>
     /// Mandates that derived classes implement core required SpatialUI controller functionality
     /// </summary>
-    public abstract class SpatialUIController : MonoBehaviour, IRayVisibilitySettings, INodeToRay
+    public abstract class SpatialUIController : MonoBehaviour, INodeToRay
     {
         // Pre-box bools to avoid allocation when setting them via reflection
         static object[] boxedTrueBool = new object[] {true};
