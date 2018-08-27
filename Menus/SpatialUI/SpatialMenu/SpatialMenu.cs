@@ -669,7 +669,7 @@ namespace UnityEditor.Experimental.EditorVR
                         s_SpatialMenuUi.HighlightSingleElementInHomeMenu(0);
                         highlightedMenuElements = s_SpatialMenuData[0].spatialMenuElements;
                     }
-                    else if (s_SpatialMenuUi.spatialInterfaceInputMode != SpatialMenuUI.SpatialInterfaceInputMode.GhostRay && m_HighlightedMenuElements != null)
+                    else if (m_HighlightedMenuElements != null)
                     {
                         var menuElementCount = s_SpatialMenuData.Count;
                         if (menuElementCount == 0)
