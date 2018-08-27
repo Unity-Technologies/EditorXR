@@ -246,7 +246,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     case SpatialInterfaceInputMode.Translation:
                         m_InputModeText.text = k_TranslationInputModeName;
                         break;
-                    case SpatialInterfaceInputMode.ExternalInputRay:
+                    case SpatialInterfaceInputMode.Ray:
                         m_InputModeText.text = k_ExternalRayBasedInputModeName;
                         break;
                 }
