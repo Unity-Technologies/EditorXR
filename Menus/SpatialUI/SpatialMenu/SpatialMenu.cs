@@ -718,7 +718,7 @@ namespace UnityEditor.Experimental.EditorVR
 */
                 else if (m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent)
                 {
-                    if (m_CurrentSpatialActionMapInput.cancel.isHeld)
+                    if (m_CurrentSpatialActionMapInput.cancel.wasJustPressed || m_CurrentSpatialActionMapInput.grip.wasJustPressed)
                     {
                         Debug.LogWarning("Cancel button was just presset on node : " + node);
                         ReturnToPreviousMenuLevel();
