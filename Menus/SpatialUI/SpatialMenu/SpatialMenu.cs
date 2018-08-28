@@ -619,7 +619,6 @@ namespace UnityEditor.Experimental.EditorVR
                     //Debug.Log("<color=green>SpatialUI state changed this frame!!</color>");
 
                 var inputLocalRotation = m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion;
-                var ghostDeviceRotation = inputLocalRotation * Quaternion.Inverse(m_InitialSpatialLocalRotation);
 
                 /*
                 if (m_Transitioning && m_State == State.navigatingSubMenuContent && Mathf.Abs(Mathf.DeltaAngle(m_InitialSpatialLocalRotation.x, actionMapInput.localRotationQuaternion.quaternion.x)) > k_WristReturnRotationThreshold)
