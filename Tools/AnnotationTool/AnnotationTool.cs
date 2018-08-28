@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IUsesRayOrigins, IInstantiateUI, IUsesMenuOrigins, IUsesCustomMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISettingsMenuItemProvider, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback, IConnectInterfaces
+        IUsesNode, IRequestFeedback, IConnectInterfaces, ISpatialMenuCustomDescription
     {
         [Serializable]
         class Preferences
@@ -59,6 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const string k_AnnotationFormatStrig = "Annotation {0}";
         const string k_MainHolderName = "Annotations";
         const string k_MeshName = "Annotation";
+        const string k_SpatialMenuDescription = "Annotate objects & draw in your scene";
 
         public const float TipDistance = 0.05f;
         public const float MinBrushSize = 0.0025f;
@@ -123,10 +124,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform alternateMenuOrigin { private get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         public List<ILinkedObject> linkedObjects { private get; set; }
         public Node node { private get; set; }
+
+        public string spatialMenuCustomDescription { get { return k_SpatialMenuDescription; } }
 
         public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 
@@ -689,6 +692,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             return triangles;
         }
 
+        // TODO : if your action starts as left or right, brush size should adjust.
+        // if it doesn't, spatial UI should consume and brush shouldn't change
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             var annotationInput = (AnnotationInput)input;

@@ -48,6 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         sectionName = attribute.sectionName,
                         priority = attribute.priority,
                         action = action,
+                        addToSpatialMenu = attribute.addToSpatialMenu
                     };
 
                     m_MenuActions.Add(actionMenuData);

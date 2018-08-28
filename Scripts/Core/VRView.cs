@@ -404,7 +404,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_ToggleDeviceViewRect.width = width;
             m_PresentationCameraRect.y = height - m_PresentationCameraRect.height;
 
-            if (GUI.Button(m_ToggleDeviceViewRect, "Toggle Device View", EditorStyles.toolbarButton))
+
+            const string kToggleDeviceViewEnabled = "Toggle Device View : Enabled";
+            const string kToggleDeviceViewDisabled = "Toggle Device View : Disabled";
+            if (GUI.Button(m_ToggleDeviceViewRect, m_ShowDeviceView ? kToggleDeviceViewEnabled : kToggleDeviceViewDisabled, EditorStyles.toolbarButton))
                 m_ShowDeviceView = !m_ShowDeviceView;
 
             if (m_CustomPreviewCamera)

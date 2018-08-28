@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 1fe169093b3871d4fb29b599bf826a09
+timeCreated: 1519342477
+licenseType: Pro
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_TestObject: {fileID: 1789767321393858, guid: 1cfdca3f54ef6914bb53878610be8682,
+      type: 2}
+  - m_MovementStartPulse: {fileID: 11400000, guid: 511c17eccb9801e419708b7bcfc902c8,
+      type: 2}
+  - m_MovingPulse: {fileID: 11400000, guid: edab525a4977b1949b941ef49d9dfa74, type: 2}
+  - m_MovementEndPulse: {fileID: 11400000, guid: 03b2ce26ecb980744b115c5140e92c71,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

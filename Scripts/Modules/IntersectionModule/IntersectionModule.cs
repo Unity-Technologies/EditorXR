@@ -22,6 +22,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         SpatialHash<Renderer> m_SpatialHash;
         MeshCollider m_CollisionTester;
 
+        // If TRUE prevent intersection processing
+        // Utilized by implementers of IControlInputIntersection to temporarily enable/disable testing
+        bool m_IgnoreIntersectionTesting;
+
         struct RayIntersection
         {
             public GameObject go;
@@ -47,6 +51,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float distance;
         }
 
+        public IntersectionModule()
+        {
+            IControlInputIntersectionMethods.preventStandardInputIntersection = UpdateInputIntersection;
+        }
+
         void Awake()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
@@ -64,6 +73,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return;
 
             if (m_Testers == null)
+                return;
+
+            if (m_IgnoreIntersectionTesting)
                 return;
 
             for (int i = 0; i < m_Testers.Count; i++)
@@ -322,6 +334,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var playerBounds = ObjectUtils.GetBounds(this.GetVRPlayerObjects());
             playerBounds.extents += m_PlayerBoundsMargin;
             return objectBounds.ContainsCompletely(playerBounds);
+        }
+
+        internal void UpdateInputIntersection(IControlInputIntersection caller, bool blockStandardInput)
+        {
+            m_IgnoreIntersectionTesting = blockStandardInput;
         }
     }
 }

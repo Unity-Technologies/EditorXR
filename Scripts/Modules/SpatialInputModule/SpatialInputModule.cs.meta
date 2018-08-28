@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 1dd36681eb4184f44b6db781f3e1f4dc
+timeCreated: 1523907314
+licenseType: Pro
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_SpatialProxyRayPrefab: {fileID: 114000010564953552, guid: 6ee2c3fb8e3e9bf41b1096d7de10f03c,
+      type: 2}
+  - m_TranslationPulse: {fileID: 11400000, guid: 256bdb668da7b234abced1927350c2fa,
+      type: 2}
+  - m_FreeRotationPulse: {fileID: 11400000, guid: 37885c4e43f37364885121a115c76196,
+      type: 2}
+  - m_SingleAxistRotationPulse: {fileID: 11400000, guid: f8e728923e8d1e8478b4b202f6772bb8,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

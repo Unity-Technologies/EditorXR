@@ -22,6 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 public Sprite icon;
             }
 
+            const string k_SelectionToolDescription = "Select & manipulate objects in the scene";
+
             internal List<Type> allTools { get; private set; }
 
             readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
@@ -91,6 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 var vacuumables = evr.GetNestedModule<Vacuumables>();
                 var lockModule = evr.GetModule<LockModule>();
+                var multiRayInputModule = evr.GetModule<MultipleRayInputModule>();
                 var defaultTools = evr.m_DefaultTools;
 
                 foreach (var deviceData in evr.m_DeviceData)
@@ -145,8 +148,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     this.ConnectInterfaces(toolsMenu, rayOrigin);
                     deviceData.toolsMenu = toolsMenu;
                     toolsMenu.rayOrigin = rayOrigin;
-                    toolsMenu.setButtonForType(typeof(IMainMenu), null);
-                    toolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
+                    toolsMenu.setButtonForType(typeof(IMainMenu), null, null);
+                    toolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null, k_SelectionToolDescription);
+
+                    var spatialMenu = ObjectUtils.AddComponent<SpatialMenu>(evr.gameObject);
+                    this.ConnectInterfaces(spatialMenu, rayOrigin);
+                    spatialMenu.Setup();
                 }
 
                 evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -238,7 +245,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             else if (setSelectAsCurrentTool)
                             {
                                 // Set the selection tool as the active tool, if select is to be the new current tool
-                                toolsMenu.setButtonForType(typeof(SelectionTool), null);
+                                toolsMenu.setButtonForType(typeof(SelectionTool), null, k_SelectionToolDescription);
                             }
 
                             spawnTool = false;
@@ -252,6 +259,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             HashSet<InputDevice> usedDevices;
                             var device = deviceData.inputDevice;
                             var newTool = SpawnTool(toolType, out usedDevices, device, rayOrigin);
+                            var tool = newTool.tool;
                             var multiTool = newTool.tool as IMultiDeviceTool;
                             if (multiTool != null)
                             {
@@ -296,7 +304,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                                 AddToolToStack(data, newTool);
 
-                                toolsMenu.setButtonForType(toolType, newTool.icon);
+                                var spatialMenuData = tool as ISpatialMenuCustomDescription;
+                                var spatialMenuDescription = spatialMenuData != null ? spatialMenuData.spatialMenuCustomDescription : null;
+                                toolsMenu.setButtonForType(toolType, newTool.icon, spatialMenuDescription);
                             }
                         }
 
