@@ -180,12 +180,12 @@ namespace UnityEditor.Experimental.EditorVR
                     //outlinesDisabledState.
                     //AnnotationInput.
                     //sceneView.sceneViewState = new SceneView.SceneViewState();
-                    
+
                     //foreach (var sceneView in sceneViews)
                     //{
                         //sceneview
                     //}
-                    //SceneView.SceneViewState = new 
+                    //SceneView.SceneViewState = new
                 }
                 else
                 {
@@ -523,15 +523,32 @@ namespace UnityEditor.Experimental.EditorVR
             return isAbove;
         }
 
+        bool m_SpatialInputHold;
+        float m_DefaultValueTime = 0f;
+
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             //Debug.Log("processing input in SpatialUI");
             const float kSubMenuNavigationTranslationTriggerThreshold = 0.075f;
             m_CurrentSpatialActionMapInput = (SpatialMenuInput)input;
 
+            // count how long the input value has been default and thus is in deadzone or lifted
+            if (m_CurrentSpatialActionMapInput.showMenu.vector2 == default(Vector2))
+                m_DefaultValueTime += Time.deltaTime;
+            else
+                m_DefaultValueTime = 0f;
+
+            // release after the input has been default for a few frames.  This almost entirely prevents
+            // the case where having your thumb in the middle of the pad causes default value and thus release
+            if (m_DefaultValueTime >= 0.05f)
+            {
+                m_SpatialInputHold = false;
+            }
+
             // This block is only processed after a frame with both trigger buttons held has been detected
             if (spatialScrollData != null && m_CurrentSpatialActionMapInput.cancel.wasJustPressed)
             {
+                m_SpatialInputHold = false;
                 ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl);
 
                 //consumeControl(actionMapInput.localPosition);
@@ -550,7 +567,7 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 consumeControl(m_CurrentSpatialActionMapInput.show);
                 consumeControl(m_CurrentSpatialActionMapInput.select);
-
+                
                 //TODO restore this functionality.  It resets the starting position when being moved, but currently breaks when initially opening the menu
                 if (m_SpatialMenuState != SpatialMenuState.hidden && Vector3.Magnitude(m_HomeSectionSpatialScrollStartLocalPosition - m_CurrentSpatialActionMapInput.localPosition.vector3) > kSubMenuNavigationTranslationTriggerThreshold)
                     m_HomeSectionSpatialScrollStartLocalPosition = m_CurrentSpatialActionMapInput.localPosition.vector3;
@@ -558,11 +575,13 @@ namespace UnityEditor.Experimental.EditorVR
             */
 
             // Detect the initial activation of the relevant Spatial input
-            if (m_CurrentSpatialActionMapInput.showMenu.positive.wasJustPressed)
+            // convert left thumbstick y
+            if (m_CurrentSpatialActionMapInput.showMenu.positiveY.wasJustPressed)
             {
+                m_SpatialInputHold = true;
                 ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
 
-                // Hide the scene view Gizmo UI that draws SpatialMenu outlines and 
+                // Hide the scene view Gizmo UI that draws SpatialMenu outlines and
                 sceneViewGizmosVisible = false;
 
                 m_MenuEntranceStartTime = Time.realtimeSinceStartup;
@@ -571,7 +590,9 @@ namespace UnityEditor.Experimental.EditorVR
                 //Reset();
             }
 
-            if (m_CurrentSpatialActionMapInput.showMenu.positive.isHeld && m_SpatialMenuState != SpatialMenuState.hidden)
+            // isHeld goes false right when you go below 0.5.  this is the check for 'up-click' on the pad / stick
+            // TODO - we also need to invent the definition of 'released'.  some combo of Isheld = false & below minimum x/y deadzone for a time
+            if ((m_CurrentSpatialActionMapInput.showMenu.positiveY.isHeld || m_SpatialInputHold) && m_SpatialMenuState != SpatialMenuState.hidden )
             {
                 m_RotationVelocityTracker.Update(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
                 foreach (var origin in allSpatialMenuRayOrigins)
@@ -777,7 +798,7 @@ namespace UnityEditor.Experimental.EditorVR
                 return;
             }
 
-            if (!m_CurrentSpatialActionMapInput.showMenu.positive.isHeld)
+            if (!m_CurrentSpatialActionMapInput.showMenu.positiveY.isHeld && !m_SpatialInputHold)
             {
                 visible = false;
                 return;

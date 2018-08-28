@@ -20,6 +20,8 @@ namespace UnityEngine.InputNew
 		public AxisInputControl @localPositionZ { get { return (AxisInputControl)this[10]; } }
 		public Vector3InputControl @localPosition { get { return (Vector3InputControl)this[11]; } }
 		public ButtonInputControl @confirm { get { return (ButtonInputControl)this[12]; } }
-		public AxisInputControl @showMenu { get { return (AxisInputControl)this[13]; } }
+		public Vector2InputControl @showMenu { get { return (Vector2InputControl)this[13]; } }
+		public AxisInputControl @leftStickX { get { return (AxisInputControl)this[14]; } }
+		public AxisInputControl @leftStickY { get { return (AxisInputControl)this[15]; } }
 	}
 }
