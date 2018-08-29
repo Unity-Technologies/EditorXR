@@ -9,16 +9,10 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale
+    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics
     {
         [SerializeField]
-        HapticPulse m_MovementStartPulse; // The pulse performed when beginning to move an element to a new destination
-
-        [SerializeField]
         HapticPulse m_MovingPulse; // The pulse performed while moving an element to a new target position in the user's FOV
-
-        [SerializeField]
-        HapticPulse m_MovementEndPulse; // The pulse performed when movement of an element has ended, the element has bee repositioned in the user's FOV
 
         Coroutine m_AdaptiveElementRepositionCoroutine;
         bool m_TestInFocus;
@@ -45,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// The origin/starting position of the object being re-positioned
             /// </summary>
             public Vector3 startingPosition { get; set; }
+
         }
 
         void Awake()
@@ -110,6 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             targetPosition = targetPosition + (this.GetViewerScale() * m_GazeTransform.forward * adaptiveElement.distanceOffset);
             if (!adaptiveElement.resetAdaptivePosition)
             {
+                this.Pulse(Node.None, m_MovingPulse);
                 adaptiveElement.beingMoved = true;
                 var transitionAmount = 0f;
                 var transitionSubtractMultiplier = 2f;
