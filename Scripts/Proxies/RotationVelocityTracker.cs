@@ -31,10 +31,6 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
 
         bool m_Initialized;
 
-        public float timePeriod { set { m_Period = value; } }
-        public int steps { set { m_Steps = value; } }
-        public float newChunkWeight { set { m_NewChunkWeight = value; } }
-
         /// <summary>
         /// How a rotation the tracked object is experiencing this frame
         /// </summary>
@@ -46,6 +42,7 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
         /// <param name="startRotation"></param>
         public void Initialize(Quaternion startRotation)
         {
+            // TODO: make core functionality of various trackers generic
             // Since this is not a monobehaviour we don't have OnValidate - which means we need to do input validation here
             m_Period = Mathf.Max(m_Period, 0.01f);
             m_Steps = Mathf.Max(m_Steps, 1);
@@ -61,10 +58,10 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
         }
 
         /// <summary>
-        /// Based on new position data, calculates how much shake this object is currently experiencing
+        /// Based on new rotation data, calculates how much varying rotation this object is currently experiencing
         /// </summary>
-        /// <param name="newRotation">The new position of this shaken object</param>
-        /// <param name="timeSlice">How much time has passed to get to this new position</param>
+        /// <param name="newRotation">The new rotation of this object</param>
+        /// <param name="timeSlice">How much time has passed to get to this new rotation</param>
         public void Update(Quaternion newRotation, float timeSlice)
         {
             if (!m_Initialized)
@@ -79,8 +76,6 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
             }
             m_TimeChunks[m_ChunkIndex] += timeSlice;
 
-            // Update positions and distance value
-            //var currentOffset = newRotation * m_PreviousRotation; //newRotation * Quaternion.Inverse(m_PreviousRotation);
             var newRotationDelta = Quaternion.Angle(newRotation, m_PreviousRotation);
 
             m_PreviousRotation = newRotation;
@@ -114,9 +109,9 @@ namespace  UnityEditor.Experimental.EditorVR.Helpers
         }
 
         /// <summary>
-        /// Clear the buffer and set a new position
+        /// Clear the buffer and set a new rotation
         /// </summary>
-        /// <param name="newRotation">The new position</param>
+        /// <param name="newRotation">The new rotation</param>
         public void ForceChangeRotation(Quaternion newRotation)
         {
             m_PreviousRotation = newRotation;
