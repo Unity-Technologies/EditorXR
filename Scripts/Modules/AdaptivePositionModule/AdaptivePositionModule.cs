@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public class AdaptivePositionData
         {
-            public AdaptivePositionData(IAdaptPosition caller, bool centerVisuals = true)
+            public AdaptivePositionData(IAdaptPosition caller, Vector3 previousAnchoredPosition)
             {
                 this.previousAnchoredPosition = previousAnchoredPosition;
                 startingPosition = caller.adaptiveTransform.position;
@@ -84,9 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void ControlObject(IAdaptPosition adaptiveElement)
         {
-            if (!m_AdaptivePositionElements.Contains(adaptiveElement))
-                m_AdaptivePositionElements.Add(adaptiveElement);
-            else
+            if (m_AdaptivePositionElements.Contains(adaptiveElement))
                 return;
 
             var adaptiveTransform = adaptiveElement.adaptiveTransform;
@@ -94,8 +92,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             adaptiveTransform.parent = m_WorldspaceAnchorTransform;
             adaptiveTransform.rotation = Quaternion.identity;
 
-            adaptiveElement.adaptivePositionData = new AdaptivePositionData(adaptiveElement);
-            adaptiveElement.adaptivePositionData.previousAnchoredPosition = adaptiveTransform.position;
+            m_AdaptivePositionElements.Add(adaptiveElement);
+            adaptiveElement.adaptivePositionData = new AdaptivePositionData(adaptiveElement, adaptiveTransform.position);
         }
 
         public void FreeObject(IAdaptPosition objectToReposition)
