@@ -66,7 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public IToolsMenuButton PreviewToolsMenuButton { get; private set; }
         public Transform alternateMenuOrigin { get; set; }
         public Transform spatialScrollOrigin { get; set; }
-        public SpatialScrollModule.SpatialScrollDataDeprecated SpatialScrollDataDeprecated { get; set; }
+        public SpatialScrollModule.SpatialScrollData SpatialScrollData { get; set; }
         public Vector3 spatialScrollStartPosition { get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
@@ -194,7 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             var toolslMenuInput = (ToolsMenuInput)input;
 
-            if (SpatialScrollDataDeprecated != null && toolslMenuInput.cancel.wasJustPressed)
+            if (SpatialScrollData != null && toolslMenuInput.cancel.wasJustPressed)
             {
                 consumeControl(toolslMenuInput.cancel);
                 consumeControl(toolslMenuInput.show);
@@ -210,7 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (toolslMenuInput.show.wasJustReleased)
                 HideScrollFeedback();
 
-            if (SpatialScrollDataDeprecated == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld) && toolslMenuInput.select.wasJustPressed)
+            if (SpatialScrollData == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld) && toolslMenuInput.select.wasJustPressed)
             {
                 spatialScrollStartPosition = spatialScrollOrigin.position;
                 allowSpatialQuickToggleActionBeforeThisTime = Time.realtimeSinceStartup + spatialQuickToggleDuration;
@@ -220,25 +220,25 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 consumeControl(toolslMenuInput.select);
 
                 // Assign initial SpatialScrollDataDeprecated; begin scroll
-                SpatialScrollDataDeprecated = this.PerformSpatialScrollDeprecated(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+                SpatialScrollData = this.PerformSpatialScrollDeprecated(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
 
                 HideScrollFeedback();
                 ShowMenuFeedback();
             }
-            else if (SpatialScrollDataDeprecated != null && toolslMenuInput.show.isHeld)
+            else if (SpatialScrollData != null && toolslMenuInput.show.isHeld)
             {
                 consumeControl(toolslMenuInput.show);
                 consumeControl(toolslMenuInput.select);
 
                 // Attempt to close a button, if a scroll has passed the trigger threshold
-                if (SpatialScrollDataDeprecated != null && toolslMenuInput.select.wasJustPressed)
+                if (SpatialScrollData != null && toolslMenuInput.select.wasJustPressed)
                 {
                     if (m_ToolsMenuUI.DeleteHighlightedButton())
                         buttonCount = buttons.Count; // The MainMenu button will be hidden, subtract 1 from the activeButtonCount
 
                     if (buttonCount <= k_ActiveToolOrderPosition + 1)
                     {
-                        if (SpatialScrollDataDeprecated != null)
+                        if (SpatialScrollData != null)
                             this.EndSpatialScroll();
 
                         return;
@@ -247,30 +247,30 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 // normalized input should loop after reaching the 0.15f length
                 buttonCount -= 1; // Decrement to disallow cycling through the main menu button
-                SpatialScrollDataDeprecated = this.PerformSpatialScrollDeprecated(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
-                var normalizedRepeatingPosition = SpatialScrollDataDeprecated.normalizedLoopingPosition;
+                SpatialScrollData = this.PerformSpatialScrollDeprecated(node, spatialScrollStartPosition, spatialScrollOrigin.position, 0.325f, m_ToolsMenuUI.buttons.Count, m_ToolsMenuUI.maxButtonCount);
+                var normalizedRepeatingPosition = SpatialScrollData.normalizedLoopingPosition;
                 if (!Mathf.Approximately(normalizedRepeatingPosition, 0f))
                 {
                     if (!m_ToolsMenuUI.allButtonsVisible)
                     {
-                        m_ToolsMenuUI.spatialDragDistance = SpatialScrollDataDeprecated.dragDistance;
+                        m_ToolsMenuUI.spatialDragDistance = SpatialScrollData.dragDistance;
                         this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.CenteredScrolling);
                         m_ToolsMenuUI.allButtonsVisible = true;
                     }
-                    else if (SpatialScrollDataDeprecated.spatialDirection != null)
+                    else if (SpatialScrollData.spatialDirection != null)
                     {
-                        m_ToolsMenuUI.startingDragOrigin = SpatialScrollDataDeprecated.spatialDirection;
+                        m_ToolsMenuUI.startingDragOrigin = SpatialScrollData.spatialDirection;
                     }
 
                     m_ToolsMenuUI.HighlightSingleButtonWithoutMenu((int)(buttonCount * normalizedRepeatingPosition) + 1);
                 }
             }
-            else if (SpatialScrollDataDeprecated != null && !toolslMenuInput.show.isHeld && !toolslMenuInput.select.isHeld)
+            else if (SpatialScrollData != null && !toolslMenuInput.show.isHeld && !toolslMenuInput.select.isHeld)
             {
                 consumeControl(toolslMenuInput.show);
                 consumeControl(toolslMenuInput.select);
 
-                if (SpatialScrollDataDeprecated != null && SpatialScrollDataDeprecated.passedMinDragActivationThreshold)
+                if (SpatialScrollData != null && SpatialScrollData.passedMinDragActivationThreshold)
                 {
                     m_ToolsMenuUI.SelectHighlightedButton();
                 }
