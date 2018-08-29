@@ -53,11 +53,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
                 IGetRayVisibilityMethods.isRayVisible = IsRayActive;
                 IGetRayVisibilityMethods.isConeVisible = IsConeActive;
-
-                // Allow the Spatial UI elements to update the spatial ray, at their own frequency
-                ISpatialProxyRayMethods.updateSpatialUIRayLengthLength = UpdateSpatialUIRayLength;
-                ISpatialProxyRayMethods.initializeSpatialProxyRay = InitializeSpatialProxyRay;
-
             }
 
             internal override void OnDestroy()
@@ -551,44 +546,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 var highlightModule = evr.GetModule<HighlightModule>();
                 return highlightModule.highlightColor;
-            }
-
-            internal Transform InitializeSpatialProxyRay(ISpatialProxyRay caller, Transform rayOrigin, GameObject spatialProxyRayPrefab)
-            {
-                const string kSpatialRayName = "Spatial Menu Ray Origin";
-                rayOrigin.name = kSpatialRayName;
-                var rayTransform = ObjectUtils.Instantiate(spatialProxyRayPrefab, rayOrigin).transform;
-                rayTransform.position = rayOrigin.position;
-                rayTransform.rotation = rayOrigin.rotation;
-                var dpr = rayTransform.GetComponent<DefaultProxyRay>();
-                dpr.SetColor(Color.white);
-                m_DefaultRays.Add(rayOrigin, dpr);
-
-                return rayTransform;
-            }
-
-            internal void UpdateSpatialUIRayLength(ISpatialProxyRay caller)
-            {
-                Debug.Log("<color=orange> updating spatial UI ray</color>");
-                const float k_SpatialUIRayLength = 0.5f;
-                var intersectionModule = evr.GetModule<IntersectionModule>();
-                var inputModule = evr.GetModule<MultipleRayInputModule>();
-                var spatialProxyRayOrigin = caller.spatialProxyRayOrigin;
-                var distance = k_SpatialUIRayLength * Viewer.GetViewerScale();
-                var uiEventData = inputModule.GetPointerEventData(spatialProxyRayOrigin);
-                if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
-                {
-                    // Set ray length to distance to UI objects
-                    distance = uiEventData.pointerCurrentRaycast.distance;
-                }
-                else
-                {
-                    float hitDistance;
-                    if (intersectionModule.GetFirstGameObject(spatialProxyRayOrigin, out hitDistance))
-                        distance = hitDistance;
-                }
-
-                caller.spatialProxyRay.SetLength(distance);
             }
         }
     }
