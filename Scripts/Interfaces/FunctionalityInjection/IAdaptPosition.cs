@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
