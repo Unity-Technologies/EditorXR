@@ -89,6 +89,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             consumeControl(spatialMenuActionMapInput.cancel);
             consumeControl(spatialMenuActionMapInput.showMenu);
+            consumeControl(spatialMenuActionMapInput.leftStickX);
+            consumeControl(spatialMenuActionMapInput.leftStickY);
+            consumeControl(spatialMenuActionMapInput.grip);
 
             if (!consumeSelection)
                 return;
