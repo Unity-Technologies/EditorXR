@@ -19,8 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const float k_AllowedGazeDivergence = 45f;
 
         readonly string k_TranslationInputModeName = "Spatial Input Mode";
-        readonly string k_ExternalRayBasedInputModeName = "External Ray-based Input Mode";
-        readonly string k_RotationInputModeName = "Rotation Input Mode";
+        readonly string k_ExternalRayBasedInputModeName = "External Ray Input Mode";
 
         [Header("Common UI")]
         [SerializeField]
