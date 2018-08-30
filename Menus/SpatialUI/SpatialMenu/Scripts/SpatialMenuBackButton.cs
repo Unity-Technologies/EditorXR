@@ -55,6 +55,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_ButtonImage = m_Button.image;
             m_Button.onClick.AddListener(Selected);
             m_VisibleLocalScale = transform.localScale;
+            transform.localScale = Vector3.zero;
+            m_ButtonImage.raycastTarget = false;
         }
 
         void OnDestroy()
