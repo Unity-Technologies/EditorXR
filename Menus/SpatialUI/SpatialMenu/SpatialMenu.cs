@@ -91,6 +91,12 @@ namespace UnityEditor.Experimental.EditorVR
 
         SpatialMenuInput m_CurrentSpatialActionMapInput;
 
+        // Bool denoting that the input necessary to keep the SpatialMenu visible is currently being maintained
+        bool m_SpatialInputHold;
+
+        // Duration denoting how long the input value has been at default/neutral and thus is in deadzone or lifted
+        float m_DefaultValueTime;
+
         // "Rotate wrist to return" members
         float m_StartingWristXRotation;
         float m_WristReturnVelocity;
@@ -410,9 +416,6 @@ namespace UnityEditor.Experimental.EditorVR
 
             return isAbove;
         }
-
-        bool m_SpatialInputHold;
-        float m_DefaultValueTime = 0f;
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
