@@ -500,7 +500,7 @@ namespace UnityEditor.Experimental.EditorVR
                 {
                     if (m_CurrentSpatialActionMapInput.cancel.wasJustPressed || m_CurrentSpatialActionMapInput.grip.wasJustPressed)
                     {
-                        Debug.LogWarning("Cancel button was just presset on node : " + node);
+                        Debug.LogWarning("Cancel button was just pressed on node : " + node);
                         ReturnToPreviousMenuLevel();
                         return;
                     }

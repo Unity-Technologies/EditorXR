@@ -90,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [Header("SurroundingBorderButtons")]
         [SerializeField]
-        SpatialMenuBackButton[] m_BackButtons;
+        SpatialMenuBackButton m_BackButton;
 
         [Header("Return To Previous Level Visuals")]
         [SerializeField]
@@ -180,8 +180,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 // TODO: Only block input for input devices directly interacting with SpatialUI
                 this.PreventInputIntersection(m_Visible);
 
+                m_MainCanvasGroup.interactable = m_Visible;
+                m_MainCanvasGroup.blocksRaycasts = m_Visible;
+
                 if (!m_Visible)
+                {
                     spatialMenuState = SpatialMenu.SpatialMenuState.hidden;
+                }
             }
         }
 
@@ -214,6 +219,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         DisplayHighlightedSubMenuContents();
                         break;
                     case SpatialMenu.SpatialMenuState.hidden:
+                        Debug.LogWarning("<color=orange>setting SpatialMenuUI state to hidden</>");
                         foreach (var element in currentlyDisplayedMenuElements)
                         {
                             // Perform animated hiding of elements
@@ -327,14 +333,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_HomeSectionTimelineStoppingTime = m_HomeSectionTimelineDuration * 0.5f;
             Reset();
 
-            foreach (var button in m_BackButtons)
-            {
-                button.OnHoverEnter = OnBackButtonHoverEnter;
-                button.OnHoverExit = OnBackButtonHoverExit;
-                button.OnSelected = OnBackButtonSelected;
-            }
+            m_BackButton.OnHoverEnter = OnBackButtonHoverEnter;
+            m_BackButton.OnHoverExit = OnBackButtonHoverExit;
+            m_BackButton.OnSelected = OnBackButtonSelected;
 
-            m_originalBackButtonIconLocalScale = m_BackButtons[0].transform.localScale;
+            m_originalBackButtonIconLocalScale = m_BackButton.transform.localScale;
+
+            // When setting up the SpatialMenuUI the visibility will be defaulted to false
+            // Manually set the backer bool to true, in order to perform a manual hiding of the menu in this case
+            m_Visible = true;
             visible = false;
         }
 
@@ -429,6 +436,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void DisplayHomeSectionContents()
         {
+            m_BackButton.allowInteraction = false;
             this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(true));
 
             // Proxy sub-menu/dynamicHUD menu element(s) display
@@ -460,6 +468,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void DisplayHighlightedSubMenuContents()
         {
+            m_BackButton.allowInteraction = true;
+
             Debug.Log("Displaying sub-menu elements");
             ForceClearHomeMenuElements();
             const float subMenuElementHeight = 0.022f; // TODO source height from individual sub-menu element height, not arbitrary value
@@ -786,10 +796,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (visible)
                 this.Pulse(Node.None, m_HighlightUIElementPulse);
 
+            m_BackButton.highlighted = visible;
             m_BackButtonVisualsContainer.SetActive(true);
-
-            var currentBackButtonIconSize = m_BackButtons[0].transform.localScale;
-            var targetBackButtonIconLocalScale = visible ? m_originalBackButtonIconLocalScale * 2.5f : m_originalBackButtonIconLocalScale;
 
             var currentArrowsContainerLocalPosition = m_SurroundingArrowsContainer.localPosition;
             var targetArrowsContainerLocalPosition = visible ? new Vector3(0f, 0f, -0.02f) : m_OriginalSurroundingArrowsContainerLocalPosition;
@@ -809,12 +817,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_ReturnToPreviousLevelText.localPosition = Vector3.Lerp(currentTextLocalPosition, targetTextLocalPosition, smoothTransition);
 
                 m_SurroundingArrowsContainer.localPosition = Vector3.Lerp(currentArrowsContainerLocalPosition, targetArrowsContainerLocalPosition, smoothTransition);
-
-                var newIconLocalScale = Vector3.Lerp(currentBackButtonIconSize, targetBackButtonIconLocalScale, smoothTransition);
-                foreach (var icon in m_BackButtons)
-                {
-                    icon.transform.localScale = newIconLocalScale;
-                }
 
                 //m_ReturnToPreviousBackground.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, smoothTransition);
                 m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", newAlpha * 10);
