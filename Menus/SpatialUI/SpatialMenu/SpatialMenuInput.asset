@@ -215,7 +215,7 @@ MonoBehaviour:
   m_ActionMap: {fileID: 11400000}
   m_ActionIndex: 13
   m_ControlData:
-    componentControlIndices: 0000000000000000
+    componentControlIndices: 0e0000000f000000
     controlType:
       m_TypeName: UnityEngine.InputNew.Vector2InputControl, Assembly-CSharp, Version=0.0.0.0,
         Culture=neutral, PublicKeyToken=null
