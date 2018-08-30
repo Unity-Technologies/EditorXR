@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -370,7 +369,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void ForceClearHomeMenuElements()
         {
             var homeMenuElementParent = m_HomeMenuLayoutGroup.transform;
-            var childrenToDelete = homeMenuElementParent.GetComponentsInChildren<Transform>().Where((x) => x != homeMenuElementParent);
+            var childrenToDelete = homeMenuElementParent.GetComponentsInChildren<Transform>().Where(x => x != homeMenuElementParent);
             var childCount = childrenToDelete.Count();
             if (childCount > 0)
             {
@@ -384,7 +383,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void ForceClearSubMenuElements()
         {
-            var childrenToDelete = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where((x) => x != m_SubMenuContainer);
+            var childrenToDelete = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where(x => x != m_SubMenuContainer);
             var childCount = childrenToDelete.Count();
             if (childCount > 0)
             {
@@ -472,7 +471,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     // TODO display all sub menu contents here
 
                     currentlyDisplayedMenuElements.Clear();
-                    var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( (x) => x != m_SubMenuContainer);
+                    var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( x => x != m_SubMenuContainer);
                     foreach (var child in deleteOldChildren)
                     {
                         if (child != null && child.gameObject != null)
@@ -506,7 +505,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             this.RestartCoroutine(ref m_HomeSectionTitlesBackgroundBordersTransitionCoroutine, AnimateTopAndBottomCenterBackgroundBorders(false));
         }
 
-        private void OnButtonHighlighted(SpatialMenu.SpatialMenuData menuData)
+        void OnButtonHighlighted(SpatialMenu.SpatialMenuData menuData)
         {
             m_HomeSectionDescription.text = menuData.spatialMenuDescription;
             const string kNoMenuHighlightedText = "Select a menu option";
@@ -613,7 +612,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
                 m_SubMenuContentsCanvasGroup.alpha = 0f;
 
-                this.StopAllCoroutines();
+                StopAllCoroutines();
                 //HideSubMenu();
                 m_Director.Evaluate();
                 ForceClearHomeMenuElements();
@@ -622,6 +621,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
             else if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.navigatingSubMenuContent)
             {
+                m_SubMenuContentsCanvasGroup.alpha = 1f;
                 // Scale background based on number of sub-menu elements
                 var targetScale = highlightedMenuElements != null ? highlightedMenuElements.Count * 1.05f : 1f;
                 var timeMultiplier = 24;
@@ -647,6 +647,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
             else if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.navigatingTopLevel)
             {
+                m_SubMenuContentsCanvasGroup.alpha = 0f;
                 //Debug.LogWarning("SpatialUI : <color=green>Navigating top level content</color>");
                 var targetScale = 1f;
                 var timeMultiplier = 24;
