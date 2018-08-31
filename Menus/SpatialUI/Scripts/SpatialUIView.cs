@@ -15,7 +15,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public enum SpatialInterfaceInputMode
         {
             Translation,
-            Ray
+            Ray,
+            TriggerRotation
         }
 
         [Header("Haptic Pulses")]

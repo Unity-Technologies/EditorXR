@@ -20,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         readonly string k_TranslationInputModeName = "Spatial Input Mode";
         readonly string k_ExternalRayBasedInputModeName = "External Ray Input Mode";
+        readonly string k_TriggerRotationInputModeName = "Trigger Rotation Input Mode";
 
         [Header("Common UI")]
         [SerializeField]
@@ -218,7 +219,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         DisplayHighlightedSubMenuContents();
                         break;
                     case SpatialMenu.SpatialMenuState.hidden:
-                        Debug.LogWarning("<color=orange>setting SpatialMenuUI state to hidden</>");
+                        Debug.LogWarning("<color=orange>setting SpatialMenuUI state to hidden</color>");
+                        m_HomeSectionDescription.text = "Awaiting Selection";
                         foreach (var element in currentlyDisplayedMenuElements)
                         {
                             // Perform animated hiding of elements
@@ -252,6 +254,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         break;
                     case SpatialInterfaceInputMode.Ray:
                         m_InputModeText.text = k_ExternalRayBasedInputModeName;
+                        break;
+                    case SpatialInterfaceInputMode.TriggerRotation:
+                        // Item highlighting via rotation of the trigger affordance beyond a threshold
+                        m_InputModeText.text = k_TriggerRotationInputModeName;
                         break;
                 }
             }
@@ -587,6 +593,38 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
                 
                 //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
+            }
+        }
+
+        public void HighlightNextElementInCurrentMenu()
+        {
+            Debug.LogError("Highlighting NEXT element via circular rotation");
+
+            var newElementHighlightPosition = m_PreviouslyHighlightedElementOrderPosition + 1 < currentlyDisplayedMenuElements.Count ? m_PreviouslyHighlightedElementOrderPosition : 0;
+            //currentlyDisplayedMenuElements[newElementHighlightPosition].highlighted = true;
+
+            //HighlightSingleElementInCurrentMenu(newElementHighlightPosition);
+            //return;
+
+            for (int i = 0; i < currentlyDisplayedMenuElements.Count; ++i)
+            {
+                currentlyDisplayedMenuElements[i].highlighted = i == newElementHighlightPosition;
+            }
+        }
+
+        public void HighlightPreviousElementInCurrentMenu()
+        {
+            Debug.LogError("Highlighting PREVIOUS element via circular rotation");
+
+            var newElementHighlightPosition = m_PreviouslyHighlightedElementOrderPosition + 1 < currentlyDisplayedMenuElements.Count ? m_PreviouslyHighlightedElementOrderPosition : 0;
+            //currentlyDisplayedMenuElements[newElementHighlightPosition].highlighted = true;
+
+            //HighlightSingleElementInCurrentMenu(newElementHighlightPosition);
+            //return;
+
+            for (int i = 0; i < currentlyDisplayedMenuElements.Count; ++i)
+            {
+                currentlyDisplayedMenuElements[i].highlighted = i == newElementHighlightPosition;
             }
         }
 

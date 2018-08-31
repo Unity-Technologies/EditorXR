@@ -1,8 +1,10 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -116,6 +118,13 @@ namespace UnityEditor.Experimental.EditorVR
         int m_HighlightedMenuElementPosition; // element position amidst the currentlyDisplayedMenuElements
         List<SpatialMenuElement> m_HighlightedMenuElements;
 
+        // Trigger + continued/held circular-input related fields
+        Vector2 m_OriginalShowMenuCircularInputDirection;
+        Vector3 m_UpdatingShowMenuCircularInputDirection;
+        bool m_ShowMenuCircularInputCrossedRotationThresholdForSelection;
+        float m_TotalShowMenuCircularInputRotation;
+        Coroutine m_CircularTriggerSelectionCyclingCoroutine;
+
         RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
         ContinuousDirectionalVelocityTracker m_ContinuousDirectionalVelocityTracker = new ContinuousDirectionalVelocityTracker();
 
@@ -194,6 +203,7 @@ namespace UnityEditor.Experimental.EditorVR
                         break;
                     case SpatialMenuState.hidden:
                         sceneViewGizmosVisible = true;
+                        m_CircularTriggerSelectionCyclingCoroutine = null;
                         break;
                 }
             }
@@ -445,8 +455,12 @@ namespace UnityEditor.Experimental.EditorVR
 
             // Detect the initial activation of the relevant Spatial input
             // convert left thumbstick y
-            if (m_CurrentSpatialActionMapInput.showMenu.positiveY.wasJustPressed)
+            if (m_CurrentSpatialActionMapInput.showMenu.positiveY.wasJustPressed && m_TotalShowMenuCircularInputRotation == 0)
             {
+                m_OriginalShowMenuCircularInputDirection = m_CurrentSpatialActionMapInput.showMenu.vector2.normalized;
+                m_UpdatingShowMenuCircularInputDirection = m_OriginalShowMenuCircularInputDirection;
+                m_ShowMenuCircularInputCrossedRotationThresholdForSelection = false;
+
                 m_SpatialInputHold = true;
                 ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
 
@@ -457,6 +471,51 @@ namespace UnityEditor.Experimental.EditorVR
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
                 s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
                 //Reset();
+            }
+
+            // Trigger + continued/held circular-input, when beyond a threshold, allow for element selection cycling
+            // If the magnitude of showMenu is below 0.5, consider the finger to have left the thumbstick/trackpad outer edge; close the menu
+            if (m_CurrentSpatialActionMapInput.showMenu.positiveY.wasJustPressed || m_CurrentSpatialActionMapInput.showMenu.vector2.magnitude > 0.5f)
+            {
+                Vector3 facing = m_CurrentSpatialActionMapInput.showMenu.vector2.normalized;
+                if (!m_ShowMenuCircularInputCrossedRotationThresholdForSelection)
+                {
+                    // Calculate rotation difference only in cases where the threshold has yet to be crossed
+                    var rotationDifference = Vector2.Dot(m_OriginalShowMenuCircularInputDirection, m_CurrentSpatialActionMapInput.showMenu.vector2.normalized);
+                    if (rotationDifference < -0.5)
+                    {
+                        // Show Menu Rotation Input can now be cycled forward/backward to select menu elements
+                        m_ShowMenuCircularInputCrossedRotationThresholdForSelection = true;
+                        Debug.LogError("<color=yellow>Show Menu Rotation Input can now select menu elements</color>");
+                    }
+                }
+                else
+                {
+                    if (m_CurrentSpatialActionMapInput.select.wasJustPressed)
+                    {
+                        s_SpatialMenuUi.SectionTitleButtonSelected();
+                    }
+                    else
+                    {
+                        if (m_CircularTriggerSelectionCyclingCoroutine == null)
+                        {
+                            s_SpatialMenuUi.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.TriggerRotation;
+
+                            // Only allow selection if there has been a suitable amount of time since the previous selection
+                            // Show menu input rotation is held, and has crossed the necessary threshold to allow for menu element cycling
+                            // Positive is rotating to the right circularly, Negative is rotating to the left circularly
+                            var circularRotationDirection = Vector3.Cross(facing, m_UpdatingShowMenuCircularInputDirection).z;
+                            if (circularRotationDirection > 0.05f) // rotating to the right circularly
+                                this.RestartCoroutine(ref m_CircularTriggerSelectionCyclingCoroutine, TimedCircularTriggerSelection());
+                            else if (circularRotationDirection < -0.05f) // rotating to the left circularly
+                                this.RestartCoroutine(ref m_CircularTriggerSelectionCyclingCoroutine, TimedCircularTriggerSelection(false));    
+                        }
+                    }
+                }
+
+                var angle = Vector3.Angle(m_UpdatingShowMenuCircularInputDirection, facing);
+                m_TotalShowMenuCircularInputRotation += angle;
+                m_UpdatingShowMenuCircularInputDirection = facing;
             }
 
             // isHeld goes false right when you go below 0.5.  this is the check for 'up-click' on the pad / stick
@@ -525,8 +584,40 @@ namespace UnityEditor.Experimental.EditorVR
 
             if (!m_CurrentSpatialActionMapInput.showMenu.positiveY.isHeld && !m_SpatialInputHold)
             {
+                m_TotalShowMenuCircularInputRotation = 0;
+                m_HighlightedMenuElementPosition = -1;
                 visible = false;
             }
+        }
+
+        IEnumerator TimedCircularTriggerSelection(bool selectNextItem = true)
+        {
+            var menuElementCount = s_SpatialMenuData.Count;
+            var elementPositionOffset = selectNextItem ? 1 : -1;
+            m_HighlightedMenuElementPosition = (int) Mathf.Repeat(m_HighlightedMenuElementPosition + elementPositionOffset, menuElementCount);
+            //s_SpatialMenuUi.HighlightSingleElementInCurrentMenu(spatialScrollData.loopingHighlightedMenuElementPositionYConstrained);
+
+            s_SpatialMenuUi.HighlightSingleElementInHomeMenu(m_HighlightedMenuElementPosition);
+
+            /*
+            if (selectNextItem)
+                s_SpatialMenuUi.HighlightNextElementInCurrentMenu();
+            else
+                s_SpatialMenuUi.HighlightPreviousElementInCurrentMenu();
+            */
+
+            // Prevent the cycling to another element by keeping the coroutine reference from being null for a period of time
+            // The coroutine reference is tested against in ProcessInput(), only allowing the cycling to previous/next element if null
+            const float selectionTimingBuffer = 0.2f;
+            var duration = 0f;
+            while (duration < selectionTimingBuffer)
+            {
+                duration += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            m_CircularTriggerSelectionCyclingCoroutine = null;
+            yield return null;
         }
     }
 }
