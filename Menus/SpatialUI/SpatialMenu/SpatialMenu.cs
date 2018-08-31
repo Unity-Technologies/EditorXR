@@ -486,7 +486,6 @@ namespace UnityEditor.Experimental.EditorVR
                     {
                         // Show Menu Rotation Input can now be cycled forward/backward to select menu elements
                         m_ShowMenuCircularInputCrossedRotationThresholdForSelection = true;
-                        Debug.LogError("<color=yellow>Show Menu Rotation Input can now select menu elements</color>");
                     }
                 }
                 else

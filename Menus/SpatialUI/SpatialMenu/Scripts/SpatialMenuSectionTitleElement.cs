@@ -221,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR
             var targetTextLocalScale = isHighlighted ? Vector3.one * 1.15f : Vector3.one;
             //var currentBackgroundColor = m_BackgroundImage.color;
             var targetBackgroundColor = isHighlighted ? Color.black : Color.clear;
-            var speedMultiplier = isHighlighted ? 3f : 6f;
+            var speedMultiplier = isHighlighted ? 8f : 4f;
             while (alphaTransitionAmount < 1f)
             {
                 var alphaSmoothTransition = MathUtilsExt.SmoothInOutLerpFloat(alphaTransitionAmount);
@@ -230,7 +230,7 @@ namespace UnityEditor.Experimental.EditorVR
                 textTransform.localPosition = Vector3.Lerp(textCurrentLocalPosition, textTargetLocalPosition, positionSmoothTransition);
                 textTransform.localScale = Vector3.Lerp(currentTextLocalScale, targetTextLocalScale, alphaSmoothTransition);
                 alphaTransitionAmount += Time.deltaTime * speedMultiplier;
-                positionTransitionAmount += alphaTransitionAmount * 1.35f;
+                positionTransitionAmount += alphaTransitionAmount * 1.35f; // slightly faster position transition
                 //m_BackgroundImage.color = Color.Lerp(currentBackgroundColor, targetBackgroundColor, alphaSmoothTransition * 4);
                 yield return null;
             }
