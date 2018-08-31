@@ -15,7 +15,8 @@ namespace UnityEditor.Experimental.EditorVR
 {
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public sealed class SpatialMenu : SpatialUIController, IProcessSpatialInput, IInstantiateUI, IUsesNode,
-        IUsesRayOrigin, ISelectTool, IConnectInterfaces, IControlHaptics, INodeToRay, IDetectGazeDivergence
+        IUsesRayOrigin, ISelectTool, IConnectInterfaces, IControlHaptics, INodeToRay, IDetectGazeDivergence,
+        IControlInputIntersection, ISetManipulatorsVisible
     {
         public class SpatialMenuData
         {
@@ -546,6 +547,8 @@ namespace UnityEditor.Experimental.EditorVR
                 //consumeControl(m_CurrentSpatialActionMapInput.select);
 
                 m_Transitioning = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // duration for which input is not taken into account when menu swapping
+                this.SetRayOriginEnabled(m_RayOrigin, false);
+                this.SetManipulatorsVisible(this, false);
                 visible = true;
 
                 var inputLocalRotation = m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion;
@@ -585,6 +588,8 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 m_TotalShowMenuCircularInputRotation = 0;
                 m_HighlightedMenuElementPosition = -1;
+                this.SetManipulatorsVisible(this, true);
+                this.SetRayOriginEnabled(m_RayOrigin, true);
                 visible = false;
             }
         }

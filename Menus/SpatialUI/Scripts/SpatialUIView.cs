@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
@@ -9,8 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// Mandates that derived classes implement core SpatialUI implementation
     /// The SpatialMenu is the first robust implementation, SpatialContextUI is planned to derive from core
     /// </summary>
-    public abstract class SpatialUIView : MonoBehaviour, IControlHaptics, IControlInputIntersection,
-        INodeToRay
+    public abstract class SpatialUIView : MonoBehaviour, IControlHaptics, INodeToRay
     {
         public enum SpatialInterfaceInputMode
         {
@@ -28,8 +26,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         protected HapticPulse m_SustainedHoverUIElementPulse;
-
-        protected SpatialUIToggle m_SpatialPinToggle { get; set; }
 
         public HapticPulse highlightUIElementPulse { get { return m_HighlightUIElementPulse; } }
     }
