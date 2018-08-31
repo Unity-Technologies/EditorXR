@@ -17,14 +17,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
         readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
         readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
+        readonly Dictionary<Transform, bool> m_RayoriginEnabled = new Dictionary<Transform, bool>();
         readonly List<GameObject> m_StandardIgnoreList = new List<GameObject>();
 
         SpatialHash<Renderer> m_SpatialHash;
         MeshCollider m_CollisionTester;
-
-        // If TRUE prevent intersection processing
-        // Utilized by implementers of IControlInputIntersection to temporarily enable/disable testing
-        bool m_IgnoreIntersectionTesting;
 
         struct RayIntersection
         {
@@ -51,14 +48,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float distance;
         }
 
-        public IntersectionModule()
-        {
-            IControlInputIntersectionMethods.preventStandardInputIntersection = UpdateInputIntersection;
-        }
-
         void Awake()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
+            IControlInputIntersectionMethods.setRayOriginEnabled = SetRayOriginEnabled;
         }
 
         internal void Setup(SpatialHash<Renderer> hash)
@@ -73,9 +66,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return;
 
             if (m_Testers == null)
-                return;
-
-            if (m_IgnoreIntersectionTesting)
                 return;
 
             for (int i = 0; i < m_Testers.Count; i++)
@@ -203,11 +193,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_IntersectedObjects.Remove(tester);
         }
 
-        internal Renderer GetIntersectedObjectForTester(IntersectionTester tester)
+        internal Renderer GetIntersectedObjectForRayOrigin(Transform rayOrigin)
         {
+            if (!m_RayoriginEnabled.ContainsKey(rayOrigin))
+                m_RayoriginEnabled[rayOrigin] = true;
+
+            if (!m_RayoriginEnabled[rayOrigin])
+                return null;
+
+            var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
             Renderer obj = null;
             if (tester)
+            {
+                if (!tester.active)
+                    return null;
+
                 m_IntersectedObjects.TryGetValue(tester, out obj);
+            }
 
             return obj;
         }
@@ -225,11 +227,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return null;
         }
 
+        internal void SetRayOriginEnabled(Transform rayOrigin, bool enabled)
+        {
+            m_RayoriginEnabled[rayOrigin] = enabled;
+        }
+
         internal void UpdateRaycast(Transform rayOrigin, float distance)
         {
+            if (!m_RayoriginEnabled.ContainsKey(rayOrigin))
+                m_RayoriginEnabled[rayOrigin] = true;
+
             GameObject go;
             RaycastHit hit;
             Raycast(new Ray(rayOrigin.position, rayOrigin.forward), out hit, out go, distance);
+
+            if (!m_RayoriginEnabled[rayOrigin])
+            {
+                go = null;
+                hit.distance = 0;
+            }
+
             m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
         }
 
@@ -334,11 +351,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var playerBounds = ObjectUtils.GetBounds(this.GetVRPlayerObjects());
             playerBounds.extents += m_PlayerBoundsMargin;
             return objectBounds.ContainsCompletely(playerBounds);
-        }
-
-        internal void UpdateInputIntersection(IControlInputIntersection caller, bool blockStandardInput)
-        {
-            m_IgnoreIntersectionTesting = blockStandardInput;
         }
     }
 }

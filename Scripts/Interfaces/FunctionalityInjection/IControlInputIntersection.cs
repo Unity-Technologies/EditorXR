@@ -1,4 +1,7 @@
 ﻿#if UNITY_EDITOR
+using System;
+using UnityEngine;
+
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
@@ -10,16 +13,14 @@ namespace UnityEditor.Experimental.EditorVR
 
     public static class IControlInputIntersectionMethods
     {
-        internal delegate void PreventInputIntersectionDelegate(IControlInputIntersection caller, bool blockStandardInput = true);
-
-        internal static PreventInputIntersectionDelegate preventStandardInputIntersection { private get; set; }
+        internal static Action<Transform, bool> setRayOriginEnabled { private get; set; }
 
         /// <summary>
         ///
         /// </summary>
-        public static void PreventInputIntersection(this IControlInputIntersection obj, bool blockStandardInput = true)
+        public static void SetRayOriginEnabled(this IControlInputIntersection obj, Transform rayOrigin, bool enabled)
         {
-            preventStandardInputIntersection(obj, blockStandardInput);
+            setRayOriginEnabled(rayOrigin, enabled);
         }
     }
 }

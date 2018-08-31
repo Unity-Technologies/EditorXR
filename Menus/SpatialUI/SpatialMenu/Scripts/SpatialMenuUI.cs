@@ -176,10 +176,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 resetAdaptivePosition = m_Visible;
                 m_BackButtonVisualsContainer.SetActive(false);
 
-                // Block normal intersection testing while interacting with SpatialUI
-                // TODO: Only block input for input devices directly interacting with SpatialUI
-                this.PreventInputIntersection(m_Visible);
-
                 if (!m_Visible)
                     spatialMenuState = SpatialMenu.SpatialMenuState.hidden;
             }
