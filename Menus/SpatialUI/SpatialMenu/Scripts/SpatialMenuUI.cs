@@ -267,9 +267,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (m_InFocus == value)
                     return;
 
-                //if (value != m_InFocus)
-                //this.RestartCoroutine(ref m_InFocusCoroutine, AnimateFocusVisuals());
-
                 m_InFocus = value;
             }
         }
@@ -287,10 +284,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
 
         public Transform homeMenuContainer { get { return m_HomeMenuContainer; } }
-
-        //public GameObject menuElementPrefab { get { return m_MenuElementPrefab; } }
-
-        //public GameObject subMenuElementPrefab { get { return m_SubMenuElementPrefab; } }
 
         public Transform subMenuContainer { get { return m_SubMenuContainer; } }
 
@@ -361,10 +354,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             // Director related
             m_Director.time = 0f;
             m_Director.Evaluate();
-
-            // Hack that fixes the home section menu element positions not being recalculated when first revealed
-            //m_HomeMenuLayoutGroup.enabled = false;
-            //m_HomeMenuLayoutGroup.enabled = true;
         }
 
         void ReturnToPreviousMenuLevel()
@@ -424,16 +413,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_Director.Evaluate();
             }
         }
-
-        /*
-        public void UpdateSectionNames(List<ISpatialMenuProvider> spatialMenuProviders)
-        {
-            for (int i = 0; i < spatialMenuProviders.Count; ++i)
-            {
-                m_SectionNameTexts[i].text = spatialMenuProviders[i].spatialMenuName;
-            }
-        }
-        */
 
         void DisplayHomeSectionContents()
         {
@@ -501,15 +480,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         providerMenuElement.visible = true;
                         providerMenuElement.selected = subMenuElement.correspondingFunction;
                     }
-
-                    //.Add(provider, providerMenuElement);
-                    //instantiatedPrefab.transform.SetParent(m_SubMenuContainer);
-                    //instantiatedPrefab.localRotation = Quaternion.identity;
-                    //instantiatedPrefab.localPosition = Vector3.zero;
-                    //instantiatedPrefab.localScale = Vector3.one;
                 }
-
-                //menuData.Value.gameObject.SetActive(false);
             }
 
             m_HomeSectionDescription.gameObject.SetActive(false);
@@ -633,10 +604,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void Update()
         {
             m_HomeMenuLayoutGroup.spacing = 1 % Time.unscaledDeltaTime * 0.01f; // Don't ask... horizontal layout group refused to play nicely without this... b'cause magic mysetery something
-            //Debug.Log("<color=yellow> SpatialMenuUI state : " + m_SpatialinterfaceState + " : director time : " + m_Director.time + "</color>");
             if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.hidden && m_Director.time <= m_HomeSectionTimelineDuration)
             {
-                //Debug.LogWarning("<color=orange>Hiding spatial menu UI</color>");
                 // Performed an animated hide of any currently displayed UI
                 m_Director.time = m_Director.time += Time.unscaledDeltaTime;
                 m_Director.Evaluate();
@@ -649,7 +618,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
             else if (m_Director.time > m_HomeSectionTimelineDuration)
             {
-                Debug.Log("<color=green>Finished hiding spatial menu UI</color>");
                 // UI hiding animation has finished, perform final cleanup.  TODO: optimze for pooling and a lesser GC impact
                 //m_Director.time = 0f;
                 m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, 1f, 1f);
@@ -711,8 +679,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 else
                 {
                     UpdateDirector();
-                    //m_HomeTextBackgroundInnerTransform.localScale = new Vector3(1f, targetScale, 1f);
-                    //m_SubMenuContentsCanvasGroup.alpha = 0f;
                 }
             }
         }
