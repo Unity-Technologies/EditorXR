@@ -8,6 +8,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
+    [SpatialMenuItem("Primitives", "Tools", "Create primitives in the scene")]
     sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
         IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
         IRayVisibilitySettings, IMenuIcon, IRequestFeedback, IUsesNode, ISpatialMenuCustomDescription
