@@ -7,6 +7,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("Locked Objects", "Workspaces", "View all locked objects in your scene(s)")]
+    [SpatialMenuItem("Locked Objects", "Workspaces", "View all locked objects in your scene(s)")]
     class LockedObjectsWorkspace : HierarchyWorkspace, IUsesGameObjectLocking
     {
         [SerializeField]
