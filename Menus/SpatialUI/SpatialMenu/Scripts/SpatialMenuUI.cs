@@ -120,6 +120,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         float m_OriginalHomeSectionTitleTextSpacing;
         Vector3 m_OriginalSurroundingArrowsContainerLocalPosition;
         Vector3 m_originalBackButtonIconLocalScale;
+        ISpatialMenuElement m_CurrentlyHighlightedMenuElement;
 
         // Adaptive Position related fields
         bool m_InFocus;
@@ -203,6 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     //gameObject.SetActive(true);
 
                 m_SpatialMenuState = value;
+                m_CurrentlyHighlightedMenuElement = null;
                 Debug.LogWarning("Switching spatial menu state to " + m_SpatialMenuState);
 
                 switch (m_SpatialMenuState)
@@ -545,6 +547,40 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             // TODO unify the spatialMenuData
             m_PreviouslyHighlightedElementOrderPosition = elementOrderPosition;
+        }
+
+        public void HighlightElementInCurrentlyDisplayedMenuSection(int elementOrderPosition)
+        {
+            //Debug.Log("<color=blue>HighlightSingleElementInCurrentMenu in SpatialMenuUI : " + elementOrderPosition + "</color>");
+            var menuElementCount = 3;// highlightedMenuElements.Count;
+            for (int i = 0; i < menuElementCount; ++i)
+            {
+
+                //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
+
+                if (currentlyDisplayedMenuElements.Count > i && currentlyDisplayedMenuElements[i] != null)
+                {
+                    var element = currentlyDisplayedMenuElements[i];
+                    element.highlighted = i == elementOrderPosition;
+
+                    if (i == elementOrderPosition)
+                    {
+                        m_HomeSectionDescription.text = element.parentMenuData.spatialMenuDescription;
+                        m_CurrentlyHighlightedMenuElement = element;
+                        Debug.LogWarning("Highlighting home level menu element : " + element.gameObject.name);
+                    }
+                }
+
+                //m_HighlightedTopLevelMenuProvider.spatialTableElements[i].name = i == highlightedButtonPosition ? "Highlighted" : "Not";
+            }
+
+            // TODO unify the spatialMenuData
+            m_PreviouslyHighlightedElementOrderPosition = elementOrderPosition;
+        }
+
+        public void SelectCurrentlyHighlightedElement()
+        {
+            m_CurrentlyHighlightedMenuElement.selected();
         }
 
         public void HighlightSingleElementInCurrentMenu(int elementOrderPosition)

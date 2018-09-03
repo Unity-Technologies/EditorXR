@@ -401,6 +401,7 @@ namespace UnityEditor.Experimental.EditorVR
             this.Pulse(Node.None, m_NavigateBackPulse);
             m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             spatialMenuState = SpatialMenuState.navigatingTopLevel;
+            m_HighlightedMenuElementPosition = -1;
 
             Debug.LogWarning("SpatialMenu : <color=green>Above wrist return threshold</color>");
         }
@@ -493,23 +494,20 @@ namespace UnityEditor.Experimental.EditorVR
                 {
                     if (m_CurrentSpatialActionMapInput.select.wasJustPressed)
                     {
-                        s_SpatialMenuUi.SectionTitleButtonSelected();
+                        s_SpatialMenuUi.SelectCurrentlyHighlightedElement();
                     }
-                    else
+                    else if (m_CircularTriggerSelectionCyclingCoroutine == null)
                     {
-                        if (m_CircularTriggerSelectionCyclingCoroutine == null)
-                        {
-                            s_SpatialMenuUi.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.TriggerRotation;
+                        s_SpatialMenuUi.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.TriggerRotation;
 
-                            // Only allow selection if there has been a suitable amount of time since the previous selection
-                            // Show menu input rotation is held, and has crossed the necessary threshold to allow for menu element cycling
-                            // Positive is rotating to the right circularly, Negative is rotating to the left circularly
-                            var circularRotationDirection = Vector3.Cross(facing, m_UpdatingShowMenuCircularInputDirection).z;
-                            if (circularRotationDirection > 0.05f) // rotating to the right circularly
-                                this.RestartCoroutine(ref m_CircularTriggerSelectionCyclingCoroutine, TimedCircularTriggerSelection());
-                            else if (circularRotationDirection < -0.05f) // rotating to the left circularly
-                                this.RestartCoroutine(ref m_CircularTriggerSelectionCyclingCoroutine, TimedCircularTriggerSelection(false));    
-                        }
+                        // Only allow selection if there has been a suitable amount of time since the previous selection
+                        // Show menu input rotation is held, and has crossed the necessary threshold to allow for menu element cycling
+                        // Positive is rotating to the right circularly, Negative is rotating to the left circularly
+                        var circularRotationDirection = Vector3.Cross(facing, m_UpdatingShowMenuCircularInputDirection).z;
+                        if (circularRotationDirection > 0.05f) // rotating to the right circularly
+                            this.RestartCoroutine(ref m_CircularTriggerSelectionCyclingCoroutine, TimedCircularTriggerSelection());
+                        else if (circularRotationDirection < -0.05f) // rotating to the left circularly
+                            this.RestartCoroutine(ref m_CircularTriggerSelectionCyclingCoroutine, TimedCircularTriggerSelection(false));    
                     }
                 }
 
@@ -604,7 +602,7 @@ namespace UnityEditor.Experimental.EditorVR
                 Debug.LogWarning("Cancel button was just pressed on node : " + node + " : " + m_RayOrigin.name);
                 cancelJustPressed = true;
                 ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl);
-
+                m_HighlightedMenuElementPosition = -1;
                 s_ControllingSpatialMenu.ReturnToPreviousMenuLevel();
             }
 
@@ -640,16 +638,7 @@ namespace UnityEditor.Experimental.EditorVR
             var menuElementCount = s_SpatialMenuData.Count;
             var elementPositionOffset = selectNextItem ? 1 : -1;
             m_HighlightedMenuElementPosition = (int) Mathf.Repeat(m_HighlightedMenuElementPosition + elementPositionOffset, menuElementCount);
-            //s_SpatialMenuUi.HighlightSingleElementInCurrentMenu(spatialScrollData.loopingHighlightedMenuElementPositionYConstrained);
-
-            s_SpatialMenuUi.HighlightSingleElementInHomeMenu(m_HighlightedMenuElementPosition);
-
-            /*
-            if (selectNextItem)
-                s_SpatialMenuUi.HighlightNextElementInCurrentMenu();
-            else
-                s_SpatialMenuUi.HighlightPreviousElementInCurrentMenu();
-            */
+            s_SpatialMenuUi.HighlightElementInCurrentlyDisplayedMenuSection(m_HighlightedMenuElementPosition);
 
             // Prevent the cycling to another element by keeping the coroutine reference from being null for a period of time
             // The coroutine reference is tested against in ProcessInput(), only allowing the cycling to previous/next element if null
