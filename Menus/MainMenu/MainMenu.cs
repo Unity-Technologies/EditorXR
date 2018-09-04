@@ -218,6 +218,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void CreateFaceButtons()
         {
+            var leftHandOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
+            var rightHandOrigin = this.RequestRayOriginFromNode(Node.RightHand);
             var types = new HashSet<Type>();
             types.UnionWith(menuTools);
             types.UnionWith(menuWorkspaces);
@@ -271,19 +273,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     if (mainMenuButton != null)
                         mainMenuButton.toolType = selectedType;
 
-                    // Pre-populate the tools on both nodes
-                    //this.SelectTool(this.RequestRayOriginFromNode(Node.RightHand), selectedType,
-                    //hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
-
-                    this.SelectTool(this.RequestRayOriginFromNode(Node.LeftHand), selectedType,
+                    // Pre-populate the tools on both nodes/hands
+                    // A convenience function, that allows the tools to be immediately accessible
+                    // Also allows for the ToolsMenu to have full funcitonality from the of a session
+                    this.SelectTool(leftHandOrigin, selectedType,
                         hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
 
-                    // Force the return to the selection tool after pre-populating new tools on both nodes
-                    // TODO: optimize, and add support for resuming the session using the previously selected tool (if available)
-                    //this.SelectTool(this.RequestRayOriginFromNode(Node.RightHand), typeof(SelectionTool),
-                    //hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+                    this.SelectTool(rightHandOrigin, selectedType,
+                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
 
-                    this.SelectTool(this.RequestRayOriginFromNode(Node.LeftHand), typeof(SelectionTool),
+                    // TODO: optimize, and add support for resuming the session using the previously selected tool (if available)
+                    // Force the return to the selection tool after pre-populating new tools on both nodes
+                    this.SelectTool(leftHandOrigin, typeof(SelectionTool),
+                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+
+                    this.SelectTool(rightHandOrigin, typeof(SelectionTool),
                         hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
 
                     m_ToolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElement(buttonData.name, buttonData.description, (node) =>
