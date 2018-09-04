@@ -5,12 +5,10 @@
         _Blur("Blur", Range(0, 10)) = 1
         _VerticalOffset("Offset", Range(-1, 1)) = 1
         _Alpha("Alpha", Range(0, 1)) = 1
-        //_StencilRef("StencilRef", Int) = 3
         _GradientSize("Gradient Size", Range(0, 6)) = 2
         _MainTex("Noise Texture (REQUIRED for Blur Noise)", 2D) = "white" {}
-        _BlurNoise("Blur Noise Direction", Range(-1, 1)) = 1 // TODO <-- remove
+        _BlurNoise("Blur Noise Direction", Range(-1, 1)) = 1
         _BlurNoiseAmount("Blur Noise Amount", Range(-5, 5)) = 0.125
-        //[Toggle] _StencilFailZero("Stencil Fail Zero", Float) = 0
     }
 
         Category
@@ -20,14 +18,6 @@
             ZTest LEqual
             Lighting Off
             Blend SrcAlpha OneMinusSrcAlpha
-
-            //Stencil
-            //{
-                //Ref [_StencilRef]
-                //Comp NotEqual
-                //Pass Zero
-                //Fail [_StencilFailZero]
-            //}
 
             SubShader
             {
@@ -40,7 +30,6 @@
 
                     #pragma vertex vert
                     #pragma fragment frag
-                    //#pragma fragmentoption ARB_precision_hint_fastest
                     #include "UnityCG.cginc"
 
                     struct appdata_t
@@ -82,13 +71,13 @@
                         output.grab.zw = output.position.zw;
                         output.grab *= _WorldScale;
 
-                        output.cleanUV = v.texcoord;// float2(v.texcoord.x, v.texcoord.y * sign);// float2(output.position.x, output.position.y * sign);
+                        output.cleanUV = v.texcoord;
                         return output;
                     }
 
                     half4 frag(v2f input) : COLOR
                     {
-                        float uvPos = length(input.cleanUV - float2(0.5, 0.5));// * 1.41421356237;
+                        float uvPos = length(input.cleanUV - float2(0.5, 0.5));
                         float xAdjustedPosition = pow(input.cleanUV.x * (1 - input.cleanUV.x) * 3, 1);
                         float yAdjustedPosition = (1 - input.cleanUV.y);
                         half positionAdjustedBlur = _Blur * yAdjustedPosition * xAdjustedPosition;
@@ -97,11 +86,10 @@
                         #define GrabAndOffset(weight,kernelX) tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x + _GrabTexture_TexelSize.x * kernelX * (positionAdjustedBlur * input.yPos), input.grab.y, input.grab.z, input.grab.w))) * weight
 
                         half4 color = tex2D(_MainTex, input.cleanUV);
-                        //half noiseSampledTextureAmount = 0.5 + color.r - 0.00125;
                         half noiseSampledTextureAmount = 1 + color.r - _BlurNoiseAmount * dot(input.cleanUV, float2(0.5, 0.5));
 
                         half blurAdjustmentModifier = _BlurNoise * 0.25;
-                        float adjustedBlur = 1;// - uvPos * 2;// * (input.cleanUV.y);
+                        float adjustedBlur = 1;
                         half adjustedBlurKernel = input.cleanUV.y;
                         sum += GrabAndOffset(0.02 * adjustedBlur, -6.0 * noiseSampledTextureAmount);
                         noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
@@ -128,16 +116,7 @@
                         noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
                         sum += GrabAndOffset(0.02 * adjustedBlur, +6.0 * noiseSampledTextureAmount);
 
-
-                        //float t = length(float2(0.5, 0.5) - input.grab.xy);// * 1.41421356237;
-                        //sum.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);
-                        
-                        //float t = length(input.cleanUV - float2(0.5, 0.5));// * 1.41421356237;
-                        //sum.a = lerp(0, 1, uvPos - 0.5);// t  - pow(t, 10));
-
-                        //sum.a = clamp(0, 1, 1 - (uvPos * 2));
                         float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);
-                        //sum.a = 0;// fadeFromBorderAmount;
                         sum.a = clamp(0, 1 - pow((uvPos * 2), _GradientSize * (_Blur / 10)), fadeFromBorderAmount);
 
                         return sum;
@@ -154,7 +133,6 @@
                 CGPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
-                //#pragma fragmentoption ARB_precision_hint_fastest
                 #include "UnityCG.cginc"
 
                 struct appdata_t
@@ -202,7 +180,7 @@
 
                 half4 frag(v2f input) : COLOR
                 {
-                    float uvPos = length(input.cleanUV - float2(0.5, 0.5));// * 1.41421356237;
+                    float uvPos = length(input.cleanUV - float2(0.5, 0.5));
                     float xAdjustedPosition = pow(input.cleanUV.x * (1 - input.cleanUV.x) * 3, 1);
                     float yAdjustedPosition = (1 - input.cleanUV.y);
                     half positionAdjustedBlur = _Blur * yAdjustedPosition * xAdjustedPosition;
@@ -213,7 +191,7 @@
                     half4 color = tex2D(_MainTex, input.cleanUV);
                     half noiseSampledTextureAmount = 1 + color.g - _BlurNoiseAmount * dot(input.cleanUV, float2(0.5, 0.5));
 
-                    float adjustedBlur = 1;// - uvPos * 2;// * (input.cleanUV.y);
+                    float adjustedBlur = 1;
                     half blurAdjustmentModifier = _BlurNoise * 0.25;
                     half adjustedBlurKernel = input.cleanUV.y;
                     sum += GrabAndOffset(0.02 * adjustedBlur, -6.0 * noiseSampledTextureAmount);
@@ -241,14 +219,7 @@
                     noiseSampledTextureAmount += noiseSampledTextureAmount * blurAdjustmentModifier;
                     sum += GrabAndOffset(0.02 * adjustedBlur, +6.0 * noiseSampledTextureAmount);
 
-
-                    //float t = length(input.grab - float2(0.5, 0.5)) * 1.41421356237;
-                    //sum.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);
-
-                    //sum.a = 0;
-                    //float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);
-                    float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);// - pow((uvPos * 2), _GradientSize);
-                    //sum.a = 0;// clamp(0, 1 - pow((uvPos * 2), _GradientSize * (_Blur / 10)), fadeFromBorderAmount);
+                    float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);
                     sum.a = clamp(0, 1 - pow((uvPos * 2), _GradientSize * (_Blur / 10)), fadeFromBorderAmount);
 
                     return sum;
@@ -319,7 +290,7 @@
                     half4 combinedColor = col * tint;
                     combinedColor.a *= t * lerp(0, 1, t + (_GradientSize - 0.5) * 2);;
 
-                    combinedColor.a = 0;// _Color.a;
+                    combinedColor.a = 0;
 
                     return combinedColor;
                 }
