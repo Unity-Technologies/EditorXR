@@ -190,6 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         //public ISpatialMenuProvider highlightedTopLevelMenuProvider { private get; set; }
         public SpatialMenu.SpatialMenuState spatialMenuState
         {
+            get { return m_SpatialMenuState; }
             set
             {
                 // If the previous state was hidden, reset the state of the UI
@@ -416,6 +417,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
+        public void SectionTitleButtonSelected(Node node)
+        {
+            changeMenuState(SpatialMenu.SpatialMenuState.navigatingSubMenuContent);
+        }
+
         void DisplayHomeSectionContents()
         {
             m_BackButton.allowInteraction = false;
@@ -441,11 +447,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 providerMenuElement.parentMenuData = spatialMenuData[i];
                 //m_ProviderToHomeMenuElements[menuData] = providerMenuElement;
             }
-        }
-
-        public void SectionTitleButtonSelected()
-        {
-            changeMenuState(SpatialMenu.SpatialMenuState.navigatingSubMenuContent);
         }
 
         public void DisplayHighlightedSubMenuContents()
@@ -482,6 +483,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         providerMenuElement.visible = true;
                         providerMenuElement.selected = subMenuElement.correspondingFunction;
                     }
+
+                    break;
                 }
             }
 
@@ -552,12 +555,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public void HighlightElementInCurrentlyDisplayedMenuSection(int elementOrderPosition)
         {
             //Debug.Log("<color=blue>HighlightSingleElementInCurrentMenu in SpatialMenuUI : " + elementOrderPosition + "</color>");
-            var menuElementCount = 3;// highlightedMenuElements.Count;
+            //var menuElementCount = 3;// highlightedMenuElements.Count;
+            var menuElementCount = currentlyDisplayedMenuElements.Count;
             for (int i = 0; i < menuElementCount; ++i)
             {
-
                 //var x = m_ProviderToMenuElements[m_HighlightedTopLevelMenuProvider];
-
                 if (currentlyDisplayedMenuElements.Count > i && currentlyDisplayedMenuElements[i] != null)
                 {
                     var element = currentlyDisplayedMenuElements[i];
@@ -565,8 +567,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                     if (i == elementOrderPosition)
                     {
-                        m_HomeSectionDescription.text = element.parentMenuData.spatialMenuDescription;
                         m_CurrentlyHighlightedMenuElement = element;
+
+                        if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.navigatingTopLevel)
+                            m_HomeSectionDescription.text = element.parentMenuData.spatialMenuDescription;
+
                         Debug.LogWarning("Highlighting home level menu element : " + element.gameObject.name);
                     }
                 }
@@ -578,9 +583,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_PreviouslyHighlightedElementOrderPosition = elementOrderPosition;
         }
 
-        public void SelectCurrentlyHighlightedElement()
+        public void SelectCurrentlyHighlightedElement(Node node)
         {
-            m_CurrentlyHighlightedMenuElement.selected();
+            m_CurrentlyHighlightedMenuElement.selected(node);
         }
 
         public void HighlightSingleElementInCurrentMenu(int elementOrderPosition)
