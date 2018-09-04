@@ -59,10 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             get { return m_MenuActions; }
             set
             {
-                m_MenuActions = value;/*
-                    .Where(a => a.sectionName != null && a.sectionName == ActionMenuItemAttribute.DefaultActionSectionName)
-                    .OrderBy(a => a.priority)
-                    .ToList();*/
+                m_MenuActions = value;
 
                 if (m_RadialMenuUI)
                     m_RadialMenuUI.actions = value;
@@ -114,7 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
         }
 
-        // TODO - REMEMBER TO WORK IN HERE 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             var radialMenuInput = (RadialMenuInput)input;
