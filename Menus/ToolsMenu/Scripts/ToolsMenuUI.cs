@@ -19,8 +19,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const int k_InactiveButtonInitialOrderPosition = -1;
         const float k_RaySelectIconHighlightedZOffset = -0.0075f;
         const float k_SpatialSelectIconHighlightedZOffset = -0.02f;
-        readonly string k_SpatialDisplayName = "Tools";
-        readonly string k_SpatialDescription = "Select from the tools already enabled";
 
         [SerializeField]
         Transform m_ButtonContainer;
@@ -55,12 +53,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public Transform rayOrigin { private get; set; }
         public Action<Transform> mainMenuActivatorSelected { get; set; }
-
-        // Spatial UI implementation
-        public string spatialMenuName { get { return k_SpatialDisplayName; } }
-        public string spatialMenuDescription { get { return k_SpatialDescription; } }
-        public bool displayingSpatially { get; set; }
-        public SpatialMenu.SpatialMenuElement spatialTableElements { get; set; }
 
         public List<IToolsMenuButton> buttons { get { return m_OrderedButtons; } }
 
