@@ -777,8 +777,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                     midPoint = currentRotation * midPoint * currentScale;
 
                                     var pos = m_StartPosition + m_StartMidPoint - midPoint;
-                                    if (pos != null)
-                                        cameraRig.position = pos;
+                                    cameraRig.position = pos;
 
                                     cameraRig.rotation = currentRotation;
 
