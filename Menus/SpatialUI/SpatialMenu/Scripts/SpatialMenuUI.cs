@@ -584,7 +584,27 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public void SelectCurrentlyHighlightedElement(Node node)
         {
             if (m_CurrentlyHighlightedMenuElement != null)
+            {
+                // Spatial/cyclical/trackpad/thumbstick selection will set this reference
                 m_CurrentlyHighlightedMenuElement.selected(node);
+            }
+            else
+            {
+                // Search for an element that is being hovered,
+                // if no currentlyHighlightedMenuElement was assigned via a spatial/cyclical input means
+                for (int i = 0; i < currentlyDisplayedMenuElements.Count; ++i)
+                {
+                    if (currentlyDisplayedMenuElements[i] != null)
+                    {
+                        var highlighted = currentlyDisplayedMenuElements[i].highlighted;
+                        if (highlighted)
+                        {
+                            currentlyDisplayedMenuElements[i].selected(node);
+                            return;
+                        }
+                    }
+                }
+            }
         }
 
         public void HighlightSingleElementInCurrentMenu(int elementOrderPosition)
