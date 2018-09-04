@@ -103,8 +103,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         IEnumerator AnimateHighlight()
         {
+            const float kLargerSizeScalar = 2.5f;
             var currentBackButtonIconSize = transform.localScale;
-            var targetBackButtonIconLocalScale = m_Highlighted ? m_VisibleLocalScale * 2.5f : m_VisibleLocalScale; // Larger if highlighted
+            var targetBackButtonIconLocalScale = m_Highlighted ? m_VisibleLocalScale * kLargerSizeScalar : m_VisibleLocalScale; // Larger if highlighted
             var transitionAmount = 0f;
             var transitionSpeedMultiplier = m_Highlighted ? 10f : 5f; // Faster when revealing, slower when hiding
             while (transitionAmount < 1)
