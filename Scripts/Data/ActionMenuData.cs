@@ -30,11 +30,6 @@ namespace UnityEditor.Experimental.EditorVR
         /// The tooltip text for this action
         /// </summary>
         public string tooltipText { get { return name; } }
-
-        /// <summary>
-        /// Bool denoting that this item should be added & shown in the Spatial Menu
-        /// </summary>
-        public bool addToSpatialMenu { get; set; }
     }
 }
 #endif
