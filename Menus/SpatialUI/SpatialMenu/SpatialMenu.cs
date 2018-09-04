@@ -439,7 +439,7 @@ namespace UnityEditor.Experimental.EditorVR
                     }
                     else if (m_CircularTriggerSelectionCyclingCoroutine == null)
                     {
-                        s_SpatialMenuUi.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.TriggerRotation;
+                        s_SpatialMenuUi.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.TriggerAffordanceRotation;
 
                         // Only allow selection if there has been a suitable amount of time since the previous selection
                         // Show menu input rotation is held, and has crossed the necessary threshold to allow for menu element cycling

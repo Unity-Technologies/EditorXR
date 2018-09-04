@@ -254,7 +254,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     case SpatialInterfaceInputMode.Ray:
                         m_InputModeText.text = k_ExternalRayBasedInputModeName;
                         break;
-                    case SpatialInterfaceInputMode.TriggerRotation:
+                    case SpatialInterfaceInputMode.TriggerAffordanceRotation:
                         // Item highlighting via rotation of the trigger affordance beyond a threshold
                         m_InputModeText.text = k_TriggerRotationInputModeName;
                         break;

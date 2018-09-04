@@ -10,11 +10,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// </summary>
     public abstract class SpatialUIView : MonoBehaviour, IControlHaptics, INodeToRay
     {
+        /// <summary>
+        /// Enum that defines the allowed SpatialUI input-modes
+        /// </summary>
         public enum SpatialInterfaceInputMode
         {
             Translation,
             Ray,
-            TriggerRotation
+            TriggerAffordanceRotation
         }
 
         [Header("Haptic Pulses")]
