@@ -134,7 +134,6 @@ namespace UnityEditor.Experimental.EditorVR
         Transform m_RayOrigin;
 
         RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
-        ContinuousDirectionalVelocityTracker m_ContinuousDirectionalVelocityTracker = new ContinuousDirectionalVelocityTracker();
 
         List<SpatialMenuElement> highlightedMenuElements
         {
@@ -186,11 +185,9 @@ namespace UnityEditor.Experimental.EditorVR
                     case SpatialMenuState.navigatingTopLevel:
                         m_HighlightedSubLevelMenuElementPosition = -1;
                         m_SubMenuData = null;
-                        m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
                         break;
                     case SpatialMenuState.navigatingSubMenuContent:
                         m_SubMenuData = s_SpatialMenuData.Where(x => x.highlighted).First();
-                        m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
                         this.Pulse(Node.None, m_MenuOpenPulse);
                         m_MenuEntranceStartTime = Time.realtimeSinceStartup;
                         break;
@@ -332,7 +329,6 @@ namespace UnityEditor.Experimental.EditorVR
             this.Pulse(Node.None, m_MenuOpenPulse);
 
             m_RotationVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).localRotation);
-            m_ContinuousDirectionalVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).position);
         }
 
         void ReturnToPreviousMenuLevel()
@@ -500,9 +496,6 @@ namespace UnityEditor.Experimental.EditorVR
                 else
                     s_SpatialMenuUi.ReturnToPreviousInputMode();
 
-                m_ContinuousDirectionalVelocityTracker.Update(m_CurrentSpatialActionMapInput.localPosition.vector3, Time.unscaledDeltaTime);
-                //Debug.Log("<color=green>Continuous Direction strength " + m_ContinuousDirectionalVelocityTracker.directionalDivergence + "</color>");
-
                 ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl, false);
 
                 m_Transitioning = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow; // duration for which input is not taken into account when menu swapping
@@ -510,7 +503,7 @@ namespace UnityEditor.Experimental.EditorVR
                 this.SetManipulatorsVisible(this, false);
                 visible = true;
 
-                if (m_Transitioning && m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent && m_ContinuousDirectionalVelocityTracker.directionalDivergence > 10.08f) // TODO: return to 0.08f
+                if (m_Transitioning && m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent)
                 {
                     //Debug.LogWarning("<color=green>" + Mathf.DeltaAngle(m_InitialSpatialLocalRotation.z, actionMapInput.localRotationQuaternion.quaternion.z) + "</color>");
                     ReturnToPreviousMenuLevel();
