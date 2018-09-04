@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         Action<Transform, Action, string, string> Setup { get; }
 
-        Action selected { get; set; }
+        Action<Node> selected { get; set; }
 
         Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
 
@@ -26,6 +26,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Action correspondingFunction { get; set; }
 
         Action onHiddenAction { get; set; }
+
+        /// <summary>
+        /// If the menu element isn't being hovered, utilize this node for performing any node-dependent logic
+        /// </summary>
+        Node spatialMenuActiveControllerNode { get; set; }
+
+        /// <summary>
+        /// If the menu element isn't being hovered, utilize this node for performing any node-dependent logic
+        /// </summary>
+        Node hoveringNode { get; set; }
     }
 }
 #endif

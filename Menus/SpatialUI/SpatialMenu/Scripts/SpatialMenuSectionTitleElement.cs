@@ -59,6 +59,8 @@ namespace UnityEditor.Experimental.EditorVR
         public Transform elementTransform { get { return transform; } }
         public Action selectedAction { get { return m_SelectedAction; } }
         public Button button { get { return m_Button; } }
+        public Node spatialMenuActiveControllerNode { get; set; }
+        public Node hoveringNode { get; set; }
 
         public bool visible
         {
@@ -100,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR
         }
 
         public Action<Transform, Action, string, string> Setup { get; set; }
-        public Action selected { get; set; }
+        public Action<Node> selected { get; set; }
         public Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
         public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
         public Action correspondingFunction { get; set; }
@@ -119,9 +121,11 @@ namespace UnityEditor.Experimental.EditorVR
 
         void Select()
         {
-            Debug.Log("Selected called in spatial menu sectio title element :" + m_Text.text);
+            var selectionNode = hoveringNode != Node.None ? hoveringNode : spatialMenuActiveControllerNode;
             if (selected != null)
-                selected();
+                selected(selectionNode);
+
+            Debug.Log("Selected called in spatial menu section title element :" + m_Text.text + " : on node : " + selectionNode);
         }
 
         public void SetupInternal(Transform parentTransform, Action selectedAction, String displayedText = null, string toolTipText = null)
@@ -174,11 +178,13 @@ namespace UnityEditor.Experimental.EditorVR
         public void OnRayEnter(RayEventData eventData)
         {
             highlighted = true;
+            hoveringNode = eventData.node;
         }
 
         public void OnRayExit(RayEventData eventData)
         {
             highlighted = false;
+            hoveringNode = Node.None;
         }
 
         IEnumerator AnimateVisibility(bool fadeIn)
