@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -20,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// </summary>
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public sealed class SpatialMenu : SpatialUIController, IInstantiateUI, IUsesNode, IUsesRayOrigin, ISelectTool,
-        IConnectInterfaces, IControlHaptics, INodeToRay, IDetectGazeDivergence, IControlInputIntersection,
+        IConnectInterfaces, IControlHaptics, IDetectGazeDivergence, IControlInputIntersection,
         ISetManipulatorsVisible, ILinkedObject, IRayVisibilitySettings, ICustomActionMap
     {
         public class SpatialMenuData
@@ -58,11 +56,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        // TODO expose as a user preference, for spatial UI distance
-        const float k_SpatialQuickToggleDuration = 0.25f;
-        const float k_WristReturnRotationThreshold = 0.3f;
         const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
-        const float k_SpatialScrollVectorLength = 0.25f;  // was 0.125, though felt too short a distance for the Spatial Menu (was better suited for the tools menu implementation)
 
         static SpatialMenu s_ControllingSpatialMenu;
         static SpatialMenuUI s_SpatialMenuUi;
@@ -98,12 +92,9 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         HapticPulse m_NavigateBackPulse;
 
-        HapticPulse m_HighlightMenuElementPulse; // Fetched from SpatialUICore(SpatialMenuUI)
-
         static SpatialMenuState s_SpatialMenuState;
 
         bool m_Visible;
-        bool m_Transitioning;
 
         SpatialMenuInput m_CurrentSpatialActionMapInput;
 
@@ -116,9 +107,6 @@ namespace UnityEditor.Experimental.EditorVR
         // "Rotate wrist to return" members
         float m_StartingWristXRotation;
         float m_WristReturnVelocity;
-
-        // Menu entrance start time
-        float m_MenuEntranceStartTime;
 
         string m_HighlightedSectionNameKey;
         int m_HighlightedTopLevelMenuElementPosition;
@@ -189,7 +177,6 @@ namespace UnityEditor.Experimental.EditorVR
                     case SpatialMenuState.navigatingSubMenuContent:
                         m_SubMenuData = s_SpatialMenuData.Where(x => x.highlighted).First();
                         this.Pulse(Node.None, m_MenuOpenPulse);
-                        m_MenuEntranceStartTime = Time.realtimeSinceStartup;
                         break;
                     case SpatialMenuState.hidden:
                         sceneViewGizmosVisible = true;
@@ -274,10 +261,6 @@ namespace UnityEditor.Experimental.EditorVR
                 s_SpatialMenuUi.Setup();
                 s_SpatialMenuUi.returnToPreviousMenuLevel = ReturnToPreviousMenuLevel;
                 s_SpatialMenuUi.changeMenuState = ChangeMenuState;
-                SpatialMenuUI.spatialMenuProviders = s_SpatialMenuProviders;
-
-                // Certain core/common SpatialUICore elements are retrieved from SpatialMenuUI(deriving from Core)
-                m_HighlightMenuElementPulse = s_SpatialMenuUi.highlightUIElementPulse;
             }
 
             visible = false;
@@ -319,7 +302,6 @@ namespace UnityEditor.Experimental.EditorVR
             if (s_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent)
                 this.Pulse(Node.None, m_NavigateBackPulse); // Only perform haptic pulse when not at the top-level of the UI
 
-            m_MenuEntranceStartTime = Time.realtimeSinceStartup;
             spatialMenuState = SpatialMenuState.navigatingTopLevel;
             m_HighlightedTopLevelMenuElementPosition = -1;
         }
@@ -391,7 +373,6 @@ namespace UnityEditor.Experimental.EditorVR
                 // As opposed to passing the SpatialMenu instance's delegate when a new SpatialMenu instance initiates display of the menu
                 s_SpatialMenuUi.changeMenuState = ChangeMenuState;
 
-                m_MenuEntranceStartTime = Time.realtimeSinceStartup;
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
                 s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
 
@@ -476,8 +457,6 @@ namespace UnityEditor.Experimental.EditorVR
                 else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Ray)
                     s_SpatialMenuUi.ReturnToPreviousInputMode();
 
-                // duration for which input is not taken into account when menu swapping
-                m_Transitioning = Time.realtimeSinceStartup - m_MenuEntranceStartTime > k_MenuSectionBlockedTransitionTimeWindow;
                 this.SetRayOriginEnabled(m_RayOrigin, false);
                 this.SetManipulatorsVisible(this, false);
                 visible = true;

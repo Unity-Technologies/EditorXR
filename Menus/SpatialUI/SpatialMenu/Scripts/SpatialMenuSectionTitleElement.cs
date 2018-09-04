@@ -25,16 +25,16 @@ namespace UnityEditor.Experimental.EditorVR
         Vector3 m_OriginalBordersLohocalScale;
         float m_BordersOriginalAlpha;
         bool m_Visible;
-        RectTransform m_RectTransform;
 
         public override bool visible
         {
             get { return m_Visible; }
             set
             {
-                //var originalValue = m_Visible; // compare against default False value as not to destroy when initially spawned
                 if (m_Visible == value)
                     return;
+
+                m_Visible = value;
 
                 if (m_CanvasGroup != null)
                     this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(m_Visible));
@@ -52,14 +52,10 @@ namespace UnityEditor.Experimental.EditorVR
                 m_Highlighted = value;
                 parentMenuData.highlighted = value;
 
-
                 this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHighlight(m_Highlighted));
 
-                //Debug.LogWarning("<color=orange>Highlighting top level menu button : </color>" + m_Text.text);
                 if (m_Highlighted)
-                {
                     this.Pulse(Node.None, m_HighlightPulse);
-                }
 
                 var action = highlightedAction;
                 if (action != null)
@@ -83,20 +79,15 @@ namespace UnityEditor.Experimental.EditorVR
             var selectionNode = hoveringNode != Node.None ? hoveringNode : spatialMenuActiveControllerNode;
             if (selected != null)
                 selected(selectionNode);
-
-            Debug.Log("Selected called in spatial menu section title element :" + m_Text.text + " : on node : " + selectionNode);
         }
 
         public void SetupInternal(Transform parentTransform, Action selectedAction, String displayedText = null, string toolTipText = null)
         {
             if (selectedAction == null)
             {
-                Debug.LogWarning("Cannot setup SpatialUIMenuElement without an assigned action.");
                 ObjectUtils.Destroy(gameObject);
                 return;
             }
-
-            m_RectTransform = (RectTransform)transform;
 
             transform.SetParent(parentTransform);
             transform.localRotation = Quaternion.identity;

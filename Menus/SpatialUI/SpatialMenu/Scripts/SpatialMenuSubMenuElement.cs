@@ -4,7 +4,6 @@ using System.Collections;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -47,7 +46,6 @@ namespace UnityEditor.Experimental.EditorVR
         HapticPulse m_TooltipDisplayPulse;
 
         RectTransform m_RectTransform;
-        Action m_SelectedAction;
         Vector2 m_OriginalSize;
         Vector2 m_ExpandedTooltipDisplaySize;
         Coroutine m_VisibilityCoroutine;
@@ -59,7 +57,7 @@ namespace UnityEditor.Experimental.EditorVR
         Color m_OriginalBackgroundColor;
         bool m_Visible;
 
-        public Action selectedAction { get { return m_SelectedAction; } }
+        public Action selectedAction { get; set; }
         public Action onHiddenAction { get; set; }
         public Button button { get { return m_Button; } }
 
@@ -130,37 +128,24 @@ namespace UnityEditor.Experimental.EditorVR
             var selectionNode = hoveringNode != Node.None ? hoveringNode : spatialMenuActiveControllerNode;
             if (selected != null)
                 selected(selectionNode);
-
-            Debug.Log("Selected called in spatial menu section title element :" + m_Text.text + " : on node : " + selectionNode);
         }
 
         public void SetupInternal(Transform parentTransform, Action selectedAction, String displayedText = null, string toolTipText = null)
         {
             if (selectedAction == null)
             {
-                Debug.LogWarning("Cannot setup SpatialUIMenuElement without an assigned action.");
                 ObjectUtils.Destroy(gameObject);
                 return;
             }
 
-            m_SelectedAction = selectedAction;
+            this.selectedAction = selectedAction;
             m_RectTransform = (RectTransform)transform;
             m_OriginalSize = m_RectTransform.sizeDelta;
             m_ExpandedTooltipDisplaySize = new Vector2(m_RectTransform.sizeDelta.x, m_ExpandedTooltipHeight);
 
-            Sprite sprite = null; // TODO: add sprite support
-            if (sprite != null) // Displaying a sprite icon instead of text
-            {
-                m_Icon.gameObject.SetActive(true);
-                m_Text.gameObject.SetActive(false);
-                m_Icon.sprite = sprite;
-            }
-            else // Displaying text instead of a sprite icon
-            {
-                m_Icon.gameObject.SetActive(false);
-                m_Text.gameObject.SetActive(true);
-                m_Text.text = displayedText;
-            }
+            m_Icon.gameObject.SetActive(false);
+            m_Text.gameObject.SetActive(true);
+            m_Text.text = displayedText;
 
             transform.SetParent(parentTransform);
             transform.localRotation = Quaternion.identity;
@@ -177,7 +162,6 @@ namespace UnityEditor.Experimental.EditorVR
 
         IEnumerator AnimateVisibility(bool fadeIn)
         {
-            Debug.Log("Animating visiblity of submenu button : " + fadeIn);
             var currentAlpha = fadeIn ? 0f : m_CanvasGroup.alpha;
             var targetAlpha = fadeIn ? 1f : 0f;
             var alphaTransitionAmount = 0f;
@@ -203,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR
             m_VisibilityCoroutine = null;
 
             if (!fadeIn)
-                ObjectUtils.Destroy(gameObject); // TODO: when pooling is in place, don't destroy
+                ObjectUtils.Destroy(gameObject); // TODO: pool
         }
 
         IEnumerator AnimateHighlight(bool isHighlighted)

@@ -25,6 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         readonly string k_TranslationInputModeName = "Spatial Input Mode";
         readonly string k_ExternalRayBasedInputModeName = "External Ray Input Mode";
         readonly string k_TriggerRotationInputModeName = "Trigger Rotation Input Mode";
+        readonly List<SpatialMenuElement> currentlyDisplayedMenuElements = new List<SpatialMenuElement>();
 
         [Header("Common UI")]
         [SerializeField]
@@ -106,7 +107,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         Renderer m_ReturnToPreviousBackgroundRenderer;
 
-        Transform m_ReturnToPreviousBackground;
         Material m_ReturnToPreviousBackgroundMaterial;
 
         bool m_Visible;
@@ -115,12 +115,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         SpatialMenu.SpatialMenuState m_SpatialMenuState;
 
         Vector3 m_HomeTextBackgroundOriginalLocalScale;
-        Vector3 m_HomeBackgroundOriginalLocalScale;
         float m_HomeSectionTimelineDuration;
         float m_HomeSectionTimelineStoppingTime;
-        float m_OriginalHomeSectionTitleTextSpacing;
         Vector3 m_OriginalSurroundingArrowsContainerLocalPosition;
-        Vector3 m_originalBackButtonIconLocalScale;
         SpatialMenuElement m_CurrentlyHighlightedMenuElement;
 
         // Adaptive Position related fields
@@ -130,32 +127,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Coroutine m_InFocusCoroutine;
         Coroutine m_HomeSectionTitlesBackgroundBordersTransitionCoroutine;
         Coroutine m_ReturnToPreviousLevelTransitionCoroutine;
-
-        // Secondary visuals
-        int m_PreviouslyHighlightedElementOrderPosition;
-
-        readonly List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
-
-        readonly List<SpatialMenuElement> currentlyDisplayedMenuElements = new List<SpatialMenuElement>();
-
-        public static List<ISpatialMenuProvider> spatialMenuProviders;
-
-        // Adaptive position related members
-        public Transform adaptiveTransform { get { return transform; } }
-        public float allowedDegreeOfGazeDivergence { get { return k_AllowedGazeDivergence; } }
-        public float distanceOffset { get { return k_DistanceOffset; } }
-        public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
-        public bool allowAdaptivePositioning { get; private set; }
-        public bool resetAdaptivePosition { get; set; }
-
-        // Section name string, corresponding element collection, currentlyHighlightedState
-        public List<SpatialMenu.SpatialMenuData> spatialMenuData { get; set; }
-        public List<SpatialMenu.SpatialMenuElementContainer> highlightedMenuElements;
-        public string highlightedSectionName { get; set; }
-
-        // SpatialMenu actions/delegates/funcs
-        public Action returnToPreviousMenuLevel { get; set; }
-        public Action<SpatialMenu.SpatialMenuState> changeMenuState { get; set; }
 
         bool visible
         {
@@ -178,6 +149,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
+        // Adaptive position related members
+        public Transform adaptiveTransform { get { return transform; } }
+        public float allowedDegreeOfGazeDivergence { get { return k_AllowedGazeDivergence; } }
+        public float distanceOffset { get { return k_DistanceOffset; } }
+        public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
+        public bool allowAdaptivePositioning { get; private set; }
+        public bool resetAdaptivePosition { get; set; }
+
+        // Section name string, corresponding element collection, currentlyHighlightedState
+        public List<SpatialMenu.SpatialMenuData> spatialMenuData { get; set; }
+        public List<SpatialMenu.SpatialMenuElementContainer> highlightedMenuElements;
+
+        // SpatialMenu actions/delegates/funcs
+        public Action returnToPreviousMenuLevel { get; set; }
+        public Action<SpatialMenu.SpatialMenuState> changeMenuState { get; set; }
+
+        public Transform subMenuContainer { get { return m_SubMenuContainer; } }
+
         public SpatialMenu.SpatialMenuState spatialMenuState
         {
             get { return m_SpatialMenuState; }
@@ -192,7 +181,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 m_SpatialMenuState = value;
                 m_CurrentlyHighlightedMenuElement = null;
-                Debug.LogWarning("Switching spatial menu state to " + m_SpatialMenuState);
 
                 switch (m_SpatialMenuState)
                 {
@@ -204,7 +192,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         DisplayHighlightedSubMenuContents();
                         break;
                     case SpatialMenu.SpatialMenuState.hidden:
-                        m_HomeSectionDescription.text = "Awaiting Selection";
+                        const string kAwaktingText = "Awaiting Selection";
+                        m_HomeSectionDescription.text = kAwaktingText;
                         foreach (var element in currentlyDisplayedMenuElements)
                         {
                             // Perform animated hiding of elements
@@ -213,11 +202,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         break;
                 }
             }
-        }
-
-        public bool directorBeyondHomeSectionDuration
-        {
-            get { return m_Director.time > m_HomeSectionTimelineDuration; }
         }
 
         public SpatialInterfaceInputMode spatialInterfaceInputMode
@@ -270,13 +254,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        public Transform homeMenuContainer { get { return m_HomeMenuContainer; } }
-        public Transform subMenuContainer { get { return m_SubMenuContainer; } }
-
         void Start()
         {
             visible = false;
-            m_ReturnToPreviousBackground = m_ReturnToPreviousBackgroundRenderer.transform;
             m_ReturnToPreviousBackgroundMaterial = MaterialUtils.GetMaterialClone(m_ReturnToPreviousBackgroundRenderer);
             m_ReturnToPreviousBackgroundRenderer.material = m_ReturnToPreviousBackgroundMaterial;
             m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", 0);
@@ -301,9 +281,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public void Setup()
         {
             m_HomeTextBackgroundOriginalLocalScale = m_HomeTextBackgroundTransform.localScale;
-            m_HomeBackgroundOriginalLocalScale = m_Background.localScale;
-
-            m_OriginalHomeSectionTitleTextSpacing = m_HomeMenuLayoutGroup.spacing;
             m_OriginalSurroundingArrowsContainerLocalPosition = m_SurroundingArrowsContainer.localPosition;
 
             m_HomeSectionTimelineDuration = (float) m_RevealTimelinePlayable.duration;
@@ -313,8 +290,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_BackButton.OnHoverEnter = OnBackButtonHoverEnter;
             m_BackButton.OnHoverExit = OnBackButtonHoverExit;
             m_BackButton.OnSelected = OnBackButtonSelected;
-
-            m_originalBackButtonIconLocalScale = m_BackButton.transform.localScale;
 
             // When setting up the SpatialMenuUI the visibility will be defaulted to false
             // Manually set the backer bool to true, in order to perform a manual hiding of the menu in this case
@@ -333,7 +308,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_HomeTextBackgroundInnerCanvasGroup.alpha = 1f;
             m_HomeSectionTitlesBackgroundBorderCanvasGroup.alpha = 1f;
 
-            // Director related
             m_Director.time = 0f;
             m_Director.Evaluate();
         }
@@ -473,37 +447,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_HomeSectionDescription.text = highlightedMenuDataText;
         }
 
-        public void HighlightHomeSectionMenuElement(int providerCollectionPosition)
-        {
-            var highlightedMenuData = spatialMenuData[providerCollectionPosition];
-            m_HomeSectionDescription.text = highlightedMenuData.spatialMenuDescription;
-
-            for (int i = 0; i < spatialMenuData.Count; ++i)
-            {
-                var targetSize = i == providerCollectionPosition ? Vector3.one : Vector3.one * 0.5f;
-                // switch to highlighted bool set in ISpatialMenuElement
-                if (currentlyDisplayedMenuElements.Count >= i && currentlyDisplayedMenuElements[i] != null)
-                    currentlyDisplayedMenuElements[i].gameObject.transform.localScale = targetSize;
-            }
-        }
-
-        public void HighlightSingleElementInHomeMenu(int elementOrderPosition)
-        {
-            var menuElementCount = 3;
-            for (int i = 0; i < menuElementCount; ++i)
-            {
-                if (currentlyDisplayedMenuElements.Count > i && currentlyDisplayedMenuElements[i] != null)
-                {
-                    currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
-
-                    if (i == elementOrderPosition)
-                        m_HomeSectionDescription.text = currentlyDisplayedMenuElements[i].parentMenuData.spatialMenuDescription;
-                }
-            }
-
-            m_PreviouslyHighlightedElementOrderPosition = elementOrderPosition;
-        }
-
         public void HighlightElementInCurrentlyDisplayedMenuSection(int elementOrderPosition)
         {
             var menuElementCount = currentlyDisplayedMenuElements.Count;
@@ -523,8 +466,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     }
                 }
             }
-
-            m_PreviouslyHighlightedElementOrderPosition = elementOrderPosition;
         }
 
         public void SelectCurrentlyHighlightedElement(Node node)
@@ -553,34 +494,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        public void HighlightSingleElementInCurrentMenu(int elementOrderPosition)
-        {
-            var menuElementCount = highlightedMenuElements.Count;
-            for (int i = 0; i < menuElementCount; ++i)
-            {
-                if (currentlyDisplayedMenuElements.Count > i && currentlyDisplayedMenuElements[i] != null)
-                    currentlyDisplayedMenuElements[i].highlighted = i == elementOrderPosition;
-            }
-        }
-
-        public void HighlightNextElementInCurrentMenu()
-        {
-            var newElementHighlightPosition = m_PreviouslyHighlightedElementOrderPosition + 1 < currentlyDisplayedMenuElements.Count ? m_PreviouslyHighlightedElementOrderPosition : 0;
-            for (int i = 0; i < currentlyDisplayedMenuElements.Count; ++i)
-            {
-                currentlyDisplayedMenuElements[i].highlighted = i == newElementHighlightPosition;
-            }
-        }
-
-        public void HighlightPreviousElementInCurrentMenu()
-        {
-            var newElementHighlightPosition = m_PreviouslyHighlightedElementOrderPosition + 1 < currentlyDisplayedMenuElements.Count ? m_PreviouslyHighlightedElementOrderPosition : 0;
-            for (int i = 0; i < currentlyDisplayedMenuElements.Count; ++i)
-            {
-                currentlyDisplayedMenuElements[i].highlighted = i == newElementHighlightPosition;
-            }
-        }
-
         public void ReturnToPreviousInputMode()
         {
             // This is a convenience function that allows for a previous-non-override input state to be restored,
@@ -590,7 +503,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void Update()
         {
-            // HACK: Don't ask... horizontal layout group refused to play nicely without this... b'cause magic mysetery something
+            // HACK: Don't ask... horizontal layout group refused to play nicely without this...
             // The horiz layout groupd would refuse to space elements as expected without this
             m_HomeMenuLayoutGroup.spacing = 1 % Time.unscaledDeltaTime * 0.01f;
 
@@ -666,27 +579,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     UpdateDirector();
                 }
             }
-        }
-
-        IEnumerator AnimateFocusVisuals()
-        {
-            // this should account for the magnitude difference between the highlightedYPositionOffset,
-            // and the current magnitude difference between the local Y and the original Y
-            var transitionAmount = 0f;
-
-            var currentScale = transform.localScale;
-            var targetScale = m_InFocus ? Vector3.one : Vector3.one * 0.5f;
-            var transitionSubtractMultiplier = 5f;
-            while (transitionAmount < 1f)
-            {
-                var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
-                transform.localScale = Vector3.Lerp(currentScale, targetScale, smoothTransition);
-                transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
-                yield return null;
-            }
-
-            transform.localScale = targetScale;
-            m_InFocusCoroutine = null;
         }
 
         IEnumerator AnimateTopAndBottomCenterBackgroundBorders(bool visible)
