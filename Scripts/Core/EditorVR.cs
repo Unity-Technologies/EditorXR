@@ -78,7 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public ITool currentTool;
             public IMenu customMenu;
             public IToolsMenu toolsMenu;
-            public SpatialMenu spatialMenu;
             public readonly List<IAlternateMenu> alternateMenus = new List<IAlternateMenu>();
             public IAlternateMenu alternateMenu;
             public readonly Dictionary<IMenu, Menus.MenuHideData> menuHideData = new Dictionary<IMenu, Menus.MenuHideData>();
