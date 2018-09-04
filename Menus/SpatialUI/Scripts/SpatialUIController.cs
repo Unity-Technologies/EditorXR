@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// </summary>
     public abstract class SpatialUIController : MonoBehaviour, INodeToRay
     {
-        // Pre-box bools to avoid allocation when setting them via reflection
+        // Pre-box fields to avoid allocation when setting them via reflection
         static object[] boxedTrueBool = new object[] {true};
         static object[] boxedFalseBool = new object[] {false};
         static bool s_Initialized;
@@ -55,8 +55,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             // These are set via checkbox in an Editor Scene/Game view/window/panel
             s_SceneViewGizmosInOriginalState = true;
             var asm = Assembly.GetAssembly(typeof(Editor));
-            s_SceneViewGizmoAnnotationUtilityType = asm.GetType("UnityEditor.AnnotationUtility");
-            s_AnnotationUtilityType = Type.GetType("UnityEditor.Annotation, UnityEditor");
+            var annotationUtilityType = "UnityEditor.AnnotationUtility";
+            var annotationType = "UnityEditor.Annotation, UnityEditor";
+            s_SceneViewGizmoAnnotationUtilityType = asm.GetType(annotationUtilityType);
+            s_AnnotationUtilityType = Type.GetType(annotationType);
             if (s_SceneViewGizmoAnnotationUtilityType != null)
             {
                 var currentSelectionOutlineProperty = s_SceneViewGizmoAnnotationUtilityType.GetProperty(s_SelectionOutlineProperty, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
