@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Abstract class housing common SpatualMenu element functionality
     /// </summary>
-    internal abstract class SpatialMenuElement : MonoBehaviour, ISpatialMenuElement, IControlHaptics,
+    public abstract class SpatialMenuElement : MonoBehaviour, IControlHaptics,
         IRayEnterHandler, IRayExitHandler, IRayClickHandler, IPointerClickHandler
     {
         [SerializeField]
@@ -36,31 +36,61 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         protected float m_HighlightedZOffset = -0.005f;
 
-        // Abstract members
-        public abstract bool highlighted { get; set; }
-        public abstract bool visible { get; set; }
-
-        // SpatialMenuElement implementation
-        public Action<Transform, Action, string, string> Setup { get; protected set; }
-        public Action<Node> selected { get; set; }
-        public Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
-        public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
-        public Node spatialMenuActiveControllerNode { get; set; }
         public Node hoveringNode { get; set; }
 
-        public void OnRayEnter(RayEventData eventData)
+        /// <summary>
+        /// Bool denoting that this element is currently highlighted
+        /// </summary>
+        public abstract bool highlighted { get; set; }
+
+        /// <summary>
+        /// Bool denoting that this element is currently visible
+        /// </summary>
+        public abstract bool visible { get; set; }
+
+        /// <summary>
+        /// FUnction that sets up the model and view for this particular element
+        /// </summary>
+        public Action<Transform, Action, string, string> Setup { get; set; }
+
+        /// <summary>
+        /// Action performed when this element is selected
+        /// The node denotes either the controlling SpatialMenu's node,
+        /// or the node of a hovering proxy (which takes precedence over the menu control node)
+        /// The main purpose of the node is to allow a selected action to perform a
+        /// rayOriginal dependent actions (selecting & assigning a tools to a given proxy, etc)
+        /// </summary>
+        public Action<Node> selected { get; set; }
+
+        /// <summary>
+        /// Action performed when this element is highlighted
+        /// </summary>
+        public Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
+
+        /// <summary>
+        /// Reference to the data defining the parent menu of this element
+        /// Used to display certain relevant visual elements relating to the parent menu
+        /// </summary>
+        public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
+
+        /// <summary>
+        /// If the menu element isn't being hovered, utilize this node for performing any node-dependent logic
+        /// </summary>
+        public Node spatialMenuActiveControllerNode { get; set; }
+
+        void IRayEnterHandler.OnRayEnter(RayEventData eventData)
         {
             highlighted = true;
             hoveringNode = eventData.node;
         }
 
-        public void OnRayExit(RayEventData eventData)
+        void IRayExitHandler.OnRayExit(RayEventData eventData)
         {
             highlighted = false;
             hoveringNode = Node.None;
         }
 
-        public void OnRayClick(RayEventData eventData)
+        void IRayClickHandler.OnRayClick(RayEventData eventData)
         {
             Debug.LogError("OnRayClick called for spatial menu section title element :" + m_Text.text);
             throw new NotImplementedException();

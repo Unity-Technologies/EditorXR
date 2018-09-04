@@ -102,6 +102,7 @@ namespace UnityEditor.Experimental.EditorVR
             transform.localRotation = Quaternion.identity;
             transform.localPosition = Vector3.zero;
             transform.localScale = Vector3.one;
+            m_Text.text = displayedText;
 
             if (Mathf.Approximately(m_TransitionDuration, 0f))
                 m_TransitionDuration = 0.001f;
