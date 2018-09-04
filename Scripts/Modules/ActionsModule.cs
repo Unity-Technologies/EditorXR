@@ -31,7 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void SpawnActions()
         {
             m_SpatialMenuData.Clear();
-            var spatialMenuActions = new List<SpatialMenu.SpatialMenuElement>();
+            var spatialMenuActions = new List<SpatialMenu.SpatialMenuElementContainer>();
             var spatialMenuData = new SpatialMenu.SpatialMenuData("Actions", "Perform actions on selected object", spatialMenuActions);
             m_SpatialMenuData.Add(spatialMenuData);
 
@@ -61,9 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 var spatialMenuAttribute = (SpatialMenuItemAttribute)actionType.GetCustomAttributes(typeof(SpatialMenuItemAttribute), false).FirstOrDefault();
                 if (spatialMenuAttribute != null)
-                {
-                    spatialMenuActions.Add(new SpatialMenu.SpatialMenuElement(spatialMenuAttribute.name, spatialMenuAttribute.description, (node) => action.ExecuteAction()));
-                }
+                    spatialMenuActions.Add(new SpatialMenu.SpatialMenuElementContainer(spatialMenuAttribute.name, spatialMenuAttribute.description, (node) => action.ExecuteAction()));
 
                 m_Actions.Add(action);
             }

@@ -48,9 +48,9 @@ namespace UnityEditor.Experimental.EditorVR
             /// <summary>
             /// Collection of elements with which to populate the corresponding spatial UI table/list/view
             /// </summary>
-            public List<SpatialMenu.SpatialMenuElement> spatialMenuElements { get; private set; }
+            public List<SpatialMenu.SpatialMenuElementContainer> spatialMenuElements { get; private set; }
 
-            public SpatialMenuData(string menuName, string menuDescription, List<SpatialMenu.SpatialMenuElement> menuElements)
+            public SpatialMenuData(string menuName, string menuDescription, List<SpatialMenu.SpatialMenuElementContainer> menuElements)
             {
                 spatialMenuName = menuName;
                 spatialMenuDescription = menuDescription;
@@ -123,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR
         string m_HighlightedSectionNameKey;
         int m_HighlightedTopLevelMenuElementPosition;
         int m_HighlightedSubLevelMenuElementPosition;
-        List<SpatialMenuElement> m_DisplayedMenuElements;
+        List<SpatialMenuElementContainer> m_DisplayedMenuElements;
 
         // Trigger + continued/held circular-input related fields
         Vector2 m_OriginalShowMenuCircularInputDirection;
@@ -133,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR
         Coroutine m_CircularTriggerSelectionCyclingCoroutine;
         Transform m_RayOrigin;
 
-        List<SpatialMenuElement> highlightedMenuElements
+        List<SpatialMenuElementContainer> highlightedMenuElements
         {
             set
             {
@@ -230,9 +230,10 @@ namespace UnityEditor.Experimental.EditorVR
 
         public SpatialMenuUI spatialMenuUI { get { return s_SpatialMenuUi; } }
         public List<ILinkedObject> linkedObjects { private get; set; }
-        public class SpatialMenuElement
+
+        public class SpatialMenuElementContainer
         {
-            public SpatialMenuElement(string name, string tooltipText, Action<Node> correspondingFunction)
+            public SpatialMenuElementContainer(string name, string tooltipText, Action<Node> correspondingFunction)
             {
                 this.name = name;
                 this.tooltipText = tooltipText;
@@ -245,7 +246,7 @@ namespace UnityEditor.Experimental.EditorVR
 
             public string tooltipText { get; private set; }
 
-            public ISpatialMenuElement VisualElement { get; set; }
+            public SpatialMenuElement VisualElement { get; set; }
         }
 
         public void Setup()
@@ -411,7 +412,8 @@ namespace UnityEditor.Experimental.EditorVR
                         // This node is used as a fallback, if the element isn't currently being hovered by a proxy/ray
                         // This allows for a separate proxy/device, other than that which is the active SpatialMenuController,
                         // to have node-specific operations performed on the hovering node (adding tools, etc), rather than the controlling Menu node
-                        element.VisualElement.spatialMenuActiveControllerNode = node;
+                        if (element.VisualElement != null)
+                            element.VisualElement.spatialMenuActiveControllerNode = node;
                     }
                 }
             }
@@ -563,7 +565,7 @@ namespace UnityEditor.Experimental.EditorVR
             var elementPositionOffset = selectNextItem ? 1 : -1;
             if (m_SpatialMenuState == SpatialMenuState.navigatingTopLevel)
             {
-                Debug.LogError("circular selection of TOP LEVEL elements");
+                //Debug.LogError("circular selection of TOP LEVEL elements");
                 // User should return to the previously highligted position at this depth of the SpatialMenu
                 var menuElementCount = s_SpatialMenuData.Count;
                 m_HighlightedTopLevelMenuElementPosition = (int)Mathf.Repeat(m_HighlightedTopLevelMenuElementPosition + elementPositionOffset, menuElementCount);
@@ -572,7 +574,7 @@ namespace UnityEditor.Experimental.EditorVR
             else if (m_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent)
             {
                 // User should return to the previously highligted position at this depth of the SpatialMenu
-                Debug.LogError("circular selection of sub menu elements : " + subMenuElementCount);
+                //Debug.LogError("circular selection of sub menu elements : " + subMenuElementCount);
                 m_HighlightedSubLevelMenuElementPosition = (int)Mathf.Repeat(m_HighlightedSubLevelMenuElementPosition + elementPositionOffset, subMenuElementCount);
                 s_SpatialMenuUi.HighlightElementInCurrentlyDisplayedMenuSection(m_HighlightedSubLevelMenuElementPosition);
             }

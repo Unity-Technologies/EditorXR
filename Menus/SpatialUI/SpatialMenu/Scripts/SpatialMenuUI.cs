@@ -120,7 +120,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         float m_OriginalHomeSectionTitleTextSpacing;
         Vector3 m_OriginalSurroundingArrowsContainerLocalPosition;
         Vector3 m_originalBackButtonIconLocalScale;
-        ISpatialMenuElement m_CurrentlyHighlightedMenuElement;
+        SpatialMenuElement m_CurrentlyHighlightedMenuElement;
 
         // Adaptive Position related fields
         bool m_InFocus;
@@ -139,7 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         readonly List<TextMeshProUGUI> m_SectionNameTexts = new List<TextMeshProUGUI>();
 
-        readonly List<ISpatialMenuElement> currentlyDisplayedMenuElements = new List<ISpatialMenuElement>();
+        readonly List<SpatialMenuElement> currentlyDisplayedMenuElements = new List<SpatialMenuElement>();
 
         public static List<ISpatialMenuProvider> spatialMenuProviders;
 
@@ -157,7 +157,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         // Section name string, corresponding element collection, currentlyHighlightedState
         public List<SpatialMenu.SpatialMenuData> spatialMenuData { get; set; }
-        public List<SpatialMenu.SpatialMenuElement> highlightedMenuElements;
+        public List<SpatialMenu.SpatialMenuElementContainer> highlightedMenuElements;
         public string highlightedSectionName { get; set; }
 
         // SpatialMenu actions/delegates/funcs
@@ -438,14 +438,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 Debug.Log("<color=green>Displaying home section contents</color>");
                 var instantiatedPrefabTransform = ObjectUtils.Instantiate(m_SectionTitleElementPrefab).transform as RectTransform;
-                var providerMenuElement = instantiatedPrefabTransform.GetComponent<ISpatialMenuElement>();
+                var providerMenuElement = instantiatedPrefabTransform.GetComponent<SpatialMenuElement>();
                 this.ConnectInterfaces(instantiatedPrefabTransform);
                 providerMenuElement.Setup(homeMenuElementParent, () => { }, spatialMenuData[i].spatialMenuName, null);
                 currentlyDisplayedMenuElements.Add(providerMenuElement);
                 providerMenuElement.selected = SectionTitleButtonSelected;
                 providerMenuElement.highlightedAction = OnButtonHighlighted;
                 providerMenuElement.parentMenuData = spatialMenuData[i];
-                //m_ProviderToHomeMenuElements[menuData] = providerMenuElement;
             }
         }
 
@@ -460,7 +459,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 if (menuData.highlighted)
                 {
-                    // m_SubMenuText.text = m_HighlightedTopLevelMenuProvider.spatialTableElements[0].name;
                     // TODO display all sub menu contents here
 
                     currentlyDisplayedMenuElements.Clear();
@@ -474,7 +472,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     foreach (var subMenuElement in menuData.spatialMenuElements)
                     {
                         var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
-                        var providerMenuElement = instantiatedPrefab.GetComponent<ISpatialMenuElement>();
+                        var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
                         this.ConnectInterfaces(providerMenuElement);
                         providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, subMenuElement.tooltipText);
                         currentlyDisplayedMenuElements.Add(providerMenuElement);
@@ -585,7 +583,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void SelectCurrentlyHighlightedElement(Node node)
         {
-            m_CurrentlyHighlightedMenuElement.selected(node);
+            if (m_CurrentlyHighlightedMenuElement != null)
+                m_CurrentlyHighlightedMenuElement.selected(node);
         }
 
         public void HighlightSingleElementInCurrentMenu(int elementOrderPosition)
