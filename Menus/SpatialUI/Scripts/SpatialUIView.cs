@@ -22,19 +22,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [Header("Haptic Pulses")]
         [SerializeField]
-        protected HapticPulse m_AdaptivePositionPulse;
-
-        [SerializeField]
         protected HapticPulse m_HighlightUIElementPulse;
 
         [SerializeField]
         protected HapticPulse m_SustainedHoverUIElementPulse;
-
-        /// <summary>
-        /// The pulse peformed when highlighting SpatialMenu elements
-        /// Assigned by the SpatialMenu
-        /// </summary>
-        public HapticPulse highlightUIElementPulse { get { return m_HighlightUIElementPulse; } }
     }
 }
 #endif

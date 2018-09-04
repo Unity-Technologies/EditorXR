@@ -58,8 +58,6 @@ namespace UnityEditor.Experimental.EditorVR
         bool m_Visible;
 
         public Action selectedAction { get; set; }
-        public Action onHiddenAction { get; set; }
-        public Button button { get { return m_Button; } }
 
         public override bool visible
         {

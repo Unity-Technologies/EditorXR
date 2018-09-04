@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using TMPro;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;

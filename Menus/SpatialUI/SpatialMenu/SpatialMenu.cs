@@ -34,11 +34,6 @@ namespace UnityEditor.Experimental.EditorVR
             public string spatialMenuDescription { get; private set; }
 
             /// <summary>
-            /// Bool denoting that this menu's contents are being displayed via the SpatialUI
-            /// </summary>
-            public bool displayingSpatially { get; set; }
-
-            /// <summary>
             /// Bool denoting that this element is currently highlighted as either a section title or a sub-menu element
             /// </summary>
             public bool highlighted { get; set; }
@@ -55,8 +50,6 @@ namespace UnityEditor.Experimental.EditorVR
                 spatialMenuElements = menuElements;
             }
         }
-
-        const float k_MenuSectionBlockedTransitionTimeWindow = 1f;
 
         static SpatialMenu s_ControllingSpatialMenu;
         static SpatialMenuUI s_SpatialMenuUi;
@@ -159,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        private SpatialMenuState spatialMenuState
+        SpatialMenuState spatialMenuState
         {
             set
             {
@@ -210,17 +203,9 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Node node { get; set; }
 
-        //IMenu interface members
-        public MenuHideFlags menuHideFlags { get; set; }
-        public GameObject menuContent { get; private set; }
-        public Bounds localBounds { get; private set; }
-        public int priority { get; private set; }
-
         // Action Map interface members
         public ActionMap actionMap { get { return m_ActionMap; } set { m_ActionMap = value; } }
         public bool ignoreActionMapInputLocking { get; private set; }
-
-        public SpatialMenuUI spatialMenuUI { get { return s_SpatialMenuUi; } }
         public List<ILinkedObject> linkedObjects { private get; set; }
 
         public class SpatialMenuElementContainer

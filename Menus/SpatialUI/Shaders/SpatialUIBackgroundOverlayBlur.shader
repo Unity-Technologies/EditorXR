@@ -54,7 +54,7 @@
                     half _GradientSize;
                     sampler2D _MainTex;
                     half _BlurNoise;
-					half _BlurNoiseAmount;
+                    half _BlurNoiseAmount;
 
                     v2f vert(appdata_t v)
                     {
@@ -116,6 +116,7 @@
                         noiseSampledTextureAmount -= noiseSampledTextureAmount * blurAdjustmentModifier;
                         sum += GrabAndOffset(0.02 * adjustedBlur, +6.0 * noiseSampledTextureAmount);
 
+                        // Fade blur amount based on fragment distance to center UV coord
                         float fadeFromBorderAmount = 1 - clamp(0, 1, pow(uvPos, _GradientSize) * 2);
                         sum.a = clamp(0, 1 - pow((uvPos * 2), _GradientSize * (_Blur / 10)), fadeFromBorderAmount);
 
@@ -129,7 +130,7 @@
             Pass
             {
                 Name "SpatialUIBlurVertical"
-                
+
                 CGPROGRAM
                 #pragma vertex vert
                 #pragma fragment frag
@@ -157,7 +158,7 @@
                 half _GradientSize;
                 sampler2D _MainTex;
                 half _BlurNoise;
-				half _BlurNoiseAmount;
+                half _BlurNoiseAmount;
 
                 v2f vert(appdata_t v)
                 {
