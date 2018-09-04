@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
         IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
-        IRequestFeedback, ISpatialMenuProvider, INodeToRay
+        IRequestFeedback, INodeToRay
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
@@ -50,7 +50,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_MenuFeedback = new List<ProxyFeedbackRequest>();
         readonly List<SpatialMenu.SpatialMenuElement> m_SpatialMenuTools = new List<SpatialMenu.SpatialMenuElement>();
-        readonly List<SpatialMenu.SpatialMenuData> m_SpatialMenuData = new List<SpatialMenu.SpatialMenuData>();
 
         public Transform menuOrigin { get; set; }
 
@@ -79,7 +78,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public string spatialMenuName { get { return k_SpatialDisplayName; } }
         public string spatialMenuDescription { get { return k_SpatialDescription; } }
         public bool displayingSpatially { get; set; }
-        public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
         public float spatialQuickToggleDuration { get { return k_SpatialQuickToggleDuration; } }
         public float allowSpatialQuickToggleActionBeforeThisTime { get; set; }
         //public SpatialInputModule.SpatialScrollData spatialScrollData { get; set; }
@@ -95,15 +93,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             setButtonForType = CreateToolsMenuButton;
             deleteToolsMenuButton = DeleteToolsMenuButton;
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
-
-            /*
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 1", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 2", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 3", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 4", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 5", null, null));
-            m_SpatialUITableElements.Add(new SpatialUI.SpatialUITableElement("Tool Item : 6", null, null));
-            */
         }
 
         void OnDestroy()
@@ -129,10 +118,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             // Spatial scroll setup
             spatialScrollOrigin = alternateMenuOrigin;
-
-            // Spatial Menu Setup
-            var spatialMenuData = new SpatialMenu.SpatialMenuData(k_SpatialDisplayName, k_SpatialDescription, m_SpatialMenuTools);
-            m_SpatialMenuData.Add(spatialMenuData);
         }
 
         void CreateToolsMenuButton(Type toolType, Sprite buttonIcon, string toolDescription)
@@ -172,9 +157,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (toolType != typeof(IMainMenu))
             {
                 // Add the tools that have been instantiated, and are already selectable to the spatial menu "tools" section
-                m_SpatialMenuTools.Add(new SpatialMenu.SpatialMenuElement(toolType.Name, button.icon, toolDescription, () =>
+                m_SpatialMenuTools.Add(new SpatialMenu.SpatialMenuElement(toolType.Name, toolDescription, (node) =>
                 {
-                    this.SelectTool(this.RequestRayOriginFromNode(Node.RightHand), toolType,
+                    this.SelectTool(this.RequestRayOriginFromNode(node), toolType,
                         hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(toolType));
                 }));
             }
