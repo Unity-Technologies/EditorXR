@@ -113,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 if (scroller == caller)
                 {
-                    scrollData = scroller.SpatialScrollData;
+                    scrollData = scroller.spatialScrollData;
                     scrollData.UpdateExistingScrollData(currentPosition);
                     break;
                 }
@@ -167,9 +167,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 if (scroller == caller)
                 {
-                    this.RemoveRayVisibilitySettings(caller.SpatialScrollData.rayOrigin, caller);
+                    this.RemoveRayVisibilitySettings(caller.spatialScrollData.rayOrigin, caller);
                     this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
-                    caller.SpatialScrollData = null; // clear reference to the previously used scrollData
+                    caller.spatialScrollData = null; // clear reference to the previously used scrollData
                     m_ScrollCallers.Remove(caller);
                     return;
                 }

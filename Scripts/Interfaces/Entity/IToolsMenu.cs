@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// This method isn't hooked up in EVR, it should reside in the implementing class
         /// Type of tool; tool icon sprite (if available), tool description
         /// </summary>
-        Action<Type, Sprite, String> setButtonForType { get; }
+        Action<Type, Sprite> setButtonForType { get; }
 
         /// <summary>
         /// Delete the tool button with corresponding type of the first parameter.
