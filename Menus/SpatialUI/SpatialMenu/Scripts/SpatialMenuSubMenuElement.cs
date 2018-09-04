@@ -4,7 +4,6 @@ using System.Collections;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -12,29 +11,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    internal class SpatialMenuSubMenuElement : MonoBehaviour, ISpatialMenuElement, IControlHaptics, IRayEnterHandler, IRayExitHandler
+    sealed internal class SpatialMenuSubMenuElement : SpatialMenuElement
     {
-        [SerializeField]
-        TextMeshProUGUI m_Text;
-
-        [SerializeField]
-        Image m_Icon;
-
-        [SerializeField]
-        CanvasGroup m_CanvasGroup;
-
-        [SerializeField]
-        Button m_Button;
-
-        [SerializeField]
-        float m_TransitionDuration = 0.75f;
-
-        [SerializeField]
-        float m_FadeInZOffset = 0.05f;
-
-        [SerializeField]
-        float m_HighlightedZOffset = -0.005f;
-
         [SerializeField]
         Image m_BackgroundImage;
 
@@ -84,10 +62,8 @@ namespace UnityEditor.Experimental.EditorVR
         public Action selectedAction { get { return m_SelectedAction; } }
         public Action onHiddenAction { get; set; }
         public Button button { get { return m_Button; } }
-        public Node spatialMenuActiveControllerNode { get; set; }
-        public Node hoveringNode { get; set; }
 
-        public bool visible
+        public override bool visible
         {
             get { return m_Visible; }
             set
@@ -102,8 +78,9 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        public bool highlighted
+        public override bool highlighted
         {
+            get { return m_Highlighted; }
             set
             {
                 if (m_Highlighted == value)
@@ -117,12 +94,6 @@ namespace UnityEditor.Experimental.EditorVR
                     this.Pulse(Node.None, m_HighlightPulse);
             }
         }
-
-        public Action<Transform, Action, string, string> Setup { get; set; }
-        public Action<Node> selected { get; set; }
-        public Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
-        public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
-        public Action correspondingFunction { get; set; }
 
         void Awake()
         {
@@ -152,18 +123,6 @@ namespace UnityEditor.Experimental.EditorVR
         void OnDestroy()
         {
             m_Button.onClick.RemoveAllListeners();
-        }
-
-        public void OnRayEnter(RayEventData eventData)
-        {
-            highlighted = true;
-            hoveringNode = eventData.node;
-        }
-
-        public void OnRayExit(RayEventData eventData)
-        {
-            highlighted = false;
-            hoveringNode = Node.None;
         }
 
         void Select()

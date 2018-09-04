@@ -1,42 +1,15 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
-using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    internal class SpatialMenuSectionTitleElement : MonoBehaviour, ISpatialMenuElement, IControlHaptics, IRayEnterHandler, IRayExitHandler,
-        IRayClickHandler, IPointerClickHandler
+    sealed internal class SpatialMenuSectionTitleElement : SpatialMenuElement
     {
-        [SerializeField]
-        TextMeshProUGUI m_Text;
-
-        [SerializeField]
-        Image m_Icon;
-
-        [SerializeField]
-        CanvasGroup m_CanvasGroup;
-
-        [SerializeField]
-        Button m_Button;
-
-        [SerializeField]
-        float m_TransitionDuration = 0.75f;
-
-        [SerializeField]
-        float m_FadeInZOffset = 0.05f;
-
-        [SerializeField]
-        float m_HighlightedZOffset = -0.005f;
-
         [Header("Haptic Pulses")]
         [SerializeField]
         HapticPulse m_HighlightPulse;
@@ -44,25 +17,17 @@ namespace UnityEditor.Experimental.EditorVR
         [SerializeField]
         HapticPulse m_TooltipDisplayPulse;
 
-        RectTransform m_RectTransform;
-        Action m_SelectedAction;
-        Vector2 m_OriginalSize;
         Vector2 m_ExpandedTooltipDisplaySize;
         Coroutine m_VisibilityCoroutine;
         Coroutine m_TooltipVisualsVisibilityCoroutine;
         Vector3 m_TextOriginalLocalPosition;
         bool m_Highlighted;
-        Vector3 m_OriginalBordersLocalScale;
+        Vector3 m_OriginalBordersLohocalScale;
         float m_BordersOriginalAlpha;
         bool m_Visible;
+        RectTransform m_RectTransform;
 
-        public Transform elementTransform { get { return transform; } }
-        public Action selectedAction { get { return m_SelectedAction; } }
-        public Button button { get { return m_Button; } }
-        public Node spatialMenuActiveControllerNode { get; set; }
-        public Node hoveringNode { get; set; }
-
-        public bool visible
+        public override bool visible
         {
             get { return m_Visible; }
             set
@@ -76,8 +41,9 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-        public bool highlighted
+        public override bool highlighted
         {
+            get { return m_Highlighted; }
             set
             {
                 if (m_Highlighted == value)
@@ -100,13 +66,6 @@ namespace UnityEditor.Experimental.EditorVR
                     action(parentMenuData);
             }
         }
-
-        public Action<Transform, Action, string, string> Setup { get; set; }
-        public Action<Node> selected { get; set; }
-        public Action<SpatialMenu.SpatialMenuData> highlightedAction { get; set; }
-        public SpatialMenu.SpatialMenuData parentMenuData { get; set; }
-        public Action correspondingFunction { get; set; }
-        public Action onHiddenAction { get; set; }
 
         void Awake()
         {
@@ -137,23 +96,7 @@ namespace UnityEditor.Experimental.EditorVR
                 return;
             }
 
-            m_SelectedAction = selectedAction;
             m_RectTransform = (RectTransform)transform;
-            m_OriginalSize = m_RectTransform.sizeDelta;
-
-            Sprite sprite = null;
-            if (sprite != null) // Displaying a sprite icon instead of text
-            {
-                m_Icon.gameObject.SetActive(true);
-                m_Text.gameObject.SetActive(false);
-                m_Icon.sprite = sprite;
-            }
-            else // Displaying text instead of a sprite icon
-            {
-                m_Icon.gameObject.SetActive(false);
-                m_Text.gameObject.SetActive(true);
-                m_Text.text = displayedText;
-            }
 
             transform.SetParent(parentTransform);
             transform.localRotation = Quaternion.identity;
@@ -173,18 +116,6 @@ namespace UnityEditor.Experimental.EditorVR
         void OnDisable()
         {
             StopAllCoroutines();
-        }
-
-        public void OnRayEnter(RayEventData eventData)
-        {
-            highlighted = true;
-            hoveringNode = eventData.node;
-        }
-
-        public void OnRayExit(RayEventData eventData)
-        {
-            highlighted = false;
-            hoveringNode = Node.None;
         }
 
         IEnumerator AnimateVisibility(bool fadeIn)
@@ -225,8 +156,6 @@ namespace UnityEditor.Experimental.EditorVR
             var positionTransitionAmount = 0f;
             var currentTextLocalScale = textTransform.localScale;
             var targetTextLocalScale = isHighlighted ? Vector3.one * 1.15f : Vector3.one;
-            //var currentBackgroundColor = m_BackgroundImage.color;
-            var targetBackgroundColor = isHighlighted ? Color.black : Color.clear;
             var speedMultiplier = isHighlighted ? 8f : 4f;
             while (alphaTransitionAmount < 1f)
             {
@@ -237,25 +166,13 @@ namespace UnityEditor.Experimental.EditorVR
                 textTransform.localScale = Vector3.Lerp(currentTextLocalScale, targetTextLocalScale, alphaSmoothTransition);
                 alphaTransitionAmount += Time.deltaTime * speedMultiplier;
                 positionTransitionAmount += alphaTransitionAmount * 1.35f; // slightly faster position transition
-                //m_BackgroundImage.color = Color.Lerp(currentBackgroundColor, targetBackgroundColor, alphaSmoothTransition * 4);
                 yield return null;
             }
 
             textTransform.localPosition = textTargetLocalPosition;
             textTransform.localScale = targetTextLocalScale;
-            //m_BackgroundImage.color = targetBackgroundColor;
             m_CanvasGroup.alpha = targetAlpha;
             m_VisibilityCoroutine = null;
-        }
-
-        public void OnRayClick(RayEventData eventData)
-        {
-            Debug.LogError("OnRayClick called for spatial menu section title element :" + m_Text.text);
-         }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            Debug.LogError("OnPointerClick called for spatial menu section title element :" + m_Text.text);
         }
     }
 }
