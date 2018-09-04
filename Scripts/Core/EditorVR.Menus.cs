@@ -29,8 +29,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             const float k_TwoHandHideDistance = 0.25f;
             const int k_PossibleOverlaps = 16;
 
-            //internal SpatialMenu m_SpatialMenu;
-
             readonly Dictionary<Transform, IMainMenu> m_MainMenus = new Dictionary<Transform, IMainMenu>();
             readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
             readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
@@ -48,21 +46,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IIsMainMenuVisibleMethods.isMainMenuVisible = IsMainMenuVisible;
                 IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
                 IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
-            }
-
-            internal override void OnDestroy()
-            {
-                base.OnDestroy();
-
-                //ObjectUtils.Destroy(m_SpatialMenu.gameObject);
-            }
-
-            internal void Initialize()
-            {
-                // SpatialUI must be instantiated after the AdaptivePositionModule is added
-                //m_SpatialMenu = ObjectUtils.AddComponent<SpatialMenu>(evr.gameObject);
-                //this.ConnectInterfaces(m_SpatialMenu);
-                //m_SpatialMenu.Setup();
             }
 
             public void ConnectInterface(object target, object userData = null)
