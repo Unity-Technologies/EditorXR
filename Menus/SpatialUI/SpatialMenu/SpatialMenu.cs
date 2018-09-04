@@ -473,6 +473,18 @@ namespace UnityEditor.Experimental.EditorVR
                 m_MenuEntranceStartTime = Time.realtimeSinceStartup;
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
                 s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
+
+                foreach (var data in s_SpatialMenuData)
+                {
+                    foreach (var element in data.spatialMenuElements)
+                    {
+                        // When the SpatialMenu is displayed, assign its node as the controllerNode to all SpatialMenuElements
+                        // This node is used as a fallback, if the element isn't currently being hovered by a proxy/ray
+                        // This allows for a separate proxy/device, other than that which is the active SpatialMenuController,
+                        // to have node-specific operations performed on the hovering node (adding tools, etc), rather than the controlling Menu node
+                        element.VisualElement.spatialMenuActiveControllerNode = node;
+                    }
+                }
             }
 
             // Trigger + continued/held circular-input, when beyond a threshold, allow for element selection cycling
