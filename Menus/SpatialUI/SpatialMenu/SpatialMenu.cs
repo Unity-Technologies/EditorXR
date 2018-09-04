@@ -161,7 +161,9 @@ namespace UnityEditor.Experimental.EditorVR
                 }
                 else
                 {
-                    ReturnToPreviousMenuLevel(); // TODO: verify that this needs to be called, or can be replaced by a core set of referenced functionality
+                    if (s_ControllingSpatialMenu != null) // Don't animate a return to the top menu level if closing
+                        ReturnToPreviousMenuLevel();
+
                     this.Pulse(Node.None, m_MenuClosePulse);
                     spatialMenuState = SpatialMenuState.hidden;
                 }
