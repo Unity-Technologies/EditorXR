@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     [SpatialMenuItem("Primitives", "Tools", "Create primitives in the scene")]
     sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
         IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
-        IRayVisibilitySettings, IMenuIcon, IRequestFeedback, IUsesNode, ISpatialMenuCustomDescription
+        IRayVisibilitySettings, IMenuIcon, IRequestFeedback, IUsesNode
     {
         [SerializeField]
         CreatePrimitiveMenu m_MenuPrefab;
@@ -20,7 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Sprite m_Icon;
 
         const float k_DrawDistance = 0.075f;
-        const string k_SpatialMenuDescription = "Create new primitive objects : sphere/cube/cylinder/etc";
 
         GameObject m_ToolMenu;
 
@@ -38,8 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Node node { get; set; }
 
         public Sprite icon { get { return m_Icon; } }
-
-        public string spatialMenuCustomDescription { get { return k_SpatialMenuDescription; } }
 
         enum PrimitiveCreationStates
         {
