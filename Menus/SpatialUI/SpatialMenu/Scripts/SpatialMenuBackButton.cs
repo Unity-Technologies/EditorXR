@@ -19,10 +19,19 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Coroutine m_AllowInteractionCoroutine;
         bool m_Highlighted;
 
+        /// <summary>
+        /// Action performed when this element is initially hovered
+        /// </summary>
         public Action OnHoverEnter { get; set; }
 
+        /// <summary>
+        /// Action performed when this element is no longer hovered
+        /// </summary>
         public Action OnHoverExit { get; set; }
 
+        /// <summary>
+        /// Action performed when this element is selected
+        /// </summary>
         public Action OnSelected { get; set; }
 
         public bool allowInteraction
