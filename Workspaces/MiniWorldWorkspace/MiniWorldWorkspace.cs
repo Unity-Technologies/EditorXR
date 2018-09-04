@@ -15,7 +15,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
-    [SpatialMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
+    [SpatialMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
     sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRequestFeedback, IControlHaptics, IRayToNode
     {
         class MiniWorldTooltip : ITooltip
