@@ -517,13 +517,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (m_RaycastSources.TryGetValue(rayOrigin, out source))
                 source.blocked = blocked;
         }
-
-        public bool SourceAlreadyAdded(Transform rayOrigin)
-        {
-            RaycastSource source;
-            m_RaycastSources.TryGetValue(rayOrigin, out source);
-            return source != null;
-        }
     }
 }
 #endif
