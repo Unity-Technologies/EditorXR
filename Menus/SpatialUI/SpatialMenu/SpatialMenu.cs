@@ -133,8 +133,6 @@ namespace UnityEditor.Experimental.EditorVR
         Coroutine m_CircularTriggerSelectionCyclingCoroutine;
         Transform m_RayOrigin;
 
-        RotationVelocityTracker m_RotationVelocityTracker = new RotationVelocityTracker();
-
         List<SpatialMenuElement> highlightedMenuElements
         {
             set
@@ -179,7 +177,6 @@ namespace UnityEditor.Experimental.EditorVR
 
                 m_SpatialMenuState = value;
                 s_SpatialMenuUi.spatialMenuState = m_SpatialMenuState;
-                m_RotationVelocityTracker.Initialize(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion);
                 switch (m_SpatialMenuState)
                 {
                     case SpatialMenuState.navigatingTopLevel:
@@ -327,8 +324,6 @@ namespace UnityEditor.Experimental.EditorVR
             spatialMenuState = SpatialMenuState.navigatingTopLevel;
 
             this.Pulse(Node.None, m_MenuOpenPulse);
-
-            m_RotationVelocityTracker.Initialize(this.RequestRayOriginFromNode(Node.LeftHand).localRotation);
         }
 
         void ReturnToPreviousMenuLevel()
@@ -467,7 +462,6 @@ namespace UnityEditor.Experimental.EditorVR
             if ((positiveYInputAction.isHeld || m_SpatialInputHold) && m_SpatialMenuState != SpatialMenuState.hidden)
             {
                 var atLeastOneInputDeviceIsAimingAtSpatialMenu = false;
-                m_RotationVelocityTracker.Update(m_CurrentSpatialActionMapInput.localRotationQuaternion.quaternion, Time.deltaTime);
                 foreach (var origin in allSpatialMenuRayOrigins)
                 {
                     if (origin == null || origin == m_RayOrigin) // Don't compare against the rayOrigin that is currently processing input for the Spatial UI
