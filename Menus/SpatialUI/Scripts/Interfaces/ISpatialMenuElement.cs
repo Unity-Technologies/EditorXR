@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
