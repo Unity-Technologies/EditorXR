@@ -50,6 +50,32 @@ namespace UnityEditor.Experimental.EditorVR
         /// Bool denoting that this implementer should have its position immediately reset when the next scheduled position update occurs
         /// </summary>
         bool resetAdaptivePosition { get; set; }
+
+        /// <summary>
+        /// Distance below which an object will be re-positioned at the ideal distance from the user's gaze/hmd
+        /// </summary>
+        float allowedMinDistanceDivergence { get; }
+
+        /// <summary>
+        /// Distance beyond which an object will be re-positioned at the ideal distance from the user's gaze/hmd
+        /// </summary>
+        float allowedMaxDistanceDivergence { get; }
+
+        /// <summary>
+        /// Coroutine that handles the animated re-positioning of the object
+        /// </summary>
+        Coroutine adaptiveElementRepositionCoroutine { get; set; }
+
+        /// <summary>
+        /// Adjust position only when out of focus/gaze
+        /// This allows an implementer to remain stable while the user move towards/away while focusing upon it
+        /// </summary>
+        bool onlyMoveWhenOutOfFocus { get; }
+
+        /// <summary>
+        /// Adjust position, regardless of distance, if out of focus
+        /// </summary>
+        bool repositionIfOutOfFocus { get; }
     }
 }
 #endif
