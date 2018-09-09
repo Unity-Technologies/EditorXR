@@ -17,9 +17,9 @@ namespace UnityEditor.Experimental.EditorVR
     /// There is a singule static SpatialUI(view) that all SpatialMenu controllers direct
     /// </summary>
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
-    public sealed class SpatialMenu : SpatialUIController, IInstantiateUI, IUsesNode, IUsesRayOrigin, ISelectTool,
-        IConnectInterfaces, IControlHaptics, IDetectGazeDivergence, IControlInputIntersection,
-        ISetManipulatorsVisible, ILinkedObject, IRayVisibilitySettings, ICustomActionMap
+    public sealed class SpatialMenu : SpatialUIController, IInstantiateUI, IUsesNode, IUsesRayOrigin,
+        ISelectTool, IConnectInterfaces, IControlHaptics, IControlInputIntersection, ISetManipulatorsVisible,
+        ILinkedObject, IRayVisibilitySettings, ICustomActionMap
     {
         public class SpatialMenuData
         {
@@ -291,18 +291,20 @@ namespace UnityEditor.Experimental.EditorVR
             m_HighlightedTopLevelMenuElementPosition = -1;
         }
 
-        public bool IsAboveDivergenceThreshold(Transform firstTransform, Transform secondTransform, float divergenceThreshold)
+        bool IsAimingAtUI(Transform firstTransform)
         {
-            var isAbove = false;
+            var isAimingAtUi = false;
+
+            const float divergenceThreshold = 45f;
             var gazeDirection = firstTransform.forward;
-            var testVector = secondTransform.position - firstTransform.position; // Test object to gaze source vector
+            var testVector = s_SpatialMenuUi.adaptiveTransform.position - firstTransform.position; // Test object to gaze source vector
             testVector.Normalize(); // Normalize, in order to retain expected dot values
 
             var divergenceThresholdConvertedToDot = Mathf.Sin(Mathf.Deg2Rad * divergenceThreshold);
             var angularComparison = Mathf.Abs(Vector3.Dot(testVector, gazeDirection));
-            isAbove = angularComparison < divergenceThresholdConvertedToDot;
+            isAimingAtUi = angularComparison < divergenceThresholdConvertedToDot;
 
-            return isAbove;
+            return isAimingAtUi;
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -426,11 +428,8 @@ namespace UnityEditor.Experimental.EditorVR
                     if (origin == null || origin == m_RayOrigin) // Don't compare against the rayOrigin that is currently processing input for the Spatial UI
                         continue;
 
-                    // Compare the angular differnce between the spatialUI's transform, and ANY spatial menu ray origin
-                    var isAboveDivergenceThreshold = IsAboveDivergenceThreshold(origin, s_SpatialMenuUi.adaptiveTransform, 45);
-
                     // If BELOW the threshold, thus a ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
-                    if (!isAboveDivergenceThreshold)
+                    if (!IsAimingAtUI(origin))
                     {
                         atLeastOneInputDeviceIsAimingAtSpatialMenu = true;
                         break;
