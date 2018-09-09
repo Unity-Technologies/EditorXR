@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Target z-offset, at which to position the gaze source transform
         /// </summary>
-        float distanceOffset { get; }
+        float adaptivePositionRestDistance { get; }
 
         /// <summary>
         /// The data defining the adaptive position state of the implementer
