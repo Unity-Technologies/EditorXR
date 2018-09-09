@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -40,11 +39,6 @@ namespace UnityEditor.Experimental.EditorVR
         /// Target z-offset, at which to position the gaze source transform
         /// </summary>
         float adaptivePositionRestDistance { get; }
-
-        /// <summary>
-        /// The data defining the adaptive position state of the implementer
-        /// </summary>
-        AdaptivePositionModule.AdaptivePositionData adaptivePositionData { set; }
 
         /// <summary>
         /// Bool denoting that this implementer should have its position immediately reset when the next scheduled position update occurs
