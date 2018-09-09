@@ -301,6 +301,9 @@ namespace UnityEditor.Experimental.EditorVR
             var viewerScale = this.GetViewerScale();
             foreach (var origin in allSpatialMenuRayOrigins)
             {
+                if (origin == null)
+                    continue;
+
                 var testVector = spatialMenuUITransformPosition - origin.position; // Test device to UI source vector
                 var unscaledTestVector = testVector;
                 testVector.Normalize(); // Normalize, in order to retain expected dot values
