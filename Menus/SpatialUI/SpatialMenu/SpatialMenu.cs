@@ -185,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR
             get { return m_RayOrigin; }
             set
             {
-                if (m_RayOrigin == value) // TODO: This will block addition to allSpatialMenuRayOrigins FIX!
+                if (m_RayOrigin != null && m_RayOrigin == value)
                     return;
 
                 m_RayOrigin = value;
