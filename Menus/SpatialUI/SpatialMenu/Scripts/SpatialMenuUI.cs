@@ -178,7 +178,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public SpatialMenu.SpatialMenuState spatialMenuState
         {
-            get { return m_SpatialMenuState; }
             set
             {
                 // If the previous state was hidden, reset the state of the UI
@@ -306,7 +305,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             visible = false;
         }
 
-        public void Reset()
+        void Reset()
         {
             ForceClearHomeMenuElements();
             ForceClearSubMenuElements();
@@ -364,7 +363,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        public void UpdateDirector()
+        void UpdateDirector()
         {
             if (m_Director.time <= m_HomeSectionTimelineStoppingTime)
             {
@@ -389,20 +388,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             currentlyDisplayedMenuElements.Clear();
             var homeMenuElementParent = (RectTransform)m_HomeMenuLayoutGroup.transform;
-            for (int i = 0; i < spatialMenuData.Count; ++i)
+            foreach (var data in spatialMenuData)
             {
                 var instantiatedPrefabTransform = ObjectUtils.Instantiate(m_SectionTitleElementPrefab).transform as RectTransform;
                 var providerMenuElement = instantiatedPrefabTransform.GetComponent<SpatialMenuElement>();
                 this.ConnectInterfaces(instantiatedPrefabTransform);
-                providerMenuElement.Setup(homeMenuElementParent, () => { }, spatialMenuData[i].spatialMenuName, null);
+                providerMenuElement.Setup(homeMenuElementParent, () => { }, data.spatialMenuName, null);
                 currentlyDisplayedMenuElements.Add(providerMenuElement);
                 providerMenuElement.selected = SectionTitleButtonSelected;
                 providerMenuElement.highlightedAction = OnButtonHighlighted;
-                providerMenuElement.parentMenuData = spatialMenuData[i];
+                providerMenuElement.parentMenuData = data;
             }
         }
 
-        public void DisplayHighlightedSubMenuContents()
+        void DisplayHighlightedSubMenuContents()
         {
             m_BackButton.allowInteraction = true;
             ForceClearHomeMenuElements();
@@ -559,10 +558,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     m_HomeTextBackgroundInnerTransform.localScale = newScale;
                     m_SubMenuContentsCanvasGroup.alpha += Time.unscaledDeltaTime;
                 }
-                else
-                {
-                    return;
-                }
             }
             else if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.navigatingTopLevel)
             {
@@ -650,7 +645,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             while (visible)
             {
+                // Continuously looping when visible is intentional
                 // Maintain the sustained pulse while hovering the back button
+                // When disabling the return-to-previous UI, the coroutine restart will stop the pulse
                 this.Pulse(Node.None, m_SustainedHoverUIElementPulse);
                 yield return null;
             }
