@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR
     public interface IAdaptPosition
     {
         /// <summary>
-        /// Bool denoting that this implementer is active, and will have it's position adjusted automatically
+        /// Denotes if this implementer is active, and will have it's position adjusted automatically
         /// </summary>
         bool allowAdaptivePositioning { get; }
 
@@ -21,12 +21,12 @@ namespace UnityEditor.Experimental.EditorVR
         Transform adaptiveTransform { get; }
 
         /// <summary>
-        /// Bool denoting that this implementer is being moved by the AdaptivePositionModule
+        /// Denotes if this implementer is being moved by the AdaptivePositionModule
         /// </summary>
         bool beingMoved { set; }
 
         /// <summary>
-        /// Bool denoting that this implementer is within the allowed gaze range, & being looked at
+        /// Denotes if this implementer is within the allowed gaze range, & being looked at
         /// </summary>
         bool inFocus { get; set; }
 
