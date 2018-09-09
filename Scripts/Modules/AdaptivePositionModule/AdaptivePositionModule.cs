@@ -13,12 +13,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         HapticPulse m_MovingPulse; // The pulse performed while moving an element to a new target position in the user's FOV
 
-        Coroutine m_AdaptiveElementRepositionCoroutine;
         bool m_TestInFocus;
         Transform m_GazeTransform;
         Transform m_WorldspaceAnchorTransform; // The player transform under which anchored objects will be parented
 
-        // Collection objects whose position is controlled by this module
+        // Collection of objects whose position is controlled by this module
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
 
         public class AdaptivePositionData
@@ -50,38 +49,71 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             if (m_AdaptivePositionElements.Count > 0)
             {
-                var adaptiveElement = m_AdaptivePositionElements.First();
-                if (adaptiveElement.resetAdaptivePosition)
+                foreach (var element in m_AdaptivePositionElements)
                 {
-                    this.RestartCoroutine(ref m_AdaptiveElementRepositionCoroutine, RepositionElement(adaptiveElement));
-                    return;
-                }
+                    var repositionCoroutine = element.adaptiveElementRepositionCoroutine;
+                    if (element.resetAdaptivePosition)
+                    {
+                        this.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
+                        element.adaptiveElementRepositionCoroutine = repositionCoroutine;
+                        return;
+                    }
 
-                var adaptiveTransform = adaptiveElement.adaptiveTransform;
-                var allowedDegreeOfGazeDivergence = adaptiveElement.allowedDegreeOfGazeDivergence;
-                var isAboveDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveTransform, allowedDegreeOfGazeDivergence);
-                adaptiveElement.inFocus = !isAboveDivergenceThreshold; // gaze divergence threshold test regardless of temporal stability
+                    var adaptiveTransform = element.adaptiveTransform;
+                    var allowedDegreeOfGazeDivergence = element.allowedDegreeOfGazeDivergence;
+                    var isAboveDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveTransform, allowedDegreeOfGazeDivergence);
+                    element.inFocus = !isAboveDivergenceThreshold; // gaze divergence threshold test regardless of temporal stability
 
-                if (!adaptiveElement.allowAdaptivePositioning)
-                    return;
+                    if (!element.allowAdaptivePositioning)
+                        continue;
 
-                const float kAllowedDistanceDivergence = 0.5f; // distance beyond which content will be re-positioned at the ideal distance from the user's gaze/hmd
-                if (m_AdaptiveElementRepositionCoroutine == null && Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - adaptiveTransform.position)) > kAllowedDistanceDivergence)
-                {
-                    var isAboveTemporalDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveTransform, allowedDegreeOfGazeDivergence, false);
-                    if (isAboveTemporalDivergenceThreshold) // only move if above the gaze divergence threshold with respect to temporal stability
-                        this.RestartCoroutine(ref m_AdaptiveElementRepositionCoroutine, RepositionElement(adaptiveElement));
+                    if (repositionCoroutine == null)
+                    {
+                        var moveElement = false;
+                        var isAboveTemporalDivergenceThreshold = this.IsAboveDivergenceThreshold(adaptiveTransform, allowedDegreeOfGazeDivergence, false);
+                        if (element.repositionIfOutOfFocus && isAboveTemporalDivergenceThreshold)
+                        {
+                            moveElement = true;
+                        }
+                        else
+                        {
+                            var distanceFromGazeTransform = Mathf.Abs(Vector3.Magnitude(m_GazeTransform.position - adaptiveTransform.position)) / this.GetViewerScale();
+                            if (distanceFromGazeTransform > element.allowedMaxDistanceDivergence)
+                            {
+                                // only move if above the gaze divergence threshold with respect to temporal stability
+                                if (element.onlyMoveWhenOutOfFocus && !isAboveTemporalDivergenceThreshold)
+                                    continue;
+
+                                moveElement = true;
+                            }
+                            else if (distanceFromGazeTransform < element.allowedMinDistanceDivergence)
+                            {
+                                // Always move away from the hmd regardless of angle, in order to prevent the user from moving through the UI
+                                moveElement = true;
+                            }
+                        }
+
+                        if (moveElement)
+                        {
+                            this.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
+                            element.adaptiveElementRepositionCoroutine = repositionCoroutine;
+                        }
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// Implementers are assigned in the AdaptivePositionModuleConnector's ConnectInterface() function
+        /// </summary>
+        /// <param name="adaptiveElement">Implementer that will be added to the AdaptivePositionElements collection</param>
         public void ControlObject(IAdaptPosition adaptiveElement)
         {
             if (m_AdaptivePositionElements.Contains(adaptiveElement))
                 return;
 
             var adaptiveTransform = adaptiveElement.adaptiveTransform;
-            adaptiveTransform.localPosition = new Vector3(0f, 0f, adaptiveElement.distanceOffset); // push the object away from the HMD
+            adaptiveTransform.localPosition = new Vector3(0f, 0f, adaptiveElement.adaptivePositionRestDistance); // push the object away from the HMD
             adaptiveTransform.parent = m_WorldspaceAnchorTransform;
             adaptiveTransform.rotation = Quaternion.identity;
 
@@ -89,10 +121,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             adaptiveElement.adaptivePositionData = new AdaptivePositionData(adaptiveElement, adaptiveTransform.position);
         }
 
-        public void FreeObject(IAdaptPosition objectToReposition)
+        /// <summary>
+        /// Implementers are removed from the AdaptivePositionModuleConnector's DisconnectInterface() function
+        /// </summary>
+        /// <param name="adaptiveElement">Implementer that will be removed from the AdaptivePositionElements collection</param>
+        public void FreeObject(IAdaptPosition adaptiveElement)
         {
-            if (m_AdaptivePositionElements.Contains(objectToReposition))
-                m_AdaptivePositionElements.Remove(objectToReposition);
+            if (m_AdaptivePositionElements.Contains(adaptiveElement))
+                m_AdaptivePositionElements.Remove(adaptiveElement);
         }
 
         IEnumerator RepositionElement(IAdaptPosition adaptiveElement)
@@ -100,19 +136,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var adaptiveTransform = adaptiveElement.adaptiveTransform;
             var currentPosition = adaptiveTransform.position;
             var targetPosition = m_GazeTransform.position;
-            targetPosition = targetPosition + (this.GetViewerScale() * m_GazeTransform.forward * adaptiveElement.distanceOffset);
+            targetPosition = targetPosition + this.GetViewerScale() * m_GazeTransform.forward * adaptiveElement.adaptivePositionRestDistance;
             if (!adaptiveElement.resetAdaptivePosition)
             {
                 this.Pulse(Node.None, m_MovingPulse);
+                const float kTransitionSpeedScalar = 4f;
                 adaptiveElement.beingMoved = true;
                 var transitionAmount = 0f;
-                var transitionSubtractMultiplier = 2f;
                 while (transitionAmount < 1f)
                 {
                     var smoothTransition = MathUtilsExt.SmoothInOutLerpFloat(transitionAmount);
                     smoothTransition *= smoothTransition;
                     adaptiveTransform.position = Vector3.Lerp(currentPosition, targetPosition, smoothTransition);
-                    transitionAmount += Time.deltaTime * transitionSubtractMultiplier;
+                    transitionAmount += Time.deltaTime * kTransitionSpeedScalar;
                     adaptiveTransform.LookAt(m_GazeTransform);
                     yield return null;
                 }
@@ -120,7 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             adaptiveTransform.position = targetPosition;
             adaptiveTransform.LookAt(m_GazeTransform);
-            m_AdaptiveElementRepositionCoroutine = null;
+            adaptiveElement.adaptiveElementRepositionCoroutine = null;
             adaptiveElement.beingMoved = false;
             adaptiveElement.resetAdaptivePosition = false;
         }
