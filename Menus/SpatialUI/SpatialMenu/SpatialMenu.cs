@@ -425,13 +425,12 @@ namespace UnityEditor.Experimental.EditorVR
             }
 
             // isHeld goes false right when you go below 0.5.  this is the check for 'up-click' on the pad / stick
-            // TODO - we also need to invent the definition of 'released'.  some combo of Isheld = false & below minimum x/y deadzone for a time
             if ((positiveYInputAction.isHeld || m_SpatialInputHold) && s_SpatialMenuState != SpatialMenuState.hidden)
             {
                 var atLeastOneInputDeviceIsAimingAtSpatialMenu = false;
                 foreach (var origin in allSpatialMenuRayOrigins)
                 {
-                    if (origin == null || origin == m_RayOrigin) // Don't compare against the rayOrigin that is currently processing input for the Spatial UI
+                    if (origin == null)
                         continue;
 
                     // If BELOW the threshold, thus a ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
