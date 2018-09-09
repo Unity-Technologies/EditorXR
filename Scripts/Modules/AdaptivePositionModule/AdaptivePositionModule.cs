@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -39,7 +38,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// The origin/starting position of the object being re-positioned
             /// </summary>
             public Vector3 startingPosition { get; set; }
-
         }
 
         void Awake()
