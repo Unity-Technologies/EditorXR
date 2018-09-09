@@ -19,8 +19,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// </summary>
     public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
     {
-        const float k_DistanceOffset = 0.75f;
         const float k_AllowedGazeDivergence = 45f;
+        const float k_AllowedMaxHMDDistanceDivergence = 0.95f; // Distance at which the menu will move towards
+        const float k_AllowedMinHMDDistanceDivergence = 0.3f; // Distance at which the menu will move away
+        const float k_TargetAdaptiveRestDistance = 0.75f; // Distance at which the menu will be re-positioned
+        const bool k_onlyMoveWhenOutOfFocus = true;
+        const bool k_alwaysRepositionIfOutOfFocus = true;
 
         readonly string k_TranslationInputModeName = "Spatial Input Mode";
         readonly string k_ExternalRayBasedInputModeName = "External Ray Input Mode";
@@ -152,13 +156,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         // Adaptive position related members
         public Transform adaptiveTransform { get { return transform; } }
         public float allowedDegreeOfGazeDivergence { get { return k_AllowedGazeDivergence; } }
-        public float distanceOffset { get { return k_DistanceOffset; } }
+        public float allowedMinDistanceDivergence { get { return k_AllowedMinHMDDistanceDivergence; } }
+        public float allowedMaxDistanceDivergence { get { return k_AllowedMaxHMDDistanceDivergence; } }
+        public float adaptivePositionRestDistance { get { return k_TargetAdaptiveRestDistance; } }
         public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
         public bool allowAdaptivePositioning { get; private set; }
         public bool resetAdaptivePosition { get; set; }
+        public Coroutine adaptiveElementRepositionCoroutine { get; set; }
+        public bool onlyMoveWhenOutOfFocus { get { return k_onlyMoveWhenOutOfFocus; } }
+        public bool repositionIfOutOfFocus { get { return k_alwaysRepositionIfOutOfFocus; } }
 
         // Section name string, corresponding element collection, currentlyHighlightedState
-        public List<SpatialMenu.SpatialMenuData> spatialMenuData { get; set; }
+        public List<SpatialMenu.SpatialMenuData> spatialMenuData { private get; set; }
         public List<SpatialMenu.SpatialMenuElementContainer> highlightedMenuElements;
 
         // SpatialMenu actions/delegates/funcs
