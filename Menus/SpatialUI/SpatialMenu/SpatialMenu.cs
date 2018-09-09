@@ -430,9 +430,6 @@ namespace UnityEditor.Experimental.EditorVR
                 var atLeastOneInputDeviceIsAimingAtSpatialMenu = false;
                 foreach (var origin in allSpatialMenuRayOrigins)
                 {
-                    if (origin == null)
-                        continue;
-
                     // If BELOW the threshold, thus a ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
                     if (IsAimingAtUI(origin))
                     {
