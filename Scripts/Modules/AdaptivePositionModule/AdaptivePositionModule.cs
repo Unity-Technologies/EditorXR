@@ -20,25 +20,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Collection of objects whose position is controlled by this module
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
 
-        public class AdaptivePositionData
-        {
-            public AdaptivePositionData(IAdaptPosition caller, Vector3 previousAnchoredPosition)
-            {
-                this.previousAnchoredPosition = previousAnchoredPosition;
-                startingPosition = caller.adaptiveTransform.position;
-            }
-
-            /// <summary>
-            /// The world-position at which this object was last anchored
-            /// </summary>
-            public Vector3 previousAnchoredPosition { get; set; }
-
-            /// <summary>
-            /// The origin/starting position of the object being re-positioned
-            /// </summary>
-            public Vector3 startingPosition { get; set; }
-        }
-
         void Awake()
         {
             m_GazeTransform = CameraUtils.GetMainCamera().transform;
@@ -118,7 +99,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             adaptiveTransform.rotation = Quaternion.identity;
 
             m_AdaptivePositionElements.Add(adaptiveElement);
-            adaptiveElement.adaptivePositionData = new AdaptivePositionData(adaptiveElement, adaptiveTransform.position);
         }
 
         /// <summary>

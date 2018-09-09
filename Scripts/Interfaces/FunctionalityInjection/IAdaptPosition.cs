@@ -42,11 +42,6 @@ namespace UnityEditor.Experimental.EditorVR
         float adaptivePositionRestDistance { get; }
 
         /// <summary>
-        /// The data defining the adaptive position state of the implementer
-        /// </summary>
-        AdaptivePositionModule.AdaptivePositionData adaptivePositionData { set; }
-
-        /// <summary>
         /// Bool denoting that this implementer should have its position immediately reset when the next scheduled position update occurs
         /// </summary>
         bool resetAdaptivePosition { get; set; }
