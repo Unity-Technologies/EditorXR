@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR
     public interface IAdaptPosition
     {
         /// <summary>
-        /// Bool denoting that this implementer is active, and will have it's position adjusted automatically
+        /// Denotes if this implementer is active, and will have it's position adjusted automatically
         /// </summary>
         bool allowAdaptivePositioning { get; }
 
@@ -21,12 +21,12 @@ namespace UnityEditor.Experimental.EditorVR
         Transform adaptiveTransform { get; }
 
         /// <summary>
-        /// Bool denoting that this implementer is being moved by the AdaptivePositionModule
+        /// Denotes if this implementer is being moved by the AdaptivePositionModule
         /// </summary>
         bool beingMoved { set; }
 
         /// <summary>
-        /// Bool denoting that this implementer is within the allowed gaze range, & being looked at
+        /// Denotes if this implementer is within the allowed gaze range, & being looked at
         /// </summary>
         bool inFocus { get; set; }
 
@@ -39,17 +39,43 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Target z-offset, at which to position the gaze source transform
         /// </summary>
-        float distanceOffset { get; }
+        float adaptivePositionRestDistance { get; }
 
         /// <summary>
         /// The data defining the adaptive position state of the implementer
         /// </summary>
-        AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
+        AdaptivePositionModule.AdaptivePositionData adaptivePositionData { set; }
 
         /// <summary>
         /// Bool denoting that this implementer should have its position immediately reset when the next scheduled position update occurs
         /// </summary>
         bool resetAdaptivePosition { get; set; }
+
+        /// <summary>
+        /// Distance below which an object will be re-positioned at the ideal distance from the user's gaze/hmd
+        /// </summary>
+        float allowedMinDistanceDivergence { get; }
+
+        /// <summary>
+        /// Distance beyond which an object will be re-positioned at the ideal distance from the user's gaze/hmd
+        /// </summary>
+        float allowedMaxDistanceDivergence { get; }
+
+        /// <summary>
+        /// Coroutine that handles the animated re-positioning of the object
+        /// </summary>
+        Coroutine adaptiveElementRepositionCoroutine { get; set; }
+
+        /// <summary>
+        /// Adjust position only when out of focus/gaze
+        /// This allows an implementer to remain stable while the user move towards/away while focusing upon it
+        /// </summary>
+        bool onlyMoveWhenOutOfFocus { get; }
+
+        /// <summary>
+        /// Adjust position, regardless of distance, if out of focus
+        /// </summary>
+        bool repositionIfOutOfFocus { get; }
     }
 }
 #endif
