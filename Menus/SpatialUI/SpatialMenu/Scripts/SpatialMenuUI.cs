@@ -159,7 +159,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public float allowedMinDistanceDivergence { get { return k_AllowedMinHMDDistanceDivergence; } }
         public float allowedMaxDistanceDivergence { get { return k_AllowedMaxHMDDistanceDivergence; } }
         public float adaptivePositionRestDistance { get { return k_TargetAdaptiveRestDistance; } }
-        public AdaptivePositionModule.AdaptivePositionData adaptivePositionData { get; set; }
         public bool allowAdaptivePositioning { get; private set; }
         public bool resetAdaptivePosition { get; set; }
         public Coroutine adaptiveElementRepositionCoroutine { get; set; }
