@@ -296,6 +296,7 @@ namespace UnityEditor.Experimental.EditorVR
             const float divergenceThreshold = 45f; // Allowed angular deviation of the device and UI
             var divergenceThresholdConvertedToDot = Mathf.Sin(Mathf.Deg2Rad * divergenceThreshold);
             var testVector = s_SpatialMenuUi.adaptiveTransform.position - deviceTransform.position; // Test device to UI source vector
+            var unscaledTestVector = testVector;
             testVector.Normalize(); // Normalize, in order to retain expected dot values
             var inputDeviceForwardDirection = deviceTransform.forward;
             var angularComparison = Vector3.Dot(testVector, inputDeviceForwardDirection);
@@ -304,10 +305,12 @@ namespace UnityEditor.Experimental.EditorVR
             // This expanded target area will allow a device ray to enable external-ray-mode, with greater tolerance on the +- X-axis, but not the Y-axis
             // This retains the ability of the ray to be more easily pointed upward/downward in order to deactivate this mode, and go into other modes (SpatialSelect, etc)
             // During testing, this allowed for easier targeting of the UI via ray at expected times, better accommodating the expectations of testers)
-            var deviceXOffsetInlocalSpace = Mathf.Abs(deviceTransform.InverseTransformVector(testVector).x - deviceTransform.localPosition.x);
             const float additiveXPositionOffsetShapingScalar = 3f; // Apply less when near the center of the UI, more towards the outer reach of an extended arm on the X
-            const float xPositionOffsetFromCenterAdditiveScalar = 0.8f; // Lessen the amount added for better ergonomic shaping
-            angularComparison += Mathf.Pow(deviceXOffsetInlocalSpace, additiveXPositionOffsetShapingScalar) * xPositionOffsetFromCenterAdditiveScalar;
+            var deviceXOffsetInlocalSpace = Mathf.Abs(deviceTransform.InverseTransformVector(unscaledTestVector).x - deviceTransform.localPosition.x);
+            var viewerScale = this.GetViewerScale();
+            var xPositionOffsetFromCenterAdditiveScalar = 0.8f * viewerScale; // Lessen the amount added for better ergonomic shaping
+            var xOffsetAddition = Mathf.Pow(deviceXOffsetInlocalSpace, additiveXPositionOffsetShapingScalar) * xPositionOffsetFromCenterAdditiveScalar / viewerScale;
+            angularComparison += xOffsetAddition;
 
             var isAimingAtUi = angularComparison > divergenceThresholdConvertedToDot;
             return isAimingAtUi;
