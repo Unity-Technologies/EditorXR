@@ -291,28 +291,36 @@ namespace UnityEditor.Experimental.EditorVR
             m_HighlightedTopLevelMenuElementPosition = -1;
         }
 
-        bool IsAimingAtUI(Transform deviceTransform)
+        bool IsAimingAtUI()
         {
-            const float divergenceThreshold = 45f; // Allowed angular deviation of the device and UI
-            var divergenceThresholdConvertedToDot = Mathf.Sin(Mathf.Deg2Rad * divergenceThreshold);
-            var testVector = s_SpatialMenuUi.adaptiveTransform.position - deviceTransform.position; // Test device to UI source vector
-            var unscaledTestVector = testVector;
-            testVector.Normalize(); // Normalize, in order to retain expected dot values
-            var inputDeviceForwardDirection = deviceTransform.forward;
-            var angularComparison = Vector3.Dot(testVector, inputDeviceForwardDirection);
+            bool isAimingAtUi = false;
 
-            // Circularly expand/inflate outward from the center, the allowed target/intersection area of the device ray & the UI on the += X-axis
-            // This expanded target area will allow a device ray to enable external-ray-mode, with greater tolerance on the +- X-axis, but not the Y-axis
-            // This retains the ability of the ray to be more easily pointed upward/downward in order to deactivate this mode, and go into other modes (SpatialSelect, etc)
-            // During testing, this allowed for easier targeting of the UI via ray at expected times, better accommodating the expectations of testers)
-            const float additiveXPositionOffsetShapingScalar = 3f; // Apply less when near the center of the UI, more towards the outer reach of an extended arm on the X
-            var deviceXOffsetInlocalSpace = Mathf.Abs(deviceTransform.InverseTransformVector(unscaledTestVector).x - deviceTransform.localPosition.x);
+            const float kDivergenceThreshold = 45f; // Allowed angular deviation of the device and UI
+            var divergenceThresholdConvertedToDot = Mathf.Sin(Mathf.Deg2Rad * kDivergenceThreshold);
+            var spatialMenuUITransformPosition = s_SpatialMenuUi.adaptiveTransform != null ? s_SpatialMenuUi.adaptiveTransform.position : Vector3.zero;
             var viewerScale = this.GetViewerScale();
-            var xPositionOffsetFromCenterAdditiveScalar = 0.8f * viewerScale; // Lessen the amount added for better ergonomic shaping
-            var xOffsetAddition = Mathf.Pow(deviceXOffsetInlocalSpace, additiveXPositionOffsetShapingScalar) * xPositionOffsetFromCenterAdditiveScalar / viewerScale;
-            angularComparison += xOffsetAddition;
+            foreach (var origin in allSpatialMenuRayOrigins)
+            {
+                var testVector = spatialMenuUITransformPosition - origin.position; // Test device to UI source vector
+                var unscaledTestVector = testVector;
+                testVector.Normalize(); // Normalize, in order to retain expected dot values
+                var inputDeviceForwardDirection = origin.forward;
+                var angularComparison = Vector3.Dot(testVector, inputDeviceForwardDirection);
 
-            var isAimingAtUi = angularComparison > divergenceThresholdConvertedToDot;
+                // Circularly expand/inflate outward from the center, the allowed target/intersection area of the device ray & the UI on the += X-axis
+                // This expanded target area will allow a device ray to enable external-ray-mode, with greater tolerance on the +- X-axis, but not the Y-axis
+                // This retains the ability of the ray to be more easily pointed upward/downward in order to deactivate this mode, and go into other modes (SpatialSelect, etc)
+                // During testing, this allowed for easier targeting of the UI via ray at expected times, better accommodating the expectations of testers)
+                const float kAdditiveXPositionOffsetShapingScalar = 3f; // Apply less when near the center of the UI, more towards the outer reach of an extended arm on the X
+                var deviceXOffsetInlocalSpace = Mathf.Abs(origin.InverseTransformVector(unscaledTestVector).x - origin.localPosition.x);
+                var xPositionOffsetFromCenterAdditiveScalar = 0.8f * viewerScale; // Lessen the amount added for better ergonomic shaping
+                var xOffsetAddition = Mathf.Pow(deviceXOffsetInlocalSpace, kAdditiveXPositionOffsetShapingScalar) * xPositionOffsetFromCenterAdditiveScalar / viewerScale;
+                angularComparison += xOffsetAddition;
+
+                isAimingAtUi = angularComparison > divergenceThresholdConvertedToDot;
+                break;
+            }
+
             return isAimingAtUi;
         }
 
@@ -370,7 +378,7 @@ namespace UnityEditor.Experimental.EditorVR
                 s_SpatialMenuUi.changeMenuState = ChangeMenuState;
 
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
-                s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Translation;
+                s_SpatialMenuUi.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.Translation;
 
                 foreach (var data in s_SpatialMenuData)
                 {
@@ -430,19 +438,10 @@ namespace UnityEditor.Experimental.EditorVR
             // isHeld goes false right when you go below 0.5.  this is the check for 'up-click' on the pad / stick
             if ((positiveYInputAction.isHeld || m_SpatialInputHold) && s_SpatialMenuState != SpatialMenuState.hidden)
             {
-                var atLeastOneInputDeviceIsAimingAtSpatialMenu = false;
-                foreach (var origin in allSpatialMenuRayOrigins)
-                {
-                    // If BELOW the threshold, thus a ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
-                    if (IsAimingAtUI(origin))
-                    {
-                        atLeastOneInputDeviceIsAimingAtSpatialMenu = true;
-                        break;
-                    }
-                }
-
+                // If the ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
+                var atLeastOneInputDeviceIsAimingAtSpatialMenu = IsAimingAtUI();
                 if (atLeastOneInputDeviceIsAimingAtSpatialMenu) // Ray-based interaction takes precedence over other input types
-                    s_SpatialMenuUi.spatialInterfaceInputMode = SpatialMenuUI.SpatialInterfaceInputMode.Ray;
+                    s_SpatialMenuUi.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.Ray;
                 else if (s_SpatialMenuUi.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Ray)
                     s_SpatialMenuUi.ReturnToPreviousInputMode();
 
