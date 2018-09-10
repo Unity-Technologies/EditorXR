@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -13,8 +14,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     public abstract class SpatialUIController : MonoBehaviour, INodeToRay
     {
         // Pre-box fields to avoid allocation when setting them via reflection
-        static object[] boxedTrueBool = new object[] {true};
-        static object[] boxedFalseBool = new object[] {false};
+        static readonly object[] boxedTrueBool = new object[] {true};
+        static readonly object[] boxedFalseBool = new object[] {false};
         static bool s_Initialized;
         static bool s_SceneViewGizmosInOriginalState = true;
         static bool s_SelectionOutlineWasEnabledOnStart;
@@ -62,14 +63,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (s_SceneViewGizmoAnnotationUtilityType != null)
             {
                 var currentSelectionOutlineProperty = s_SceneViewGizmoAnnotationUtilityType.GetProperty(s_SelectionOutlineProperty, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
-                var currentSelectionOutlineValue = currentSelectionOutlineProperty.GetValue(s_SceneViewGizmoAnnotationUtilityType, null);
-                if (currentSelectionOutlineValue != null)
-                    s_SelectionOutlineWasEnabledOnStart = (bool)currentSelectionOutlineValue;
+                if (currentSelectionOutlineProperty != null)
+                {
+                    var currentSelectionOutlineValue = currentSelectionOutlineProperty.GetValue(s_SceneViewGizmoAnnotationUtilityType, null);
+                    if (currentSelectionOutlineValue != null)
+                        s_SelectionOutlineWasEnabledOnStart = (bool)currentSelectionOutlineValue;
+                }
 
                 var currentSelectionWireProperty = s_SceneViewGizmoAnnotationUtilityType.GetProperty(s_SelectionWireframeProperty, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
-                var currentSelectionWireValue = currentSelectionWireProperty.GetValue(s_SceneViewGizmoAnnotationUtilityType, null);
-                if (currentSelectionWireValue != null)
-                    s_SelectionWireframeWasEnabledOnStart = (bool)currentSelectionWireValue;
+                if (currentSelectionWireProperty != null)
+                {
+                    var currentSelectionWireValue = currentSelectionWireProperty.GetValue(s_SceneViewGizmoAnnotationUtilityType, null);
+                    if (currentSelectionWireValue != null)
+                        s_SelectionWireframeWasEnabledOnStart = (bool)currentSelectionWireValue;
+                }
             }
         }
 
@@ -82,9 +89,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
                 Type.DefaultBinder, s_AnnotationUtilityType, selectionOutlineEnabledBoxedBool);
 
+            var selectionWireEnabledBoxedBool = selectionWireEnabled ? boxedTrueBool : boxedFalseBool;
             s_SceneViewGizmoAnnotationUtilityType.InvokeMember(s_SelectionWireframeProperty,
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
-                Type.DefaultBinder, s_AnnotationUtilityType, selectionOutlineEnabledBoxedBool);
+                Type.DefaultBinder, s_AnnotationUtilityType, selectionWireEnabledBoxedBool);
         }
 
         protected static void ConsumeControls(SpatialMenuInput spatialMenuActionMapInput, ConsumeControlDelegate consumeControl, bool consumeSelection = true)
