@@ -308,7 +308,10 @@ namespace UnityEditor.Experimental.EditorVR
                 angularComparison += xOffsetAddition;
 
                 isAimingAtUi = angularComparison > divergenceThresholdConvertedToDot;
-                break;
+
+                // Only need to detect at least one proxy ray aiming at the UI
+                if (isAimingAtUi)
+                    break;
             }
 
             return isAimingAtUi;
