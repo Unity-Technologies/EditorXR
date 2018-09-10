@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -112,6 +113,12 @@ namespace UnityEditor.Experimental.EditorVR
         Coroutine m_CircularTriggerSelectionCyclingCoroutine;
         Transform m_RayOrigin;
 
+        // Spatial Scroll related fields
+        Transform m_SpatialScrollOriginTransform;
+        Vector3 m_SpatialScrollOriginPosition;
+        Vector3 m_PreviousTrackedSpatialScrollPosition;
+        Coroutine m_SpatialScrollEvaluationCoroutine;
+
         int subMenuElementCount { get { return s_SubMenuData.spatialMenuElements.Count; } }
 
         bool visible
@@ -165,6 +172,10 @@ namespace UnityEditor.Experimental.EditorVR
                         m_CurrentSpatialActionMapInput = null;
                         break;
                 }
+
+                // Spatial scroll evaluation routines should be stopped when state changes
+                if (m_SpatialScrollEvaluationCoroutine != null)
+                    this.StopCoroutine(ref m_SpatialScrollEvaluationCoroutine);
             }
         }
 
@@ -373,6 +384,8 @@ namespace UnityEditor.Experimental.EditorVR
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
                 s_SpatialMenuUI.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.Translation;
 
+                SetupSpatialScroll();
+
                 foreach (var data in s_SpatialMenuData)
                 {
                     foreach (var element in data.spatialMenuElements)
@@ -434,9 +447,16 @@ namespace UnityEditor.Experimental.EditorVR
                 // If the ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
                 var atLeastOneInputDeviceIsAimingAtSpatialMenu = IsAimingAtUI();
                 if (atLeastOneInputDeviceIsAimingAtSpatialMenu) // Ray-based interaction takes precedence over other input types
+                {
                     s_SpatialMenuUI.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.Ray;
-                else if (s_SpatialMenuUI.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Ray)
+                }
+                else
+                {
+                    if (s_SpatialMenuUI.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Ray)
                         s_SpatialMenuUI.ReturnToPreviousInputMode();
+                    else if (m_SpatialScrollEvaluationCoroutine == null && s_SpatialMenuUI.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Translation)
+                        this.RestartCoroutine(ref m_SpatialScrollEvaluationCoroutine, SpatialScrollTimedEvaluation());
+                }
 
                 this.SetRayOriginEnabled(m_RayOrigin, false);
                 this.SetManipulatorsVisible(this, false);
@@ -447,6 +467,14 @@ namespace UnityEditor.Experimental.EditorVR
                     var cancelJustPressed = CancelWasJustPressedTest(consumeControl);
                     if (cancelJustPressed)
                         return;
+                }
+
+                // Allow custom selection in Spatial Selection mode, but prevent redundant selection when in circular selection mode
+                if (s_SpatialMenuUI.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Translation
+                    && m_CurrentSpatialActionMapInput.select.wasJustPressed
+                    && !m_ShowMenuCircularInputCrossedRotationThresholdForSelection)
+                {
+                    s_SpatialMenuUI.SelectCurrentlyHighlightedElement(node);
                 }
 
                 return;
@@ -524,6 +552,93 @@ namespace UnityEditor.Experimental.EditorVR
 
             m_CircularTriggerSelectionCyclingCoroutine = null;
             yield return null;
+        }
+
+        void SetupSpatialScroll()
+        {
+            if (m_SpatialScrollOriginTransform == null) // Only performed once when initial displaying the menu
+                m_SpatialScrollOriginTransform = ObjectUtils.CreateEmptyGameObject("SpatialMenuSpatialScrollTarget", transform).transform;
+
+            // Define the vector going from the HMD to the input device that triggered the SpatialMenu display
+            // +- scrolling will then be project upon the X & Y axis' of that vector (which is aiming at the HMD)
+            //m_SpatailScrollOriginToViewVector = VRView.viewerCamera.transform.position - m_RayOrigin.position;
+            m_SpatialScrollOriginTransform.position = m_RayOrigin.position;
+            m_SpatialScrollOriginTransform.LookAt(VRView.viewerCamera.transform);
+        }
+
+        float PerformSpatialScrollInputEvaluation()
+        {
+            var testVector = m_SpatialScrollOriginTransform.position - m_RayOrigin.position;
+            var unscaledTestVector = testVector;
+            testVector.Normalize(); // Normalize, in order to retain expected dot values
+
+            var currentPositionOnSpecifiedAxis = 0f;
+            if (s_SpatialMenuState == SpatialMenuState.navigatingTopLevel)
+            {
+                var deviceXOffsetInlocalSpace = m_RayOrigin.InverseTransformVector(unscaledTestVector).x - m_RayOrigin.localPosition.x;
+                currentPositionOnSpecifiedAxis = deviceXOffsetInlocalSpace;
+            }
+            else if (s_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent)
+            {
+                var deviceYOffsetInlocalSpace = m_RayOrigin.InverseTransformVector(unscaledTestVector).y - m_RayOrigin.localPosition.y;
+                currentPositionOnSpecifiedAxis = deviceYOffsetInlocalSpace;
+            }
+
+            return currentPositionOnSpecifiedAxis;
+        }
+
+        IEnumerator SpatialScrollTimedEvaluation()
+        {
+            // assign current x/y position in spatial scroll eval space as the previous value, for comparison after the timed delay
+            var previousAxisToMenuStateScrollPosition = PerformSpatialScrollInputEvaluation();
+
+            // Prevent the cycling to another element by keeping the coroutine reference from being null for a period of time
+            // The coroutine reference is tested against in ProcessInput(), only allowing the cycling to previous/next element if null
+            const float kSelectionTimingBuffer = 0.15f;
+            var distanceTraversedDuringDelay = 0f;
+            var duration = 0f;
+            while (duration < kSelectionTimingBuffer && s_SpatialMenuUI.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Translation)
+            {
+                distanceTraversedDuringDelay += Mathf.Abs(previousAxisToMenuStateScrollPosition - PerformSpatialScrollInputEvaluation());
+                duration += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            const float kRequiredMinDistanceTraversed = 0.1f;
+            // The distance traversed should be increased for Y-axis scrolling, in order to account for less ergnomic range
+            var yScaledMinDistanceTraversed = distanceTraversedDuringDelay * (s_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent ? 4 : 1);
+            if (s_SpatialMenuUI.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Translation && yScaledMinDistanceTraversed > kRequiredMinDistanceTraversed)
+            {
+                Debug.LogWarning(distanceTraversedDuringDelay);
+                // assign current x/y position in spatial scroll eval space
+                var currentAxisToMenuStateScrollPosition = PerformSpatialScrollInputEvaluation();
+                if (s_SpatialMenuState == SpatialMenuState.navigatingTopLevel)
+                {
+                    const float necessaryXDistanceToTraverse = 0.0515f;
+                    var xDistanceTraversed = Mathf.Abs(currentAxisToMenuStateScrollPosition - previousAxisToMenuStateScrollPosition);
+                    Debug.LogError(xDistanceTraversed);
+                    if (xDistanceTraversed > necessaryXDistanceToTraverse) // make sure difference between positions is above a necessary minimum
+                    {
+                        var elementPositionOffset = currentAxisToMenuStateScrollPosition > previousAxisToMenuStateScrollPosition ? -1 : 1;
+                        var menuElementCount = s_SpatialMenuData.Count;
+                        m_HighlightedTopLevelMenuElementPosition = (int)Mathf.Repeat(m_HighlightedTopLevelMenuElementPosition + elementPositionOffset, menuElementCount);
+                        s_SpatialMenuUI.HighlightElementInCurrentlyDisplayedMenuSection(m_HighlightedTopLevelMenuElementPosition);
+                    }
+                }
+                else if (s_SpatialMenuState == SpatialMenuState.navigatingSubMenuContent)
+                {
+                    const float necessaryYDistanceToTraverse = 0.02f; // Less distance to traverse on Y-axis for better ergonomics
+                    var yDistanceTraversed = Mathf.Abs(currentAxisToMenuStateScrollPosition - previousAxisToMenuStateScrollPosition);
+                    if (yDistanceTraversed > necessaryYDistanceToTraverse) // make sure difference between positions is above a necessary minimum
+                    {
+                        var elementPositionOffset = currentAxisToMenuStateScrollPosition > previousAxisToMenuStateScrollPosition ? 1 : -1;
+                        m_HighlightedSubLevelMenuElementPosition = (int)Mathf.Repeat(m_HighlightedSubLevelMenuElementPosition + elementPositionOffset, subMenuElementCount);
+                        s_SpatialMenuUI.HighlightElementInCurrentlyDisplayedMenuSection(m_HighlightedSubLevelMenuElementPosition);
+                    }
+                }
+            }
+
+            m_SpatialScrollEvaluationCoroutine = null;
         }
     }
 }
