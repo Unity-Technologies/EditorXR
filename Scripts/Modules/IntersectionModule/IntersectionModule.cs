@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking, IGetVRPlayerObjects
+    sealed partial class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking, IGetVRPlayerObjects
     {
         const int k_MaxTestsPerTester = 250;
 
@@ -21,6 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         SpatialHash<Renderer> m_SpatialHash;
         MeshCollider m_CollisionTester;
+
+        bool m_ComputeSupported;
 
         struct RayIntersection
         {
@@ -50,6 +52,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void Awake()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
+            m_ComputeSupported = SystemInfo.supportsComputeShaders;
+            if (m_ComputeSupported)
+                SetupGPUIntersection();
         }
 
         internal void Setup(SpatialHash<Renderer> hash)
@@ -66,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (m_Testers == null)
                 return;
 
-            for (int i = 0; i < m_Testers.Count; i++)
+            for (var i = 0; i < m_Testers.Count; i++)
             {
                 var tester = m_Testers[i];
                 if (!tester.active)
@@ -131,7 +136,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         for (int j = 0; j < m_SortedIntersections.Count; j++)
                         {
                             var obj = m_SortedIntersections[j].renderer;
-                            if (IntersectionUtils.TestObject(m_CollisionTester, obj, tester))
+                            var test = m_ComputeSupported
+                                ? TestObjectGPU(obj, tester)
+                                : IntersectionUtils.TestObject(m_CollisionTester, obj, tester);
+                            if (test)
                             {
                                 intersectionFound = true;
                                 Renderer currentObject;
@@ -322,6 +330,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var playerBounds = ObjectUtils.GetBounds(this.GetVRPlayerObjects());
             playerBounds.extents += m_PlayerBoundsMargin;
             return objectBounds.ContainsCompletely(playerBounds);
+        }
+
+        void OnDestroy()
+        {
+            TearDownGPUIntersection();
         }
     }
 }

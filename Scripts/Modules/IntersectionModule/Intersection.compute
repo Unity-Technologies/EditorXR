@@ -1,0 +1,59 @@
+﻿// Kernels
+#pragma kernel Intersect
+
+#define EPSILON 1e-6
+
+// Structures
+struct Ray
+{
+    float3 pos;
+    float3 dir;
+};
+
+// Input
+RWStructuredBuffer<Ray> rays;
+RWStructuredBuffer<float3> vertices;
+RWStructuredBuffer<int> indices;
+
+// Output
+RWStructuredBuffer<float> output;
+
+[numthreads(1, 1, 1)]
+void Intersect(uint3 id : SV_DispatchThreadID)
+{
+	int triIndex = id.x * 3;
+	float3 vertex0 = vertices[indices[triIndex]];
+	float3 vertex1 = vertices[indices[triIndex + 1]];
+	float3 vertex2 = vertices[indices[triIndex + 2]];
+
+	float3 edge1 = vertex1 - vertex0;
+	float3 edge2 = vertex2 - vertex0;
+	Ray ray = rays[0];
+	float3 rayVector = ray.dir;
+	float3 h = cross(rayVector, edge2);
+	float a = dot(edge1, h);
+	if (abs(a) < EPSILON)
+		return;
+
+	float f = 1 / a;
+	float3 rayOrigin = ray.pos;
+	float3 s = rayOrigin - vertex0;
+	float u = f * dot(s, h);
+	if (u < 0.0 || u > 1.0)
+		return;
+
+	float3 q = cross(s, edge1);
+	float v = f * dot(rayVector, q);
+	if (v < 0.0 || u + v > 1.0)
+		return;
+
+	// At this stage we can compute t to find out where the intersection point is on the line.
+	float t = f * dot(edge2, q);
+	if (t < EPSILON) // ray intersection
+	{
+		//outIntersectionPoint = rayOrigin + rayVector * t;
+		return;
+	}
+
+	output[0] = 1;
+}

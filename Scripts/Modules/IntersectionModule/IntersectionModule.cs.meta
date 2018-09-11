@@ -1,10 +1,11 @@
 fileFormatVersion: 2
 guid: c4b96cb00aff3a144b8be334d9d89258
-timeCreated: 1469224720
-licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - m_IntersectionShader: {fileID: 7200000, guid: 2e8d6b4b18d4c45969391aacd4c7e05d,
+      type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
