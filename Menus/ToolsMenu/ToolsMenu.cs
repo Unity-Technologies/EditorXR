@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get; private set; }
 
         public Transform rayOrigin { get; set; }
 
