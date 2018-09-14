@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -690,8 +689,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             return triangles;
         }
 
-        // TODO : if your action starts as left or right, brush size should adjust.
-        // if it doesn't, spatial UI should consume and brush shouldn't change
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             var annotationInput = (AnnotationInput)input;

@@ -13,7 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IActionsMenu
     {
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
-        const string k_SpatialDisplayName = "Actions";
         const string k_SpatialDescription = "Perform actions based on selected-object context";
 
         [SerializeField]

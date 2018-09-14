@@ -21,8 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         static bool s_SelectionWireframeWasEnabledOnStart;
         static Type s_SceneViewGizmoAnnotationUtilityType;
         static Type s_AnnotationUtilityType;
-        static string s_SelectionOutlineProperty = "showSelectionOutline";
-        static string s_SelectionWireframeProperty = "showSelectionWire";
+        static readonly string s_SelectionOutlineProperty = "showSelectionOutline";
+        static readonly string s_SelectionWireframeProperty = "showSelectionWire";
 
         protected bool sceneViewGizmosVisible
         {

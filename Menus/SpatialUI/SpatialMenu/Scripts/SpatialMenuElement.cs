@@ -3,7 +3,6 @@ using System;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -11,8 +10,8 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Abstract class housing common SpatialMenu element functionality
     /// </summary>
-    public class SpatialMenuElement : MonoBehaviour, IControlHaptics,
-        IRayEnterHandler, IRayExitHandler, IRayClickHandler, IPointerClickHandler
+    public abstract class SpatialMenuElement : MonoBehaviour, IControlHaptics,
+        IRayEnterHandler, IRayExitHandler
     {
         [SerializeField]
         protected TextMeshProUGUI m_Text;
@@ -48,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR
         public virtual bool visible { get; set; }
 
         /// <summary>
-        /// FUnction that sets up the model and view for this particular element
+        /// Sets up the model and view for this particular element
         /// </summary>
         public Action<Transform, Action, string, string> Setup { get; set; }
 
@@ -87,18 +86,6 @@ namespace UnityEditor.Experimental.EditorVR
         {
             highlighted = false;
             hoveringNode = Node.None;
-        }
-
-        void IRayClickHandler.OnRayClick(RayEventData eventData)
-        {
-            Debug.LogError("OnRayClick called for spatial menu section title element :" + m_Text.text);
-            throw new NotImplementedException();
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            Debug.LogError("OnPointerClick called for spatial menu section title element :" + m_Text.text);
-            throw new NotImplementedException();
         }
     }
 }
