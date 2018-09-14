@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         /// </summary>
         public enum SpatialInterfaceInputMode
         {
-            Translation,
+            Neutral,
             Ray,
             TriggerAffordanceRotation
         }

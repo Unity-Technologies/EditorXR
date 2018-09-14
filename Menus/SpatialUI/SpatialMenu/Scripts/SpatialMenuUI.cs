@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Playables;
@@ -23,13 +22,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const float k_AllowedMaxHMDDistanceDivergence = 0.95f; // Distance at which the menu will move towards
         const float k_AllowedMinHMDDistanceDivergence = 0.3f; // Distance at which the menu will move away
         const float k_TargetAdaptiveRestDistance = 0.75f; // Distance at which the menu will be re-positioned
-        const bool k_onlyMoveWhenOutOfFocus = true;
-        const bool k_alwaysRepositionIfOutOfFocus = true;
-
-        readonly string k_TranslationInputModeName = "Spatial Input Mode";
-        readonly string k_ExternalRayBasedInputModeName = "External Ray Input Mode";
-        readonly string k_TriggerRotationInputModeName = "Trigger Rotation Input Mode";
-        readonly List<SpatialMenuElement> currentlyDisplayedMenuElements = new List<SpatialMenuElement>();
+        const bool k_OnlyMoveWhenOutOfFocus = true;
+        const bool k_AlwaysRepositionIfOutOfFocus = true;
+        const string k_ExternalRayBasedInputModeName = "Ray Input Mode";
+        const string k_TriggerRotationInputModeName = "Thumb Rotation Input Mode";
 
         [Header("Common UI")]
         [SerializeField]
@@ -111,6 +107,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         Renderer m_ReturnToPreviousBackgroundRenderer;
 
+        readonly List<SpatialMenuElement> m_CurrentlyDisplayedMenuElements = new List<SpatialMenuElement>();
+
         Material m_ReturnToPreviousBackgroundMaterial;
 
         bool m_Visible;
@@ -162,8 +160,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public bool allowAdaptivePositioning { get; private set; }
         public bool resetAdaptivePosition { get; set; }
         public Coroutine adaptiveElementRepositionCoroutine { get; set; }
-        public bool onlyMoveWhenOutOfFocus { get { return k_onlyMoveWhenOutOfFocus; } }
-        public bool repositionIfOutOfFocus { get { return k_alwaysRepositionIfOutOfFocus; } }
+        public bool onlyMoveWhenOutOfFocus { get { return k_OnlyMoveWhenOutOfFocus; } }
+        public bool repositionIfOutOfFocus { get { return k_AlwaysRepositionIfOutOfFocus; } }
 
         // Section name string, corresponding element collection, currentlyHighlightedState
         public List<SpatialMenu.SpatialMenuData> spatialMenuData { private get; set; }
@@ -201,7 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     case SpatialMenu.SpatialMenuState.hidden:
                         const string kAwaktingText = "Awaiting Selection";
                         m_HomeSectionDescription.text = kAwaktingText;
-                        foreach (var element in currentlyDisplayedMenuElements)
+                        foreach (var element in m_CurrentlyDisplayedMenuElements)
                         {
                             // Perform animated hiding of elements
                             element.visible = false;
@@ -224,8 +222,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 switch (m_SpatialInterfaceInputMode)
                 {
-                    case SpatialInterfaceInputMode.Translation:
-                        m_InputModeText.text = k_TranslationInputModeName;
+                    case SpatialInterfaceInputMode.Neutral:
+                        m_InputModeText.text = String.Empty;
                         break;
                     case SpatialInterfaceInputMode.Ray:
                         m_InputModeText.text = k_ExternalRayBasedInputModeName;
@@ -309,7 +307,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             ForceClearHomeMenuElements();
             ForceClearSubMenuElements();
 
-            m_InputModeText.text = k_TranslationInputModeName;
+            m_InputModeText.text = string.Empty;
             m_Director.playableAsset = m_RevealTimelinePlayable;
             m_HomeSectionCanvasGroup.alpha = 1f;
             m_HomeTextBackgroundInnerCanvasGroup.alpha = 1f;
@@ -356,7 +354,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void HideSubMenuElements()
         {
-            foreach (var element in currentlyDisplayedMenuElements)
+            foreach (var element in m_CurrentlyDisplayedMenuElements)
             {
                 element.visible = false;
             }
@@ -385,7 +383,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_HomeTextBackgroundTransform.localScale = m_HomeTextBackgroundOriginalLocalScale;
             m_HomeSectionDescription.gameObject.SetActive(true);
 
-            currentlyDisplayedMenuElements.Clear();
+            m_CurrentlyDisplayedMenuElements.Clear();
             var homeMenuElementParent = (RectTransform)m_HomeMenuLayoutGroup.transform;
             foreach (var data in spatialMenuData)
             {
@@ -393,7 +391,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 var providerMenuElement = instantiatedPrefabTransform.GetComponent<SpatialMenuElement>();
                 this.ConnectInterfaces(instantiatedPrefabTransform);
                 providerMenuElement.Setup(homeMenuElementParent, () => { }, data.spatialMenuName, null);
-                currentlyDisplayedMenuElements.Add(providerMenuElement);
+                m_CurrentlyDisplayedMenuElements.Add(providerMenuElement);
                 providerMenuElement.selected = SectionTitleButtonSelected;
                 providerMenuElement.highlightedAction = OnButtonHighlighted;
                 providerMenuElement.parentMenuData = data;
@@ -408,7 +406,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 if (menuData.highlighted)
                 {
-                    currentlyDisplayedMenuElements.Clear();
+                    m_CurrentlyDisplayedMenuElements.Clear();
                     var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( x => x != m_SubMenuContainer);
                     foreach (var child in deleteOldChildren)
                     {
@@ -422,7 +420,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
                         this.ConnectInterfaces(providerMenuElement);
                         providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, subMenuElement.tooltipText);
-                        currentlyDisplayedMenuElements.Add(providerMenuElement);
+                        m_CurrentlyDisplayedMenuElements.Add(providerMenuElement);
                         subMenuElement.VisualElement = providerMenuElement;
                         providerMenuElement.parentMenuData = menuData;
                         providerMenuElement.visible = true;
@@ -456,12 +454,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void HighlightElementInCurrentlyDisplayedMenuSection(int elementOrderPosition)
         {
-            var menuElementCount = currentlyDisplayedMenuElements.Count;
+            var menuElementCount = m_CurrentlyDisplayedMenuElements.Count;
             for (int i = 0; i < menuElementCount; ++i)
             {
-                if (currentlyDisplayedMenuElements.Count > i && currentlyDisplayedMenuElements[i] != null)
+                if (m_CurrentlyDisplayedMenuElements.Count > i && m_CurrentlyDisplayedMenuElements[i] != null)
                 {
-                    var element = currentlyDisplayedMenuElements[i];
+                    var element = m_CurrentlyDisplayedMenuElements[i];
                     element.highlighted = i == elementOrderPosition;
 
                     if (i == elementOrderPosition)
@@ -486,14 +484,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 // Search for an element that is being hovered,
                 // if no currentlyHighlightedMenuElement was assigned via a spatial/cyclical input means
-                for (int i = 0; i < currentlyDisplayedMenuElements.Count; ++i)
+                for (int i = 0; i < m_CurrentlyDisplayedMenuElements.Count; ++i)
                 {
-                    if (currentlyDisplayedMenuElements[i] != null)
+                    if (m_CurrentlyDisplayedMenuElements[i] != null)
                     {
-                        var highlighted = currentlyDisplayedMenuElements[i].highlighted;
+                        var highlighted = m_CurrentlyDisplayedMenuElements[i].highlighted;
                         if (highlighted)
                         {
-                            currentlyDisplayedMenuElements[i].selected(node);
+                            m_CurrentlyDisplayedMenuElements[i].selected(node);
                             return;
                         }
                     }

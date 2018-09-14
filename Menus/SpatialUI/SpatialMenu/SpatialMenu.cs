@@ -371,7 +371,7 @@ namespace UnityEditor.Experimental.EditorVR
                 s_SpatialMenuUI.changeMenuState = ChangeMenuState;
 
                 spatialMenuState = SpatialMenuState.navigatingTopLevel;
-                s_SpatialMenuUI.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.Translation;
+                s_SpatialMenuUI.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.Neutral;
 
                 foreach (var data in s_SpatialMenuData)
                 {
@@ -401,6 +401,7 @@ namespace UnityEditor.Experimental.EditorVR
                     if (rotationDifference < -0.5)
                     {
                         // Show Menu Rotation Input can now be cycled forward/backward to select menu elements
+                        s_SpatialMenuUI.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.TriggerAffordanceRotation;
                         m_ShowMenuCircularInputCrossedRotationThresholdForSelection = true;
                     }
                 }
