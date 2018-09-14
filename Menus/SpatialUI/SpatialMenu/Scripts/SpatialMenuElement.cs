@@ -9,9 +9,9 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
-    /// Abstract class housing common SpatualMenu element functionality
+    /// Abstract class housing common SpatialMenu element functionality
     /// </summary>
-    public abstract class SpatialMenuElement : MonoBehaviour, IControlHaptics,
+    public class SpatialMenuElement : MonoBehaviour, IControlHaptics,
         IRayEnterHandler, IRayExitHandler, IRayClickHandler, IPointerClickHandler
     {
         [SerializeField]
@@ -40,12 +40,12 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Bool denoting that this element is currently highlighted
         /// </summary>
-        public abstract bool highlighted { get; set; }
+        public virtual bool highlighted { get; set; }
 
         /// <summary>
         /// Bool denoting that this element is currently visible
         /// </summary>
-        public abstract bool visible { get; set; }
+        public virtual bool visible { get; set; }
 
         /// <summary>
         /// FUnction that sets up the model and view for this particular element
