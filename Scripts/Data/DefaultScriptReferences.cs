@@ -77,9 +77,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                         continue;
 
                     var mb = (MonoBehaviour)ObjectUtils.CreateGameObjectWithComponent(t, runInEditMode: false);
-                    mb.gameObject.hideFlags = HideFlags.None;
-                    mb.enabled = false;
-                    mb.transform.parent = prefabsRoot.transform;
+                    if (mb)
+                    {
+                        mb.gameObject.hideFlags = HideFlags.None;
+                        mb.enabled = false;
+                        mb.transform.parent = prefabsRoot.transform;
+                    }
                 }
             };
 
@@ -96,8 +99,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             defaultScriptReferences.m_ScriptPrefab = PrefabUtility.CreatePrefab(Path.ChangeExtension(k_Path, "prefab"), prefabsRoot);
             defaultScriptReferences.m_EditingContexts = EditingContextManager.GetEditingContextAssets().ConvertAll(ec => (ScriptableObject)ec);
 
-            if (!Directory.Exists(k_Path))
-                Directory.CreateDirectory(Path.GetDirectoryName(k_Path));
+            var directory = Path.GetDirectoryName(k_Path);
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory);
             AssetDatabase.CreateAsset(defaultScriptReferences, k_Path);
 
             DestroyImmediate(prefabsRoot);

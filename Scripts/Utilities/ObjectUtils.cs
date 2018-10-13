@@ -93,9 +93,17 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 #if UNITY_EDITOR
             else
             {
-                component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type).GetComponent(type);
-                SetRunInEditModeRecursively(component.gameObject, runInEditMode);
-                component.transform.SetParent(parent, worldPositionStays);
+                var go = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type);
+                component = go.GetComponent(type);
+                if (component)
+                {
+                    SetRunInEditModeRecursively(component.gameObject, runInEditMode);
+                    component.transform.SetParent(parent, worldPositionStays);
+                }
+                else
+                {
+                    UnityObject.DestroyImmediate(go);
+                }
             }
 #endif
 
