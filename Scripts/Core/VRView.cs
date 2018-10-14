@@ -273,6 +273,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void UpdateCameraTransform()
         {
+            if (!m_Camera)
+                return;
+
             var cameraTransform = m_Camera.transform;
 #if UNITY_2017_2_OR_NEWER
             cameraTransform.localPosition = InputTracking.GetLocalPosition(XRNode.Head);
@@ -322,7 +325,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             // Always render camera into a RT
             CreateCameraTargetTexture(ref m_TargetTexture, cameraRect, false);
-            m_Camera.targetTexture = m_ShowDeviceView ? m_TargetTexture : null;
+            m_Camera.targetTexture = m_TargetTexture;
 #if UNITY_2017_2_OR_NEWER
             XRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
 #endif
@@ -472,7 +475,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        static bool GetIsUserPresent()
+        internal static bool GetIsUserPresent()
         {
 #if UNITY_2017_2_OR_NEWER
 #if ENABLE_OVR_INPUT
@@ -484,7 +487,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
 #endif
 #endif
-            return true;
+            return false;
         }
 
         void SetGameViewsAutoRepaint(bool enabled)

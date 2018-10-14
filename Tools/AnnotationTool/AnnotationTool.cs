@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public const float TipDistance = 0.05f;
         public const float MinBrushSize = 0.0025f;
         public const float MaxBrushSize = 0.05f;
-    
+
         public delegate void AnnotationUpdatedCallback(MeshFilter meshFilter);
         public static AnnotationUpdatedCallback AnnotationUpdated;
         public delegate void AnnotationFinishedCallback(MeshFilter meshFilter);
@@ -296,8 +296,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (m_Preferences != null)
                 {
                     //Setting toggles on this tool's menu will set them on other tool menus
-                    m_MeshToggle.isOn = m_Preferences.meshGroupingMode;
-                    m_TransformToggle.isOn = !m_Preferences.meshGroupingMode;
+                    if (m_MeshToggle)
+                        m_MeshToggle.isOn = m_Preferences.meshGroupingMode;
+                    if (m_TransformToggle)
+                        m_TransformToggle.isOn = !m_Preferences.meshGroupingMode;
                 }
             }
 

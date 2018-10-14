@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
 using System.IO;
+using System.Reflection;
+using UnityEngine.XR;
 using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -20,7 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal const string k_SettingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
         internal const string k_UserSettingsPath = "Library/EditingContextManagerSettings.asset";
 
-        const string k_LaunchOnExitPlaymode = "EditingContextManager.LaunchOnExitPlaymode";
+        const string k_AutoOpen = "EditorXR.EditingContextManager.AutoOpen";
+        const string k_LaunchOnExitPlaymode = "EditorXR.EditingContextManager.LaunchOnExitPlaymode";
 
         IEditingContext m_CurrentContext;
 
@@ -29,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static List<IEditingContext> s_AvailableContexts;
         static EditingContextManagerSettings s_Settings;
         static UnityObject s_DefaultContext;
+        static bool s_AutoOpened;
 
         string[] m_ContextNames;
         int m_SelectedContextIndex;
@@ -76,12 +80,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
+        static bool autoOpen
+        {
+            get { return EditorPrefs.GetBool(k_AutoOpen, true); }
+            set { EditorPrefs.SetBool(k_AutoOpen, value); }
+        }
+
+
         static EditingContextManager()
         {
             VRView.viewEnabled += OnVRViewEnabled;
             VRView.viewDisabled += OnVRViewDisabled;
 
             EditorApplication.update += ReopenOnExitPlaymode;
+            EditorApplication.update += OpenIfUserPresent;
         }
 
         static void OnVRViewEnabled()
@@ -117,9 +129,59 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Selection.activeObject = settings;
         }
 
+        [PreferenceItem("EditorXR")]
+        static void PreferencesGUI()
+        {
+            EditorGUILayout.LabelField("Context Manager", EditorStyles.boldLabel);
+            // Auto open an EditorXR context
+            {
+                string title = "Auto open?";
+                string tooltip = "Automatically open an EditorXR context when the HMD is being worn";
+
+                autoOpen = EditorGUILayout.Toggle(new GUIContent(title, tooltip), autoOpen);
+            }
+
+            var contextTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
+            foreach (var contextType in contextTypes)
+            {
+                var preferencesGUIMethod = contextType.GetMethod("PreferencesGUI", BindingFlags.Static | BindingFlags.NonPublic);
+                if (preferencesGUIMethod != null)
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField(contextType.Name.Replace("Context", string.Empty), EditorStyles.boldLabel);
+                    preferencesGUIMethod.Invoke(null, null);
+                }
+            }
+        }
+
+        static void OpenIfUserPresent()
+        {
+            if (autoOpen)
+            {
+                var view = VRView.activeView;
+                if (!s_AutoOpened && ShouldShowEditorVR() && !view)
+                {
+                    if (!XRSettings.enabled)
+                        XRSettings.enabled = true;
+
+                    if (VRView.GetIsUserPresent())
+                    {
+                        s_AutoOpened = true;
+                        EditorApplication.delayCall += ShowEditorVR;
+                    }
+                }
+                else if (s_AutoOpened && view && !VRView.GetIsUserPresent())
+                {
+                    s_AutoOpened = false;
+                    EditorApplication.delayCall += view.Close;
+                }
+            }
+        }
+
         // Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
         // EditorVR after we switch back out of playmode (assuming the view was visible before a playmode switch). So,
-        // we watch until playmode is done and then relaunch.  
+        // we watch until playmode is done and then relaunch.
         static void ReopenOnExitPlaymode()
         {
             var launch = EditorPrefs.GetBool(k_LaunchOnExitPlaymode, false);
@@ -186,7 +248,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             SaveUserSettings(settings);
         }
 #endif
-
 
         void Awake()
         {

@@ -77,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (mainMenu != null && rayOrigin != null)
                 {
                     mainMenu.menuTools = m_MainMenuTools;
-                    mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
+                    mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes.Where(t => !HiddenTypes.Contains(t)).ToList();
                     mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
                     mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
                     m_MainMenus[rayOrigin] = mainMenu;
@@ -170,7 +170,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             public void LateBindInterfaceMethods(Tools provider)
             {
-                m_MainMenuTools = provider.allTools.Where(t => !Tools.IsDefaultTool(t)).ToList(); // Don't show tools that can't be selected/toggled
+                m_MainMenuTools = provider.allTools.Where(t =>
+                {
+                    return !Tools.IsDefaultTool(t) && !HiddenTypes.Contains(t);
+                }).ToList(); // Don't show tools that can't be selected/toggled
             }
 
             static void UpdateAlternateMenuForDevice(DeviceData deviceData)
@@ -316,31 +319,35 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 foreach (var deviceData in k_ActiveDeviceData)
                 {
                     var mainMenu = deviceData.mainMenu;
-                    var mainMenuHideData = deviceData.menuHideData[mainMenu];
-                    var mainMenuHideFlags = mainMenuHideData.hideFlags;
-                    var lastMainMenuHideFlags = mainMenuHideData.lastHideFlags;
+                    if (mainMenu != null)
+                    {
+                        var mainMenuHideData = deviceData.menuHideData[mainMenu];
+                        var mainMenuHideFlags = mainMenuHideData.hideFlags;
+                        var lastMainMenuHideFlags = mainMenuHideData.lastHideFlags;
 
-                    var permanentlyHidden = (mainMenuHideFlags & MenuHideFlags.Hidden) != 0;
-                    var wasPermanentlyHidden = (lastMainMenuHideFlags & MenuHideFlags.Hidden) != 0;
+                        var permanentlyHidden = (mainMenuHideFlags & MenuHideFlags.Hidden) != 0;
+                        var wasPermanentlyHidden = (lastMainMenuHideFlags & MenuHideFlags.Hidden) != 0;
 
-                    //Temporary states take effect after a delay
-                    var temporarilyHidden = (mainMenuHideFlags & MenuHideFlags.Temporary) != 0
-                        && Time.time > mainMenuHideData.autoHideTime + k_MainMenuAutoHideDelay;
-                    var wasTemporarilyHidden = (lastMainMenuHideFlags & MenuHideFlags.Temporary) != 0
-                        && Time.time > mainMenuHideData.autoShowTime + k_MainMenuAutoShowDelay;
+                        //Temporary states take effect after a delay
+                        var temporarilyHidden = (mainMenuHideFlags & MenuHideFlags.Temporary) != 0
+                            && Time.time > mainMenuHideData.autoHideTime + k_MainMenuAutoHideDelay;
+                        var wasTemporarilyHidden = (lastMainMenuHideFlags & MenuHideFlags.Temporary) != 0
+                            && Time.time > mainMenuHideData.autoShowTime + k_MainMenuAutoShowDelay;
 
-                    // If the menu is focused, only hide if Hidden is set (e.g. not temporary) in order to hide the selected tool
-                    if (permanentlyHidden || wasPermanentlyHidden || !mainMenu.focus && (temporarilyHidden || wasTemporarilyHidden))
-                        mainMenu.menuHideFlags = mainMenuHideFlags;
+                        // If the menu is focused, only hide if Hidden is set (e.g. not temporary) in order to hide the selected tool
+                        if (permanentlyHidden || wasPermanentlyHidden || !mainMenu.focus && (temporarilyHidden || wasTemporarilyHidden))
+                            mainMenu.menuHideFlags = mainMenuHideFlags;
 
-                    // Disable the main menu activator if any temporary states are set
-                    deviceData.toolsMenu.mainMenuActivatorInteractable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0;
+                        // Disable the main menu activator if any temporary states are set
+                        deviceData.toolsMenu.mainMenuActivatorInteractable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0
+                            && mainMenu.menuContent;
+                    }
 
                     // Show/hide custom menu, if it exists
                     var customMenu = deviceData.customMenu;
                     if (customMenu != null)
                         customMenu.menuHideFlags = deviceData.menuHideData[customMenu].hideFlags;
-                    
+
                     var alternateMenus = deviceData.alternateMenus;
                     foreach (var menu in alternateMenus)
                     {
@@ -472,6 +479,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (deviceData.customMenu != null && menuHideFlags[mainMenu].hideFlags != 0)
                         openMenu = deviceData.customMenu;
 
+                    if (openMenu == null)
+                        return false;
+
                     if (scaledPointerDistance < openMenu.localBounds.size.y + k_MenuHideMargin)
                     {
                         // Only set if hidden--value is reset every frame
@@ -533,12 +543,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         if (deviceData.rayOrigin == rayOrigin)
                         {
                             // Toggle main menu hidden flag
-                            mainMenuHideData.hideFlags ^= MenuHideFlags.Hidden;
+                            if (mainMenu.menuContent)
+                                mainMenuHideData.hideFlags ^= MenuHideFlags.Hidden;
                             mainMenu.targetRayOrigin = targetRayOrigin;
                         }
                         else
                         {
-                            mainMenuHideData.hideFlags |= MenuHideFlags.Hidden;
+                            if (mainMenu.menuContent)
+                                mainMenuHideData.hideFlags |= MenuHideFlags.Hidden;
 
                             var customMenuOverridden = customMenu != null &&
                                 (menuHideData[customMenu].hideFlags & MenuHideFlags.OtherMenu) != 0;
@@ -589,7 +601,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             internal T SpawnMenu<T>(Transform rayOrigin) where T : Component, IMenu
             {
-                var spawnedMenu = ObjectUtils.AddComponent<T>(evr.gameObject);
+                return (T)SpawnMenu(typeof(T), rayOrigin);
+            }
+
+            internal IMenu SpawnMenu(Type menuType, Transform rayOrigin)
+            {
+                var spawnedMenu = (IMenu)ObjectUtils.AddComponent(menuType, evr.gameObject);
                 this.ConnectInterfaces(spawnedMenu, rayOrigin);
 
                 return spawnedMenu;
@@ -599,7 +616,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 foreach (var deviceData in evr.m_DeviceData)
                 {
-                    if (deviceData.rayOrigin == rayOrigin)
+                    if (deviceData.mainMenu != null && deviceData.rayOrigin == rayOrigin)
                         return (deviceData.menuHideData[deviceData.mainMenu].hideFlags & MenuHideFlags.Hidden) == 0;
                 }
 

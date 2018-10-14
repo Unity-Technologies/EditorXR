@@ -40,20 +40,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static bool s_IsInitialized;
 
-        static EditorVR s_Instance;
-
-        static HideFlags defaultHideFlags
+        internal static HideFlags defaultHideFlags
         {
             get { return showGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave; }
         }
 
-        static bool showGameObjects
+        internal static bool showGameObjects
         {
             get { return EditorPrefs.GetBool(k_ShowGameObjects, false); }
             set { EditorPrefs.SetBool(k_ShowGameObjects, value); }
         }
 
-        static bool preserveLayout
+        internal static bool preserveLayout
         {
             get { return EditorPrefs.GetBool(k_PreserveLayout, true); }
             set { EditorPrefs.SetBool(k_PreserveLayout, value); }
@@ -65,7 +63,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set { EditorPrefs.SetString(k_SerializedPreferences, value); }
         }
 
-        internal static Type[] defaultTools { get; set; }
+        internal static Type[] DefaultTools { private get; set; }
+        internal static Type DefaultMenu { private get; set; }
+        internal static Type DefaultAlternateMenu { private get; set; }
+        internal static Type[] HiddenTypes { private get; set; }
 
         class DeviceData
         {
@@ -90,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             internal virtual void OnDestroy() { }
         }
 
-        static void ResetPreferences()
+        internal static void ResetPreferences()
         {
             EditorPrefs.DeleteKey(k_ShowGameObjects);
             EditorPrefs.DeleteKey(k_PreserveLayout);
@@ -131,9 +132,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNDO_PATCH
             DrivenRectTransformTracker.BlockUndo = true;
 #endif
-            s_Instance = this; // Used only by PreferencesGUI
             Nested.evr = this; // Set this once for the convenience of all nested classes
-            m_DefaultTools = defaultTools;
+            m_DefaultTools = DefaultTools;
             SetHideFlags(defaultHideFlags);
             ClearDeveloperConsoleIfNecessary();
             HandleInitialization();
@@ -350,7 +350,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnDestroy()
         {
-            s_Instance = null;
             foreach (var nested in m_NestedModules.Values)
             {
                 nested.OnDestroy();
@@ -481,7 +480,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        void SetHideFlags(HideFlags hideFlags)
+        internal void SetHideFlags(HideFlags hideFlags)
         {
             ObjectUtils.hideFlags = hideFlags;
 
@@ -501,37 +500,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
-        }
-
-        [PreferenceItem("EditorVR")]
-        static void PreferencesGUI()
-        {
-            EditorGUILayout.BeginVertical();
-            EditorGUILayout.Space();
-
-            // Show EditorVR GameObjects
-            {
-                string title = "Show EditorVR GameObjects";
-                string tooltip = "Normally, EditorVR GameObjects are hidden in the Hierarchy. Would you like to show them?";
-
-                EditorGUI.BeginChangeCheck();
-                showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
-                if (EditorGUI.EndChangeCheck() && s_Instance)
-                    s_Instance.SetHideFlags(defaultHideFlags);
-            }
-
-            // Preserve Layout
-            {
-                string title = "Preserve Layout";
-                string tooltip = "Check this to preserve your layout and location in EditorVR";
-                preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), preserveLayout);
-            }
-
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Reset to Defaults", GUILayout.Width(140)))
-                ResetPreferences();
-
-            EditorGUILayout.EndVertical();
         }
 
 #if !INCLUDE_TEXT_MESH_PRO

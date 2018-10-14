@@ -9,18 +9,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0bcb87ab5055bd3498c8b75ba8ccde1c, type: 3}
-  m_Name: EditorVR
+  m_Name: Minimal
   m_EditorClassIdentifier: 
   m_RenderScale: 1
   m_CopyMainCameraSettings: 1
   m_CopyMainCameraImageEffectsToHmd: 1
   m_CopyMainCameraImageEffectsToPresentationCamera: 1
-  m_DefaultMainMenu: {fileID: 11500000, guid: 52a6f827905e5da45b04e9ad17c95d45, type: 3}
-  m_DefaultAlternateMenu: {fileID: 11500000, guid: 11fd46c50e83ee74083fc3e7b3f226d9,
-    type: 3}
+  m_DefaultMainMenu: {fileID: 11500000, guid: 0a49111bce950ca43a438825e2ba304a, type: 3}
+  m_DefaultAlternateMenu: {fileID: 0}
   m_DefaultToolStack:
   - {fileID: 11500000, guid: 882053426a5f76d46b5505d9a20be912, type: 3}
   - {fileID: 11500000, guid: aab8fcc587f237c4cb48fb7bc8a59909, type: 3}
   - {fileID: 11500000, guid: 367f6e7e8089d554ebdb3aff02883660, type: 3}
   - {fileID: 11500000, guid: 49e533569ecea994c856e43af713e5be, type: 3}
   - {fileID: 11500000, guid: 403957a6dcd8bfe4a905881513f309b0, type: 3}
+  m_HiddenTypes:
+  - {fileID: 11500000, guid: 846104f2bc29ebd43a3fd7c0476166b3, type: 3}
+  - {fileID: 11500000, guid: 4791bcc58b44c9a40a87ea33e45e75a8, type: 3}
+  - {fileID: 11500000, guid: 73c25ff258c691d4ab00efb98e11dd39, type: 3}
+  - {fileID: 11500000, guid: abb8ac7663774794da12f7c749f66d2a, type: 3}
+  - {fileID: 11500000, guid: aab2ab33b5d370b4889c8004fceb7843, type: 3}
+  - {fileID: 11500000, guid: 80defa433e2f1ba4b8c5cbf97051b13e, type: 3}

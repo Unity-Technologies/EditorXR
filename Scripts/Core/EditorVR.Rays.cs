@@ -106,13 +106,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var mainMenu = deviceData.mainMenu;
                 var customMenu = deviceData.customMenu;
 
-                if (mainMenu.menuHideFlags == 0 || (customMenu != null && customMenu.menuHideFlags == 0))
+                if (mainMenu != null)
                 {
-                    AddVisibilitySettings(rayOrigin, mainMenu, false, false);
-                }
-                else
-                {
-                    RemoveVisibilitySettings(rayOrigin, mainMenu);
+                    if (mainMenu.menuHideFlags == 0 || (customMenu != null && customMenu.menuHideFlags == 0))
+                    {
+                        AddVisibilitySettings(rayOrigin, mainMenu, false, false);
+                    }
+                    else
+                    {
+                        RemoveVisibilitySettings(rayOrigin, mainMenu);
+                    }
                 }
             }
 

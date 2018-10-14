@@ -69,7 +69,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public bool mainMenuActivatorInteractable
         {
-            set { PreviewToolsMenuButton.interactable = value; }
+            set
+            {
+                if (PreviewToolsMenuButton != null)
+                    PreviewToolsMenuButton.interactable = value;
+            }
         }
 
         void Awake()
