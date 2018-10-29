@@ -326,6 +326,9 @@ namespace UnityEditor.Experimental.EditorVR
             return isAimingAtUi;
         }
 
+        private float m_AverageInputVelocity = 0f;
+        private Vector3 m_PreviousInputPosition;
+
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             m_CurrentSpatialActionMapInput = (SpatialMenuInput)input;
@@ -361,6 +364,8 @@ namespace UnityEditor.Experimental.EditorVR
                 EndDisplayOfMenu();
             }
             
+            
+
             // Detect the initial activation of the relevant Spatial input, in order to display menu and own control with this SpatialMenuController
             if (positiveYInputAction.wasJustPressed && Mathf.Approximately(m_TotalShowMenuCircularInputRotation, 0))
             {
@@ -385,6 +390,8 @@ namespace UnityEditor.Experimental.EditorVR
 
                 SetupSpatialScroll();
 
+                m_PreviousInputPosition = m_RayOrigin.position;
+
                 foreach (var data in s_SpatialMenuData)
                 {
                     foreach (var element in data.spatialMenuElements)
@@ -399,6 +406,14 @@ namespace UnityEditor.Experimental.EditorVR
                 }
 
                 return;
+            }
+
+            if (m_Visible)
+            {
+                // This is utilized in the spatial scrolling timed coroutine, preventing the scrolling to the next item, if the user has dropped below a given value tallied here
+                var newPosition = m_RayOrigin.position;
+                m_AverageInputVelocity = Mathf.Clamp01(m_AverageInputVelocity + Mathf.Abs(Vector3.SqrMagnitude(newPosition - m_PreviousInputPosition)) * this.GetViewerScale() * Time.unscaledDeltaTime * 0.0025f - (Time.unscaledDeltaTime * 0.1f) - 0.085f);
+                m_PreviousInputPosition = m_RayOrigin.position;
             }
 
             // Trigger + continued/held circular-input, when beyond a threshold, allow for element selection cycling
@@ -593,11 +608,12 @@ namespace UnityEditor.Experimental.EditorVR
             // assign current x/y position in spatial scroll eval space as the previous value, for comparison after the timed delay
             var previousAxisToMenuStateScrollPosition = PerformSpatialScrollInputEvaluation();
 
-            var timingBasedOnItemCountScalar = s_SpatialMenuState == SpatialMenuState.NavigatingTopLevel ? s_SpatialMenuProviders.Count : subMenuElementCount;
+            const int kMaxItemsToFactorWhenScrolling = 18;
+            var timingBasedOnItemCountScalar = Mathf.Clamp(s_SpatialMenuState == SpatialMenuState.NavigatingTopLevel ? s_SpatialMenuProviders.Count : subMenuElementCount, 0, kMaxItemsToFactorWhenScrolling);
             
             // Prevent the cycling to another element by keeping the coroutine reference from being null for a period of time
             // The coroutine reference is tested against in ProcessInput(), only allowing the cycling to previous/next element if null
-            var selectionTimingBuffer = 0.1f + Mathf.Clamp01((8 - timingBasedOnItemCountScalar) * 0.075f); // Max ideal item count minus the currently displayed item count
+            var selectionTimingBuffer = Mathf.Clamp01((kMaxItemsToFactorWhenScrolling - timingBasedOnItemCountScalar) * 0.01f); // Max ideal item count minus the currently displayed item count
             var distanceTraversedDuringDelay = 0f;
             var duration = 0f;
             while (duration < selectionTimingBuffer && s_SpatialMenuUI.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Translation)
@@ -610,7 +626,7 @@ namespace UnityEditor.Experimental.EditorVR
             const float kRequiredMinDistanceTraversed = 0.1f;
             // The distance traversed should be increased for Y-axis scrolling, in order to account for less ergonomic range
             var yScaledMinDistanceTraversed = distanceTraversedDuringDelay * (s_SpatialMenuState == SpatialMenuState.NavigatingSubMenuContent ? 4 : 1);
-            if (s_SpatialMenuUI.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Translation && yScaledMinDistanceTraversed > kRequiredMinDistanceTraversed)
+            if (m_AverageInputVelocity > 0.75f && s_SpatialMenuUI.spatialInterfaceInputMode == SpatialUIView.SpatialInterfaceInputMode.Translation && yScaledMinDistanceTraversed > kRequiredMinDistanceTraversed)
             {
                 Debug.LogWarning(distanceTraversedDuringDelay);
                 // assign current x/y position in spatial scroll eval space
