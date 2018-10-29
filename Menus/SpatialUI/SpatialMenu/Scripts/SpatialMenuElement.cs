@@ -3,16 +3,15 @@ using System;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
-    /// Abstract class housing common SpatualMenu element functionality
+    /// Abstract class housing common SpatialMenu element functionality
     /// </summary>
     public abstract class SpatialMenuElement : MonoBehaviour, IControlHaptics,
-        IRayEnterHandler, IRayExitHandler, IRayClickHandler, IPointerClickHandler
+        IRayEnterHandler, IRayExitHandler
     {
         [SerializeField]
         protected TextMeshProUGUI m_Text;
@@ -40,15 +39,15 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Bool denoting that this element is currently highlighted
         /// </summary>
-        public abstract bool highlighted { get; set; }
+        public virtual bool highlighted { get; set; }
 
         /// <summary>
         /// Bool denoting that this element is currently visible
         /// </summary>
-        public abstract bool visible { get; set; }
+        public virtual bool visible { get; set; }
 
         /// <summary>
-        /// FUnction that sets up the model and view for this particular element
+        /// Sets up the model and view for this particular element
         /// </summary>
         public Action<Transform, Action, string, string> Setup { get; set; }
 
@@ -87,18 +86,6 @@ namespace UnityEditor.Experimental.EditorVR
         {
             highlighted = false;
             hoveringNode = Node.None;
-        }
-
-        void IRayClickHandler.OnRayClick(RayEventData eventData)
-        {
-            Debug.LogError("OnRayClick called for spatial menu section title element :" + m_Text.text);
-            throw new NotImplementedException();
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            Debug.LogError("OnPointerClick called for spatial menu section title element :" + m_Text.text);
-            throw new NotImplementedException();
         }
     }
 }

@@ -13,16 +13,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     public abstract class SpatialUIController : MonoBehaviour, INodeToRay
     {
         // Pre-box fields to avoid allocation when setting them via reflection
-        static readonly object[] boxedTrueBool = new object[] {true};
-        static readonly object[] boxedFalseBool = new object[] {false};
+        static readonly object[] s_BoxedTrueBool = new object[] {true};
+        static readonly object[] s_BoxedFalseBool = new object[] {false};
         static bool s_Initialized;
         static bool s_SceneViewGizmosInOriginalState = true;
         static bool s_SelectionOutlineWasEnabledOnStart;
         static bool s_SelectionWireframeWasEnabledOnStart;
         static Type s_SceneViewGizmoAnnotationUtilityType;
         static Type s_AnnotationUtilityType;
-        static string s_SelectionOutlineProperty = "showSelectionOutline";
-        static string s_SelectionWireframeProperty = "showSelectionWire";
+        static readonly string s_SelectionOutlineProperty = "showSelectionOutline";
+        static readonly string s_SelectionWireframeProperty = "showSelectionWire";
 
         protected bool sceneViewGizmosVisible
         {
@@ -61,7 +61,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             s_AnnotationUtilityType = Type.GetType(annotationType);
             if (s_SceneViewGizmoAnnotationUtilityType != null)
             {
-                var currentSelectionOutlineProperty = s_SceneViewGizmoAnnotationUtilityType.GetProperty(s_SelectionOutlineProperty, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
+                var flags = BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty;
+                var currentSelectionOutlineProperty = s_SceneViewGizmoAnnotationUtilityType.GetProperty(s_SelectionOutlineProperty, flags);
                 if (currentSelectionOutlineProperty != null)
                 {
                     var currentSelectionOutlineValue = currentSelectionOutlineProperty.GetValue(s_SceneViewGizmoAnnotationUtilityType, null);
@@ -69,7 +70,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         s_SelectionOutlineWasEnabledOnStart = (bool)currentSelectionOutlineValue;
                 }
 
-                var currentSelectionWireProperty = s_SceneViewGizmoAnnotationUtilityType.GetProperty(s_SelectionWireframeProperty, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.GetProperty);
+                var currentSelectionWireProperty = s_SceneViewGizmoAnnotationUtilityType.GetProperty(s_SelectionWireframeProperty, flags);
                 if (currentSelectionWireProperty != null)
                 {
                     var currentSelectionWireValue = currentSelectionWireProperty.GetValue(s_SceneViewGizmoAnnotationUtilityType, null);
@@ -83,15 +84,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             // Enable/Disable values in the SceneView gizmos (editor scene/game view popup)
             // This functionality allows for hiding/showing of the outlines and wireframes that will draw above the SpatialUI element
-            var selectionOutlineEnabledBoxedBool = selectionOutlineEnabled ? boxedTrueBool : boxedFalseBool;
+            var flags = BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty;
+            var selectionOutlineEnabledBoxedBool = selectionOutlineEnabled ? s_BoxedTrueBool : s_BoxedFalseBool;
             s_SceneViewGizmoAnnotationUtilityType.InvokeMember(s_SelectionOutlineProperty,
-                BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
-                Type.DefaultBinder, s_AnnotationUtilityType, selectionOutlineEnabledBoxedBool);
+                flags, Type.DefaultBinder, s_AnnotationUtilityType, selectionOutlineEnabledBoxedBool);
 
-            var selectionWireEnabledBoxedBool = selectionWireEnabled ? boxedTrueBool : boxedFalseBool;
+            var selectionWireEnabledBoxedBool = selectionWireEnabled ? s_BoxedTrueBool : s_BoxedFalseBool;
             s_SceneViewGizmoAnnotationUtilityType.InvokeMember(s_SelectionWireframeProperty,
-                BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.SetProperty,
-                Type.DefaultBinder, s_AnnotationUtilityType, selectionWireEnabledBoxedBool);
+                flags, Type.DefaultBinder, s_AnnotationUtilityType, selectionWireEnabledBoxedBool);
         }
 
         protected static void ConsumeControls(SpatialMenuInput spatialMenuActionMapInput, ConsumeControlDelegate consumeControl, bool consumeSelection = true)
