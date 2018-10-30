@@ -163,7 +163,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (!s_AutoOpened && ShouldShowEditorVR() && !view)
                 {
                     if (!XRSettings.enabled)
+                    {
                         XRSettings.enabled = true;
+                        if (!XRSettings.enabled)
+                        {
+                            // Initialization failed, so don't keep trying
+                            EditorApplication.update -= OpenIfUserPresent;
+                            return;
+                        }
+                    }
 
                     if (VRView.GetIsUserPresent())
                     {
