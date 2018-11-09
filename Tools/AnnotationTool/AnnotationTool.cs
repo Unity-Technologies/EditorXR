@@ -298,6 +298,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     //Setting toggles on this tool's menu will set them on other tool menus
                     if (m_MeshToggle)
                         m_MeshToggle.isOn = m_Preferences.meshGroupingMode;
+
                     if (m_TransformToggle)
                         m_TransformToggle.isOn = !m_Preferences.meshGroupingMode;
                 }

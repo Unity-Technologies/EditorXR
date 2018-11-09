@@ -545,6 +545,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             // Toggle main menu hidden flag
                             if (mainMenu.menuContent)
                                 mainMenuHideData.hideFlags ^= MenuHideFlags.Hidden;
+
                             mainMenu.targetRayOrigin = targetRayOrigin;
                         }
                         else

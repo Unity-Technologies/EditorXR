@@ -560,6 +560,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 if (m_SphereToggle)
                     m_SphereToggle.isOn = m_Preferences.sphereMode;
+
                 if (m_CubeToggle)
                     m_CubeToggle.isOn = !m_Preferences.sphereMode;
             }

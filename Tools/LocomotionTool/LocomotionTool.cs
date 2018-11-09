@@ -998,6 +998,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 //Setting toggles on this tool's menu will set them on other tool menus
                 if (m_BlinkToggle)
                     m_BlinkToggle.isOn = m_Preferences.blinkMode;
+
                 if (m_FlyToggle)
                     m_FlyToggle.isOn = !m_Preferences.blinkMode;
             }

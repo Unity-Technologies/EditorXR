@@ -1,13 +1,13 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
-using System.IO;
-using System.Reflection;
 using UnityEngine.XR;
 using UnityObject = UnityEngine.Object;
 
