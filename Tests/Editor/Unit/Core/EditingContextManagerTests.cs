@@ -40,6 +40,9 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
             settings.defaultContextName = "Custom Default Context";
             newSettings = ScriptableObject.CreateInstance<EditingContextManagerSettings>();
             newSettings.defaultContextName = "New Custom Default Context";
+
+            // Save once so that we can detect a change--without this, SaveProjectSettings_UpdatesProjectSettingsFile will fail on CloudBuild
+            EditingContextManager.SaveProjectSettings(settings);
         }
 
         [Test]
