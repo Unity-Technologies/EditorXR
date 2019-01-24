@@ -5,8 +5,11 @@
         "SteamVR",
         "input-prototype",
         "OVR",
-        "VRLR"
+        "VRLR",
+        "Unity.TextMeshPro"
     ],
+    "optionalUnityReferences": [],
     "includePlatforms": [],
-    "excludePlatforms": []
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
 }

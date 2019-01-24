@@ -2,10 +2,13 @@
     "name": "EXR-ProjectWorkspace",
     "references": [
         "EXR",
-        "input-prototype"
+        "input-prototype",
+        "Unity.TextMeshPro"
     ],
+    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
-    "excludePlatforms": []
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
 }

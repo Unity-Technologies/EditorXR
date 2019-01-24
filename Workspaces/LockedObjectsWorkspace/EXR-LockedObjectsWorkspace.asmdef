@@ -2,10 +2,13 @@
     "name": "EXR-LockedObjectsWorkspace",
     "references": [
         "EXR-HierarchyWorkspace",
-        "EXR"
+        "EXR",
+        "Unity.TextMeshPro"
     ],
+    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
-    "excludePlatforms": []
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
 }
