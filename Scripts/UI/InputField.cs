@@ -6,6 +6,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -39,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
         [SerializeField]
-        Text m_TextComponent;
+        TextMeshProUGUI m_TextComponent;
 
         [SerializeField]
         int m_CharacterLimit = 10;

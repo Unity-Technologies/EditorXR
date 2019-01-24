@@ -99,6 +99,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var alternateMenu = target as IAlternateMenu;
                 if (alternateMenu != null)
                     AddAlternateMenu(alternateMenu, rayOrigin);
+
+                var spatialMenuProvider = target as ISpatialMenuProvider;
+                if (spatialMenuProvider != null)
+                    SpatialMenu.AddProvider(spatialMenuProvider);
             }
 
             public void DisconnectInterface(object target, object userData = null)
@@ -584,10 +588,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             internal T SpawnMenu<T>(Transform rayOrigin) where T : MonoBehaviour, IMenu
             {
-                var mainMenu = ObjectUtils.AddComponent<T>(evr.gameObject);
-                this.ConnectInterfaces(mainMenu, rayOrigin);
+                var spawnedMenu = ObjectUtils.AddComponent<T>(evr.gameObject);
+                this.ConnectInterfaces(spawnedMenu, rayOrigin);
 
-                return mainMenu;
+                return spawnedMenu;
             }
 
             static bool IsMainMenuVisible(Transform rayOrigin)

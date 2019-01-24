@@ -1,9 +1,9 @@
 ﻿
 using System;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     sealed class InspectorObjectFieldItem : InspectorPropertyItem
     {
         [SerializeField]
-        Text m_FieldLabel;
+        TextMeshProUGUI m_FieldLabel;
 
         [SerializeField]
         MeshRenderer m_Button;
@@ -92,9 +92,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             SetObject(dropObject as Object);
         }
 
-        public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+        public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
         {
-            base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
+            base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
             m_Button.sharedMaterials = highlightMaterials;
         }
 

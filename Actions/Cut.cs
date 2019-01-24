@@ -4,6 +4,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Cut", ActionMenuItemAttribute.DefaultActionSectionName, 4)]
+    [SpatialMenuItem("Cut", "Actions", "Cut the selected object")]
     sealed class Cut : BaseAction
     {
         public override void ExecuteAction()

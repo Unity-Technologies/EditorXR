@@ -1,6 +1,7 @@
 
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -30,14 +31,14 @@ namespace UnityEditor.Experimental.EditorVR.UI
         const float k_KeyResponsePositionAmplitude = 0.02f;
         const float k_KeyResponseScaleAmplitude = 0.08f;
 
-        public Text textComponent
+        public TextMeshProUGUI textComponent
         {
             get { return m_TextComponent; }
             set { m_TextComponent = value; }
         }
 
         [SerializeField]
-        Text m_TextComponent;
+        TextMeshProUGUI m_TextComponent;
 
         public Material targetMeshMaterial
         {

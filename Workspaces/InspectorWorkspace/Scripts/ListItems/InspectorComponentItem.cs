@@ -1,4 +1,5 @@
 ﻿
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -23,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Toggle m_EnabledToggle;
 
         [SerializeField]
-        Text m_NameText;
+        TextMeshProUGUI m_NameText;
 
         public override void Setup(InspectorData data)
         {

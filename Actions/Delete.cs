@@ -5,6 +5,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Delete", ActionMenuItemAttribute.DefaultActionSectionName, 7)]
+    [SpatialMenuItem("Delete", "Actions", "Delete the selected object")]
     sealed class Delete : BaseAction, IDeleteSceneObject
     {
         public Action<GameObject> addToSpatialHash { private get; set; }

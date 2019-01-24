@@ -24,8 +24,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 [SerializeField]
                 Vector3 m_CameraPosition;
+
                 [SerializeField]
                 Quaternion m_CameraRotation;
+
                 [SerializeField]
                 float m_CameraRigScale = 1;
 

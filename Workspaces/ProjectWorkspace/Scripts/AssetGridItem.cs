@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -33,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_CheckAssignDelayTime = 0.125f;
 
         [SerializeField]
-        Text m_Text;
+        TextMeshProUGUI m_Text;
 
         [SerializeField]
         BaseHandle m_Handle;
@@ -88,6 +89,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         // negative value means object has been checked and can't be assigned to
         // positive means it can be assigned, 0 means it hasn't yet been checked
         readonly Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
+
+        readonly List<Renderer> m_SelectionRenderers = new List<Renderer>();
+        readonly Dictionary<Renderer, Material> m_SelectionOriginalMaterials = new Dictionary<Renderer, Material>();
 
         public GameObject icon
         {
@@ -412,6 +416,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 StopHighlight(m_CachedDropSelection, rayOrigin);
                 m_CachedDropSelection = null;
                 m_LastDragSelectionChange = Time.time;
+                RestoreOriginalSelectionMaterials();
             }
             else if (selection != null)
             {
@@ -423,9 +428,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     StopHighlight(m_CachedDropSelection);
                     // if we've previously checked this object, indicate the result again
                     if(previous > 0f)
+                    {
                         SetAssignableHighlight(selection, rayOrigin, true);
+                        PreviewMaterialOnSelection(selection);
+                    }
                     else if (previous < 0f)
+                    {
                         SetAssignableHighlight(selection, rayOrigin, false);
+                        RestoreOriginalSelectionMaterials();
+                    }
 
                     m_CachedDropSelection = selection;
                     m_LastDragSelectionChange = time;
@@ -439,10 +450,46 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     {
                         var assignable = CheckAssignable(selection);
                         SetAssignableHighlight(selection, rayOrigin, assignable);
+
+                        if (assignable)
+                            PreviewMaterialOnSelection(selection);
                     }
                 }
             }
+        }
 
+        void PreviewMaterialOnSelection(GameObject selection)
+        {
+            if (data.type != "Material" || selection == null)
+                return;
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
+
+            selection.GetComponentsInChildren(m_SelectionRenderers);
+
+            var material = (Material)data.asset;
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                m_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
+                renderer.sharedMaterial = material;
+        }
+        }
+
+        void RestoreOriginalSelectionMaterials()
+        {
+            if (m_SelectionRenderers.Count < 1)
+                return;
+
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                Material originalMaterial;
+                if (m_SelectionOriginalMaterials.TryGetValue(renderer, out originalMaterial))
+                    renderer.sharedMaterial = originalMaterial;
+            }
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
         }
 
         bool CheckAssignable(GameObject go, bool checkChildren = false)

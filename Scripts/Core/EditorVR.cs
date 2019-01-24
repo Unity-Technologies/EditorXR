@@ -211,6 +211,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 #endif
 
+            AddModule<AdaptivePositionModule>();
+
             var viewer = GetNestedModule<Viewer>();
             viewer.preserveCameraRig = preserveLayout;
             viewer.InitializeCamera();
@@ -299,6 +301,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             };
 
             AddModule<HapticsModule>();
+            AddModule<GazeDivergenceModule>();
             AddModule<SpatialHintModule>();
             AddModule<SpatialScrollModule>();
 
@@ -606,7 +609,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if !INCLUDE_TEXT_MESH_PRO
         static EditorVR()
         {
-            Debug.LogWarning("EditorVR requires TextMesh Pro. Please install it via Package Manager (Window -> Package Manager).");
+            Debug.LogWarning("EditorVR requires TextMesh Pro. Please go to the Asset Store and download/import Text Mesh Pro.");
         }
 #endif
     }

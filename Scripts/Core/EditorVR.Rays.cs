@@ -367,27 +367,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return go;
 
                 // If a raycast did not find an object use the spatial hash as a final test
-                var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-                var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
+                var renderer = intersectionModule.GetIntersectedObjectForRayOrigin(rayOrigin);
                 if (renderer && !renderer.CompareTag(k_VRPlayerTag))
                     return renderer.gameObject;
 
-                var enumerator = evr.GetNestedModule<MiniWorlds>().rays.GetEnumerator();
-                while (enumerator.MoveNext())
+                foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
                 {
-                    var miniWorldRay = enumerator.Current.Value;
+                    var miniWorldRay = kvp.Value;
                     if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
                     {
-                        tester = miniWorldRay.tester;
-                        if (!tester.active)
-                            continue;
-
-                        renderer = intersectionModule.GetIntersectedObjectForTester(tester);
+                        renderer = intersectionModule.GetIntersectedObjectForRayOrigin(kvp.Key);
                         if (renderer)
                             return renderer.gameObject;
                     }
                 }
-                enumerator.Dispose();
 
                 return null;
             }

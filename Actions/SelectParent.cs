@@ -2,6 +2,7 @@
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("SelectParent", ActionMenuItemAttribute.DefaultActionSectionName, 8)]
+    [SpatialMenuItem("Select Parent", "Actions", "Select the parent of the currently selected object")]
     sealed class SelectParent : BaseAction
     {
         public override void ExecuteAction()

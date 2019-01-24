@@ -20,13 +20,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Material m_BackingCubeMaterial;
 
         [SerializeField]
-        Material m_TextMaterial;
-
-        [SerializeField]
         Material m_UIMaterial;
 
         [SerializeField]
         Material m_UIMaskMaterial;
+
         [SerializeField]
         Material m_NoClipBackingCubeMaterial;
 
@@ -65,8 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_RowCubeMaterial = Instantiate(m_RowCubeMaterial);
             m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
-            m_TextMaterial = Instantiate(m_TextMaterial);
-            m_TextMaterial.SetInt(k_MaterialStencilRef, stencilRef);
             m_UIMaterial = Instantiate(m_UIMaterial);
             m_UIMaterial.SetInt(k_MaterialStencilRef, stencilRef);
             m_UIMaskMaterial = Instantiate(m_UIMaskMaterial);
@@ -101,7 +97,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var parentMatrix = transform.worldToLocalMatrix;
             SetMaterialClip(m_RowCubeMaterial, parentMatrix);
             SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
-            SetMaterialClip(m_TextMaterial, parentMatrix);
             SetMaterialClip(m_UIMaterial, parentMatrix);
             SetMaterialClip(m_UIMaskMaterial, parentMatrix);
             SetMaterialClip(m_HighlightMaterial, parentMatrix);
@@ -219,7 +214,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
                 var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
-                item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_TextMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
+                item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
 
                 var numberItem = item as InspectorNumberItem;
                 if (numberItem)
@@ -303,7 +298,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             ObjectUtils.Destroy(m_RowCubeMaterial);
             ObjectUtils.Destroy(m_BackingCubeMaterial);
-            ObjectUtils.Destroy(m_TextMaterial);
             ObjectUtils.Destroy(m_UIMaterial);
             ObjectUtils.Destroy(m_UIMaskMaterial);
             ObjectUtils.Destroy(m_HighlightMaterial);

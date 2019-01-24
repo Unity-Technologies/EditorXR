@@ -5,6 +5,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Paste", ActionMenuItemAttribute.DefaultActionSectionName, 6)]
+    [SpatialMenuItem("Paste", "Actions", "Paste a copied object")]
     sealed class Paste : BaseAction, IUsesSpatialHash, IUsesViewerScale
     {
         static float s_BufferDistance;

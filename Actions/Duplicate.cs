@@ -5,6 +5,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Duplicate", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
+    [SpatialMenuItem("Duplicate", "Actions", "Duplicate the selected object at the currently focused position")]
     sealed class Duplicate : BaseAction, IUsesSpatialHash, IUsesViewerScale
     {
         public override void ExecuteAction()

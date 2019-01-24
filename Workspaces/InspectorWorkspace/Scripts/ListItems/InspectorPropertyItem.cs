@@ -1,15 +1,15 @@
 
 using System;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     abstract class InspectorPropertyItem : InspectorListItem
     {
         [SerializeField]
-        Text m_Label;
+        TextMeshProUGUI m_Label;
 
         public Transform tooltipTarget
         {

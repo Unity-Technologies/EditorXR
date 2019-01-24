@@ -2,6 +2,7 @@
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Play")]
+    [SpatialMenuItem("Play", "Actions", "Enter Play-Mode")]
     sealed class Play : BaseAction
     {
         public override void ExecuteAction()

@@ -135,9 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (m_IntersectionModule == null)
                     m_IntersectionModule = evr.GetModule<IntersectionModule>();
 
-                var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-
-                var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+                var renderer = m_IntersectionModule.GetIntersectedObjectForRayOrigin(rayOrigin);
                 if (renderer)
                     return renderer.gameObject;
 

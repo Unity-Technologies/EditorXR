@@ -273,7 +273,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Node node { private get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         void Start()
         {

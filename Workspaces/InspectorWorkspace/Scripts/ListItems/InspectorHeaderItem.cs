@@ -137,9 +137,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_NameField.ForceUpdateLabel();
         }
 
-        public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+        public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
         {
-            base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
+            base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
             m_Button.sharedMaterials = highlightMaterials;
         }
 

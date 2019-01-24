@@ -11,6 +11,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
+    [SpatialMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
     sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, ISerializeWorkspace
     {
         const float k_LeftPaneRatio = 0.3333333f; // Size of left pane relative to workspace bounds

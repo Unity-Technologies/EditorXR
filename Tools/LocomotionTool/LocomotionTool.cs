@@ -8,6 +8,7 @@ using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -26,12 +27,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_MinScale = 0.1f;
         const float k_MaxScale = 1000f;
 
+        const float k_RingDirectionSmoothing = 0.5f;
+        const float k_MouseMovementMultiplier = 0.01f;
+        const float k_MouseScrollMultiplier = 0.01f;
+        const float k_MouseRotationMultiplier = 0.05f;
+
         const string k_Crawl = "Crawl";
         const string k_Rotate = "Rotate";
         const string k_Blink = "Blink";
         const string k_Fly = "Fly";
 
         const int k_RotationSegments = 32;
+
+        static readonly Vector3 k_RingOffset = new Vector3(0f, -0.3f, 0.5f);
 
         [SerializeField]
         GameObject m_BlinkVisualsPrefab;
@@ -44,6 +52,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         GameObject m_SettingsMenuItemPrefab;
+
+        [SerializeField]
+        GameObject m_RingPrefab;
 
         [Serializable]
         class Preferences
@@ -97,6 +108,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Toggle m_BlinkToggle;
         bool m_BlockValueChangedListener;
 
+        bool m_MouseWasHeld;
+        Vector3 m_RingDirection;
+        Ring m_Ring;
+
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_MainButtonFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_SpeedFeedback = new List<ProxyFeedbackRequest>();
@@ -106,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
         public Transform rayOrigin { get; set; }
         public Transform cameraRig { private get; set; }
         public List<ILinkedObject> linkedObjects { private get; set; }
@@ -176,6 +191,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     ((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
                 }
+
+                var instance = ObjectUtils.Instantiate(m_RingPrefab, cameraRig, false);
+                m_Ring = instance.GetComponent<Ring>();
             }
 
             m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
@@ -191,6 +209,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             viewerScaleObject.SetActive(false);
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+        }
+
+        void SetRingPosition()
+        {
+            if (!this.IsSharedUpdater(this))
+                return;
+
+            var cameraTransform = CameraUtils.GetMainCamera().transform;
+            var cameraYaw = MathUtilsExt.ConstrainYawRotation(cameraTransform.localRotation);
+            var ringTransform = m_Ring.transform;
+            ringTransform.localPosition = cameraTransform.localPosition + cameraYaw * k_RingOffset;
+            ringTransform.localRotation = cameraYaw;
         }
 
         void OnDestroy()
@@ -234,6 +264,55 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 return;
 
             this.SetUIBlockedForRayOrigin(rayOrigin, false);
+        }
+
+        // HACK: Because we don't get mouse input through action maps, just use Update
+        void Update()
+        {
+            var mouseDelta = VRView.MouseDelta;
+
+            if (VRView.LeftMouseButtonHeld)
+            {
+                if (!m_MouseWasHeld)
+                    SetRingPosition();
+
+                var xzConstrain = new Vector3(1f, 0f, 1f);
+                var forward = Vector3.Scale(cameraRig.forward, xzConstrain).normalized;
+                var right = new Vector3(-forward.z, 0f, forward.x);
+                var delta = (mouseDelta.x * right + mouseDelta.y * forward)
+                    * k_MouseMovementMultiplier;
+
+                cameraRig.position += delta;
+
+                if (this.IsSharedUpdater(this) && delta.normalized != Vector3.zero)
+                {
+                    m_RingDirection = Vector3.Lerp(m_RingDirection, delta.normalized, k_RingDirectionSmoothing);
+
+                    if (m_RingDirection != Vector3.zero)
+                        m_Ring.SetEffectWorldDirection(m_RingDirection);
+                }
+            }
+
+            if (VRView.RightMouseButtonHeld)
+                cameraRig.rotation *= Quaternion.AngleAxis(mouseDelta.x * k_MouseRotationMultiplier, Vector3.up);
+
+            var deltaScroll = VRView.MouseScrollDelta.y;
+            cameraRig.position += deltaScroll * Vector3.up * k_MouseScrollMultiplier;
+
+            if (this.IsSharedUpdater(this) && !Mathf.Approximately(deltaScroll, 0f))
+            {
+                if (!m_Ring.coreVisible)
+                    SetRingPosition();
+
+                m_Ring.SetEffectCore();
+
+                if (deltaScroll > 0f)
+                    m_Ring.SetEffectCoreUp();
+                else
+                    m_Ring.SetEffectCoreDown();
+            }
+
+            m_MouseWasHeld = VRView.LeftMouseButtonHeld;
         }
 
         bool DoFlying(ConsumeControlDelegate consumeControl)
@@ -697,7 +776,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                     var currentRotation = Quaternion.AngleAxis(currentYaw, Vector3.up);
                                     midPoint = currentRotation * midPoint * currentScale;
 
-                                    cameraRig.position = m_StartPosition + m_StartMidPoint - midPoint;
+                                    var pos = m_StartPosition + m_StartMidPoint - midPoint;
+                                    cameraRig.position = pos;
+
                                     cameraRig.rotation = currentRotation;
 
                                     this.SetViewerScale(currentScale);
