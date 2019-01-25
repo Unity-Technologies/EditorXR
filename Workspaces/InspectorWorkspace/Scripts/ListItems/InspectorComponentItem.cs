@@ -30,6 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.Setup(data);
 
+#if UNITY_EDITOR
             var target = data.serializedObject.targetObject;
             var type = target.GetType();
             m_NameText.text = type.Name;
@@ -40,6 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var enabled = EditorUtility.GetObjectEnabled(target);
             m_EnabledToggle.gameObject.SetActive(enabled != -1);
             m_EnabledToggle.isOn = enabled == 1;
+#endif
 
             m_ExpandArrow.gameObject.SetActive(data.children != null);
         }
@@ -56,12 +58,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public override void OnObjectModified()
         {
             base.OnObjectModified();
+#if UNITY_EDITOR
             var enabled = EditorUtility.GetObjectEnabled(data.serializedObject.targetObject);
             m_EnabledToggle.isOn = enabled == 1;
+#endif
         }
 
         public void SetEnabled(bool value)
         {
+#if UNITY_EDITOR
             var serializedObject = data.serializedObject;
             var target = serializedObject.targetObject;
             if (value != (EditorUtility.GetObjectEnabled(target) == 1))
@@ -71,6 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 Undo.IncrementCurrentGroup();
                 serializedObject.ApplyModifiedProperties();
             }
+#endif
         }
     }
 }

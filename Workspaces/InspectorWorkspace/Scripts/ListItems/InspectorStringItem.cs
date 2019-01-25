@@ -28,6 +28,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             base.Setup(data);
 
             var val = string.Empty;
+
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.String:
@@ -37,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     val = m_SerializedProperty.intValue.ToString();
                     break;
             }
+#endif
 
             m_InputField.text = val;
             m_InputField.ForceUpdateLabel();
@@ -50,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         bool SetValueIfPossible(string input)
         {
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.String:
@@ -76,6 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     }
                     break;
             }
+#endif
 
             return false;
         }

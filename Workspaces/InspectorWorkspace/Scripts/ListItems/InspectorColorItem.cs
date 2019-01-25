@@ -15,19 +15,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             UpdateInputFields();
         }
 
-        void UpdateInputFields(Color color)
-        {
-            for (var i = 0; i < 4; i++)
-            {
-                m_InputFields[i].text = color[i].ToString();
-                m_InputFields[i].ForceUpdateLabel();
-            }
-        }
-
         protected override void FirstTimeSetup()
         {
             base.FirstTimeSetup();
 
+#if UNITY_EDITOR
             for (var i = 0; i < m_InputFields.Length; i++)
             {
                 var index = i;
@@ -37,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         data.serializedObject.ApplyModifiedProperties();
                 });
             }
+#endif
         }
 
         public override void OnObjectModified()
@@ -47,6 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public bool SetValue(string input, int index)
         {
+#if UNITY_EDITOR
             float value;
             if (!float.TryParse(input, out value))
                 return false;
@@ -61,12 +55,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 return true;
             }
+#endif
 
             return false;
         }
 
         void UpdateInputFields()
         {
+#if UNITY_EDITOR
             var color = m_SerializedProperty.colorValue;
 
             for (var i = 0; i < 4; i++)
@@ -74,11 +70,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_InputFields[i].text = color[i].ToString();
                 m_InputFields[i].ForceUpdateLabel();
             }
+#endif
         }
 
         protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
         {
             object dropObject = null;
+
+#if UNITY_EDITOR
             var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
             if (inputfields.Length > 1)
             {
@@ -86,6 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
             else if (inputfields.Length > 0)
                 dropObject = inputfields[0].text;
+#endif
 
             return dropObject;
         }
@@ -113,6 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
 
+#if UNITY_EDITOR
             if (dropObject is Color)
             {
                 m_SerializedProperty.colorValue = (Color)dropObject;
@@ -161,6 +162,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 FinalizeModifications();
             }
+#endif
         }
     }
 }

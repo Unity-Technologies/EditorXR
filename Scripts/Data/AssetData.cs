@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using ListView;
+﻿using ListView;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -40,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
         {
             if (type == "GameObject")
             {
-
+#if UNITY_EDITOR
                 switch (PrefabUtility.GetPrefabType(asset))
                 {
                     case PrefabType.ModelPrefab:
@@ -50,9 +49,8 @@ namespace UnityEditor.Experimental.EditorVR.Data
                         type = "Prefab";
                         break;
                 }
-
+#endif
             }
         }
     }
 }
-#endif

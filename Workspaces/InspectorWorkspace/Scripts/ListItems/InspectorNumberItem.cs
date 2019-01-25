@@ -53,7 +53,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.Setup(data);
 
+#if UNITY_EDITOR
             propertyType = m_SerializedProperty.propertyType;
+#endif
 
             OnObjectModified();
         }
@@ -67,6 +69,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void UpdateInputField()
         {
             var val = string.Empty;
+
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.ArraySize:
@@ -79,6 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     m_InputField.numberType = NumericInputField.NumberType.Float;
                     break;
             }
+#endif
 
             m_InputField.text = val;
             m_InputField.ForceUpdateLabel();
@@ -86,13 +91,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void SetValue(string input)
         {
+#if UNITY_EDITOR
             // Do not increment undo group because NumericInputField does it for us
             if (SetValueIfPossible(input))
                 data.serializedObject.ApplyModifiedProperties();
+#endif
         }
 
         bool SetValueIfPossible(string input)
         {
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.ArraySize:
@@ -138,6 +146,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     }
                     break;
             }
+#endif
 
             return false;
         }
@@ -169,6 +178,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.OnDragEnded(handle, eventData);
 
+#if UNITY_EDITOR
             // Update field value in case drag value was invalid (i.e. array size < 0)
             if (m_DraggedField)
             {
@@ -185,6 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         break;
                 }
             }
+#endif
 
             foreach (var button in m_IncrementDecrementButtons)
                 button.alternateIconVisible = false;
@@ -192,6 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void Increment()
         {
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.ArraySize:
@@ -204,10 +216,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         FinalizeModifications();
                     break;
             }
+#endif
         }
 
         public void Decrement()
         {
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.ArraySize:
@@ -220,6 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         FinalizeModifications();
                     break;
             }
+#endif
         }
     }
 }

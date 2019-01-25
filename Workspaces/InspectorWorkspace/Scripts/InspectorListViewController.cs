@@ -234,6 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             return item;
         }
 
+#if UNITY_EDITOR
         public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData, int> data, List<InspectorData> newData)
         {
             InspectorNumberItem arraySizeItem = null;
@@ -269,6 +270,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
         }
+#endif
 
         void ToggleExpanded(int index)
         {

@@ -15,7 +15,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.Setup(data);
 
+#if UNITY_EDITOR
             m_TypeLabel.text = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
+#endif
         }
     }
 }

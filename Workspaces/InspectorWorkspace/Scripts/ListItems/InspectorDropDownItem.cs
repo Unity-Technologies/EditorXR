@@ -38,6 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void UpdateDropdown()
         {
+#if UNITY_EDITOR
             if (m_SerializedProperty.propertyType == SerializedPropertyType.LayerMask)
             {
                 m_DropDown.multiSelect = true;
@@ -66,10 +67,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_DropDown.options = m_SerializedProperty.enumDisplayNames;
                 m_DropDown.value = m_SerializedProperty.enumValueIndex;
             }
+#endif
         }
 
         void ValueChanged(int clicked, int[] values)
         {
+#if UNITY_EDITOR
             if (m_SerializedProperty.propertyType == SerializedPropertyType.LayerMask)
             {
                 if (clicked == 0) // Clicked "Nothing"
@@ -122,9 +125,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     FinalizeModifications();
                 }
             }
+#endif
         }
 
-        int[] EverythingValues()
+#if UNITY_EDITOR
+        static int[] EverythingValues()
         {
             var values = new int[InternalEditorUtility.layers.Length + 1];
             for (var i = 0; i < values.Length; i++)
@@ -132,6 +137,40 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             return values;
         }
+
+        static int[] LayerMaskToIndices(int layerMask)
+        {
+            var mask = 1;
+            var layers = new List<int>();
+            for (var i = 0; i < 32; i++)
+            {
+                if ((layerMask & mask) != 0)
+                    layers.Add(Array.IndexOf(InternalEditorUtility.layers, LayerMask.LayerToName(i)) + 2);
+
+                mask <<= 1;
+            }
+            return layers.ToArray();
+        }
+
+        static int IndicesToLayerMask(int[] indices)
+        {
+            var layerMask = 0;
+            foreach (var index in indices)
+            {
+                if (index == 0) // Nothing
+                    return 0;
+
+                if (index == 1) // Everything
+                    return ~0;
+
+                var realIndex = index - 2; // Account for "Nothing" and "Everything"
+                if (realIndex >= 0)
+                    layerMask |= 1 << LayerMask.NameToLayer(InternalEditorUtility.layers[realIndex]);
+            }
+
+            return layerMask;
+        }
+#endif
 
         protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
         {
@@ -155,36 +194,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 m_DropDown.value = (int)dropObject;
             }
-        }
-
-        static int[] LayerMaskToIndices(int layerMask)
-        {
-            var mask = 1;
-            var layers = new List<int>();
-            for (var i = 0; i < 32; i++)
-            {
-                if ((layerMask & mask) != 0)
-                    layers.Add(Array.IndexOf(InternalEditorUtility.layers, LayerMask.LayerToName(i)) + 2);
-                mask <<= 1;
-            }
-            return layers.ToArray();
-        }
-
-        static int IndicesToLayerMask(int[] indices)
-        {
-            var layerMask = 0;
-            foreach (var index in indices)
-            {
-                if (index == 0) // Nothing
-                    return 0;
-                if (index == 1) // Everything
-                    return ~0;
-                var realIndex = index - 2; // Account for "Nothing" and "Everything"
-                if (realIndex >= 0)
-                    layerMask |= 1 << LayerMask.NameToLayer(InternalEditorUtility.layers[realIndex]);
-            }
-
-            return layerMask;
         }
     }
 }

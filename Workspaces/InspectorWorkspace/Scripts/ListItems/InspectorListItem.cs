@@ -147,8 +147,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public virtual void OnObjectModified()
         {
+#if UNITY_EDITOR
             if (data.serializedObject.targetObject) // An exception is thrown if the targetObject has been deleted
                 data.serializedObject.Update();
+#endif
         }
 
         public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)

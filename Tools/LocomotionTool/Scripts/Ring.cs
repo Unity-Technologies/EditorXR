@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -154,4 +153,3 @@ public class Ring : MonoBehaviour
         ObjectUtils.Destroy(m_RingMat);
     }
 }
-#endif

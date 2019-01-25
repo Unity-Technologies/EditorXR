@@ -26,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.FirstTimeSetup();
 
+#if UNITY_EDITOR
             for (var i = 0; i < m_CenterFields.Length; i++)
             {
                 var index = i;
@@ -40,6 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         data.serializedObject.ApplyModifiedProperties();
                 });
             }
+#endif
         }
 
         public override void OnObjectModified()
@@ -50,6 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void UpdateInputFields()
         {
+#if UNITY_EDITOR
             var bounds = m_SerializedProperty.boundsValue;
 
             for (var i = 0; i < m_CenterFields.Length; i++)
@@ -57,10 +60,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_CenterFields[i].text = bounds.center[i].ToString();
                 m_ExtentsFields[i].text = bounds.extents[i].ToString();
             }
+#endif
         }
 
         bool SetValue(string input, int index, bool center = false)
         {
+#if UNITY_EDITOR
             float value;
             if (!float.TryParse(input, out value))
                 return false;
@@ -82,6 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 return true;
             }
+#endif
 
             return false;
         }
@@ -89,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
         {
             object dropObject = null;
+#if UNITY_EDITOR
             var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
 
             if (inputfields.Length > 3) // If we've grabbed all of the fields
@@ -102,6 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
             else if (inputfields.Length > 0) // If we've grabbed a single field
                 dropObject = inputfields[0].text;
+#endif
 
             return dropObject;
         }
@@ -135,6 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
 
+#if UNITY_EDITOR
             if (dropObject is Bounds)
             {
                 m_SerializedProperty.boundsValue = (Bounds)dropObject;
@@ -143,6 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 FinalizeModifications();
             }
+#endif
         }
     }
 }
