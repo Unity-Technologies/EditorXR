@@ -95,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             create(ObjectUtils.GetImplementationsOfInterface(typeof(IAlternateMenu)).ToList());
             create(ObjectUtils.GetImplementationsOfInterface(typeof(IAction)).ToList());
             create(ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList());
+            create(new List<Type> {typeof(SpatialMenu)});
 
             defaultScriptReferences.m_ScriptPrefab = PrefabUtility.CreatePrefab(Path.ChangeExtension(k_Path, "prefab"), prefabsRoot);
             defaultScriptReferences.m_EditingContexts = EditingContextManager.GetEditingContextAssets().ConvertAll(ec => (ScriptableObject)ec);

@@ -13,6 +13,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (usesHierarchyData != null)
                 {
                     var evrHierarchyModule = evr.GetModule<HierarchyModule>();
+                    if (evrHierarchyModule == null)
+                        return;
+
                     evrHierarchyModule.AddConsumer(usesHierarchyData);
 
                     var filterUI = target as IFilterUI;
@@ -27,6 +30,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (usesHierarchy != null)
                 {
                     var evrHierarchyModule = evr.GetModule<HierarchyModule>();
+                    if (evrHierarchyModule == null)
+                        return;
+
                     evrHierarchyModule.RemoveConsumer(usesHierarchy);
 
                     var filterUI = target as IFilterUI;

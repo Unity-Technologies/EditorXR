@@ -6,8 +6,10 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
+using UnityEngine.SpatialTracking;
 using UnityEngine.XR;
-
+using InputTracking = UnityEngine.XR.InputTracking;
+using TrackingSpaceType = UnityEngine.XR.TrackingSpaceType;
 #if ENABLE_STEAMVR_INPUT
 using Valve.VR;
 #endif
@@ -176,8 +178,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 s_ExistingSceneMainCamera = Camera.main;
 
                 // TODO: Copy camera settings when changing contexts
-            var defaultContext = EditingContextManager.defaultContext;
-            if (defaultContext.copyMainCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+                var defaultContext = EditingContextManager.defaultContext;
+                if (defaultContext.copyMainCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
                 {
                     GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, hideFlags);
                     camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
@@ -212,21 +214,34 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 camera.cameraType = CameraType.VR;
                 camera.useOcclusionCulling = false;
 
-            if (s_ExistingSceneMainCamera && defaultContext.copyMainCameraImageEffectsToHMD)
-            {
-                CopyImagesEffectsToCamera(viewerCamera);
+                if (s_ExistingSceneMainCamera && defaultContext.copyMainCameraImageEffectsToHMD)
+                {
+                    CopyImagesEffectsToCamera(viewerCamera);
 
-                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
-                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
-            }
+                    s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
+                    s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
+                }
+
                 rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", hideFlags, typeof(EditorMonoBehaviour));
             }
 #endif
 
             cameraRig = rigGO.transform;
             camera.transform.parent = cameraRig;
-            cameraRig.position = headCenteredOrigin;
-            cameraRig.rotation = Quaternion.identity;
+
+            if (Application.isPlaying)
+            {
+                var tpd = camera.GetComponent<TrackedPoseDriver>();
+                if (!tpd)
+                    tpd = camera.gameObject.AddComponent<TrackedPoseDriver>();
+
+                tpd.UseRelativeTransform = false;
+            }
+            else
+            {
+                cameraRig.rotation = Quaternion.identity;
+                cameraRig.position = headCenteredOrigin;
+            }
         }
 
 #if UNITY_EDITOR
