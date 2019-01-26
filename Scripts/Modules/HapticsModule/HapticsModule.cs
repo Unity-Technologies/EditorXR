@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
@@ -174,4 +173,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
     }
 }
-

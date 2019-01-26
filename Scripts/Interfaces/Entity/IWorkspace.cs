@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -35,4 +34,3 @@ namespace UnityEditor.Experimental.EditorVR
         Bounds contentBounds { get; set; }
     }
 }
-

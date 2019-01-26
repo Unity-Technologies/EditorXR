@@ -10,4 +10,3 @@ namespace UnityEditor.Experimental.EditorVR
         ActionMap standardActionMap { set; }
     }
 }
-

@@ -1,8 +1,6 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     interface ISystemModule
     {
     }
 }
-

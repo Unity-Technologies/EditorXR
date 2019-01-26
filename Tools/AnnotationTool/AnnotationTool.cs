@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -611,7 +610,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 #if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
 #endif
-            
+
             if (AnnotationFinished != null)
             {
                 AnnotationFinished(m_CurrentMeshFilter);
@@ -844,4 +843,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-

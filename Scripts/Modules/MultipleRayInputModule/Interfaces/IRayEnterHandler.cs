@@ -1,5 +1,4 @@
-﻿
-using UnityEngine.EventSystems;
+﻿using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -11,4 +10,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnRayEnter(RayEventData eventData);
     }
 }
-

@@ -1,5 +1,3 @@
-
-using System;
 using UnityEditor.Experimental.EditorVR;
 
 #if INCLUDE_POLY_TOOLKIT
@@ -48,4 +46,3 @@ namespace UnityEditor.Experimental.EditorVR
     }
 #endif
 }
-

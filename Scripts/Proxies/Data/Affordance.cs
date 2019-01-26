@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -34,4 +33,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public AffordanceTooltip[] tooltips { get { return m_Tooltips; } }
     }
 }
-

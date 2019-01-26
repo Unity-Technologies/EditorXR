@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR.UI
+﻿namespace UnityEditor.Experimental.EditorVR.UI
 {
     /// <summary>
     /// Allows fine-grained control of what constitutes a selection
@@ -12,4 +11,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         SelectionFlags selectionFlags { get; set; }
     }
 }
-

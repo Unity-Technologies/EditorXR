@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,4 +30,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-

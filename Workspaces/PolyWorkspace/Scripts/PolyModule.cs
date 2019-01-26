@@ -1,4 +1,3 @@
-
 using System;
 using System.Text;
 using UnityEditor.Experimental.EditorVR;
@@ -99,4 +98,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     }
 }
 #endif
-

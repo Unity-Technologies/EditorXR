@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -128,4 +127,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-

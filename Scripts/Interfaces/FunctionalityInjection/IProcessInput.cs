@@ -1,4 +1,3 @@
-
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -22,4 +21,3 @@ namespace UnityEditor.Experimental.EditorVR
         void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl);
     }
 }
-

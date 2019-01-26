@@ -1,5 +1,4 @@
-﻿
-using UnityEditor.Experimental.EditorVR.Extensions;
+﻿using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -128,4 +127,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
-

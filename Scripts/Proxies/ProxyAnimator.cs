@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -188,4 +187,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-

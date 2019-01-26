@@ -1,4 +1,3 @@
-
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
@@ -16,4 +15,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public LinearHandle scrollHandle { get { return m_ScrollHandle; } }
     }
 }
-

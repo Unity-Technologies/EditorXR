@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,4 +27,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Func<Action, bool> buttonPressed { get; set; }
     }
 }
-

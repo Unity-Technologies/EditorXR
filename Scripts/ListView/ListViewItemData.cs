@@ -1,5 +1,4 @@
-﻿
-namespace ListView
+﻿namespace ListView
 {
     public abstract class ListViewItemData<TIndex>
     {
@@ -7,4 +6,3 @@ namespace ListView
         public string template { get; protected set; }
     }
 }
-

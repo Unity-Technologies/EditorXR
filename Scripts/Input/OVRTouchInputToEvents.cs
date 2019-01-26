@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -169,4 +168,3 @@ namespace UnityEditor.Experimental.EditorVR.Input
 #endif
     }
 }
-

@@ -1,5 +1,4 @@
-﻿
-using UnityEngine.InputNew;
+﻿using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -19,4 +18,3 @@ namespace UnityEditor.Experimental.EditorVR
         bool ignoreActionMapInputLocking { get; }
     }
 }
-

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -28,4 +27,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         internal AffordanceTooltipPlacementOverride[] leftPlacementOverrides { get { return m_LeftPlacementOverrides; } }
     }
 }
-

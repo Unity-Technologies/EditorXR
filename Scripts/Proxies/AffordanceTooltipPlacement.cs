@@ -1,5 +1,4 @@
-﻿
-using UnityEditor.Experimental.EditorVR.UI;
+﻿using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
@@ -33,4 +32,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-

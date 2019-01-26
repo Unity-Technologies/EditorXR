@@ -1,4 +1,3 @@
-
 using System;
 using UnityEngine.Networking;
 
@@ -50,4 +49,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-

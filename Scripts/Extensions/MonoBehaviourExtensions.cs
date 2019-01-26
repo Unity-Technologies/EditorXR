@@ -1,5 +1,4 @@
-﻿
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Extensions
@@ -22,4 +21,3 @@ namespace UnityEditor.Experimental.EditorVR.Extensions
         }
     }
 }
-

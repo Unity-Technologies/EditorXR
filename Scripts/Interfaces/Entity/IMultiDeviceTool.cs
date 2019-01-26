@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Declares a tool as one that should be spawned on all devices at once
@@ -12,4 +11,3 @@ namespace UnityEditor.Experimental.EditorVR
         bool primary { set; }
     }
 }
-

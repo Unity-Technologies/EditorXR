@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Play")]
     [SpatialMenuItem("Play", "Actions", "Enter Play-Mode")]
@@ -13,4 +12,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-

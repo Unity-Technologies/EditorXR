@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -535,4 +534,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-

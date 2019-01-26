@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -65,4 +64,3 @@ namespace UnityEditor.Experimental.EditorVR
         Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
     }
 }
-

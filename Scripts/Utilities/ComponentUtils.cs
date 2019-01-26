@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -37,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (option && component == null)
                 component = Undo.AddComponent<T>(go);
 #endif
-            
+
             return component;
         }
 
@@ -52,7 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 method = type.BaseType.GetMethodRecursively(name, bindingAttr);
 
             return method;
-    }
+        }
     }
 }
-

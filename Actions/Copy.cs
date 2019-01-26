@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Copy", ActionMenuItemAttribute.DefaultActionSectionName, 5)]
     [SpatialMenuItem("Copy", "Actions", "Copy the selected object")]
@@ -14,4 +13,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-

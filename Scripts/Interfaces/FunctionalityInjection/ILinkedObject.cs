@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -29,4 +28,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -276,4 +275,3 @@ namespace ListView
         }
     }
 }
-

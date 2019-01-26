@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
@@ -27,4 +26,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-

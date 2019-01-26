@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -217,4 +216,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-

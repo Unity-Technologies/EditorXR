@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,7 +112,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 #if UNITY_EDITOR
                 Undo.RecordObjects(grabbedObjects, "Move");
 #endif
-                
+
                 for (int i = 0; i < grabbedObjects.Length; i++)
                 {
                     var grabbedObject = grabbedObjects[i];
@@ -898,4 +897,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-

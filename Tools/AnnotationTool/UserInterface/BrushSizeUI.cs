@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Menus;
@@ -64,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             return modificationList.ToArray();
         }
 #endif
-        
+
         public void OnSliderValueChanged(float value)
         {
             m_SliderHandle.localScale = Vector3.one * Mathf.Lerp(k_MinSize, k_MaxSize, value);
@@ -84,4 +83,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -64,4 +63,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public string alphaProperty { get { return m_AlphaProperty; } }
     }
 }
-

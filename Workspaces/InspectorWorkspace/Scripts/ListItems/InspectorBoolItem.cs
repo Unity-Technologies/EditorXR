@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine.UI;
 
@@ -47,4 +46,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-

@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Undo", ActionMenuItemAttribute.DefaultActionSectionName, 2)]
     [SpatialMenuItem("Undo", "Actions", "Undo the previous action")]
@@ -13,4 +12,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-

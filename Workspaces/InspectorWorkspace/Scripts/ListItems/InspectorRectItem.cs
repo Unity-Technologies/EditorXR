@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -189,4 +188,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-

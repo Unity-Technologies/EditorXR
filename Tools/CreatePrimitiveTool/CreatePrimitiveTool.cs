@@ -1,5 +1,3 @@
-
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -171,7 +169,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 #if UNITY_EDITOR
                 Undo.IncrementCurrentGroup();
 #endif
-                
+
                 consumeControl(standardInput.action);
             }
         }
@@ -200,4 +198,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public ActionMap standardActionMap { private get; set; }
     }
 }
-

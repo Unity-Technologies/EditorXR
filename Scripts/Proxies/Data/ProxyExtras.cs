@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -56,4 +55,3 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         ProxyExtraData[] m_Extras;
     }
 }
-

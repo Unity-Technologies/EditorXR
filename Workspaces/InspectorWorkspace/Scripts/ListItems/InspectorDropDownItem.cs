@@ -197,4 +197,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-

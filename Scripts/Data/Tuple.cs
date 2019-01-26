@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     public class Tuple<T1, T2>
     {
@@ -60,6 +59,4 @@ namespace UnityEditor.Experimental.EditorVR
             this.fifthElement = fifthElement;
         }
     }
-
 }
-

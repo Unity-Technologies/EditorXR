@@ -1,5 +1,3 @@
-
-
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
@@ -27,4 +25,3 @@ namespace UnityEditor.Experimental.EditorVR
         void ClearFeedbackRequests(IRequestFeedback caller);
     }
 }
-

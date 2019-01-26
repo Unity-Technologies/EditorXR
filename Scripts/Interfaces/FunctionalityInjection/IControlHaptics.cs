@@ -1,5 +1,4 @@
-﻿
-using UnityEditor.Experimental.EditorVR.Core;
+﻿using UnityEditor.Experimental.EditorVR.Core;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -42,4 +41,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-

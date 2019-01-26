@@ -5,8 +5,4 @@
 
 [assembly: InternalsVisibleTo("Assembly-CSharp-Editor")]
 [assembly: InternalsVisibleTo("EXR-Editor")]
-[assembly: InternalsVisibleTo("EXR-HierarchyWorkspace")]
-[assembly: InternalsVisibleTo("EXR-InspectorWorkspace")]
-[assembly: InternalsVisibleTo("EXR-LockedObjectsWorkspace")]
-[assembly: InternalsVisibleTo("EXR-ProjectWorkspace")]
 [assembly: InternalsVisibleTo("EXR-Tests")]

@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 
 namespace ListView
@@ -200,4 +199,3 @@ namespace ListView
         }
     }
 }
-

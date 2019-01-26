@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Declares a class as a tool within the system
@@ -8,4 +7,3 @@ namespace UnityEditor.Experimental.EditorVR
     {
     }
 }
-

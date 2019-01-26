@@ -1,4 +1,3 @@
-
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -205,4 +204,3 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
         }
     }
 }
-

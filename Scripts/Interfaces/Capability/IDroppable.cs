@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors can be dropped on IDropReceivers
@@ -12,4 +11,3 @@ namespace UnityEditor.Experimental.EditorVR
         object GetDropObject();
     }
 }
-

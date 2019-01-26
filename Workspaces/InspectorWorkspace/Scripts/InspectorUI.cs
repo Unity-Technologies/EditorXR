@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Handles;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -31,4 +30,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         RectTransform m_ListPanel;
     }
 }
-

@@ -1,5 +1,4 @@
-﻿
-#if !UNITY_2017_2_OR_NEWER
+﻿#if !UNITY_2017_2_OR_NEWER
 #pragma warning disable 649 // "never assigned to" warning
 #endif
 
@@ -346,4 +345,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-

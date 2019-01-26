@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
@@ -154,4 +153,3 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-

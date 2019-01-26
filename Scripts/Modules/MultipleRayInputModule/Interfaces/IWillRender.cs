@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -30,4 +29,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnBecameInvisible();
     }
 }
-

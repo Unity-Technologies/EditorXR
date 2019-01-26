@@ -1,4 +1,3 @@
-
 using System;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -105,4 +104,3 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-

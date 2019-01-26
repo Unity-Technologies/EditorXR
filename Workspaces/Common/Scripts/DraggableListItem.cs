@@ -1,4 +1,3 @@
-
 using ListView;
 using System;
 using System.Collections;
@@ -140,4 +139,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected virtual void OnMagnetizeEnded() {}
     }
 }
-

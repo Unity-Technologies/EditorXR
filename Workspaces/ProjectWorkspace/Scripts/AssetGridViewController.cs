@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using ListView;
@@ -279,4 +278,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-

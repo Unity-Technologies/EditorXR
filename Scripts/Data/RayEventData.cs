@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -24,4 +23,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public RayEventData(EventSystem eventSystem) : base(eventSystem) {}
     }
 }
-

@@ -1,5 +1,4 @@
-﻿
-using ListView;
+﻿using ListView;
 using System.Collections.Generic;
 
 #if !UNITY_EDITOR
@@ -26,4 +25,3 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
     }
 }
-

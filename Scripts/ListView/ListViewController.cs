@@ -1,9 +1,6 @@
-
-using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
 namespace ListView
@@ -239,4 +236,3 @@ namespace ListView
         }
     }
 }
-

@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -309,4 +308,3 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         }
     }
 }
-

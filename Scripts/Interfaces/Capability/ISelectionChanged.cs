@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Decorates types that need to respond to a change in selection
@@ -13,4 +12,3 @@ namespace UnityEditor.Experimental.EditorVR
         void OnSelectionChanged();
     }
 }
-

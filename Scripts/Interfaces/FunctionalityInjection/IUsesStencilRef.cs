@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Deliver a stencil ref value for use in materials (useful for masks)
@@ -12,4 +11,3 @@ namespace UnityEditor.Experimental.EditorVR
         byte stencilRef { get; set; }
     }
 }
-

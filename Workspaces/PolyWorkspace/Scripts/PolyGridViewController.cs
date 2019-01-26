@@ -1,4 +1,3 @@
-
 using ListView;
 using UnityEngine;
 
@@ -272,4 +271,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-

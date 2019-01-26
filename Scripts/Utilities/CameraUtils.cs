@@ -1,5 +1,4 @@
-﻿
-using UnityEditor.Experimental.EditorVR.Core;
+﻿using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
@@ -63,4 +62,3 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-

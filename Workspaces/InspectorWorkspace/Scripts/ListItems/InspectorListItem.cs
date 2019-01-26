@@ -1,4 +1,3 @@
-
 using System;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -368,4 +367,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-

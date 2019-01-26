@@ -1,5 +1,4 @@
-﻿
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provide access to the system to show/hide and check drag state of manipulators on this tool / workspace / etc.
@@ -17,4 +16,3 @@ namespace UnityEditor.Experimental.EditorVR
         bool manipulatorDragging { get; }
     }
 }
-

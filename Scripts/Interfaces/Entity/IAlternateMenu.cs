@@ -1,8 +1,4 @@
-﻿
-using System;
-using UnityEngine;
-
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// An alternate menu that shows on device proxies
@@ -11,4 +7,3 @@ namespace UnityEditor.Experimental.EditorVR
     {
     }
 }
-

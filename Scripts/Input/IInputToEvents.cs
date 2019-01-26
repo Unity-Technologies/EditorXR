@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 
 namespace UnityEditor.Experimental.EditorVR.Input
 {
@@ -9,4 +8,3 @@ namespace UnityEditor.Experimental.EditorVR.Input
         event Action activeChanged;
     }
 }
-

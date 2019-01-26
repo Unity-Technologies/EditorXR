@@ -1,4 +1,3 @@
-
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -99,4 +98,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-

@@ -1,4 +1,3 @@
-
 using System;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -56,4 +55,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-

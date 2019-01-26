@@ -1,4 +1,3 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -190,4 +189,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-

@@ -1,4 +1,3 @@
-
 using System;
 using UnityEngine.XR;
 
@@ -35,4 +34,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-
