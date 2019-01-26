@@ -128,7 +128,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Awake()
         {
-#if UNDO_PATCH
+#if UNITY_2018_2_OR_NEWER
+            DrivenRectTransformTracker.StopRecordingUndo();
+#elif UNDO_PATCH
             DrivenRectTransformTracker.BlockUndo = true;
 #endif
             s_Instance = this; // Used only by PreferencesGUI
@@ -356,7 +358,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 nested.OnDestroy();
             }
 
-#if UNDO_PATCH
+#if UNITY_2018_2_OR_NEWER
+            DrivenRectTransformTracker.StartRecordingUndo();
+#elif UNDO_PATCH
             DrivenRectTransformTracker.BlockUndo = false;
 #endif
         }
