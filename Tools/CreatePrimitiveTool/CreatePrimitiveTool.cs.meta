@@ -4,7 +4,7 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - m_MenuPrefab: {fileID: 114600396075827832, guid: 0636793f94b4a424781f6e236242b1c3,
+  - m_MenuPrefab: {fileID: 114000010621161446, guid: 86d6b2e01d02faf42be52ce94b33817b,
       type: 2}
   - m_Icon: {fileID: 21300000, guid: 7f71d318c2ae666478a6e3a737d6d1ac, type: 3}
   executionOrder: 0
