@@ -2120,7 +2120,7 @@ MonoBehaviour:
   m_Description: {fileID: 0}
   m_Title: {fileID: 0}
   m_Button: {fileID: 114000010422884470}
-  OnHoverStart:
+  hoverStarted:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114175322038400138}
@@ -2136,7 +2136,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  OnHoverEnd:
+  hoverEnded:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114175322038400138}
@@ -2218,7 +2218,7 @@ MonoBehaviour:
   m_Description: {fileID: 0}
   m_Title: {fileID: 0}
   m_Button: {fileID: 114000010260101998}
-  OnHoverStart:
+  hoverStarted:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114136729339155072}
@@ -2234,7 +2234,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  OnHoverEnd:
+  hoverEnded:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114136729339155072}
@@ -2611,7 +2611,7 @@ MonoBehaviour:
   m_Description: {fileID: 0}
   m_Title: {fileID: 0}
   m_Button: {fileID: 114000014144221930}
-  OnHoverStart:
+  hoverStarted:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114614287067848106}
@@ -2627,7 +2627,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  OnHoverEnd:
+  hoverEnded:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114614287067848106}
@@ -2669,7 +2669,7 @@ MonoBehaviour:
   m_Description: {fileID: 0}
   m_Title: {fileID: 0}
   m_Button: {fileID: 114000013405031928}
-  OnHoverStart:
+  hoverStarted:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114364197269764576}
@@ -2685,7 +2685,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  OnHoverEnd:
+  hoverEnded:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114364197269764576}
@@ -2864,7 +2864,7 @@ MonoBehaviour:
   m_Description: {fileID: 0}
   m_Title: {fileID: 0}
   m_Button: {fileID: 114000011140226108}
-  OnHoverStart:
+  hoverStarted:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114503784281641334}
@@ -2880,7 +2880,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  OnHoverEnd:
+  hoverEnded:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114503784281641334}
@@ -3600,7 +3600,7 @@ MonoBehaviour:
   m_Description: {fileID: 0}
   m_Title: {fileID: 0}
   m_Button: {fileID: 114250044117128470}
-  OnHoverStart:
+  hoverStarted:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114962695164338082}
@@ -3616,7 +3616,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  OnHoverEnd:
+  hoverEnded:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114962695164338082}
@@ -4726,7 +4726,7 @@ MonoBehaviour:
   m_Description: {fileID: 0}
   m_Title: {fileID: 0}
   m_Button: {fileID: 114149674734371676}
-  OnHoverStart:
+  hoverStarted:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114080452604469542}
@@ -4742,7 +4742,7 @@ MonoBehaviour:
         m_CallState: 1
     m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
       Culture=neutral, PublicKeyToken=null
-  OnHoverEnd:
+  hoverEnded:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 114080452604469542}
