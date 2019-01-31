@@ -78,7 +78,7 @@ Material:
     - _UVSec: 0
     - _ZWrite: 0
     - g_flCornerAdjust: 0.48
-    - g_flOutlineWidth: 0.00441
+    - g_flOutlineWidth: 0.00225
     m_Colors:
     - _Color: {r: 0.126, g: 0.126, b: 0.126, a: 1}
     - _ColorBottom: {r: 0, g: 0.76256925, b: 0.83137256, a: 1}
