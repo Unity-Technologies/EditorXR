@@ -1,6 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -24,18 +22,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_HiddenBackgroundSizeDelta = new Vector2(0f, 0f);
             m_BackgroundGradientTransform.sizeDelta = m_HiddenBackgroundSizeDelta;
             m_ShapeTransform.localScale = Vector3.zero;
-
-            //m_MainMenuButton.hovered += Show;
-        }
-
-        void OnDestroy()
-        {
-            //m_MainMenuButton.hovered -= Show;
-        }
+         }
 
         public void Show()
         {
-            Debug.LogError("showing : " + name);
             m_ShapeTransform.localScale = m_OriginalShapeLocalScale;
             m_BackgroundGradientTransform.sizeDelta = m_OriginalBackgroundSizeDelta;
         }
@@ -46,17 +36,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public void Hide()
         {
-            Debug.LogError("HIDING : " + name);
             m_ShapeTransform.localScale = Vector3.zero;
             m_BackgroundGradientTransform.sizeDelta = m_HiddenBackgroundSizeDelta;
-        }
-
-        public void Test1()
-        {
-        }
-
-        public void Test3()
-        {
         }
     }
 }
