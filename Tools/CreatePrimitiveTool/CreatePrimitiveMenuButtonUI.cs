@@ -30,10 +30,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_BackgroundGradientTransform.sizeDelta = m_OriginalBackgroundSizeDelta;
         }
 
-        public void MakeVisible()
-        {
-        }
-
         public void Hide()
         {
             m_ShapeTransform.localScale = Vector3.zero;
