@@ -3,6 +3,7 @@ using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -25,6 +26,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public event Action<Transform, Type, string> hovered;
         public event Action<Transform> clicked;
+
+        public UnityEvent OnHoverStart;
+        public UnityEvent OnHoverEnd;
 
         new void Awake()
         {
@@ -51,7 +55,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     descriptionText = m_Description.text;
 #endif
 
-                hovered(eventData.rayOrigin, toolType, descriptionText);
+                if (hovered != null)
+                    hovered(eventData.rayOrigin, toolType, descriptionText);
+
+                if (OnHoverStart != null)
+                    OnHoverStart.Invoke();
             }
         }
 
@@ -61,7 +69,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 return;
 
             if (button.interactable && hovered != null)
-                hovered(eventData.rayOrigin, null, null);
+            {
+
+                if (hovered != null)
+                    hovered(eventData.rayOrigin, null, null);
+
+                if (OnHoverEnd != null)
+                    OnHoverEnd.Invoke();
+            }
         }
 
         public void OnPointerClick(PointerEventData eventData)
