@@ -27,8 +27,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public event Action<Transform, Type, string> hovered;
         public event Action<Transform> clicked;
 
-        public UnityEvent OnHoverStart;
-        public UnityEvent OnHoverEnd;
+        public UnityEvent hoverStarted;
+        public UnityEvent hoverEnded;
 
         new void Awake()
         {
@@ -58,8 +58,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (hovered != null)
                     hovered(eventData.rayOrigin, toolType, descriptionText);
 
-                if (OnHoverStart != null)
-                    OnHoverStart.Invoke();
+                if (hoverStarted != null)
+                    hoverStarted.Invoke();
             }
         }
 
@@ -74,8 +74,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 if (hovered != null)
                     hovered(eventData.rayOrigin, null, null);
 
-                if (OnHoverEnd != null)
-                    OnHoverEnd.Invoke();
+                if (hoverEnded != null)
+                    hoverEnded.Invoke();
             }
         }
 
