@@ -42,6 +42,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_TitleIconMaterial = MaterialUtils.GetMaterialClone(m_TitleIcon);
             m_TitleIconMaterial.SetColor(k_TopGradientProperty, k_EmptyGradient.a);
             m_TitleIconMaterial.SetColor(k_BottomGradientProperty, k_EmptyGradient.b);
+
+            for (var i = 0; i < m_HighlightObjects.Length; ++i)
+            {
+                var go = m_HighlightObjects[i];
+                go.SetActive(false);
+            }
         }
 
         public void SelectPrimitive(int type)
@@ -51,8 +57,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             // the order of the objects in m_HighlightObjects is matched to the values of the PrimitiveType enum elements
             for (var i = 0; i < m_HighlightObjects.Length; ++i)
             {
-                var go = m_HighlightObjects[i];
-                go.SetActive(i == type);
+                //var go = m_HighlightObjects[i];
+                //go.SetActive(i == type);
             }
         }
 
@@ -62,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             foreach (var go in m_HighlightObjects)
             {
-                go.SetActive(false);
+                //go.SetActive(false);
             }
         }
 
