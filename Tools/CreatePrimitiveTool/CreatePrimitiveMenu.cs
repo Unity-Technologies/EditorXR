@@ -40,8 +40,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             localBounds = ObjectUtils.GetBounds(transform);
             m_TitleIconMaterial = MaterialUtils.GetMaterialClone(m_TitleIcon);
-            m_TitleIconMaterial.SetColor(k_TopGradientProperty, k_EmptyGradient.a);
-            m_TitleIconMaterial.SetColor(k_BottomGradientProperty, k_EmptyGradient.b);
+            m_TitleIconMaterial.SetColor(k_TopGradientProperty, UnityBrandColorScheme.saturatedSessionGradient.a);
+            m_TitleIconMaterial.SetColor(k_BottomGradientProperty, UnityBrandColorScheme.saturatedSessionGradient.b);
 
             for (var i = 0; i < m_HighlightObjects.Length; ++i)
             {
