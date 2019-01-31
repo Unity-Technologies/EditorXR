@@ -49,6 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 // We can't use ?? because it breaks on destroyed references
                 if (m_Description)
                     descriptionText = m_Description.text;
+
                 hovered(eventData.rayOrigin, toolType, descriptionText);
             }
 #endif
