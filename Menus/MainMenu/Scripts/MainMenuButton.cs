@@ -42,17 +42,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (m_CanvasGroup && !m_CanvasGroup.interactable)
                 return;
 
-#if INCLUDE_TEXT_MESH_PRO
             if (button.interactable && hovered != null)
             {
                 var descriptionText = string.Empty;
+#if INCLUDE_TEXT_MESH_PRO
                 // We can't use ?? because it breaks on destroyed references
                 if (m_Description)
                     descriptionText = m_Description.text;
+#endif
 
                 hovered(eventData.rayOrigin, toolType, descriptionText);
             }
-#endif
         }
 
         public void OnRayExit(RayEventData eventData)
