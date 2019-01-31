@@ -46,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (m_CanvasGroup && !m_CanvasGroup.interactable)
                 return;
 
-            if (button.interactable && hovered != null)
+            if (button.interactable)
             {
                 var descriptionText = string.Empty;
 #if INCLUDE_TEXT_MESH_PRO
@@ -68,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (m_CanvasGroup && !m_CanvasGroup.interactable)
                 return;
 
-            if (button.interactable && hovered != null)
+            if (button.interactable)
             {
 
                 if (hovered != null)
