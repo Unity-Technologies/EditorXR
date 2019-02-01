@@ -2341,6 +2341,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TitleIcon: {fileID: 137925600403856278}
+  m_Buttons:
+  - {fileID: 114792322112990344}
+  - {fileID: 114000014014803856}
+  - {fileID: 114000010289911076}
+  - {fileID: 114000013352514132}
+  - {fileID: 114000012469117326}
+  - {fileID: 114269995500307678}
+  - {fileID: 114000010118303946}
+  m_ButtonClickPulse: {fileID: 11400000, guid: f66cb0a158f54124aa4158bbad3ed702, type: 2}
+  m_ButtonHoverPulse: {fileID: 11400000, guid: dd561ccb8162d1040adba0a7ea60eadc, type: 2}
 --- !u!114 &114000010887635516
 MonoBehaviour:
   m_ObjectHideFlags: 1

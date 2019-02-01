@@ -1,12 +1,13 @@
 #if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu
+    sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu, IControlHaptics, IRayToNode
     {
         const int k_Priority = 1;
         const string k_BottomGradientProperty = "_ColorBottom";
@@ -14,6 +15,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         Renderer m_TitleIcon;
+
+        [SerializeField]
+        MainMenuButton[] m_Buttons;
+
+        [SerializeField]
+        HapticPulse m_ButtonClickPulse;
+
+        [SerializeField]
+        HapticPulse m_ButtonHoverPulse;
 
         Material m_TitleIconMaterial;
 
@@ -37,6 +47,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_TitleIconMaterial = MaterialUtils.GetMaterialClone(m_TitleIcon);
             m_TitleIconMaterial.SetColor(k_TopGradientProperty, UnityBrandColorScheme.saturatedSessionGradient.a);
             m_TitleIconMaterial.SetColor(k_BottomGradientProperty, UnityBrandColorScheme.saturatedSessionGradient.b);
+
+            foreach (var button in m_Buttons)
+            {
+                button.hovered += OnButtonHovered;
+                button.clicked += OnButtonClicked;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            foreach (var button in m_Buttons)
+            {
+                button.hovered -= OnButtonHovered;
+                button.clicked -= OnButtonClicked;
+            }
         }
 
         public void SelectPrimitive(int type)
@@ -52,6 +77,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public void Close()
         {
             close();
+        }
+
+        void OnButtonClicked(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+        }
+
+        void OnButtonHovered(Transform rayOrigin, Type buttonType, string buttonDescription)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
         }
     }
 }
