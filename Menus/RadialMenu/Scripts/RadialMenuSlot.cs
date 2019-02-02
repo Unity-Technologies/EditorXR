@@ -13,6 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
     {
         static Color s_FrameOpaqueColor;
+        static GradientPair s_GradientPair;
         static readonly Vector3 k_HiddenLocalScale = new Vector3(1f, 0f, 1f);
         const float k_IconHighlightedLocalYOffset = 0.006f;
         const string k_MaterialAlphaProperty = "_Alpha";
@@ -20,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const string k_MaterialColorTopProperty = "_ColorTop";
         const string k_MaterialColorBottomProperty = "_ColorBottom";
         const string k_MaterialColorProperty = "_Color";
+        const string k_MaterialStencilRefProperty = "_StencilRef";
 
         [SerializeField]
         MeshRenderer m_InsetMeshRenderer;
@@ -45,17 +47,59 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         MeshRenderer m_FrameRenderer;
 
-        public Transform tooltipTarget { get { return m_TooltipTarget; } }
+        [SerializeField]
+        MeshRenderer m_MaskRenderer;
 
         [SerializeField]
         Transform m_TooltipTarget;
 
-        public Transform tooltipSource { get { return m_TooltipSource; } }
-
         [SerializeField]
         Transform m_TooltipSource;
 
+        bool m_Pressed;
+        bool m_Highlighted;
+        bool m_SemiTransparent;
+        bool m_Visible;
+        Color m_SemiTransparentFrameColor;
+        float m_IconLookForwardOffset = 0.5f;
+        GradientPair m_OriginalInsetGradientPair;
+        string m_TooltipText;
+        Vector3 m_VisibleInsetLocalScale;
+        Vector3 m_HiddenInsetLocalScale;
+        Vector3 m_HighlightedInsetLocalScale;
+        Vector3 m_OriginalIconLocalPosition;
+        Vector3 m_IconHighlightedLocalPosition;
+        Vector3 m_IconPressedLocalPosition;
+        Vector3 m_IconLookDirection;
+
+        Material m_InsetMaterial;
+        Material m_BorderRendererMaterial;
+        Material m_FrameMaterial;
+        Material m_IconMaterial;
+        Material m_MaskMaterial;
+
+        Coroutine m_VisibilityCoroutine;
+        Coroutine m_HighlightCoroutine;
+        Coroutine m_IconHighlightCoroutine;
+        Coroutine m_InsetRevealCoroutine;
+        Coroutine m_RayExitDelayCoroutine;
+
+        public Transform tooltipTarget { get { return m_TooltipTarget; } }
+
+        public Transform tooltipSource { get { return m_TooltipSource; } }
+
         public TextAlignment tooltipAlignment { get; private set; }
+
+        // All RadialMenu buttons have their stencil ID set from the RadialMenuUI's single shared stencil ID
+        public byte stencilRef
+        {
+            set
+            {
+                m_MaskMaterial.SetInt(k_MaterialStencilRefProperty, value);
+                m_InsetMaterial.SetInt(k_MaterialStencilRefProperty, value);
+                m_FrameMaterial.SetInt(k_MaterialStencilRefProperty, value);
+            }
+        }
 
         public bool pressed
         {
@@ -73,8 +117,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 }
             }
         }
-
-        bool m_Pressed;
 
         public bool highlighted
         {
@@ -109,8 +151,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             get { return m_Highlighted; }
         }
 
-        bool m_Highlighted;
-
         public bool semiTransparent
         {
             get { return m_SemiTransparent; }
@@ -125,8 +165,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 PostReveal();
             }
         }
-
-        bool m_SemiTransparent;
 
         public bool visible
         {
@@ -152,8 +190,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        bool m_Visible;
-
         public GradientPair gradientPair
         {
             set
@@ -163,8 +199,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_BorderRendererMaterial.SetColor(k_MaterialColorBottomProperty, value.b);
             }
         }
-
-        static GradientPair s_GradientPair;
 
         public Material borderRendererMaterial
         {
@@ -176,35 +210,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        Material m_BorderRendererMaterial;
-
-        GradientPair m_OriginalInsetGradientPair;
-        Material m_InsetMaterial;
-        Vector3 m_VisibleInsetLocalScale;
-        Vector3 m_HiddenInsetLocalScale;
-        Vector3 m_HighlightedInsetLocalScale;
-        Vector3 m_OriginalIconLocalPosition;
-        Vector3 m_IconHighlightedLocalPosition;
-        Vector3 m_IconPressedLocalPosition;
-        float m_IconLookForwardOffset = 0.5f;
-        Vector3 m_IconLookDirection;
-        Material m_FrameMaterial;
-        Material m_IconMaterial;
-        Color m_SemiTransparentFrameColor;
-
-        Coroutine m_VisibilityCoroutine;
-        Coroutine m_HighlightCoroutine;
-        Coroutine m_IconHighlightCoroutine;
-        Coroutine m_InsetRevealCoroutine;
-        Coroutine m_RayExitDelayCoroutine;
-
         public string tooltipText
         {
             get { return tooltip != null ? tooltip.tooltipText : m_TooltipText; }
             set { m_TooltipText = value; }
         }
-
-        string m_TooltipText;
 
         public Sprite icon
         {
@@ -227,6 +237,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void Awake()
         {
+            m_MaskMaterial = MaterialUtils.GetMaterialClone(m_MaskRenderer);
             m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
             m_IconMaterial = MaterialUtils.GetMaterialClone(m_Icon);
             m_OriginalInsetGradientPair = new GradientPair(m_InsetMaterial.GetColor(k_MaterialColorTopProperty), m_InsetMaterial.GetColor(k_MaterialColorBottomProperty));
@@ -259,6 +270,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             ObjectUtils.Destroy(m_InsetMaterial);
             ObjectUtils.Destroy(m_IconMaterial);
             ObjectUtils.Destroy(m_FrameMaterial);
+            ObjectUtils.Destroy(m_MaskMaterial);
         }
 
         public void CorrectIconRotation()

@@ -5,6 +5,7 @@
 		_ColorTop("Top Color", Color) = (1,1,1,1)
 		_ColorBottom("Bottom Color", Color) = (1,1,1,1)
 		_Alpha("Alpha", Range(0.0, 1.0)) = 1.0
+		_StencilRef("StencilRef", Int) = 3
 	}
 
 	SubShader
@@ -17,7 +18,7 @@
 
 		Stencil
 		{
-			Ref 1
+			Ref [_StencilRef]
 			Comp equal
 		}
 
