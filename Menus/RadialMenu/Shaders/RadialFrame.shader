@@ -4,7 +4,7 @@ Shader "EditorVR/RadialMenu/RadialFrame"
     {
         _Color("Color", Color) = (1,1,1,1)
         _MainTex("Albedo", 2D) = "white" {}
-        
+
         _Cutoff("Alpha Cutoff", Range(0.0, 1.0)) = 0.5
 
         _Glossiness("Smoothness", Range(0.0, 1.0)) = 0.5
@@ -28,7 +28,7 @@ Shader "EditorVR/RadialMenu/RadialFrame"
 
         _EmissionColor("Color", Color) = (0,0,0)
         _EmissionMap("Emission", 2D) = "white" {}
-        
+
         _DetailMask("Detail Mask", 2D) = "white" {}
 
         _DetailAlbedoMap("Detail Albedo x2", 2D) = "grey" {}
@@ -52,20 +52,14 @@ Shader "EditorVR/RadialMenu/RadialFrame"
         Tags { "Queue" = "Overlay+5503" "RenderType"="Opaque" "PerformanceChecks"="False" }
         LOD 300
 
-        Stencil
-        {
-            Ref 1
-            Comp NotEqual
-        }
-
         //  Base forward pass (directional light, emission, lightmaps, ...)
         Pass
         {
-            Name "FORWARD" 
+            Name "FORWARD"
             Tags { "LightMode" = "ForwardBase" }
 
             Blend [_SrcBlend] [_DstBlend]
-            ZWrite [_ZWrite]
+            ZWrite On
             Offset 0, -1
 
             CGPROGRAM
@@ -175,7 +169,7 @@ Shader "EditorVR/RadialMenu/RadialFrame"
         // This pass it not used during regular rendering.
         Pass
         {
-            Name "META" 
+            Name "META"
             Tags { "LightMode"="Meta" }
 
             Cull Off
