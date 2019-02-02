@@ -190,7 +190,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4000010172062078
 Transform:
   m_ObjectHideFlags: 1
@@ -331,6 +331,7 @@ MeshRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 5c092e872a72dd144a84ae7da8095049, type: 2}
   m_StaticBatchInfo:
@@ -365,6 +366,7 @@ MeshRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 075f4317080fbf24cbfdec28d849f2eb, type: 2}
   m_StaticBatchInfo:
@@ -399,6 +401,7 @@ MeshRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: dd74871271698184f8f9183a65aa3193, type: 2}
   m_StaticBatchInfo:
@@ -433,6 +436,7 @@ MeshRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: d3faf3eb695bbf945b92c347e1b5036c, type: 2}
   m_StaticBatchInfo:
@@ -542,6 +546,7 @@ MonoBehaviour:
   m_Button: {fileID: 114000011110648212}
   m_BorderRenderer: {fileID: 23000014264746152}
   m_FrameRenderer: {fileID: 23000010833860060}
+  m_MaskRenderer: {fileID: 23000013666946814}
   m_TooltipTarget: {fileID: 4000010666759626}
   m_TooltipSource: {fileID: 4000011568490198}
 --- !u!114 &114000013317744718
@@ -625,7 +630,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 89.981, y: -11.04, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0.0000009164214, y: -0.0000004209578}
+  m_AnchoredPosition: {x: 0, y: 0.0008}
   m_SizeDelta: {x: 60.2615, y: 60.2615}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224000011929366698
@@ -648,7 +653,7 @@ RectTransform:
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &225000011303517996
 CanvasGroup:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013100143890}
