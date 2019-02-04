@@ -120,7 +120,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Shared stencil ID for all buttons in this menu instance
         /// </summary>
-        byte stencilRef { get; set; }
+        byte stencilRef { set; }
     }
 }
 #endif
