@@ -279,7 +279,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 var sliderValue = Mathf.Lerp(MinBrushSize, MaxBrushSize, value);
                 m_Preferences.brushSize = sliderValue;
-                m_AnnotationPointer.Resize(sliderValue);
             };
             m_BrushSizeChanged = m_BrushSizeUI.ChangeSliderValue;
         }
@@ -314,7 +313,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     m_BrushSizeChanged(ratio);
                 }
 
-                m_AnnotationPointer.Resize(brushSize);
                 m_Preferences.brushSize = brushSize;
             }
         }
@@ -640,17 +638,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             // We can only start drawing if we're not over UI
             if (!isOverUI || m_WasDrawing)
             {
-                if (!m_Preferences.pressureSensitive)
+                if (m_Preferences.pressureSensitive)
                 {
-                    isHeld = draw.isHeld;
-                    m_DrawStrength = 1.0f;
+                    var drawInput = Mathf.Lerp(rawInput, m_SmoothInput.predictedValue, m_Preferences.pressureSmoothing);
+                    isHeld = drawInput > k_MinDrawStrength;
+
+                    m_DrawStrength = (drawInput - k_MinDrawStrength) * k_DrawPressureScale;
                 }
                 else
                 {
-                    var drawInput = Mathf.Lerp(rawInput, m_SmoothInput.predictedValue, m_Preferences.pressureSmoothing);
-                    isHeld = (drawInput > k_MinDrawStrength);
- 
-                    m_DrawStrength = (drawInput - k_MinDrawStrength) * k_DrawPressureScale;
+                    isHeld = draw.isHeld;
+                    m_DrawStrength = 1.0f;
                 }
             }
 
@@ -684,12 +682,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     FinalizeMesh();
                     consumeControl(draw);
                 }
+
+                var brushSize = m_Preferences.brushSize;
+                if (isHeld)
+                    brushSize *= m_DrawStrength;
+
+                // ProcessInput is called once before Start, so m_AnnotationPointer will be null
+                if (m_AnnotationPointer != null)
+                    m_AnnotationPointer.Resize(brushSize);
             }
 
             if (isHeld)
                 return;
 
-            
             if (isOverUI != m_WasOverUI)
             {
                 m_WasOverUI = isOverUI;
