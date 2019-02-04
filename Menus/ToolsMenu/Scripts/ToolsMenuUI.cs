@@ -12,7 +12,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenuUI : MonoBehaviour, IUsesViewerScale, IInstantiateUI,
-        IConnectInterfaces, IControlSpatialHinting, IUsesRayOrigin
+        IConnectInterfaces, IControlSpatialHinting, IUsesRayOrigin, IUsesStencilRef
     {
         const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
         const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -46,6 +46,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Quaternion m_HintContentContainerInitialRotation;
         Vector3 m_HintContentWorldPosition;
         Vector3 m_DragTarget;
+
+        public byte stencilRef { get; set; }
 
         public int maxButtonCount { get; set; }
 
@@ -193,6 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             button.iconHighlightedLocalZOffset = k_RaySelectIconHighlightedZOffset;
             button.tooltipTarget = m_ButtonTooltipTarget;
             button.hovered += OnButtonHover;
+            button.stencilRef = stencilRef;
 
             bool allowSecondaryButton = false; // Secondary button is the close button
             var insertPosition = k_MenuButtonOrderPosition;
