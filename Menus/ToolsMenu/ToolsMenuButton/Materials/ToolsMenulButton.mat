@@ -75,8 +75,9 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _StencilRef: 3
     - _UVSec: 0
-    - _ZWrite: 0
+    - _ZWrite: 1
     m_Colors:
     - _Color: {r: 0.101960786, g: 0.101960786, b: 0.101960786, a: 1}
     - _ColorBottom: {r: 0.13333334, g: 0.17254902, b: 0.21568628, a: 1}

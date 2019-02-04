@@ -897,6 +897,7 @@ MonoBehaviour:
   m_IconContainerCanvasGroup: {fileID: 225000010727404378}
   m_FrameRenderer: {fileID: 137000012108747896}
   m_InsetMeshRenderer: {fileID: 137000013542685126}
+  m_MaskRenderer: {fileID: 137000011420067172}
   m_PrimaryButtonColliders:
   - {fileID: 65000012469590154}
   - {fileID: 65000012136550866}
