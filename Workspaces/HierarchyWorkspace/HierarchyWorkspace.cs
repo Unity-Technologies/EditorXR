@@ -8,6 +8,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
+    [SpatialMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
     class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
     {
         protected const string k_Locked = "Locked";

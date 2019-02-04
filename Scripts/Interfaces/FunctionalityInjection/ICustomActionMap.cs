@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Whether the custom action map will always receive input, regardless of locking
         /// </summary>
-        bool ignoreLocking { get; }
+        bool ignoreActionMapInputLocking { get; }
     }
 }
 #endif

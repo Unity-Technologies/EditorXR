@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (s_ActiveView)
                 {
-                    if (!s_ActiveView.m_CustomPreviewCamera && EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
+                    if (s_ExistingSceneMainCamera && !s_ActiveView.m_CustomPreviewCamera && EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
                         CopyImagesEffectsToCamera(value);
 
                     s_ActiveView.m_CustomPreviewCamera = value;
@@ -127,6 +127,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public static event Action<bool> hmdStatusChange;
 
         public Rect guiRect { get; private set; }
+
+        public static Vector2 MouseDelta;
+        public static Vector2 MouseScrollDelta;
+        public static bool LeftMouseButtonHeld;
+        public static bool MiddleMouseButtonHeld;
+        public static bool RightMouseButtonHeld;
 
         public static Coroutine StartCoroutine(IEnumerator routine)
         {
@@ -342,7 +348,44 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             DoDrawCamera(guiRect);
 
-            Event e = Event.current;
+            MouseScrollDelta = Vector2.zero;
+            var e = Event.current;
+            MouseDelta = e.delta;
+            switch (e.type)
+            {
+                case EventType.ScrollWheel:
+                    MouseScrollDelta = e.delta;
+                    break;
+                case EventType.MouseDown:
+                    switch (e.button)
+                    {
+                        case 0:
+                            LeftMouseButtonHeld = true;
+                            break;
+                        case 1:
+                            RightMouseButtonHeld = true;
+                            break;
+                        case 2:
+                            MiddleMouseButtonHeld = true;
+                            break;
+                    }
+                    break;
+                case EventType.MouseUp:
+                    switch (e.button)
+                    {
+                        case 0:
+                            LeftMouseButtonHeld = false;
+                            break;
+                        case 1:
+                            RightMouseButtonHeld = false;
+                            break;
+                        case 2:
+                            MiddleMouseButtonHeld = false;
+                            break;
+                    }
+                    break;
+            }
+
             if (m_ShowDeviceView)
             {
                 if (e.type == EventType.Repaint)
@@ -361,7 +404,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_ToggleDeviceViewRect.width = width;
             m_PresentationCameraRect.y = height - m_PresentationCameraRect.height;
 
-            if (GUI.Button(m_ToggleDeviceViewRect, "Toggle Device View", EditorStyles.toolbarButton))
+
+            const string kToggleDeviceViewEnabled = "Toggle Device View : Enabled";
+            const string kToggleDeviceViewDisabled = "Toggle Device View : Disabled";
+            if (GUI.Button(m_ToggleDeviceViewRect, m_ShowDeviceView ? kToggleDeviceViewEnabled : kToggleDeviceViewDisabled, EditorStyles.toolbarButton))
                 m_ShowDeviceView = !m_ShowDeviceView;
 
             if (m_CustomPreviewCamera)
@@ -381,9 +427,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 #endif
 
-            #if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
                 GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-            #endif
+#endif
 
             UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
@@ -391,9 +437,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
-            #if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_1_OR_NEWER
                 GL.sRGBWrite = false;
-            #endif
+#endif
         }
 
         private void Update()

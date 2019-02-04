@@ -151,6 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             AddModule<HierarchyModule>();
             AddModule<ProjectFolderModule>();
+            AddModule<AdaptivePositionModule>();
 
             var viewer = GetNestedModule<Viewer>();
             viewer.preserveCameraRig = preserveLayout;
@@ -240,6 +241,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             };
 
             AddModule<HapticsModule>();
+            AddModule<GazeDivergenceModule>();
             AddModule<SpatialHintModule>();
             AddModule<SpatialScrollModule>();
 

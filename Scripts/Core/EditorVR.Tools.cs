@@ -147,6 +147,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     toolsMenu.rayOrigin = rayOrigin;
                     toolsMenu.setButtonForType(typeof(IMainMenu), null);
                     toolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
+
+                    var spatialMenu = ObjectUtils.AddComponent<SpatialMenu>(evr.gameObject);
+                    this.ConnectInterfaces(spatialMenu, rayOrigin);
+                    spatialMenu.Setup();
                 }
 
                 evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();

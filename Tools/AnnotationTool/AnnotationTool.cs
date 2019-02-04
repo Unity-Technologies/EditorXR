@@ -14,6 +14,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [MainMenuItem("Annotation", "Create", "Draw in 3D")]
+    [SpatialMenuItem("Annotation", "Tools", "Draw in 3D")]
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IInstantiateUI, IInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
@@ -137,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform alternateMenuOrigin { private get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         public List<ILinkedObject> linkedObjects { private get; set; }
         public Node node { private get; set; }
