@@ -8,6 +8,7 @@ using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -120,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
         public Transform rayOrigin { get; set; }
         public Transform cameraRig { private get; set; }
         public List<ILinkedObject> linkedObjects { private get; set; }
@@ -679,6 +680,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                 consumeControl(m_LocomotionInput.scaleReset);
                                 consumeControl(otherLocomotionInput.scaleReset);
 
+                                // Also pre-emptively consume world-reset
+                                consumeControl(m_LocomotionInput.worldReset);
+                                consumeControl(otherLocomotionInput.worldReset);
+
                                 var thisPosition = cameraRig.InverseTransformPoint(rayOrigin.position);
                                 var otherRayOrigin = otherLocomotionTool.rayOrigin;
                                 var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);
@@ -775,7 +780,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                     var currentRotation = Quaternion.AngleAxis(currentYaw, Vector3.up);
                                     midPoint = currentRotation * midPoint * currentScale;
 
-                                    cameraRig.position = m_StartPosition + m_StartMidPoint - midPoint;
+                                    var pos = m_StartPosition + m_StartMidPoint - midPoint;
+                                    cameraRig.position = pos;
+
                                     cameraRig.rotation = currentRotation;
 
                                     this.SetViewerScale(currentScale);

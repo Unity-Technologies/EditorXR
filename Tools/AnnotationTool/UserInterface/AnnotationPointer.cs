@@ -17,8 +17,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         Mesh m_CustomPointerMesh;
 
+        float m_Size;
+
         public void Resize(float size)
         {
+            if (size == m_Size)
+                return;
+
+            m_Size = size;
+
             size /= k_YScale;
             var vertices = m_CustomPointerMesh.vertices;
             for (var i = k_Sides; i < k_Sides * 2; i++)
