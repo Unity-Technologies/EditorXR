@@ -427,7 +427,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 m_OrderedButtons.Remove(button);
                 button.destroy();
-                button = m_OrderedButtons[k_ActiveToolOrderPosition]; // Assign next ordered button
+
+                // Return to the selection tool, as the active tool, when closing a tool via the secondary close button on a ToolsMenuButton
+                for (int i = 0; i < m_OrderedButtons.Count; ++i)
+                {
+                    if (IsSelectionToolButton(m_OrderedButtons[i]))
+                    {
+                        button = m_OrderedButtons[i];
+                        break;
+                    }
+                }
 
                 if (buttonSelected != null)
                     buttonSelected(rayOrigin, button.toolType); // Select the new active tool button
