@@ -100,6 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Sprite m_PreviewIcon;
         bool m_Highlighted;
         bool m_ActiveTool;
+        bool m_ImplementsSecondaryButton;
 
         public Transform tooltipTarget
         {
@@ -121,7 +122,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public int activeButtonCount { get; set; }
         public int maxButtonCount { get; set; }
         public Transform menuOrigin { get; set; }
-        public bool implementsSecondaryButton { get; set; }
 
         public Action<Transform, Transform> openMenu { get; set; }
         public Action<Type> selectTool { get; set; }
@@ -185,6 +185,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 if (m_Order == -1)
                     this.HideTooltip(this);
+            }
+        }
+
+        public bool implementsSecondaryButton
+        {
+            get { return m_ImplementsSecondaryButton; }
+            set
+            {
+                m_ImplementsSecondaryButton = value;
+
+                if (!value)
+                {
+                    foreach (var collider in m_CloseButtonColliders)
+                    {
+                        collider.enabled = false;
+                    }
+                }
             }
         }
 
@@ -341,10 +358,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        bool secondaryButtonCollidersEnabled
+        private bool secondaryButtonCollidersEnabled
         {
             set
             {
+                // Prevent secondary button colliders from being enabled on ToolsMenuButtons without a secondary button
+                if (!implementsSecondaryButton)
+                    return;
+
                 foreach (var collider in m_CloseButtonColliders)
                 {
                     collider.enabled = value;
