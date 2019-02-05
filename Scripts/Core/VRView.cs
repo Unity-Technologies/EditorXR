@@ -64,8 +64,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         bool m_HMDReady;
         bool m_UseCustomPreviewCamera;
 
-        Rect m_ToggleDeviceViewRect = new Rect(0, 0, 0, 20); // Width will be set based on window size
-        Rect m_PresentationCameraRect = new Rect(0, 0, 160, 20); // Y position and width will be set based on window size
+        Rect m_ToggleDeviceViewRect = new Rect(5, 0, 140, 20); // Width will be set based on window size
+        Rect m_PresentationCameraRect = new Rect(0, 0, 165, 20); // Y position and width will be set based on window size
 
         public static Transform cameraRig
         {
@@ -401,14 +401,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
 
-            m_ToggleDeviceViewRect.width = width;
+            m_ToggleDeviceViewRect.y = height - m_ToggleDeviceViewRect.height;
+            m_PresentationCameraRect.x = width - m_PresentationCameraRect.width;
             m_PresentationCameraRect.y = height - m_PresentationCameraRect.height;
 
-
-            const string kToggleDeviceViewEnabled = "Toggle Device View : Enabled";
-            const string kToggleDeviceViewDisabled = "Toggle Device View : Disabled";
-            if (GUI.Button(m_ToggleDeviceViewRect, m_ShowDeviceView ? kToggleDeviceViewEnabled : kToggleDeviceViewDisabled, EditorStyles.toolbarButton))
-                m_ShowDeviceView = !m_ShowDeviceView;
+            const string deviceViewEnabled = "Device View Enabled";
+            const string deviceViewDisabled = "Device View Disabled";
+            m_ShowDeviceView = GUI.Toggle(m_ToggleDeviceViewRect, m_ShowDeviceView, m_ShowDeviceView ? deviceViewEnabled : deviceViewDisabled);
 
             if (m_CustomPreviewCamera)
                 m_UseCustomPreviewCamera = GUI.Toggle(m_PresentationCameraRect, m_UseCustomPreviewCamera, "Use Presentation Camera");
