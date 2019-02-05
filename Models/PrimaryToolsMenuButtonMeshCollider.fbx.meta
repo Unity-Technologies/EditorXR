@@ -9,9 +9,10 @@ ModelImporter:
     2300000: //RootNode
     3300000: //RootNode
     4300000: ToolsMenuButtonMeshCollider
+    4300002: ToolsMenuButtonMeshColliderPrimary
   externalObjects: {}
   materials:
-    importMaterials: 1
+    importMaterials: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -65,7 +66,7 @@ ModelImporter:
     normalImportMode: 1
     tangentImportMode: 3
     normalCalculationMode: 4
-  importAnimation: 1
+  importAnimation: 0
   copyAvatar: 0
   humanDescription:
     serializedVersion: 2
