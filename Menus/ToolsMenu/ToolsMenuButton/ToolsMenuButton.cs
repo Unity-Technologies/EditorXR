@@ -358,7 +358,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        private bool secondaryButtonCollidersEnabled
+        bool secondaryButtonCollidersEnabled
         {
             set
             {
@@ -462,9 +462,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_CloseButton.click += OnSecondaryButtonClicked;
             m_CloseButtonContainerCanvasGroup.alpha = 0f;
 
+            // These materials have already been cloned when instantiating this button
             m_InsetMaterial = m_InsetMeshRenderer.sharedMaterial;
-            m_MaskMaterial = MaterialUtils.GetMaterialClone(m_MaskRenderer); // The inset materials are already cloned when instantiating this button
             m_CloseInsetMaterial = m_CloseInsetMeshRenderer.sharedMaterial;
+            // These materials have NOT been cloned when instantiating this button
+            m_MaskMaterial = MaterialUtils.GetMaterialClone(m_MaskRenderer);
             m_CloseButtonMaskMaterial = MaterialUtils.GetMaterialClone(m_CloseInsetMaskMeshRenderer);
 
             m_InsetMaterial.SetInt(k_MaterialStencilRefProperty, stencilRef);
@@ -477,6 +479,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             ObjectUtils.Destroy(m_InsetMaterial);
             ObjectUtils.Destroy(m_IconMaterial);
+            ObjectUtils.Destroy(m_CloseInsetMaterial);
+            ObjectUtils.Destroy(m_CloseButtonMaskMaterial);
             ObjectUtils.Destroy(m_FrameMaterial);
 
             this.StopCoroutine(ref m_PositionCoroutine);
