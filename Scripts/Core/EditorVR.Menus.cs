@@ -267,10 +267,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (customMenuVisible && (mainMenuVisible || mainMenuSupressed))
                         customMenuHideData.hideFlags |= MenuHideFlags.OtherMenu;
 
-                    // Temporarily hide alternateMenu if other menus are visible
-                    if (alternateMenuVisible && (customMenuVisible || mainMenuVisible))
-                        alternateMenuData.hideFlags |= MenuHideFlags.OtherMenu;
-
                     // Kick the alternate menu to the other hand if a main menu or custom menu is visible
                     if (alternateMenuVisible && (mainMenuVisible || customMenuVisible) && alternateMenu is RadialMenu)
                     {
@@ -583,7 +579,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         }
                     }
                 });
-
                 return go;
             }
 
