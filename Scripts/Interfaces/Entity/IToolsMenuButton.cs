@@ -115,5 +115,10 @@ namespace UnityEditor.Experimental.EditorVR
         /// Performed when a hover action is detected by this button
         /// </summary>
         event Action hovered;
+
+        /// <summary>
+        /// Shared stencil ID for all buttons in this menu instance
+        /// </summary>
+        byte stencilRef { set; }
     }
 }

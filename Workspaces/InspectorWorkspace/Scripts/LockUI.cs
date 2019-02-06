@@ -6,6 +6,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class LockUI : MonoBehaviour, IUsesStencilRef
     {
+        const string k_MaterialStencilRefProperty = "_StencilRef";
+
         [SerializeField]
         Image m_LockImage;
 
@@ -28,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var mr = GetComponentInChildren<MeshRenderer>();
             foreach (var sm in mr.sharedMaterials)
             {
-                sm.SetInt("_StencilRef", stencilRef);
+                sm.SetInt(k_MaterialStencilRefProperty, stencilRef);
             }
 
             m_Button.clicked += OnClicked;

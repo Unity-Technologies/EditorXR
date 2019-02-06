@@ -679,6 +679,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                 consumeControl(m_LocomotionInput.scaleReset);
                                 consumeControl(otherLocomotionInput.scaleReset);
 
+                                // Also pre-emptively consume world-reset
+                                consumeControl(m_LocomotionInput.worldReset);
+                                consumeControl(otherLocomotionInput.worldReset);
+
                                 var thisPosition = cameraRig.InverseTransformPoint(rayOrigin.position);
                                 var otherRayOrigin = otherLocomotionTool.rayOrigin;
                                 var otherPosition = cameraRig.InverseTransformPoint(otherRayOrigin.position);

@@ -1,6 +1,7 @@
 using UnityEditor.Experimental.EditorVR;
 
 #if INCLUDE_POLY_TOOLKIT
+using System;
 using System.Collections.Generic;
 using PolyToolkit;
 using UnityEditor.Experimental.EditorVR.Workspaces;

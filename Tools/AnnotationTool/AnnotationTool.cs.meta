@@ -11,9 +11,7 @@ MonoImporter:
       type: 2}
   - m_BrushSizePrefab: {fileID: 1000012251850158, guid: 76909d1f493d664469c9e0f4726790a3,
       type: 2}
-  - m_ColorPickerActivatorPrefab: {fileID: 1000010255295176, guid: a643645e8043ba84a8109a98e55603ff,
-      type: 2}
-  - m_SettingsMenuItemPrefab: {fileID: 1000013404610172, guid: 9d3d2d6c1e56f4e49ab368e814bf8801,
+  - m_MenuPrefab: {fileID: 114165694704150928, guid: 8a41be7e1e6013f4a90551e09db75c7b,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}

@@ -6,7 +6,8 @@
         "input-prototype",
         "OVR",
         "VRLR",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "PolyToolkit"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

@@ -240,6 +240,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 CloseMenu();
             }
+            else if (spatialScrollData == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld))
+            {
+                // Consume the control to activate spatial scrolling - so nothing else fires accidentally when attempting to engage this feature
+                if (toolslMenuInput.select.rawValue > 0.0f)
+                {
+                    consumeControl(toolslMenuInput.select);
+                }
+            }
         }
 
         void OnButtonClick()

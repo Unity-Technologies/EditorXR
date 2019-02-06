@@ -1,8 +1,7 @@
 fileFormatVersion: 2
 guid: a88637e6fe98dcd4da6c6238d3cfc5a4
-timeCreated: 1492726047
-licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
   - m_MenuPrefab: {fileID: 114000010621161446, guid: 86d6b2e01d02faf42be52ce94b33817b,
