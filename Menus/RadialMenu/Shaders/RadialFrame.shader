@@ -50,12 +50,6 @@ Shader "EditorVR/RadialMenu/RadialFrame"
         Tags { "Queue" = "Overlay+5503" "RenderType"="Opaque" "PerformanceChecks"="False" }
         LOD 300
 
-        Stencil
-        {
-            Ref 1
-            Comp NotEqual
-        }
-
         //  Base forward pass (directional light, emission, lightmaps, ...)
         Pass
         {
@@ -63,7 +57,7 @@ Shader "EditorVR/RadialMenu/RadialFrame"
             Tags { "LightMode" = "ForwardBase" }
 
             Blend [_SrcBlend] [_DstBlend]
-            ZWrite [_ZWrite]
+            ZWrite On
             Offset 0, -1
 
             CGPROGRAM
