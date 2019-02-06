@@ -16,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     sealed class FilterUI : MonoBehaviour, IUsesStencilRef
     {
         const string k_AllText = "All";
+        const string k_MaterialStencilRefProperty = "_StencilRef";
 
 #if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
@@ -135,7 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void Start()
         {
             m_BackgroundMaterial = MaterialUtils.GetMaterialClone(m_Background);
-            m_BackgroundMaterial.SetInt("_StencilRef", stencilRef);
+            m_BackgroundMaterial.SetInt(k_MaterialStencilRefProperty, stencilRef);
 
             if (m_VisibilityButton)
             {

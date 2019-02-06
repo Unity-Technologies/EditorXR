@@ -3,6 +3,7 @@ using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -26,6 +27,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public event Action<Transform, Type, string> hovered;
         public event Action<Transform> clicked;
 
+        public UnityEvent hoverStarted;
+        public UnityEvent hoverEnded;
+
         new void Awake()
         {
             m_Selectable = m_Button;
@@ -42,16 +46,21 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (m_CanvasGroup && !m_CanvasGroup.interactable)
                 return;
 
-#if INCLUDE_TEXT_MESH_PRO
-            if (button.interactable && hovered != null)
+            if (button.interactable)
             {
                 var descriptionText = string.Empty;
+#if INCLUDE_TEXT_MESH_PRO
                 // We can't use ?? because it breaks on destroyed references
                 if (m_Description)
                     descriptionText = m_Description.text;
-                hovered(eventData.rayOrigin, toolType, descriptionText);
-            }
 #endif
+
+                if (hovered != null)
+                    hovered(eventData.rayOrigin, toolType, descriptionText);
+
+                if (hoverStarted != null)
+                    hoverStarted.Invoke();
+            }
         }
 
         public void OnRayExit(RayEventData eventData)
@@ -59,8 +68,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (m_CanvasGroup && !m_CanvasGroup.interactable)
                 return;
 
-            if (button.interactable && hovered != null)
-                hovered(eventData.rayOrigin, null, null);
+            if (button.interactable)
+            {
+
+                if (hovered != null)
+                    hovered(eventData.rayOrigin, null, null);
+
+                if (hoverEnded != null)
+                    hoverEnded.Invoke();
+            }
         }
 
         public void OnPointerClick(PointerEventData eventData)
