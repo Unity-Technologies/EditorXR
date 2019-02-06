@@ -86,6 +86,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
         }
 
+        /// <summary>
+        /// Called in the EditorVR Update() function
+        /// </summary>
         public void ProcessInput()
         {
             k_RemoveList.Clear();
@@ -175,7 +178,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     Debug.LogWarning("Cannot use IStandardActionMap and ICustomActionMap together in " + obj.GetType());
 
                 var input = CreateActionMapInput(customMap.actionMap, device);
-                if (customMap.ignoreLocking)
+                if (customMap.ignoreActionMapInputLocking)
                     m_IgnoreLocking[input] = customMap;
 
                 return input;

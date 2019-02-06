@@ -28,7 +28,7 @@ If you're a developer, we recommend that you take a look at the [Getting Started
 - [git-submodule](https://git-scm.com/docs/git-submodule)
 
 ### Project Asset Dependencies
-- [Textmesh Pro](https://assetstore.unity.com/packages/essentials/beta-projects/textmesh-pro-84126)
+- [Textmesh Pro](https://docs.unity3d.com/Packages/com.unity.textmeshpro@1.2/manual/index.html#installation)
 
 ### Cloning
 1. Create a new Unity project or use an existing one

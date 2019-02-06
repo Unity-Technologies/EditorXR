@@ -47,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Bounds localBounds { get { return default(Bounds); } }
         public int priority { get { return 0; } }
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         public Transform alternateMenuOrigin
         {

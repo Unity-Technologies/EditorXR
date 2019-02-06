@@ -12,6 +12,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
+    [SpatialMenuItem("Selection", "Tools", "Select & manipulate objects in the scene")]
     sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
         ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
         ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
@@ -83,7 +84,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<GameObject> m_BlockSelectHoverGameObjects = new List<GameObject>();
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
+
 
         public Transform rayOrigin { get; set; }
         public Node node { private get; set; }

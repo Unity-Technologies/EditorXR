@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get; private set; }
 
         public Transform rayOrigin { get; set; }
 
@@ -240,6 +240,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 }
 
                 CloseMenu();
+            }
+            else if (spatialScrollData == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld))
+            {
+                // Consume the control to activate spatial scrolling - so nothing else fires accidentally when attempting to engage this feature
+                if (toolslMenuInput.select.rawValue > 0.0f)
+                {
+                    consumeControl(toolslMenuInput.select);
+                }
             }
         }
 

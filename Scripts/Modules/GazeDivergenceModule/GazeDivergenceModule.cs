@@ -4,6 +4,10 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
+    /// <summary>
+    /// Allows an implementer to test for a given transforms'
+    /// position residing within an angular threshold of the HMD
+    /// </summary>
     public sealed class GazeDivergenceModule : MonoBehaviour
     {
         const float k_StableGazeThreshold = 0.25f;
@@ -12,20 +16,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Quaternion m_PreviousGazeRotation;
         float m_GazeVelocity;
 
+        /// <summary>
+        /// Is the gaze currently focused on a single location, and not scanning the surrounding FOV above a certain velocity
+        /// </summary>
         public bool gazeStable { get { return m_GazeVelocity < k_StableGazeThreshold; } }
 
         void Awake()
         {
             m_GazeSourceTransform = CameraUtils.GetMainCamera().transform;
+            m_PreviousGazeRotation = m_GazeSourceTransform.rotation; // Prevent a quick initial snap of interpolated rotation values
         }
 
         void Update()
         {
-            var gazeRotationDifference = Quaternion.Angle(m_GazeSourceTransform.rotation, m_PreviousGazeRotation);
+            var currentGazeSourceRotation = m_GazeSourceTransform.rotation;
+            var gazeRotationDifference = Quaternion.Angle(currentGazeSourceRotation, m_PreviousGazeRotation);
             gazeRotationDifference *= gazeRotationDifference; // Square the difference for intended response curve/shape
             m_GazeVelocity = m_GazeVelocity + gazeRotationDifference * Time.unscaledDeltaTime;
-            m_GazeVelocity = Mathf.Clamp01(m_GazeVelocity -= Time.unscaledDeltaTime);
-            m_PreviousGazeRotation = m_GazeSourceTransform.rotation; // Cache the previous camera rotation
+            m_GazeVelocity = Mathf.Clamp01(m_GazeVelocity - Time.unscaledDeltaTime);
+            m_PreviousGazeRotation = currentGazeSourceRotation; // Cache the previous camera rotation
         }
 
         /// <summary>

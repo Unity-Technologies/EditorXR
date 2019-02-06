@@ -100,6 +100,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var alternateMenu = target as IAlternateMenu;
                 if (alternateMenu != null)
                     AddAlternateMenu(alternateMenu, rayOrigin);
+
+                var spatialMenuProvider = target as ISpatialMenuProvider;
+                if (spatialMenuProvider != null)
+                    SpatialMenu.AddProvider(spatialMenuProvider);
             }
 
             public void DisconnectInterface(object target, object userData = null)
@@ -262,10 +266,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Temporarily hide customMenu if other menus are visible or should be
                     if (customMenuVisible && (mainMenuVisible || mainMenuSupressed))
                         customMenuHideData.hideFlags |= MenuHideFlags.OtherMenu;
-
-                    // Temporarily hide alternateMenu if other menus are visible
-                    if (alternateMenuVisible && (customMenuVisible || mainMenuVisible))
-                        alternateMenuData.hideFlags |= MenuHideFlags.OtherMenu;
 
                     // Kick the alternate menu to the other hand if a main menu or custom menu is visible
                     if (alternateMenuVisible && (mainMenuVisible || customMenuVisible) && alternateMenu is RadialMenu)
@@ -579,16 +579,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         }
                     }
                 });
-
                 return go;
             }
 
             internal T SpawnMenu<T>(Transform rayOrigin) where T : Component, IMenu
             {
-                var mainMenu = ObjectUtils.AddComponent<T>(evr.gameObject);
-                this.ConnectInterfaces(mainMenu, rayOrigin);
+                var spawnedMenu = ObjectUtils.AddComponent<T>(evr.gameObject);
+                this.ConnectInterfaces(spawnedMenu, rayOrigin);
 
-                return mainMenu;
+                return spawnedMenu;
             }
 
             static bool IsMainMenuVisible(Transform rayOrigin)
