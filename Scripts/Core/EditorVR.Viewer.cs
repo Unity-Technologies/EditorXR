@@ -63,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             static Collider[] s_CachedColliders = new Collider[k_MaxCollisionCheck];
 
             PlayerBody m_PlayerBody;
-            PlayerFloor m_PlayerFloor;
+            GameObject m_PlayerFloor;
 
             float m_OriginalNearClipPlane;
             float m_OriginalFarClipPlane;
@@ -103,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 cameraRig.transform.parent = null;
 
                 ObjectUtils.Destroy(m_PlayerBody.gameObject);
-                ObjectUtils.Destroy(m_PlayerFloor.gameObject);
+                ObjectUtils.Destroy(m_PlayerFloor);
 
                 if (customPreviewCamera != null)
                     ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -206,16 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             internal void AddPlayerFloor()
             {
-                m_PlayerFloor = ObjectUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false).GetComponent<PlayerFloor>();
-                var renderer = m_PlayerBody.GetComponent<Renderer>();
-                evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
-                var playerObjects = m_PlayerFloor.GetComponentsInChildren<Renderer>(true);
-                foreach (var playerObject in playerObjects)
-                {
-                    m_VRPlayerObjects.Add(playerObject.gameObject);
-                }
-
-                evr.GetModule<IntersectionModule>().standardIgnoreList.AddRange(m_VRPlayerObjects);
+                m_PlayerFloor = ObjectUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
             }
 
             internal void AddPlayerModel()

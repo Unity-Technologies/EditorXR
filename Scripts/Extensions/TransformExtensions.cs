@@ -27,13 +27,13 @@ namespace UnityEditor.Experimental.EditorVR.Extensions
         {
             var forward = target.forward;
             var up = forward.y;
-            const float kMid = 0.5f;
-            const float kMin = 0.0f;
-            if ((up * up) >= kMid)
+            const float mid = 0.5f;
+            const float min = 0.0f;
+            if (up * up >= mid)
             {
                 forward = -target.up * Mathf.Sign(up);
             }
-            else if (target.up.y < kMin)
+            else if (target.up.y < min)
             {
                 forward = -forward;
             }
@@ -42,6 +42,5 @@ namespace UnityEditor.Experimental.EditorVR.Extensions
             return forward.normalized;
         }
     }
-
 }
 #endif
