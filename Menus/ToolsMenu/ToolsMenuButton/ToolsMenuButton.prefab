@@ -483,14 +483,14 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010204453368}
-  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0.025}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4000012648346800}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4000012609671830
 Transform:
   m_ObjectHideFlags: 1
@@ -827,7 +827,7 @@ MonoBehaviour:
   m_text: close
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 21452896fabdc4e4ea06c09c6ac05c9e, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 2800c3c40f001db459e655626fba97bf, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5bffd6f821832994184e70c900d8ba48, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -941,9 +941,9 @@ MonoBehaviour:
   m_text: A
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 21452896fabdc4e4ea06c09c6ac05c9e, type: 2}
-  m_sharedMaterial: {fileID: 2100000, guid: 2800c3c40f001db459e655626fba97bf, type: 2}
+  m_sharedMaterial: {fileID: 2100000, guid: 5bffd6f821832994184e70c900d8ba48, type: 2}
   m_fontSharedMaterials: []
-  m_fontMaterial: {fileID: 0}
+  m_fontMaterial: {fileID: 2100000, guid: 5bffd6f821832994184e70c900d8ba48, type: 2}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
@@ -1279,24 +1279,28 @@ CanvasRenderer:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000010001831882}
+  m_CullTransparentMesh: 0
 --- !u!222 &222000011708094976
 CanvasRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013816124996}
+  m_CullTransparentMesh: 0
 --- !u!222 &222000013219081446
 CanvasRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000013077063568}
+  m_CullTransparentMesh: 0
 --- !u!222 &222000013531508252
 CanvasRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1000011851968468}
+  m_CullTransparentMesh: 0
 --- !u!223 &223000013382208598
 Canvas:
   m_ObjectHideFlags: 1
