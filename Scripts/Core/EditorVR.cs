@@ -62,6 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     {
         const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
+        const string k_IncludeInBuilds = "EditorVR.IncludeInBuilds";
         const string k_SerializedPreferences = "EditorVR.SerializedPreferences";
         const string k_VRPlayerTag = "VRPlayer";
 
@@ -102,6 +103,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             get { return EditorPrefs.GetBool(k_PreserveLayout, true); }
             set { EditorPrefs.SetBool(k_PreserveLayout, value); }
+        }
+
+        static bool includeInBuilds
+        {
+            get { return EditorPrefs.GetBool(k_IncludeInBuilds, true); }
+            set { EditorPrefs.SetBool(k_IncludeInBuilds, value); }
         }
 
         internal static string serializedPreferences
@@ -179,10 +186,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Initialize()
         {
+#if UNITY_EDITOR
 #if UNITY_2018_2_OR_NEWER
             DrivenRectTransformTracker.StopRecordingUndo();
 #elif UNDO_PATCH
             DrivenRectTransformTracker.BlockUndo = true;
+#endif
 #endif
             s_Instance = this; // Used only by PreferencesGUI
             Nested.evr = this; // Set this once for the convenience of all nested classes
@@ -425,10 +434,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 nested.OnDestroy();
             }
 
+#if UNITY_EDITOR
 #if UNITY_2018_2_OR_NEWER
             DrivenRectTransformTracker.StartRecordingUndo();
 #elif UNDO_PATCH
             DrivenRectTransformTracker.BlockUndo = false;
+#endif
 #endif
         }
 
@@ -577,16 +588,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 
 #if UNITY_EDITOR
-        [PreferenceItem("EditorVR")]
+        [PreferenceItem("EditorXR")]
         static void PreferencesGUI()
         {
             EditorGUILayout.BeginVertical();
             EditorGUILayout.Space();
 
-            // Show EditorVR GameObjects
+            // Show EditorXR GameObjects
             {
-                string title = "Show EditorVR GameObjects";
-                string tooltip = "Normally, EditorVR GameObjects are hidden in the Hierarchy. Would you like to show them?";
+                const string title = "Show EditorXR GameObjects";
+                const string tooltip = "Normally, EditorXR GameObjects are hidden in the Hierarchy. Would you like to show them?";
 
                 EditorGUI.BeginChangeCheck();
                 showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
@@ -596,9 +607,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             // Preserve Layout
             {
-                string title = "Preserve Layout";
-                string tooltip = "Check this to preserve your layout and location in EditorVR";
+                const string title = "Preserve Layout";
+                const string tooltip = "Check this to preserve your layout and location in EditorXR";
                 preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), preserveLayout);
+            }
+
+            // Include in Builds
+            {
+                const string title = "Include in Player Builds";
+                const string tooltip = "Normally, EditorXR will override its assembly definitions to keep its assemblies out of Player builds. Check this if you would like to skip this step and include EditorXR in Player builds";
+                includeInBuilds = EditorGUILayout.Toggle(new GUIContent(title, tooltip), includeInBuilds);
             }
 
             GUILayout.FlexibleSpace();
