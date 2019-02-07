@@ -211,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return result;
             }
 
-            internal bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true, bool hideMenu = false, bool setSelectAsCurrentToolOnDespawn = true)
+            internal bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true, bool hideMenu = false)
             {
                 var result = false;
                 var deviceInputModule = evr.GetModule<DeviceInputModule>();
@@ -224,9 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         var currentToolType = currentTool.GetType();
                         var currentToolIsSelect = currentToolType == typeof(SelectionTool);
                         var toolsMenu = deviceData.toolsMenu;
-
-                        if (!setSelectAsCurrentToolOnDespawn)
-                            setSelectAsCurrentToolOnDespawn = toolType == typeof(SelectionTool) && !currentToolIsSelect;
+                        var setSelectAsCurrentToolOnDespawn = toolType == typeof(SelectionTool) && !currentToolIsSelect;
 
                         // If this tool was on the current device already, remove it, if it is selected while already being the current tool
                         var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentToolOnDespawn; // || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
