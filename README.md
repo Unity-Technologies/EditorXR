@@ -4,7 +4,7 @@ Author XR in XR - Initial public release was on December 15, 2016 via [blogpost]
 ## Experimental Status
 It’s important to note that EditorXR is an experimental feature. As such, there is no formal support (e.g. FogBugz, support@unity3d.com, Premium Support, etc.) offered, so please do not use these channels. Instead, take your questions, suggestions, comments to our dedicated [forum](https://forum.unity3d.com/forums/editorvr.126/).
 
-To help ensure you have a good experience, and to help us answer your questions (hey, we’re a small team!), we encourage you to try it out first with a small VR-ready scene. Please use life-sized objects, nothing too big or small. Dive in and have fun just playing around, instead of trying to use your existing project. 
+To help ensure you have a good experience, and to help us answer your questions (hey, we’re a small team!), we encourage you to try it out first with a small VR-ready scene. Please use life-sized objects, nothing too big or small. Dive in and have fun just playing around, instead of trying to use your existing project.
 
 **As with any experimental/preview/alpha/beta build, it is always a good idea to make a backup of your project before using the build.**
 
@@ -18,10 +18,10 @@ Experimental means this:
 - As such, there is no guarantee that this will remain an actively supported project.
 
 ## Getting Started
-If you've made it here, but aren't accustomed to using GitHub, cloning repositories, etc. and are simply looking to give EditorXR a spin, then take a look at the [Getting Started Guide](https://docs.google.com/document/d/1xWunGC3NJoDRBBz44gxpMUAh3SmedtNK12LqACyy2L0). Once you're up and running we recommend you join the discussion on the [EditorXR forum](https://forum.unity3d.com/forums/editorvr.126/).
+If you've made it here, but aren't accustomed to using GitHub, cloning repositories, etc. and are simply looking to give EditorXR a spin, then take a look at the [Getting Started Guide](https://docs.google.com/document/d/1RD0SAjWnXdtY6eOC4qHk_fcl7w2-aBGrF3rX5pk5KDo). Once you're up and running we recommend you join the discussion on the [EditorXR forum](https://forum.unity3d.com/forums/editorvr.126/).
 
 ## For Software Developers
-If you're a developer, we recommend that you take a look at the [Getting Started Guide](https://docs.google.com/document/d/1xWunGC3NJoDRBBz44gxpMUAh3SmedtNK12LqACyy2L0) *and* the companion document [Extending EditorXR](https://docs.google.com/document/d/1EGi9hKXAujfBMI2spErojdqRc0giqEnOu0NpwgBxtpg). You'll need to clone the repository into an existing project using the instructions below.
+If you're a developer, we recommend that you take a look at the [Getting Started Guide](https://docs.google.com/document/d/1RD0SAjWnXdtY6eOC4qHk_fcl7w2-aBGrF3rX5pk5KDo) *and* the companion document [Extending EditorXR](https://docs.google.com/document/d/1EGi9hKXAujfBMI2spErojdqRc0giqEnOu0NpwgBxtpg). You'll need to clone the repository into an existing project using the instructions below.
 
 ### Git Dependencies
 - [git-lfs](https://git-lfs.github.com/)
