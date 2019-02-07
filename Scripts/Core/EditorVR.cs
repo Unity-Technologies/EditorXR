@@ -631,7 +631,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if !INCLUDE_TEXT_MESH_PRO
         static EditorVR()
         {
-            Debug.LogWarning("EditorVR requires TextMesh Pro. Please go to the Asset Store and download/import Text Mesh Pro.");
+            if (Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro") == null)
+                Debug.LogWarning("EditorVR requires TextMesh Pro. Please open the package manager and install Text Mesh Pro");
         }
 #endif
     }
