@@ -166,6 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         }
     }
 
-    class SetEditingContextImplementor : ISetEditingContext { }
+    class SetEditingContextImplementor : ISetEditingContext
+    {
+    }
 }
-

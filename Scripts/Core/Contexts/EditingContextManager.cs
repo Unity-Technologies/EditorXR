@@ -154,7 +154,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnEnable()
         {
-            Debug.Log("OnEnable");
             ISetEditingContextMethods.getAvailableEditingContexts = GetAvailableEditingContexts;
             ISetEditingContextMethods.getPreviousEditingContexts = GetPreviousEditingContexts;
             ISetEditingContextMethods.setEditingContext = SetEditingContext;
@@ -172,11 +171,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 SetEditingContext(defaultContext);
             }
 #endif
-        }
-
-        void OnApplicationQuit()
-        {
-            Debug.Log("Quitting");
         }
 
         void OnDisable()
@@ -216,7 +210,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Awake()
         {
-            Debug.Log("Awake");
             s_DefaultContext = m_DefaultContext;
 
             var availableContexts = GetAvailableEditingContexts();
@@ -369,31 +362,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
         }
 
-#if UNITY_EDITOR
-        [ContextMenu("Utility")]
-        void Utility()
-        {
-            var objects = Resources.FindObjectsOfTypeAll<InputManager>();
-            Debug.Log("InputManagers");
-            foreach (var o in objects)
-                Debug.Log(o);
-
-            Resources.UnloadUnusedAssets();
-
-            Debug.Log("GameObjects");
-            var gameObjects = Resources.FindObjectsOfTypeAll<GameObject>();
-            foreach (var g in gameObjects)
-            {
-                if ((g.hideFlags & (HideFlags.DontSave | HideFlags.DontUnloadUnusedAsset)) != 0)
-                    Debug.Log(g.name, g);
-
-                var im = g.GetComponent<InputManager>();
-                if (im)
-                    Debug.Log("Input Manager!!!! " + im);
-            }
-        }
-#endif
-
         static void InitializeInputManager()
         {
             // HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
@@ -405,10 +373,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             managers = Resources.FindObjectsOfTypeAll<InputManager>();
-
-//            var gameObjects = Resources.FindObjectsOfTypeAll<GameObject>();
-//            foreach (var g in gameObjects)
-//                Debug.Log(g.name);
 
             if (managers.Length == 0)
             {
@@ -426,7 +390,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             s_InputManager = managers[0];
             var go = s_InputManager.gameObject;
-//            go.hideFlags = ObjectUtils.hideFlags;
             ObjectUtils.SetRunInEditModeRecursively(go, true);
 
             // These components were allocating memory every frame and aren't currently used in EditorVR

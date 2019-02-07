@@ -12,7 +12,6 @@ namespace UnityEditor.Experimental.EditorVR.Data
 {
     class InspectorData : ListViewItemNestedData<InspectorData, int>
     {
-
         public SerializedObject serializedObject { get; private set; }
 
         public InspectorData(string template, SerializedObject serializedObject, List<InspectorData> children)
@@ -22,6 +21,5 @@ namespace UnityEditor.Experimental.EditorVR.Data
             index = serializedObject.targetObject.GetInstanceID();
             m_Children = children;
         }
-
     }
 }

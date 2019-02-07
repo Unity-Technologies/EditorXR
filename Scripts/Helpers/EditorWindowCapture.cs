@@ -6,7 +6,6 @@ using Object = UnityEngine.Object;
 #if UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
 using System.Threading;
-
 #endif
 
 namespace UnityEditor.Experimental.EditorVR.Helpers

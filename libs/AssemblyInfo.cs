@@ -4,4 +4,3 @@
 // namespace; The plan is that all code will eventually be within a single assembly.
 
 [assembly: InternalsVisibleTo("EXR")]
-

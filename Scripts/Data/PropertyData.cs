@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 
-#if !UNITY_EDITOR
-        class SerializedProperty {}
+#if UNITY_EDITOR
+class SerializedProperty
+{
+}
 #endif
 
 namespace UnityEditor.Experimental.EditorVR.Data
@@ -20,6 +22,5 @@ namespace UnityEditor.Experimental.EditorVR.Data
         {
             this.property = property;
         }
-
     }
 }

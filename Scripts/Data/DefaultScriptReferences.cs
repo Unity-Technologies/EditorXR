@@ -3,10 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEditor;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
@@ -45,7 +42,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return defaultScriptReferences ? defaultScriptReferences.m_EditingContexts.ConvertAll(ec => (IEditingContext)ec) : null;
         }
 
-
         void Awake()
         {
             if (m_ScriptPrefab)
@@ -68,8 +64,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         {
             var defaultScriptReferences = CreateInstance<DefaultScriptReferences>();
 
-            var prefabsRoot = new GameObject(System.IO.Path.GetFileNameWithoutExtension(k_Path));
-            Action<ICollection> create = (types) =>
+            var prefabsRoot = new GameObject(Path.GetFileNameWithoutExtension(k_Path));
+            Action<ICollection> create = types =>
             {
                 foreach (Type t in types)
                 {
@@ -103,6 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var directory = Path.GetDirectoryName(k_Path);
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
+
             AssetDatabase.CreateAsset(defaultScriptReferences, k_Path);
 
             DestroyImmediate(prefabsRoot);

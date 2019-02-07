@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 #if !UNITY_EDITOR
-  public enum HierarchyType
-  {
+public enum HierarchyType
+{
     Assets = 1,
     GameObjects = 2,
     Packages = 3,
-  }
+}
 
 class HierarchyProperty
 {
@@ -19,7 +19,7 @@ class HierarchyProperty
     {
     }
 
-    public void Next() {}
+    public void Next() { }
 }
 #endif
 

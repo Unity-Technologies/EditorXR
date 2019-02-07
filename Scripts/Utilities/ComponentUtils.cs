@@ -35,6 +35,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 #if UNITY_EDITOR
             if (option && component == null)
                 component = Undo.AddComponent<T>(go);
+#else
+            if (option && component == null)
+                component = go.AddComponent<T>();
 #endif
 
             return component;

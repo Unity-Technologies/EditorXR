@@ -41,10 +41,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (s_ActiveView != null)
                 {
-#if UNITY_EDITOR                    
+#if UNITY_EDITOR
                     if (s_ExistingSceneMainCamera && !s_ActiveView.m_CustomPreviewCamera && EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
                         CopyImagesEffectsToCamera(value);
-#endif                    
+#endif
 
                     s_ActiveView.m_CustomPreviewCamera = value;
             }
@@ -163,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             const float nearClipPlane = 0.01f;
             const float farClipPlane = 1000f;
 
-            GameObject rigGO = null;
+            GameObject rigGO;
 
             if (Application.isPlaying)
             {

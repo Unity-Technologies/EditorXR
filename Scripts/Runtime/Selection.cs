@@ -5,6 +5,8 @@ using UnityEngine;
 // Not fully implemented yet; Exists only to allow compilation
 public static class Selection
 {
+    static Object[] s_Objects;
+
     public static Object activeObject
     {
         get {return s_Objects != null && s_Objects.Length > 0 ? s_Objects[0] : null; }
@@ -58,8 +60,5 @@ public static class Selection
                 : new Transform[0];
         }
     }
-
-
-    static Object[] s_Objects;
 }
 #endif

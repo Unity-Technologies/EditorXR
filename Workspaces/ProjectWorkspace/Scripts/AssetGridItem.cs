@@ -426,7 +426,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     StopHighlight(m_CachedDropSelection);
                     // if we've previously checked this object, indicate the result again
-                    if(previous > 0f)
+                    if (previous > 0f)
                     {
                         SetAssignableHighlight(selection, rayOrigin, true);
                         PreviewMaterialOnSelection(selection);
@@ -472,7 +472,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 m_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
                 renderer.sharedMaterial = material;
-        }
+            }
         }
 
         void RestoreOriginalSelectionMaterials()
