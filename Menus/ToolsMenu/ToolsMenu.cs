@@ -42,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         float m_AllowToolToggleBeforeThisTime;
         Vector3 m_SpatialScrollStartPosition;
         ToolsMenuUI m_ToolsMenuUI;
+        Type activeButtonType; // used to prevent re-selection of the currently active tool
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
@@ -264,6 +265,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void OnButtonSelected(Transform rayOrigin, Type buttonType)
         {
+            if (buttonType == activeButtonType)
+                return;
+
+            activeButtonType = buttonType;
             this.SelectTool(rayOrigin, buttonType, false);
         }
 
