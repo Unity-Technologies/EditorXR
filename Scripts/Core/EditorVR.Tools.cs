@@ -211,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return result;
             }
 
-            internal bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true, bool hideMenu = false)
+            internal bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true, bool hideMenu = false, bool setSelectAsCurrentToolOnDespawn = true)
             {
                 var result = false;
                 var deviceInputModule = evr.GetModule<DeviceInputModule>();
@@ -223,23 +223,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         var currentTool = deviceData.currentTool;
                         var currentToolType = currentTool.GetType();
                         var currentToolIsSelect = currentToolType == typeof(SelectionTool);
-                        var setSelectAsCurrentTool = toolType == typeof(SelectionTool) && !currentToolIsSelect;
                         var toolsMenu = deviceData.toolsMenu;
 
+                        if (!setSelectAsCurrentToolOnDespawn)
+                            setSelectAsCurrentToolOnDespawn = toolType == typeof(SelectionTool) && !currentToolIsSelect;
+
                         // If this tool was on the current device already, remove it, if it is selected while already being the current tool
-                        var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentTool; // || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
+                        var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentToolOnDespawn; // || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
                         if (currentTool != null && despawn)
                         {
                             DespawnTool(deviceData, currentTool);
 
-                            if (!setSelectAsCurrentTool)
+                            if (!setSelectAsCurrentToolOnDespawn)
                             {
                                 // Delete a button of the first type parameter
                                 // Then select a button the second type param (the new current tool)
                                 // Don't spawn a new tool, since we are only removing the old tool
                                 toolsMenu.deleteToolsMenuButton(toolType, currentToolType);
                             }
-                            else if (setSelectAsCurrentTool)
+                            else if (setSelectAsCurrentToolOnDespawn)
                             {
                                 // Set the selection tool as the active tool, if select is to be the new current tool
                                 toolsMenu.setButtonForType(typeof(SelectionTool), null);
