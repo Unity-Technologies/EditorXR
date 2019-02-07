@@ -105,9 +105,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set { EditorPrefs.SetBool(k_PreserveLayout, value); }
         }
 
-        static bool includeInBuilds
+        internal static bool includeInBuilds
         {
-            get { return EditorPrefs.GetBool(k_IncludeInBuilds, true); }
+            get { return EditorPrefs.GetBool(k_IncludeInBuilds, false); }
             set { EditorPrefs.SetBool(k_IncludeInBuilds, value); }
         }
 
@@ -147,6 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             EditorPrefs.DeleteKey(k_ShowGameObjects);
             EditorPrefs.DeleteKey(k_PreserveLayout);
+            EditorPrefs.DeleteKey(k_IncludeInBuilds);
             EditorPrefs.DeleteKey(k_SerializedPreferences);
 #endif
         }
