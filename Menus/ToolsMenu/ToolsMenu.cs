@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -265,7 +266,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void OnButtonSelected(Transform rayOrigin, Type buttonType)
         {
-            if (buttonType == activeButtonType)
+            if (buttonType != typeof(SelectionTool) && buttonType == activeButtonType)
                 return;
 
             activeButtonType = buttonType;
