@@ -27,3 +27,4 @@
 *.wav	filter=lfs diff=lfs merge=lfs -crlf
 *.zip	filter=lfs diff=lfs merge=lfs -crlf
 *.lfs.*	filter=lfs diff=lfs merge=lfs -crlf
+*.unitypackage	filter=lfs diff=lfs merge=lfs -crlf
