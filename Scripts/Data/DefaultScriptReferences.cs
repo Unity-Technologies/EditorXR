@@ -10,7 +10,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 {
     public class DefaultScriptReferences : ScriptableObject
     {
-        const string k_Path = "Assets/Resources/DefaultScriptReferences.asset";
+        const string k_ParentFolder = "Assets";
+        const string k_ResourcesFolder = "Resources";
+        const string k_Path = k_ParentFolder + "/" + k_ResourcesFolder + "/DefaultScriptReferences.asset";
 
         [SerializeField]
         GameObject m_ScriptPrefab;
@@ -93,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             create(ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList());
             create(new List<Type> {typeof(SpatialMenu)});
 
+            AssetDatabase.CreateFolder(k_ParentFolder, k_ResourcesFolder);
             defaultScriptReferences.m_ScriptPrefab = PrefabUtility.CreatePrefab(Path.ChangeExtension(k_Path, "prefab"), prefabsRoot);
             defaultScriptReferences.m_EditingContexts = EditingContextManager.GetEditingContextAssets().ConvertAll(ec => (ScriptableObject)ec);
 

@@ -262,7 +262,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void SetupBrushUI()
         {
-            m_AnnotationPointer = Instantiate(m_AnnotationPointerPrefab, rayOrigin, false).GetComponent<AnnotationPointer>();//ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false));
+            m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
             m_OriginalAnnotationPointerLocalScale = m_AnnotationPointer.transform.localScale;
             var brushSize = m_Preferences.brushSize;
             m_AnnotationPointer.Resize(brushSize);
