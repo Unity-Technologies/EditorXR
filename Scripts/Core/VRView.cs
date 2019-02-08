@@ -163,7 +163,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             const float nearClipPlane = 0.01f;
             const float farClipPlane = 1000f;
 
-            GameObject rigGO;
+            // Redundant assignment for player builds
+            // ReSharper disable once RedundantAssignment
+            GameObject rigGO = null;
 
             if (Application.isPlaying)
             {
