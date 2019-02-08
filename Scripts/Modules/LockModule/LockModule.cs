@@ -36,12 +36,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         float m_HoverDuration;
         const float k_MaxHoverTime = 2.0f;
 
-        void OnEnable()
+        void Awake()
         {
             m_LockModuleAction.execute = ToggleLocked;
             UpdateAction(null);
 
-            actions = new List<IAction>() { m_LockModuleAction };
+            actions = new List<IAction> { m_LockModuleAction };
         }
 
         public bool IsLocked(GameObject go)

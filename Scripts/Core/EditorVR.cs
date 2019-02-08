@@ -88,8 +88,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (Application.isPlaying)
                     return HideFlags.None;
-                else
-                    return showGameObjects ? HideFlags.DontSaveInEditor : HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
+
+                return showGameObjects ? HideFlags.DontSaveInEditor : HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
             }
         }
 
@@ -113,22 +113,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal static string serializedPreferences
         {
-            get
-            {
-#if UNITY_EDITOR
-                return EditorPrefs.GetString(k_SerializedPreferences, string.Empty);
-#else
-                return PlayerPrefs.GetString(k_SerializedPreferences, string.Empty);
-#endif
-            }
-            set
-            {
-#if UNITY_EDITOR
-                EditorPrefs.SetString(k_SerializedPreferences, value);
-#else
-                PlayerPrefs.SetString(k_SerializedPreferences, value);
-#endif
-            }
+            get { return EditorPrefs.GetString(k_SerializedPreferences, string.Empty); }
+            set { EditorPrefs.SetString(k_SerializedPreferences, value); }
         }
 
         internal static Type[] defaultTools { get; set; }
@@ -175,29 +161,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if UNITY_EDITOR
                 if (!PlayerSettings.virtualRealitySupported)
-                    Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
+                    Debug.Log(
+                        "<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
 #endif
 
 #if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
                 Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
             }
-                // Add EVR tags and layers if they don't exist
+            // Add EVR tags and layers if they don't exist
 #if UNITY_EDITOR
-                var tags = TagManager.GetRequiredTags();
-                var layers = TagManager.GetRequiredLayers();
+            var tags = TagManager.GetRequiredTags();
+            var layers = TagManager.GetRequiredLayers();
 
-                foreach (var tag in tags)
-                {
-                    TagManager.AddTag(tag);
-                }
-
-                foreach (var layer in layers)
-                {
-                    TagManager.AddLayer(layer);
-                }
-#endif
+            foreach (var tag in tags)
+            {
+                TagManager.AddTag(tag);
             }
+
+            foreach (var layer in layers)
+            {
+                TagManager.AddLayer(layer);
+            }
+#endif
+        }
 
         void Initialize()
         {

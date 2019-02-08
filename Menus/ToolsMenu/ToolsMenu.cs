@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             set { PreviewToolsMenuButton.interactable = value; }
         }
 
-        void OnEnable()
+        void Awake()
         {
             setButtonForType = CreateToolsMenuButton;
             deleteToolsMenuButton = DeleteToolsMenuButton;

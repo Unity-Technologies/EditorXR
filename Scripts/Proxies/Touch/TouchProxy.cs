@@ -7,9 +7,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     sealed class TouchProxy : TwoHandedProxyBase
     {
-        protected override void OnEnable()
+        protected override void Awake()
         {
-            base.OnEnable();
+            base.Awake();
             m_InputToEvents = ObjectUtils.AddComponent<OVRTouchInputToEvents>(gameObject);
         }
 

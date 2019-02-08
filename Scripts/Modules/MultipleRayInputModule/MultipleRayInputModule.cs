@@ -210,9 +210,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Local method use only -- created here to reduce garbage collection
         RayEventData m_TempRayEvent;
 
-        protected override void OnEnable()
+        protected override void Awake()
         {
-            base.OnEnable();
+            base.Awake();
 
             s_LayerMask = LayerMask.GetMask("UI");
             m_TempRayEvent = new RayEventData(eventSystem);

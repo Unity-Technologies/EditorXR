@@ -372,7 +372,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
         Transform[] m_SingleTransformArray = new Transform[1];
 
-        void OnEnable()
+        void Awake()
         {
             m_GroundPlane = ObjectUtils.Instantiate(m_GroundPlane, transform);
             m_GroundPlane.SetActive(false);

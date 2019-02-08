@@ -91,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
 
-        protected virtual void OnEnable()
+        protected virtual void Awake()
         {
             m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
             m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;

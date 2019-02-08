@@ -75,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         Transform spatialHintContentContainer { get { return m_SpatialHintUI.contentContainer; } }
 
-        void OnEnable()
+        void Awake()
         {
             m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
             this.ConnectInterfaces(m_SpatialHintUI);

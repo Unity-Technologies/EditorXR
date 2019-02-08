@@ -50,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             set { m_RayHighlightMaterial.color = value; }
         }
 
-        void OnEnable()
+        void Awake()
         {
             m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
             if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
