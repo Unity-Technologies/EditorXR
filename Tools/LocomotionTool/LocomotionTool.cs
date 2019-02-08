@@ -7,7 +7,6 @@ using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -227,7 +226,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             this.RemoveRayVisibilitySettings(rayOrigin, this);
             this.ClearFeedbackRequests();
 
-            if (m_ViewerScaleVisuals && m_ViewerScaleVisuals.gameObject.activeInHierarchy)
+            if (m_ViewerScaleVisuals)
                 ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
         }
 
