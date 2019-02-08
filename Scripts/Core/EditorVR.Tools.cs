@@ -150,8 +150,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             break;
                         }
                     }
+
                     if (!toolsMenu)
                         toolsMenu = ObjectUtils.AddComponent<Experimental.EditorVR.Menus.ToolsMenu>(evr.gameObject);
+
                     toolsMenu.enabled = true;
                     this.ConnectInterfaces(toolsMenu, rayOrigin);
                     deviceData.toolsMenu = toolsMenu;
