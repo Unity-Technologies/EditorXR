@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using ListView;
+﻿using ListView;
 using System;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -154,4 +153,3 @@ namespace UnityEditor.Experimental.EditorVR.Data
         }
     }
 }
-#endif

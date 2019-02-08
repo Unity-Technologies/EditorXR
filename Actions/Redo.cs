@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Redo", ActionMenuItemAttribute.DefaultActionSectionName, 1)]
     [SpatialMenuItem("Redo", "Actions", "Redo the previously undone action")]
@@ -13,4 +12,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif

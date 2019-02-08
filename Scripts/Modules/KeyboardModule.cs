@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -8,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class KeyboardModule : MonoBehaviour, IRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
+    sealed class KeyboardModule : MonoBehaviour, ISystemModule, IRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
     {
         [SerializeField]
         KeyboardMallet m_KeyboardMalletPrefab;
@@ -118,4 +117,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

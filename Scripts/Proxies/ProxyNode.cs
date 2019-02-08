@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -568,7 +567,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_FacingAngleWeights.z += k_LastFacingAngleWeight;
                 return zDot > 0 ? FacingDirection.Front : FacingDirection.Back;
             }
-                
+
             m_FacingAngleWeights.y += k_LastFacingAngleWeight;
             return yDot > 0 ? FacingDirection.Top : FacingDirection.Bottom;
         }
@@ -809,4 +808,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif

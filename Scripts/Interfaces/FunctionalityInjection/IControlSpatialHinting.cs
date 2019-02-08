@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
@@ -7,7 +6,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class ability to control spatial-hinting visuals.
-    /// 
+    ///
     /// Spatial-Hinting visuals are displayed when performing a spatial-input action, such as spatial-scrolling
     /// These visual elements assist the user in seeing which spatial direction(s) will
     /// reveal/allow additional spatial interaction(s).
@@ -100,4 +99,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,9 +23,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 get
                 {
+#if UNITY_EDITOR
                     return PlayerSettings.stereoRenderingPath == StereoRenderingPath.MultiPass
                         ? string.Empty
                         : "Not currently working in single pass";
+#else
+                    return string.Empty;
+#endif
                 }
             }
         }
@@ -596,4 +599,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

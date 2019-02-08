@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections;
 using System.Text;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -7,7 +6,6 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
@@ -20,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const string k_MaterialColorProperty = "_Color";
         const string k_SelectionTooltipText = "Selection Tool (cannot be closed)";
         const string k_MainMenuTipText = "Main Menu";
+        const string k_MaterialStencilRefProperty = "_StencilRef";
         readonly Vector3 k_ToolButtonActivePosition = new Vector3(0f, 0f, -0.035f);
 
         [SerializeField]
@@ -39,6 +38,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         SkinnedMeshRenderer m_InsetMeshRenderer;
+
+        [SerializeField]
+        Renderer m_MaskRenderer;
 
         [SerializeField]
         Collider[] m_PrimaryButtonColliders;
@@ -89,11 +91,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Vector3 m_OriginalLocalPosition;
         Vector3 m_OriginalLocalScale;
         Material m_IconMaterial;
+        Material m_MaskMaterial;
+        Material m_CloseButtonMaskMaterial;
+        Material m_CloseInsetMaterial;
         Vector3 m_OriginalIconContainerLocalScale;
         Sprite m_Icon;
         Sprite m_PreviewIcon;
         bool m_Highlighted;
         bool m_ActiveTool;
+        bool m_ImplementsSecondaryButton;
 
         public Transform tooltipTarget
         {
@@ -115,7 +121,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public int activeButtonCount { get; set; }
         public int maxButtonCount { get; set; }
         public Transform menuOrigin { get; set; }
-        public bool implementsSecondaryButton { get; set; }
 
         public Action<Transform, Transform> openMenu { get; set; }
         public Action<Type> selectTool { get; set; }
@@ -179,6 +184,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 if (m_Order == -1)
                     this.HideTooltip(this);
+            }
+        }
+
+        public bool implementsSecondaryButton
+        {
+            get { return m_ImplementsSecondaryButton; }
+            set
+            {
+                m_ImplementsSecondaryButton = value;
+
+                if (!value)
+                {
+                    foreach (var collider in m_CloseButtonColliders)
+                    {
+                        collider.enabled = false;
+                    }
+                }
             }
         }
 
@@ -339,6 +361,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             set
             {
+                // Prevent secondary button colliders from being enabled on ToolsMenuButtons without a secondary button
+                if (!implementsSecondaryButton)
+                    return;
+
                 foreach (var collider in m_CloseButtonColliders)
                 {
                     collider.enabled = value;
@@ -397,6 +423,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public float iconHighlightedLocalZOffset { set { m_GradientButton.iconHighlightedLocalZOffset = value; } }
 
+
+        // All buttons in a given menu share the same stencil ID which is fetched in the UI, then assigned to each button in the same menu
+        public byte stencilRef { get; set; }
+
         public event Action hovered;
 
         void Awake()
@@ -407,9 +437,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var frameMaterialColor = m_FrameMaterial.color;
             s_FrameOpaqueColor = new Color(frameMaterialColor.r, frameMaterialColor.g, frameMaterialColor.b, 1f);
             m_FrameMaterial.SetColor(k_MaterialColorProperty, s_FrameOpaqueColor);
-
             m_IconMaterial = MaterialUtils.GetMaterialClone(m_ButtonIcon);
-            m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);
             m_OriginalIconContainerLocalScale = m_IconContainer.localScale;
         }
 
@@ -432,12 +460,26 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_CloseButton.hoverExit += OnActionButtonHoverExit;
             m_CloseButton.click += OnSecondaryButtonClicked;
             m_CloseButtonContainerCanvasGroup.alpha = 0f;
+
+            // These materials have already been cloned when instantiating this button
+            m_InsetMaterial = m_InsetMeshRenderer.sharedMaterial;
+            m_CloseInsetMaterial = m_CloseInsetMeshRenderer.sharedMaterial;
+            // These materials have NOT been cloned when instantiating this button
+            m_MaskMaterial = MaterialUtils.GetMaterialClone(m_MaskRenderer);
+            m_CloseButtonMaskMaterial = MaterialUtils.GetMaterialClone(m_CloseInsetMaskMeshRenderer);
+
+            m_InsetMaterial.SetInt(k_MaterialStencilRefProperty, stencilRef);
+            m_MaskMaterial.SetInt(k_MaterialStencilRefProperty, stencilRef);
+            m_CloseInsetMaterial.SetInt(k_MaterialStencilRefProperty, stencilRef);
+            m_CloseButtonMaskMaterial.SetInt(k_MaterialStencilRefProperty, stencilRef);
         }
 
         void OnDestroy()
         {
             ObjectUtils.Destroy(m_InsetMaterial);
             ObjectUtils.Destroy(m_IconMaterial);
+            ObjectUtils.Destroy(m_CloseInsetMaterial);
+            ObjectUtils.Destroy(m_CloseButtonMaskMaterial);
             ObjectUtils.Destroy(m_FrameMaterial);
 
             this.StopCoroutine(ref m_PositionCoroutine);
@@ -747,4 +789,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

@@ -1,12 +1,12 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class access to hover/intersection detection
-    /// </summary>    public interface IUsesRaycastResults
+    /// </summary>
+    public interface IUsesRaycastResults
     {
     }
 
@@ -25,4 +25,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

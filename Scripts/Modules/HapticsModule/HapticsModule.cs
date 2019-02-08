@@ -1,11 +1,10 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HapticsModule : MonoBehaviour
+    sealed class HapticsModule : MonoBehaviour, ISystemModule
     {
         public const float MaxDuration = 0.8f;
 
@@ -174,4 +173,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
     }
 }
-#endif

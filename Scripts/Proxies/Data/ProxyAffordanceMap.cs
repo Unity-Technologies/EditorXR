@@ -1,9 +1,8 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    [CreateAssetMenu(menuName = "EditorVR/Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
+    [CreateAssetMenu(menuName = "EditorXR/Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
     public class ProxyAffordanceMap : ScriptableObject
     {
         /// <summary>
@@ -52,4 +51,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public AffordanceAnimationDefinition defaultAnimationDefinition { get { return m_DefaultAffordanceAnimationDefinition; } }
     }
 }
-#endif

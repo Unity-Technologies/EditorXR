@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -72,4 +71,3 @@ namespace UnityEditor.Experimental.EditorVR
         bool repositionIfOutOfFocus { get; }
     }
 }
-#endif

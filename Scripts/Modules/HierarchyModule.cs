@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HierarchyModule : MonoBehaviour, ISelectionChanged
+    sealed class HierarchyModule : MonoBehaviour, ISystemModule, ISelectionChanged
     {
         readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
         readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
@@ -39,20 +39,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void OnEnable()
         {
+#if UNITY_EDITOR
 #if UNITY_2018_1_OR_NEWER
             EditorApplication.hierarchyChanged += UpdateHierarchyData;
 #else
             EditorApplication.hierarchyWindowChanged += UpdateHierarchyData;
+#endif
 #endif
             UpdateHierarchyData();
         }
 
         void OnDisable()
         {
+#if UNITY_EDITOR
 #if UNITY_2018_1_OR_NEWER
             EditorApplication.hierarchyChanged -= UpdateHierarchyData;
 #else
             EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
+#endif
 #endif
         }
 

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Menus;
@@ -8,7 +8,7 @@ using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    [CreateAssetMenu(menuName = "EditorVR/EditorVR Context")]
+    [CreateAssetMenu(menuName = "EditorXR/Editing Context")]
     class EditorVRContext : ScriptableObject, IEditingContext
     {
         [SerializeField]
@@ -23,6 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         bool m_CopyMainCameraImageEffectsToPresentationCamera;
 
+#if UNITY_EDITOR
         [SerializeField]
         MonoScript m_DefaultMainMenu;
 
@@ -34,6 +35,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         [SerializeField]
         List<MonoScript> m_HiddenTypes;
+#endif
+
+        [SerializeField]
+        [HideInInspector]
+        List<string> m_DefaultToolStackNames;
 
         EditorVR m_Instance;
         static EditorVR s_Instance; // Used only by PreferencesGUI
@@ -48,29 +54,45 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Setup()
         {
-            EditorVR.DefaultTools = m_DefaultToolStack.Select(ms => ms.GetClass()).ToArray();
+            EditorVR.DefaultTools = m_DefaultToolStackNames.Select(t => Type.GetType(t)).ToArray();
             EditorVR.DefaultMenu = m_DefaultMainMenu ? m_DefaultMainMenu.GetClass() : null;
             EditorVR.DefaultAlternateMenu = m_DefaultAlternateMenu ? m_DefaultAlternateMenu.GetClass() : null;
             EditorVR.HiddenTypes = m_HiddenTypes.Select(ms => ms.GetClass()).ToArray();
             s_Instance = m_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
+
+            if (Application.isPlaying)
+            {
+                var camera = CameraUtils.GetMainCamera();
+                var cameraRig = m_Instance.transform;
+                VRView.CreateCameraRig(ref camera, ref cameraRig);
+            }
+
             XRSettings.eyeTextureResolutionScale = m_RenderScale;
         }
 
         public void Dispose()
         {
             m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
-            ObjectUtils.Destroy(m_Instance.gameObject);
+            if (m_Instance)
+                ObjectUtils.Destroy(m_Instance.gameObject);
             s_Instance = m_Instance = null;
         }
+
+#if UNITY_EDITOR
+        void OnValidate()
+        {
+            m_DefaultToolStackNames = m_DefaultToolStack.Select(ms => ms.GetClass().AssemblyQualifiedName).ToList();
+        }
+#endif
 
         static void PreferencesGUI()
         {
             EditorGUILayout.BeginVertical();
 
-            // Show EditorVR GameObjects
+            // Show EditorXR GameObjects
             {
-                string title = "Show EditorVR GameObjects";
-                string tooltip = "Normally, EditorVR GameObjects are hidden in the Hierarchy. Would you like to show them?";
+                const string title = "Show EditorXR GameObjects";
+                const string tooltip = "Normally, EditorXR GameObjects are hidden in the Hierarchy. Would you like to show them?";
 
                 EditorGUI.BeginChangeCheck();
                 EditorVR.showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.showGameObjects);
@@ -80,9 +102,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             // Preserve Layout
             {
-                string title = "Preserve Layout";
-                string tooltip = "Check this to preserve your layout and location in EditorVR";
+                const string title = "Preserve Layout";
+                const string tooltip = "Check this to preserve your layout and location in EditorXR";
                 EditorVR.preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.preserveLayout);
+            }
+
+            // Include in Builds
+            {
+                const string title = "Include in Player Builds";
+                const string tooltip = "Normally, EditorXR will override its assembly definitions to keep its assemblies out of Player builds. Check this if you would like to skip this step and include EditorXR in Player builds";
+                EditorVR.includeInBuilds = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.includeInBuilds);
             }
 
             if (GUILayout.Button("Reset to Defaults", GUILayout.Width(140)))
@@ -92,4 +121,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
+

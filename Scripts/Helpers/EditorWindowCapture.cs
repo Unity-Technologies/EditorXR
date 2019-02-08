@@ -6,7 +6,6 @@ using Object = UnityEngine.Object;
 #if UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
 using System.Threading;
-
 #endif
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
@@ -69,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 // NOTE: Uncomment To grab any and all GUIViews
                 //foreach (UnityEngine.Object view in Resources.FindObjectsOfTypeAll(guiViewType))
                 //{
-                //    Debug.Log(view.name);             
+                //    Debug.Log(view.name);
                 //}
 
                 var parentField = windowType.GetField("m_Parent", BindingFlags.Instance | BindingFlags.NonPublic);

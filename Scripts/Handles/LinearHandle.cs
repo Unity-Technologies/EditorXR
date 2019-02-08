@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -51,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 
             if (m_OrientDragPlaneToRay)
             {
-                // Orient a plane for dragging purposes through the axis that rotates to avoid being parallel to the ray, 
+                // Orient a plane for dragging purposes through the axis that rotates to avoid being parallel to the ray,
                 // so that you can prevent intersections at infinity
                 var forward = Quaternion.Inverse(transform.rotation) * (rayOrigin.position - transform.position);
                 forward.z = 0;
@@ -112,4 +111,3 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         }
     }
 }
-#endif

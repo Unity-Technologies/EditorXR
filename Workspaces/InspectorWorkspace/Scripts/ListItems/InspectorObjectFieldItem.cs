@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -23,8 +22,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.Setup(data);
 
+#if UNITY_EDITOR
             m_ObjectTypeName = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
             m_ObjectType = ObjectUtils.TypeNameToType(m_ObjectTypeName);
+#endif
 
             OnObjectModified();
         }
@@ -34,6 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (!IsAssignable(obj))
                 return false;
 
+#if UNITY_EDITOR
             if (obj == null && m_SerializedProperty.objectReferenceValue == null)
                 return true;
 
@@ -41,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 return true;
 
             m_SerializedProperty.objectReferenceValue = obj;
+#endif
 
             FinalizeModifications();
 
@@ -62,6 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void UpdateUI()
         {
+#if UNITY_EDITOR
             var obj = m_SerializedProperty.objectReferenceValue;
             if (obj == null)
             {
@@ -74,11 +78,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 return;
             }
             m_FieldLabel.text = string.Format("{0} ({1})", obj.name, obj.GetType().Name);
+#endif
         }
 
         protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
         {
+#if UNITY_EDITOR
             return m_SerializedProperty.objectReferenceValue;
+#else
+            return null;
+#endif
         }
 
         protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
@@ -104,4 +113,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

@@ -1,11 +1,10 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DragAndDropModule : MonoBehaviour
+    sealed class DragAndDropModule : MonoBehaviour, ISystemModule
     {
         readonly Dictionary<Transform, IDroppable> m_Droppables = new Dictionary<Transform, IDroppable>();
         readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();
@@ -90,4 +89,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

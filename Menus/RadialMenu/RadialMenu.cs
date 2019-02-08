@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -178,4 +177,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

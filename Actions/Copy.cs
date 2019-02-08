@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Copy", ActionMenuItemAttribute.DefaultActionSectionName, 5)]
     [SpatialMenuItem("Copy", "Actions", "Copy the selected object")]
@@ -7,9 +6,10 @@ namespace UnityEditor.Experimental.EditorVR.Actions
     {
         public override void ExecuteAction()
         {
+#if UNITY_EDITOR
             Unsupported.CopyGameObjectsToPasteboard();
+#endif
             Paste.SetBufferDistance(Selection.transforms);
         }
     }
 }
-#endif

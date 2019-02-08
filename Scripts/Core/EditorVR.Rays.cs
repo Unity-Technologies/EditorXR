@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -136,10 +135,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             internal void CreateAllProxies()
             {
                 var deviceInputModule = evr.GetModule<DeviceInputModule>();
+                var cameraRig = CameraUtils.GetCameraRig();
                 foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
                 {
-                    var component = ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig, false);
-                    var proxy = (IProxy)component;
+                    var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
                     this.ConnectInterfaces(proxy);
                     proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
                     proxy.activeChanged += () => OnProxyActiveChanged(proxy);
@@ -542,4 +541,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
+

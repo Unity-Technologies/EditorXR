@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
@@ -32,4 +31,3 @@ namespace UnityEditor.Experimental.EditorVR
         int priority { get; }
     }
 }
-#endif
