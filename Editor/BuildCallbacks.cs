@@ -65,7 +65,6 @@ namespace UnityEditor.Experimental.EditorVR
 
                 var asmDef = JsonUtility.FromJson<AssemblyDefinition>(asmDefAsset.text);
                 callback(asmDef);
-                Debug.Log("Writing to " + path);
                 File.WriteAllText(path, JsonUtility.ToJson(asmDef, true));
             }
         }
