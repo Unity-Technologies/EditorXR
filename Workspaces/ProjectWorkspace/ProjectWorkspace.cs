@@ -10,6 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+    [EditorOnlyWorkspace]
     [MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
     [SpatialMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
     sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, ISerializeWorkspace

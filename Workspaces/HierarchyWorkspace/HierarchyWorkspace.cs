@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+    [EditorOnlyWorkspace]
     [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
     [SpatialMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
     class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig

@@ -225,6 +225,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Key));
             types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Key));
 
+            if (Application.isPlaying)
+                types.RemoveWhere(type => type.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any());
+
             foreach (var type in types)
             {
                 var customMenuAttribute = (MainMenuItemAttribute)type.GetCustomAttributes(typeof(MainMenuItemAttribute), false).FirstOrDefault();
