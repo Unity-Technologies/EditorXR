@@ -95,13 +95,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             create(ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList());
             create(new List<Type> {typeof(SpatialMenu)});
 
-            AssetDatabase.CreateFolder(k_ParentFolder, k_ResourcesFolder);
-            defaultScriptReferences.m_ScriptPrefab = PrefabUtility.CreatePrefab(Path.ChangeExtension(k_Path, "prefab"), prefabsRoot);
-            defaultScriptReferences.m_EditingContexts = EditingContextManager.GetEditingContextAssets().ConvertAll(ec => (ScriptableObject)ec);
-
             var directory = Path.GetDirectoryName(k_Path);
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
+
+            defaultScriptReferences.m_ScriptPrefab = PrefabUtility.CreatePrefab(Path.ChangeExtension(k_Path, "prefab"), prefabsRoot);
+            defaultScriptReferences.m_EditingContexts = EditingContextManager.GetEditingContextAssets().ConvertAll(ec => (ScriptableObject)ec);
 
             AssetDatabase.CreateAsset(defaultScriptReferences, k_Path);
 

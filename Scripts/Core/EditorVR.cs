@@ -113,8 +113,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal static string serializedPreferences
         {
-            get { return EditorPrefs.GetString(k_SerializedPreferences, string.Empty); }
-            set { EditorPrefs.SetString(k_SerializedPreferences, value); }
+            get
+            {
+#if UNITY_EDITOR
+                return EditorPrefs.GetString(k_SerializedPreferences, string.Empty);
+#else
+                return PlayerPrefs.GetString(k_SerializedPreferences, string.Empty);
+#endif
+            }
+            set
+            {
+#if UNITY_EDITOR
+                EditorPrefs.SetString(k_SerializedPreferences, value);
+#else
+                PlayerPrefs.SetString(k_SerializedPreferences, value);
+#endif
+            }
         }
 
         internal static Type[] defaultTools { get; set; }
@@ -359,9 +373,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             while (!viewer.hmdReady)
                 yield return null;
 
-#if UNITY_EDITOR
             GetModule<SerializedPreferencesModule>().SetupWithPreferences(serializedPreferences);
-#endif
+
             m_HasDeserialized = true;
         }
 
@@ -663,4 +676,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 #endif
-}
+            }

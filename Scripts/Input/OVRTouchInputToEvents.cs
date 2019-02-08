@@ -89,7 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
                     if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], value))
                         continue;
 
-                    if (value < k_DeadZone)
+                    if (Mathf.Abs(value) < k_DeadZone)
                         value = 0;
 
                     var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
