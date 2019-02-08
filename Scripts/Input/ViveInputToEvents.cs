@@ -31,13 +31,12 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
         readonly int[] steamDeviceIndices = new int[] { -1, -1 };
 
-        const int k_ControllerCount = 10;
         const int k_ButtonCount = (int)EVRButtonId.k_EButton_Max + 1;
         const int k_AxisCount = 10; // 5 axes in openVR, each with X and Y.
 
-        float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount + k_ButtonCount];
-        Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
-        Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
+        float[,] m_LastAxisValues = new float[OpenVR.k_unMaxTrackedDeviceCount, k_AxisCount + k_ButtonCount];
+        Vector3[] m_LastPositionValues = new Vector3[OpenVR.k_unMaxTrackedDeviceCount];
+        Quaternion[] m_LastRotationValues = new Quaternion[OpenVR.k_unMaxTrackedDeviceCount];
 
         static EVRButtonId[] s_EnumValues;
 
