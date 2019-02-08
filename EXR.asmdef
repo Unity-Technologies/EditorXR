@@ -4,10 +4,10 @@
         "EXR-Dependencies",
         "SteamVR",
         "input-prototype",
-        "OVR",
         "VRLR",
         "Unity.TextMeshPro",
-        "PolyToolkit"
+        "PolyToolkit",
+        "Oculus.VR"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
