@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
@@ -276,8 +275,12 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var mf = obj.GetComponent<MeshFilter>();
             if (mf)
             {
-                collisionTester.sharedMesh = mf.sharedMesh;
-                collisionTester.transform.localScale = Vector3.one;
+                if (collisionTester.sharedMesh != mf.sharedMesh)
+                {
+                    collisionTester.sharedMesh = mf.sharedMesh;
+                    collisionTester.transform.localScale = Vector3.one;
+                }
+
                 return;
             }
 
@@ -291,4 +294,3 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif

@@ -1,0 +1,16 @@
+{
+    "name": "EXR",
+    "references": [
+        "EXR-Dependencies",
+        "SteamVR",
+        "input-prototype",
+        "VRLR",
+        "Unity.TextMeshPro",
+        "PolyToolkit",
+        "Oculus.VR"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

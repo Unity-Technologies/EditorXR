@@ -1,6 +1,6 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Core;
+﻿using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
+using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
@@ -13,11 +13,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         {
             var camera = Camera.main;
 
+            if (!camera)
+                camera = UnityObject.FindObjectOfType<Camera>();
+
 #if UNITY_EDITOR
-            if (!Application.isPlaying && VRView.viewerCamera)
-            {
-                camera = VRView.viewerCamera;
-            }
+            var viewerCamera = VRView.viewerCamera;
+            if (!Application.isPlaying && viewerCamera)
+                camera = viewerCamera;
 #endif
 
             return camera;
@@ -25,16 +27,23 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         public static Transform GetCameraRig()
         {
-            var rig = Camera.main ? Camera.main.transform.parent : null;
+            var camera = GetMainCamera();
+            if (camera)
+            {
+                var rig = camera.transform.parent;
 
 #if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                if (VRView.cameraRig)
-                    rig = VRView.cameraRig;
-            }
+                if (!Application.isPlaying)
+                {
+                    if (VRView.cameraRig)
+                        rig = VRView.cameraRig;
+                }
 #endif
-            return rig;
+
+                return rig;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -53,4 +62,3 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif

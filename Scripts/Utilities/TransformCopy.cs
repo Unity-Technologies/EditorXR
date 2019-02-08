@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
@@ -59,4 +58,3 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         }
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SpatialHashModule : MonoBehaviour
+    sealed class SpatialHashModule : MonoBehaviour, ISystemModule
     {
         readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 
@@ -110,4 +109,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

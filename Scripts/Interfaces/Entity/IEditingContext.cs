@@ -1,7 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Core;
-
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implement this interface to create an editing context. You can also specify your own custom
@@ -45,4 +42,3 @@ namespace UnityEditor.Experimental.EditorVR
         void Dispose();
     }
 }
-#endif

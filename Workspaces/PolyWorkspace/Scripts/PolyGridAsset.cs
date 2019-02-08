@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
@@ -147,4 +146,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     #pragma warning restore 618
 #endif
 }
-#endif

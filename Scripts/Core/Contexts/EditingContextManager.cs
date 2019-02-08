@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +12,9 @@ using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
+#if UNITY_EDITOR
     [InitializeOnLoad]
+#endif
     sealed class EditingContextManager : MonoBehaviour
     {
         [SerializeField]
@@ -36,8 +37,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         string[] m_ContextNames;
         int m_SelectedContextIndex;
-
-        Rect m_EditingContextPopupRect = new Rect(0, 0, 150, 20); // Y and X position will be set based on window size
 
         readonly List<IEditingContext> m_PreviousContexts = new List<IEditingContext>();
 
@@ -86,28 +85,32 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set { EditorPrefs.SetBool(k_AutoOpen, value); }
         }
 
-
+#if UNITY_EDITOR
         static EditingContextManager()
         {
             VRView.viewEnabled += OnVRViewEnabled;
             VRView.viewDisabled += OnVRViewDisabled;
-
             EditorApplication.update += ReopenOnExitPlaymode;
             EditorApplication.update += OpenIfUserPresent;
         }
+#endif
 
         static void OnVRViewEnabled()
         {
+            Resources.UnloadUnusedAssets();
             InitializeInputManager();
-            s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditingContextManager>();
+            if (!Application.isPlaying)
+                s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditingContextManager>();
         }
 
         static void OnVRViewDisabled()
         {
             ObjectUtils.Destroy(s_Instance.gameObject);
-            ObjectUtils.Destroy(s_InputManager.gameObject);
+            if (s_InputManager)
+                ObjectUtils.Destroy(s_InputManager.gameObject);
         }
 
+#if UNITY_EDITOR
         [MenuItem("Window/EditorXR %e", false)]
         internal static void ShowEditorVR()
         {
@@ -201,8 +204,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     EditorApplication.delayCall += ShowEditorVR;
             }
         }
+#endif
 
-#if UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
         static void OnPlayModeStateChanged(PlayModeStateChange stateChange)
         {
             if (stateChange == PlayModeStateChange.ExitingEditMode)
@@ -213,6 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     view.Close();
             }
         }
+#endif
 
         void OnEnable()
         {
@@ -221,22 +226,36 @@ namespace UnityEditor.Experimental.EditorVR.Core
             ISetEditingContextMethods.setEditingContext = SetEditingContext;
             ISetEditingContextMethods.restorePreviousEditingContext = RestorePreviousContext;
 
-            // Force the window to repaint every tick, since we need live updating
-            // This also allows scripts with [ExecuteInEditMode] to run
-            EditorApplication.update += EditorApplication.QueuePlayerLoopUpdate;
+#if UNITY_EDITOR
+            if (runInEditMode)
+            {
+                // Force the window to repaint every tick, since we need live updating
+                // This also allows scripts with [ExecuteInEditMode] to run
+                EditorApplication.update += EditorApplication.QueuePlayerLoopUpdate;
 
-            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+                EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 
-            SetEditingContext(defaultContext);
+                SetEditingContext(defaultContext);
+            }
+#endif
         }
 
         void OnDisable()
         {
-            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
+            if (Application.isPlaying)
+            {
+                OnVRViewDisabled();
+            }
+#if UNITY_EDITOR
+            else
+            {
+                EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
 
-            EditorApplication.update -= EditorApplication.QueuePlayerLoopUpdate;
+                EditorApplication.update -= EditorApplication.QueuePlayerLoopUpdate;
 
-            VRView.afterOnGUI -= OnVRViewGUI;
+                VRView.afterOnGUI -= OnVRViewGUI;
+            }
+#endif
 
             if (m_CurrentContext != null)
             {
@@ -255,7 +274,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             SaveUserSettings(settings);
         }
-#endif
 
         void Awake()
         {
@@ -267,23 +285,42 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (s_AvailableContexts.Count == 0)
                 throw new Exception("You can't start EditorXR without at least one context. Try re-importing the package or use version control to restore the default context asset");
 
+#if UNITY_EDITOR
             if (s_AvailableContexts.Count > 1)
                 VRView.afterOnGUI += OnVRViewGUI;
+#endif
+
+            if (Application.isPlaying)
+            {
+                OnVRViewEnabled();
+                s_Instance = this;
+
+                SetEditingContext(defaultContext);
+            }
         }
 
+
+#if UNITY_EDITOR
         void OnVRViewGUI(VRView view)
         {
             var position = view.position;
-            m_EditingContextPopupRect.y = position.height - m_EditingContextPopupRect.height;
-            m_EditingContextPopupRect.x = position.width - m_EditingContextPopupRect.width;
+            GUILayout.FlexibleSpace();
 
-            m_SelectedContextIndex = EditorGUI.Popup(m_EditingContextPopupRect, string.Empty, m_SelectedContextIndex, m_ContextNames);
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("Editing Context:");
+            m_SelectedContextIndex = EditorGUILayout.Popup(m_SelectedContextIndex, m_ContextNames);
             if (GUI.changed)
             {
                 SetEditingContext(s_AvailableContexts[m_SelectedContextIndex]);
                 GUIUtility.ExitGUI();
             }
+            EditorGUILayout.EndHorizontal();
+
+            var offsetToAccomodatePresentationCamera = 24f;
+            GUILayout.Space(offsetToAccomodatePresentationCamera);
         }
+#endif
 
         internal void SetEditingContext(IEditingContext context)
         {
@@ -310,19 +347,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 SetEditingContext(m_PreviousContexts.First());
         }
 
-        static List<IEditingContext> GetEditingContextAssets()
+        public static List<IEditingContext> GetEditingContextAssets()
         {
+#if UNITY_EDITOR
+            var availableContexts = new List<IEditingContext>();
             var types = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
             var searchString = "t: " + string.Join(" t: ", types.Select(t => t.FullName).ToArray());
             var assets = AssetDatabase.FindAssets(searchString);
 
-            var availableContexts = new List<IEditingContext>();
             foreach (var asset in assets)
             {
                 var assetPath = AssetDatabase.GUIDToAssetPath(asset);
                 var context = AssetDatabase.LoadMainAssetAtPath(assetPath) as IEditingContext;
                 availableContexts.Add(context);
             }
+#else
+            var availableContexts = DefaultScriptReferences.GetEditingContexts();
+#endif
 
             return availableContexts;
         }
@@ -372,20 +413,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal static void ResetProjectSettings()
         {
+#if UNITY_EDITOR
             File.Delete(k_UserSettingsPath);
 
             if (EditorUtility.DisplayDialog("Delete Project Settings?", "Would you like to remove the project-wide settings, too?", "Yes", "No"))
                 File.Delete(k_SettingsPath);
+#endif
         }
 
         internal static void SaveProjectSettings(EditingContextManagerSettings settings)
         {
+#if UNITY_EDITOR
             File.WriteAllText(k_SettingsPath, JsonUtility.ToJson(settings, true));
+#endif
         }
 
         internal static void SaveUserSettings(EditingContextManagerSettings settings)
         {
+#if UNITY_EDITOR
             File.WriteAllText(k_UserSettingsPath, JsonUtility.ToJson(settings, true));
+#endif
         }
 
         static void InitializeInputManager()
@@ -416,7 +463,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             s_InputManager = managers[0];
             var go = s_InputManager.gameObject;
-            go.hideFlags = ObjectUtils.hideFlags;
             ObjectUtils.SetRunInEditModeRecursively(go, true);
 
             // These components were allocating memory every frame and aren't currently used in EditorVR
@@ -427,4 +473,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif

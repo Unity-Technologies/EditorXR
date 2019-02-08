@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -33,8 +32,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         public static T GetOrAddIf<T>(GameObject go, bool option) where T : Component
         {
             T component = go.GetComponent<T>();
+#if UNITY_EDITOR
             if (option && component == null)
                 component = Undo.AddComponent<T>(go);
+#else
+            if (option && component == null)
+                component = go.AddComponent<T>();
+#endif
 
             return component;
         }
@@ -53,4 +57,3 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif

@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Utilities;
+﻿using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
@@ -23,7 +22,9 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 
         public override void ExecuteAction()
         {
+#if UNITY_EDITOR
             Unsupported.PasteGameObjectsFromPasteboard();
+#endif
             var transforms = Selection.transforms;
             var bounds = ObjectUtils.GetBounds(transforms);
             foreach (var transform in transforms)
@@ -40,4 +41,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif

@@ -1,11 +1,11 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors can check whether the manipulator is in the dragging state
-    /// </summary>    public interface IGetManipulatorDragState
+    /// </summary>
+    public interface IGetManipulatorDragState
     {
     }
 
@@ -22,4 +22,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

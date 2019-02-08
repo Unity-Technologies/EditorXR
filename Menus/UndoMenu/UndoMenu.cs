@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -120,14 +119,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var undoRedoPerformed = false;
             if (navigateX < -k_UndoRedoThreshold && (m_TrackpadController || m_PrevNavigateX > -k_UndoRedoThreshold))
             {
+#if UNITY_EDITOR
                 Undo.PerformUndo();
+#endif
                 m_UndoMenuUI.StartPerformedAnimation(true);
                 ShowUndoPerformedFeedback(true);
                 undoRedoPerformed = true;
             }
             else if (navigateX > k_UndoRedoThreshold && (m_TrackpadController || m_PrevNavigateX < k_UndoRedoThreshold))
             {
+#if UNITY_EDITOR
                 Undo.PerformRedo();
+#endif
                 m_UndoMenuUI.StartPerformedAnimation(false);
                 ShowUndoPerformedFeedback(false);
                 undoRedoPerformed = true;
@@ -186,4 +189,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

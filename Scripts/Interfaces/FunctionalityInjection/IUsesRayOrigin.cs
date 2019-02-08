@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -15,4 +14,3 @@ namespace UnityEditor.Experimental.EditorVR
         Transform rayOrigin { set; }
     }
 }
-#endif

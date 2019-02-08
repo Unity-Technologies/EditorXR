@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -269,10 +268,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Temporarily hide customMenu if other menus are visible or should be
                     if (customMenuVisible && (mainMenuVisible || mainMenuSupressed))
                         customMenuHideData.hideFlags |= MenuHideFlags.OtherMenu;
-
-                    // Temporarily hide alternateMenu if other menus are visible
-                    if (alternateMenuVisible && (customMenuVisible || mainMenuVisible))
-                        alternateMenuData.hideFlags |= MenuHideFlags.OtherMenu;
 
                     // Kick the alternate menu to the other hand if a main menu or custom menu is visible
                     if (alternateMenuVisible && (mainMenuVisible || customMenuVisible) && alternateMenu is RadialMenu)
@@ -596,11 +591,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         }
                     }
                 });
-
                 return go;
             }
 
-            internal T SpawnMenu<T>(Transform rayOrigin) where T : Component, IMenu
+            internal T SpawnMenu<T>(Transform rayOrigin) where T : MonoBehaviour, IMenu
             {
                 return (T)SpawnMenu(typeof(T), rayOrigin);
             }
@@ -626,4 +620,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
+

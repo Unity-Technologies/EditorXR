@@ -53,7 +53,9 @@
 		// prevent overlapping lines from adding too much color,
 		// we set the alpha value to one after visiting a pixel.
 		Blend OneMinusDstAlpha DstAlpha, One One
-		BlendOp Add, Max
+		// FIXME: There's a bug where the _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A keyword gets set incorrectly causing the alpha to be incorrect and consequently the
+		// line renderer to not render correctly, so for now this is set to Max, so it shows up. It should be Add.
+		BlendOp Max, Max
 		Cull Off
 		Lighting Off
 		ZWrite Off

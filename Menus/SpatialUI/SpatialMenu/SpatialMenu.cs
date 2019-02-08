@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,7 +157,9 @@ namespace UnityEditor.Experimental.EditorVR
                         this.Pulse(Node.None, m_MenuOpenPulse);
                         break;
                     case SpatialMenuState.Hidden:
+#if UNITY_EDITOR
                         sceneViewGizmosVisible = true;
+#endif
                         m_CircularTriggerSelectionCyclingCoroutine = null;
                         m_CurrentSpatialActionMapInput = null;
                         break;
@@ -216,11 +217,13 @@ namespace UnityEditor.Experimental.EditorVR
             CreateUI();
         }
 
+#if UNITY_EDITOR
         void OnDestroy()
         {
             // Reset the applicable selection gizmo (SceneView) states
             sceneViewGizmosVisible = true;
         }
+#endif
 
         void CreateUI()
         {
@@ -361,8 +364,10 @@ namespace UnityEditor.Experimental.EditorVR
                 m_SpatialInputHold = true;
                 ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
 
+#if UNITY_EDITOR
                 // Hide the scene view Gizmo UI that draws SpatialMenu outlines and
                 sceneViewGizmosVisible = false;
+#endif
 
                 // Alternatively, SpatialMenu's state could be a single static state
                 // As opposed to passing the SpatialMenu instance's delegate when a new SpatialMenu instance initiates display of the menu
@@ -526,4 +531,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
