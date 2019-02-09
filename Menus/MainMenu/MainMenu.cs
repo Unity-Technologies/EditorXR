@@ -366,6 +366,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnButtonClicked(Transform rayOrigin)
         {
             this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+            this.ClearToolMenuButtonPreview();
         }
 
         void OnButtonHovered(Transform rayOrigin, Type buttonType, string buttonDescription)
