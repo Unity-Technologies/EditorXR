@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Core;
+﻿using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
@@ -28,4 +27,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         protected HapticPulse m_SustainedHoverUIElementPulse;
     }
 }
-#endif

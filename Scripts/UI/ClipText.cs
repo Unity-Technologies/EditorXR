@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
@@ -46,4 +45,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
-#endif

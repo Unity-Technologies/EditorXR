@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -555,7 +554,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 var previewObjectTransform = gridItem.m_PreviewObjectTransform;
                 if (previewObjectTransform)
                 {
+#if UNITY_EDITOR
                     Undo.RegisterCreatedObjectUndo(previewObjectTransform.gameObject, "Place Scene Object");
+#endif
                     this.PlaceSceneObject(previewObjectTransform, m_PreviewPrefabScale);
                 }
                 else
@@ -617,15 +618,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
 #if UNITY_EDITOR
             var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
+#else
+            var go = (GameObject)Instantiate(data.asset);
+#endif
+
             var transform = go.transform;
             transform.position = itemTransform.position;
             transform.rotation = MathUtilsExt.ConstrainYawRotation(itemTransform.rotation);
-#else
-            var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-#endif
 
             this.AddToSpatialHash(go);
+
+#if UNITY_EDITOR
             Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
+#endif
         }
 
         GameObject TryGetSelection(Transform rayOrigin, bool includeRays)
@@ -864,4 +869,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public void OnResetDirectSelectionState() {}
     }
 }
-#endif

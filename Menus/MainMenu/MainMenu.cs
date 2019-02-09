@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -126,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        void Awake()
+        void OnEnable()
         {
             m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
             this.ConnectInterfaces(m_MainMenuUI);
@@ -195,7 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     }
                 }
             }
-            else if (Mathf.Abs(rotationInput) >= kFlickDeltaThreshold 
+            else if (Mathf.Abs(rotationInput) >= kFlickDeltaThreshold
                 && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
             {
                 FlickMenu(rotationInput);
@@ -225,6 +224,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             types.UnionWith(menuWorkspaces);
             types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Key));
             types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Key));
+
+            if (Application.isPlaying)
+                types.RemoveWhere(type => type.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any());
 
             foreach (var type in types)
             {
@@ -364,7 +366,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnButtonClicked(Transform rayOrigin)
         {
             this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
-            this.ClearToolMenuButtonPreview();
         }
 
         void OnButtonHovered(Transform rayOrigin, Type buttonType, string buttonDescription)
@@ -496,4 +497,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

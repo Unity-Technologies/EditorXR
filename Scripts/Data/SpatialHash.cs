@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Data
@@ -44,4 +43,3 @@ namespace UnityEditor.Experimental.EditorVR.Data
         }
     }
 }
-#endif

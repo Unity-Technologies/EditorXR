@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +7,6 @@ using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -1003,4 +1001,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif

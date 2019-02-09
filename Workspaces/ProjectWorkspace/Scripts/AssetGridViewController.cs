@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using ListView;
@@ -223,12 +222,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * jitterMargin) // Avoid jitter while scrolling rows in and out of view
                 return null;
 
+#if UNITY_EDITOR
             // If this AssetData hasn't fetched its asset yet, do so now
             if (data.asset == null)
             {
                 data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index));
                 data.preview = data.asset as GameObject;
             }
+#endif
 
             var item = base.GetItem(data);
 
@@ -269,10 +270,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         static void LoadFallbackTexture(AssetGridItem item, AssetData data)
         {
             item.fallbackTexture = null;
+#if UNITY_EDITOR
             item.StartCoroutine(ObjectUtils.GetAssetPreview(
                 AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index)),
                 texture => item.fallbackTexture = texture));
+#endif
         }
     }
 }
-#endif

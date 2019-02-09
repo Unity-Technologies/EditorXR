@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -167,6 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         }
     }
 
-    class SetEditingContextImplementor : ISetEditingContext { }
+    class SetEditingContextImplementor : ISetEditingContext
+    {
+    }
 }
-#endif

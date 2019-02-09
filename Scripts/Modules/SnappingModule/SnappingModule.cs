@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
@@ -19,7 +18,7 @@ using TMPro;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-    sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
+    sealed class SnappingModule : MonoBehaviour, ISystemModule, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
         IRaycast, IStandardIgnoreList
     {
         const float k_GroundPlaneScale = 1000f;
@@ -972,4 +971,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

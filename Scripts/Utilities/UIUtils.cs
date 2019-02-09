@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -52,7 +51,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <returns></returns>
         public static int MaskField(Rect position, GUIContent label, int mask, string[] displayedOptions, Type propertyType)
         {
+#if UNITY_EDITOR
             mask = EditorGUI.MaskField(position, label, mask, displayedOptions);
+#endif
             return ActualEnumFlags(mask, propertyType);
         }
 
@@ -74,6 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return value;
         }
 
+#if UNITY_EDITOR
         public static Type SerializedPropertyToType(SerializedProperty property)
         {
             var parts = property.propertyPath.Split('.');
@@ -87,6 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             return field != null ? field.FieldType : null;
         }
+#endif
 
         public static FieldInfo GetFieldInTypeOrParent(Type type, string fieldName)
         {
@@ -101,4 +104,3 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -336,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     var customMenu = deviceData.customMenu;
                     if (customMenu != null)
                         customMenu.menuHideFlags = deviceData.menuHideData[customMenu].hideFlags;
-                    
+
                     var alternateMenus = deviceData.alternateMenus;
                     foreach (var menu in alternateMenus)
                     {
@@ -582,7 +581,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return go;
             }
 
-            internal T SpawnMenu<T>(Transform rayOrigin) where T : Component, IMenu
+            internal T SpawnMenu<T>(Transform rayOrigin) where T : MonoBehaviour, IMenu
             {
                 var spawnedMenu = ObjectUtils.AddComponent<T>(evr.gameObject);
                 this.ConnectInterfaces(spawnedMenu, rayOrigin);
@@ -603,4 +602,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
+

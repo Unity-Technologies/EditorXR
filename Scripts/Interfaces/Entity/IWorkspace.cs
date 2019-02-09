@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -30,9 +29,8 @@ namespace UnityEditor.Experimental.EditorVR
         Bounds outerBounds { get; }
 
         /// <summary>
-        /// Bounding box for workspace content (ignores value.center) 
+        /// Bounding box for workspace content (ignores value.center)
         /// </summary>
         Bounds contentBounds { get; set; }
     }
 }
-#endif

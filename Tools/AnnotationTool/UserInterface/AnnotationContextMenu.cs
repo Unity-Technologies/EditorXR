@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -202,4 +201,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif

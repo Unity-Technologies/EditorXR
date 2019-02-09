@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -278,4 +277,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

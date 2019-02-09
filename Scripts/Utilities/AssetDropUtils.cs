@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
@@ -41,7 +40,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static void AssignAnimationClip(Animation animation, AnimationClip clipAsset)
         {
+#if UNITY_EDITOR
             Undo.RecordObject(animation, k_AssignAnimationClipUndo);
+#endif
 
             if (animation.GetClipCount() > 0 && s_AssignMultipleAnimationClips)
                 animation.AddClip(clipAsset, clipAsset.name);
@@ -68,7 +69,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var source = ComponentUtils.GetOrAddIf<AudioSource>(go, s_CreatePlayerForClips);
             if (source != null)
             {
+#if UNITY_EDITOR
                 Undo.RecordObject(source, k_AssignAudioClipUndo);
+#endif
                 source.clip = (AudioClip)data.asset;
             }
 
@@ -85,7 +88,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var player = ComponentUtils.GetOrAddIf<VideoPlayer>(go, s_CreatePlayerForClips);
             if (player != null)
             {
+#if UNITY_EDITOR
                 Undo.RecordObject(player, k_AssignVideoClipUndo);
+#endif
                 player.clip = (VideoClip)data.asset;
             }
 
@@ -99,9 +104,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static GameObject AttachScript(GameObject go, AssetData data)
         {
+#if UNITY_EDITOR
             var script = (MonoScript)data.asset;
             var type = script.GetClass();
             Undo.AddComponent(go, type);
+#endif
             return go;
         }
 
@@ -115,7 +122,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var renderer = go.GetComponent<Renderer>();
             if (renderer != null)
             {
+#if UNITY_EDITOR
                 Undo.RecordObject(go, k_AssignMaterialUndo);
+#endif
                 renderer.sharedMaterial = (Material)data.asset;
             }
 
@@ -132,7 +141,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var renderer = go.GetComponent<Renderer>();
             if (renderer != null)
             {
+#if UNITY_EDITOR
                 Undo.RecordObject(go, k_AssignMaterialUndo);
+#endif
 
                 // copy the material before applying shader to the instance
                 // this prevents the warning about leaking materials
@@ -173,7 +184,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         internal static void AssignPhysicMaterial(Collider collider, PhysicMaterial material)
         {
+#if UNITY_EDITOR
             Undo.RecordObject(collider, k_AssignPhysicMaterialUndo);
+#endif
             collider.material = material;
         }
 
@@ -184,7 +197,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (text != null)
             {
                 var font = (Font)data.asset;
+
+#if UNITY_EDITOR
                 Undo.RecordObject(go, k_AssignFontUndo);
+#endif
+
                 text.font = font;
 
                 return font;
@@ -199,4 +216,3 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif

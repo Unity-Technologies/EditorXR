@@ -1,11 +1,11 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Core;
+﻿using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, INodeToRay, IRayVisibilitySettings
+    public sealed class SpatialHintModule : MonoBehaviour, ISystemModule, IConnectInterfaces, IInstantiateUI,
+        INodeToRay, IRayVisibilitySettings
     {
         public enum SpatialHintStateFlags
         {
@@ -128,4 +128,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif
