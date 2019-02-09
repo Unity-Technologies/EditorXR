@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         /// <summary>
         /// Delete the tool button with corresponding type of the first parameter.
-        /// Then, select the tool button with corresponds to the type of the second parameter.
+        /// Then, select the tool button which corresponds to the type of the second parameter.
         /// </summary>
         Action<Type, Type> deleteToolsMenuButton { get; }
 
