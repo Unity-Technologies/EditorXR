@@ -275,23 +275,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     if (mainMenuButton != null)
                         mainMenuButton.toolType = selectedType;
 
-                    // Pre-populate the tools on both nodes/hands
-                    // A convenience function, that allows the tools to be immediately accessible
-                    // Also allows for the ToolsMenu to have full funcitonality from the of a session
-                    this.SelectTool(leftHandOrigin, selectedType,
-                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
-
-                    this.SelectTool(rightHandOrigin, selectedType,
-                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
-
-                    // TODO: optimize, and add support for resuming the session using the previously selected tool (if available)
-                    // Force the return to the selection tool after pre-populating new tools on both nodes
-                    this.SelectTool(leftHandOrigin, typeof(SelectionTool),
-                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
-
-                    this.SelectTool(rightHandOrigin, typeof(SelectionTool),
-                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
-
                     m_ToolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(buttonData.name, buttonData.description, (node) =>
                     {
                         this.SelectTool(this.RequestRayOriginFromNode(node), selectedType,
