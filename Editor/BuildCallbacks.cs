@@ -43,6 +43,8 @@ namespace UnityEditor.Experimental.EditorVR
         static readonly Dictionary<string, string[]> k_IncludePlatforms = new Dictionary<string, string[]>();
         static readonly Dictionary<string, string[]> k_ExcludePlatforms = new Dictionary<string, string[]>();
 
+        static bool s_IsBuilding;
+
         public int callbackOrder { get { return 0; } }
 
         static void ForEachAssembly(Action<AssemblyDefinition> callback)
@@ -74,6 +76,9 @@ namespace UnityEditor.Experimental.EditorVR
             if (Core.EditorVR.includeInBuilds)
                 return;
 
+            s_IsBuilding = true;
+            EditorApplication.update += CheckBuildComplete;
+
             ForEachAssembly(asmDef =>
             {
                 var name = asmDef.Name;
@@ -89,6 +94,14 @@ namespace UnityEditor.Experimental.EditorVR
 
         public void OnPostprocessBuild(BuildReport report)
         {
+            OnPostprocessBuild();
+        }
+
+        public void OnPostprocessBuild()
+        {
+            s_IsBuilding = false;
+            EditorApplication.update -= CheckBuildComplete;
+
             if (Core.EditorVR.includeInBuilds)
                 return;
 
@@ -98,6 +111,12 @@ namespace UnityEditor.Experimental.EditorVR
                 asmDef.IncludePlatforms = k_IncludePlatforms[name];
                 asmDef.ExcludePlatforms = k_ExcludePlatforms[name];
             });
+        }
+
+        void CheckBuildComplete()
+        {
+            if (s_IsBuilding)
+                OnPostprocessBuild();
         }
     }
 }
