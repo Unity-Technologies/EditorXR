@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// The SpatialMenu controller
     /// A SpatialMenu controller is spawned in EditorVR.Tools SpawnDefaultTools() function, for each proxy/input-device
-    /// There is a singule static SpatialUI(view) that all SpatialMenu controllers direct
+    /// There is a single static SpatialUI(view) that all SpatialMenu controllers direct
     /// </summary>
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public sealed class SpatialMenu : SpatialUIController, IInstantiateUI, IUsesNode, IUsesRayOrigin,

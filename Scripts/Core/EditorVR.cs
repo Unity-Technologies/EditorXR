@@ -200,7 +200,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_DefaultTools = DefaultTools;
             SetHideFlags(defaultHideFlags);
 #if UNITY_EDITOR
-            ClearDeveloperConsoleIfNecessary();
+            if (!Application.isPlaying)
+                ClearDeveloperConsoleIfNecessary();
 #endif
             HandleInitialization();
 

@@ -74,6 +74,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                     if (t.IsNested || !typeof(MonoBehaviour).IsAssignableFrom(t))
                         continue;
 
+                    if (t.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any())
+                        continue;
+
                     var mb = (MonoBehaviour)ObjectUtils.CreateGameObjectWithComponent(t, runInEditMode: false);
                     if (mb)
                     {
