@@ -376,6 +376,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                 // Pop this tool of any other stack that references it (for IMultiDeviceTools)
                                 if (tool is IMultiDeviceTool)
                                 {
+                                    otherDeviceData.toolsMenu.deleteToolsMenuButton(toolType, typeof(SelectionTool));
+
                                     if (otherTool.GetType() == toolType)
                                     {
                                         oldTool = otherDeviceData.toolData.Pop();
@@ -400,6 +402,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             }
                         }
                     }
+
                     this.DisconnectInterfaces(tool, deviceData.rayOrigin);
 
                     // Exclusive tools disable other tools underneath, so restore those
