@@ -282,6 +282,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var miniWorlds = GetNestedModule<MiniWorlds>();
             var workspaceModule = AddModule<WorkspaceModule>();
             workspaceModule.preserveWorkspaces = preserveLayout;
+            workspaceModule.HiddenTypes = HiddenTypes;
             workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
             workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
             workspaceModule.workspaceCreated += workspace => { deviceInputModule.UpdatePlayerHandleMaps(); };

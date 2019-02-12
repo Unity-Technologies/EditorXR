@@ -47,13 +47,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var availableContexts = GetAvailableEditingContexts();
                 var context = availableContexts.Find(c => c.Equals(s_DefaultContext)) ?? availableContexts.First();
 
-                var defaultContextName = settings.defaultContextName;
-                if (!string.IsNullOrEmpty(defaultContextName))
-                {
-                    var foundContext = availableContexts.Find(c => c.name == defaultContextName);
-                    if (foundContext != null)
-                        context = foundContext;
-                }
+                // TODO: Fix context switching while EXR is running
+                //var defaultContextName = settings.defaultContextName;
+                //if (!string.IsNullOrEmpty(defaultContextName))
+                //{
+                //    var foundContext = availableContexts.Find(c => c.name == defaultContextName);
+                //    if (foundContext != null)
+                //        context = foundContext;
+                //}
 
                 return context;
             }
