@@ -8,7 +8,7 @@ using UnityEngine.XR;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [CreateAssetMenu(menuName = "EditorXR/Editing Context")]
-    class EditorVRContext : ScriptableObject, IEditingContext
+    class EditorXRContext : ScriptableObject, IEditingContext
     {
         [SerializeField]
         float m_RenderScale = 1f;
@@ -38,7 +38,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         [SerializeField]
         [HideInInspector]
+        string m_DefaultMainMenuName;
+
+        [SerializeField]
+        [HideInInspector]
+        string m_DefaultAlternateMenuName;
+
+        [SerializeField]
+        [HideInInspector]
         List<string> m_DefaultToolStackNames;
+
+        [SerializeField]
+        [HideInInspector]
+        List<string> m_HiddenTypeNames;
 
         EditorVR m_Instance;
         static EditorVR s_Instance; // Used only by PreferencesGUI
@@ -53,10 +65,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Setup()
         {
-            EditorVR.DefaultTools = m_DefaultToolStackNames.Select(t => Type.GetType(t)).ToArray();
-            EditorVR.DefaultMenu = m_DefaultMainMenu ? m_DefaultMainMenu.GetClass() : null;
-            EditorVR.DefaultAlternateMenu = m_DefaultAlternateMenu ? m_DefaultAlternateMenu.GetClass() : null;
-            EditorVR.HiddenTypes = m_HiddenTypes.Select(ms => ms.GetClass()).ToArray();
+#if UNITY_EDITOR
+            SetupMonoScriptTypeNames();
+#endif
+
+            EditorVR.DefaultMenu = GetTypeSafe(m_DefaultMainMenuName);
+            EditorVR.DefaultAlternateMenu = GetTypeSafe(m_DefaultAlternateMenuName);
+
+            if (m_DefaultToolStackNames != null)
+                EditorVR.DefaultTools = m_DefaultToolStackNames.Select(GetTypeSafe).ToArray();
+
+            if (m_HiddenTypeNames != null)
+                EditorVR.HiddenTypes = m_HiddenTypeNames.Select(GetTypeSafe).ToArray();
+
             s_Instance = m_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
 
             if (Application.isPlaying)
@@ -69,20 +90,43 @@ namespace UnityEditor.Experimental.EditorVR.Core
             XRSettings.eyeTextureResolutionScale = m_RenderScale;
         }
 
+        static Type GetTypeSafe(string name)
+        {
+            if (!string.IsNullOrEmpty(name))
+                return Type.GetType(name);
+
+            return null;
+        }
+
         public void Dispose()
         {
             m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
             if (m_Instance)
                 ObjectUtils.Destroy(m_Instance.gameObject);
+
             s_Instance = m_Instance = null;
         }
 
 #if UNITY_EDITOR
         void OnValidate()
         {
-            m_DefaultToolStackNames = m_DefaultToolStack.Select(ms => ms.GetClass().AssemblyQualifiedName).ToList();
+            SetupMonoScriptTypeNames();
         }
-#endif
+
+        void SetupMonoScriptTypeNames()
+        {
+            if (m_DefaultMainMenu)
+                m_DefaultMainMenuName = m_DefaultMainMenu.GetClass().AssemblyQualifiedName;
+
+            if (m_DefaultAlternateMenu)
+                m_DefaultAlternateMenuName = m_DefaultAlternateMenu.GetClass().AssemblyQualifiedName;
+
+            if (m_DefaultToolStack != null)
+                m_DefaultToolStackNames = m_DefaultToolStack.Select(ms => ms.GetClass().AssemblyQualifiedName).ToList();
+
+            if (m_HiddenTypes != null)
+                m_HiddenTypeNames = m_HiddenTypes.Select(ms => ms.GetClass().AssemblyQualifiedName).ToList();
+        }
 
         static void PreferencesGUI()
         {
@@ -118,6 +162,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             EditorGUILayout.EndVertical();
         }
+#endif
     }
 }
 

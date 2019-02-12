@@ -138,8 +138,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorGUILayout.LabelField("Context Manager", EditorStyles.boldLabel);
             // Auto open an EditorXR context
             {
-                string title = "Auto open?";
-                string tooltip = "Automatically open an EditorXR context when the HMD is being worn";
+                const string title = "Auto open";
+                const string tooltip = "Automatically open an EditorXR context when the HMD is being worn";
 
                 autoOpen = EditorGUILayout.Toggle(new GUIContent(title, tooltip), autoOpen);
             }
@@ -286,8 +286,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 throw new Exception("You can't start EditorXR without at least one context. Try re-importing the package or use version control to restore the default context asset");
 
 #if UNITY_EDITOR
-            if (s_AvailableContexts.Count > 1)
-                VRView.afterOnGUI += OnVRViewGUI;
+            // TODO: Fix context switching while EXR is running
+            //if (s_AvailableContexts.Count > 1)
+            //    VRView.afterOnGUI += OnVRViewGUI;
 #endif
 
             if (Application.isPlaying)

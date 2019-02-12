@@ -1,8 +1,9 @@
 {
-    "name": "EXR-Tests",
+    "name": "EXR-Tests-Editor",
     "references": [
-        "EXR",
-        "EXR-Utilities-Editor"
+        "EXR-Tests",
+        "EXR-Utilities-Editor",
+        "EXR"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

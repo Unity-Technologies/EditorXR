@@ -6,3 +6,4 @@
 [assembly: InternalsVisibleTo("Assembly-CSharp-Editor")]
 [assembly: InternalsVisibleTo("EXR-Editor")]
 [assembly: InternalsVisibleTo("EXR-Tests")]
+[assembly: InternalsVisibleTo("EXR-Tests-Editor")]
