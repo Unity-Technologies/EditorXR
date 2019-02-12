@@ -343,6 +343,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             return;
                         }
 
+                        if (deviceData.customMenu != null)
+                        {
+                            deviceData.menuHideData.Remove(deviceData.customMenu);
+                            deviceData.customMenu = null;
+                        }
+
                         var oldTool = deviceData.toolData.Pop();
                         oldTool.input.active = false;
                         topTool = deviceData.toolData.Peek();
