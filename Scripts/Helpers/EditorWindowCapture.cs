@@ -100,6 +100,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             {
                 var rect = m_Position;
 
+                // Convert to GUI Rect (handles high-DPI screens)
+                rect = EditorGUIUtility.PointsToPixels(rect);
+
                 // GrabPixels is relative to the GUIView and not the desktop, so we don't care about the offset
                 rect.x = 0f;
                 rect.y = 0f;
