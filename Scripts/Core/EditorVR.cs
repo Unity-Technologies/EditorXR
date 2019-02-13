@@ -88,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return HideFlags.None;
 
                 return showGameObjects ? HideFlags.DontSaveInEditor : HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
-            }
+        }
         }
 
         internal static bool showGameObjects
@@ -170,22 +170,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
             }
-            // Add EVR tags and layers if they don't exist
+                // Add EVR tags and layers if they don't exist
 #if UNITY_EDITOR
-            var tags = TagManager.GetRequiredTags();
-            var layers = TagManager.GetRequiredLayers();
+                var tags = TagManager.GetRequiredTags();
+                var layers = TagManager.GetRequiredLayers();
 
-            foreach (var tag in tags)
-            {
-                TagManager.AddTag(tag);
-            }
+                foreach (var tag in tags)
+                {
+                    TagManager.AddTag(tag);
+                }
 
-            foreach (var layer in layers)
-            {
-                TagManager.AddLayer(layer);
-            }
+                foreach (var layer in layers)
+                {
+                    TagManager.AddLayer(layer);
+                }
 #endif
-        }
+            }
 
         void Initialize()
         {
@@ -201,7 +201,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             SetHideFlags(defaultHideFlags);
 #if UNITY_EDITOR
             if (!Application.isPlaying)
-                ClearDeveloperConsoleIfNecessary();
+            ClearDeveloperConsoleIfNecessary();
 #endif
             HandleInitialization();
 
@@ -219,8 +219,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
-                AddModule<HierarchyModule>();
-                AddModule<ProjectFolderModule>();
+            AddModule<HierarchyModule>();
+            AddModule<ProjectFolderModule>();
             }
 #endif
 
@@ -329,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
 
             viewer.AddPlayerModel();
-
+            viewer.AddPlayerFloor();
             GetNestedModule<Rays>().CreateAllProxies();
 
             // In case we have anything selected at start, set up manipulators, inspector, etc.
@@ -624,4 +624,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 #endif
-            }
+}

@@ -298,7 +298,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 cameraRig.rotation *= Quaternion.AngleAxis(mouseDelta.x * k_MouseRotationMultiplier, Vector3.up);
 
             var deltaScroll = VRView.MouseScrollDelta.y;
-            cameraRig.position += deltaScroll * Vector3.up * k_MouseScrollMultiplier;
+            cameraRig.position += deltaScroll * Vector3.up * k_MouseScrollMultiplier * this.GetViewerScale();
 
             if (this.IsSharedUpdater(this) && !Mathf.Approximately(deltaScroll, 0f))
             {
