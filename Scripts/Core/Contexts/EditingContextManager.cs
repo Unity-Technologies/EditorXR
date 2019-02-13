@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.InputNew;
-using System.IO;
+using UnityEngine.XR;
 using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -21,7 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal const string k_SettingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
         internal const string k_UserSettingsPath = "Library/EditingContextManagerSettings.asset";
 
-        const string k_LaunchOnExitPlaymode = "EditingContextManager.LaunchOnExitPlaymode";
+        const string k_AutoOpen = "EditorXR.EditingContextManager.AutoOpen";
+        const string k_LaunchOnExitPlaymode = "EditorXR.EditingContextManager.LaunchOnExitPlaymode";
 
         IEditingContext m_CurrentContext;
 
@@ -30,13 +33,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static List<IEditingContext> s_AvailableContexts;
         static EditingContextManagerSettings s_Settings;
         static UnityObject s_DefaultContext;
+        static bool s_AutoOpened;
 
         string[] m_ContextNames;
         int m_SelectedContextIndex;
 
-        Rect m_EditingContextPopupRect = new Rect(0, 0, 150, 20); // Y and X position will be set based on window size
-
         readonly List<IEditingContext> m_PreviousContexts = new List<IEditingContext>();
+
+        Rect m_ContextPopupRect = new Rect(5, 0, 100, 20); // Position will be set based on window size
+        Rect m_ContextLabelRect = new Rect(5, 0, 100, 20); // Position will be set based on window size
 
         internal static IEditingContext defaultContext
         {
@@ -77,12 +82,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
+        static bool autoOpen
+        {
+            get { return EditorPrefs.GetBool(k_AutoOpen, true); }
+            set { EditorPrefs.SetBool(k_AutoOpen, value); }
+        }
+
 #if UNITY_EDITOR
         static EditingContextManager()
         {
             VRView.viewEnabled += OnVRViewEnabled;
             VRView.viewDisabled += OnVRViewDisabled;
             EditorApplication.update += ReopenOnExitPlaymode;
+            EditorApplication.update += OpenIfUserPresent;
         }
 #endif
 
@@ -96,9 +108,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static void OnVRViewDisabled()
         {
-            ObjectUtils.Destroy(s_Instance.gameObject);
-            if (s_InputManager)
-                ObjectUtils.Destroy(s_InputManager.gameObject);
+                ObjectUtils.Destroy(s_Instance.gameObject);
+                if (s_InputManager)
+                    ObjectUtils.Destroy(s_InputManager.gameObject);
         }
 
 #if UNITY_EDITOR
@@ -121,6 +133,64 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var settings = LoadProjectSettings();
             settings.name = "Default Editing Context";
             Selection.activeObject = settings;
+        }
+
+        [PreferenceItem("EditorXR")]
+        static void PreferencesGUI()
+        {
+            EditorGUILayout.LabelField("Context Manager", EditorStyles.boldLabel);
+            // Auto open an EditorXR context
+            {
+                const string title = "Auto open";
+                const string tooltip = "Automatically open an EditorXR context when the HMD is being worn";
+
+                autoOpen = EditorGUILayout.Toggle(new GUIContent(title, tooltip), autoOpen);
+            }
+
+            var contextTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
+            foreach (var contextType in contextTypes)
+            {
+                var preferencesGUIMethod = contextType.GetMethod("PreferencesGUI", BindingFlags.Static | BindingFlags.NonPublic);
+                if (preferencesGUIMethod != null)
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField(contextType.Name.Replace("Context", string.Empty), EditorStyles.boldLabel);
+                    preferencesGUIMethod.Invoke(null, null);
+                }
+            }
+        }
+
+        static void OpenIfUserPresent()
+        {
+            if (autoOpen)
+            {
+                var view = VRView.activeView;
+                if (!s_AutoOpened && ShouldShowEditorVR() && !view)
+                {
+                    if (!XRSettings.enabled)
+                    {
+                        XRSettings.enabled = true;
+                        if (!XRSettings.enabled)
+                        {
+                            // Initialization failed, so don't keep trying
+                            EditorApplication.update -= OpenIfUserPresent;
+                            return;
+                        }
+                    }
+
+                    if (VRView.GetIsUserPresent())
+                    {
+                        s_AutoOpened = true;
+                        EditorApplication.delayCall += ShowEditorVR;
+                    }
+                }
+                else if (s_AutoOpened && view && !VRView.GetIsUserPresent())
+                {
+                    s_AutoOpened = false;
+                    EditorApplication.delayCall += view.Close;
+                }
+            }
         }
 
         // Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
@@ -232,15 +302,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-
 #if UNITY_EDITOR
         void OnVRViewGUI(VRView view)
         {
+            const float paddingX = 5;
             var position = view.position;
-            m_EditingContextPopupRect.y = position.height - m_EditingContextPopupRect.height;
-            m_EditingContextPopupRect.x = position.width - m_EditingContextPopupRect.width;
+            var height = position.height - m_ContextPopupRect.height * 2;
+            var popupX = position.width - m_ContextPopupRect.width - paddingX;
 
-            m_SelectedContextIndex = EditorGUI.Popup(m_EditingContextPopupRect, string.Empty, m_SelectedContextIndex, m_ContextNames);
+            m_ContextPopupRect.x = popupX;
+            m_ContextPopupRect.y = height;
+            m_ContextLabelRect.x = popupX - m_ContextLabelRect.width;
+            m_ContextLabelRect.y = height;
+
+            GUI.Label(m_ContextLabelRect, "Editing Context:");
+            m_SelectedContextIndex = EditorGUI.Popup(m_ContextPopupRect, m_SelectedContextIndex, m_ContextNames);
             if (GUI.changed)
             {
                 SetEditingContext(s_AvailableContexts[m_SelectedContextIndex]);

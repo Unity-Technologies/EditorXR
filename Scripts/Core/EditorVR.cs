@@ -80,9 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static bool s_IsInitialized;
 
-        static EditorVR s_Instance;
-
-        static HideFlags defaultHideFlags
+        internal static HideFlags defaultHideFlags
         {
             get
             {
@@ -93,13 +91,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        static bool showGameObjects
+        internal static bool showGameObjects
         {
             get { return EditorPrefs.GetBool(k_ShowGameObjects, false); }
             set { EditorPrefs.SetBool(k_ShowGameObjects, value); }
         }
 
-        static bool preserveLayout
+        internal static bool preserveLayout
         {
             get { return EditorPrefs.GetBool(k_PreserveLayout, true); }
             set { EditorPrefs.SetBool(k_PreserveLayout, value); }
@@ -117,7 +115,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set { EditorPrefs.SetString(k_SerializedPreferences, value); }
         }
 
-        internal static Type[] defaultTools { get; set; }
+        internal static Type[] DefaultTools { private get; set; }
+        internal static Type DefaultMenu { private get; set; }
+        internal static Type DefaultAlternateMenu { private get; set; }
+        internal static Type[] HiddenTypes { private get; set; }
 
         class DeviceData
         {
@@ -142,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             internal virtual void OnDestroy() { }
         }
 
-        static void ResetPreferences()
+        internal static void ResetPreferences()
         {
 #if UNITY_EDITOR
             EditorPrefs.DeleteKey(k_ShowGameObjects);
@@ -195,12 +196,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
             DrivenRectTransformTracker.BlockUndo = true;
 #endif
 #endif
-            s_Instance = this; // Used only by PreferencesGUI
             Nested.evr = this; // Set this once for the convenience of all nested classes
-            m_DefaultTools = defaultTools;
+            m_DefaultTools = DefaultTools;
             SetHideFlags(defaultHideFlags);
 #if UNITY_EDITOR
-            ClearDeveloperConsoleIfNecessary();
+            if (!Application.isPlaying)
+                ClearDeveloperConsoleIfNecessary();
 #endif
             HandleInitialization();
 
@@ -282,6 +283,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var miniWorlds = GetNestedModule<MiniWorlds>();
             var workspaceModule = AddModule<WorkspaceModule>();
             workspaceModule.preserveWorkspaces = preserveLayout;
+            workspaceModule.HiddenTypes = HiddenTypes;
             workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
             workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
             workspaceModule.workspaceCreated += workspace => { deviceInputModule.UpdatePlayerHandleMaps(); };
@@ -429,7 +431,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnDestroy()
         {
-            s_Instance = null;
             foreach (var nested in m_NestedModules.Values)
             {
                 nested.OnDestroy();
@@ -564,7 +565,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        void SetHideFlags(HideFlags hideFlags)
+        internal void SetHideFlags(HideFlags hideFlags)
         {
             ObjectUtils.hideFlags = hideFlags;
 
@@ -587,46 +588,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
 #endif
         }
-
-#if UNITY_EDITOR
-        [PreferenceItem("EditorXR")]
-        static void PreferencesGUI()
-        {
-            EditorGUILayout.BeginVertical();
-            EditorGUILayout.Space();
-
-            // Show EditorXR GameObjects
-            {
-                const string title = "Show EditorXR GameObjects";
-                const string tooltip = "Normally, EditorXR GameObjects are hidden in the Hierarchy. Would you like to show them?";
-
-                EditorGUI.BeginChangeCheck();
-                showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
-                if (EditorGUI.EndChangeCheck() && s_Instance)
-                    s_Instance.SetHideFlags(defaultHideFlags);
-            }
-
-            // Preserve Layout
-            {
-                const string title = "Preserve Layout";
-                const string tooltip = "Check this to preserve your layout and location in EditorXR";
-                preserveLayout = EditorGUILayout.Toggle(new GUIContent(title, tooltip), preserveLayout);
-            }
-
-            // Include in Builds
-            {
-                const string title = "Include in Player Builds";
-                const string tooltip = "Normally, EditorXR will override its assembly definitions to keep its assemblies out of Player builds. Check this if you would like to skip this step and include EditorXR in Player builds";
-                includeInBuilds = EditorGUILayout.Toggle(new GUIContent(title, tooltip), includeInBuilds);
-            }
-
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Reset to Defaults", GUILayout.Width(140)))
-                ResetPreferences();
-
-            EditorGUILayout.EndVertical();
-        }
-#endif
 
 #if !INCLUDE_TEXT_MESH_PRO
         static EditorVR()

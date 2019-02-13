@@ -124,15 +124,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         }
                     }
 
+                    IMainMenu mainMenu = null;
                     var menus = evr.GetNestedModule<Menus>();
                     var menuHideData = deviceData.menuHideData;
-                    var mainMenu = menus.SpawnMenu<MainMenu>(rayOrigin);
-                    deviceData.mainMenu = mainMenu;
-                    menuHideData[mainMenu] = new Menus.MenuHideData();
+                    if (DefaultMenu != null)
+                    {
+                        mainMenu = (IMainMenu)menus.SpawnMenu(DefaultMenu, rayOrigin);
+                        deviceData.mainMenu = mainMenu;
+                        menuHideData[mainMenu] = new Menus.MenuHideData();
+                    }
 
-                    var radialMenu = menus.SpawnMenu<RadialMenu>(rayOrigin);
-                    menuHideData[radialMenu] = new Menus.MenuHideData();
-                    radialMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
+                    if (DefaultAlternateMenu != null)
+                    {
+                        var alternateMenu = (IAlternateMenu)menus.SpawnMenu(DefaultAlternateMenu, rayOrigin);
+                        menuHideData[alternateMenu] = new Menus.MenuHideData();
+                        var radialMenu = alternateMenu as RadialMenu;
+                        if (radialMenu)
+                            radialMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
+                    }
 
                     var undoMenu = menus.SpawnMenu<UndoMenu>(rayOrigin);
                     var hideData = new Menus.MenuHideData();

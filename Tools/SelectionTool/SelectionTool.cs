@@ -557,8 +557,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     ((SelectionTool)linkedObject).m_Preferences = m_Preferences;
                 }
 
-                m_SphereToggle.isOn = m_Preferences.sphereMode;
-                m_CubeToggle.isOn = !m_Preferences.sphereMode;
+                if (m_SphereToggle)
+                    m_SphereToggle.isOn = m_Preferences.sphereMode;
+
+                if (m_CubeToggle)
+                    m_CubeToggle.isOn = !m_Preferences.sphereMode;
             }
         }
 

@@ -68,7 +68,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public bool mainMenuActivatorInteractable
         {
-            set { PreviewToolsMenuButton.interactable = value; }
+            set
+            {
+                if (PreviewToolsMenuButton != null)
+                    PreviewToolsMenuButton.interactable = value;
+            }
         }
 
         void Awake()
@@ -85,7 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void CreateToolsMenuUI()
         {
-            m_ToolsMenuUI = this.InstantiateUI(m_ToolsMenuPrefab.gameObject, rayOrigin, true, rayOrigin).GetComponent<ToolsMenuUI>();
+            m_ToolsMenuUI = this.InstantiateUI(m_ToolsMenuPrefab.gameObject, rayOrigin, false, rayOrigin).GetComponent<ToolsMenuUI>();
             m_ToolsMenuUI.maxButtonCount = k_MaxButtonCount;
             m_ToolsMenuUI.mainMenuActivatorSelected = this.MainMenuActivatorSelected;
             m_ToolsMenuUI.buttonHovered += OnButtonHover;
@@ -95,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             // Alternate menu origin isn't set when awake or start run
             var toolsMenuUITransform = m_ToolsMenuUI.transform;
-            toolsMenuUITransform.SetParent(alternateMenuOrigin);
+            toolsMenuUITransform.SetParent(alternateMenuOrigin, false);
             toolsMenuUITransform.localPosition = Vector3.zero;
             toolsMenuUITransform.localRotation = Quaternion.identity;
         }
