@@ -40,6 +40,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         readonly List<IEditingContext> m_PreviousContexts = new List<IEditingContext>();
 
+        Rect m_ContextPopupRect = new Rect(5, 0, 100, 20); // Position will be set based on window size
+        Rect m_ContextLabelRect = new Rect(5, 0, 100, 20); // Position will be set based on window size
+
         internal static IEditingContext defaultContext
         {
             get
@@ -305,22 +308,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
         void OnVRViewGUI(VRView view)
         {
+            const float paddingX = 5;
             var position = view.position;
-            GUILayout.FlexibleSpace();
+            var height = position.height - m_ContextPopupRect.height * 2;
+            var popupX = position.width - m_ContextPopupRect.width - paddingX;
 
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("Editing Context:");
-            m_SelectedContextIndex = EditorGUILayout.Popup(m_SelectedContextIndex, m_ContextNames);
+            m_ContextPopupRect.x = popupX;
+            m_ContextPopupRect.y = height;
+            m_ContextLabelRect.x = popupX - m_ContextLabelRect.width;
+            m_ContextLabelRect.y = height;
+
+            GUI.Label(m_ContextLabelRect, "Editing Context:");
+            m_SelectedContextIndex = EditorGUI.Popup(m_ContextPopupRect, m_SelectedContextIndex, m_ContextNames);
             if (GUI.changed)
             {
                 SetEditingContext(s_AvailableContexts[m_SelectedContextIndex]);
                 GUIUtility.ExitGUI();
             }
-            EditorGUILayout.EndHorizontal();
-
-            var offsetToAccomodatePresentationCamera = 24f;
-            GUILayout.Space(offsetToAccomodatePresentationCamera);
         }
 #endif
 
