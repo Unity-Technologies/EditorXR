@@ -8,7 +8,6 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-    [ExecuteInEditMode]
     public class PlayerFloor : MonoBehaviour, IUsesViewerScale, IDetectGazeDivergence
     {
         const float k_XOffset = 0.05f;
@@ -19,6 +18,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         [SerializeField]
         Image m_BorderImage;
+
+        [SerializeField]
+        float m_Delay = 2f;
 
         Vector3 m_FloorPosition;
         Transform m_Camera;
@@ -50,21 +52,24 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             transform.forward = m_CameraForwardCurrent;
 
             const float kAllowedDegreeOfGazeDivergence = 25f;
-            var isAboveDivergenceThreshold = this.IsAboveDivergenceThreshold(transform, kAllowedDegreeOfGazeDivergence);
+            var visible = !this.IsAboveDivergenceThreshold(transform, kAllowedDegreeOfGazeDivergence);
 
-            if (m_Visible != isAboveDivergenceThreshold)
-                this.RestartCoroutine(ref m_AnimationVisibilityCoroutine, UpdateVisibility(isAboveDivergenceThreshold));
+            if (m_Visible != visible)
+                this.RestartCoroutine(ref m_AnimationVisibilityCoroutine, UpdateVisibility(visible));
         }
 
-        IEnumerator UpdateVisibility(bool hidden)
+        IEnumerator UpdateVisibility(bool visible)
         {
-            m_Visible = hidden;
+            m_Visible = visible;
 
-            const float kHidingSpeedMultiplier = 4f;
-            const float kShowingSpeedMultiplier = 0.5f;
-            var durationMultiplier = hidden ? kHidingSpeedMultiplier : kShowingSpeedMultiplier;
+            if (visible)
+                yield return new WaitForSeconds(m_Delay);
+
+            const float hidingSpeedMultiplier = 4f;
+            const float showingSpeedMultiplier = 0.5f;
+            var durationMultiplier = visible ? showingSpeedMultiplier : hidingSpeedMultiplier;
             var currentCanvasGroupAlpha = m_CanvasGroup.alpha;
-            var targetCanvasGroupAlpha = hidden ? 0f : 1f;
+            var targetCanvasGroupAlpha = visible ? 1f : 0f;
             var amount = 0f;
             while (amount < 1f)
             {
