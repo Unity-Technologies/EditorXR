@@ -15,6 +15,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         GameObject m_PlayerModelPrefab;
 
         [SerializeField]
+        GameObject m_PlayerFloorPrefab;
+
+        [SerializeField]
         GameObject m_PreviewCameraPrefab;
 
         class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces
@@ -59,6 +62,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             static Collider[] s_CachedColliders = new Collider[k_MaxCollisionCheck];
 
             PlayerBody m_PlayerBody;
+            GameObject m_PlayerFloor;
+
             float m_OriginalNearClipPlane;
             float m_OriginalFarClipPlane;
             readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
@@ -98,6 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     cameraRig.transform.parent = null;
 
                 ObjectUtils.Destroy(m_PlayerBody.gameObject);
+                ObjectUtils.Destroy(m_PlayerFloor);
 
                 if (customPreviewCamera != null)
                     ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -198,6 +204,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (customPreviewCamera != null)
                     customPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
+            }
+
+            internal void AddPlayerFloor()
+            {
+                m_PlayerFloor = ObjectUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
             }
 
             internal void AddPlayerModel()

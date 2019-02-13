@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     return;
 
                 m_AlternateMenuOrigin = value;
-                transform.SetParent(m_AlternateMenuOrigin);
+                transform.SetParent(m_AlternateMenuOrigin, false);
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
             }

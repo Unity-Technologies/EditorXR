@@ -105,13 +105,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var mainMenu = deviceData.mainMenu;
                 var customMenu = deviceData.customMenu;
 
-                if (mainMenu.menuHideFlags == 0 || (customMenu != null && customMenu.menuHideFlags == 0))
+                if (mainMenu != null)
                 {
-                    AddVisibilitySettings(rayOrigin, mainMenu, false, false);
-                }
-                else
-                {
-                    RemoveVisibilitySettings(rayOrigin, mainMenu);
+                    if (mainMenu.menuHideFlags == 0 || customMenu != null && customMenu.menuHideFlags == 0)
+                        AddVisibilitySettings(rayOrigin, mainMenu, false, false);
+                    else
+                        RemoveVisibilitySettings(rayOrigin, mainMenu);
                 }
             }
 
@@ -222,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             }
 
                             rayOrigin.name = string.Format("{0} Ray Origin", node);
-                            var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;
+                            var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin, false).transform;
                             rayTransform.position = rayOrigin.position;
                             rayTransform.rotation = rayOrigin.rotation;
                             var dpr = rayTransform.GetComponent<DefaultProxyRay>();

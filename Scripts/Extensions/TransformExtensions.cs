@@ -21,5 +21,24 @@ namespace UnityEditor.Experimental.EditorVR.Extensions
 
             return new Bounds { center = center, extents = extents };
         }
+
+        public static Vector3 XZForward(this Transform target)
+        {
+            var forward = target.forward;
+            var up = forward.y;
+            const float mid = 0.5f;
+            const float min = 0.0f;
+            if (up * up >= mid)
+            {
+                forward = -target.up * Mathf.Sign(up);
+            }
+            else if (target.up.y < min)
+            {
+                forward = -forward;
+            }
+
+            forward.y = 0.0f;
+            return forward.normalized;
+        }
     }
 }
