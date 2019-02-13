@@ -1,12 +1,12 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Gives decorated class the ability to preview tools in a ToolButton
-    /// </summary>    public interface IPreviewInToolsMenuButton
+    /// </summary>
+    public interface IPreviewInToolsMenuButton
     {
     }
 
@@ -36,4 +36,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
@@ -63,12 +62,12 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 time += other.time * scalar;
 
                 // We want the oldest speed for acceleration integration
-                // We do a lerp so that as the oldest sample fades out, we smooth switch to the next sample 
+                // We do a lerp so that as the oldest sample fades out, we smooth switch to the next sample
                 value = Mathf.Lerp(value, other.value, scalar);
             }
         }
 
-        // We store all the sampled frame data in a circular array for tightest packing 
+        // We store all the sampled frame data in a circular array for tightest packing
         // We don't need to store the 'end' index in our array, as when we reset we always
         // make sure the frame time in that reset sample is the maximum we need
         int m_CurrentSampleIndex = -1;
@@ -165,4 +164,3 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         }
     }
 }
-#endif

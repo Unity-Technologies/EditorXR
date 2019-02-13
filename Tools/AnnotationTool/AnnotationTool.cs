@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -91,6 +90,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         ActionMap m_ActionMap;
+
+        [SerializeField]
+        GameObject m_AnnotationPointerPrefab;
 
         [SerializeField]
         Material m_AnnotationMaterial;
@@ -260,7 +262,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void SetupBrushUI()
         {
-            m_AnnotationPointer = ObjectUtils.CreateGameObjectWithComponent<AnnotationPointer>(rayOrigin, false);
+            m_AnnotationPointer = ObjectUtils.Instantiate(m_AnnotationPointerPrefab, rayOrigin, false).GetComponent<AnnotationPointer>();
             m_OriginalAnnotationPointerLocalScale = m_AnnotationPointer.transform.localScale;
             var brushSize = m_Preferences.brushSize;
             m_AnnotationPointer.Resize(brushSize);
@@ -327,8 +329,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Length = 0;
 
             var go = new GameObject(string.Format(k_AnnotationFormatStrig, m_AnnotationHolder.childCount));
+#if UNITY_EDITOR
             Undo.RegisterCreatedObjectUndo(go, "Annotation");
-
+#endif
             var goTrans = go.transform;
             goTrans.SetParent(m_AnnotationHolder);
             goTrans.position = rayOrigin.position;
@@ -537,7 +540,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             this.AddToSpatialHash(go);
 
+#if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
+#endif
 
             if (AnnotationFinished != null)
             {
@@ -624,6 +629,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            if (m_Preferences == null)
+                return;
+
             var annotationInput = (AnnotationInput)input;
 
             var draw = annotationInput.draw;
@@ -805,4 +813,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             set { s_HideFlags = value; }
         }
 
-        static HideFlags s_HideFlags = HideFlags.DontSave;
+        static HideFlags s_HideFlags = HideFlags.DontSaveInEditor;
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<Renderer> k_Renderers = new List<Renderer>();
@@ -73,23 +72,39 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return empty;
         }
 
-        public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true)
+        public static T CreateGameObjectWithComponent<T>(Transform parent = null, bool worldPositionStays = true,
+            bool runInEditMode = true)
             where T : Component
         {
-            return (T)CreateGameObjectWithComponent(typeof(T), parent, worldPositionStays);
+            return (T)CreateGameObjectWithComponent(typeof(T), parent, worldPositionStays, runInEditMode);
         }
 
         public static Component CreateGameObjectWithComponent(Type type, Transform parent = null,
-            bool worldPositionStays = true)
+            bool worldPositionStays = true, bool runInEditMode = true)
         {
+            Component component = null;
+            if (Application.isPlaying)
+            {
+                var go = new GameObject(type.Name);
+                go.transform.parent = parent;
+                component = AddComponent(type, go);
+            }
 #if UNITY_EDITOR
-            var component = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type).GetComponent(type);
-            if (!Application.isPlaying)
-                SetRunInEditModeRecursively(component.gameObject, true);
-#else
-            var component = new GameObject(type.Name).AddComponent(type);
+            else
+            {
+                var go = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type);
+                component = go.GetComponent(type);
+                if (component)
+                {
+                    SetRunInEditModeRecursively(component.gameObject, runInEditMode);
+                    component.transform.SetParent(parent, worldPositionStays);
+                }
+                else
+                {
+                    UnityObject.DestroyImmediate(go);
+                }
+            }
 #endif
-            component.transform.SetParent(parent, worldPositionStays);
 
             return component;
         }
@@ -178,6 +193,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         public static void SetRunInEditModeRecursively(GameObject go, bool enabled)
         {
 #if UNITY_EDITOR
+            if (Application.isPlaying)
+                return;
+
             var monoBehaviours = go.GetComponents<MonoBehaviour>();
             foreach (var mb in monoBehaviours)
             {
@@ -199,7 +217,21 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         public static Component AddComponent(Type type, GameObject go)
         {
-            var component = go.AddComponent(type);
+            Component component = null;
+            if (Application.isPlaying)
+            {
+                var mb = DefaultScriptReferences.Create(type);
+                if (mb)
+                {
+                    mb.transform.parent = go.transform;
+                    mb.enabled = true;
+                    component = mb;
+                }
+            }
+
+            if (!component)
+                component = go.AddComponent(type);
+
             SetRunInEditModeRecursively(go, true);
             return component;
         }
@@ -208,8 +240,28 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         {
             var sourceType = sourceComponent.GetType();
             var clonedTargetComponent = AddComponent(sourceType, targetGameObject);
-            EditorUtility.CopySerialized(sourceComponent, clonedTargetComponent);
-
+            if (Application.isPlaying)
+            {
+                Type type = sourceComponent.GetType();
+                var fields = type.GetFields();
+                foreach (var field in fields)
+                {
+                    if (field.IsStatic) continue;
+                    field.SetValue(clonedTargetComponent, field.GetValue(sourceComponent));
+                }
+                var props = type.GetProperties();
+                foreach (var prop in props)
+                {
+                    if (!prop.CanWrite || !prop.CanWrite || prop.Name == "name") continue;
+                    prop.SetValue(clonedTargetComponent, prop.GetValue(sourceComponent, null), null);
+                }
+            }
+#if UNITY_EDITOR
+            else
+            {
+                EditorUtility.CopySerialized(sourceComponent, clonedTargetComponent);
+            }
+#endif
             return (T)clonedTargetComponent;
         }
 
@@ -297,9 +349,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             while (Time.realtimeSinceStartup <= startTime + t)
                 yield return null;
 
+#if UNITY_EDITOR
             if (withUndo)
                 Undo.DestroyObjectImmediate(o);
             else
+#endif
                 UnityObject.DestroyImmediate(o);
         }
 
@@ -342,6 +396,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return typeof(UnityObject);
         }
 
+#if UNITY_EDITOR
         public static IEnumerator GetAssetPreview(UnityObject obj, Action<Texture> callback)
         {
             var texture = AssetPreview.GetAssetPreview(obj);
@@ -357,6 +412,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             callback(texture);
         }
+#endif
     }
 }
-#endif

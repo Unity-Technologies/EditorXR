@@ -6,7 +6,6 @@ using Object = UnityEngine.Object;
 #if UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
 using System.Threading;
-
 #endif
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
@@ -69,7 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 // NOTE: Uncomment To grab any and all GUIViews
                 //foreach (UnityEngine.Object view in Resources.FindObjectsOfTypeAll(guiViewType))
                 //{
-                //    Debug.Log(view.name);             
+                //    Debug.Log(view.name);
                 //}
 
                 var parentField = windowType.GetField("m_Parent", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -100,6 +99,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             if (m_Window && capture)
             {
                 var rect = m_Position;
+
+                // Convert to GUI Rect (handles high-DPI screens)
+                rect = EditorGUIUtility.PointsToPixels(rect);
 
                 // GrabPixels is relative to the GUIView and not the desktop, so we don't care about the offset
                 rect.x = 0f;

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +7,6 @@ using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
@@ -230,6 +228,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             if (m_ViewerScaleVisuals)
                 ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
+
+            if (m_Ring)
+                ObjectUtils.Destroy(m_Ring.gameObject);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -997,10 +998,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
 
                 //Setting toggles on this tool's menu will set them on other tool menus
-                m_BlinkToggle.isOn = m_Preferences.blinkMode;
-                m_FlyToggle.isOn = !m_Preferences.blinkMode;
+                if (m_BlinkToggle)
+                    m_BlinkToggle.isOn = m_Preferences.blinkMode;
+
+                if (m_FlyToggle)
+                    m_FlyToggle.isOn = !m_Preferences.blinkMode;
             }
         }
     }
 }
-#endif

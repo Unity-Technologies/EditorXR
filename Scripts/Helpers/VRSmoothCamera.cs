@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
@@ -93,6 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         {
             m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
             var vrCameraTexture = m_VRCamera.targetTexture;
+#if UNITY_EDITOR
             if (vrCameraTexture && (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height))
             {
                 var guiRect = new Rect(0f, 0f, vrCameraTexture.width, vrCameraTexture.height);
@@ -100,6 +100,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 VRView.activeView.CreateCameraTargetTexture(ref m_RenderTexture, cameraRect, false);
                 m_RenderTexture.name = "Smooth Camera RT";
             }
+#endif
 
             m_SmoothCamera.targetTexture = m_RenderTexture;
             m_SmoothCamera.targetDisplay = m_TargetDisplay;
@@ -139,4 +140,3 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         }
     }
 }
-#endif

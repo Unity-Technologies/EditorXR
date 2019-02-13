@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Adds Node information to determine which hand the tool is attached to
@@ -12,4 +11,3 @@ namespace UnityEditor.Experimental.EditorVR
         Node node { set; }
     }
 }
-#endif

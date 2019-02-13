@@ -1,8 +1,8 @@
-#if UNITY_EDITOR
 using System;
 
 namespace UnityEditor.Experimental.EditorVR
-{    public interface IResetWorkspaces
+{
+    public interface IResetWorkspaces
     {
     }
 
@@ -19,4 +19,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

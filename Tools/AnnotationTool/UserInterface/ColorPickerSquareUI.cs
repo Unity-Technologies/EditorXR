@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -28,4 +27,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif

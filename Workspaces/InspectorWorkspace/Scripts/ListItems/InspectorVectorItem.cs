@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
@@ -18,6 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.Setup(data);
 
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.Vector2:
@@ -37,6 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     WGroup.SetActive(true);
                     break;
             }
+#endif
+
             m_CuboidLayout.UpdateObjects();
 
             UpdateInputFields();
@@ -46,6 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             var vector = Vector4.zero;
             var count = 4;
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.Vector2:
@@ -64,6 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     vector = m_SerializedProperty.vector4Value;
                     break;
             }
+#endif
 
             for (var i = 0; i < count; i++)
             {
@@ -76,6 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.FirstTimeSetup();
 
+#if UNITY_EDITOR
             for (var i = 0; i < m_InputFields.Length; i++)
             {
                 var index = i;
@@ -85,6 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         data.serializedObject.ApplyModifiedProperties();
                 });
             }
+#endif
         }
 
         public override void OnObjectModified()
@@ -98,6 +104,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             float value;
             if (!float.TryParse(input, out value)) return false;
 
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.Vector2:
@@ -141,6 +148,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     }
                     break;
             }
+#endif
 
             return false;
         }
@@ -148,6 +156,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
         {
             object dropObject = null;
+
+#if UNITY_EDITOR
             var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
             if (inputfields.Length > 1)
             {
@@ -169,6 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
             else if (inputfields.Length > 0)
                 dropObject = inputfields[0].text;
+#endif
 
             return dropObject;
         }
@@ -195,6 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
 
+#if UNITY_EDITOR
             if (dropObject is Vector2)
             {
                 var vector2 = (Vector2)dropObject;
@@ -326,7 +338,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 UpdateInputFields();
                 FinalizeModifications();
             }
+#endif
         }
     }
 }
-#endif

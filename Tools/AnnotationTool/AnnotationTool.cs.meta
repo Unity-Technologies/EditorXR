@@ -5,6 +5,8 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - m_ActionMap: {fileID: 11400000, guid: 6615fd7d8b165fe43bc85867850097e5, type: 2}
+  - m_AnnotationPointerPrefab: {fileID: 1052926436026162, guid: 28f4cb78bebbacb4cac56871d9cb675d,
+      type: 2}
   - m_AnnotationMaterial: {fileID: 2100000, guid: 252a12e5980ef5b438bcc0dbc0d35529,
       type: 2}
   - m_BrushSizePrefab: {fileID: 1000012251850158, guid: 76909d1f493d664469c9e0f4726790a3,

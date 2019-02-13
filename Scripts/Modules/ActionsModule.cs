@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class ActionsModule : MonoBehaviour, IConnectInterfaces, ISpatialMenuProvider
+    sealed class ActionsModule : MonoBehaviour, ISystemModule, IConnectInterfaces, ISpatialMenuProvider
     {
         List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
         readonly List<IAction> m_Actions = new List<IAction>();
@@ -83,4 +82,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

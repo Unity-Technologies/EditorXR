@@ -1,6 +1,13 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
+
+#if !UNITY_EDITOR
+public enum PivotMode
+{
+    Center,
+    Pivot,
+}
+#endif
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -62,4 +69,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,14 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+
+#if !UNITY_EDITOR
+public enum PivotRotation
+{
+    Local,
+    Global,
+}
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
@@ -63,7 +70,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (suspended)
                     return;
 
+#if UNITY_EDITOR
                 Undo.RecordObjects(grabbedObjects, "Move");
+#endif
 
                 for (int i = 0; i < grabbedObjects.Length; i++)
                 {
@@ -100,7 +109,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (suspended)
                     return;
 
+#if UNITY_EDITOR
                 Undo.RecordObjects(grabbedObjects, "Move");
+#endif
 
                 for (int i = 0; i < grabbedObjects.Length; i++)
                 {
@@ -407,7 +418,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         // A direct selection has been made. Hide the manipulator until the selection changes
                         m_DirectSelected = true;
 
+#if UNITY_EDITOR
                         Undo.IncrementCurrentGroup();
+#endif
                     }
                 }
 
@@ -439,7 +452,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                             DropHeldObjects(Node.LeftHand);
                         }
                         hasLeft = false;
+#if UNITY_EDITOR
                         Undo.PerformUndo();
+#endif
                     }
 
                     if (leftInput.select.wasJustReleased)
@@ -470,7 +485,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                              DropHeldObjects(Node.RightHand);
                         }
                         hasRight = false;
+#if UNITY_EDITOR
                         Undo.PerformUndo();
+#endif
                     }
 
                     if (rightInput.select.wasJustReleased)
@@ -563,7 +580,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, k_LazyFollowRotate * deltaTime);
 
                 var selectionTransforms = Selection.transforms;
+#if UNITY_EDITOR
                 Undo.RecordObjects(selectionTransforms, "Move");
+#endif
 
                 foreach (var t in selectionTransforms)
                 {
@@ -697,7 +716,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         static void OnDragStarted()
         {
+#if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
+#endif
         }
 
         void OnDragEnded(Transform rayOrigin)
@@ -876,4 +897,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif

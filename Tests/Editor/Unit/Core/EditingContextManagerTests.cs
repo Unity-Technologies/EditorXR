@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
 using NUnit.Framework;
@@ -13,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
     public class EditingContextManagerTests
     {
         GameObject go;
-        EditorVRContext context, context2;
+        EditorXRContext context, context2;
         EditingContextManager manager;
         EditingContextManagerSettings settings, newSettings;
         SetEditingContextImplementor contextSetter;
@@ -26,13 +25,13 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
             var transformTool = go.AddComponent<TransformTool>();
             var createPrimitiveTool = go.AddComponent<CreatePrimitiveTool>();
 
-            context = ScriptableObject.CreateInstance<EditorVRContext>();
+            context = ScriptableObject.CreateInstance<EditorXRContext>();
             context.name = "Some Other Context";
             context.m_DefaultToolStack = new List<MonoScript>();
             context.m_DefaultToolStack.Add(MonoScript.FromMonoBehaviour(transformTool));
             context.m_DefaultToolStack.Add(MonoScript.FromMonoBehaviour(createPrimitiveTool));
 
-            context2 = ScriptableObject.CreateInstance<EditorVRContext>();
+            context2 = ScriptableObject.CreateInstance<EditorXRContext>();
             context2.name = "Yet Another Context";
             context2.m_DefaultToolStack = context.m_DefaultToolStack;
 
@@ -167,6 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         }
     }
 
-    class SetEditingContextImplementor : ISetEditingContext { }
+    class SetEditingContextImplementor : ISetEditingContext
+    {
+    }
 }
-#endif

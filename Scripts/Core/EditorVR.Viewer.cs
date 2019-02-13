@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -100,7 +99,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 VRView.hmdStatusChange -= OnHMDStatusChange;
 
                 var cameraRig = CameraUtils.GetCameraRig();
-                cameraRig.transform.parent = null;
+                if (cameraRig)
+                    cameraRig.transform.parent = null;
 
                 ObjectUtils.Destroy(m_PlayerBody.gameObject);
                 ObjectUtils.Destroy(m_PlayerFloor);
@@ -181,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 var hmdOnlyLayerMask = 0;
-                if (evr.m_PreviewCameraPrefab)
+                if (!Application.isPlaying && evr.m_PreviewCameraPrefab)
                 {
                     var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
                     go.transform.SetParent(CameraUtils.GetCameraRig(), false);
@@ -195,7 +195,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         this.ConnectInterfaces(customPreviewCamera);
                     }
                 }
+#if UNITY_EDITOR
                 VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
+#endif
             }
 
             internal void UpdateCamera()
@@ -339,4 +341,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
+

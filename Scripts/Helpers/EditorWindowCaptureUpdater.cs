@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             var camera = CameraUtils.GetMainCamera();
             if (camera)
             {
-                Plane plane = new Plane(-transform.forward, transform.position);
+                var plane = new Plane(-transform.forward, transform.position);
                 m_EditorWindowCapture.capture = plane.GetSide(camera.transform.position);
             }
 

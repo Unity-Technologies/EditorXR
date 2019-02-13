@@ -1,12 +1,12 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors can get the color of the default ray
-    /// </summary>    public interface IGetDefaultRayColor
+    /// </summary>
+    public interface IGetDefaultRayColor
     {
     }
 
@@ -24,4 +24,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

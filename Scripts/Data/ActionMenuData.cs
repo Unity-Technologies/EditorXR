@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Used for passing action data for menu purposes
@@ -32,4 +31,3 @@ namespace UnityEditor.Experimental.EditorVR
         public string tooltipText { get { return name; } }
     }
 }
-#endif

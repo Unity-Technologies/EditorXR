@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+﻿#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Modules;
 
 namespace UnityEditor.Experimental.EditorVR.Core

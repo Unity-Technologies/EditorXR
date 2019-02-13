@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
@@ -95,4 +94,3 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         }
     }
 }
-#endif

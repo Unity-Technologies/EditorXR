@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Attribute used to tag items (tools, actions, etc) that can be added to a "spatial menu"
@@ -24,4 +23,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif
