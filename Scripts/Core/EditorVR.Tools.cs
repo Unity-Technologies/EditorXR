@@ -244,11 +244,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         var currentTool = deviceData.currentTool;
                         var currentToolType = currentTool.GetType();
                         var currentToolIsSelect = currentToolType == typeof(SelectionTool);
-                        var toolsMenu = deviceData.toolsMenu;
                         var setSelectAsCurrentToolOnDespawn = toolType == typeof(SelectionTool) && !currentToolIsSelect;
+                        var toolsMenu = deviceData.toolsMenu;
 
                         // If this tool was on the current device already, remove it, if it is selected while already being the current tool
-                        var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentToolOnDespawn; // || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
+                        var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentToolOnDespawn;
                         if (currentTool != null && despawn)
                         {
                             DespawnTool(deviceData, currentTool);
