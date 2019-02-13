@@ -50,7 +50,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var availableContexts = GetAvailableEditingContexts();
                 var context = availableContexts.Find(c => c.Equals(s_DefaultContext)) ?? availableContexts.First();
 
-                // TODO: Fix context switching while EXR is running
                 var defaultContextName = settings.defaultContextName;
                 if (!string.IsNullOrEmpty(defaultContextName))
                 {
@@ -109,9 +108,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static void OnVRViewDisabled()
         {
-            ObjectUtils.Destroy(s_Instance.gameObject);
-            if (s_InputManager)
-                ObjectUtils.Destroy(s_InputManager.gameObject);
+                ObjectUtils.Destroy(s_Instance.gameObject);
+                if (s_InputManager)
+                    ObjectUtils.Destroy(s_InputManager.gameObject);
         }
 
 #if UNITY_EDITOR
@@ -290,7 +289,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 throw new Exception("You can't start EditorXR without at least one context. Try re-importing the package or use version control to restore the default context asset");
 
 #if UNITY_EDITOR
-            // TODO: Fix context switching while EXR is running
             if (s_AvailableContexts.Count > 1)
                 VRView.afterOnGUI += OnVRViewGUI;
 #endif
@@ -303,7 +301,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 SetEditingContext(defaultContext);
             }
         }
-
 
 #if UNITY_EDITOR
         void OnVRViewGUI(VRView view)
