@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_CameraForwardCurrent = Vector3.Lerp(m_CameraForwardCurrent, m_CameraForwardTarget, Time.unscaledDeltaTime * kLerpMultiplier);
             transform.forward = m_CameraForwardCurrent;
 
-            const float kAllowedDegreeOfGazeDivergence = 25f;
+            const float kAllowedDegreeOfGazeDivergence = 55f;
             var visible = !this.IsAboveDivergenceThreshold(transform, kAllowedDegreeOfGazeDivergence);
 
             if (m_Visible != visible)
@@ -65,8 +65,8 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             if (visible)
                 yield return new WaitForSeconds(m_Delay);
 
-            const float hidingSpeedMultiplier = 4f;
-            const float showingSpeedMultiplier = 0.5f;
+            const float hidingSpeedMultiplier = 8f;
+            const float showingSpeedMultiplier = 1.25f;
             var durationMultiplier = visible ? showingSpeedMultiplier : hidingSpeedMultiplier;
             var currentCanvasGroupAlpha = m_CanvasGroup.alpha;
             var targetCanvasGroupAlpha = visible ? 1f : 0f;
