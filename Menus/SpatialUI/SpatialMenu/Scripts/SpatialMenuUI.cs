@@ -479,6 +479,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void SelectCurrentlyHighlightedElement(Node node)
         {
+            // In the case of a ray-based selection, don't process the selection of a currently highlighted element assigned via another input-mode
+            if (m_SpatialInterfaceInputMode == SpatialInterfaceInputMode.Ray)
+                return;
+
             if (m_CurrentlyHighlightedMenuElement != null)
             {
                 // Spatial/cyclical/trackpad/thumbstick selection will set this reference
