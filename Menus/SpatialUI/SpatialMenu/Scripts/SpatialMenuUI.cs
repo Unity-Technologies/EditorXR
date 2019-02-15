@@ -258,9 +258,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
+        void Awake()
+        {
+            m_Visible = true;
+            visible = false;
+        }
+
         void Start()
         {
-            visible = false;
             m_ReturnToPreviousBackgroundMaterial = MaterialUtils.GetMaterialClone(m_ReturnToPreviousBackgroundRenderer);
             m_ReturnToPreviousBackgroundRenderer.material = m_ReturnToPreviousBackgroundMaterial;
             m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", 0);
