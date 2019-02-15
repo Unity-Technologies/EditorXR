@@ -488,7 +488,24 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             // In the case of a ray-based selection, don't process the selection of a currently highlighted element assigned via another input-mode
             if (m_SpatialInterfaceInputMode == SpatialInterfaceInputMode.Ray)
-                return;
+            {
+                var rayHoveringButton = false;
+                for (int i = 0; i < m_CurrentlyDisplayedMenuElements.Count; ++i)
+                {
+                    if (m_CurrentlyDisplayedMenuElements[i] != null)
+                    {
+                        rayHoveringButton = m_CurrentlyDisplayedMenuElements[i].hoveringNode != Node.None;
+                        if (rayHoveringButton)
+                        {
+                            rayHoveringButton = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (rayHoveringButton)
+                    return;
+            }
 
             if (m_CurrentlyHighlightedMenuElement != null)
             {
