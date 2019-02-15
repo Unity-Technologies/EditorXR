@@ -496,10 +496,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     {
                         rayHoveringButton = m_CurrentlyDisplayedMenuElements[i].hoveringNode != Node.None;
                         if (rayHoveringButton)
-                        {
-                            rayHoveringButton = true;
                             break;
-                        }
                     }
                 }
 
