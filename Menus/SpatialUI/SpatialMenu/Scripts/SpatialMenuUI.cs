@@ -388,6 +388,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_HomeSectionDescription.gameObject.SetActive(true);
 
             m_CurrentlyDisplayedMenuElements.Clear();
+            var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( x => x != m_SubMenuContainer);
+            foreach (var child in deleteOldChildren)
+            {
+                if (child != null && child.gameObject != null)
+                    ObjectUtils.Destroy(child.gameObject);
+            }
+
             var homeMenuElementParent = (RectTransform)m_HomeMenuLayoutGroup.transform;
             foreach (var data in spatialMenuData)
             {
