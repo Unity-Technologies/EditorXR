@@ -508,20 +508,34 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 // Spatial/cyclical/trackpad/thumbstick selection will set this reference
                 m_CurrentlyHighlightedMenuElement.selected(node);
+                for (int i = 0; i < m_CurrentlyDisplayedMenuElements.Count; ++i)
+                {
+                    if (m_CurrentlyDisplayedMenuElements[i] != null)
+                        m_CurrentlyDisplayedMenuElements[i].highlighted = false;
+                }
             }
             else
             {
                 // Search for an element that is being hovered,
                 // if no currentlyHighlightedMenuElement was assigned via a spatial/cyclical input means
+                var highlightedButtonFound = false;
                 for (int i = 0; i < m_CurrentlyDisplayedMenuElements.Count; ++i)
                 {
                     if (m_CurrentlyDisplayedMenuElements[i] != null)
                     {
-                        var highlighted = m_CurrentlyDisplayedMenuElements[i].highlighted;
-                        if (highlighted)
+                        if (!highlightedButtonFound)
                         {
-                            m_CurrentlyDisplayedMenuElements[i].selected(node);
-                            return;
+                            var highlighted = m_CurrentlyDisplayedMenuElements[i].highlighted;
+                            if (highlighted)
+                            {
+                                highlightedButtonFound = true;
+                                m_CurrentlyDisplayedMenuElements[i].selected(node);
+                                m_CurrentlyDisplayedMenuElements[i].highlighted = false;
+                            }
+                        }
+                        else
+                        {
+                            m_CurrentlyDisplayedMenuElements[i].highlighted = false;
                         }
                     }
                 }
