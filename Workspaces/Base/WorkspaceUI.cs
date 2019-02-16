@@ -346,6 +346,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     handle.gameObject.SetActive(!value);
                 }
+
+                m_ResizeButton.gameObject.SetActive(!value);
             }
         }
 
