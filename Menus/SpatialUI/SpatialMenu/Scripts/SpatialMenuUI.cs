@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// The SpatialMenu's UI/View-controller
     /// Drives the SpatialMenu visuals elements
     /// </summary>
-    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
+    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IDetectGazeDivergence, IConnectInterfaces, IUsesRaycastResults
     {
         const float k_AllowedGazeDivergence = 45f;
         const float k_AllowedMaxHMDDistanceDivergence = 0.95f; // Distance at which the menu will move towards
@@ -25,6 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const bool k_AlwaysRepositionIfOutOfFocus = true;
         const string k_ExternalRayBasedInputModeName = "Ray Input Mode";
         const string k_TriggerRotationInputModeName = "Thumb Rotation Input Mode";
+
+        [SerializeField]
+        float m_AdaptiveRepositionRate = 1f;
 
         [Header("Common UI")]
         [SerializeField]
@@ -299,6 +302,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             // Manually set the backer bool to true, in order to perform a manual hiding of the menu in this case
             m_Visible = true;
             visible = false;
+
+            this.SetDivergenceRecoverySpeed(m_AdaptiveRepositionRate);
         }
 
         void Reset()
