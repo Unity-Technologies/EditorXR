@@ -26,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const string k_ExternalRayBasedInputModeName = "Ray Input Mode";
         const string k_TriggerRotationInputModeName = "Thumb Rotation Input Mode";
 
+        [Tooltip("Scales the amount of delay before the menu will reposition itself (higher is faster)")]
         [SerializeField]
         float m_AdaptiveRepositionRate = 1f;
 
