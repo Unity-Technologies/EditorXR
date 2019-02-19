@@ -22,10 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public int selectedFolder
         {
-            get
-            {
-                return m_SelectedFolder ?? 0;
-            }
+            get { return m_SelectedFolder ?? 0; }
             set { SelectFolder(value); }
         }
 

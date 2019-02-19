@@ -446,6 +446,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var cameraPosition = camera.transform.position;
                 var matrix = camera.worldToCameraMatrix;
 
+                // Include inactive children to avoid constantly polling for manipulators until first selection is made
                 if (!m_StandardManipulator)
                 {
                     m_StandardManipulator = evr.GetComponentInChildren<StandardManipulator>(true);
