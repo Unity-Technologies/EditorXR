@@ -34,6 +34,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static EditingContextManagerSettings s_Settings;
         static UnityObject s_DefaultContext;
         static bool s_AutoOpened;
+        static bool s_UserWasPresent;
+        static bool s_EnableXRFailed;
 
         string[] m_ContextNames;
         int m_SelectedContextIndex;
@@ -94,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             VRView.viewEnabled += OnVRViewEnabled;
             VRView.viewDisabled += OnVRViewDisabled;
             EditorApplication.update += ReopenOnExitPlaymode;
-            EditorApplication.update += OpenIfUserPresent;
+            OnAutoOpenStateChanged();
         }
 #endif
 
@@ -108,9 +110,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static void OnVRViewDisabled()
         {
-                ObjectUtils.Destroy(s_Instance.gameObject);
-                if (s_InputManager)
-                    ObjectUtils.Destroy(s_InputManager.gameObject);
+            s_AutoOpened = false;
+            ObjectUtils.Destroy(s_Instance.gameObject);
+            if (s_InputManager)
+                ObjectUtils.Destroy(s_InputManager.gameObject);
         }
 
 #if UNITY_EDITOR
@@ -139,12 +142,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static void PreferencesGUI()
         {
             EditorGUILayout.LabelField("Context Manager", EditorStyles.boldLabel);
+
             // Auto open an EditorXR context
             {
                 const string title = "Auto open";
                 const string tooltip = "Automatically open an EditorXR context when the HMD is being worn";
 
-                autoOpen = EditorGUILayout.Toggle(new GUIContent(title, tooltip), autoOpen);
+                using (var change = new EditorGUI.ChangeCheckScope())
+                {
+                    autoOpen = EditorGUILayout.Toggle(new GUIContent(title, tooltip), autoOpen);
+
+                    if (change.changed)
+                        OnAutoOpenStateChanged();
+
+                    if (s_EnableXRFailed)
+                    {
+                        const float retryButtonWidth = 70f;
+                        EditorGUILayout.HelpBox("Failed to initialize XR session. Check that your device and platform software are working properly.", MessageType.Warning);
+                        if (GUILayout.Button("Retry", GUILayout.Width(retryButtonWidth)))
+                        {
+                            s_EnableXRFailed = false;
+                            OnAutoOpenStateChanged();
+                        }
+                    }
+                }
             }
 
             var contextTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
@@ -161,36 +182,64 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        static void OpenIfUserPresent()
+        static void OnAutoOpenStateChanged()
         {
             if (autoOpen)
             {
-                var view = VRView.activeView;
-                if (!s_AutoOpened && ShouldShowEditorVR() && !view)
-                {
-                    if (!XRSettings.enabled)
-                    {
-                        XRSettings.enabled = true;
-                        if (!XRSettings.enabled)
-                        {
-                            // Initialization failed, so don't keep trying
-                            EditorApplication.update -= OpenIfUserPresent;
-                            return;
-                        }
-                    }
+                s_AutoOpened = false;
+                s_UserWasPresent = false;
+                s_EnableXRFailed = false;
+                EditorApplication.update += OpenIfUserPresent;
+            }
+            else
+            {
+                EditorApplication.update -= OpenIfUserPresent;
+                XRSettings.enabled = false;
+                s_AutoOpened = false;
+                s_UserWasPresent = false;
+                s_EnableXRFailed = false;
+            }
+        }
 
-                    if (VRView.GetIsUserPresent())
-                    {
-                        s_AutoOpened = true;
-                        EditorApplication.delayCall += ShowEditorVR;
-                    }
-                }
-                else if (s_AutoOpened && view && !VRView.GetIsUserPresent())
+        static void OpenIfUserPresent()
+        {
+            if (EditorApplication.isCompiling)
+                return;
+
+            if (!ShouldShowEditorVR())
+                return;
+
+            if (!XRSettings.enabled)
+            {
+                XRSettings.enabled = true;
+                if (!XRSettings.enabled)
                 {
-                    s_AutoOpened = false;
-                    EditorApplication.delayCall += view.Close;
+                    // Initialization failed, so don't keep trying
+                    EditorApplication.update -= OpenIfUserPresent;
+                    s_EnableXRFailed = true;
+                    return;
                 }
             }
+
+            s_EnableXRFailed = false;
+
+            if (EditorWindow.mouseOverWindow == null)
+                return;
+
+            var userPresent = VRView.GetIsUserPresent();
+            var view = VRView.activeView;
+            if (!s_UserWasPresent && userPresent && !view && !s_AutoOpened)
+            {
+                s_AutoOpened = true;
+                EditorApplication.delayCall += ShowEditorVR;
+            }
+            else if (s_UserWasPresent && view && !userPresent && s_AutoOpened)
+            {
+                s_AutoOpened = false;
+                EditorApplication.delayCall += view.Close;
+            }
+
+            s_UserWasPresent = userPresent;
         }
 
         // Life cycle management across playmode switches is an odd beast indeed, and there is a need to reliably relaunch
