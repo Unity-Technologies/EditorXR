@@ -1,105 +1,156 @@
-﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics, IRayToNode
-	{
-		[SerializeField]
-		HapticPulse m_HoverPulse;
+    sealed class SelectionModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking, ISelectionChanged,
+        IControlHaptics, IRayToNode, IContainsVRPlayerCompletely
+    {
+        [SerializeField]
+        HapticPulse m_HoverPulse;
 
-		GameObject m_CurrentGroupRoot;
-		readonly List<Object> m_SelectedObjects = new List<Object>(); // Keep the list to avoid allocations--we do not use it to maintain state
+        GameObject m_CurrentGroupRoot;
+        readonly Dictionary<GameObject, GameObject> m_GroupMap = new Dictionary<GameObject, GameObject>(); // Maps objects to their group parent
 
-		public Func<GameObject, GameObject> getGroupRoot { private get; set; }
-		public Func<GameObject, bool> overrideSelectObject { private get; set; }
+        public Func<GameObject, bool> overrideSelectObject { private get; set; }
 
-		public event Action<Transform> selected;
+        public event Action<Transform> selected;
 
-		public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
-		{
-			// If we can't even select the object we're starting with, then skip any further logic
-			if (!CanSelectObject(hoveredObject, false))
-				return null;
+        // Local method use only -- created here to reduce garbage collection
+        static readonly HashSet<Object> k_SelectedObjects = new HashSet<Object>();
+        static readonly List<GameObject> k_SingleObjectList = new List<GameObject>();
+        readonly List<Transform> m_Transforms = new List<Transform>();
 
-			// By default the selection candidate would be the same object passed in
-			if (!useGrouping)
-				return hoveredObject;
+        public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
+        {
+            // If we can't even select the object we're starting with, then skip any further logic
+            if (!CanSelectObject(hoveredObject, false))
+                return null;
 
-			// Only offer up the group root as the selection on first selection; Subsequent selections would allow children from the group
-			var groupRoot = getGroupRoot(hoveredObject);
-			if (groupRoot && groupRoot != m_CurrentGroupRoot && CanSelectObject(groupRoot, false))
-				return groupRoot;
-			
-			return hoveredObject;
-		}
+            // By default the selection candidate would be the same object passed in
+            if (!useGrouping)
+                return hoveredObject;
 
-		bool CanSelectObject(GameObject hoveredObject, bool useGrouping)
-		{
-			if (this.IsLocked(hoveredObject))
-				return false;
+            // Only offer up the group root as the selection on first selection; Subsequent selections would allow children from the group
+            var groupRoot = GetGroupRoot(hoveredObject);
+            if (groupRoot && groupRoot != m_CurrentGroupRoot && CanSelectObject(groupRoot, false))
+                return groupRoot;
 
-			if (hoveredObject != null)
-			{
-				if (!hoveredObject.activeInHierarchy)
-					return false;
+            return hoveredObject;
+        }
 
-				if (useGrouping)
-					return CanSelectObject(GetSelectionCandidate(hoveredObject, true), false);
-			}
+        bool CanSelectObject(GameObject hoveredObject, bool useGrouping)
+        {
+            if (this.IsLocked(hoveredObject))
+                return false;
 
-			return true;
-		}
+            if (hoveredObject != null)
+            {
+                if (!hoveredObject.activeInHierarchy)
+                    return false;
 
-		public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
-		{
-			if (overrideSelectObject(hoveredObject))
-				return;
+                if (this.ContainsVRPlayerCompletely(hoveredObject))
+                    return false;
 
-			var selection = GetSelectionCandidate(hoveredObject, useGrouping);
+                if (useGrouping)
+                    return CanSelectObject(GetSelectionCandidate(hoveredObject, true), false);
+            }
 
-			var groupRoot = getGroupRoot(hoveredObject);
-			if (useGrouping && groupRoot != m_CurrentGroupRoot)
-				m_CurrentGroupRoot = groupRoot;
+            return true;
+        }
 
-			m_SelectedObjects.Clear();
+        public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
+        {
+            k_SingleObjectList.Clear();
+            k_SingleObjectList.Add(hoveredObject);
+            SelectObjects(k_SingleObjectList, rayOrigin, multiSelect, useGrouping);
+        }
 
-			if (hoveredObject)
-				this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_HoverPulse);
+        public void SelectObjects(List<GameObject> hoveredObjects, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
+        {
+            if (hoveredObjects == null || hoveredObjects.Count == 0)
+            {
+                if (!multiSelect)
+                    Selection.activeObject = null;
 
-			// Multi-Select
-			if (multiSelect)
-			{
-				m_SelectedObjects.AddRange(Selection.objects);
-				// Re-selecting an object removes it from selection
-				if (!m_SelectedObjects.Remove(selection))
-				{
-					m_SelectedObjects.Add(selection);
-					Selection.activeObject = selection;
-				}
-			}
-			else
-			{
-				m_SelectedObjects.Clear();
-				Selection.activeObject = selection;
-				m_SelectedObjects.Add(selection);
-			}
+                return;
+            }
 
-			Selection.objects = m_SelectedObjects.ToArray();
-			if (selected != null)
-				selected(rayOrigin);
-		}
+            k_SelectedObjects.Clear();
 
-		public void OnSelectionChanged()
-		{
-			// Selection can change outside of this module, so stay in sync
-			if (Selection.objects.Length == 0)
-				m_CurrentGroupRoot = null;
-		}
-	}
-}
+            if (multiSelect)
+                k_SelectedObjects.UnionWith(Selection.objects);
+
+            Selection.activeGameObject = hoveredObjects[0];
+
+            if (Selection.activeGameObject)
+                this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_HoverPulse);
+
+            foreach (var hoveredObject in hoveredObjects)
+            {
+                if (overrideSelectObject(hoveredObject))
+                    continue;
+
+                var selection = GetSelectionCandidate(hoveredObject, useGrouping);
+
+                var groupRoot = GetGroupRoot(hoveredObject);
+                if (useGrouping && groupRoot != m_CurrentGroupRoot)
+                    m_CurrentGroupRoot = groupRoot;
+
+                if (multiSelect)
+                {
+                    // Re-selecting an object removes it from selection, otherwise add it
+                    if (!k_SelectedObjects.Remove(selection))
+                        k_SelectedObjects.Add(selection);
+                }
+                else
+                {
+                    k_SelectedObjects.Add(selection);
+                }
+            }
+
+            Selection.objects = k_SelectedObjects.ToArray();
+            if (selected != null)
+                selected(rayOrigin);
+        }
+
+        public void OnSelectionChanged()
+        {
+            // Selection can change outside of this module, so stay in sync
+            if (Selection.objects.Length == 0)
+                m_CurrentGroupRoot = null;
+        }
+
+        GameObject GetGroupRoot(GameObject hoveredObject)
+        {
+            if (!hoveredObject)
+                return null;
+
+            GameObject groupParent;
+            if (m_GroupMap.TryGetValue(hoveredObject, out groupParent))
+                return groupParent;
+
+#if UNITY_EDITOR
+            var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
+
+            if (groupRoot)
+                return groupRoot;
 #endif
+
+            return null;
+        }
+
+        public void MakeGroup(GameObject parent)
+        {
+            parent.GetComponentsInChildren(m_Transforms);
+            foreach (var child in m_Transforms)
+            {
+                m_GroupMap[child.gameObject] = parent;
+            }
+        }
+    }
+}

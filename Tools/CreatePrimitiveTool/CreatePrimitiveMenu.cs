@@ -1,54 +1,91 @@
-#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu
-	{
-		[SerializeField]
-		GameObject[] m_HighlightObjects;
+    sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu, IControlHaptics, IRayToNode
+    {
+        const int k_Priority = 1;
+        const string k_BottomGradientProperty = "_ColorBottom";
+        const string k_TopGradientProperty = "_ColorTop";
 
-		public Action<PrimitiveType, bool> selectPrimitive;
-		public Action close;
+        [SerializeField]
+        Renderer m_TitleIcon;
 
-		public float hideDistance {get { return Mathf.Infinity; } }
+        [SerializeField]
+        MainMenuButton[] m_Buttons;
 
-		public bool visible
-		{
-			get { return gameObject.activeSelf; }
-			set { gameObject.SetActive(value); }
-		}
+        [SerializeField]
+        HapticPulse m_ButtonClickPulse;
 
-		public GameObject menuContent
-		{
-			get { return gameObject; }
-		}
+        [SerializeField]
+        HapticPulse m_ButtonHoverPulse;
 
-		public void SelectPrimitive(int type)
-		{
-			selectPrimitive((PrimitiveType)type, false);
+        Material m_TitleIconMaterial;
 
-			// the order of the objects in m_HighlightObjects is matched to the values of the PrimitiveType enum elements
-			for (var i = 0; i < m_HighlightObjects.Length; i++)
-			{
-				var go = m_HighlightObjects[i];
-				go.SetActive(i == type);
-			}
-		}
+        public Action<PrimitiveType, bool> selectPrimitive;
+        public Action close;
 
-		public void SelectFreeformCuboid()
-		{
-			selectPrimitive(PrimitiveType.Cube, true);
+        public Bounds localBounds { get; private set; }
+        public int priority { get { return k_Priority; } }
 
-			foreach (GameObject go in m_HighlightObjects)
-				go.SetActive(false);
-		}
+        public MenuHideFlags menuHideFlags
+        {
+            get { return gameObject.activeSelf ? 0 : MenuHideFlags.Hidden; }
+            set { gameObject.SetActive(value == 0); }
+        }
 
-		public void Close()
-		{
-			close();
-		}
-	}
+        public GameObject menuContent { get { return gameObject; } }
+
+        void Awake()
+        {
+            localBounds = ObjectUtils.GetBounds(transform);
+            m_TitleIconMaterial = MaterialUtils.GetMaterialClone(m_TitleIcon);
+            m_TitleIconMaterial.SetColor(k_TopGradientProperty, UnityBrandColorScheme.saturatedSessionGradient.a);
+            m_TitleIconMaterial.SetColor(k_BottomGradientProperty, UnityBrandColorScheme.saturatedSessionGradient.b);
+
+            foreach (var button in m_Buttons)
+            {
+                button.hovered += OnButtonHovered;
+                button.clicked += OnButtonClicked;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            foreach (var button in m_Buttons)
+            {
+                button.hovered -= OnButtonHovered;
+                button.clicked -= OnButtonClicked;
+            }
+        }
+
+        public void SelectPrimitive(int type)
+        {
+            selectPrimitive((PrimitiveType)type, false);
+        }
+
+        public void SelectFreeformCuboid()
+        {
+            selectPrimitive(PrimitiveType.Cube, true);
+        }
+
+        public void Close()
+        {
+            close();
+        }
+
+        void OnButtonClicked(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+        }
+
+        void OnButtonHovered(Transform rayOrigin, Type buttonType, string buttonDescription)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+        }
+    }
 }
-#endif

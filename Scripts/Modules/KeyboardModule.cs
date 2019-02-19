@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -8,105 +7,113 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class KeyboardModule : MonoBehaviour, IRegisterRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
-	{
-		[SerializeField]
-		KeyboardMallet m_KeyboardMalletPrefab;
+    sealed class KeyboardModule : MonoBehaviour, ISystemModule, IRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
+    {
+        [SerializeField]
+        KeyboardMallet m_KeyboardMalletPrefab;
 
-		[SerializeField]
-		KeyboardUI m_NumericKeyboardPrefab;
+        [SerializeField]
+        KeyboardUI m_NumericKeyboardPrefab;
 
-		[SerializeField]
-		KeyboardUI m_StandardKeyboardPrefab;
+        [SerializeField]
+        KeyboardUI m_StandardKeyboardPrefab;
 
-		readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
-		KeyboardUI m_NumericKeyboard;
-		KeyboardUI m_StandardKeyboard;
+        readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
+        KeyboardUI m_NumericKeyboard;
+        KeyboardUI m_StandardKeyboard;
 
-		public KeyboardUI SpawnNumericKeyboard()
-		{
-			if (m_StandardKeyboard != null)
-				m_StandardKeyboard.gameObject.SetActive(false);
+        ForEachRayOriginCallback m_UpdateKeyboardMallets;
 
-			// Check if the prefab has already been instantiated
-			if (m_NumericKeyboard == null)
-			{
-				m_NumericKeyboard = ObjectUtils.Instantiate(m_NumericKeyboardPrefab.gameObject, CameraUtils.GetCameraRig(), false).GetComponent<KeyboardUI>();
-				var smoothMotions = m_NumericKeyboard.GetComponentsInChildren<SmoothMotion>(true);
-				foreach (var smoothMotion in smoothMotions)
-				{
-					this.ConnectInterfaces(smoothMotion);
-				}
-			}
+        void Awake()
+        {
+            m_UpdateKeyboardMallets = UpdateKeyboardMallets;
+        }
 
-			return m_NumericKeyboard;
-		}
+        public KeyboardUI SpawnNumericKeyboard()
+        {
+            if (m_StandardKeyboard != null)
+                m_StandardKeyboard.gameObject.SetActive(false);
 
-		public KeyboardUI SpawnAlphaNumericKeyboard()
-		{
-			if (m_NumericKeyboard != null)
-				m_NumericKeyboard.gameObject.SetActive(false);
+            // Check if the prefab has already been instantiated
+            if (m_NumericKeyboard == null)
+            {
+                m_NumericKeyboard = ObjectUtils.Instantiate(m_NumericKeyboardPrefab.gameObject, CameraUtils.GetCameraRig(), false).GetComponent<KeyboardUI>();
+                var smoothMotions = m_NumericKeyboard.GetComponentsInChildren<SmoothMotion>(true);
+                foreach (var smoothMotion in smoothMotions)
+                {
+                    this.ConnectInterfaces(smoothMotion);
+                }
+            }
 
-			// Check if the prefab has already been instantiated
-			if (m_StandardKeyboard == null)
-			{
-				m_StandardKeyboard = ObjectUtils.Instantiate(m_StandardKeyboardPrefab.gameObject, CameraUtils.GetCameraRig(), false).GetComponent<KeyboardUI>();
-				var smoothMotions = m_StandardKeyboard.GetComponentsInChildren<SmoothMotion>(true);
-				foreach (var smoothMotion in smoothMotions)
-				{
-					this.ConnectInterfaces(smoothMotion);
-				}
-			}
+            return m_NumericKeyboard;
+        }
 
-			return m_StandardKeyboard;
-		}
+        public KeyboardUI SpawnAlphaNumericKeyboard()
+        {
+            if (m_NumericKeyboard != null)
+                m_NumericKeyboard.gameObject.SetActive(false);
 
-		public void SpawnKeyboardMallet(Transform rayOrigin)
-		{
-			var malletTransform = ObjectUtils.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOrigin).transform;
-			malletTransform.position = rayOrigin.position;
-			malletTransform.rotation = rayOrigin.rotation;
-			var mallet = malletTransform.GetComponent<KeyboardMallet>();
-			mallet.gameObject.SetActive(false);
-			m_KeyboardMallets.Add(rayOrigin, mallet);
-		}
+            // Check if the prefab has already been instantiated
+            if (m_StandardKeyboard == null)
+            {
+                m_StandardKeyboard = ObjectUtils.Instantiate(m_StandardKeyboardPrefab.gameObject, CameraUtils.GetCameraRig(), false).GetComponent<KeyboardUI>();
+                var smoothMotions = m_StandardKeyboard.GetComponentsInChildren<SmoothMotion>(true);
+                foreach (var smoothMotion in smoothMotions)
+                {
+                    this.ConnectInterfaces(smoothMotion);
+                }
+            }
 
-		public void UpdateKeyboardMallets()
-		{
-			this.ForEachRayOrigin(rayOrigin =>
-			{
-				var malletVisible = true;
-				var numericKeyboardNull = false;
-				var standardKeyboardNull = false;
+            return m_StandardKeyboard;
+        }
 
-				if (m_NumericKeyboard != null)
-					malletVisible = m_NumericKeyboard.ShouldShowMallet(rayOrigin);
-				else
-					numericKeyboardNull = true;
+        public void SpawnKeyboardMallet(Transform rayOrigin)
+        {
+            var malletTransform = ObjectUtils.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOrigin).transform;
+            malletTransform.position = rayOrigin.position;
+            malletTransform.rotation = rayOrigin.rotation;
+            var mallet = malletTransform.GetComponent<KeyboardMallet>();
+            mallet.gameObject.SetActive(false);
+            m_KeyboardMallets.Add(rayOrigin, mallet);
+        }
 
-				if (m_StandardKeyboard != null)
-					malletVisible = malletVisible || m_StandardKeyboard.ShouldShowMallet(rayOrigin);
-				else
-					standardKeyboardNull = true;
+        public void UpdateKeyboardMallets()
+        {
+            this.ForEachRayOrigin(m_UpdateKeyboardMallets);
+        }
 
-				if (numericKeyboardNull && standardKeyboardNull)
-					malletVisible = false;
+        void UpdateKeyboardMallets(Transform rayOrigin)
+        {
+            var malletVisible = true;
+            var numericKeyboardNull = false;
+            var standardKeyboardNull = false;
 
-				var mallet = m_KeyboardMallets[rayOrigin];
+            if (m_NumericKeyboard != null)
+                malletVisible = m_NumericKeyboard.ShouldShowMallet(rayOrigin);
+            else
+                numericKeyboardNull = true;
 
-				if (mallet.visible != malletVisible)
-				{
-					mallet.visible = malletVisible;
-					if (malletVisible)
-						this.RegisterRayVisibilitySettings(rayOrigin, this, false, false);
-					else
-						this.UnregisterRayVisibilitySettings(rayOrigin, this);
-				}
+            if (m_StandardKeyboard != null)
+                malletVisible = malletVisible || m_StandardKeyboard.ShouldShowMallet(rayOrigin);
+            else
+                standardKeyboardNull = true;
 
-				// TODO remove this after physics is in
-				mallet.CheckForKeyCollision();
-			});
-		}
-	}
+            if (numericKeyboardNull && standardKeyboardNull)
+                malletVisible = false;
+
+            var mallet = m_KeyboardMallets[rayOrigin];
+
+            if (mallet.visible != malletVisible)
+            {
+                mallet.visible = malletVisible;
+                if (malletVisible)
+                    this.AddRayVisibilitySettings(rayOrigin, this, false, false);
+                else
+                    this.RemoveRayVisibilitySettings(rayOrigin, this);
+            }
+
+            // TODO remove this after physics is in
+            mallet.CheckForKeyCollision();
+        }
+    }
 }
-#endif

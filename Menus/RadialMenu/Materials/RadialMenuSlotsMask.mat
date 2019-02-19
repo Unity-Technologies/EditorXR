@@ -4,14 +4,15 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: RadialMenuSlotsMask
   m_Shader: {fileID: 4800000, guid: da29182e4499c6740bf4e5dc3198313a, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
-  m_CustomRenderQueue: -1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 9499
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
@@ -73,6 +74,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _StencilRef: 3
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

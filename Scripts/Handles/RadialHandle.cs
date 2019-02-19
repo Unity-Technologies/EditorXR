@@ -1,4 +1,3 @@
-﻿#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -6,63 +5,69 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Handles
 {
-	sealed class RadialHandle : BaseHandle
-	{
-		internal class RadialHandleEventData : HandleEventData
-		{
-			public Vector3 raycastHitWorldPosition;
+    sealed class RadialHandle : BaseHandle
+    {
+        internal class RadialHandleEventData : HandleEventData
+        {
+            public Vector3 raycastHitWorldPosition;
 
-			public RadialHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) { }
-		}
+            public RadialHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) {}
+        }
 
-		[SerializeField]
-		float m_TurnSpeed;
+        [SerializeField]
+        float m_TurnSpeed;
 
-		Plane m_Plane;
-		readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
-		readonly Dictionary<Transform, Vector3> m_LastDragForwards = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
+        Plane m_Plane;
+        readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
+        readonly Dictionary<Transform, Vector3> m_LastDragForwards = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
 
-		protected override HandleEventData GetHandleEventData(RayEventData eventData)
-		{
-			return new RadialHandleEventData(eventData.rayOrigin, UIUtils.IsDirectEvent(eventData)) { raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition };
-		}
+        // Local method use only -- created here to reduce garbage collection
+        static readonly RadialHandleEventData k_RadialHandleEventData = new RadialHandleEventData(null, false);
 
-		protected override void OnHandleDragStarted(HandleEventData eventData)
-		{
-			var rayOrigin = eventData.rayOrigin;
+        protected override HandleEventData GetHandleEventData(RayEventData eventData)
+        {
+            k_RadialHandleEventData.rayOrigin = eventData.rayOrigin;
+            k_RadialHandleEventData.direct = UIUtils.IsDirectEvent(eventData);
+            k_RadialHandleEventData.raycastHitWorldPosition = eventData.pointerCurrentRaycast.worldPosition;
 
-			var radialEventData = (RadialHandleEventData)eventData;
-			m_LastPositions[rayOrigin] = radialEventData.raycastHitWorldPosition;
-			m_LastDragForwards[rayOrigin] = rayOrigin.forward;
+            return k_RadialHandleEventData;
+        }
 
-			m_Plane.SetNormalAndPosition(rayOrigin.forward, transform.position);
+        protected override void OnHandleDragStarted(HandleEventData eventData)
+        {
+            var rayOrigin = eventData.rayOrigin;
 
-			base.OnHandleDragStarted(eventData);
-		}
+            var radialEventData = (RadialHandleEventData)eventData;
+            m_LastPositions[rayOrigin] = radialEventData.raycastHitWorldPosition;
+            m_LastDragForwards[rayOrigin] = rayOrigin.forward;
 
-		protected override void OnHandleDragging(HandleEventData eventData)
-		{
-			var rayOrigin = eventData.rayOrigin;
+            m_Plane.SetNormalAndPosition(rayOrigin.forward, transform.position);
 
-			var lastPosition = m_LastPositions[rayOrigin];
-			var lastDragForward = m_LastDragForwards[rayOrigin];
-			var worldPosition = lastPosition;
+            base.OnHandleDragStarted(eventData);
+        }
 
-			float distance;
-			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-			if (m_Plane.Raycast(ray, out distance))
-				worldPosition = ray.GetPoint(Mathf.Abs(distance));
+        protected override void OnHandleDragging(HandleEventData eventData)
+        {
+            var rayOrigin = eventData.rayOrigin;
 
-			var dragTangent = Vector3.Cross(transform.up, (startDragPositions[rayOrigin] - transform.position).normalized);
-			var angle = m_TurnSpeed * Vector3.Angle(rayOrigin.forward, lastDragForward) *
-				Vector3.Dot((worldPosition - lastPosition).normalized, dragTangent);
-			eventData.deltaRotation = Quaternion.AngleAxis(angle, transform.up);
-			
-			m_LastPositions[rayOrigin] = worldPosition;
-			m_LastDragForwards[rayOrigin] = rayOrigin.forward;
+            var lastPosition = m_LastPositions[rayOrigin];
+            var lastDragForward = m_LastDragForwards[rayOrigin];
+            var worldPosition = lastPosition;
 
-			base.OnHandleDragging(eventData);
-		}
-	}
+            float distance;
+            var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+            if (m_Plane.Raycast(ray, out distance))
+                worldPosition = ray.GetPoint(Mathf.Abs(distance));
+
+            var dragTangent = Vector3.Cross(transform.up, (startDragPositions[rayOrigin] - transform.position).normalized);
+            var angle = m_TurnSpeed * Vector3.Angle(rayOrigin.forward, lastDragForward) *
+                Vector3.Dot((worldPosition - lastPosition).normalized, dragTangent);
+            eventData.deltaRotation = Quaternion.AngleAxis(angle, transform.up);
+
+            m_LastPositions[rayOrigin] = worldPosition;
+            m_LastDragForwards[rayOrigin] = rayOrigin.forward;
+
+            base.OnHandleDragging(eventData);
+        }
+    }
 }
-#endif

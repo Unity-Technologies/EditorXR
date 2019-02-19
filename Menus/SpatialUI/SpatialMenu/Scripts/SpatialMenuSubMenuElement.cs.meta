@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 88fd014d780d83c429af66de62a08984
+timeCreated: 1519863797
+licenseType: Pro
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_ActionMap: {instanceID: 0}
+  - m_MainCanvasGroup: {instanceID: 0}
+  - m_HomeTextCanvasGroup: {instanceID: 0}
+  - m_HomeTextBackgroundTransform: {instanceID: 0}
+  - m_MenuTitleText: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

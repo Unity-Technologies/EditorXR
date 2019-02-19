@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using ListView;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -8,281 +7,305 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class InspectorListViewController : NestedListViewController<InspectorData, InspectorListItem, int>, IUsesGameObjectLocking, IUsesStencilRef
-	{
-		const string k_MaterialStencilRef = "_StencilRef";
-		const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
+    sealed class InspectorListViewController : NestedListViewController<InspectorData, InspectorListItem, int>, IUsesGameObjectLocking, IUsesStencilRef
+    {
+        const string k_MaterialStencilRef = "_StencilRef";
+        const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
-		[SerializeField]
-		Material m_RowCubeMaterial;
+        [SerializeField]
+        Material m_RowCubeMaterial;
 
-		[SerializeField]
-		Material m_BackingCubeMaterial;
+        [SerializeField]
+        Material m_BackingCubeMaterial;
 
-		[SerializeField]
-		Material m_TextMaterial;
+        [SerializeField]
+        Material m_UIMaterial;
 
-		[SerializeField]
-		Material m_UIMaterial;
+        [SerializeField]
+        Material m_UIMaskMaterial;
 
-		[SerializeField]
-		Material m_UIMaskMaterial;
-		[SerializeField]
-		Material m_NoClipBackingCubeMaterial;
+        [SerializeField]
+        Material m_NoClipBackingCubeMaterial;
 
-		[SerializeField]
-		Material m_HighlightMaterial;
+        [SerializeField]
+        Material m_HighlightMaterial;
 
-		[SerializeField]
-		Material m_HighlightMaskMaterial;
+        [SerializeField]
+        Material m_HighlightMaskMaterial;
 
-		[SerializeField]
-		Material m_NoClipHighlightMaterial;
+        [SerializeField]
+        Material m_NoClipHighlightMaterial;
 
-		[SerializeField]
-		Material m_NoClipHighlightMaskMaterial;
+        [SerializeField]
+        Material m_NoClipHighlightMaskMaterial;
 
-		readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
+        readonly Dictionary<string, Vector3> m_TemplateSizes = new Dictionary<string, Vector3>();
 
-		public override List<InspectorData> data
-		{
-			set
-			{
-				base.data = value;
-				m_ExpandStates.Clear();
+        public override List<InspectorData> data
+        {
+            set
+            {
+                base.data = value;
+                m_ExpandStates.Clear();
 
-				ExpandComponentRows(data);
-			}
-		}
+                ExpandComponentRows(data);
+            }
+        }
 
-		public byte stencilRef { get; set; }
+        public byte stencilRef { get; set; }
 
-		public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
+        public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
 
-		protected override void Setup()
-		{
-			base.Setup();
+        protected override void Setup()
+        {
+            base.Setup();
 
-			m_RowCubeMaterial = Instantiate(m_RowCubeMaterial);
-			m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
-			m_TextMaterial = Instantiate(m_TextMaterial);
-			m_TextMaterial.SetInt(k_MaterialStencilRef, stencilRef);
-			m_UIMaterial = Instantiate(m_UIMaterial);
-			m_UIMaterial.SetInt(k_MaterialStencilRef, stencilRef);
-			m_UIMaskMaterial = Instantiate(m_UIMaskMaterial);
-			m_UIMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+            m_RowCubeMaterial = Instantiate(m_RowCubeMaterial);
+            m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
+            m_UIMaterial = Instantiate(m_UIMaterial);
+            m_UIMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+            m_UIMaskMaterial = Instantiate(m_UIMaskMaterial);
+            m_UIMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 
-			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
-			m_HighlightMaterial.SetInt(k_MaterialStencilRef, stencilRef);
-			m_HighlightMaskMaterial = Instantiate(m_HighlightMaskMaterial);
-			m_HighlightMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+            m_HighlightMaterial = Instantiate(m_HighlightMaterial);
+            m_HighlightMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+            m_HighlightMaskMaterial = Instantiate(m_HighlightMaskMaterial);
+            m_HighlightMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
 
-			m_NoClipBackingCubeMaterial = Instantiate(m_NoClipBackingCubeMaterial);
-			m_NoClipHighlightMaterial = Instantiate(m_NoClipHighlightMaterial);
-			m_NoClipHighlightMaskMaterial = Instantiate(m_NoClipHighlightMaskMaterial);
+            m_NoClipBackingCubeMaterial = Instantiate(m_NoClipBackingCubeMaterial);
+            m_NoClipHighlightMaterial = Instantiate(m_NoClipHighlightMaterial);
+            m_NoClipHighlightMaskMaterial = Instantiate(m_NoClipHighlightMaskMaterial);
 
-			foreach (var template in m_TemplateDictionary)
-				m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
+            foreach (var template in m_TemplateDictionary)
+                m_TemplateSizes[template.Key] = GetObjectSize(template.Value.prefab);
 
-			if (data == null)
-				data = new List<InspectorData>();
-		}
+            if (data == null)
+                data = new List<InspectorData>();
+        }
 
-		protected override void ComputeConditions()
-		{
-			// Check if object was deleted
-			if (data.Count > 0 && !data[0].serializedObject.targetObject)
-				data = new List<InspectorData>();
+        protected override void ComputeConditions()
+        {
+            // Check if object was deleted
+            if (data.Count > 0 && !data[0].serializedObject.targetObject)
+                data = new List<InspectorData>();
 
-			base.ComputeConditions();
+            base.ComputeConditions();
 
-			m_StartPosition = m_Extents.z * Vector3.back;
+            m_StartPosition = m_Extents.z * Vector3.back;
 
-			var parentMatrix = transform.worldToLocalMatrix;
-			SetMaterialClip(m_RowCubeMaterial, parentMatrix);
-			SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
-			SetMaterialClip(m_TextMaterial, parentMatrix);
-			SetMaterialClip(m_UIMaterial, parentMatrix);
-			SetMaterialClip(m_UIMaskMaterial, parentMatrix);
-			SetMaterialClip(m_HighlightMaterial, parentMatrix);
-			SetMaterialClip(m_HighlightMaskMaterial, parentMatrix);
-		}
+            var parentMatrix = transform.worldToLocalMatrix;
+            SetMaterialClip(m_RowCubeMaterial, parentMatrix);
+            SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
+            SetMaterialClip(m_UIMaterial, parentMatrix);
+            SetMaterialClip(m_UIMaskMaterial, parentMatrix);
+            SetMaterialClip(m_HighlightMaterial, parentMatrix);
+            SetMaterialClip(m_HighlightMaskMaterial, parentMatrix);
+        }
 
-		public void OnObjectModified()
-		{
-			foreach (var item in m_ListItems.Values)
-			{
-				item.OnObjectModified();
-			}
-		}
+        public void OnObjectModified()
+        {
+            foreach (var item in m_ListItems.Values)
+            {
+                item.OnObjectModified();
+            }
+        }
 
-		protected override void UpdateRecursively(List<InspectorData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
-		{
-			for (int i = 0; i < data.Count; i++)
-			{
-				var datum = data[i];
-				var serializedObject = datum.serializedObject;
-				if (serializedObject == null || serializedObject.targetObject == null)
-				{
-					Recycle(datum.index);
-					RecycleChildren(datum);
-					continue;
-				}
+        protected override void UpdateNestedItems(List<InspectorData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        {
+            m_UpdateStack.Push(new UpdateData
+            {
+                data = data,
+                depth = depth
+            });
 
-				var index = datum.index;
-				bool expanded;
-				if (!m_ExpandStates.TryGetValue(index, out expanded))
-					m_ExpandStates[index] = false;
+            order = m_ListItems.Count - 1;
+            while (m_UpdateStack.Count > 0)
+            {
+                var stackData = m_UpdateStack.Pop();
+                data = stackData.data;
+                depth = stackData.depth;
 
-				m_ItemSize = m_TemplateSizes[datum.template];
-				var itemSize = m_ItemSize.Value;
+                var i = stackData.index;
+                for (; i < data.Count; i++)
+                {
+                    var datum = data[i];
+                    var serializedObject = datum.serializedObject;
+                    if (serializedObject == null || serializedObject.targetObject == null)
+                    {
+                        Recycle(datum.index);
+                        RecycleChildren(datum);
+                        continue;
+                    }
 
-				if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
-					Recycle(index);
-				else
-					UpdateItemRecursive(datum, order++, offset, depth, expanded, ref doneSettling);
+                    var index = datum.index;
+                    bool expanded;
+                    if (!m_ExpandStates.TryGetValue(index, out expanded))
+                        m_ExpandStates[index] = false;
 
-				offset += itemSize.z;
+                    m_ItemSize = m_TemplateSizes[datum.template];
+                    var itemSize = m_ItemSize.Value;
 
-				if (datum.children != null)
-				{
-					if (expanded)
-						UpdateRecursively(datum.children, ref order, ref offset, ref doneSettling, depth + 1);
-					else
-						RecycleChildren(datum);
-				}
-			}
-		}
+                    if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
+                        Recycle(index);
+                    else
+                        UpdateInspectorItem(datum, order--, offset, depth, expanded, ref doneSettling);
 
-		void UpdateItemRecursive(InspectorData data, int order, float offset, int depth, bool expanded, ref bool doneSettling)
-		{
-			InspectorListItem item;
-			if (!m_ListItems.TryGetValue(data.index, out item))
-			{
-				item = GetItem(data);
-				UpdateItem(item.transform, order, offset, true, ref doneSettling);
-			}
+                    offset += itemSize.z;
 
-			item.UpdateSelf(m_Size.x - k_ClipMargin, depth, expanded);
-			item.UpdateClipTexts(transform.worldToLocalMatrix, m_Extents);
+                    if (datum.children != null)
+                    {
+                        if (expanded)
+                        {
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = data,
+                                depth = depth,
 
-			UpdateItem(item.transform, order, offset, false, ref doneSettling);
-		}
+                                index = i + 1
+                            });
 
-		void UpdateItem(Transform t, int order, float offset, bool dontSettle, ref bool doneSettling)
-		{
-			var targetPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
-			var targetRotation = Quaternion.identity;
+                            m_UpdateStack.Push(new UpdateData
+                            {
+                                data = datum.children,
+                                depth = depth + 1
+                            });
+                            break;
+                        }
 
-			// order is reversed because Inspector draws bottom-to-top, hence the "0" below
-			UpdateItemTransform(t, 0, targetPosition, targetRotation, dontSettle, ref doneSettling);
-		}
+                        RecycleChildren(datum);
+                    }
+                }
+            }
+        }
 
-		protected override InspectorListItem GetItem(InspectorData listData)
-		{
-			var item = base.GetItem(listData);
+        void UpdateInspectorItem(InspectorData data, int order, float offset, int depth, bool expanded, ref bool doneSettling)
+        {
+            InspectorListItem item;
+            if (!m_ListItems.TryGetValue(data.index, out item))
+            {
+                item = GetItem(data);
+                UpdateItem(item.transform, order, offset, true, ref doneSettling);
+            }
 
-			item.setRowGrabbed = SetRowGrabbed;
-			item.getGrabbedRow = GetGrabbedRow;
-			item.toggleExpanded = ToggleExpanded;
+            item.UpdateSelf(m_Size.x - k_ClipMargin, depth, expanded);
+            item.UpdateClipTexts(transform.worldToLocalMatrix, m_Extents);
 
-			if (!item.setup)
-			{
-				var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
-				var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
-				item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_TextMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
+            UpdateItem(item.transform, order, offset, false, ref doneSettling);
+        }
 
-				var numberItem = item as InspectorNumberItem;
-				if (numberItem)
-					numberItem.arraySizeChanged += OnArraySizeChanged;
+        void UpdateItem(Transform t, int order, float offset, bool dontSettle, ref bool doneSettling)
+        {
+            var targetPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
+            var targetRotation = Quaternion.identity;
 
-				item.setup = true;
-			}
+            UpdateItemTransform(t, order, targetPosition, targetRotation, dontSettle, ref doneSettling);
+        }
 
-			var headerItem = item as InspectorHeaderItem;
-			if (headerItem)
-			{
-				var go = (GameObject)listData.serializedObject.targetObject;
-				headerItem.setLocked = locked => this.SetLocked(go, locked);
-				headerItem.lockToggle.isOn = this.IsLocked(go);
-			}
+        protected override InspectorListItem GetItem(InspectorData listData)
+        {
+            var item = base.GetItem(listData);
 
-			return item;
-		}
+            item.setRowGrabbed = SetRowGrabbed;
+            item.getGrabbedRow = GetGrabbedRow;
+            item.toggleExpanded = ToggleExpanded;
 
-		public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData, int> data, List<InspectorData> newData)
-		{
-			InspectorNumberItem arraySizeItem = null;
-			var children = data.children;
-			if (children != null)
-			{
-				foreach (var child in children)
-				{
-					var index = child.index;
-					InspectorListItem item;
-					if (m_ListItems.TryGetValue(index, out item))
-					{
-						var childNumberItem = item as InspectorNumberItem;
-						if (childNumberItem && childNumberItem.propertyType == SerializedPropertyType.ArraySize)
-							arraySizeItem = childNumberItem;
-						else
-							Recycle(index);
-					}
-				}
-			}
+            if (!item.setup)
+            {
+                var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
+                var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
+                item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
 
-			// Re-use InspectorNumberItem for array Size in case we are dragging the value
-			if (arraySizeItem)
-			{
-				foreach (var child in newData)
-				{
-					var propChild = child as PropertyData;
-					if (propChild != null && propChild.property.propertyType == SerializedPropertyType.ArraySize)
-					{
-						m_ListItems[propChild.index] = arraySizeItem;
-						arraySizeItem.data = propChild;
-					}
-				}
-			}
-		}
+                var numberItem = item as InspectorNumberItem;
+                if (numberItem)
+                    numberItem.arraySizeChanged += OnArraySizeChanged;
 
-		void ToggleExpanded(int index)
-		{
-			m_ExpandStates[index] = !m_ExpandStates[index];
-			StartSettling();
-		}
+                item.setup = true;
+            }
 
-		void OnArraySizeChanged(PropertyData element)
-		{
-			if (arraySizeChanged != null)
-				arraySizeChanged(m_Data, element);
-		}
+            var headerItem = item as InspectorHeaderItem;
+            if (headerItem)
+            {
+                var go = (GameObject)listData.serializedObject.targetObject;
+                headerItem.setLocked = locked => this.SetLocked(go, locked);
+                headerItem.lockToggle.isOn = this.IsLocked(go);
+            }
 
-		void ExpandComponentRows(List<InspectorData> data)
-		{
-			foreach (var datum in data)
-			{
-				var targetObject = datum.serializedObject.targetObject;
-				m_ExpandStates[datum.index] = targetObject is Component || targetObject is GameObject;
+            return item;
+        }
 
-				if (datum.children != null)
-					ExpandComponentRows(datum.children);
-			}
-		}
+#if UNITY_EDITOR
+        public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData, int> data, List<InspectorData> newData)
+        {
+            InspectorNumberItem arraySizeItem = null;
+            var children = data.children;
+            if (children != null)
+            {
+                foreach (var child in children)
+                {
+                    var index = child.index;
+                    InspectorListItem item;
+                    if (m_ListItems.TryGetValue(index, out item))
+                    {
+                        var childNumberItem = item as InspectorNumberItem;
+                        if (childNumberItem && childNumberItem.propertyType == SerializedPropertyType.ArraySize)
+                            arraySizeItem = childNumberItem;
+                        else
+                            Recycle(index);
+                    }
+                }
+            }
 
-		void OnDestroy()
-		{
-			ObjectUtils.Destroy(m_RowCubeMaterial);
-			ObjectUtils.Destroy(m_BackingCubeMaterial);
-			ObjectUtils.Destroy(m_TextMaterial);
-			ObjectUtils.Destroy(m_UIMaterial);
-			ObjectUtils.Destroy(m_UIMaskMaterial);
-			ObjectUtils.Destroy(m_HighlightMaterial);
-			ObjectUtils.Destroy(m_HighlightMaskMaterial);
-			ObjectUtils.Destroy(m_NoClipBackingCubeMaterial);
-			ObjectUtils.Destroy(m_NoClipHighlightMaterial);
-			ObjectUtils.Destroy(m_NoClipHighlightMaskMaterial);
-		}
-	}
-}
+            // Re-use InspectorNumberItem for array Size in case we are dragging the value
+            if (arraySizeItem)
+            {
+                foreach (var child in newData)
+                {
+                    var propChild = child as PropertyData;
+                    if (propChild != null && propChild.property.propertyType == SerializedPropertyType.ArraySize)
+                    {
+                        m_ListItems[propChild.index] = arraySizeItem;
+                        arraySizeItem.data = propChild;
+                    }
+                }
+            }
+        }
 #endif
+
+        void ToggleExpanded(int index)
+        {
+            m_ExpandStates[index] = !m_ExpandStates[index];
+            StartSettling();
+        }
+
+        void OnArraySizeChanged(PropertyData element)
+        {
+            if (arraySizeChanged != null)
+                arraySizeChanged(m_Data, element);
+        }
+
+        void ExpandComponentRows(List<InspectorData> data)
+        {
+            foreach (var datum in data)
+            {
+                var targetObject = datum.serializedObject.targetObject;
+                m_ExpandStates[datum.index] = targetObject is Component || targetObject is GameObject;
+
+                if (datum.children != null)
+                    ExpandComponentRows(datum.children);
+            }
+        }
+
+        void OnDestroy()
+        {
+            ObjectUtils.Destroy(m_RowCubeMaterial);
+            ObjectUtils.Destroy(m_BackingCubeMaterial);
+            ObjectUtils.Destroy(m_UIMaterial);
+            ObjectUtils.Destroy(m_UIMaskMaterial);
+            ObjectUtils.Destroy(m_HighlightMaterial);
+            ObjectUtils.Destroy(m_HighlightMaskMaterial);
+            ObjectUtils.Destroy(m_NoClipBackingCubeMaterial);
+            ObjectUtils.Destroy(m_NoClipHighlightMaterial);
+            ObjectUtils.Destroy(m_NoClipHighlightMaskMaterial);
+        }
+    }
+}

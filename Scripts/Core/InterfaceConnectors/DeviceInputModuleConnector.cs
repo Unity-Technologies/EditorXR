@@ -1,25 +1,29 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	partial class EditorVR
-	{
-		class DeviceInputModuleConnector : Nested, IInterfaceConnector
-		{
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
-			{
-				// Tracked Object action maps shouldn't block each other so we share an instance
-				var trackedObjectMap = obj as ITrackedObjectActionMap;
-				if (trackedObjectMap != null)
-					trackedObjectMap.trackedObjectInput = evr.GetModule<DeviceInputModule>().trackedObjectInput;
-			}
+    partial class EditorVR
+    {
+        class DeviceInputModuleConnector : Nested, IInterfaceConnector
+        {
+            public void ConnectInterface(object target, object userData = null)
+            {
+                var trackedObjectMap = target as ITrackedObjectActionMap;
+                if (trackedObjectMap != null)
+                    trackedObjectMap.trackedObjectInput = evr.GetModule<DeviceInputModule>().trackedObjectInput;
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
-			{
-			}
-		}
-	}
+                var processInput = target as IProcessInput;
+                if (processInput != null && !(target is ITool)) // Tools have their input processed separately
+                    evr.GetModule<DeviceInputModule>().AddInputProcessor(processInput, userData);
+            }
+
+            public void DisconnectInterface(object target, object userData = null)
+            {
+                var processInput = target as IProcessInput;
+                if (processInput != null)
+                    evr.GetModule<DeviceInputModule>().RemoveInputProcessor(processInput);
+            }
+        }
+    }
 }
-#endif
+

@@ -1,0 +1,147 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24e5bc088c9caeb44bc4283dc321b033, type: 3}
+  m_Name: AnnotationInput
+  m_EditorClassIdentifier: 
+  m_Actions:
+  - {fileID: 114000013162093460}
+  - {fileID: 114000010589948208}
+  - {fileID: 114574627476091900}
+  - {fileID: 114831519838551112}
+  m_ControlSchemes:
+  - m_Name: AnnotationInput
+    m_DeviceSlots:
+    - m_Key: 1
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
+    m_ActionMap: {fileID: 11400000}
+    m_Bindings:
+    - sources:
+      - controlIndex: 2
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 0
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 1
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 22
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+  m_MapTypeName: AnnotationInput, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  m_CustomNamespace: 
+--- !u!114 &114000010589948208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Change Brush Size
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 1
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Change Brush Size
+    defaultValue: 0
+--- !u!114 &114000013162093460
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Draw
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 0
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Draw
+    defaultValue: 0
+--- !u!114 &114574627476091900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: Vertical
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 2
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.AxisInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: Vertical
+    defaultValue: 0
+--- !u!114 &114831519838551112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5eba7b4b2e3ea134991ccbff5f47c2c8, type: 3}
+  m_Name: StickButton
+  m_EditorClassIdentifier: 
+  m_ActionMap: {fileID: 11400000}
+  m_ActionIndex: 3
+  m_ControlData:
+    componentControlIndices: 
+    controlType:
+      m_TypeName: UnityEngine.InputNew.ButtonInputControl, Assembly-CSharp, Version=0.0.0.0,
+        Culture=neutral, PublicKeyToken=null
+    name: StickButton
+    defaultValue: 0

@@ -1,93 +1,134 @@
-﻿#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-	sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale
-	{
-		[SerializeField]
-		ActionMap m_ActionMap;
+    sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale,
+        IRequestFeedback, IUsesNode
+    {
+        [SerializeField]
+        ActionMap m_ActionMap;
 
-		float m_LastClickTime;
-		readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
+        float m_LastClickTime;
+        readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
 
-		public ActionMap actionMap { get { return m_ActionMap; } }
+        readonly BindingDictionary m_Controls = new BindingDictionary();
+        readonly List<ProxyFeedbackRequest> m_Feedback = new List<ProxyFeedbackRequest>();
 
-		public List<IVacuumable> vacuumables { private get; set; }
+        public ActionMap actionMap { get { return m_ActionMap; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
-		public Transform rayOrigin { get; set; }
+        public List<IVacuumable> vacuumables { private get; set; }
 
-		public Vector3 defaultOffset { private get; set; }
-		public Quaternion defaultTilt { private get; set; }
+        public Transform rayOrigin { get; set; }
 
-		public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
-		{
-			var vacuumInput = (VacuumInput)input;
-			if (vacuumInput.vacuum.wasJustPressed)
-			{
-				var realTime = Time.realtimeSinceStartup;
-				if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
-				{
-					var hit = false;
-					foreach (var vacuumable in vacuumables)
-					{
-						var vacuumableTransform = vacuumable.transform;
-						var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-						ray.origin = vacuumableTransform.InverseTransformPoint(ray.origin);
-						ray.direction = vacuumableTransform.InverseTransformDirection(ray.direction);
-						if (vacuumable.vacuumBounds.IntersectRay(ray))
-						{
-							hit = true;
-							Coroutine coroutine;
-							if (m_VacuumingCoroutines.TryGetValue(vacuumableTransform, out coroutine))
-								StopCoroutine(coroutine);
+        public Vector3 defaultOffset { private get; set; }
+        public Quaternion defaultTilt { private get; set; }
+        public Node node { private get; set; }
 
-							m_VacuumingCoroutines[vacuumableTransform] = StartCoroutine(VacuumToViewer(vacuumable));
-						}
-					}
+        void Start()
+        {
+            InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+        }
 
-					if (hit)
-						consumeControl(vacuumInput.vacuum);
-				}
+        void OnDestroy()
+        {
+            this.ClearFeedbackRequests();
+        }
 
-				m_LastClickTime = realTime;
-			}
-		}
+        public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
+        {
+            var hit = false;
+            foreach (var vacuumable in vacuumables)
+            {
+                var vacuumableTransform = vacuumable.transform;
+                var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+                ray.origin = vacuumableTransform.InverseTransformPoint(ray.origin);
+                ray.direction = vacuumableTransform.InverseTransformDirection(ray.direction);
+                if (vacuumable.vacuumBounds.IntersectRay(ray))
+                {
+                    hit = true;
+                    var vacuumInput = (VacuumInput)input;
+                    if (vacuumInput.vacuum.wasJustPressed)
+                    {
+                        var realTime = Time.realtimeSinceStartup;
+                        if (UIUtils.IsDoubleClick(realTime - m_LastClickTime))
+                        {
+                            consumeControl(vacuumInput.vacuum);
 
-		IEnumerator VacuumToViewer(IVacuumable vacuumable)
-		{
-			var vacuumTransform = vacuumable.transform;
-			var startPosition = vacuumTransform.position;
-			var startRotation = vacuumTransform.rotation;
+                            Coroutine coroutine;
+                            if (m_VacuumingCoroutines.TryGetValue(vacuumableTransform, out coroutine))
+                                StopCoroutine(coroutine);
 
-			var offset = defaultOffset;
-			offset.z += vacuumable.vacuumBounds.extents.z;
-			offset *= this.GetViewerScale();
+                            m_VacuumingCoroutines[vacuumableTransform] = StartCoroutine(VacuumToViewer(vacuumable));
+                        }
 
-			var camera = CameraUtils.GetMainCamera().transform;
-			var destPosition = camera.position + MathUtilsExt.ConstrainYawRotation(camera.rotation) * offset;
-			var destRotation = Quaternion.LookRotation(camera.forward) * defaultTilt;
+                        m_LastClickTime = realTime;
+                    }
 
-			var currentValue = 0f;
-			var currentVelocity = 0f;
-			var currentDuration = 0f;
-			const float kTargetValue = 1f;
-			const float kTargetDuration = 0.5f;
-			while (currentDuration < kTargetDuration)
-			{
-				currentDuration += Time.deltaTime;
-				currentValue = MathUtilsExt.SmoothDamp(currentValue, kTargetValue, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
-				vacuumTransform.position = Vector3.Lerp(startPosition, destPosition, currentValue);
-				vacuumTransform.rotation = Quaternion.Lerp(startRotation, destRotation, currentValue);
-				yield return null;
-			}
+                    if (m_Feedback.Count == 0)
+                    {
+                        foreach (var kvp in m_Controls)
+                        {
+                            foreach (var id in kvp.Value)
+                            {
+                                var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                                request.control = id;
+                                request.node = node;
+                                request.tooltipText = "Double-tap to summon workspace";
+                                m_Feedback.Add(request);
+                                this.AddFeedbackRequest(request);
+                            }
+                        }
+                    }
 
-			m_VacuumingCoroutines.Remove(vacuumTransform);
-		}
-	}
+                    break;
+                }
+            }
+
+            if (!hit)
+            {
+                foreach (var request in m_Feedback)
+                {
+                    this.RemoveFeedbackRequest(request);
+                }
+                m_Feedback.Clear();
+            }
+        }
+
+        IEnumerator VacuumToViewer(IVacuumable vacuumable)
+        {
+            var vacuumTransform = vacuumable.transform;
+            var startPosition = vacuumTransform.position;
+            var startRotation = vacuumTransform.rotation;
+
+            var offset = defaultOffset;
+            offset.z += vacuumable.vacuumBounds.extents.z;
+            offset *= this.GetViewerScale();
+
+            var camera = CameraUtils.GetMainCamera().transform;
+            var destPosition = camera.position + MathUtilsExt.ConstrainYawRotation(camera.rotation) * offset;
+            var destRotation = Quaternion.LookRotation(camera.forward) * defaultTilt;
+
+            var currentValue = 0f;
+            var currentVelocity = 0f;
+            var currentDuration = 0f;
+            const float kTargetValue = 1f;
+            const float kTargetDuration = 0.5f;
+            while (currentDuration < kTargetDuration)
+            {
+                currentDuration += Time.deltaTime;
+                currentValue = MathUtilsExt.SmoothDamp(currentValue, kTargetValue, ref currentVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                vacuumTransform.position = Vector3.Lerp(startPosition, destPosition, currentValue);
+                vacuumTransform.rotation = Quaternion.Lerp(startRotation, destRotation, currentValue);
+                yield return null;
+            }
+
+            m_VacuumingCoroutines.Remove(vacuumTransform);
+        }
+    }
 }
-#endif

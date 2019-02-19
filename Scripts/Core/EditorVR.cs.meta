@@ -1,34 +1,19 @@
 fileFormatVersion: 2
 guid: 1d288f1a40f3bc54bb07e9a5eb99d137
-timeCreated: 1479964689
-licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - m_TrackedObjectActionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a,
-      type: 2}
-  - m_StandardToolActionMap: {fileID: 11400000, guid: f904ed06397c2fc4f81263e88804a0af,
-      type: 2}
-  - m_DirectSelectActionMap: {fileID: 11400000, guid: dc1ccafeffffc62419a3265a080a94a3,
-      type: 2}
   - m_ProxyRayPrefab: {fileID: 114000010564953552, guid: 6c037b4595ca1ab4c921efeac9524073,
       type: 2}
+  - m_ProxyExtras: {instanceID: 0}
   - m_EventCameraPrefab: {fileID: 20000012271368486, guid: 6078fbea960c1014cba733bb3ec1d7ad,
-      type: 2}
-  - m_MainMenuActivatorPrefab: {fileID: 114000011125667836, guid: a943a77cb6a6bd04da2b86b34ade4596,
-      type: 2}
-  - m_KeyboardMalletPrefab: {fileID: 114000013972379212, guid: 55c3df0d3b957354fa26bae2b39cffb3,
-      type: 2}
-  - m_NumericKeyboardPrefab: {fileID: 114000012169358554, guid: 5f76c682f089562449adab190d7a8fc4,
-      type: 2}
-  - m_StandardKeyboardPrefab: {fileID: 114000012076762946, guid: 6a5c5a798b3bb39408f3dbf2bfa77923,
       type: 2}
   - m_PlayerModelPrefab: {fileID: 1000013280737546, guid: 3dbbb2baa83f3994e94fe56a60c73252,
       type: 2}
-  - m_PreviewCameraPrefab: {fileID: 1000010893495554, guid: 66d2f6b9efc6b7842bea782607a65bd2,
+  - m_PlayerFloorPrefab: {fileID: 1888626590568660, guid: b904665d3c595934b8950ea7c2a51972,
       type: 2}
-  - m_ProxyExtras: {instanceID: 0}
-  - m_PinnedToolButtonPrefab: {fileID: 114000011260412956, guid: 7221a75a049ac3949a505c7c2f06bd8e,
+  - m_PreviewCameraPrefab: {fileID: 1000010893495554, guid: 66d2f6b9efc6b7842bea782607a65bd2,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}

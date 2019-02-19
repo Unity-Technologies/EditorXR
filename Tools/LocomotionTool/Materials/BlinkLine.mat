@@ -7,11 +7,12 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: BlinkLine
-  m_Shader: {fileID: 4800000, guid: d2d82e816970e9849bc93f1842c33050, type: 3}
+  m_Shader: {fileID: 4800000, guid: 9cf337af42e23a3459efede97d9f4ba0, type: 3}
   m_ShaderKeywords: LINE_PERSPECTIVE_WIDTH LINE_WORLD_SPACE
   m_LightmapFlags: 5
   m_EnableInstancingVariants: 0
-  m_CustomRenderQueue: 3000
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:

@@ -1,58 +1,56 @@
-﻿#if UNITY_EDITOR
-using ListView;
+﻿using ListView;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-	sealed class AssetData : ListViewItemData<string>
-	{
-		const string k_TemplateName = "AssetGridItem";
+    sealed class AssetData : ListViewItemData<string>
+    {
+        const string k_TemplateName = "AssetGridItem";
 
-		public string name { get; private set; }
-		
-		public string type { get; private set; }
+        public string name { get; private set; }
 
-		public GameObject preview { get; set; }
+        public string type { get; private set; }
 
-		public Object asset
-		{
-			get { return m_Asset; }
-			set
-			{
-				m_Asset = value;
-				if (m_Asset)
-					UpdateType(); // We lazy load assets and don't know the final type until the asset is loaded
-			}
-		}
+        public GameObject preview { get; set; }
 
-		Object m_Asset;
+        public Object asset
+        {
+            get { return m_Asset; }
+            set
+            {
+                m_Asset = value;
+                if (m_Asset)
+                    UpdateType(); // We lazy load assets and don't know the final type until the asset is loaded
+            }
+        }
 
-		public AssetData(string name, string guid, string type)
-		{
-			template = k_TemplateName;
-			index = guid;
-			this.name = name;
-			this.type = type;
-		}
+        Object m_Asset;
 
-		void UpdateType()
-		{
-			if (type == "GameObject")
-			{
+        public AssetData(string name, string guid, string type)
+        {
+            template = k_TemplateName;
+            index = guid;
+            this.name = name;
+            this.type = type;
+        }
+
+        void UpdateType()
+        {
+            if (type == "GameObject")
+            {
 #if UNITY_EDITOR
-				switch (PrefabUtility.GetPrefabType(asset))
-				{
-					case PrefabType.ModelPrefab:
-						type = "Model";
-						break;
-					default:
-						type = "Prefab";
-						break;
-				}
+                switch (PrefabUtility.GetPrefabType(asset))
+                {
+                    case PrefabType.ModelPrefab:
+                        type = "Model";
+                        break;
+                    default:
+                        type = "Prefab";
+                        break;
+                }
 #endif
-			}
-		}
-	}
+            }
+        }
+    }
 }
-#endif

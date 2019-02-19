@@ -1,4 +1,3 @@
-﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -9,314 +8,331 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces,
-		IUsesViewerScale, IControlHaptics, IRayToNode
-	{
-		const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
+    abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces,
+        IUsesViewerScale, IControlHaptics, IRayToNode
+    {
+        const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
 
-		public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0.4f, 0.4f);
-		public static readonly Vector3 MinBounds = new Vector3(0.55f, 0f, 0.1f);
+        public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0f, 0.4f);
+        public static readonly Vector3 MinBounds = new Vector3(0.677f, 0f, 0.1f);
 
-		public const float FaceMargin = 0.025f;
-		public const float HighlightMargin = 0.002f;
+        public const float FaceMargin = 0.025f;
+        protected float DoubleFaceMargin = FaceMargin * 2;
+        public const float HighlightMargin = 0.002f;
 
-		[SerializeField]
-		Vector3 m_MinBounds = MinBounds;
+        [SerializeField]
+        Vector3 m_MinBounds = MinBounds;
 
-		[SerializeField]
-		GameObject m_BasePrefab;
+        [SerializeField]
+        GameObject m_BasePrefab;
 
-		[SerializeField]
-		ActionMap m_ActionMap;
+        [SerializeField]
+        ActionMap m_ActionMap;
 
-		[SerializeField]
-		HapticPulse m_ButtonClickPulse;
+        [SerializeField]
+        HapticPulse m_ButtonClickPulse;
 
-		[SerializeField]
-		HapticPulse m_ButtonHoverPulse;
+        [SerializeField]
+        HapticPulse m_ButtonHoverPulse;
 
-		[SerializeField]
-		HapticPulse m_ResizePulse;
+        [SerializeField]
+        HapticPulse m_ResizePulse;
 
-		[SerializeField]
-		HapticPulse m_MovePulse;
+        [SerializeField]
+        protected HapticPulse m_MovePulse;
 
-		Bounds m_ContentBounds;
-		BoxCollider m_OuterCollider;
-		BoxCollider m_FrameCollider;
+        Bounds m_ContentBounds;
+        BoxCollider m_OuterCollider;
 
-		Coroutine m_VisibilityCoroutine;
-		Coroutine m_ResetSizeCoroutine;
+        Coroutine m_VisibilityCoroutine;
+        Coroutine m_ResetSizeCoroutine;
 
-		protected WorkspaceUI m_WorkspaceUI;
+        protected WorkspaceUI m_WorkspaceUI;
 
-		protected Vector3? m_CustomStartingBounds;
+        protected Vector3? m_CustomStartingBounds;
 
-		public Vector3 minBounds { get { return m_MinBounds; } set { m_MinBounds = value; } }
+        protected Transform m_LeftRayOrigin;
+        protected Transform m_RightRayOrigin;
 
-		public Bounds contentBounds
-		{
-			get { return m_ContentBounds; }
-			set
-			{
-				if (!value.Equals(contentBounds))
-				{
-					m_ContentBounds = value;
-					var size = value.size;
-					size.x = Mathf.Clamp(Mathf.Max(size.x, minBounds.x), 0, k_MaxFrameSize);
-					size.y = Mathf.Max(size.y, minBounds.y);
-					size.z = Mathf.Clamp(Mathf.Max(size.z, minBounds.z), 0, k_MaxFrameSize);
-					m_ContentBounds.size = size;
+        public Vector3 minBounds
+        {
+            get { return m_MinBounds; }
+            set { m_MinBounds = value; }
+        }
 
-					// Offset by half height
-					var center = m_ContentBounds.center;
-					center.y = size.y * 0.5f;
-					m_ContentBounds.center = center;
+        public Bounds contentBounds
+        {
+            get { return m_ContentBounds; }
+            set
+            {
+                if (!value.Equals(contentBounds))
+                {
+                    m_ContentBounds = value;
+                    var size = value.size;
+                    size.x = Mathf.Clamp(Mathf.Max(size.x, minBounds.x), 0, k_MaxFrameSize);
+                    size.y = Mathf.Max(size.y, minBounds.y);
+                    size.z = Mathf.Clamp(Mathf.Max(size.z, minBounds.z), 0, k_MaxFrameSize);
+                    m_ContentBounds.size = size;
 
-					UpdateBounds();
-					OnBoundsChanged();
-				}
-			}
-		}
+                    // Offset by half height
+                    var center = m_ContentBounds.center;
+                    center.y = size.y * 0.5f;
+                    m_ContentBounds.center = center;
 
-		public Bounds outerBounds
-		{
-			get
-			{
-				const float kOuterBoundsCenterOffset = 0.09275f; //Amount to extend the bounds to include frame
-				return new Bounds(contentBounds.center + Vector3.down * kOuterBoundsCenterOffset * 0.5f,
-					new Vector3(
-						contentBounds.size.x,
-						contentBounds.size.y + kOuterBoundsCenterOffset,
-						contentBounds.size.z
-						));
-			}
-		}
+                    UpdateBounds();
+                    OnBoundsChanged();
+                }
+            }
+        }
 
-		public Bounds vacuumBounds { get { return outerBounds; } }
+        public Bounds outerBounds
+        {
+            get
+            {
+                const float outerBoundsCenterOffset = 0.09275f; //Amount to extend the bounds to include frame
+                return new Bounds(contentBounds.center + Vector3.down * outerBoundsCenterOffset * 0.5f,
+                    new Vector3(
+                        contentBounds.size.x,
+                        contentBounds.size.y + outerBoundsCenterOffset,
+                        contentBounds.size.z
+                    ));
+            }
+        }
 
-		public byte stencilRef { get; set; }
+        public Bounds vacuumBounds { get { return outerBounds; } }
 
-		/// <summary>
-		/// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
-		/// </summary>
-		public bool dynamicFaceAdjustment { set { m_WorkspaceUI.dynamicFaceAdjustment = value; } }
+        public byte stencilRef { get; set; }
 
-		/// <summary>
-		/// If true, prevent the resizing of a workspace
-		/// </summary>
-		public bool preventResize { set { m_WorkspaceUI.preventResize = value; } }
+        /// <summary>
+        /// If true, allow the front face of the workspace to dynamically adjust its angle when rotated
+        /// </summary>
+        public bool dynamicFaceAdjustment { set { m_WorkspaceUI.dynamicFaceAdjustment = value; } }
 
-		/// <summary>
-		/// (-1 to 1) ranged value that controls the separator mask's X-offset placement
-		/// A value of zero will leave the mask in the center of the workspace
-		/// </summary>
-		public float topPanelDividerOffset
-		{
-			set
-			{
-				m_WorkspaceUI.topPanelDividerOffset = value;
-				m_WorkspaceUI.bounds = contentBounds;
-			}
-		}
+        /// <summary>
+        /// If true, prevent the resizing of a workspace
+        /// </summary>
+        public bool preventResize { set { m_WorkspaceUI.preventResize = value; } }
 
-		public event Action<IWorkspace> destroyed;
+        /// <summary>
+        /// (-1 to 1) ranged value that controls the separator mask's X-offset placement
+        /// A value of zero will leave the mask in the center of the workspace
+        /// </summary>
+        public float topPanelDividerOffset
+        {
+            set
+            {
+                m_WorkspaceUI.topPanelDividerOffset = value;
+                m_WorkspaceUI.bounds = contentBounds;
+            }
+        }
 
-		public Transform topPanel { get { return m_WorkspaceUI.topFaceContainer; } }
+        public event Action<IWorkspace> destroyed;
 
-		public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
+        public Transform topPanel { get { return m_WorkspaceUI.topFaceContainer; } }
 
-		public ActionMap actionMap { get { return m_ActionMap; } }
+        public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
-		public Transform leftRayOrigin { protected get; set; }
-		public Transform rightRayOrigin { protected get; set; }
+        public ActionMap actionMap { get { return m_ActionMap; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
-		public virtual void Setup()
-		{
-			var baseObject = this.InstantiateUI(m_BasePrefab);
-			baseObject.transform.SetParent(transform, false);
+        public Transform leftRayOrigin
+        {
+            protected get { return m_LeftRayOrigin; }
+            set
+            {
+                m_LeftRayOrigin = value;
+                leftNode = this.RequestNodeFromRayOrigin(m_LeftRayOrigin);
+            }
+        }
 
-			m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
-			this.ConnectInterfaces(m_WorkspaceUI);
-			m_WorkspaceUI.closeClicked += OnCloseClicked;
-			m_WorkspaceUI.resetSizeClicked += OnResetClicked;
-			m_WorkspaceUI.buttonHovered += OnButtonHovered;
-			m_WorkspaceUI.hoveringFrame += OnHoveringFrame;
-			m_WorkspaceUI.moving += OnMoving;
-			m_WorkspaceUI.resizing += OnResizing;
+        public Transform rightRayOrigin
+        {
+            protected get { return m_RightRayOrigin; }
+            set
+            {
+                m_RightRayOrigin = value;
+                rightNode = this.RequestNodeFromRayOrigin(m_RightRayOrigin);
+            }
+        }
 
-			m_WorkspaceUI.leftRayOrigin = leftRayOrigin;
-			m_WorkspaceUI.rightRayOrigin = rightRayOrigin;
+        protected Node leftNode { get; set; }
+        protected Node rightNode { get; set; }
 
-			m_WorkspaceUI.resize += bounds =>
-			{
-				var size = contentBounds.size;
-				var boundsSize = bounds.size;
-				size.x = boundsSize.x;
-				size.z = boundsSize.z;
-				var content = contentBounds;
-				content.size = size;
-				contentBounds = content;
-			};
+        public virtual void Setup()
+        {
+            var baseObject = this.InstantiateUI(m_BasePrefab, transform, false);
 
-			m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
+            m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
+            this.ConnectInterfaces(m_WorkspaceUI);
+            m_WorkspaceUI.closeClicked += OnCloseClicked;
+            m_WorkspaceUI.resetSizeClicked += OnResetClicked;
+            m_WorkspaceUI.buttonHovered += OnButtonHovered;
+            m_WorkspaceUI.hoveringFrame += OnHoveringFrame;
+            m_WorkspaceUI.moving += OnMoving;
+            m_WorkspaceUI.resizing += OnResizing;
 
-			m_OuterCollider = gameObject.AddComponent<BoxCollider>();
-			m_OuterCollider.isTrigger = true;
-			m_FrameCollider = gameObject.AddComponent<BoxCollider>();
-			m_FrameCollider.isTrigger = true;
+            m_WorkspaceUI.leftRayOrigin = leftRayOrigin;
+            m_WorkspaceUI.rightRayOrigin = rightRayOrigin;
 
-			var startingBounds = m_CustomStartingBounds ?? DefaultBounds;
-			//Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-			m_ContentBounds = new Bounds(Vector3.up * startingBounds.y * 0.5f, startingBounds); // If custom bounds have been set, use them as the initial bounds
-			UpdateBounds();
+            m_WorkspaceUI.resize += bounds =>
+            {
+                var size = contentBounds.size;
+                var boundsSize = bounds.size;
+                size.x = boundsSize.x;
+                size.z = boundsSize.z;
+                var content = contentBounds;
+                content.size = size;
+                contentBounds = content;
+            };
 
-			this.StopCoroutine(ref m_VisibilityCoroutine);
+            m_WorkspaceUI.sceneContainer.transform.localPosition = Vector3.zero;
 
-			m_VisibilityCoroutine = StartCoroutine(AnimateShow());
-		}
+            m_OuterCollider = gameObject.AddComponent<BoxCollider>();
+            m_OuterCollider.isTrigger = true;
 
-		public void Close()
-		{
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-			m_VisibilityCoroutine = StartCoroutine(AnimateHide());
-		}
+            var startingBounds = m_CustomStartingBounds ?? DefaultBounds;
 
-		protected virtual void OnCloseClicked(Transform rayOrigin)
-		{
-			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
-			Close();
-		}
+            //Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
+            m_ContentBounds = new Bounds(Vector3.up * startingBounds.y * 0.5f, startingBounds); // If custom bounds have been set, use them as the initial bounds
+            UpdateBounds();
 
-		protected virtual void OnResetClicked(Transform rayOrigin)
-		{
-			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+            this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
+        }
 
-			this.StopCoroutine(ref m_ResetSizeCoroutine);
-			m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
-		}
+        public void Close()
+        {
+            this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
+        }
 
-		protected void OnButtonHovered(Transform rayOrigin)
-		{
-			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
-		}
+        protected virtual void OnCloseClicked(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+            Close();
+        }
 
-		public void SetUIHighlightsVisible(bool value)
-		{
-			m_WorkspaceUI.highlightsVisible = value;
-		}
+        protected virtual void OnResetClicked(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+            this.RestartCoroutine(ref m_ResetSizeCoroutine, AnimateResetSize());
+        }
 
-		void UpdateBounds()
-		{
-			m_WorkspaceUI.bounds = contentBounds;
+        protected void OnButtonHovered(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
+        }
 
-			var outerBounds = this.outerBounds;
-			m_OuterCollider.size = outerBounds.size;
-			m_OuterCollider.center = outerBounds.center;
-		}
+        public void SetUIHighlightsVisible(bool value)
+        {
+            m_WorkspaceUI.highlightsVisible = value;
+        }
 
-		protected virtual void OnDestroy()
-		{
-			destroyed(this);
-		}
+        void UpdateBounds()
+        {
+            m_WorkspaceUI.bounds = contentBounds;
 
-		protected virtual void OnBoundsChanged()
-		{
-		}
+            var outerBounds = this.outerBounds;
+            m_OuterCollider.size = outerBounds.size;
+            m_OuterCollider.center = outerBounds.center;
+        }
 
-		IEnumerator AnimateShow()
-		{
-			m_WorkspaceUI.highlightsVisible = true;
+        protected virtual void OnDestroy()
+        {
+            destroyed(this);
+        }
 
-			var targetScale = Vector3.one;
-			var scale = Vector3.zero;
-			var smoothVelocity = Vector3.zero;
-			var currentDuration = 0f;
-			const float kTargetDuration = 0.75f;
-			while (currentDuration < kTargetDuration)
-			{
-				currentDuration += Time.deltaTime;
-				transform.localScale = scale;
-				scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
-				yield return null;
-			}
+        protected virtual void OnBoundsChanged() { }
 
-			transform.localScale = targetScale;
+        IEnumerator AnimateShow()
+        {
+            m_WorkspaceUI.highlightsVisible = true;
 
-			m_WorkspaceUI.highlightsVisible = false;
-			m_VisibilityCoroutine = null;
-		}
+            var targetScale = Vector3.one;
+            var scale = Vector3.zero;
+            var smoothVelocity = Vector3.zero;
+            var currentDuration = 0f;
+            const float kTargetDuration = 0.75f;
+            while (currentDuration < kTargetDuration)
+            {
+                currentDuration += Time.deltaTime;
+                transform.localScale = scale;
+                scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                yield return null;
+            }
 
-		IEnumerator AnimateHide()
-		{
-			var targetScale = Vector3.zero;
-			var scale = transform.localScale;
-			var smoothVelocity = Vector3.zero;
-			var currentDuration = 0f;
-			const float kTargetDuration = 0.185f;
-			while (currentDuration < kTargetDuration)
-			{
-				currentDuration += Time.deltaTime;
-				transform.localScale = scale;
-				scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
-				yield return null;
-			}
-			transform.localScale = targetScale;
+            transform.localScale = targetScale;
+            m_WorkspaceUI.highlightsVisible = false;
+            m_VisibilityCoroutine = null;
+        }
 
-			m_WorkspaceUI.highlightsVisible = false;
-			m_VisibilityCoroutine = null;
-			ObjectUtils.Destroy(gameObject);
-		}
+        IEnumerator AnimateHide()
+        {
+            var targetScale = Vector3.zero;
+            var scale = transform.localScale;
+            var smoothVelocity = Vector3.zero;
+            var currentDuration = 0f;
+            const float kTargetDuration = 0.185f;
+            while (currentDuration < kTargetDuration)
+            {
+                currentDuration += Time.deltaTime;
+                transform.localScale = scale;
+                scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                yield return null;
+            }
 
-		IEnumerator AnimateResetSize()
-		{
-			var currentBoundsSize = contentBounds.size;
-			var currentBoundsCenter = contentBounds.center;
-			var targetBoundsSize = m_CustomStartingBounds ?? minBounds;
-			var targetBoundsCenter = Vector3.zero;
-			var smoothVelocitySize = Vector3.zero;
-			var smoothVelocityCenter = Vector3.zero;
-			var currentDuration = 0f;
-			const float kTargetDuration = 0.75f;
-			while (currentDuration < kTargetDuration)
-			{
-				currentDuration += Time.deltaTime;
-				currentBoundsCenter = MathUtilsExt.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.deltaTime);
-				currentBoundsSize = MathUtilsExt.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.deltaTime);
-				contentBounds = new Bounds(currentBoundsCenter, currentBoundsSize);
-				OnBoundsChanged();
-				yield return null;
-			}
-		}
+            transform.localScale = targetScale;
+            m_WorkspaceUI.highlightsVisible = false;
+            m_VisibilityCoroutine = null;
+            ObjectUtils.Destroy(gameObject);
+        }
 
-		public virtual void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
-		{
-			m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);
+        IEnumerator AnimateResetSize()
+        {
+            var currentBoundsSize = contentBounds.size;
+            var currentBoundsCenter = contentBounds.center;
+            var targetBoundsSize = m_CustomStartingBounds ?? minBounds;
+            var targetBoundsCenter = Vector3.zero;
+            var smoothVelocitySize = Vector3.zero;
+            var smoothVelocityCenter = Vector3.zero;
+            var currentDuration = 0f;
+            const float kTargetDuration = 0.75f;
+            while (currentDuration < kTargetDuration)
+            {
+                currentDuration += Time.deltaTime;
+                currentBoundsCenter = MathUtilsExt.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                currentBoundsSize = MathUtilsExt.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                contentBounds = new Bounds(currentBoundsCenter, currentBoundsSize);
+                OnBoundsChanged();
+                yield return null;
+            }
 
-			var frameBounds = m_WorkspaceUI.adjustedBounds;
-			m_FrameCollider.size = frameBounds.size;
-			m_FrameCollider.center = frameBounds.center;
-		}
+            contentBounds = new Bounds(targetBoundsCenter, targetBoundsSize);
+            OnBoundsChanged();
+            m_ResetSizeCoroutine = null;
+        }
 
-		protected void OnButtonClicked(Transform rayOrigin)
-		{
-			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
-		}
+        public virtual void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
+        {
+            m_WorkspaceUI.ProcessInput((WorkspaceInput)input, consumeControl);
+        }
 
-		void OnMoving(Transform rayOrigin)
-		{
-			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_MovePulse);
-		}
+        protected void OnButtonClicked(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+        }
 
-		void OnResizing(Transform rayOrigin)
-		{
-			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
-		}
+        void OnMoving(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_MovePulse);
+        }
 
-		void OnHoveringFrame(Transform rayOrigin)
-		{
-			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
-		}
-	}
+        void OnResizing(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
+        }
+
+        void OnHoveringFrame(Transform rayOrigin)
+        {
+            this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ResizePulse);
+        }
+    }
 }
-#endif

@@ -26,14 +26,14 @@
 		// In the first pass we write only to the alpha channel.
 		// This lets us punch a hole in the background that our 
 		// line color then shows through
-		blend srcalpha oneminussrcalpha
-		blendop sub
-		cull off
-		lighting off
-		zwrite on
-		ztest lequal
-		colormask a
-		offset 0, -.1
+		Blend One One
+		BlendOp Min
+		Cull Off
+		Lighting Off
+		ZWrite Off
+		ColorMask A
+		Offset 0, -.1
+
 		CGPROGRAM
 
 #pragma vertex vert
@@ -52,11 +52,14 @@
 		// as the alpha value we wrote before allows through.  To
 		// prevent overlapping lines from adding too much color,
 		// we set the alpha value to one after visiting a pixel.
-		blend oneminusdstalpha dstalpha
-		cull off
-		lighting off
-		zwrite on
-		offset 0, -.1
+		Blend OneMinusDstAlpha DstAlpha, One One
+		// FIXME: There's a bug where the _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A keyword gets set incorrectly causing the alpha to be incorrect and consequently the
+		// line renderer to not render correctly, so for now this is set to Max, so it shows up. It should be Add.
+		BlendOp Max, Max
+		Cull Off
+		Lighting Off
+		ZWrite Off
+		Offset 0, -.1
 
 		CGPROGRAM
 

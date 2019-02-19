@@ -1,10 +1,8 @@
-﻿#if UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
-	interface ISerializeWorkspace
-	{
-		object OnSerializeWorkspace();
-		void OnDeserializeWorkspace(object obj);
-	}
+    interface ISerializeWorkspace
+    {
+        object OnSerializeWorkspace();
+        void OnDeserializeWorkspace(object obj);
+    }
 }
-#endif

@@ -1,38 +1,31 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
-using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEngine;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	partial class EditorVR
-	{
-		class HighlightModuleConnector : Nested, IInterfaceConnector, ILateBindInterfaceMethods<HighlightModule>
-		{
-			public void LateBindInterfaceMethods(HighlightModule provider)
-			{
-				ISetHighlightMethods.setHighlight = provider.SetHighlight;
-			}
+    partial class EditorVR
+    {
+        class HighlightModuleConnector : Nested, IInterfaceConnector, ILateBindInterfaceMethods<HighlightModule>
+        {
+            public void LateBindInterfaceMethods(HighlightModule provider)
+            {
+                ISetHighlightMethods.setHighlight = provider.SetHighlight;
+                ISetHighlightMethods.setBlinkingHighlight = provider.SetBlinkingHighlight;
+            }
 
-			public void ConnectInterface(object obj, Transform rayOrigin = null)
-			{
-				var customHighlight = obj as ICustomHighlight;
-				if (customHighlight != null)
-				{
-					var evrHighlightModule = evr.GetModule<HighlightModule>();
-					evrHighlightModule.customHighlight += customHighlight.OnHighlight;
-				}
-			}
+            public void ConnectInterface(object target, object userData = null)
+            {
+                var customHighlight = target as ICustomHighlight;
+                if (customHighlight != null)
+                    evr.GetModule<HighlightModule>().customHighlight += customHighlight.OnHighlight;
+            }
 
-			public void DisconnectInterface(object obj, Transform rayOrigin = null)
-			{
-				var customHighlight = obj as ICustomHighlight;
-				if (customHighlight != null)
-				{
-					var evrHighlightModule = evr.GetModule<HighlightModule>();
-					evrHighlightModule.customHighlight -= customHighlight.OnHighlight;
-				}
-			}
-		}
-	}
+            public void DisconnectInterface(object target, object userData = null)
+            {
+                var customHighlight = target as ICustomHighlight;
+                if (customHighlight != null)
+                    evr.GetModule<HighlightModule>().customHighlight -= customHighlight.OnHighlight;
+            }
+        }
+    }
 }
-#endif
+

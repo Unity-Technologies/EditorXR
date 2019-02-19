@@ -1,0 +1,13 @@
+{
+    "name": "EXR-Editor",
+    "references": [
+        "EXR",
+        "Unity.TextMeshPro"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

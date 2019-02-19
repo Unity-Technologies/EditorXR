@@ -1,10 +1,8 @@
-﻿#if UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR.Core
+﻿namespace UnityEditor.Experimental.EditorVR.Core
 {
-	interface ISerializePreferences
-	{
-		object OnSerializePreferences();
-		void OnDeserializePreferences(object obj);
-	}
+    interface ISerializePreferences
+    {
+        object OnSerializePreferences();
+        void OnDeserializePreferences(object obj);
+    }
 }
-#endif

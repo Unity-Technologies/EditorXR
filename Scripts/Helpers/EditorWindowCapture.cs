@@ -3,7 +3,6 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using Object = UnityEngine.Object;
-
 #if UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -11,162 +10,172 @@ using System.Threading;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-	/// <summary>
-	/// Captures a RenderTexture representing an Editor window
-	/// </summary>
-	sealed class EditorWindowCapture : MonoBehaviour
-	{
-		// Offset for window header (internally defined in Unity) when sending events
-		// Mouse events are expected to be relative to the window, but our quad only displays the inner GUI
-		static readonly Vector2 k_WindowOffset = new Vector2(0, 22f);
+    /// <summary>
+    /// Captures a RenderTexture representing an Editor window
+    /// </summary>
+    sealed class EditorWindowCapture : MonoBehaviour
+    {
+        // Offset for window header (internally defined in Unity) when sending events
+        // Mouse events are expected to be relative to the window, but our quad only displays the inner GUI
+        static readonly Vector2 k_WindowOffset = new Vector2(0, 22f);
 
-		[SerializeField]
-		string m_WindowClass;
+        [SerializeField]
+        string m_WindowClass;
 
-		[SerializeField]
-		Rect m_Position = new Rect(0f, 0f, 600f, 400f);
+        [SerializeField]
+        Rect m_Position = new Rect(0f, 0f, 600f, 400f);
 
-		EditorWindow m_Window;
-		Object m_GuiView;
-		MethodInfo m_GrabPixels;
+        EditorWindow m_Window;
+        Object m_GuiView;
+        MethodInfo m_GrabPixels;
+        Rect m_ScaledRect;
 
-		/// <summary>
-		/// RenderTexture that represents the captured Editor Window
-		/// Updated frequently, when capture is enabled
-		/// </summary>
-		public RenderTexture texture { get; private set; }
+        /// <summary>
+        /// RenderTexture that represents the captured Editor Window
+        /// Updated frequently, when capture is enabled
+        /// </summary>
+        public RenderTexture texture { get; private set; }
 
-		public bool capture { get; set; }
+        public bool capture { get; set; }
 
-		void Start()
-		{
-			Type windowType = null;
-			Type guiViewType = null;
+        // Local method use only -- created here to reduce garbage collection
+        static readonly object[] k_GrabPixelsArgs = new object[2];
 
-			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-			{
-				var type = assembly.GetType(m_WindowClass);
-				if (type != null)
-					windowType = type;
+        void Start()
+        {
+            Type windowType = null;
+            Type guiViewType = null;
 
-				type = assembly.GetType("UnityEditor.GUIView");
-				if (type != null)
-					guiViewType = type;
-			}
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var type = assembly.GetType(m_WindowClass);
+                if (type != null)
+                    windowType = type;
 
-			if (windowType != null && guiViewType != null)
-			{
-				m_Window = ScriptableObject.CreateInstance(windowType) as EditorWindow;
+                type = assembly.GetType("UnityEditor.GUIView");
+                if (type != null)
+                    guiViewType = type;
+            }
 
-				// AE: The first assignment is to undock the window if it was docked and the second is to position it off screen
-				//window.position = rect;
-				m_Window.Show();
-				m_Window.position = m_Position;
+            if (windowType != null && guiViewType != null)
+            {
+                m_Window = ScriptableObject.CreateInstance(windowType) as EditorWindow;
 
-				// NOTE: Uncomment To grab any and all GUIViews
-				//foreach (UnityEngine.Object view in Resources.FindObjectsOfTypeAll(guiViewType))
-				//{
-				//    Debug.Log(view.name);             
-				//}
+                // AE: The first assignment is to undock the window if it was docked and the second is to position it off screen
+                //window.position = rect;
+                m_Window.Show();
+                m_Window.position = m_Position;
 
-				var parentField = windowType.GetField("m_Parent", BindingFlags.Instance | BindingFlags.NonPublic);
-				m_GuiView = (Object)parentField.GetValue(m_Window);
+                // NOTE: Uncomment To grab any and all GUIViews
+                //foreach (UnityEngine.Object view in Resources.FindObjectsOfTypeAll(guiViewType))
+                //{
+                //    Debug.Log(view.name);
+                //}
 
-				// It's necessary to force a repaint on first start-up of window
-				var repaint = windowType.GetMethod("RepaintImmediately", BindingFlags.Instance | BindingFlags.NonPublic);
-				repaint.Invoke(m_Window, null);
+                var parentField = windowType.GetField("m_Parent", BindingFlags.Instance | BindingFlags.NonPublic);
+                m_GuiView = (Object)parentField.GetValue(m_Window);
 
-				m_GrabPixels = guiViewType.GetMethod("GrabPixels", BindingFlags.Instance | BindingFlags.NonPublic);
+                // It's necessary to force a repaint on first start-up of window
+                var repaint = windowType.GetMethod("RepaintImmediately", BindingFlags.Instance | BindingFlags.NonPublic);
+                repaint.Invoke(m_Window, null);
 
-				capture = true;
-			}
-			else
-			{
-				Debug.LogError("Could not load " + m_WindowClass);
-			}
-		}
+                m_GrabPixels = guiViewType.GetMethod("GrabPixels", BindingFlags.Instance | BindingFlags.NonPublic);
 
-		void OnDisable()
-		{
-			if (m_Window)
-				m_Window.Close();
-		}
+                // Convert to GUI Rect (handles high-DPI screens)
+                m_ScaledRect = EditorGUIUtility.PointsToPixels(m_Position);
 
-		void Update()
-		{
-			if (m_Window && capture)
-			{
-				var rect = m_Position;
+                capture = true;
+            }
+            else
+            {
+                Debug.LogError("Could not load " + m_WindowClass);
+            }
+        }
 
-				// GrabPixels is relative to the GUIView and not the desktop, so we don't care about the offset
-				rect.x = 0f;
-				rect.y = 0f;
-				var width = Mathf.RoundToInt(rect.width);
-				var height = Mathf.RoundToInt(rect.height);
+        void OnDisable()
+        {
+            if (m_Window)
+                m_Window.Close();
+        }
 
-				if (texture && (texture.width != width || texture.height != height))
-				{
-					texture.Release();
-					texture = null;
-				}
+        void Update()
+        {
+            if (m_Window && capture)
+            {
+                var rect = m_ScaledRect;
 
-				if (!texture)
-				{
-					texture = new RenderTexture(width, height, 0);
-					texture.wrapMode = TextureWrapMode.Repeat;
-				}
+                // GrabPixels is relative to the GUIView and not the desktop, so we don't care about the offset
+                rect.x = 0f;
+                rect.y = 0f;
+                var width = Mathf.RoundToInt(rect.width);
+                var height = Mathf.RoundToInt(rect.height);
 
-				m_GrabPixels.Invoke(m_GuiView, new object[] { texture, rect });
-			}
-		}
+                if (texture && (texture.width != width || texture.height != height))
+                {
+                    texture.Release();
+                    texture = null;
+                }
 
-		public void SendEvent(Transform rayOrigin, Transform workspace, EventType type)
-		{
-			if (m_Window == null)
-				return;
+                if (!texture)
+                {
+                    texture = new RenderTexture(width, height, 0);
+                    texture.wrapMode = TextureWrapMode.Repeat;
+                }
 
-			var ray = new Ray(rayOrigin.position, rayOrigin.forward);
-			var plane = new Plane(workspace.up, workspace.position);
-			float distance;
-			plane.Raycast(ray, out distance);
-			var localPosition = transform.parent.InverseTransformPoint(ray.GetPoint(distance));
-			localPosition.x += 0.5f;
-			localPosition.y = -localPosition.z + 0.5f;
+                k_GrabPixelsArgs[0] = texture;
+                k_GrabPixelsArgs[1] = rect;
+                m_GrabPixels.Invoke(m_GuiView, k_GrabPixelsArgs);
+            }
+        }
 
-			var rect = m_Window.position;
-			var clickPosition = Vector2.Scale(localPosition, rect.size);
+        public void SendEvent(Transform rayOrigin, Transform workspace, EventType type)
+        {
+            if (m_Window == null)
+                return;
 
-			if (clickPosition.y < 0) // Click y positions below 0 move the window and cause issues
-				return;
+            var ray = new Ray(rayOrigin.position, rayOrigin.forward);
+            var plane = new Plane(workspace.up, workspace.position);
+            float distance;
+            plane.Raycast(ray, out distance);
+            var localPosition = transform.parent.InverseTransformPoint(ray.GetPoint(distance));
+            localPosition.x += 0.5f;
+            localPosition.y = -localPosition.z + 0.5f;
 
-			clickPosition += k_WindowOffset;
+            var rect = m_Window.position;
+            var clickPosition = Vector2.Scale(localPosition, rect.size);
 
-#if UNITY_EDITOR_WIN
-			// Send a message to cancel context menus in case the user clicked a drop-down
-			// Thread is needed because context menu blocks main thread
-			if (type == EventType.MouseDown)
-			{
-				new Thread(() =>
-				{
-					const int HWND_BROADCAST = 0xffff;
-					const int WM_CANCELMODE = 0x001F;
-					var hwnd = new IntPtr(HWND_BROADCAST);
-					SendMessage(hwnd, WM_CANCELMODE, 0, IntPtr.Zero);
-				}).Start();
-			}
-#endif
+            if (clickPosition.y < 0) // Click y positions below 0 move the window and cause issues
+                return;
 
-			m_Window.SendEvent(new Event
-			{
-				type = type,
-				mousePosition = clickPosition
-			});
-		}
+            clickPosition += k_WindowOffset;
 
 #if UNITY_EDITOR_WIN
-		[DllImport("User32.dll")]
-		public static extern int SendMessage(IntPtr hWnd, int uMsg, int wParam, IntPtr lParam);
+
+            // Send a message to cancel context menus in case the user clicked a drop-down
+            // Thread is needed because context menu blocks main thread
+            if (type == EventType.MouseDown)
+            {
+                new Thread(() =>
+                {
+                    const int HWND_BROADCAST = 0xffff;
+                    const int WM_CANCELMODE = 0x001F;
+                    var hwnd = new IntPtr(HWND_BROADCAST);
+                    SendMessage(hwnd, WM_CANCELMODE, 0, IntPtr.Zero);
+                }).Start();
+            }
 #endif
-	}
+
+            m_Window.SendEvent(new Event
+            {
+                type = type,
+                mousePosition = clickPosition
+            });
+        }
+
+#if UNITY_EDITOR_WIN
+        [DllImport("User32.dll")]
+        public static extern int SendMessage(IntPtr hWnd, int uMsg, int wParam, IntPtr lParam);
+#endif
+    }
 }
 #endif

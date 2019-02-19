@@ -1,57 +1,57 @@
-#if UNITY_EDITOR
 using System;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class LockUI : MonoBehaviour, IUsesStencilRef
-	{
-		[SerializeField]
-		Image m_LockImage;
+    sealed class LockUI : MonoBehaviour, IUsesStencilRef
+    {
+        const string k_MaterialStencilRefProperty = "_StencilRef";
 
-		[SerializeField]
-		Sprite m_LockIcon;
+        [SerializeField]
+        Image m_LockImage;
 
-		[SerializeField]
-		Sprite m_UnlockIcon;
+        [SerializeField]
+        Sprite m_LockIcon;
 
-		[SerializeField]
-		WorkspaceButton m_Button;
+        [SerializeField]
+        Sprite m_UnlockIcon;
 
-		public byte stencilRef { get; set; }
+        [SerializeField]
+        WorkspaceButton m_Button;
 
-		public event Action<Transform> hovered;
-		public event Action<Transform> clicked;
+        public byte stencilRef { get; set; }
 
-		public void Setup()
-		{
-			var mr = GetComponentInChildren<MeshRenderer>();
-			foreach (var sm in mr.sharedMaterials)
-			{
-				sm.SetInt("_StencilRef", stencilRef);
-			}
+        public event Action<Transform> hovered;
+        public event Action<Transform> clicked;
 
-			m_Button.clicked += OnClicked;
-			m_Button.hovered += OnHovered;
-		}
+        public void Setup()
+        {
+            var mr = GetComponentInChildren<MeshRenderer>();
+            foreach (var sm in mr.sharedMaterials)
+            {
+                sm.SetInt(k_MaterialStencilRefProperty, stencilRef);
+            }
 
-		void OnClicked(Transform rayOrigin)
-		{
-			if (clicked != null)
-				clicked(rayOrigin);
-		}
+            m_Button.clicked += OnClicked;
+            m_Button.hovered += OnHovered;
+        }
 
-		void OnHovered(Transform rayOrigin)
-		{
-			if (hovered != null)
-				hovered(rayOrigin);
-		}
+        void OnClicked(Transform rayOrigin)
+        {
+            if (clicked != null)
+                clicked(rayOrigin);
+        }
 
-		public void UpdateIcon(bool locked)
-		{
-			m_LockImage.sprite = locked ? m_LockIcon : m_UnlockIcon;
-		}
-	}
+        void OnHovered(Transform rayOrigin)
+        {
+            if (hovered != null)
+                hovered(rayOrigin);
+        }
+
+        public void UpdateIcon(bool locked)
+        {
+            m_LockImage.sprite = locked ? m_LockIcon : m_UnlockIcon;
+        }
+    }
 }
-#endif

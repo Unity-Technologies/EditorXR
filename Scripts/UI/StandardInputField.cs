@@ -1,109 +1,108 @@
-#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
-	sealed class StandardInputField : InputField
-	{
-		public enum LineType
-		{
-			SingleLine,
-			MultiLine,
-		}
+    sealed class StandardInputField : InputField
+    {
+        public enum LineType
+        {
+            SingleLine,
+            MultiLine,
+        }
 
-		[SerializeField]
-		LineType m_LineType = LineType.SingleLine;
+        [SerializeField]
+        LineType m_LineType = LineType.SingleLine;
 
-		bool m_CapsLock;
-		bool m_Shift;
+        bool m_CapsLock;
+        bool m_Shift;
 
-		public override void OpenKeyboard()
-		{
-			// AE 12/6/16 - Disabling for now since it is not completely functional
-		}
+        public override void OpenKeyboard()
+        {
+            // AE 12/6/16 - Disabling for now since it is not completely functional
+        }
 
-		protected override void Append(char c)
-		{
-			var len = m_Text.Length;
+        protected override void Append(char c)
+        {
+            var len = m_Text.Length;
 
-			if (m_CapsLock && !m_Shift || !m_CapsLock && m_Shift)
-				c = char.ToUpper(c);
-			else if (m_CapsLock && m_Shift || !m_CapsLock && !m_Shift)
-				c = char.ToLower(c);
-			// Deactivate shift after pressing a key
-			if (m_Shift)
-				Shift();
+            if (m_CapsLock && !m_Shift || !m_CapsLock && m_Shift)
+                c = char.ToUpper(c);
+            else if (m_CapsLock && m_Shift || !m_CapsLock && !m_Shift)
+                c = char.ToLower(c);
 
-			text += c;
+            // Deactivate shift after pressing a key
+            if (m_Shift)
+                Shift();
 
-			if (len != m_Text.Length)
-				SendOnValueChangedAndUpdateLabel();
-		}
+            text += c;
 
-		protected override void Backspace()
-		{
-			if (m_Text.Length == 0)
-				return;
+            if (len != m_Text.Length)
+                SendOnValueChangedAndUpdateLabel();
+        }
 
-			m_Text = m_Text.Remove(m_Text.Length - 1);
+        protected override void Backspace()
+        {
+            if (m_Text.Length == 0)
+                return;
 
-			SendOnValueChangedAndUpdateLabel();
-		}
+            m_Text = m_Text.Remove(m_Text.Length - 1);
 
-		protected override void Tab()
-		{
-			if (m_LineType == LineType.SingleLine) return;
+            SendOnValueChangedAndUpdateLabel();
+        }
 
-			const char kTab = '\t';
-			text += kTab;
+        protected override void Tab()
+        {
+            if (m_LineType == LineType.SingleLine) return;
 
-			SendOnValueChangedAndUpdateLabel();
-		}
+            const char kTab = '\t';
+            text += kTab;
 
-		protected override void Return()
-		{
-			if (m_LineType == LineType.SingleLine) return;
+            SendOnValueChangedAndUpdateLabel();
+        }
 
-			const char kNewline = '\n';
-			const string kLineBreak = "<br>";
-			text += kNewline;
-			text = text.Replace(kLineBreak, kNewline.ToString());
+        protected override void Return()
+        {
+            if (m_LineType == LineType.SingleLine) return;
 
-			SendOnValueChangedAndUpdateLabel();
-		}
+            const char kNewline = '\n';
+            const string kLineBreak = "<br>";
+            text += kNewline;
+            text = text.Replace(kLineBreak, kNewline.ToString());
 
-		protected override void Space()
-		{
-			var len = m_Text.Length;
+            SendOnValueChangedAndUpdateLabel();
+        }
 
-			const string kWhiteSpace = " ";
-			text += kWhiteSpace;
+        protected override void Space()
+        {
+            var len = m_Text.Length;
 
-			if (len != m_Text.Length)
-				SendOnValueChangedAndUpdateLabel();
-		}
+            const string kWhiteSpace = " ";
+            text += kWhiteSpace;
 
-		protected override void Shift()
-		{
-			m_Shift = !m_Shift;
+            if (len != m_Text.Length)
+                SendOnValueChangedAndUpdateLabel();
+        }
 
-			UpdateKeyText();
-		}
+        protected override void Shift()
+        {
+            m_Shift = !m_Shift;
 
-		protected override void CapsLock()
-		{
-			m_CapsLock = !m_CapsLock;
+            UpdateKeyText();
+        }
 
-			UpdateKeyText();
-		}
+        protected override void CapsLock()
+        {
+            m_CapsLock = !m_CapsLock;
 
-		void UpdateKeyText()
-		{
-			if (m_CapsLock && !m_Shift || !m_CapsLock && m_Shift)
-				m_Keyboard.ActivateShiftModeOnKeys();
-			else if (m_CapsLock && m_Shift || !m_CapsLock && !m_Shift)
-				m_Keyboard.DeactivateShiftModeOnKeys();
-		}
-	}
+            UpdateKeyText();
+        }
+
+        void UpdateKeyText()
+        {
+            if (m_CapsLock && !m_Shift || !m_CapsLock && m_Shift)
+                m_Keyboard.ActivateShiftModeOnKeys();
+            else if (m_CapsLock && m_Shift || !m_CapsLock && !m_Shift)
+                m_Keyboard.DeactivateShiftModeOnKeys();
+        }
+    }
 }
-#endif

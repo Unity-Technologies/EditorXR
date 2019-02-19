@@ -1,65 +1,50 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-	partial class EditorVR
-	{
-		class Interfaces : Nested
-		{
-			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
+    partial class EditorVR
+    {
+        class Interfaces : Nested
+        {
+            readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
-			event IConnectInterfacesMethods.ConnectInterfacesDelegate connectInterfaces;
-			event IConnectInterfacesMethods.DisonnectInterfacesDelegate disconnectInterfaces;
+            event Action<object, object> connectInterfaces;
+            event Action<object, object> disconnectInterfaces;
 
-			public Interfaces()
-			{
-				IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
-				IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
-			}
+            public Interfaces()
+            {
+                IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
+                IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
+            }
 
-			internal void AttachInterfaceConnectors(object obj)
-			{
-				var connector = obj as IInterfaceConnector;
-				if (connector != null)
-				{
-					connectInterfaces += connector.ConnectInterface;
-					disconnectInterfaces += connector.DisconnectInterface;
-				}
-			}
+            internal void AttachInterfaceConnectors(object target)
+            {
+                var connector = target as IInterfaceConnector;
+                if (connector != null)
+                {
+                    connectInterfaces += connector.ConnectInterface;
+                    disconnectInterfaces += connector.DisconnectInterface;
+                }
+            }
 
-			internal void ConnectInterfaces(object obj, InputDevice device)
-			{
-				Transform rayOrigin = null;
-				var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.inputDevice == device);
-				if (deviceData != null)
-					rayOrigin = deviceData.rayOrigin;
+            void ConnectInterfaces(object target, object userData = null)
+            {
+                if (!m_ConnectedInterfaces.Add(target))
+                    return;
 
-				ConnectInterfaces(obj, rayOrigin);
-			}
+                if (connectInterfaces != null)
+                    connectInterfaces(target, userData);
+            }
 
-			internal void ConnectInterfaces(object obj, Transform rayOrigin = null)
-			{
-				if (!m_ConnectedInterfaces.Add(obj))
-					return;
+            void DisconnectInterfaces(object target, object userData = null)
+            {
+                m_ConnectedInterfaces.Remove(target);
 
-				if (connectInterfaces != null)
-					connectInterfaces(obj, rayOrigin);
-			}
-
-			internal void DisconnectInterfaces(object obj, Transform rayOrigin = null)
-			{
-				m_ConnectedInterfaces.Remove(obj);
-
-				if (disconnectInterfaces != null)
-					disconnectInterfaces(obj, rayOrigin);
-			}
-		}
-	}
+                if (disconnectInterfaces != null)
+                    disconnectInterfaces(target, userData);
+            }
+        }
+    }
 }
 
-#endif
