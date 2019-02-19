@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -136,9 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (m_IntersectionModule == null)
                     m_IntersectionModule = evr.GetModule<IntersectionModule>();
 
-                var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-
-                var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
+                var renderer = m_IntersectionModule.GetIntersectedObjectForRayOrigin(rayOrigin);
                 if (renderer)
                     return renderer.gameObject;
 
@@ -265,4 +262,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
+

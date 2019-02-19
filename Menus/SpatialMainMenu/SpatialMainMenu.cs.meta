@@ -1,0 +1,24 @@
+fileFormatVersion: 2
+guid: 0a49111bce950ca43a438825e2ba304a
+timeCreated: 1507852516
+licenseType: Pro
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_ActionMap: {fileID: 11400000, guid: 5b2451b50b5b2ff4fb3c3d8cda77aa65, type: 2}
+  - m_FaceRotationPulse: {fileID: 11400000, guid: f5f56317312943d4da218b9b2e6ea9d0,
+      type: 2}
+  - m_ShowPulse: {fileID: 11400000, guid: 7c69a56582b55ec41b36b49c44a42905, type: 2}
+  - m_HidePulse: {fileID: 11400000, guid: 29832200cc7e1744b9e98febd6d30db8, type: 2}
+  - m_MainMenuPrefab: {fileID: 114000011808682746, guid: b7d63888e7ed4654ba750593eaa5f75c,
+      type: 2}
+  - m_ButtonClickPulse: {fileID: 11400000, guid: f66cb0a158f54124aa4158bbad3ed702,
+      type: 2}
+  - m_ButtonHoverPulse: {fileID: 11400000, guid: dd561ccb8162d1040adba0a7ea60eadc,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

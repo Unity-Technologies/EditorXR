@@ -1,11 +1,11 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class SpatialScrollModule : MonoBehaviour, IUsesViewerScale, IControlHaptics, IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
+    public sealed class SpatialScrollModule : MonoBehaviour, ISystemModule, IUsesViewerScale, IControlHaptics,
+        IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
     {
         [SerializeField]
         HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection
@@ -177,4 +177,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

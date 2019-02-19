@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Input
@@ -26,4 +25,3 @@ namespace UnityEditor.Experimental.EditorVR.Input
         public event Action activeChanged;
     }
 }
-#endif

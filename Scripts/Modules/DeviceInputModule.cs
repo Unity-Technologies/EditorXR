@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-#if !UNITY_2017_2_OR_NEWER
+﻿#if !UNITY_2017_2_OR_NEWER
 #pragma warning disable 649 // "never assigned to" warning
 #endif
 
@@ -12,7 +11,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DeviceInputModule : MonoBehaviour
+    sealed class DeviceInputModule : MonoBehaviour, ISystemModule
     {
         class InputProcessor
         {
@@ -86,6 +85,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
         }
 
+        /// <summary>
+        /// Called in the EditorVR Update() function
+        /// </summary>
         public void ProcessInput()
         {
             k_RemoveList.Clear();
@@ -157,7 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 actionMapInput.autoReinitialize = false;
 
-                // Resetting AMIs cause all AMIs (active or not) that use the same sources to be reset, which causes 
+                // Resetting AMIs cause all AMIs (active or not) that use the same sources to be reset, which causes
                 // problems (e.g. dropping objects because wasJustPressed becomes true when reset)
                 actionMapInput.resetOnActiveChanged = false;
                 actionMapInput.active = true;
@@ -175,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     Debug.LogWarning("Cannot use IStandardActionMap and ICustomActionMap together in " + obj.GetType());
 
                 var input = CreateActionMapInput(customMap.actionMap, device);
-                if (customMap.ignoreLocking)
+                if (customMap.ignoreActionMapInputLocking)
                     m_IgnoreLocking[input] = customMap;
 
                 return input;
@@ -334,7 +336,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     {
                         m_LockedControls.Remove(input[i]);
                     }
-                    
+
                     var customActionMap = processInput as ICustomActionMap;
                     if (customActionMap != null)
                         m_IgnoreLocking.Remove(processor.input);
@@ -343,4 +345,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

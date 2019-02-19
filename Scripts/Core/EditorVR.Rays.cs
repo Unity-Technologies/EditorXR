@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -106,13 +105,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var mainMenu = deviceData.mainMenu;
                 var customMenu = deviceData.customMenu;
 
-                if (mainMenu.menuHideFlags == 0 || (customMenu != null && customMenu.menuHideFlags == 0))
+                if (mainMenu != null)
                 {
-                    AddVisibilitySettings(rayOrigin, mainMenu, false, false);
-                }
-                else
-                {
-                    RemoveVisibilitySettings(rayOrigin, mainMenu);
+                    if (mainMenu.menuHideFlags == 0 || customMenu != null && customMenu.menuHideFlags == 0)
+                        AddVisibilitySettings(rayOrigin, mainMenu, false, false);
+                    else
+                        AddVisibilitySettings(rayOrigin, mainMenu, true, true, 1);
                 }
             }
 
@@ -137,10 +135,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             internal void CreateAllProxies()
             {
                 var deviceInputModule = evr.GetModule<DeviceInputModule>();
+                var cameraRig = CameraUtils.GetCameraRig();
                 foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
                 {
-                    var component = ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig, false);
-                    var proxy = (IProxy)component;
+                    var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
                     this.ConnectInterfaces(proxy);
                     proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
                     proxy.activeChanged += () => OnProxyActiveChanged(proxy);
@@ -223,7 +221,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             }
 
                             rayOrigin.name = string.Format("{0} Ray Origin", node);
-                            var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;
+                            var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin, false).transform;
                             rayTransform.position = rayOrigin.position;
                             rayTransform.rotation = rayOrigin.rotation;
                             var dpr = rayTransform.GetComponent<DefaultProxyRay>();
@@ -368,27 +366,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return go;
 
                 // If a raycast did not find an object use the spatial hash as a final test
-                var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-                var renderer = intersectionModule.GetIntersectedObjectForTester(tester);
+                var renderer = intersectionModule.GetIntersectedObjectForRayOrigin(rayOrigin);
                 if (renderer && !renderer.CompareTag(k_VRPlayerTag))
                     return renderer.gameObject;
 
-                var enumerator = evr.GetNestedModule<MiniWorlds>().rays.GetEnumerator();
-                while (enumerator.MoveNext())
+                foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
                 {
-                    var miniWorldRay = enumerator.Current.Value;
+                    var miniWorldRay = kvp.Value;
                     if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
                     {
-                        tester = miniWorldRay.tester;
-                        if (!tester.active)
-                            continue;
-
-                        renderer = intersectionModule.GetIntersectedObjectForTester(tester);
+                        renderer = intersectionModule.GetIntersectedObjectForRayOrigin(kvp.Key);
                         if (renderer)
                             return renderer.gameObject;
                     }
                 }
-                enumerator.Dispose();
 
                 return null;
             }
@@ -550,4 +541,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
+

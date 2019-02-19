@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using TMPro;
@@ -241,7 +240,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             UpdateArrow(expanded);
 
+#if UNITY_EDITOR
             var isPrefab = gameObject && PrefabUtility.GetPrefabType(gameObject) == PrefabType.PrefabInstance;
+#else
+            var isPrefab = false;
+#endif
 
             // Set selected/hover/normal color
             if (selected)
@@ -373,7 +376,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 if (this.IsOverShoulder(transform))
                 {
+#if UNITY_EDITOR
                     ObjectUtils.Destroy(EditorUtility.InstanceIDToObject(data.index));
+#else
+                    // TODO: Hierarchy indices
+#endif
                 }
 
                 // OnHierarchyChanged doesn't happen until next frame--delay un-grab so the object doesn't start moving to the wrong spot
@@ -562,4 +569,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

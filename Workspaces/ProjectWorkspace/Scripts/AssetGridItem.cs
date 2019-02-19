@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -89,6 +88,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         // negative value means object has been checked and can't be assigned to
         // positive means it can be assigned, 0 means it hasn't yet been checked
         readonly Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
+
+        readonly List<Renderer> m_SelectionRenderers = new List<Renderer>();
+        readonly Dictionary<Renderer, Material> m_SelectionOriginalMaterials = new Dictionary<Renderer, Material>();
 
         public GameObject icon
         {
@@ -413,6 +415,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 StopHighlight(m_CachedDropSelection, rayOrigin);
                 m_CachedDropSelection = null;
                 m_LastDragSelectionChange = Time.time;
+                RestoreOriginalSelectionMaterials();
             }
             else if (selection != null)
             {
@@ -423,10 +426,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     StopHighlight(m_CachedDropSelection);
                     // if we've previously checked this object, indicate the result again
-                    if(previous > 0f)
+                    if (previous > 0f)
+                    {
                         SetAssignableHighlight(selection, rayOrigin, true);
+                        PreviewMaterialOnSelection(selection);
+                    }
                     else if (previous < 0f)
+                    {
                         SetAssignableHighlight(selection, rayOrigin, false);
+                        RestoreOriginalSelectionMaterials();
+                    }
 
                     m_CachedDropSelection = selection;
                     m_LastDragSelectionChange = time;
@@ -440,10 +449,46 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     {
                         var assignable = CheckAssignable(selection);
                         SetAssignableHighlight(selection, rayOrigin, assignable);
+
+                        if (assignable)
+                            PreviewMaterialOnSelection(selection);
                     }
                 }
             }
-            
+        }
+
+        void PreviewMaterialOnSelection(GameObject selection)
+        {
+            if (data.type != "Material" || selection == null)
+                return;
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
+
+            selection.GetComponentsInChildren(m_SelectionRenderers);
+
+            var material = (Material)data.asset;
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                m_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
+                renderer.sharedMaterial = material;
+            }
+        }
+
+        void RestoreOriginalSelectionMaterials()
+        {
+            if (m_SelectionRenderers.Count < 1)
+                return;
+
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                Material originalMaterial;
+                if (m_SelectionOriginalMaterials.TryGetValue(renderer, out originalMaterial))
+                    renderer.sharedMaterial = originalMaterial;
+            }
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
         }
 
         bool CheckAssignable(GameObject go, bool checkChildren = false)
@@ -509,7 +554,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 var previewObjectTransform = gridItem.m_PreviewObjectTransform;
                 if (previewObjectTransform)
                 {
+#if UNITY_EDITOR
                     Undo.RegisterCreatedObjectUndo(previewObjectTransform.gameObject, "Place Scene Object");
+#endif
                     this.PlaceSceneObject(previewObjectTransform, m_PreviewPrefabScale);
                 }
                 else
@@ -571,15 +618,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
 #if UNITY_EDITOR
             var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
+#else
+            var go = (GameObject)Instantiate(data.asset);
+#endif
+
             var transform = go.transform;
             transform.position = itemTransform.position;
             transform.rotation = MathUtilsExt.ConstrainYawRotation(itemTransform.rotation);
-#else
-            var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-#endif
 
             this.AddToSpatialHash(go);
+
+#if UNITY_EDITOR
             Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
+#endif
         }
 
         GameObject TryGetSelection(Transform rayOrigin, bool includeRays)
@@ -818,4 +869,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public void OnResetDirectSelectionState() {}
     }
 }
-#endif

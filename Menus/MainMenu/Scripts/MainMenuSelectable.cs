@@ -1,9 +1,7 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEditor.Experimental.EditorVR.Core;
 
 #if INCLUDE_TEXT_MESH_PRO
 using TMPro;
@@ -61,5 +59,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif
-

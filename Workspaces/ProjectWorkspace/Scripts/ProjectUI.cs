@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Handles;
+﻿using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -32,4 +31,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public WorkspaceHighlight folderPanelHighlight { get { return m_FolderPanelHighlight; } }
     }
 }
-#endif

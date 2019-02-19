@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Handles;
+﻿using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
@@ -38,4 +37,3 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         }
     }
 }
-#endif

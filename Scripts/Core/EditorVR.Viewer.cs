@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +15,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         GameObject m_PlayerModelPrefab;
 
         [SerializeField]
+        GameObject m_PlayerFloorPrefab;
+
+        [SerializeField]
         GameObject m_PreviewCameraPrefab;
 
         class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces
@@ -25,8 +27,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 [SerializeField]
                 Vector3 m_CameraPosition;
+
                 [SerializeField]
                 Quaternion m_CameraRotation;
+
                 [SerializeField]
                 float m_CameraRigScale = 1;
 
@@ -58,6 +62,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             static Collider[] s_CachedColliders = new Collider[k_MaxCollisionCheck];
 
             PlayerBody m_PlayerBody;
+            GameObject m_PlayerFloor;
+
             float m_OriginalNearClipPlane;
             float m_OriginalFarClipPlane;
             readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
@@ -93,9 +99,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 VRView.hmdStatusChange -= OnHMDStatusChange;
 
                 var cameraRig = CameraUtils.GetCameraRig();
-                cameraRig.transform.parent = null;
+                if (cameraRig)
+                    cameraRig.transform.parent = null;
 
                 ObjectUtils.Destroy(m_PlayerBody.gameObject);
+                ObjectUtils.Destroy(m_PlayerFloor);
 
                 if (customPreviewCamera != null)
                     ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -173,7 +181,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 var hmdOnlyLayerMask = 0;
-                if (evr.m_PreviewCameraPrefab)
+                if (!Application.isPlaying && evr.m_PreviewCameraPrefab)
                 {
                     var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
                     go.transform.SetParent(CameraUtils.GetCameraRig(), false);
@@ -187,13 +195,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         this.ConnectInterfaces(customPreviewCamera);
                     }
                 }
+#if UNITY_EDITOR
                 VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
+#endif
             }
 
             internal void UpdateCamera()
             {
                 if (customPreviewCamera != null)
                     customPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
+            }
+
+            internal void AddPlayerFloor()
+            {
+                m_PlayerFloor = ObjectUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
             }
 
             internal void AddPlayerModel()
@@ -326,4 +341,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
+

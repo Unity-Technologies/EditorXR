@@ -1,12 +1,12 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Decorates objects which can delete objects from the scene
-    /// </summary>    public interface IDeleteSceneObject
+    /// </summary>
+    public interface IDeleteSceneObject
     {
     }
 
@@ -24,4 +24,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

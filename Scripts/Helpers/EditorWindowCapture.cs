@@ -6,7 +6,6 @@ using Object = UnityEngine.Object;
 #if UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
 using System.Threading;
-
 #endif
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
@@ -29,6 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         EditorWindow m_Window;
         Object m_GuiView;
         MethodInfo m_GrabPixels;
+        Rect m_ScaledRect;
 
         /// <summary>
         /// RenderTexture that represents the captured Editor Window
@@ -69,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 // NOTE: Uncomment To grab any and all GUIViews
                 //foreach (UnityEngine.Object view in Resources.FindObjectsOfTypeAll(guiViewType))
                 //{
-                //    Debug.Log(view.name);             
+                //    Debug.Log(view.name);
                 //}
 
                 var parentField = windowType.GetField("m_Parent", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -80,6 +80,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 repaint.Invoke(m_Window, null);
 
                 m_GrabPixels = guiViewType.GetMethod("GrabPixels", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                // Convert to GUI Rect (handles high-DPI screens)
+                m_ScaledRect = EditorGUIUtility.PointsToPixels(m_Position);
 
                 capture = true;
             }
@@ -99,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         {
             if (m_Window && capture)
             {
-                var rect = m_Position;
+                var rect = m_ScaledRect;
 
                 // GrabPixels is relative to the GUIView and not the desktop, so we don't care about the offset
                 rect.x = 0f;
@@ -118,7 +121,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                     texture = new RenderTexture(width, height, 0);
                     texture.wrapMode = TextureWrapMode.Repeat;
                 }
-
 
                 k_GrabPixelsArgs[0] = texture;
                 k_GrabPixelsArgs[1] = rect;

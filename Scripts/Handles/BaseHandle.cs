@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -287,4 +286,3 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         }
     }
 }
-#endif

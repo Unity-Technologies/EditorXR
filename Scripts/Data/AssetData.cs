@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using ListView;
+﻿using ListView;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -58,4 +57,3 @@ namespace UnityEditor.Experimental.EditorVR.Data
         }
     }
 }
-#endif

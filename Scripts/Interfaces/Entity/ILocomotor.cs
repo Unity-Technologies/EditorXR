@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Decorates a class as a locomotion implementer that uses the camera rig
@@ -8,4 +7,3 @@ namespace UnityEditor.Experimental.EditorVR
     {
     }
 }
-#endif

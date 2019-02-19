@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -11,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     // Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-    sealed class MultipleRayInputModule : BaseInputModule, IUsesPointer, IConnectInterfaces
+    sealed class MultipleRayInputModule : BaseInputModule, ISystemModule, IUsesPointer, IConnectInterfaces
     {
         public class RaycastSource : ICustomActionMap, IRequestFeedback
         {
@@ -32,7 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
 
             public ActionMap actionMap { get { return m_Owner.m_UIActionMap; } }
-            public bool ignoreLocking { get { return false; } }
+            public bool ignoreActionMapInputLocking { get { return false; } }
 
             public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<RaycastSource, bool> validationCallback)
             {
@@ -509,4 +508,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

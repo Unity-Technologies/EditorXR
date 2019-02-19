@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
@@ -28,6 +27,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         [SerializeField]
         ColorPickerSquareUI m_ColorPickerSquare;
 
+        [SerializeField]
+        Slider m_BrightnessSlider;
+
         Vector3 m_PickerTargetPosition;
 
         Texture2D m_BrightnessBarTexture;
@@ -41,10 +43,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public Action onHideCalled { private get; set; }
 
-        void Start()
+        void Awake()
         {
             m_ColorPickerSquare.onDrag = OnDrag;
-
+            m_BrightnessSlider.onValueChanged.AddListener(OnSliderChanged);
             m_ColorPickerTexture = m_ColorPickerSquare.GetComponent<RawImage>().texture as Texture2D;
             GenerateBrightnessBar();
         }
@@ -183,4 +185,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif
