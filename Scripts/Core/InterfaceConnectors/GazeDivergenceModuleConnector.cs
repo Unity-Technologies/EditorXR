@@ -10,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public void LateBindInterfaceMethods(GazeDivergenceModule provider)
             {
                 IDetectGazeDivergenceMethods.isAboveDivergenceThreshold = provider.IsAboveDivergenceThreshold;
+                IDetectGazeDivergenceMethods.setDivergenceRecoverySpeed = provider.SetGazeDivergenceRecoverySpeed;
             }
         }
     }

@@ -244,23 +244,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         var currentTool = deviceData.currentTool;
                         var currentToolType = currentTool.GetType();
                         var currentToolIsSelect = currentToolType == typeof(SelectionTool);
-                        var setSelectAsCurrentTool = toolType == typeof(SelectionTool) && !currentToolIsSelect;
+                        var setSelectAsCurrentToolOnDespawn = toolType == typeof(SelectionTool) && !currentToolIsSelect;
                         var toolsMenu = deviceData.toolsMenu;
 
                         // If this tool was on the current device already, remove it, if it is selected while already being the current tool
-                        var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentTool; // || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
+                        var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentToolOnDespawn;
                         if (currentTool != null && despawn)
                         {
                             DespawnTool(deviceData, currentTool);
 
-                            if (!setSelectAsCurrentTool)
+                            if (!setSelectAsCurrentToolOnDespawn)
                             {
                                 // Delete a button of the first type parameter
                                 // Then select a button the second type param (the new current tool)
                                 // Don't spawn a new tool, since we are only removing the old tool
                                 toolsMenu.deleteToolsMenuButton(toolType, currentToolType);
                             }
-                            else if (setSelectAsCurrentTool)
+                            else if (setSelectAsCurrentToolOnDespawn)
                             {
                                 // Set the selection tool as the active tool, if select is to be the new current tool
                                 toolsMenu.setButtonForType(typeof(SelectionTool), null);
@@ -352,6 +352,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             return;
                         }
 
+                        if (deviceData.customMenu != null)
+                        {
+                            deviceData.menuHideData.Remove(deviceData.customMenu);
+                            deviceData.customMenu = null;
+                        }
+
                         var oldTool = deviceData.toolData.Pop();
                         oldTool.input.active = false;
                         topTool = deviceData.toolData.Peek();
@@ -379,6 +385,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                 // Pop this tool of any other stack that references it (for IMultiDeviceTools)
                                 if (tool is IMultiDeviceTool)
                                 {
+                                    otherDeviceData.toolsMenu.deleteToolsMenuButton(toolType, typeof(SelectionTool));
+
                                     if (otherTool.GetType() == toolType)
                                     {
                                         oldTool = otherDeviceData.toolData.Pop();
@@ -403,6 +411,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             }
                         }
                     }
+
                     this.DisconnectInterfaces(tool, deviceData.rayOrigin);
 
                     // Exclusive tools disable other tools underneath, so restore those

@@ -134,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Action destroy { get { return DestroyButton; } }
 
         public Action<IToolsMenuButton> showAllButtons { private get; set; }
-        public Action hoverExit { get; set; }
+        public Action hoverExit { private get; set; }
 
         public Type toolType
         {
@@ -189,7 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public bool implementsSecondaryButton
         {
-            get { return m_ImplementsSecondaryButton; }
+            private get { return m_ImplementsSecondaryButton; }
             set
             {
                 m_ImplementsSecondaryButton = value;
@@ -387,7 +387,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        public Sprite previewIcon
+        Sprite previewIcon
         {
             get { return m_PreviewIcon; }
             set
@@ -397,7 +397,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        public bool moveToAlternatePosition
+        bool moveToAlternatePosition
         {
             get { return m_MoveToAlternatePosition; }
             set
@@ -425,7 +425,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 
         // All buttons in a given menu share the same stencil ID which is fetched in the UI, then assigned to each button in the same menu
-        public byte stencilRef { get; set; }
+        public byte stencilRef { private get; set; }
 
         public event Action hovered;
 
@@ -569,7 +569,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 return;
 
             this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHideAndDestroy());
+
             closeButton();
+
             ActionButtonHoverExit();
         }
 

@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// The SpatialMenu's UI/View-controller
     /// Drives the SpatialMenu visuals elements
     /// </summary>
-    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IConnectInterfaces, IUsesRaycastResults
+    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IDetectGazeDivergence, IConnectInterfaces, IUsesRaycastResults
     {
         const float k_AllowedGazeDivergence = 45f;
         const float k_AllowedMaxHMDDistanceDivergence = 0.95f; // Distance at which the menu will move towards
@@ -25,6 +25,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const bool k_AlwaysRepositionIfOutOfFocus = true;
         const string k_ExternalRayBasedInputModeName = "Ray Input Mode";
         const string k_TriggerRotationInputModeName = "Thumb Rotation Input Mode";
+
+        [Tooltip("Scales the amount of delay before the menu will reposition itself (higher is faster)")]
+        [SerializeField]
+        float m_AdaptiveRepositionRate = 1f;
 
         [Header("Common UI")]
         [SerializeField]
@@ -258,9 +262,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
+        void Awake()
+        {
+            m_Visible = true;
+            visible = false;
+        }
+
         void Start()
         {
-            visible = false;
             m_ReturnToPreviousBackgroundMaterial = MaterialUtils.GetMaterialClone(m_ReturnToPreviousBackgroundRenderer);
             m_ReturnToPreviousBackgroundRenderer.material = m_ReturnToPreviousBackgroundMaterial;
             m_ReturnToPreviousBackgroundMaterial.SetFloat("_Blur", 0);
@@ -299,6 +308,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             // Manually set the backer bool to true, in order to perform a manual hiding of the menu in this case
             m_Visible = true;
             visible = false;
+
+            this.SetDivergenceRecoverySpeed(m_AdaptiveRepositionRate);
         }
 
         void Reset()
@@ -383,6 +394,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             m_HomeSectionDescription.gameObject.SetActive(true);
 
             m_CurrentlyDisplayedMenuElements.Clear();
+            var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( x => x != m_SubMenuContainer);
+            foreach (var child in deleteOldChildren)
+            {
+                if (child != null && child.gameObject != null)
+                    ObjectUtils.Destroy(child.gameObject);
+            }
+
             var homeMenuElementParent = (RectTransform)m_HomeMenuLayoutGroup.transform;
             foreach (var data in spatialMenuData)
             {
@@ -474,24 +492,56 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void SelectCurrentlyHighlightedElement(Node node)
         {
+            // In the case of a ray-based selection, don't process the selection of a currently highlighted element assigned via another input-mode
+            if (m_SpatialInterfaceInputMode == SpatialInterfaceInputMode.Ray)
+            {
+                var rayHoveringButton = false;
+                for (int i = 0; i < m_CurrentlyDisplayedMenuElements.Count; ++i)
+                {
+                    if (m_CurrentlyDisplayedMenuElements[i] != null)
+                    {
+                        rayHoveringButton = m_CurrentlyDisplayedMenuElements[i].hoveringNode != Node.None;
+                        if (rayHoveringButton)
+                            break;
+                    }
+                }
+
+                if (rayHoveringButton)
+                    return;
+            }
+
             if (m_CurrentlyHighlightedMenuElement != null)
             {
                 // Spatial/cyclical/trackpad/thumbstick selection will set this reference
                 m_CurrentlyHighlightedMenuElement.selected(node);
+                for (int i = 0; i < m_CurrentlyDisplayedMenuElements.Count; ++i)
+                {
+                    if (m_CurrentlyDisplayedMenuElements[i] != null)
+                        m_CurrentlyDisplayedMenuElements[i].highlighted = false;
+                }
             }
             else
             {
                 // Search for an element that is being hovered,
                 // if no currentlyHighlightedMenuElement was assigned via a spatial/cyclical input means
+                var highlightedButtonFound = false;
                 for (int i = 0; i < m_CurrentlyDisplayedMenuElements.Count; ++i)
                 {
                     if (m_CurrentlyDisplayedMenuElements[i] != null)
                     {
-                        var highlighted = m_CurrentlyDisplayedMenuElements[i].highlighted;
-                        if (highlighted)
+                        if (!highlightedButtonFound)
                         {
-                            m_CurrentlyDisplayedMenuElements[i].selected(node);
-                            return;
+                            var highlighted = m_CurrentlyDisplayedMenuElements[i].highlighted;
+                            if (highlighted)
+                            {
+                                highlightedButtonFound = true;
+                                m_CurrentlyDisplayedMenuElements[i].selected(node);
+                                m_CurrentlyDisplayedMenuElements[i].highlighted = false;
+                            }
+                        }
+                        else
+                        {
+                            m_CurrentlyDisplayedMenuElements[i].highlighted = false;
                         }
                     }
                 }
