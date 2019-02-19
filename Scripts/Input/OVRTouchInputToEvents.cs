@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
 #if ENABLE_OVR_INPUT
         const uint k_ControllerCount = 2;
         const int k_AxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
-        const float k_DeadZone = 0.001f;
+        const float k_DeadZone = 0.05f;
 
         float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount];
         Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
