@@ -2903,6 +2903,7 @@ MonoBehaviour:
     type: 2}
   m_SustainedHoverUIElementPulse: {fileID: 11400000, guid: ee3076deadaac0745b2d123bff3ecbff,
     type: 2}
+  m_AdaptiveRepositionRate: 0.5
   m_MainCanvasGroup: {fileID: 225156185928477662}
   m_Background: {fileID: 224190174565545938}
   m_InputModeText: {fileID: 114005941796262990}
