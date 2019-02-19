@@ -224,14 +224,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 foreach (var deviceData in k_ActiveDeviceData)
                 {
-                    foreach (var kvp in deviceData.menuHideData)
-                    {
-                        kvp.Value.hideFlags &= ~MenuHideFlags.Temporary;
-                    }
-                }
-
-                foreach (var deviceData in k_ActiveDeviceData)
-                {
                     IAlternateMenu alternateMenu = null;
                     var menuHideData = deviceData.menuHideData;
                     // Always display the highest-priority alternate menu, and hide all others.
@@ -351,6 +343,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     UpdateAlternateMenuForDevice(deviceData);
                     Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
+                }
+
+                foreach (var deviceData in k_ActiveDeviceData)
+                {
+                    foreach (var kvp in deviceData.menuHideData)
+                    {
+                        kvp.Value.hideFlags &= ~MenuHideFlags.Temporary;
+                    }
                 }
 
                 evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();

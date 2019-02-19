@@ -144,6 +144,7 @@ namespace UnityEditor.Experimental.EditorVR
                 if (s_SpatialMenuState == value)
                     return;
 
+                RefreshProviderData();
                 s_SpatialMenuState = value;
                 s_SpatialMenuUI.spatialMenuState = s_SpatialMenuState;
                 switch (s_SpatialMenuState)
