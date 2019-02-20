@@ -114,6 +114,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Show the ray if the menu is not hidden but the custom menu is overriding it, and is also hidden
                     else if ((mainMenu.menuHideFlags & MenuHideFlags.Hidden) == 0 || customMenu != null && customMenu.menuHideFlags != 0)
                         AddVisibilitySettings(rayOrigin, mainMenu, true, true, 1);
+                    else
+                        RemoveVisibilitySettings(rayOrigin, mainMenu);
                 }
             }
 
