@@ -200,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static void OpenIfUserPresent()
         {
-            if (EditorApplication.isCompiling)
+            if (EditorApplication.isCompiling || Application.isPlaying || EditorApplication.isPlayingOrWillChangePlaymode)
                 return;
 
             if (!ShouldShowEditorVR())
