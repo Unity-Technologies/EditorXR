@@ -436,6 +436,10 @@ namespace UnityEditor.Experimental.EditorVR
             // isHeld goes false when you go below 0.5.  this is the check for 'up-click' on the pad / stick
             if ((positiveYInputAction.isHeld || m_SpatialInputHold) && s_SpatialMenuState != SpatialMenuState.Hidden)
             {
+                // Individual axes can reset to 0, so always consume controls to pick them back up
+                consumeControl(m_CurrentSpatialActionMapInput.leftStickX);
+                consumeControl(m_CurrentSpatialActionMapInput.leftStickY);
+
                 // If the ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
                 var atLeastOneInputDeviceIsAimingAtSpatialMenu = IsAimingAtUI();
                 if (atLeastOneInputDeviceIsAimingAtSpatialMenu) // Ray-based interaction takes precedence over other input types

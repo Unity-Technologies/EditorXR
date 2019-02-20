@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class FolderListViewController : NestedListViewController<FolderData, FolderListItem, string>
+    sealed class FolderListViewController : NestedListViewController<FolderData, FolderListItem, int>
     {
         const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -18,15 +18,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         Material m_ExpandArrowMaterial;
 
-        string m_SelectedFolder;
+        int? m_SelectedFolder;
 
-        public string selectedFolder
+        public int selectedFolder
         {
-            get { return m_SelectedFolder; }
+            get { return m_SelectedFolder ?? 0; }
             set { SelectFolder(value); }
         }
 
-        public Dictionary<string, bool> expandStates { get { return m_ExpandStates; } }
+        public Dictionary<int, bool> expandStates { get { return m_ExpandStates; } }
 
         public event Action<FolderData> folderSelected;
 
@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     var guid = data[0].index;
                     m_ExpandStates[guid] = true;
 
-                    SelectFolder(selectedFolder ?? guid);
+                    SelectFolder(m_SelectedFolder ?? guid);
                 }
             }
         }
@@ -162,7 +162,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             return item;
         }
 
-        void ToggleExpanded(string index)
+        void ToggleExpanded(int index)
         {
             if (data.Count == 1 && m_ListItems[index].data == data[0]) // Do not collapse Assets folder
                 return;
@@ -171,7 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             StartSettling();
         }
 
-        void SelectFolder(string guid)
+        void SelectFolder(int guid)
         {
             m_SelectedFolder = guid;
 
@@ -190,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        static FolderData GetFolderDataByGUID(FolderData data, string guid)
+        static FolderData GetFolderDataByGUID(FolderData data, int guid)
         {
             if (data.index == guid)
                 return data;
