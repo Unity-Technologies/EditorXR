@@ -96,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             VRView.viewEnabled += OnVRViewEnabled;
             VRView.viewDisabled += OnVRViewDisabled;
             EditorApplication.update += ReopenOnExitPlaymode;
-            OnAutoOpenStateChanged();
+            EditorApplication.delayCall += OnAutoOpenStateChanged;
         }
 #endif
 
