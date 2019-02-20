@@ -363,7 +363,6 @@ namespace UnityEditor.Experimental.EditorVR
                 m_ShowMenuCircularInputCrossedRotationThresholdForSelection = false;
 
                 m_SpatialInputHold = true;
-                ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
 
 #if UNITY_EDITOR
                 // Hide the scene view Gizmo UI that draws SpatialMenu outlines and
@@ -436,6 +435,9 @@ namespace UnityEditor.Experimental.EditorVR
             // isHeld goes false when you go below 0.5.  this is the check for 'up-click' on the pad / stick
             if ((positiveYInputAction.isHeld || m_SpatialInputHold) && s_SpatialMenuState != SpatialMenuState.Hidden)
             {
+                // Individual axes can reset to 0, so always consume controls to pick them back up
+                ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
+
                 // If the ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
                 var atLeastOneInputDeviceIsAimingAtSpatialMenu = IsAimingAtUI();
                 if (atLeastOneInputDeviceIsAimingAtSpatialMenu) // Ray-based interaction takes precedence over other input types
