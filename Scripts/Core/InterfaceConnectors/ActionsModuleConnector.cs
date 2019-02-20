@@ -33,6 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                     };
                                     menuActions.Add(actionMenuData);
                                 }
+
                                 actionsModule.UpdateAlternateMenuActions();
                             }
                         };
@@ -61,4 +62,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-

@@ -153,4 +153,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-

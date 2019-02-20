@@ -47,13 +47,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
 
                     s_ActiveView.m_CustomPreviewCamera = value;
+                }
             }
-            }
-            get
-            {
-                return s_ActiveView != null && s_ActiveView.m_UseCustomPreviewCamera ?
-                    s_ActiveView.m_CustomPreviewCamera : null;
-            }
+            get { return s_ActiveView != null && s_ActiveView.m_UseCustomPreviewCamera ? s_ActiveView.m_CustomPreviewCamera : null; }
         }
 
         Camera m_CustomPreviewCamera;
@@ -278,7 +274,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var targetCameraGO = targetCamera.gameObject;
             var potentialImageEffects = s_ExistingSceneMainCamera.GetComponents<MonoBehaviour>();
             var enabledPotentialImageEffects = potentialImageEffects.Where(x => x != null && x.enabled);
-            var targetMethodNames = new [] {"OnRenderImage", "OnPreRender", "OnPostRender"};
+            var targetMethodNames = new[] { "OnRenderImage", "OnPreRender", "OnPostRender" };
             var bindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
             foreach (var potentialImageEffect in enabledPotentialImageEffects)
             {
@@ -363,12 +359,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 renderTexture.antiAliasing = msaa;
                 renderTexture.hideFlags = k_HideFlags;
             }
+
             if (renderTexture.width != width || renderTexture.height != height)
             {
                 renderTexture.Release();
                 renderTexture.width = width;
                 renderTexture.height = height;
             }
+
             renderTexture.Create();
         }
 
@@ -423,6 +421,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             MiddleMouseButtonHeld = true;
                             break;
                     }
+
                     break;
                 case EventType.MouseUp:
                     switch (e.button)
@@ -437,6 +436,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             MiddleMouseButtonHeld = false;
                             break;
                     }
+
                     break;
             }
 
@@ -480,9 +480,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 #endif
 
-            #if UNITY_2018_1_OR_NEWER
-                GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-            #endif
+#if UNITY_2018_1_OR_NEWER
+            GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
+#endif
 
             UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
@@ -490,9 +490,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
-            #if UNITY_2018_1_OR_NEWER
-                GL.sRGBWrite = false;
-            #endif
+#if UNITY_2018_1_OR_NEWER
+            GL.sRGBWrite = false;
+#endif
         }
 
         private void Update()

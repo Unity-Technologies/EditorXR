@@ -62,10 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 return context;
             }
-            set
-            {
-                settings.defaultContextName = value.name;
-            }
+            set { settings.defaultContextName = value.name; }
         }
 
         internal IEditingContext currentContext
@@ -511,6 +508,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     managers = Resources.FindObjectsOfTypeAll<InputManager>();
                 }
             }
+
             Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
 
             s_InputManager = managers[0];
