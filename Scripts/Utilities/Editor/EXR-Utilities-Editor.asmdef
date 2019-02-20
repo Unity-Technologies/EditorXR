@@ -1,0 +1,10 @@
+{
+    "name": "EXR-Utilities-Editor",
+    "references": [
+        "EXR"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

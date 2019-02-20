@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6a66c1a4c74c6454eb9140a886e8f9e8
+timeCreated: 1504065308
+licenseType: Pro
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences:
+  - m_SpatialHintUI: {fileID: 114885606894613528, guid: cdc0eb858b1c7ed488024c8ad974bd47,
+      type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

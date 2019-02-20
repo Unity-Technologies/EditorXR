@@ -1,17 +1,22 @@
 fileFormatVersion: 2
 guid: fcfac1c86ef120e4494261ba5a4cfa9d
-timeCreated: 1472070063
+timeCreated: 1515111497
 licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
   - m_Text: {instanceID: 0}
+  - m_Handle: {instanceID: 0}
+  - m_TextPanel: {instanceID: 0}
   - m_Cube: {instanceID: 0}
-  - m_ExpandArrow: {instanceID: 0}
-  - m_NoClipCubeMaterial: {fileID: 2100000, guid: 66d21d847da9fae44a46053afe8d825b,
+  - m_Sphere: {instanceID: 0}
+  - m_PositiveAssignmentHighlightMaterial: {fileID: 2100000, guid: df5ea1108c16aab4cbb3f7e8819d620e,
       type: 2}
-  - m_NoClipExpandArrowMaterial: {fileID: 2100000, guid: d066c89af6b2b864cb02f409d89ce3ba,
+  - m_NegativeAssignmentHighlightMaterial: {fileID: 2100000, guid: 4dee6b0693fa1ed4c932e6b3401ceba2,
       type: 2}
+  - m_Icon: {instanceID: 0}
+  - m_PreviewObjectTransform: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

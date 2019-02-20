@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
     public class Vec3ExtensionsTests
     {
         float delta = 0.00000001f;
-        
+
         [Test]
         public void MaxComponent_ReturnsMaxAxisValue()
         {
@@ -44,6 +44,5 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Extensions
             var expected = new Vector3(-.1f, -.25f, -.5f);
             Assert.That(vec3.Inverse(), Is.EqualTo(expected).Within(delta));
         }
-
     }
 }

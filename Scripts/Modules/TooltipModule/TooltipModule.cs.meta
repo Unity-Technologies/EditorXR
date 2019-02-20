@@ -1,15 +1,14 @@
 fileFormatVersion: 2
 guid: 42531cab117a2db4bb168cd9158d0b46
-timeCreated: 1485301412
+timeCreated: 1510570640
 licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
   - m_TooltipPrefab: {fileID: 1000013663370456, guid: 0b7435b9e20b90949b516c08f26c81f0,
       type: 2}
   - m_TooltipCanvasPrefab: {fileID: 1000012000199744, guid: c5a8b49d02d6a7b4bb0d73a25d9512f6,
-      type: 2}
-  - m_HighlightMaterial: {fileID: 2100000, guid: 1b4a84ce11844ed4db6319efe2895bf3,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}

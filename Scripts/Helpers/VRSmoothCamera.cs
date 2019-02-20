@@ -1,114 +1,143 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-	/// <summary>
-	/// A preview camera that provides for smoothing of the position and look vector
-	/// </summary>
-	[RequireComponent(typeof(Camera))]
-	[RequiresLayer(k_HMDOnlyLayer)]
-	sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera
-	{
-		/// <summary>
-		/// The camera drawing the preview
-		/// </summary>
-		public Camera previewCamera { get { return m_SmoothCamera; } }
-		Camera m_SmoothCamera;
+    /// <summary>
+    /// A preview camera that provides for smoothing of the position and look vector
+    /// </summary>
+    [RequireComponent(typeof(Camera))]
+    [RequiresLayer(k_HMDOnlyLayer)]
+    sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera
+    {
+        /// <summary>
+        /// The camera drawing the preview
+        /// </summary>
+        public Camera previewCamera { get { return m_SmoothCamera; } }
 
-		/// <summary>
-		/// The actual HMD camera (will be provided by system)
-		/// The VRView's camera, whose settings are copied by the SmoothCamera
-		/// </summary>
-		public Camera vrCamera { private get { return m_VRCamera; } set { m_VRCamera = value; } }
-		[SerializeField]
-		Camera m_VRCamera;
+        Camera m_SmoothCamera;
 
-		[SerializeField]
-		int m_TargetDisplay;
+        /// <summary>
+        /// The actual HMD camera (will be provided by system)
+        /// The VRView's camera, whose settings are copied by the SmoothCamera
+        /// </summary>
+        public Camera vrCamera
+        {
+            private get { return m_VRCamera; }
+            set { m_VRCamera = value; }
+        }
 
-		[SerializeField, Range(1, 180)]
-		int m_FieldOfView = 40;
+        [SerializeField]
+        Camera m_VRCamera;
 
-		[SerializeField]
-		float m_PullBackDistance = 0.8f;
+        [SerializeField]
+        int m_TargetDisplay;
 
-		[SerializeField]
-		float m_SmoothingMultiplier = 3;
+        [SerializeField, Range(1, 180)]
+        int m_FieldOfView = 40;
 
-		const string k_HMDOnlyLayer = "HMDOnly";
-		const string k_ProxyExraLayer = "ProxyExtra";
+        [SerializeField]
+        float m_PullBackDistance = 0.8f;
 
-		RenderTexture m_RenderTexture;
+        [SerializeField]
+        float m_SmoothingMultiplier = 3;
 
-		Vector3 m_Position;
-		Quaternion m_Rotation;
+        const string k_HMDOnlyLayer = "HMDOnly";
+        const string k_ProxyExraLayer = "ProxyExtra";
+        readonly Rect k_DefaultCameraRect = new Rect(0f, 0f, 1f, 1f);
 
-		/// <summary>
-		/// A layer mask that controls what will always render in the HMD and not in the preview
-		/// </summary>
-		public int hmdOnlyLayerMask { get { return LayerMask.GetMask(k_HMDOnlyLayer) | LayerMask.GetMask(k_ProxyExraLayer); } }
+        RenderTexture m_RenderTexture;
 
-		void Awake()
-		{
-			m_SmoothCamera = GetComponent<Camera>();
-			m_SmoothCamera.enabled = false;
-		}
+        Vector3 m_Position;
+        Quaternion m_Rotation;
+        int m_HMDOnlyLayerMask;
 
-		void Start()
-		{
-			transform.position = m_VRCamera.transform.localPosition;
-			transform.localRotation = m_VRCamera.transform.localRotation;
+        static readonly List<bool> k_HiddenEnabled = new List<bool>();
 
-			m_Position = transform.localPosition;
-			m_Rotation = transform.localRotation;
-		}
+        /// <summary>
+        /// A layer mask that controls what will always render in the HMD and not in the preview
+        /// </summary>
+        public int hmdOnlyLayerMask { get { return LayerMask.GetMask(k_HMDOnlyLayer) | LayerMask.GetMask(k_ProxyExraLayer); } }
 
-		void LateUpdate()
-		{
-			m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
-			var vrCameraTexture = m_VRCamera.targetTexture;
-			if (vrCameraTexture && (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height))
-			{
-				Rect guiRect = new Rect(0f, 0f, vrCameraTexture.width, vrCameraTexture.height);
-				Rect cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
-				VRView.activeView.CreateCameraTargetTexture(ref m_RenderTexture, cameraRect, false);
-				m_RenderTexture.name = "Smooth Camera RT";
-			}
-			m_SmoothCamera.targetTexture = m_RenderTexture;
-			m_SmoothCamera.targetDisplay = m_TargetDisplay;
-			m_SmoothCamera.cameraType = CameraType.Game;
-			m_SmoothCamera.cullingMask &= ~hmdOnlyLayerMask;
-			m_SmoothCamera.rect = new Rect(0f, 0f, 1f, 1f);
-			m_SmoothCamera.stereoTargetEye = StereoTargetEyeMask.None;
-			m_SmoothCamera.fieldOfView = m_FieldOfView;
+        // Local method use only -- created here to reduce garbage collection
+        static readonly List<Renderer> k_Renderers = new List<Renderer>();
 
-			m_Position = Vector3.Lerp(m_Position, m_VRCamera.transform.localPosition, Time.deltaTime * m_SmoothingMultiplier);
-			m_Rotation = Quaternion.Slerp(m_Rotation, m_VRCamera.transform.localRotation, Time.deltaTime * m_SmoothingMultiplier);
+        void Awake()
+        {
+            m_SmoothCamera = GetComponent<Camera>();
+            m_SmoothCamera.enabled = false;
+            m_HMDOnlyLayerMask = LayerMask.GetMask(k_HMDOnlyLayer);
+        }
 
-			transform.localRotation = Quaternion.LookRotation(m_Rotation * Vector3.forward, Vector3.up);
-			transform.localPosition = m_Position - transform.localRotation * Vector3.forward * m_PullBackDistance;
+        void Start()
+        {
+            transform.position = m_VRCamera.transform.localPosition;
+            transform.localRotation = m_VRCamera.transform.localRotation;
 
-			// Don't render any HMD-related visual proxies
-			var hidden = m_VRCamera.GetComponentsInChildren<Renderer>();
-			bool[] hiddenEnabled = new bool[hidden.Length];
-			for (int i = 0; i < hidden.Length; i++)
-			{
-				var h = hidden[i];
-				hiddenEnabled[i] = h.enabled;
-				h.enabled = false;
-			}
+            m_Position = transform.localPosition;
+            m_Rotation = transform.localRotation;
+        }
 
-			RenderTexture.active = m_SmoothCamera.targetTexture;
-			m_SmoothCamera.Render();
-			RenderTexture.active = null;
+        void OnEnable()
+        {
+            // Snap camera to starting position
+            if (m_VRCamera)
+            {
+                m_Rotation = m_VRCamera.transform.localRotation;
+                m_Position = m_VRCamera.transform.localPosition;
+            }
+        }
 
-			for (int i = 0; i < hidden.Length; i++)
-			{
-				hidden[i].enabled = hiddenEnabled[i];
-			}
-		}
-	}
-}
+        void LateUpdate()
+        {
+            m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
+            var vrCameraTexture = m_VRCamera.targetTexture;
+#if UNITY_EDITOR
+            if (vrCameraTexture && (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height))
+            {
+                var guiRect = new Rect(0f, 0f, vrCameraTexture.width, vrCameraTexture.height);
+                var cameraRect = EditorGUIUtility.PointsToPixels(guiRect);
+                VRView.activeView.CreateCameraTargetTexture(ref m_RenderTexture, cameraRect, false);
+                m_RenderTexture.name = "Smooth Camera RT";
+            }
 #endif
+
+            m_SmoothCamera.targetTexture = m_RenderTexture;
+            m_SmoothCamera.targetDisplay = m_TargetDisplay;
+            m_SmoothCamera.cameraType = CameraType.Game;
+            m_SmoothCamera.cullingMask &= ~hmdOnlyLayerMask;
+            m_SmoothCamera.rect = k_DefaultCameraRect;
+            m_SmoothCamera.stereoTargetEye = StereoTargetEyeMask.None;
+            m_SmoothCamera.fieldOfView = m_FieldOfView;
+
+            m_Position = Vector3.Lerp(m_Position, m_VRCamera.transform.localPosition, Time.deltaTime * m_SmoothingMultiplier);
+            m_Rotation = Quaternion.Slerp(m_Rotation, m_VRCamera.transform.localRotation, Time.deltaTime * m_SmoothingMultiplier);
+
+            transform.localRotation = Quaternion.LookRotation(m_Rotation * Vector3.forward, Vector3.up);
+            transform.localPosition = m_Position - transform.localRotation * Vector3.forward * m_PullBackDistance;
+
+            // Don't render any HMD-related visual proxies
+            k_Renderers.Clear();
+            m_VRCamera.GetComponentsInChildren(k_Renderers);
+            var count = k_Renderers.Count;
+
+            k_HiddenEnabled.Clear();
+            for (var i = 0; i < count; i++)
+            {
+                var h = k_Renderers[i];
+                k_HiddenEnabled.Add(h.enabled);
+                h.enabled = false;
+            }
+
+            RenderTexture.active = m_SmoothCamera.targetTexture;
+            m_SmoothCamera.Render();
+            RenderTexture.active = null;
+
+            for (var i = 0; i < count; i++)
+            {
+                k_Renderers[i].enabled = k_HiddenEnabled[i];
+            }
+        }
+    }
+}

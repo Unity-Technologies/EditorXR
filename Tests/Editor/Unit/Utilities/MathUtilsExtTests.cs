@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿#if UNITY_5_6_OR_NEWER
 using NUnit.Framework;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 {
@@ -8,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
     public class MathUtilsExtTests
     {
         [OneTimeSetUp]
-        public void Setup() {}
+        public void Setup() { }
 
         [Test]
         public void SmoothDamp_DividesSmoothTimeBy3_Float()
@@ -33,9 +34,9 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
 
             Assert.AreEqual(dampedExpected, damped);
         }
-        
+
         [Test]
-        public void ConstrainYawRotation ()
+        public void ConstrainYawRotation()
         {
             var rotation = new Quaternion(4, 3, 2, 1);
             var newRotation = MathUtilsExt.ConstrainYawRotation(rotation);
@@ -46,3 +47,4 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
         public void Cleanup() { }
     }
 }
+#endif

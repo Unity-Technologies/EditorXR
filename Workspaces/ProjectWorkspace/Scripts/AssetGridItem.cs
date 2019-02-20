@@ -1,575 +1,871 @@
-﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-	sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, 
-		IUsesViewerBody, IRayVisibilitySettings
-	{
-		const float k_PreviewDuration = 0.1f;
-		const float k_MinPreviewScale = 0.01f;
-		const float k_IconPreviewScale = 0.1f;
-		const float k_MaxPreviewScale = 0.2f;
-		const float k_RotateSpeed = 50f;
-		const float k_TransitionDuration = 0.1f;
-		const float k_ScaleBump = 1.1f;
-		const int k_PreviewRenderQueue = 9200;
-
-		const int k_AutoHidePreviewVertexCount = 10000;
-		const int k_HidePreviewVertexCount = 100000;
-
-		[SerializeField]
-		Text m_Text;
-
-		[SerializeField]
-		BaseHandle m_Handle;
-
-		[SerializeField]
-		Image m_TextPanel;
-
-		[SerializeField]
-		Renderer m_Cube;
-
-		[SerializeField]
-		Renderer m_Sphere;
-
-		[HideInInspector]
-		[SerializeField] // Serialized so that this remains set after cloning
-		GameObject m_Icon;
-
-		GameObject m_IconPrefab;
-
-		[HideInInspector]
-		[SerializeField] // Serialized so that this remains set after cloning
-		Transform m_PreviewObjectTransform;
-
-		bool m_Setup;
-		bool m_AutoHidePreview;
-		Vector3 m_PreviewPrefabScale;
-		Vector3 m_PreviewTargetScale;
-		Vector3 m_PreviewPivotOffset;
-		Bounds m_PreviewBounds;
-		Transform m_PreviewObjectClone;
-
-		Coroutine m_PreviewCoroutine;
-		Coroutine m_VisibilityCoroutine;
-
-		Material m_SphereMaterial;
-
-		public GameObject icon
-		{
-			private get { return m_Icon ? m_Icon : m_Cube.gameObject; }
-			set
-			{
-				m_Cube.gameObject.SetActive(false);
-				m_Sphere.gameObject.SetActive(false);
-
-				if (m_IconPrefab == value) // If this GridItem already has this icon loaded, just refresh it's active state
-				{
-					m_Icon.SetActive(!m_PreviewObjectTransform || m_AutoHidePreview);
-					return;
-				}
-
-				if (m_Icon)
-					ObjectUtils.Destroy(m_Icon);
-
-				m_IconPrefab = value;
-				m_Icon = ObjectUtils.Instantiate(m_IconPrefab, transform, false);
-				m_Icon.transform.localPosition = Vector3.up * 0.5f;
-				m_Icon.transform.localRotation = Quaternion.AngleAxis(90, Vector3.down);
-				m_Icon.transform.localScale = Vector3.one;
-
-				if (m_PreviewObjectTransform && !m_AutoHidePreview)
-					m_Icon.SetActive(false);
-			}
-		}
-
-		public Material material
-		{
-			set
-			{
-				if (m_SphereMaterial)
-					ObjectUtils.Destroy(m_SphereMaterial);
-
-				m_SphereMaterial = Instantiate(value);
-				m_SphereMaterial.renderQueue = k_PreviewRenderQueue;
-				m_Sphere.sharedMaterial = m_SphereMaterial;
-				m_Sphere.gameObject.SetActive(true);
-
-				m_Cube.gameObject.SetActive(false);
-
-				if (m_Icon)
-					m_Icon.gameObject.SetActive(false);
-			}
-		}
-
-		public Texture texture
-		{
-			set
-			{
-				m_Sphere.gameObject.SetActive(true);
-				m_Cube.gameObject.SetActive(false);
-
-				if (m_Icon)
-					m_Icon.gameObject.SetActive(false);
-
-				if (!value)
-				{
-					m_Sphere.sharedMaterial.mainTexture = null;
-					return;
-				}
+    sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
+        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
+    {
+        const float k_PreviewDuration = 0.1f;
+        const float k_MinPreviewScale = 0.01f;
+        const float k_IconPreviewScale = 0.1f;
+        const float k_MaxPreviewScale = 0.2f;
+        const float k_RotateSpeed = 50f;
+        const float k_TransitionDuration = 0.1f;
+        const float k_ScaleBump = 1.1f;
+        const int k_PreviewRenderQueue = 9200;
+
+        const int k_AutoHidePreviewVertexCount = 10000;
+        const int k_HidePreviewVertexCount = 100000;
+
+        const float k_CheckAssignDelayTime = 0.125f;
+
+        [SerializeField]
+        TextMeshProUGUI m_Text;
+
+        [SerializeField]
+        BaseHandle m_Handle;
+
+        [SerializeField]
+        Image m_TextPanel;
+
+        [SerializeField]
+        Renderer m_Cube;
+
+        [SerializeField]
+        Renderer m_Sphere;
+
+        [SerializeField]
+        Material m_PositiveAssignmentHighlightMaterial;
+
+        [SerializeField]
+        Material m_NegativeAssignmentHighlightMaterial;
+
+        [HideInInspector]
+        [SerializeField] // Serialized so that this remains set after cloning
+        GameObject m_Icon;
+
+        GameObject m_IconPrefab;
+
+        [HideInInspector]
+        [SerializeField] // Serialized so that this remains set after cloning
+        Transform m_PreviewObjectTransform;
+
+        [SerializeField]
+        bool m_IncludeRaySelectForDrop;
+
+        bool m_Setup;
+        bool m_AutoHidePreview;
+        Vector3 m_PreviewPrefabScale;
+        Vector3 m_PreviewTargetScale;
+        Vector3 m_PreviewPivotOffset;
+        Bounds m_PreviewBounds;
+        Transform m_PreviewObjectClone;
+
+        Coroutine m_PreviewCoroutine;
+        Coroutine m_VisibilityCoroutine;
+
+        Material m_SphereMaterial;
+
+        // in priority order, the types of Components that you can assign this asset to
+        List<Type> m_AssignmentDependencyTypes = new List<Type>();
+
+        GameObject m_CachedDropSelection;
+        float m_LastDragSelectionChange;
+
+        // negative value means object has been checked and can't be assigned to
+        // positive means it can be assigned, 0 means it hasn't yet been checked
+        readonly Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
+
+        readonly List<Renderer> m_SelectionRenderers = new List<Renderer>();
+        readonly Dictionary<Renderer, Material> m_SelectionOriginalMaterials = new Dictionary<Renderer, Material>();
+
+        public GameObject icon
+        {
+            private get { return m_Icon ? m_Icon : m_Cube.gameObject; }
+            set
+            {
+                m_Cube.gameObject.SetActive(false);
+                m_Sphere.gameObject.SetActive(false);
+
+                if (m_IconPrefab == value) // If this GridItem already has this icon loaded, just refresh it's active state
+                {
+                    m_Icon.SetActive(!m_PreviewObjectTransform || m_AutoHidePreview);
+                    return;
+                }
+
+                if (m_Icon)
+                    ObjectUtils.Destroy(m_Icon);
+
+                m_IconPrefab = value;
+                m_Icon = ObjectUtils.Instantiate(m_IconPrefab, transform, false);
+                m_Icon.transform.localPosition = Vector3.up * 0.5f;
+                m_Icon.transform.localRotation = Quaternion.AngleAxis(90, Vector3.down);
+                m_Icon.transform.localScale = Vector3.one;
+
+                if (m_PreviewObjectTransform && !m_AutoHidePreview)
+                    m_Icon.SetActive(false);
+            }
+        }
+
+        public Material material
+        {
+            set
+            {
+                if (m_SphereMaterial)
+                    ObjectUtils.Destroy(m_SphereMaterial);
+
+                m_SphereMaterial = Instantiate(value);
+                m_SphereMaterial.renderQueue = k_PreviewRenderQueue;
+                m_Sphere.sharedMaterial = m_SphereMaterial;
+                m_Sphere.gameObject.SetActive(true);
+
+                m_Cube.gameObject.SetActive(false);
+
+                if (m_Icon)
+                    m_Icon.gameObject.SetActive(false);
+            }
+        }
+
+        public Texture texture
+        {
+            set
+            {
+                m_Sphere.gameObject.SetActive(true);
+                m_Cube.gameObject.SetActive(false);
+
+                if (m_Icon)
+                    m_Icon.gameObject.SetActive(false);
+
+                if (!value)
+                {
+                    m_Sphere.sharedMaterial.mainTexture = null;
+                    return;
+                }
 
-				if (m_SphereMaterial)
-					ObjectUtils.Destroy(m_SphereMaterial);
+                if (m_SphereMaterial)
+                    ObjectUtils.Destroy(m_SphereMaterial);
 
-				m_SphereMaterial = new Material(Shader.Find("Standard")) { mainTexture = value };
-				m_SphereMaterial.renderQueue = k_PreviewRenderQueue;
-				m_Sphere.sharedMaterial = m_SphereMaterial;
-			}
-		}
-
-		public Texture fallbackTexture
-		{
-			set
-			{
-				if (value)
-					value.wrapMode = TextureWrapMode.Clamp;
-
-				m_Cube.sharedMaterial.mainTexture = value;
-				m_Cube.gameObject.SetActive(true);
-				m_Sphere.gameObject.SetActive(false);
-
-				if (m_Icon)
-					m_Icon.gameObject.SetActive(false);
-			}
-		}
-
-		public float scaleFactor { private get; set; }
-
-		public override void Setup(AssetData listData)
-		{
-			base.Setup(listData);
-
-			m_PreviewCoroutine = null;
-			m_VisibilityCoroutine = null;
-			m_AutoHidePreview = false;
-			icon.transform.localScale = Vector3.one;
-
-			// First time setup
-			if (!m_Setup)
-			{
-				// Cube material might change, so we always instance it
-				MaterialUtils.GetMaterialClone(m_Cube);
-
-				m_Handle.dragStarted += OnDragStarted;
-				m_Handle.dragging += OnDragging;
-				m_Handle.dragEnded += OnDragEnded;
-
-				m_Handle.hoverStarted += OnHoverStarted;
-				m_Handle.hoverEnded += OnHoverEnded;
-
-				m_Handle.getDropObject = GetDropObject;
-
-				m_Setup = true;
-			}
-
-			InstantiatePreview();
-
-			m_Text.text = listData.name;
-		}
-
-		public void UpdateTransforms(float scale)
-		{
-			scaleFactor = scale;
-
-			// Don't scale the item while changing visibility because this would conflict with AnimateVisibility
-			if (m_VisibilityCoroutine != null)
-				return;
-
-			transform.localScale = Vector3.one * scale;
-
-			m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent);
-
-			if (m_Sphere.gameObject.activeInHierarchy)
-				m_Sphere.transform.Rotate(Vector3.up, k_RotateSpeed * Time.deltaTime, Space.Self);
-
-			if (data.type == "Scene")
-			{
-				icon.transform.rotation =
-					Quaternion.LookRotation(icon.transform.position - CameraUtils.GetMainCamera().transform.position, Vector3.up);
-			}
-		}
-
-		void InstantiatePreview()
-		{
-			if (m_PreviewObjectTransform)
-				ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
-
-			if (!data.preview)
-				return;
-
-			m_PreviewObjectTransform = Instantiate(data.preview).transform;
-
-			m_PreviewObjectTransform.position = Vector3.zero;
-			m_PreviewObjectTransform.rotation = Quaternion.identity;
-
-			m_PreviewPrefabScale = m_PreviewObjectTransform.localScale;
-
-			// Normalize total scale to 1
-			m_PreviewBounds = ObjectUtils.GetBounds(m_PreviewObjectTransform);
-
-			// Don't show a preview if there are no renderers
-			if (m_PreviewBounds.size == Vector3.zero)
-			{
-				ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
-				return;
-			}
-
-			// Turn off expensive render settings
-			foreach (var renderer in m_PreviewObjectTransform.GetComponentsInChildren<Renderer>())
-			{
-				renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-				renderer.receiveShadows = false;
-				renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
-				renderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
-			}
-
-			// Turn off lights
-			foreach (var light in m_PreviewObjectTransform.GetComponentsInChildren<Light>())
-			{
-				light.enabled = false;
-			}
-
-			m_PreviewPivotOffset = m_PreviewObjectTransform.position - m_PreviewBounds.center;
-			m_PreviewObjectTransform.SetParent(transform, false);
-
-			var maxComponent = m_PreviewBounds.size.MaxComponent();
-			var scaleFactor = 1 / maxComponent;
-			m_PreviewTargetScale = m_PreviewPrefabScale * scaleFactor;
-			m_PreviewObjectTransform.localPosition = m_PreviewPivotOffset * scaleFactor + Vector3.up * 0.5f;
-
-			var vertCount = 0;
-			foreach (var meshFilter in m_PreviewObjectTransform.GetComponentsInChildren<MeshFilter>())
-			{
-				if (meshFilter.sharedMesh)
-					vertCount += meshFilter.sharedMesh.vertexCount;
-			}
-
-			foreach (var skinnedMeshRenderer in m_PreviewObjectTransform.GetComponentsInChildren<SkinnedMeshRenderer>()) {
-				if (skinnedMeshRenderer.sharedMesh)
-					vertCount += skinnedMeshRenderer.sharedMesh.vertexCount;
-			}
-
-			// Do not show previews over a max vert count
-			if (vertCount > k_HidePreviewVertexCount)
-			{
-				ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
-				return;
-			}
-
-			// Auto hide previews over a smaller vert count
-			if (vertCount > k_AutoHidePreviewVertexCount)
-			{
-				m_AutoHidePreview = true;
-				m_PreviewObjectTransform.localScale = Vector3.zero;
-			}
-			else
-			{
-				m_PreviewObjectTransform.localScale = m_PreviewTargetScale;
-				icon.SetActive(false);
-			}
-		}
-
-		protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
-		{
-			base.OnDragStarted(handle, eventData);
-
-			var rayOrigin = eventData.rayOrigin;
-			this.AddRayVisibilitySettings(rayOrigin, this, false, true);
-
-			var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
-			var cloneItem = clone.GetComponent<AssetGridItem>();
-
-			if (cloneItem.m_PreviewObjectTransform)
-			{
-				m_PreviewObjectClone = cloneItem.m_PreviewObjectTransform;
+                m_SphereMaterial = new Material(Shader.Find("Standard")) { mainTexture = value };
+                m_SphereMaterial.renderQueue = k_PreviewRenderQueue;
+                m_Sphere.sharedMaterial = m_SphereMaterial;
+            }
+        }
+
+        public Texture fallbackTexture
+        {
+            set
+            {
+                if (value)
+                    value.wrapMode = TextureWrapMode.Clamp;
+
+                m_Cube.sharedMaterial.mainTexture = value;
+                m_Cube.gameObject.SetActive(true);
+                m_Sphere.gameObject.SetActive(false);
+
+                if (m_Icon)
+                    m_Icon.gameObject.SetActive(false);
+            }
+        }
+
+        public float scaleFactor { private get; set; }
+
+        public override void Setup(AssetData listData)
+        {
+            base.Setup(listData);
+
+            m_PreviewCoroutine = null;
+            m_VisibilityCoroutine = null;
+            m_AutoHidePreview = false;
+            icon.transform.localScale = Vector3.one;
+
+            // First time setup
+            if (!m_Setup)
+            {
+                // Cube material might change, so we always instance it
+                MaterialUtils.GetMaterialClone(m_Cube);
+
+                m_Handle.dragStarted += OnDragStarted;
+                m_Handle.dragging += OnDragging;
+                m_Handle.dragging += OnDraggingFeedForward;
+                m_Handle.dragEnded += OnDragEnded;
+
+                m_Handle.hoverStarted += OnHoverStarted;
+                m_Handle.hoverEnded += OnHoverEnded;
+
+                m_Handle.getDropObject = GetDropObject;
+
+                AssetDropUtils.AssignmentDependencies.TryGetValue(data.type, out m_AssignmentDependencyTypes);
+
+                m_Setup = true;
+            }
+
+            InstantiatePreview();
+
+            m_Text.text = listData.name;
+        }
+
+        public void UpdateTransforms(float scale)
+        {
+            scaleFactor = scale;
+
+            // Don't scale the item while changing visibility because this would conflict with AnimateVisibility
+            if (m_VisibilityCoroutine != null)
+                return;
+
+            transform.localScale = Vector3.one * scale;
+
+            m_TextPanel.transform.localRotation = CameraUtils.LocalRotateTowardCamera(transform.parent);
+
+            if (m_Sphere.gameObject.activeInHierarchy)
+                m_Sphere.transform.Rotate(Vector3.up, k_RotateSpeed * Time.deltaTime, Space.Self);
+
+            if (data.type == "Scene")
+            {
+                icon.transform.rotation =
+                    Quaternion.LookRotation(icon.transform.position - CameraUtils.GetMainCamera().transform.position, Vector3.up);
+            }
+        }
+
+        void InstantiatePreview()
+        {
+            if (m_PreviewObjectTransform)
+                ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
+
+            if (!data.preview)
+                return;
+
+            m_PreviewObjectTransform = Instantiate(data.preview).transform;
+
+            m_PreviewObjectTransform.position = Vector3.zero;
+            m_PreviewObjectTransform.rotation = Quaternion.identity;
+
+            m_PreviewPrefabScale = m_PreviewObjectTransform.localScale;
+
+            // Normalize total scale to 1
+            m_PreviewBounds = ObjectUtils.GetBounds(m_PreviewObjectTransform);
+
+            // Don't show a preview if there are no renderers
+            if (m_PreviewBounds.size == Vector3.zero)
+            {
+                ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
+                return;
+            }
+
+            // Turn off expensive render settings
+            foreach (var renderer in m_PreviewObjectTransform.GetComponentsInChildren<Renderer>())
+            {
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = false;
+                renderer.reflectionProbeUsage = UnityEngine.Rendering.ReflectionProbeUsage.Off;
+                renderer.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
+            }
+
+            // Turn off lights
+            foreach (var light in m_PreviewObjectTransform.GetComponentsInChildren<Light>())
+            {
+                light.enabled = false;
+            }
+
+            m_PreviewPivotOffset = m_PreviewObjectTransform.position - m_PreviewBounds.center;
+            m_PreviewObjectTransform.SetParent(transform, false);
+
+            var maxComponent = m_PreviewBounds.size.MaxComponent();
+            var scaleFactor = 1 / maxComponent;
+            m_PreviewTargetScale = m_PreviewPrefabScale * scaleFactor;
+            m_PreviewObjectTransform.localPosition = m_PreviewPivotOffset * scaleFactor + Vector3.up * 0.5f;
+
+            var vertCount = 0;
+            foreach (var meshFilter in m_PreviewObjectTransform.GetComponentsInChildren<MeshFilter>())
+            {
+                if (meshFilter.sharedMesh)
+                    vertCount += meshFilter.sharedMesh.vertexCount;
+            }
+
+            foreach (var skinnedMeshRenderer in m_PreviewObjectTransform.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (skinnedMeshRenderer.sharedMesh)
+                    vertCount += skinnedMeshRenderer.sharedMesh.vertexCount;
+            }
+
+            // Do not show previews over a max vert count
+            if (vertCount > k_HidePreviewVertexCount)
+            {
+                ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
+                return;
+            }
+
+            // Auto hide previews over a smaller vert count
+            if (vertCount > k_AutoHidePreviewVertexCount)
+            {
+                m_AutoHidePreview = true;
+                m_PreviewObjectTransform.localScale = Vector3.zero;
+            }
+            else
+            {
+                m_PreviewObjectTransform.localScale = m_PreviewTargetScale;
+                icon.SetActive(false);
+            }
+        }
+
+        protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData)
+        {
+            base.OnDragStarted(handle, eventData);
+
+            var rayOrigin = eventData.rayOrigin;
+            this.AddRayVisibilitySettings(rayOrigin, this, m_IncludeRaySelectForDrop, true);
+
+            var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
+            var cloneItem = clone.GetComponent<AssetGridItem>();
+
+            if (cloneItem.m_PreviewObjectTransform)
+            {
+                m_PreviewObjectClone = cloneItem.m_PreviewObjectTransform;
 
 #if UNITY_EDITOR
-				var originalPosition = m_PreviewObjectClone.position;
-				var originalRotation = m_PreviewObjectClone.rotation;
-				var originalScale = m_PreviewObjectClone.localScale;
-				var restoreParent = m_PreviewObjectClone.parent;
-				m_PreviewObjectClone.SetParent(null); // HACK: MergePrefab deactivates the root transform when calling ConnectGameObjectToPrefab, which is EditorVR in this case
-				m_PreviewObjectClone = PrefabUtility.ConnectGameObjectToPrefab(m_PreviewObjectClone.gameObject, data.preview).transform;
-				m_PreviewObjectClone.SetParent(restoreParent);
-				m_PreviewObjectClone.position = originalPosition;
-				m_PreviewObjectClone.rotation = originalRotation;
-				m_PreviewObjectClone.localScale = originalScale;
-				cloneItem.m_PreviewObjectTransform = m_PreviewObjectClone;
+                var originalPosition = m_PreviewObjectClone.position;
+                var originalRotation = m_PreviewObjectClone.rotation;
+                var originalScale = m_PreviewObjectClone.localScale;
+                var restoreParent = m_PreviewObjectClone.parent;
+                m_PreviewObjectClone.SetParent(null); // HACK: MergePrefab deactivates the root transform when calling ConnectGameObjectToPrefab, which is EditorVR in this case
+                m_PreviewObjectClone = PrefabUtility.ConnectGameObjectToPrefab(m_PreviewObjectClone.gameObject, data.preview).transform;
+                m_PreviewObjectClone.SetParent(restoreParent);
+                m_PreviewObjectClone.position = originalPosition;
+                m_PreviewObjectClone.rotation = originalRotation;
+                m_PreviewObjectClone.localScale = originalScale;
+                cloneItem.m_PreviewObjectTransform = m_PreviewObjectClone;
 #endif
 
-				cloneItem.m_Cube.gameObject.SetActive(false);
+                cloneItem.m_Cube.gameObject.SetActive(false);
 
-				if (cloneItem.m_Icon)
-					cloneItem.m_Icon.gameObject.SetActive(false);
+                if (cloneItem.m_Icon)
+                    cloneItem.m_Icon.gameObject.SetActive(false);
 
-				m_PreviewObjectClone.gameObject.SetActive(true);
-				m_PreviewObjectClone.localScale = m_PreviewTargetScale;
+                m_PreviewObjectClone.gameObject.SetActive(true);
+                m_PreviewObjectClone.localScale = m_PreviewTargetScale;
 
-				// Destroy label
-				ObjectUtils.Destroy(cloneItem.m_TextPanel.gameObject);
-			}
+                // Destroy label
+                ObjectUtils.Destroy(cloneItem.m_TextPanel.gameObject);
+            }
 
-			m_DragObject = clone.transform;
+            m_DragObject = clone.transform;
 
-			// Disable any SmoothMotion that may be applied to a cloned Asset Grid Item now referencing input device p/r/s
-			var smoothMotion = clone.GetComponent<SmoothMotion>();
-			if (smoothMotion != null)
-				smoothMotion.enabled = false;
+            // Disable any SmoothMotion that may be applied to a cloned Asset Grid Item now referencing input device p/r/s
+            var smoothMotion = clone.GetComponent<SmoothMotion>();
+            if (smoothMotion != null)
+                smoothMotion.enabled = false;
 
-			StartCoroutine(ShowGrabbedObject());
-		}
+            // setup our assignment dependency list with any known types
+            AssetDropUtils.AssignmentDependencies.TryGetValue(data.type, out m_AssignmentDependencyTypes);
 
-		protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
-		{
-			var gridItem = m_DragObject.GetComponent<AssetGridItem>();
+            StartCoroutine(ShowGrabbedObject());
+        }
 
-			var rayOrigin = eventData.rayOrigin;
-			this.RemoveRayVisibilitySettings(rayOrigin, this);
 
-			if (!this.IsOverShoulder(eventData.rayOrigin))
-			{
-				if (gridItem.m_PreviewObjectTransform)
-				{
-					this.PlaceSceneObject(gridItem.m_PreviewObjectTransform, m_PreviewPrefabScale);
-				}
-				else
-				{
-					switch (data.type)
-					{
-						case "Prefab":
-						case "Model":
+
+        float PreviouslyFoundResult(GameObject go)
+        {
+            float previous;
+            m_ObjectAssignmentChecks.TryGetValue(go.GetInstanceID(), out previous);
+            return previous;
+        }
+
+        void SetAssignableHighlight(GameObject selection, Transform rayOrigin, bool assignable)
+        {
+            if (assignable)
+            {
+                // blinking green highlight = YES, object can have this asset assigned
+                var mat = m_PositiveAssignmentHighlightMaterial;
+                this.SetBlinkingHighlight(selection, true, rayOrigin, mat);
+            }
+            else
+            {
+                // solid red highlight = NO, object can't have this asset assigned
+                var mat = m_NegativeAssignmentHighlightMaterial;
+                this.SetHighlight(selection, true, rayOrigin, mat);
+            }
+        }
+
+        void StopHighlight(GameObject go, Transform rayOrigin = null)
+        {
+            this.SetBlinkingHighlight(go, false);
+            this.SetHighlight(go, false, rayOrigin, null, true);
+        }
+
+        void OnDraggingFeedForward(BaseHandle handle, HandleEventData eventData)
+        {
+            var rayOrigin = eventData.rayOrigin;
+            var selection = TryGetSelection(rayOrigin);
+
+            // we've just stopped hovering something, stop any highlights
+            if (selection == null && m_CachedDropSelection != null)
+            {
+                StopHighlight(m_CachedDropSelection, rayOrigin);
+                m_CachedDropSelection = null;
+                m_LastDragSelectionChange = Time.time;
+                RestoreOriginalSelectionMaterials();
+            }
+            else if (selection != null)
+            {
+                var time = Time.time;
+                var previous = PreviouslyFoundResult(selection);
+
+                if (selection != m_CachedDropSelection)
+                {
+                    StopHighlight(m_CachedDropSelection);
+                    // if we've previously checked this object, indicate the result again
+                    if (previous > 0f)
+                    {
+                        SetAssignableHighlight(selection, rayOrigin, true);
+                        PreviewMaterialOnSelection(selection);
+                    }
+                    else if (previous < 0f)
+                    {
+                        SetAssignableHighlight(selection, rayOrigin, false);
+                        RestoreOriginalSelectionMaterials();
+                    }
+
+                    m_CachedDropSelection = selection;
+                    m_LastDragSelectionChange = time;
+                    return;
+                }
+
+                if (previous == 0f)
+                {
+                    // avoid checking every object the selector passes over with a short delay
+                    if (time - m_LastDragSelectionChange > k_CheckAssignDelayTime)
+                    {
+                        var assignable = CheckAssignable(selection);
+                        SetAssignableHighlight(selection, rayOrigin, assignable);
+
+                        if (assignable)
+                            PreviewMaterialOnSelection(selection);
+                    }
+                }
+            }
+        }
+
+        void PreviewMaterialOnSelection(GameObject selection)
+        {
+            if (data.type != "Material" || selection == null)
+                return;
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
+
+            selection.GetComponentsInChildren(m_SelectionRenderers);
+
+            var material = (Material)data.asset;
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                m_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
+                renderer.sharedMaterial = material;
+            }
+        }
+
+        void RestoreOriginalSelectionMaterials()
+        {
+            if (m_SelectionRenderers.Count < 1)
+                return;
+
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                Material originalMaterial;
+                if (m_SelectionOriginalMaterials.TryGetValue(renderer, out originalMaterial))
+                    renderer.sharedMaterial = originalMaterial;
+            }
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
+        }
+
+        bool CheckAssignable(GameObject go, bool checkChildren = false)
+        {
+            // if our asset type has a component dependency, we might want to add that
+            // component for the user sometimes - filling in the blank on their intention
+            // ex: AudioClips & AudioSources, VideoClips & VideoPlayers
+            if (m_AssignmentDependencyTypes == null)
+            {
+                m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                return true;
+            }
+
+            foreach (var t in m_AssignmentDependencyTypes)
+            {
+                if (AssetDropUtils.AutoFillTypes.Contains(t))
+                {
+                    m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                    return true;
+                }
+            }
+
+            if (!checkChildren)
+            {
+                foreach (Type t in m_AssignmentDependencyTypes)
+                {
+                    if (go.GetComponent(t) != null)
+                    {
+                        m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                foreach (Type t in m_AssignmentDependencyTypes)
+                {
+                    if (go.GetComponentInChildren(t) != null)
+                    {
+                        m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                        return true;
+                    }
+
+                }
+            }
+
+            m_ObjectAssignmentChecks[go.GetInstanceID()] = -Time.time;
+            return false;
+        }
+
+        protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
+        {
+            m_ObjectAssignmentChecks.Clear();
+            StopHighlight(m_CachedDropSelection, eventData.rayOrigin);
+
+            var gridItem = m_DragObject.GetComponent<AssetGridItem>();
+
+            var rayOrigin = eventData.rayOrigin;
+            this.RemoveRayVisibilitySettings(rayOrigin, this);
+
+            if (!this.IsOverShoulder(eventData.rayOrigin))
+            {
+                var previewObjectTransform = gridItem.m_PreviewObjectTransform;
+                if (previewObjectTransform)
+                {
 #if UNITY_EDITOR
-							var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
-							var transform = go.transform;
-							transform.position = gridItem.transform.position;
-							transform.rotation = MathUtilsExt.ConstrainYawRotation(gridItem.transform.rotation);
+                    Undo.RegisterCreatedObjectUndo(previewObjectTransform.gameObject, "Place Scene Object");
+#endif
+                    this.PlaceSceneObject(previewObjectTransform, m_PreviewPrefabScale);
+                }
+                else
+                {
+                    HandleAssetDropByType(rayOrigin, gridItem);
+                }
+            }
+
+            StartCoroutine(HideGrabbedObject(m_DragObject.gameObject, gridItem.m_Cube));
+            base.OnDragEnded(handle, eventData);
+        }
+
+        void HandleAssetDropByType(Transform rayOrigin, AssetGridItem gridItem)
+        {
+            switch (data.type)
+            {
+                case "Prefab":
+                case "Model":
+                    PlaceModelOrPrefab(gridItem.transform, data);
+                    break;
+                case "AnimationClip":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignAnimationClipAction);
+                    break;
+                case "AudioClip":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AudioClipAction);
+                    break;
+                case "VideoClip":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.VideoClipAction);
+                    break;
+                case "Font":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignFontAction);
+                    break;
+                case "PhysicMaterial":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignPhysicMaterialAction);
+                    break;
+                case "Material":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignMaterialAction);
+                    break;
+                case "Script":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AttachScriptAction);
+                    break;
+                case "Shader":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignShaderAction);
+                    break;
+            }
+        }
+
+        void SelectAndPlace(Transform rayOrigin, AssetData data, Action<GameObject, AssetData> placeFunc)
+        {
+            var selection = TryGetSelection(rayOrigin);
+            if (selection != null)
+            {
+                placeFunc.Invoke(selection, data);
+                this.UpdateInspectors(selection, true);
+            }
+        }
+
+        void PlaceModelOrPrefab(Transform itemTransform, AssetData data)
+        {
+#if UNITY_EDITOR
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
 #else
-							var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
+            var go = (GameObject)Instantiate(data.asset);
 #endif
 
-							this.AddToSpatialHash(go);
-							break;
-					}
-				}
-			}
+            var transform = go.transform;
+            transform.position = itemTransform.position;
+            transform.rotation = MathUtilsExt.ConstrainYawRotation(itemTransform.rotation);
 
-			StartCoroutine(HideGrabbedObject(m_DragObject.gameObject, gridItem.m_Cube));
-		}
+            this.AddToSpatialHash(go);
 
-		void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
-		{
-			if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
-			{
-				if (m_AutoHidePreview)
-				{
-					this.StopCoroutine(ref m_PreviewCoroutine);
-					m_PreviewCoroutine = StartCoroutine(AnimatePreview(false));
-				}
-				else
-				{
-					m_PreviewObjectTransform.localScale = m_PreviewTargetScale * k_ScaleBump;
-				}
-			}
-		}
+#if UNITY_EDITOR
+            Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
+#endif
+        }
 
-		void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
-		{
-			if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
-			{
-				if (m_AutoHidePreview)
-				{
-					this.StopCoroutine(ref m_PreviewCoroutine);
-					m_PreviewCoroutine = StartCoroutine(AnimatePreview(true));
-				}
-				else
-				{
-					m_PreviewObjectTransform.localScale = m_PreviewTargetScale;
-				}
-			}
-		}
+        GameObject TryGetSelection(Transform rayOrigin, bool includeRays)
+        {
+            GameObject selection = null;
+            var directSelections = this.GetDirectSelection();
+            if (directSelections != null)
+                directSelections.TryGetValue(rayOrigin, out selection);
 
-		IEnumerator AnimatePreview(bool @out)
-		{
-			icon.SetActive(true);
-			m_PreviewObjectTransform.gameObject.SetActive(true);
+            if (selection == null && includeRays)
+                selection = this.GetFirstGameObject(rayOrigin);
 
-			var iconTransform = icon.transform;
-			var currentIconScale = iconTransform.localScale;
-			var targetIconScale = @out ? Vector3.one : Vector3.zero;
+            return selection;
+        }
 
-			var currentPreviewScale = m_PreviewObjectTransform.localScale;
-			var targetPreviewScale = @out ? Vector3.zero : m_PreviewTargetScale;
+        GameObject TryGetSelection(Transform rayOrigin)
+        {
+            return TryGetSelection(rayOrigin, m_IncludeRaySelectForDrop);
+        }
 
-			var startTime = Time.realtimeSinceStartup;
-			while (Time.realtimeSinceStartup - startTime < k_PreviewDuration)
-			{
-				var t = (Time.realtimeSinceStartup - startTime) / k_PreviewDuration;
+        void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
+        {
+            if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
+            {
+                if (m_AutoHidePreview)
+                {
+                    this.StopCoroutine(ref m_PreviewCoroutine);
+                    m_PreviewCoroutine = StartCoroutine(AnimatePreview(false));
+                }
+                else
+                {
+                    m_PreviewObjectTransform.localScale = m_PreviewTargetScale * k_ScaleBump;
+                }
+            }
 
-				icon.transform.localScale = Vector3.Lerp(currentIconScale, targetIconScale, t);
-				m_PreviewObjectTransform.transform.localScale = Vector3.Lerp(currentPreviewScale, targetPreviewScale, t);
-				yield return null;
-			}
+            base.OnHoverStart(handle, eventData);
+            ShowGrabFeedback(this.RequestNodeFromRayOrigin(eventData.rayOrigin));
+        }
 
-			m_PreviewObjectTransform.transform.localScale = targetPreviewScale;
-			icon.transform.localScale = targetIconScale;
+        void OnHoverEnded(BaseHandle handle, HandleEventData eventData)
+        {
+            if (m_PreviewObjectTransform && gameObject.activeInHierarchy)
+            {
+                if (m_AutoHidePreview)
+                {
+                    this.StopCoroutine(ref m_PreviewCoroutine);
+                    m_PreviewCoroutine = StartCoroutine(AnimatePreview(true));
+                }
+                else
+                {
+                    m_PreviewObjectTransform.localScale = m_PreviewTargetScale;
+                }
+            }
 
-			m_PreviewObjectTransform.gameObject.SetActive(!@out);
-			icon.SetActive(@out);
+            HideGrabFeedback();
+        }
 
-			m_PreviewCoroutine = null;
-		}
+        IEnumerator AnimatePreview(bool @out)
+        {
+            icon.SetActive(true);
+            m_PreviewObjectTransform.gameObject.SetActive(true);
 
-		public void SetVisibility(bool visible, Action<AssetGridItem> callback = null)
-		{
-			this.StopCoroutine(ref m_VisibilityCoroutine);
-			m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(visible, callback));
-		}
+            var iconTransform = icon.transform;
+            var currentIconScale = iconTransform.localScale;
+            var targetIconScale = @out ? Vector3.one : Vector3.zero;
 
-		IEnumerator AnimateVisibility(bool visible, Action<AssetGridItem> callback)
-		{
-			var currentTime = 0f;
+            var currentPreviewScale = m_PreviewObjectTransform.localScale;
+            var targetPreviewScale = @out ? Vector3.zero : m_PreviewTargetScale;
 
-			// Item should always be at a scale of zero before becoming visible
-			if (visible)
-				transform.localScale = Vector3.zero;
+            var startTime = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - startTime < k_PreviewDuration)
+            {
+                var t = (Time.realtimeSinceStartup - startTime) / k_PreviewDuration;
 
-			var currentScale = transform.localScale;
-			var targetScale = visible ? Vector3.one * scaleFactor : Vector3.zero;
+                icon.transform.localScale = Vector3.Lerp(currentIconScale, targetIconScale, t);
+                m_PreviewObjectTransform.transform.localScale = Vector3.Lerp(currentPreviewScale, targetPreviewScale, t);
+                yield return null;
+            }
 
-			while (currentTime < k_TransitionDuration)
-			{
-				currentTime += Time.deltaTime;
-				transform.localScale = Vector3.Lerp(currentScale, targetScale, currentTime / k_TransitionDuration);
-				yield return null;
-			}
+            m_PreviewObjectTransform.transform.localScale = targetPreviewScale;
+            icon.transform.localScale = targetIconScale;
 
-			transform.localScale = targetScale;
+            m_PreviewObjectTransform.gameObject.SetActive(!@out);
+            icon.SetActive(@out);
 
-			if (callback != null)
-				callback(this);
+            m_PreviewCoroutine = null;
+        }
 
-			m_VisibilityCoroutine = null;
-		}
+        public void SetVisibility(bool visible, Action<AssetGridItem> callback = null)
+        {
+            this.StopCoroutine(ref m_VisibilityCoroutine);
+            m_VisibilityCoroutine = StartCoroutine(AnimateVisibility(visible, callback));
+        }
 
-		object GetDropObject(BaseHandle handle)
-		{
-			return data.asset;
-		}
+        IEnumerator AnimateVisibility(bool visible, Action<AssetGridItem> callback)
+        {
+            var currentTime = 0f;
 
-		void OnDestroy()
-		{
-			if (m_SphereMaterial)
-				ObjectUtils.Destroy(m_SphereMaterial);
+            // Item should always be at a scale of zero before becoming visible
+            if (visible)
+                transform.localScale = Vector3.zero;
 
-			ObjectUtils.Destroy(m_Cube.sharedMaterial);
-		}
+            var currentScale = transform.localScale;
+            var targetScale = visible ? Vector3.one * scaleFactor : Vector3.zero;
 
-		// Animate the LocalScale of the asset towards a common/unified scale
-		// used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
-		IEnumerator ShowGrabbedObject()
-		{
-			var currentLocalScale = m_DragObject.localScale;
-			var currentPreviewOffset = Vector3.zero;
-			var currentPreviewRotationOffset = Quaternion.identity;
+            while (currentTime < k_TransitionDuration)
+            {
+                currentTime += Time.deltaTime;
+                transform.localScale = Vector3.Lerp(currentScale, targetScale, currentTime / k_TransitionDuration);
+                yield return null;
+            }
 
-			if (m_PreviewObjectClone)
-				currentPreviewOffset = m_PreviewObjectClone.localPosition;
+            transform.localScale = targetScale;
 
-			var currentTime = 0f;
-			var currentVelocity = 0f;
-			const float kDuration = 1f;
+            if (callback != null)
+                callback(this);
 
-			var targetScale = Vector3.one * k_IconPreviewScale;
-			var pivotOffset = Vector3.zero;
-			var rotationOffset = Quaternion.AngleAxis(30, Vector3.right);
-			if (m_PreviewObjectClone)
-			{
-				var viewerScale = this.GetViewerScale();
-				var maxComponent = m_PreviewBounds.size.MaxComponent() / viewerScale;
-				targetScale = Vector3.one * maxComponent;
+            m_VisibilityCoroutine = null;
+        }
 
-				// Object will preview at the same size when grabbed
-				var previewExtents = m_PreviewBounds.extents / viewerScale;
-				pivotOffset = m_PreviewPivotOffset / viewerScale;
+        object GetDropObject(BaseHandle handle)
+        {
+            return data.asset;
+        }
 
-				// If bounds are greater than offset, set to bounds
-				if (previewExtents.y > pivotOffset.y)
-					pivotOffset.y = previewExtents.y;
+        void OnDestroy()
+        {
+            if (m_SphereMaterial)
+                ObjectUtils.Destroy(m_SphereMaterial);
 
-				if (previewExtents.z > pivotOffset.z)
-					pivotOffset.z = previewExtents.z;
+            ObjectUtils.Destroy(m_Cube.sharedMaterial);
+        }
 
-				if (maxComponent < k_MinPreviewScale)
-				{
-					// Object will be preview at the minimum scale
-					targetScale = Vector3.one * k_MinPreviewScale;
-					pivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MinPreviewScale;
-				}
+        // Animate the LocalScale of the asset towards a common/unified scale
+        // used when the asset is magnetized/attached to the proxy, after grabbing it from the asset grid
+        IEnumerator ShowGrabbedObject()
+        {
+            var currentLocalScale = m_DragObject.localScale;
+            var currentPreviewOffset = Vector3.zero;
+            var currentPreviewRotationOffset = Quaternion.identity;
 
-				if (maxComponent > k_MaxPreviewScale)
-				{
-					// Object will be preview at the maximum scale
-					targetScale = Vector3.one * k_MaxPreviewScale;
-					pivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MaxPreviewScale;
-				}
-			}
+            if (m_PreviewObjectClone)
+                currentPreviewOffset = m_PreviewObjectClone.localPosition;
 
-			while (currentTime < kDuration - 0.05f)
-			{
-				if (m_DragObject == null)
-					yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
+            var currentTime = 0f;
+            var currentVelocity = 0f;
+            const float kDuration = 1f;
 
-				currentTime = MathUtilsExt.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.deltaTime);
-				m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetScale, currentTime);
+            var targetScale = Vector3.one * k_IconPreviewScale;
+            var pivotOffset = Vector3.zero;
+            var rotationOffset = Quaternion.AngleAxis(30, Vector3.right);
+            if (m_PreviewObjectClone)
+            {
+                var viewerScale = this.GetViewerScale();
+                var maxComponent = m_PreviewBounds.size.MaxComponent() / viewerScale;
+                targetScale = Vector3.one * maxComponent;
 
-				if (m_PreviewObjectClone)
-				{
-					m_PreviewObjectClone.localPosition = Vector3.Lerp(currentPreviewOffset, pivotOffset, currentTime);
-					m_PreviewObjectClone.localRotation = Quaternion.Lerp(currentPreviewRotationOffset, rotationOffset, currentTime); // Compensate for preview origin rotation
-				}
+                // Object will preview at the same size when grabbed
+                var previewExtents = m_PreviewBounds.extents / viewerScale;
+                pivotOffset = m_PreviewPivotOffset / viewerScale;
 
-				yield return null;
-			}
+                // If bounds are greater than offset, set to bounds
+                if (previewExtents.y > pivotOffset.y)
+                    pivotOffset.y = previewExtents.y;
 
-			m_DragObject.localScale = targetScale;
-		}
+                if (previewExtents.z > pivotOffset.z)
+                    pivotOffset.z = previewExtents.z;
 
-		static IEnumerator HideGrabbedObject(GameObject itemToHide, Renderer cubeRenderer)
-		{
-			var itemTransform = itemToHide.transform;
-			var currentScale = itemTransform.localScale;
-			var targetScale = Vector3.zero;
-			var transitionAmount = Time.deltaTime;
-			var transitionAddMultiplier = 6;
-			while (transitionAmount < 1)
-			{
-				itemTransform.localScale = Vector3.Lerp(currentScale, targetScale, transitionAmount);
-				transitionAmount += Time.deltaTime * transitionAddMultiplier;
-				yield return null;
-			}
+                if (maxComponent < k_MinPreviewScale)
+                {
+                    // Object will be preview at the minimum scale
+                    targetScale = Vector3.one * k_MinPreviewScale;
+                    pivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MinPreviewScale;
+                }
 
-			cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
-			ObjectUtils.Destroy(itemToHide);
-		}
-	}
+                if (maxComponent > k_MaxPreviewScale)
+                {
+                    // Object will be preview at the maximum scale
+                    targetScale = Vector3.one * k_MaxPreviewScale;
+                    pivotOffset = pivotOffset * scaleFactor + (Vector3.up + Vector3.forward) * 0.5f * k_MaxPreviewScale;
+                }
+            }
+
+            while (currentTime < kDuration - 0.05f)
+            {
+                if (m_DragObject == null)
+                    yield break; // Exit coroutine if m_GrabbedObject is destroyed before the loop is finished
+
+                currentTime = MathUtilsExt.SmoothDamp(currentTime, kDuration, ref currentVelocity, 0.5f, Mathf.Infinity, Time.deltaTime);
+                m_DragObject.localScale = Vector3.Lerp(currentLocalScale, targetScale, currentTime);
+
+                if (m_PreviewObjectClone)
+                {
+                    m_PreviewObjectClone.localPosition = Vector3.Lerp(currentPreviewOffset, pivotOffset, currentTime);
+                    m_PreviewObjectClone.localRotation = Quaternion.Lerp(currentPreviewRotationOffset, rotationOffset, currentTime); // Compensate for preview origin rotation
+                }
+
+                yield return null;
+            }
+
+            m_DragObject.localScale = targetScale;
+        }
+
+        static IEnumerator HideGrabbedObject(GameObject itemToHide, Renderer cubeRenderer)
+        {
+            var itemTransform = itemToHide.transform;
+            var currentScale = itemTransform.localScale;
+            var targetScale = Vector3.zero;
+            var transitionAmount = Time.deltaTime;
+            var transitionAddMultiplier = 6;
+            while (transitionAmount < 1)
+            {
+                itemTransform.localScale = Vector3.Lerp(currentScale, targetScale, transitionAmount);
+                transitionAmount += Time.deltaTime * transitionAddMultiplier;
+                yield return null;
+            }
+
+            cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
+            ObjectUtils.Destroy(itemToHide);
+        }
+
+        void ShowGrabFeedback(Node node)
+        {
+            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+            request.control = VRInputDevice.VRControl.Trigger1;
+            request.node = node;
+            request.tooltipText = "Grab";
+            this.AddFeedbackRequest(request);
+        }
+
+        void HideGrabFeedback()
+        {
+            this.ClearFeedbackRequests();
+        }
+
+        public void OnResetDirectSelectionState() {}
+    }
 }
-#endif

@@ -1,16 +1,17 @@
 fileFormatVersion: 2
 guid: 403957a6dcd8bfe4a905881513f309b0
-timeCreated: 1501023394
-licenseType: Free
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
   - m_BlinkVisualsPrefab: {fileID: 1359949259200608, guid: da60c6627f686ff46977b7ad8b694b91,
       type: 2}
   - m_ViewerScaleVisualsPrefab: {fileID: 1000012817627458, guid: 60a4bda9bfa0dcc4e9ccab99d39c295f,
       type: 2}
-  - m_BlinkActionMap: {fileID: 11400000, guid: 9729abfd6d2540f4db055be042af7175, type: 2}
+  - m_ActionMap: {fileID: 11400000, guid: 9729abfd6d2540f4db055be042af7175, type: 2}
   - m_SettingsMenuItemPrefab: {fileID: 1000013404610172, guid: f1141ca24ceb64f49a6e988175713e3d,
+      type: 2}
+  - m_RingPrefab: {fileID: 1016627027887716, guid: 86c24572a2f561c40acaeda68c064c43,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}

@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -7,261 +6,272 @@ using UnityEngine.EventSystems;
 
 namespace ListView
 {
-	public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler, IControlHaptics
-	{
-		public float scrollOffset { get { return m_ScrollOffset; } set { m_ScrollOffset = value; } }
+    public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler, IControlHaptics
+    {
+        public float scrollOffset
+        {
+            get { return m_ScrollOffset; }
+            set { m_ScrollOffset = value; }
+        }
 
-		[Tooltip("Distance (in meters) we have scrolled from initial position")]
-		[SerializeField]
-		protected float m_ScrollOffset;
+        [Tooltip("Distance (in meters) we have scrolled from initial position")]
+        [SerializeField]
+        protected float m_ScrollOffset;
 
-		[Tooltip("Padding (in meters) between items")]
-		[SerializeField]
-		protected float m_Padding = 0.01f;
+        [Tooltip("Padding (in meters) between items")]
+        [SerializeField]
+        protected float m_Padding = 0.01f;
 
-		[Tooltip("How quickly scroll momentum fade")]
-		[SerializeField]
-		float m_ScrollDamping = 5f;
+        [Tooltip("How quickly scroll momentum fade")]
+        [SerializeField]
+        float m_ScrollDamping = 5f;
 
-		[Tooltip("Maximum velocity for scroll momentum")]
-		[SerializeField]
-		float m_MaxMomentum = 2f;
+        [Tooltip("Maximum velocity for scroll momentum")]
+        [SerializeField]
+        float m_MaxMomentum = 2f;
 
-		[Tooltip("Item template prefabs (at least one is required)")]
-		[SerializeField]
-		protected GameObject[] m_Templates;
+        [Tooltip("Item template prefabs (at least one is required)")]
+        [SerializeField]
+        protected GameObject[] m_Templates;
 
-		[SerializeField]
-		HapticPulse m_ScrollPulse;
+        [SerializeField]
+        HapticPulse m_ScrollPulse;
 
-		[SerializeField]
-		protected float m_SettleSpeed = 0.4f;
+        [SerializeField]
+        protected float m_SettleSpeed = 0.4f;
 
-		public float scrollSpeed { get { return m_ScrollSpeed; } set { m_ScrollSpeed = value; } }
-		[SerializeField]
-		float m_ScrollSpeed = 0.3f;
+        public float scrollSpeed
+        {
+            get { return m_ScrollSpeed; }
+            set { m_ScrollSpeed = value; }
+        }
 
-		protected bool m_Settling;
-		event Action settlingCompleted;
+        [SerializeField]
+        float m_ScrollSpeed = 0.3f;
 
-		public Vector3 itemSize
-		{
-			get
-			{
-				if (!m_ItemSize.HasValue && m_Templates.Length > 0)
-					m_ItemSize = GetObjectSize(m_Templates[0]);
+        protected bool m_Settling;
+        event Action settlingCompleted;
 
-				return m_ItemSize ?? Vector3.zero;
-			}
-		}
-		protected Vector3? m_ItemSize;
+        public Vector3 itemSize
+        {
+            get
+            {
+                if (!m_ItemSize.HasValue && m_Templates.Length > 0)
+                    m_ItemSize = GetObjectSize(m_Templates[0]);
 
-		protected Vector3 m_StartPosition;
+                return m_ItemSize ?? Vector3.zero;
+            }
+        }
 
-		protected bool m_Scrolling;
-		protected float m_ScrollReturn = float.MaxValue;
-		protected float m_ScrollDelta;
-		protected float m_LastScrollOffset;
+        protected Vector3? m_ItemSize;
 
-		protected Vector3 m_Size;
-		protected Vector3 m_Extents;
+        protected Vector3 m_StartPosition;
 
-		protected abstract float listHeight { get; }
+        protected bool m_Scrolling;
+        protected float m_ScrollReturn = float.MaxValue;
+        protected float m_ScrollDelta;
+        protected float m_LastScrollOffset;
 
-		public Vector3 size
-		{
-			set
-			{
-				m_Size = value;
-				m_Extents = m_Size * 0.5f;
-			}
-		}
+        protected Vector3 m_Size;
+        protected Vector3 m_Extents;
 
-		void Start()
-		{
-			Setup();
-		}
+        protected abstract float listHeight { get; }
 
-		void Update()
-		{
-			UpdateView();
+        public virtual Vector3 size
+        {
+            set
+            {
+                m_Size = value;
+                m_Extents = m_Size * 0.5f;
+            }
+        }
 
-			if (m_Scrolling)
-				this.Pulse(null, m_ScrollPulse);
-		}
+        void Start()
+        {
+            Setup();
+        }
 
-		protected abstract void Setup();
+        void Update()
+        {
+            UpdateView();
 
-		protected virtual void UpdateView()
-		{
-			ComputeConditions();
-			UpdateItems();
-		}
+            if (m_Scrolling)
+                this.Pulse(Node.None, m_ScrollPulse);
+        }
 
-		protected virtual void ComputeConditions()
-		{
-			if (m_Templates.Length > 0) // Use first template to get item size
-				m_ItemSize = GetObjectSize(m_Templates[0]);
+        protected abstract void Setup();
 
-			var itemSize = m_ItemSize.Value;
+        protected virtual void UpdateView()
+        {
+            ComputeConditions();
+            UpdateItems();
+        }
 
-			m_StartPosition = (m_Extents.z - itemSize.z * 0.5f) * Vector3.forward;
+        protected virtual void ComputeConditions()
+        {
+            if (m_Templates.Length > 0) // Use first template to get item size
+                m_ItemSize = GetObjectSize(m_Templates[0]);
 
-			if (m_Scrolling)
-			{
-				m_ScrollDelta = Mathf.Clamp((m_ScrollOffset - m_LastScrollOffset) / Time.deltaTime, -m_MaxMomentum, m_MaxMomentum);
-				m_LastScrollOffset = m_ScrollOffset;
-			}
-			else
-			{
-				//Apply scrolling momentum
-				m_ScrollOffset += m_ScrollDelta * Time.deltaTime;
-				const float kScrollMomentumShape = 2f;
-				if (m_ScrollReturn < float.MaxValue || m_ScrollOffset > 0)
-					OnScrollEnded();
+            var itemSize = m_ItemSize.Value;
 
-				if (m_ScrollDelta > 0)
-				{
-					m_ScrollDelta -= Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.deltaTime;
-					if (m_ScrollDelta < 0)
-					{
-						m_ScrollDelta = 0;
-						OnScrollEnded();
-					}
-				}
-				else if (m_ScrollDelta < 0)
-				{
-					m_ScrollDelta += Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.deltaTime;
-					if (m_ScrollDelta > 0)
-					{
-						m_ScrollDelta = 0;
-						OnScrollEnded();
-					}
-				}
-			}
+            m_StartPosition = (m_Extents.z - itemSize.z * 0.5f) * Vector3.forward;
 
-			m_ScrollReturn = float.MaxValue;
+            if (m_Scrolling)
+            {
+                m_ScrollDelta = Mathf.Clamp((m_ScrollOffset - m_LastScrollOffset) / Time.deltaTime, -m_MaxMomentum, m_MaxMomentum);
+                m_LastScrollOffset = m_ScrollOffset;
+            }
+            else
+            {
+                //Apply scrolling momentum
+                m_ScrollOffset += m_ScrollDelta * Time.deltaTime;
+                const float kScrollMomentumShape = 2f;
+                if (m_ScrollReturn < float.MaxValue || m_ScrollOffset > 0)
+                    OnScrollEnded();
 
-			const float epsilon = 1e-6f;
-			// Snap back if list scrolled too far
-			if (listHeight > 0 && -m_ScrollOffset >= listHeight)
-				m_ScrollReturn = itemSize.z - listHeight + epsilon;
-		}
+                if (m_ScrollDelta > 0)
+                {
+                    m_ScrollDelta -= Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.deltaTime;
+                    if (m_ScrollDelta < 0)
+                    {
+                        m_ScrollDelta = 0;
+                        OnScrollEnded();
+                    }
+                }
+                else if (m_ScrollDelta < 0)
+                {
+                    m_ScrollDelta += Mathf.Pow(m_ScrollDamping, kScrollMomentumShape) * Time.deltaTime;
+                    if (m_ScrollDelta > 0)
+                    {
+                        m_ScrollDelta = 0;
+                        OnScrollEnded();
+                    }
+                }
+            }
 
-		protected abstract void UpdateItems();
+            m_ScrollReturn = float.MaxValue;
 
-		public virtual void ScrollNext()
-		{
-			m_ScrollOffset += m_ItemSize.Value.z;
-		}
+            const float epsilon = 1e-6f;
 
-		public virtual void ScrollPrev()
-		{
-			m_ScrollOffset -= m_ItemSize.Value.z;
-		}
+            // Snap back if list scrolled too far
+            if (listHeight > 0 && -m_ScrollOffset >= listHeight)
+                m_ScrollReturn = itemSize.z - listHeight + epsilon;
+        }
 
-		public virtual void ScrollTo(int index)
-		{
-			m_ScrollOffset = index * itemSize.z;
-		}
+        protected abstract void UpdateItems();
 
-		protected virtual void UpdateItem(Transform t, int order, float offset, ref bool doneSettling)
-		{
-			var targetPosition = m_StartPosition + offset * Vector3.back;
-			var targetRotation = Quaternion.identity;
-			UpdateItemTransform(t, order, targetPosition, targetRotation, false, ref doneSettling);
-		}
+        public virtual void ScrollNext()
+        {
+            m_ScrollOffset += m_ItemSize.Value.z;
+        }
 
-		protected virtual void UpdateItemTransform(Transform t, int order, Vector3 targetPosition, Quaternion targetRotation, bool dontSettle, ref bool doneSettling)
-		{
-			if (m_Settling && !dontSettle)
-			{
-				t.localPosition = Vector3.Lerp(t.localPosition, targetPosition, m_SettleSpeed);
-				if (t.localPosition != targetPosition)
-					doneSettling = false;
+        public virtual void ScrollPrev()
+        {
+            m_ScrollOffset -= m_ItemSize.Value.z;
+        }
 
-				t.localRotation = Quaternion.Lerp(t.localRotation, targetRotation, m_SettleSpeed);
-				if (t.localRotation != targetRotation)
-					doneSettling = false;
-			}
-			else
-			{
-				t.localPosition = targetPosition;
-				t.localRotation = targetRotation;
-			}
+        public virtual void ScrollTo(int index)
+        {
+            m_ScrollOffset = index * itemSize.z;
+        }
 
-			t.SetSiblingIndex(order);
-		}
+        protected virtual void UpdateItem(Transform t, int order, float offset, ref bool doneSettling)
+        {
+            var targetPosition = m_StartPosition + offset * Vector3.back;
+            var targetRotation = Quaternion.identity;
+            UpdateItemTransform(t, order, targetPosition, targetRotation, false, ref doneSettling);
+        }
 
-		protected virtual Vector3 GetObjectSize(GameObject g)
-		{
-			var itemSize = Vector3.one;
-			var rend = g.GetComponentInChildren<Renderer>();
-			if (rend)
-			{
-				itemSize.x = Vector3.Scale(g.transform.lossyScale, rend.bounds.extents).x * 2 + m_Padding;
-				itemSize.y = Vector3.Scale(g.transform.lossyScale, rend.bounds.extents).y * 2 + m_Padding;
-				itemSize.z = Vector3.Scale(g.transform.lossyScale, rend.bounds.extents).z * 2 + m_Padding;
-			}
-			return itemSize;
-		}
+        protected virtual void UpdateItemTransform(Transform t, int order, Vector3 targetPosition, Quaternion targetRotation, bool dontSettle, ref bool doneSettling)
+        {
+            if (m_Settling && !dontSettle)
+            {
+                t.localPosition = Vector3.Lerp(t.localPosition, targetPosition, m_SettleSpeed);
+                if (t.localPosition != targetPosition)
+                    doneSettling = false;
 
-		public virtual void OnBeginScrolling()
-		{
-			m_Scrolling = true;
-		}
+                t.localRotation = Quaternion.Lerp(t.localRotation, targetRotation, m_SettleSpeed);
+                if (t.localRotation != targetRotation)
+                    doneSettling = false;
+            }
+            else
+            {
+                t.localPosition = targetPosition;
+                t.localRotation = targetRotation;
+            }
 
-		public virtual void OnScrollEnded()
-		{
-			m_Scrolling = false;
+            if (t.GetSiblingIndex() != order)
+                t.SetSiblingIndex(order);
+        }
 
-			if (m_ScrollOffset > 0)
-			{
-				StartSettling();
-				m_ScrollOffset = 0;
-				m_ScrollDelta = 0;
-			}
-			if (m_ScrollReturn < float.MaxValue)
-			{
-				StartSettling();
-				m_ScrollOffset = m_ScrollReturn;
-				m_ScrollReturn = float.MaxValue;
-				m_ScrollDelta = 0;
-			}
-		}
+        protected virtual Vector3 GetObjectSize(GameObject g)
+        {
+            var itemSize = Vector3.one;
+            var rend = g.GetComponentInChildren<Renderer>();
+            if (rend)
+            {
+                itemSize.x = Vector3.Scale(g.transform.lossyScale, rend.bounds.extents).x * 2 + m_Padding;
+                itemSize.y = Vector3.Scale(g.transform.lossyScale, rend.bounds.extents).y * 2 + m_Padding;
+                itemSize.z = Vector3.Scale(g.transform.lossyScale, rend.bounds.extents).z * 2 + m_Padding;
+            }
+            return itemSize;
+        }
 
-		protected void SetMaterialClip(Material material, Matrix4x4 parentMatrix)
-		{
-			material.SetMatrix("_ParentMatrix", parentMatrix);
-			material.SetVector("_ClipExtents", m_Extents);
-		}
+        public virtual void OnBeginScrolling()
+        {
+            m_Scrolling = true;
+        }
 
-		public virtual void OnScroll(PointerEventData eventData)
-		{
-			if (m_Settling)
-				return;
+        public virtual void OnScrollEnded()
+        {
+            m_Scrolling = false;
 
-			scrollOffset += eventData.scrollDelta.y * scrollSpeed * Time.deltaTime;
-		}
+            if (m_ScrollOffset > 0)
+            {
+                StartSettling();
+                m_ScrollOffset = 0;
+                m_ScrollDelta = 0;
+            }
+            if (m_ScrollReturn < float.MaxValue)
+            {
+                StartSettling();
+                m_ScrollOffset = m_ScrollReturn;
+                m_ScrollReturn = float.MaxValue;
+                m_ScrollDelta = 0;
+            }
+        }
 
-		protected virtual void StartSettling(Action onComplete = null)
-		{
-			m_Settling = true;
+        protected void SetMaterialClip(Material material, Matrix4x4 parentMatrix)
+        {
+            material.SetMatrix("_ParentMatrix", parentMatrix);
+            material.SetVector("_ClipExtents", m_Extents);
+        }
 
-			if (onComplete != null)
-				settlingCompleted += onComplete;
-		}
+        public virtual void OnScroll(PointerEventData eventData)
+        {
+            if (m_Settling)
+                return;
 
-		protected virtual void EndSettling()
-		{
-			m_Settling = false;
+            scrollOffset += eventData.scrollDelta.y * scrollSpeed * Time.deltaTime;
+        }
 
-			if (settlingCompleted != null)
-			{
-				settlingCompleted();
-				settlingCompleted = null;
-			}
-		}
-	}
+        protected virtual void StartSettling(Action onComplete = null)
+        {
+            m_Settling = true;
+
+            if (onComplete != null)
+                settlingCompleted += onComplete;
+        }
+
+        protected virtual void EndSettling()
+        {
+            m_Settling = false;
+
+            if (settlingCompleted != null)
+            {
+                settlingCompleted();
+                settlingCompleted = null;
+            }
+        }
+    }
 }
-#endif

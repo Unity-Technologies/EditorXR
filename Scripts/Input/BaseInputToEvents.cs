@@ -1,28 +1,27 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Input
 {
-	class BaseInputToEvents : MonoBehaviour, IInputToEvents
-	{
-		public bool active
-		{
-			get { return m_Active; }
-			protected set
-			{
-				if (m_Active != value)
-				{
-					m_Active = value;
+    class BaseInputToEvents : MonoBehaviour, IInputToEvents
+    {
+        public bool active
+        {
+            get { return m_Active; }
+            protected set
+            {
+                if (m_Active != value)
+                {
+                    m_Active = value;
 
-					if (activeChanged != null)
-						activeChanged();
-				}
-			}
-		}
-		bool m_Active;
+                    if (activeChanged != null)
+                        activeChanged();
+                }
+            }
+        }
 
-		public event Action activeChanged;
-	}
+        bool m_Active;
+
+        public event Action activeChanged;
+    }
 }
-#endif

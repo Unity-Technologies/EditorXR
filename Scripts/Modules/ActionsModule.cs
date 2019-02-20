@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_EDITORVR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,56 +6,79 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class ActionsModule : MonoBehaviour, IConnectInterfaces
-	{
-		public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
-		List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
-		List<IAction> m_Actions;
+    sealed class ActionsModule : MonoBehaviour, ISystemModule, IConnectInterfaces, ISpatialMenuProvider
+    {
+        List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
+        readonly List<IAction> m_Actions = new List<IAction>();
+        readonly List<IActionsMenu> m_ActionsMenus = new List<IActionsMenu>();
+        readonly List<SpatialMenu.SpatialMenuData> m_SpatialMenuData = new List<SpatialMenu.SpatialMenuData>();
 
-		public void RemoveActions(List<IAction> actions)
-		{
-			m_MenuActions.Clear();
-			m_MenuActions.AddRange(m_MenuActions.Where(a => !actions.Contains(a.action)));
-		}
+        public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
+        public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
 
-		void Start()
-		{
-			SpawnActions();
-		}
+        public void RemoveActions(List<IAction> actions)
+        {
+            m_MenuActions.Clear();
+            m_MenuActions.AddRange(m_MenuActions.Where(a => !actions.Contains(a.action)));
+        }
 
-		void SpawnActions()
-		{
-			IEnumerable<Type> actionTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IAction));
-			m_Actions = new List<IAction>();
-			foreach (Type actionType in actionTypes)
-			{
-				// Don't treat vanilla actions or tool actions as first class actions
-				if (actionType.IsNested || !typeof(MonoBehaviour).IsAssignableFrom(actionType))
-					continue;
+        void Start()
+        {
+            SpawnActions();
+        }
 
-				var action = ObjectUtils.AddComponent(actionType, gameObject) as IAction;
-				var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
+        void SpawnActions()
+        {
+            m_SpatialMenuData.Clear();
+            var spatialMenuActions = new List<SpatialMenu.SpatialMenuElementContainer>();
+            var spatialMenuData = new SpatialMenu.SpatialMenuData("Actions", "Perform actions on selected object", spatialMenuActions);
+            m_SpatialMenuData.Add(spatialMenuData);
 
-				this.ConnectInterfaces(action);
+            IEnumerable<Type> actionTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IAction));
+            foreach (Type actionType in actionTypes)
+            {
+                // Don't treat vanilla actions or tool actions as first class actions
+                if (actionType.IsNested || !typeof(MonoBehaviour).IsAssignableFrom(actionType))
+                    continue;
 
-				if (attribute != null)
-				{
-					var actionMenuData = new ActionMenuData()
-					{
-						name = attribute.name,
-						sectionName = attribute.sectionName,
-						priority = attribute.priority,
-						action = action,
-					};
+                var action = ObjectUtils.AddComponent(actionType, gameObject) as IAction;
+                this.ConnectInterfaces(action);
 
-					m_MenuActions.Add(actionMenuData);
-				}
+                var defaultActionAttribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
+                if (defaultActionAttribute != null)
+                {
+                    var actionMenuData = new ActionMenuData()
+                    {
+                        name = defaultActionAttribute.name,
+                        sectionName = defaultActionAttribute.sectionName,
+                        priority = defaultActionAttribute.priority,
+                        action = action,
+                    };
 
-				m_Actions.Add(action);
-			}
+                    m_MenuActions.Add(actionMenuData);
+                }
 
-			m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
-		}
-	}
+                var spatialMenuAttribute = (SpatialMenuItemAttribute)actionType.GetCustomAttributes(typeof(SpatialMenuItemAttribute), false).FirstOrDefault();
+                if (spatialMenuAttribute != null)
+                    spatialMenuActions.Add(new SpatialMenu.SpatialMenuElementContainer(spatialMenuAttribute.name, spatialMenuAttribute.description, (node) => action.ExecuteAction()));
+
+                m_Actions.Add(action);
+            }
+
+            m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
+        }
+
+        public void AddActionsMenu(IActionsMenu actionsMenu)
+        {
+            m_ActionsMenus.Add(actionsMenu);
+        }
+
+        internal void UpdateAlternateMenuActions()
+        {
+            foreach (var actionsMenu in m_ActionsMenus)
+            {
+                actionsMenu.menuActions = m_MenuActions;
+            }
+        }
+    }
 }
-#endif

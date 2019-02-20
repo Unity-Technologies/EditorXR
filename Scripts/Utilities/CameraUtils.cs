@@ -1,77 +1,64 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Core;
+﻿using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
+using UnityObject = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
-	/// <summary>
-	/// Camera related EditorVR utilities
-	/// </summary>
-	static class CameraUtils
-	{
-		public static float DistanceToCamera(GameObject obj)
-		{
-			// from http://forum.unity3d.com/threads/camera-to-object-distance.32643/
-			var cam = GetMainCamera();
-			var distance = 0f;
-			if (cam)
-			{
-				var heading = obj.transform.position - cam.transform.position;
-				distance = Vector3.Dot(heading, cam.transform.forward);
-			}
-			return distance;
-		}
+    /// <summary>
+    /// Camera related EditorVR utilities
+    /// </summary>
+    static class CameraUtils
+    {
+        public static Camera GetMainCamera()
+        {
+            var camera = Camera.main;
 
-		public static float GetSizeForDistanceToCamera(GameObject obj, float minScale, float scaleAt100)
-		{
-			var dist = DistanceToCamera(obj);
-			var scale = MathUtilsExt.Map(dist, 0, 100, minScale, scaleAt100);
-			if (scale < minScale)
-				scale = minScale;
+            if (!camera)
+                camera = UnityObject.FindObjectOfType<Camera>();
 
-			return scale;
-		}
-
-		public static Camera GetMainCamera()
-		{
-			var camera = Camera.main;
-
-#if UNITY_EDITOR && UNITY_EDITORVR
-			if (!Application.isPlaying && VRView.viewerCamera)
-			{
-				camera = VRView.viewerCamera;
-			}
+#if UNITY_EDITOR
+            var viewerCamera = VRView.viewerCamera;
+            if (!Application.isPlaying && viewerCamera)
+                camera = viewerCamera;
 #endif
 
-			return camera;
-		}
+            return camera;
+        }
 
-		public static Transform GetCameraRig()
-		{
-			var rig = Camera.main ? Camera.main.transform.parent : null;
+        public static Transform GetCameraRig()
+        {
+            var camera = GetMainCamera();
+            if (camera)
+            {
+                var rig = camera.transform.parent;
 
-#if UNITY_EDITOR && UNITY_EDITORVR
-			if (!Application.isPlaying)
-			{
-				if (VRView.cameraRig)
-					rig = VRView.cameraRig;
-			}
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                {
+                    if (VRView.cameraRig)
+                        rig = VRView.cameraRig;
+                }
 #endif
-			return rig;
-		}
 
-		/// <summary>
-		/// Returns a local roll-only rotation which will face the object toward the camera
-		/// </summary>
-		/// <param name="parentRotation">Glboal rotation of the parent transform</param>
-		/// <returns></returns>
-		public static Quaternion LocalRotateTowardCamera(Transform parentTransform)
-		{
-			var toCamera = parentTransform.position - GetMainCamera().transform.position;
-			var camVector = Quaternion.Inverse(parentTransform.rotation) * toCamera;
-			camVector.x = 0;
-			return Quaternion.LookRotation(camVector, Vector3.Dot(camVector, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
-		}
-	}
+                return rig;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Returns a local roll-only rotation which will face the object toward the camera
+        /// </summary>
+        /// <param name="parentTransform">The parent transform</param>
+        /// <returns></returns>
+        public static Quaternion LocalRotateTowardCamera(Transform parentTransform)
+        {
+            var camToParent = parentTransform.position - GetMainCamera().transform.position;
+            var camVector = Quaternion.Inverse(parentTransform.rotation) * camToParent;
+            camVector.x = 0;
+
+            return Quaternion.LookRotation(camVector,
+                Vector3.Dot(camVector, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
+        }
+    }
 }
-#endif
