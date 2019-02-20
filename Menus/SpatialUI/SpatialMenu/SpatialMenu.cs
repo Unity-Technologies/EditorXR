@@ -363,6 +363,7 @@ namespace UnityEditor.Experimental.EditorVR
                 m_ShowMenuCircularInputCrossedRotationThresholdForSelection = false;
 
                 m_SpatialInputHold = true;
+                ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
 
 #if UNITY_EDITOR
                 // Hide the scene view Gizmo UI that draws SpatialMenu outlines and
@@ -436,7 +437,8 @@ namespace UnityEditor.Experimental.EditorVR
             if ((positiveYInputAction.isHeld || m_SpatialInputHold) && s_SpatialMenuState != SpatialMenuState.Hidden)
             {
                 // Individual axes can reset to 0, so always consume controls to pick them back up
-                ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl); // Select should only be consumed upon activation, so other UI can receive select events
+                consumeControl(m_CurrentSpatialActionMapInput.leftStickX);
+                consumeControl(m_CurrentSpatialActionMapInput.leftStickY);
 
                 // If the ray IS pointing at the spatialMenu, then set the mode to reflect external ray input
                 var atLeastOneInputDeviceIsAimingAtSpatialMenu = IsAimingAtUI();
