@@ -206,6 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (miniWorld.Contains(rayOriginPosition) || miniWorld.Contains(pointerPosition))
                         return true;
                 }
+
                 return false;
             }
 
@@ -654,4 +655,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-

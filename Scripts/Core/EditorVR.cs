@@ -88,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return HideFlags.None;
 
                 return showGameObjects ? HideFlags.DontSaveInEditor : HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
-        }
+            }
         }
 
         internal static bool showGameObjects
@@ -170,22 +170,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
 #endif
             }
-                // Add EVR tags and layers if they don't exist
+
+            // Add EVR tags and layers if they don't exist
 #if UNITY_EDITOR
-                var tags = TagManager.GetRequiredTags();
-                var layers = TagManager.GetRequiredLayers();
+            var tags = TagManager.GetRequiredTags();
+            var layers = TagManager.GetRequiredLayers();
 
-                foreach (var tag in tags)
-                {
-                    TagManager.AddTag(tag);
-                }
-
-                foreach (var layer in layers)
-                {
-                    TagManager.AddLayer(layer);
-                }
-#endif
+            foreach (var tag in tags)
+            {
+                TagManager.AddTag(tag);
             }
+
+            foreach (var layer in layers)
+            {
+                TagManager.AddLayer(layer);
+            }
+#endif
+        }
 
         void Initialize()
         {
@@ -201,7 +202,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             SetHideFlags(defaultHideFlags);
 #if UNITY_EDITOR
             if (!Application.isPlaying)
-            ClearDeveloperConsoleIfNecessary();
+                ClearDeveloperConsoleIfNecessary();
 #endif
             HandleInitialization();
 
@@ -214,13 +215,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 AddNestedModule(type);
             }
+
             LateBindNestedModules(nestedClassTypes);
 
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
-            AddModule<HierarchyModule>();
-            AddModule<ProjectFolderModule>();
+                AddModule<HierarchyModule>();
+                AddModule<ProjectFolderModule>();
             }
 #endif
 
@@ -273,6 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var intersectionModule = AddModule<IntersectionModule>();
             this.ConnectInterfaces(intersectionModule);
             intersectionModule.Setup(spatialHashModule.spatialHash);
+
             // TODO: Support module dependencies via ConnectInterfaces
             GetNestedModule<Rays>().ignoreList = intersectionModule.standardIgnoreList;
 

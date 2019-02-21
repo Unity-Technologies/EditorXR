@@ -151,6 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     device.alternateMenus.Add(alternateMenu);
                     var menuHideData = new MenuHideData();
                     device.menuHideData[alternateMenu] = menuHideData;
+
                     // Alternate menus must be visible the first frame or they are ignored in the priority list
                     menuHideData.hideFlags = 0;
 
@@ -226,6 +227,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 {
                     IAlternateMenu alternateMenu = null;
                     var menuHideData = deviceData.menuHideData;
+
                     // Always display the highest-priority alternate menu, and hide all others.
                     var alternateMenus = deviceData.alternateMenus;
                     foreach (var menu in alternateMenus)
@@ -392,6 +394,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                 // Only set if hidden--value is reset every frame
                                 kvp.Value.hideFlags |= MenuHideFlags.HasDirectSelection;
                             }
+
                             break;
                         }
                     }
@@ -508,6 +511,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             continue;
 
                         var menuHideFlags = deviceData.menuHideData;
+
                         // Set alternate menu visible on this rayOrigin and hide it on all others
                         var alternateMenuData = menuHideFlags[menu];
                         if (deviceData.rayOrigin == rayOrigin && visible)
@@ -620,4 +624,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-

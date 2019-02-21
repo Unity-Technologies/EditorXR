@@ -62,10 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 return context;
             }
-            set
-            {
-                settings.defaultContextName = value.name;
-            }
+            set { settings.defaultContextName = value.name; }
         }
 
         internal IEditingContext currentContext
@@ -184,6 +181,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static void OnAutoOpenStateChanged()
         {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return;
+
             if (autoOpen)
             {
                 s_AutoOpened = false;
@@ -203,7 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static void OpenIfUserPresent()
         {
-            if (EditorApplication.isCompiling)
+            if (EditorApplication.isCompiling || Application.isPlaying || EditorApplication.isPlayingOrWillChangePlaymode)
                 return;
 
             if (!ShouldShowEditorVR())
@@ -346,8 +346,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 OnVRViewEnabled();
                 s_Instance = this;
-
-                SetEditingContext(defaultContext);
+                SetEditingContext((IEditingContext)m_DefaultContext);
             }
         }
 
@@ -511,6 +510,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     managers = Resources.FindObjectsOfTypeAll<InputManager>();
                 }
             }
+
             Assert.IsTrue(managers.Length == 1, "Only one InputManager should be active; Count: " + managers.Length);
 
             s_InputManager = managers[0];
