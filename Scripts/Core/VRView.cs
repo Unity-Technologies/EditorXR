@@ -37,6 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         // To allow for alternate previews (e.g. smoothing)
         public static Camera customPreviewCamera
         {
+            get { return s_ActiveView != null && s_ActiveView.m_UseCustomPreviewCamera ? s_ActiveView.m_CustomPreviewCamera : null; }
             set
             {
                 if (s_ActiveView != null)
@@ -49,7 +50,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     s_ActiveView.m_CustomPreviewCamera = value;
                 }
             }
-            get { return s_ActiveView != null && s_ActiveView.m_UseCustomPreviewCamera ? s_ActiveView.m_CustomPreviewCamera : null; }
         }
 
         Camera m_CustomPreviewCamera;
