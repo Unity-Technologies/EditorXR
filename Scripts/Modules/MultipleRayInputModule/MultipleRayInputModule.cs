@@ -266,17 +266,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             hasScrollHandler = ExecuteEvents.GetEventHandler<IScrollHandler>(currentObject);
 
-            return ExecuteEvents.GetEventHandler<IPointerClickHandler>(currentObject)
-                || ExecuteEvents.GetEventHandler<IPointerDownHandler>(currentObject)
-                || ExecuteEvents.GetEventHandler<IPointerUpHandler>(currentObject)
-                || ExecuteEvents.GetEventHandler<IDragHandler>(currentObject)
-                || ExecuteEvents.GetEventHandler<IBeginDragHandler>(currentObject)
-                || ExecuteEvents.GetEventHandler<IEndDragHandler>(currentObject)
-                || ExecuteEvents.GetEventHandler<IRayDragHandler>(currentObject)
-                || ExecuteEvents.GetEventHandler<IRayBeginDragHandler>(currentObject)
-                || ExecuteEvents.GetEventHandler<IRayEndDragHandler>(currentObject)
-                || ExecuteEvents.GetEventHandler<IRayClickHandler>(currentObject)
-                || hasScrollHandler;
+            return ExecuteEvents.GetEventHandler<IEventSystemHandler>(currentObject);
         }
 
         RayEventData GetTempEventDataClone(RayEventData eventData)

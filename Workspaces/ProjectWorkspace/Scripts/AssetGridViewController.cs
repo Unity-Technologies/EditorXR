@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, string>
+    sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, int>
     {
         const float k_PositionFollow = 0.4f;
 
@@ -226,7 +226,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             // If this AssetData hasn't fetched its asset yet, do so now
             if (data.asset == null)
             {
-                data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index));
+                data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid));
                 data.preview = data.asset as GameObject;
             }
 #endif
@@ -272,7 +272,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             item.fallbackTexture = null;
 #if UNITY_EDITOR
             item.StartCoroutine(ObjectUtils.GetAssetPreview(
-                AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index)),
+                AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid)),
                 texture => item.fallbackTexture = texture));
 #endif
         }
