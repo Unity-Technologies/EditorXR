@@ -912,7 +912,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!4 &4542884266341674
 Transform:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1789767321393858}
@@ -1104,11 +1104,11 @@ BoxCollider:
 --- !u!95 &95733557967973550
 Animator:
   serializedVersion: 3
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1789767321393858}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: aac6c73dad394d74b8656d532e327d21, type: 2}
   m_CullingMode: 0
@@ -2898,7 +2898,7 @@ MonoBehaviour:
   m_FillOrigin: 2
 --- !u!114 &114973006485777900
 MonoBehaviour:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1789767321393858}
@@ -4322,7 +4322,7 @@ CanvasGroup:
   m_IgnoreParentGroups: 0
 --- !u!320 &320579960660821910
 PlayableDirector:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1789767321393858}
@@ -4331,7 +4331,7 @@ PlayableDirector:
   m_PlayableAsset: {fileID: 11400000, guid: fc2c0c2978d07804d97906d741be6a13, type: 2}
   m_InitialState: 0
   m_WrapMode: 2
-  m_DirectorUpdateMode: 3
+  m_DirectorUpdateMode: 1
   m_InitialTime: 0
   m_SceneBindings:
   - key: {fileID: 0}

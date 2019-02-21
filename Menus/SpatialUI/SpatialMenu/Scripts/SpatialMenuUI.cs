@@ -124,6 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         float m_HomeSectionTimelineStoppingTime;
         Vector3 m_OriginalSurroundingArrowsContainerLocalPosition;
         SpatialMenuElement m_CurrentlyHighlightedMenuElement;
+        Animator m_Animator;
 
         // Adaptive Position related fields
         bool m_InFocus;
@@ -266,6 +267,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             m_Visible = true;
             visible = false;
+            m_Animator = GetComponent<Animator>();
         }
 
         void Start()
@@ -374,8 +376,15 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             if (m_Director.time <= m_HomeSectionTimelineStoppingTime)
             {
+                if (!m_Animator.enabled)
+                    m_Animator.enabled = true;
+
                 m_Director.time += Time.unscaledDeltaTime;
                 m_Director.Evaluate();
+            }
+            else if (m_Animator.enabled)
+            {
+                m_Animator.enabled = false;
             }
         }
 
@@ -563,6 +572,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             if (m_SpatialMenuState == SpatialMenu.SpatialMenuState.Hidden && m_Director.time <= m_HomeSectionTimelineDuration)
             {
+                if (!m_Animator.enabled)
+                    m_Animator.enabled = true;
+
                 // Performed an animated hide of any currently displayed UI
                 m_Director.time = m_Director.time += Time.unscaledDeltaTime;
                 m_Director.Evaluate();

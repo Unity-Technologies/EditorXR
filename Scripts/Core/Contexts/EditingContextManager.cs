@@ -181,6 +181,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         static void OnAutoOpenStateChanged()
         {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                return;
+
             if (autoOpen)
             {
                 s_AutoOpened = false;
@@ -341,8 +344,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (Application.isPlaying)
             {
-                // Enable XR in case auto-open feature has disabled it
-                XRSettings.enabled = true;
                 OnVRViewEnabled();
                 s_Instance = this;
 
