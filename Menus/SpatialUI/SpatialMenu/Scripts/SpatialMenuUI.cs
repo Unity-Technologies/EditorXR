@@ -518,10 +518,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        public void SelectCurrentlyHighlightedElement(Node node)
+        public void SelectCurrentlyHighlightedElement(Node node, bool isNodeThatActivatedMenu)
         {
             // In the case of a ray-based selection, don't process the selection of a currently highlighted element assigned via another input-mode
-            if (m_SpatialInterfaceInputMode == SpatialInterfaceInputMode.Ray)
+            // Nodes not activating this menu are allowed to skip this check, as they can't have highlighted an element via neutral/trackpad/touchpad input
+            if (m_SpatialInterfaceInputMode == SpatialInterfaceInputMode.Ray && isNodeThatActivatedMenu)
             {
                 var rayHoveringButton = false;
                 for (int i = 0; i < m_CurrentlyDisplayedMenuElements.Count; ++i)

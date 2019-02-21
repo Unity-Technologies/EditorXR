@@ -330,7 +330,7 @@ namespace UnityEditor.Experimental.EditorVR
                 // Though they may need their input actions to drive certain SpatialMenu functionality
                 var cancelJustPressed = CancelWasJustPressedTest(consumeControl);
                 if (!cancelJustPressed) // Only process selection testing if cancel was not just pressed
-                    SelectJustPressedTest(consumeControl);
+                    SelectJustPressedTest(consumeControl, false);
 
                 return;
             }
@@ -413,7 +413,7 @@ namespace UnityEditor.Experimental.EditorVR
                 {
                     if (m_CurrentSpatialActionMapInput.select.wasJustPressed)
                     {
-                        s_SpatialMenuUI.SelectCurrentlyHighlightedElement(node);
+                        s_SpatialMenuUI.SelectCurrentlyHighlightedElement(node, true);
                     }
                     else if (m_CircularTriggerSelectionCyclingCoroutine == null)
                     {
@@ -479,14 +479,14 @@ namespace UnityEditor.Experimental.EditorVR
             return cancelJustPressed;
         }
 
-        void SelectJustPressedTest(ConsumeControlDelegate consumeControl)
+        void SelectJustPressedTest(ConsumeControlDelegate consumeControl, bool isNodeThatActivatedMenu = true)
         {
             if (m_CurrentSpatialActionMapInput.select.wasJustPressed)
             {
                 if (s_SpatialMenuState == SpatialMenuState.NavigatingTopLevel)
                     s_SpatialMenuUI.SectionTitleButtonSelected(node);
                 else if (s_SpatialMenuState == SpatialMenuState.NavigatingSubMenuContent)
-                    s_SpatialMenuUI.SelectCurrentlyHighlightedElement(node);
+                    s_SpatialMenuUI.SelectCurrentlyHighlightedElement(node, isNodeThatActivatedMenu);
 
                 ConsumeControls(m_CurrentSpatialActionMapInput, consumeControl);
             }
