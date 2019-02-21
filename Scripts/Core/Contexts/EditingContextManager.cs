@@ -346,8 +346,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 OnVRViewEnabled();
                 s_Instance = this;
-
-                SetEditingContext(defaultContext);
+                SetEditingContext((IEditingContext)m_DefaultContext);
             }
         }
 
