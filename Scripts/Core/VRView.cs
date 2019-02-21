@@ -444,14 +444,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (e.type == EventType.Repaint)
                 {
+                    // Legacy fix for dark colors in device view in Linear color space
+#if !UNITY_2018_3_OR_NEWER
 #if UNITY_2018_1_OR_NEWER
                     GL.sRGBWrite = false;
 #else
                     GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 #endif
+#endif
+
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
                     GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
+
+#if !UNITY_2018_3_OR_NEWER
                     GL.sRGBWrite = false;
+#endif
                 }
             }
 
@@ -480,7 +487,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 #endif
 
-#if UNITY_2018_1_OR_NEWER
+#if UNITY_2018_1_OR_NEWER && !UNITY_2018_3_OR_NEWER
             GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
 #endif
 
@@ -490,7 +497,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
-#if UNITY_2018_1_OR_NEWER
+
+#if UNITY_2018_1_OR_NEWER && !UNITY_2018_3_OR_NEWER
             GL.sRGBWrite = false;
 #endif
         }
