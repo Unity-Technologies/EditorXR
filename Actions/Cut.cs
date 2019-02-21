@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
@@ -12,13 +11,15 @@ namespace UnityEditor.Experimental.EditorVR.Actions
             var selection = Selection.transforms;
             if (selection != null)
             {
+#if UNITY_EDITOR
                 Unsupported.CopyGameObjectsToPasteboard();
+#endif
                 Paste.SetBufferDistance(Selection.transforms);
 
                 foreach (var transform in selection)
                 {
                     var go = transform.gameObject;
-                    go.hideFlags = HideFlags.HideAndDontSave;
+                    go.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
                     go.SetActive(false);
                 }
 
@@ -27,4 +28,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif

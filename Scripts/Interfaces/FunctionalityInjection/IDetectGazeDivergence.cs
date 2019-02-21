@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -15,12 +14,20 @@ namespace UnityEditor.Experimental.EditorVR
     {
         internal delegate bool IsAboveDivergenceThresholdDelegate(IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold, bool disregardTemporalStability = true);
 
+        internal delegate float SetDivergenceRecoverySpeedDelegate(IDetectGazeDivergence obj, float rateAtWhichGazeVelocityReturnsToStableThreshold);
+
         internal static Func<Transform, float, bool, bool> isAboveDivergenceThreshold { private get; set; }
+
+        internal static Action<float> setDivergenceRecoverySpeed { private get; set; }
 
         public static bool IsAboveDivergenceThreshold(this IDetectGazeDivergence obj, Transform transformToTest, float divergenceThreshold, bool disregardTemporalStability = true)
         {
             return isAboveDivergenceThreshold(transformToTest, divergenceThreshold, disregardTemporalStability);
         }
+
+        public static void SetDivergenceRecoverySpeed(this IDetectGazeDivergence obj, float rateAtWhichGazeVelocityReturnsToStableThreshold)
+        {
+            setDivergenceRecoverySpeed(rateAtWhichGazeVelocityReturnsToStableThreshold);
+        }
     }
 }
-#endif

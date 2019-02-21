@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Modules;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -10,8 +9,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public void LateBindInterfaceMethods(GazeDivergenceModule provider)
             {
                 IDetectGazeDivergenceMethods.isAboveDivergenceThreshold = provider.IsAboveDivergenceThreshold;
+                IDetectGazeDivergenceMethods.setDivergenceRecoverySpeed = provider.SetGazeDivergenceRecoverySpeed;
             }
         }
     }
 }
-#endif

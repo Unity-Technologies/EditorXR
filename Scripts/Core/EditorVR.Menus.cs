@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,7 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (mainMenu != null && rayOrigin != null)
                 {
                     mainMenu.menuTools = m_MainMenuTools;
-                    mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes;
+                    mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes.Where(t => !HiddenTypes.Contains(t)).ToList();
                     mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
                     mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
                     m_MainMenus[rayOrigin] = mainMenu;
@@ -152,6 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     device.alternateMenus.Add(alternateMenu);
                     var menuHideData = new MenuHideData();
                     device.menuHideData[alternateMenu] = menuHideData;
+
                     // Alternate menus must be visible the first frame or they are ignored in the priority list
                     menuHideData.hideFlags = 0;
 
@@ -170,7 +170,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             public void LateBindInterfaceMethods(Tools provider)
             {
-                m_MainMenuTools = provider.allTools.Where(t => !Tools.IsDefaultTool(t)).ToList(); // Don't show tools that can't be selected/toggled
+                m_MainMenuTools = provider.allTools.Where(t =>
+                {
+                    return !Tools.IsDefaultTool(t) && !HiddenTypes.Contains(t);
+                }).ToList(); // Don't show tools that can't be selected/toggled
             }
 
             static void UpdateAlternateMenuForDevice(DeviceData deviceData)
@@ -222,16 +225,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 foreach (var deviceData in k_ActiveDeviceData)
                 {
-                    foreach (var kvp in deviceData.menuHideData)
-                    {
-                        kvp.Value.hideFlags &= ~MenuHideFlags.Temporary;
-                    }
-                }
-
-                foreach (var deviceData in k_ActiveDeviceData)
-                {
                     IAlternateMenu alternateMenu = null;
                     var menuHideData = deviceData.menuHideData;
+
                     // Always display the highest-priority alternate menu, and hide all others.
                     var alternateMenus = deviceData.alternateMenus;
                     foreach (var menu in alternateMenus)
@@ -251,7 +247,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     MenuHideData customMenuHideData = null;
 
                     var mainMenuVisible = mainMenu != null && menuHideData[mainMenu].hideFlags == 0;
-                    var mainMenuSupressed = mainMenu != null && ((menuHideData[mainMenu].hideFlags & MenuHideFlags.Occluded) != 0);
+                    var mainMenuSuppressed = mainMenu != null && ((menuHideData[mainMenu].hideFlags & MenuHideFlags.Occluded) != 0);
 
                     var alternateMenuData = menuHideData[alternateMenu];
                     var alternateMenuVisible = alternateMenuData.hideFlags == 0;
@@ -264,12 +260,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
 
                     // Temporarily hide customMenu if other menus are visible or should be
-                    if (customMenuVisible && (mainMenuVisible || mainMenuSupressed))
+                    if (customMenuVisible && (mainMenuVisible || mainMenuSuppressed))
                         customMenuHideData.hideFlags |= MenuHideFlags.OtherMenu;
-
-                    // Temporarily hide alternateMenu if other menus are visible
-                    if (alternateMenuVisible && (customMenuVisible || mainMenuVisible))
-                        alternateMenuData.hideFlags |= MenuHideFlags.OtherMenu;
 
                     // Kick the alternate menu to the other hand if a main menu or custom menu is visible
                     if (alternateMenuVisible && (mainMenuVisible || customMenuVisible) && alternateMenu is RadialMenu)
@@ -316,31 +308,35 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 foreach (var deviceData in k_ActiveDeviceData)
                 {
                     var mainMenu = deviceData.mainMenu;
-                    var mainMenuHideData = deviceData.menuHideData[mainMenu];
-                    var mainMenuHideFlags = mainMenuHideData.hideFlags;
-                    var lastMainMenuHideFlags = mainMenuHideData.lastHideFlags;
+                    if (mainMenu != null)
+                    {
+                        var mainMenuHideData = deviceData.menuHideData[mainMenu];
+                        var mainMenuHideFlags = mainMenuHideData.hideFlags;
+                        var lastMainMenuHideFlags = mainMenuHideData.lastHideFlags;
 
-                    var permanentlyHidden = (mainMenuHideFlags & MenuHideFlags.Hidden) != 0;
-                    var wasPermanentlyHidden = (lastMainMenuHideFlags & MenuHideFlags.Hidden) != 0;
+                        var permanentlyHidden = (mainMenuHideFlags & MenuHideFlags.Hidden) != 0;
+                        var wasPermanentlyHidden = (lastMainMenuHideFlags & MenuHideFlags.Hidden) != 0;
 
-                    //Temporary states take effect after a delay
-                    var temporarilyHidden = (mainMenuHideFlags & MenuHideFlags.Temporary) != 0
-                        && Time.time > mainMenuHideData.autoHideTime + k_MainMenuAutoHideDelay;
-                    var wasTemporarilyHidden = (lastMainMenuHideFlags & MenuHideFlags.Temporary) != 0
-                        && Time.time > mainMenuHideData.autoShowTime + k_MainMenuAutoShowDelay;
+                        //Temporary states take effect after a delay
+                        var temporarilyHidden = (mainMenuHideFlags & MenuHideFlags.Temporary) != 0
+                            && Time.time > mainMenuHideData.autoHideTime + k_MainMenuAutoHideDelay;
+                        var wasTemporarilyHidden = (lastMainMenuHideFlags & MenuHideFlags.Temporary) != 0
+                            && Time.time > mainMenuHideData.autoShowTime + k_MainMenuAutoShowDelay;
 
-                    // If the menu is focused, only hide if Hidden is set (e.g. not temporary) in order to hide the selected tool
-                    if (permanentlyHidden || wasPermanentlyHidden || !mainMenu.focus && (temporarilyHidden || wasTemporarilyHidden))
-                        mainMenu.menuHideFlags = mainMenuHideFlags;
+                        // If the menu is focused, only hide if Hidden is set (e.g. not temporary) in order to hide the selected tool
+                        if (permanentlyHidden || wasPermanentlyHidden || !mainMenu.focus && (temporarilyHidden || wasTemporarilyHidden))
+                            mainMenu.menuHideFlags = mainMenuHideFlags;
 
-                    // Disable the main menu activator if any temporary states are set
-                    deviceData.toolsMenu.mainMenuActivatorInteractable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0;
+                        // Disable the main menu activator if any temporary states are set
+                        deviceData.toolsMenu.mainMenuActivatorInteractable = (mainMenuHideFlags & MenuHideFlags.Temporary) == 0
+                            && mainMenu.menuContent;
+                    }
 
                     // Show/hide custom menu, if it exists
                     var customMenu = deviceData.customMenu;
                     if (customMenu != null)
                         customMenu.menuHideFlags = deviceData.menuHideData[customMenu].hideFlags;
-                    
+
                     var alternateMenus = deviceData.alternateMenus;
                     foreach (var menu in alternateMenus)
                     {
@@ -349,6 +345,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     UpdateAlternateMenuForDevice(deviceData);
                     Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
+                }
+
+                foreach (var deviceData in k_ActiveDeviceData)
+                {
+                    foreach (var kvp in deviceData.menuHideData)
+                    {
+                        kvp.Value.hideFlags &= ~MenuHideFlags.Temporary;
+                    }
                 }
 
                 evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -390,6 +394,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                 // Only set if hidden--value is reset every frame
                                 kvp.Value.hideFlags |= MenuHideFlags.HasDirectSelection;
                             }
+
                             break;
                         }
                     }
@@ -472,6 +477,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (deviceData.customMenu != null && menuHideFlags[mainMenu].hideFlags != 0)
                         openMenu = deviceData.customMenu;
 
+                    if (openMenu == null)
+                        return false;
+
                     if (scaledPointerDistance < openMenu.localBounds.size.y + k_MenuHideMargin)
                     {
                         // Only set if hidden--value is reset every frame
@@ -503,6 +511,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             continue;
 
                         var menuHideFlags = deviceData.menuHideData;
+
                         // Set alternate menu visible on this rayOrigin and hide it on all others
                         var alternateMenuData = menuHideFlags[menu];
                         if (deviceData.rayOrigin == rayOrigin && visible)
@@ -533,12 +542,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         if (deviceData.rayOrigin == rayOrigin)
                         {
                             // Toggle main menu hidden flag
-                            mainMenuHideData.hideFlags ^= MenuHideFlags.Hidden;
+                            if (mainMenu.menuContent)
+                                mainMenuHideData.hideFlags ^= MenuHideFlags.Hidden;
+
                             mainMenu.targetRayOrigin = targetRayOrigin;
                         }
                         else
                         {
-                            mainMenuHideData.hideFlags |= MenuHideFlags.Hidden;
+                            if (mainMenu.menuContent)
+                                mainMenuHideData.hideFlags |= MenuHideFlags.Hidden;
 
                             var customMenuOverridden = customMenu != null &&
                                 (menuHideData[customMenu].hideFlags & MenuHideFlags.OtherMenu) != 0;
@@ -583,13 +595,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         }
                     }
                 });
-
                 return go;
             }
 
-            internal T SpawnMenu<T>(Transform rayOrigin) where T : Component, IMenu
+            internal T SpawnMenu<T>(Transform rayOrigin) where T : MonoBehaviour, IMenu
             {
-                var spawnedMenu = ObjectUtils.AddComponent<T>(evr.gameObject);
+                return (T)SpawnMenu(typeof(T), rayOrigin);
+            }
+
+            internal IMenu SpawnMenu(Type menuType, Transform rayOrigin)
+            {
+                var spawnedMenu = (IMenu)ObjectUtils.AddComponent(menuType, evr.gameObject);
                 this.ConnectInterfaces(spawnedMenu, rayOrigin);
 
                 return spawnedMenu;
@@ -599,7 +615,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 foreach (var deviceData in evr.m_DeviceData)
                 {
-                    if (deviceData.rayOrigin == rayOrigin)
+                    if (deviceData.mainMenu != null && deviceData.rayOrigin == rayOrigin)
                         return (deviceData.menuHideData[deviceData.mainMenu].hideFlags & MenuHideFlags.Hidden) == 0;
                 }
 
@@ -608,4 +624,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif

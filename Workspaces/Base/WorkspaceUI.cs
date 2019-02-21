@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -347,6 +346,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     handle.gameObject.SetActive(!value);
                 }
+
+                m_ResizeButton.gameObject.SetActive(!value);
             }
         }
 
@@ -1044,4 +1045,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

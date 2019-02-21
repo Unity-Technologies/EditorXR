@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -12,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// </summary>
     public abstract class SpatialUIController : MonoBehaviour, INodeToRay
     {
+#if UNITY_EDITOR
         // Pre-box fields to avoid allocation when setting them via reflection
         static readonly object[] s_BoxedTrueBool = new object[] {true};
         static readonly object[] s_BoxedFalseBool = new object[] {false};
@@ -93,6 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             s_SceneViewGizmoAnnotationUtilityType.InvokeMember(s_SelectionWireframeProperty,
                 flags, Type.DefaultBinder, s_AnnotationUtilityType, selectionWireEnabledBoxedBool);
         }
+#endif
 
         protected static void ConsumeControls(SpatialMenuInput spatialMenuActionMapInput, ConsumeControlDelegate consumeControl, bool consumeSelection = true)
         {
@@ -110,4 +111,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

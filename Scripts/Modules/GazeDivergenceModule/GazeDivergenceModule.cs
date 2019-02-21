@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Utilities;
+﻿using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -15,11 +14,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Transform m_GazeSourceTransform;
         Quaternion m_PreviousGazeRotation;
         float m_GazeVelocity;
+        float m_DivergenceSpeedScalar = 1f;
 
         /// <summary>
         /// Is the gaze currently focused on a single location, and not scanning the surrounding FOV above a certain velocity
         /// </summary>
-        public bool gazeStable { get { return m_GazeVelocity < k_StableGazeThreshold; } }
+        bool gazeStable { get { return m_GazeVelocity < k_StableGazeThreshold; } }
 
         void Awake()
         {
@@ -33,8 +33,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var gazeRotationDifference = Quaternion.Angle(currentGazeSourceRotation, m_PreviousGazeRotation);
             gazeRotationDifference *= gazeRotationDifference; // Square the difference for intended response curve/shape
             m_GazeVelocity = m_GazeVelocity + gazeRotationDifference * Time.unscaledDeltaTime;
-            m_GazeVelocity = Mathf.Clamp01(m_GazeVelocity - Time.unscaledDeltaTime);
+            m_GazeVelocity = Mathf.Clamp01(m_GazeVelocity - Time.unscaledDeltaTime * m_DivergenceSpeedScalar);
             m_PreviousGazeRotation = currentGazeSourceRotation; // Cache the previous camera rotation
+        }
+
+        /// <summary>
+        /// Set the value that scales the rate at which the gaze velocity will return to the stable threshold (below the gaze divergence threshold)
+        /// A value of 1 will allow the gaze velocity to return to the stable threshold value at its' normal rate
+        /// A value less than 1 will increase the rate at which the gaze velocity returns to the stable gaze threshold value (slower)
+        /// A value greater than 1 will increase the rate at which the gaze velocity returns to the stable gaze threshold value (faster)
+        /// </summary>
+        /// <param name="rateAtWhichGazeVelocityReturnsToStableThreshold">The rate at which gaze velocity returns to stable threshold</param>
+        public void SetGazeDivergenceRecoverySpeed (float rateAtWhichGazeVelocityReturnsToStableThreshold)
+        {
+            const float minSpeed = 0.01f;
+            rateAtWhichGazeVelocityReturnsToStableThreshold = Mathf.Abs(rateAtWhichGazeVelocityReturnsToStableThreshold); // don't allow negative values
+            if (Mathf.Approximately(rateAtWhichGazeVelocityReturnsToStableThreshold, 0f))
+                rateAtWhichGazeVelocityReturnsToStableThreshold = minSpeed; // prevent the gaze velocity from never being able to return to the stable threshold
+
+            m_DivergenceSpeedScalar = rateAtWhichGazeVelocityReturnsToStableThreshold;
         }
 
         /// <summary>
@@ -62,4 +79,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

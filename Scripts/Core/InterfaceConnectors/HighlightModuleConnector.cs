@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
-using UnityEditor.Experimental.EditorVR.Modules;
+﻿using UnityEditor.Experimental.EditorVR.Modules;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -29,4 +28,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif

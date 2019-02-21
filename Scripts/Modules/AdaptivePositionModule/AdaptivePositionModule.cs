@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -8,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics
+    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, ISystemModule
     {
         [SerializeField]
         HapticPulse m_MovingPulse; // The pulse performed while moving an element to a new target position in the user's FOV
@@ -142,4 +141,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

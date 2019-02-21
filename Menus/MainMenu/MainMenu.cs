@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -126,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
-        void Awake()
+        void OnEnable()
         {
             m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
             this.ConnectInterfaces(m_MainMenuUI);
@@ -144,12 +143,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             RegisterSpatialMenuElements();
         }
 
-        private void RegisterSpatialMenuElements()
+        void RegisterSpatialMenuElements()
         {
             spatialMenuData.Add(new SpatialMenu.SpatialMenuData("Workspaces", "Open a workspace", m_WorkspaceSpatialMenuElements));
             spatialMenuData.Add(new SpatialMenu.SpatialMenuData("Tools", "Select a tool", m_ToolsSpatialMenuElements));
 
-            m_ToolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer("Selection Tool", "Perform standard object selection & manipulation", (node) =>
+            m_ToolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer("Selection Tool", "Perform standard object selection & manipulation", node =>
             {
                 this.SelectTool(this.RequestRayOriginFromNode(node), typeof(SelectionTool), hideMenu: true);
             }));
@@ -195,7 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     }
                 }
             }
-            else if (Mathf.Abs(rotationInput) >= kFlickDeltaThreshold 
+            else if (Mathf.Abs(rotationInput) >= kFlickDeltaThreshold
                 && Mathf.Abs(m_LastRotationInput) < kFlickDeltaThreshold)
             {
                 FlickMenu(rotationInput);
@@ -218,13 +217,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void CreateFaceButtons()
         {
-            var leftHandOrigin = this.RequestRayOriginFromNode(Node.LeftHand);
-            var rightHandOrigin = this.RequestRayOriginFromNode(Node.RightHand);
             var types = new HashSet<Type>();
             types.UnionWith(menuTools);
             types.UnionWith(menuWorkspaces);
             types.UnionWith(settingsMenuProviders.Keys.Select(provider => provider.Key));
             types.UnionWith(settingsMenuItemProviders.Keys.Select(provider => provider.Key));
+
+            if (Application.isPlaying)
+                types.RemoveWhere(type => type.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any());
 
             foreach (var type in types)
             {
@@ -273,24 +273,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     if (mainMenuButton != null)
                         mainMenuButton.toolType = selectedType;
 
-                    // Pre-populate the tools on both nodes/hands
-                    // A convenience function, that allows the tools to be immediately accessible
-                    // Also allows for the ToolsMenu to have full funcitonality from the of a session
-                    this.SelectTool(leftHandOrigin, selectedType,
-                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
-
-                    this.SelectTool(rightHandOrigin, selectedType,
-                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
-
-                    // TODO: optimize, and add support for resuming the session using the previously selected tool (if available)
-                    // Force the return to the selection tool after pre-populating new tools on both nodes
-                    this.SelectTool(leftHandOrigin, typeof(SelectionTool),
-                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
-
-                    this.SelectTool(rightHandOrigin, typeof(SelectionTool),
-                        hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
-
-                    m_ToolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(buttonData.name, buttonData.description, (node) =>
+                    m_ToolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(buttonData.name, buttonData.description, node =>
                     {
                         this.SelectTool(this.RequestRayOriginFromNode(node), selectedType,
                             hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
@@ -307,7 +290,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                     CreateFaceButton(buttonData, tooltip, () => { this.CreateWorkspace(selectedType); });
 
-                    m_WorkspaceSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(buttonData.name, buttonData.description, (node) => this.CreateWorkspace(selectedType)));
+                    m_WorkspaceSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(buttonData.name, buttonData.description, node => this.CreateWorkspace(selectedType)));
                 }
 
                 if (isSettingsProvider)
@@ -364,6 +347,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnButtonClicked(Transform rayOrigin)
         {
             this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
+            this.ClearToolMenuButtonPreview();
         }
 
         void OnButtonHovered(Transform rayOrigin, Type buttonType, string buttonDescription)
@@ -495,4 +479,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

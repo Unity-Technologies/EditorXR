@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {
@@ -22,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
 
         // from http://wiki.unity3d.com/index.php/3d_Math_functions
-        //Get the intersection between a line and a plane. 
+        //Get the intersection between a line and a plane.
         //If the line and plane are not parallel, the function outputs true, otherwise false.
         public static bool LinePlaneIntersection(out Vector3 intersection, Vector3 linePoint, Vector3 lineVec,
             Vector3 planeNormal, Vector3 planePoint)
@@ -154,4 +153,3 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
     }
 }
-#endif

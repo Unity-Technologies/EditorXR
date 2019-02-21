@@ -1,12 +1,12 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Provides access to checks that can test whether the main menu is visible on a given ray origin
-    /// </summary>    public interface IIsMainMenuVisible
+    /// </summary>
+    public interface IIsMainMenuVisible
     {
     }
 
@@ -24,4 +24,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

@@ -10,6 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+    [EditorOnlyWorkspace]
     [MainMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
     [SpatialMenuItem("Project", "Workspaces", "Manage the assets that belong to your project")]
     sealed class ProjectWorkspace : Workspace, IUsesProjectFolderData, IFilterUI, ISerializeWorkspace
@@ -72,10 +73,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             [SerializeField]
             float m_ScaleFactor;
+
             [SerializeField]
-            string m_SelectedFolder;
+            int m_SelectedFolder;
+
             [SerializeField]
-            List<string> m_ExpandedFolders;
+            List<int> m_ExpandedFolders;
 
             public float scaleFactor
             {
@@ -83,13 +86,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 set { m_ScaleFactor = value; }
             }
 
-            public string selectedFolder
+            public int selectedFolder
             {
                 get { return m_SelectedFolder; }
                 set { m_SelectedFolder = value; }
             }
 
-            public List<string> expandedFolders
+            public List<int> expandedFolders
             {
                 get { return m_ExpandedFolders; }
                 set { m_ExpandedFolders = value; }
