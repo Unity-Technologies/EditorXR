@@ -87,6 +87,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         PlayableDirector m_Director;
 
         [SerializeField]
+        Animator m_Animator;
+
+        [SerializeField]
         PlayableAsset m_RevealTimelinePlayable;
 
         [Header("Secondary Visuals")]
@@ -124,7 +127,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         float m_HomeSectionTimelineStoppingTime;
         Vector3 m_OriginalSurroundingArrowsContainerLocalPosition;
         SpatialMenuElement m_CurrentlyHighlightedMenuElement;
-        Animator m_Animator;
 
         // Adaptive Position related fields
         bool m_InFocus;
@@ -267,7 +269,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             m_Visible = true;
             visible = false;
-            m_Animator = GetComponent<Animator>();
         }
 
         void Start()

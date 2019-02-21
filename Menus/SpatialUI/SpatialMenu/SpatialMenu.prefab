@@ -2931,6 +2931,7 @@ MonoBehaviour:
   m_SubMenuElementPrefab: {fileID: 1166653769342808, guid: 21323fa6aadd9ef47b3ab1681f255ca1,
     type: 2}
   m_Director: {fileID: 320579960660821910}
+  m_Animator: {fileID: 95733557967973550}
   m_RevealTimelinePlayable: {fileID: 11400000, guid: fc2c0c2978d07804d97906d741be6a13,
     type: 2}
   m_SurroundingArrowsContainer: {fileID: 224684741921168796}
