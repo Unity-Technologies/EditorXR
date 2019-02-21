@@ -419,9 +419,27 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             m_BackButton.allowInteraction = true;
             ForceClearHomeMenuElements();
+
+            // Find any element hovered by a ray, for later comparison and selection override
+            // of menu elements highlighted via other input modes
+            SpatialMenu.SpatialMenuData rayHoveredElementMenuData = null;
+            if (spatialInterfaceInputMode == SpatialInterfaceInputMode.Ray)
+            {
+                foreach (var menuElement in m_CurrentlyDisplayedMenuElements)
+                {
+                    if (menuElement.hoveringNode != Node.None && menuElement.parentMenuData != null)
+                    {
+                        rayHoveredElementMenuData = menuElement.parentMenuData;
+                        break;
+                    }
+                }
+            }
+
             foreach (var menuData in spatialMenuData)
             {
-                if (menuData.highlighted)
+                // Ray-based elements that are highlighted should take precedence over elements highlighted by other means
+                // (neutral, BCI, etc) when changing menu levels
+                if (menuData.highlighted && (rayHoveredElementMenuData == null || rayHoveredElementMenuData == menuData))
                 {
                     m_CurrentlyDisplayedMenuElements.Clear();
                     var deleteOldChildren = m_SubMenuContainer.GetComponentsInChildren<Transform>().Where( x => x != m_SubMenuContainer);
