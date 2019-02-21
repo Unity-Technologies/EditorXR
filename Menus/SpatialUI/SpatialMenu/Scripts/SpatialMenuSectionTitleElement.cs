@@ -75,7 +75,15 @@ namespace UnityEditor.Experimental.EditorVR
 
         void Select()
         {
-            var selectionNode = hoveringNode != Node.None ? hoveringNode : spatialMenuActiveControllerNode;
+            var beingHoveredByRay = hoveringNode != Node.None;
+            var selectionNode = beingHoveredByRay ? hoveringNode : spatialMenuActiveControllerNode;
+
+            // Force this element to be selected again when switching menu levels
+            // due to the ray taking precedence over a non-ray-based highlighted item
+            // The button will be cleaned up regardless on menu level change or close
+            if (beingHoveredByRay)
+                highlighted = true;
+
             if (selected != null)
                 selected(selectionNode);
         }
