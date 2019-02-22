@@ -6,7 +6,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [RequiresTag(k_MiniWorldCameraTag)]
     [RequiresTag(ShowInMiniWorldTag)]
-    sealed class MiniWorldRenderer : MonoBehaviour
+    sealed class MiniWorldRenderer : MonoBehaviour, IScriptReference
     {
         public const string ShowInMiniWorldTag = "ShowInMiniWorld";
         const string k_MiniWorldCameraTag = "MiniWorldCamera";

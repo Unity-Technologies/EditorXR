@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public sealed class SpatialMenu : SpatialUIController, IInstantiateUI, IUsesNode, IUsesRayOrigin,
         ISelectTool, IConnectInterfaces, IControlHaptics, IControlInputIntersection, ISetManipulatorsVisible,
-        IRayVisibilitySettings, ICustomActionMap, IUsesViewerScale
+        IRayVisibilitySettings, ICustomActionMap, IUsesViewerScale, IScriptReference
     {
         public class SpatialMenuData
         {

@@ -243,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             {
                 float floatVal;
 
-                // Make sure that comma & period are interchangable.
+                // Make sure that comma & period are interchangeable.
                 m_Text = m_Text.Replace(',', '.');
 
                 if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
