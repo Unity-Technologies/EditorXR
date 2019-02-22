@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Threading;
 using NUnit.Framework;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -139,6 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         {
             var path = EditingContextManager.k_SettingsPath;
             var lastModTime = File.GetLastWriteTime(path);
+            Thread.Sleep(1000); // Wait one second to make sure modified time is later
             EditingContextManager.SaveProjectSettings(settings);
 
             Assert.AreEqual(JsonUtility.ToJson(settings, true), File.ReadAllText(path));
