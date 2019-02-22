@@ -1,63 +1,123 @@
 ﻿#if !UNITY_EDITOR
+using System;
 using System.Linq;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
-// Not fully implemented yet; Exists only to allow compilation
-public static class Selection
+namespace UnityEditor.Experimental.EditorVR
 {
-    static Object[] s_Objects;
-
-    public static Object activeObject
+    public static class Selection
     {
-        get {return s_Objects != null && s_Objects.Length > 0 ? s_Objects[0] : null; }
-        set { s_Objects = value ? new[] { value } : null; }
-    }
+        static Object[] s_Objects;
 
-    public static GameObject activeGameObject
-    {
-        get {return s_Objects != null && s_Objects.Length > 0 ? s_Objects[0] as GameObject : null; }
-        set { s_Objects = value ? new[] { value } : null; }
-    }
+        public static event Action selectionChanged;
 
-    public static int activeInstanceID
-    {
-        get
+        public static Object activeObject
         {
-            var ao = activeObject;
-            return ao ? ao.GetInstanceID() : -1;
+            get { return s_Objects != null && s_Objects.Length > 0 ? s_Objects[0] : null; }
+            set { s_Objects = value ? new[] { value } : null; }
         }
-    }
 
-    public static Transform activeTransform
-    {
-        get
+        public static GameObject activeGameObject
         {
-            var go = activeGameObject;
-            return go ? go.transform : null;
+            get { return s_Objects != null && s_Objects.Length > 0 ? s_Objects[0] as GameObject : null; }
+            set
+            {
+                var oldObjects = s_Objects;
+                s_Objects = value ? new[] { value } : null;
+                CheckSelectionChanged(oldObjects);
+            }
         }
-    }
 
-    public static GameObject[] gameObjects
-    {
-        get
+        public static int activeInstanceID
         {
-            return s_Objects != null ? s_Objects.Where(o => o as GameObject).Select(o => (GameObject)o).ToArray()
-                : new GameObject[0];
+            get
+            {
+                var ao = activeObject;
+                return ao ? ao.GetInstanceID() : -1;
+            }
         }
-    }
 
-    public static Object[] objects
-    {
-        get { return s_Objects ?? new Object[0]; }
-        set { s_Objects = value; }
-    }
-
-    public static Transform[] transforms
-    {
-        get
+        public static Transform activeTransform
         {
-            return s_Objects != null ? s_Objects.Where(o => o as GameObject).Select(o => ((GameObject)o).transform).ToArray()
-                : new Transform[0];
+            get
+            {
+                var go = activeGameObject;
+                return go ? go.transform : null;
+            }
+        }
+
+        public static GameObject[] gameObjects
+        {
+            get
+            {
+                return s_Objects != null
+                    ? s_Objects.Where(o => o as GameObject).Select(o => (GameObject)o).ToArray()
+                    : new GameObject[0];
+            }
+        }
+
+        public static Object[] objects
+        {
+            get { return s_Objects ?? new Object[0]; }
+            set
+            {
+                var oldObjects = s_Objects;
+                s_Objects = value;
+                CheckSelectionChanged(oldObjects);
+            }
+        }
+
+        public static Transform[] transforms
+        {
+            get
+            {
+                return s_Objects != null
+                    ? s_Objects.Where(o => o as GameObject).Select(o => ((GameObject)o).transform).ToArray()
+                    : new Transform[0];
+            }
+        }
+
+        static void CheckSelectionChanged(Object[] oldObjects)
+        {
+            if (s_Objects == null)
+            {
+                if (oldObjects == null)
+                    return;
+
+                if (selectionChanged != null)
+                    selectionChanged();
+
+                return;
+            }
+
+            if (oldObjects == null)
+            {
+                if (selectionChanged != null)
+                    selectionChanged();
+
+                return;
+            }
+
+            var length = s_Objects.Length;
+            if (length != oldObjects.Length)
+            {
+                if (selectionChanged != null)
+                    selectionChanged();
+
+                return;
+            }
+
+            for (int i = 0; i < length; i++)
+            {
+                if (s_Objects[i] != oldObjects[i])
+                {
+                    if (selectionChanged != null)
+                        selectionChanged();
+
+                    return;
+                }
+            }
         }
     }
 }
