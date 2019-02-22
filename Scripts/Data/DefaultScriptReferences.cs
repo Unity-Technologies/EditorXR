@@ -96,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             create(ObjectUtils.GetImplementationsOfInterface(typeof(IAlternateMenu)).ToList());
             create(ObjectUtils.GetImplementationsOfInterface(typeof(IAction)).ToList());
             create(ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList());
-            create(new List<Type> {typeof(SpatialMenu)});
+            create(ObjectUtils.GetImplementationsOfInterface(typeof(IScriptReference)).ToList());
 
             var directory = Path.GetDirectoryName(k_Path);
             if (!Directory.Exists(directory))
