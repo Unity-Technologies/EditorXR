@@ -414,7 +414,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Menus.UpdateAlternateMenuOnSelectionChanged(GetNestedModule<Rays>().lastSelectionRayOrigin);
         }
 
-#if UNITY_EDITOR
         void OnEnable()
         {
             Selection.selectionChanged += OnSelectionChanged;
@@ -424,7 +423,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             Selection.selectionChanged -= OnSelectionChanged;
         }
-#endif
 
         internal void Shutdown()
         {
