@@ -117,6 +117,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [MenuItem("Window/EditorXR %e", false)]
         internal static void ShowEditorVR()
         {
+            if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
+                return;
+
             // Using a utility window improves performance by saving from the overhead of DockArea.OnGUI()
             EditorWindow.GetWindow<VRView>(true, "EditorXR", true);
         }
@@ -124,6 +127,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [MenuItem("Window/EditorXR %e", true)]
         static bool ShouldShowEditorVR()
         {
+            if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
+                return false;
+
             return PlayerSettings.virtualRealitySupported;
         }
 
