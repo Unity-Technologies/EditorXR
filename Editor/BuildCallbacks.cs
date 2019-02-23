@@ -8,7 +8,6 @@ using UnityEngine;
 
 #if UNITY_2018_1_OR_NEWER
 using UnityEditor.Build.Reporting;
-#else
 #endif
 
 namespace UnityEditor.Experimental.EditorVR
