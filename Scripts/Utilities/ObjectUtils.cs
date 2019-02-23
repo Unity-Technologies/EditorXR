@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (Application.isPlaying)
             {
                 var go = new GameObject(type.Name);
-                go.transform.parent = parent;
+                go.transform.SetParent(parent, false);
                 component = AddComponent(type, go);
             }
 #if UNITY_EDITOR
