@@ -124,8 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if UNITY_EDITOR
                 if (!PlayerSettings.virtualRealitySupported)
-                    Debug.Log(
-                        "<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
+                    Debug.Log("<color=orange>EditorXR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->XR Settings</color>");
 #endif
 
 #if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
