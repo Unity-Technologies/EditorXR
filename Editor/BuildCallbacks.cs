@@ -2,14 +2,22 @@
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor.Build;
-using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
 using UnityEditorInternal;
 using UnityEngine;
 
+#if UNITY_2018_1_OR_NEWER
+using UnityEditor.Build.Reporting;
+#else
+#endif
+
 namespace UnityEditor.Experimental.EditorVR
 {
+#if UNITY_2018_1_OR_NEWER
     class BuildCallbacks : IPreprocessBuildWithReport, IPostprocessBuildWithReport
+#else
+    class BuildCallbacks : IPreprocessBuild, IPostprocessBuild
+#endif
     {
         [Serializable]
         class AssemblyDefinition
@@ -37,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR
             public string[] ExcludePlatforms { get { return excludePlatforms; } set { excludePlatforms = value; } }
         }
 
-        static readonly string[] k_AssemblyNames = { "EXR", "EXR-Dependencies", "input-prototype", "VRLR"  };
+        static readonly string[] k_AssemblyNames = { "EXR", "EXR-Dependencies", "input-prototype", "VRLR" };
         static readonly string[] k_IncludePlatformsOverride = { "Editor" };
         static readonly string[] k_ExcludePlatformsOverride = { };
         static readonly Dictionary<string, string[]> k_IncludePlatforms = new Dictionary<string, string[]>();
@@ -71,7 +79,11 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
+#if UNITY_2018_1_OR_NEWER
         public void OnPreprocessBuild(BuildReport report)
+#else
+        public void OnPreprocessBuild(BuildTarget target, string path)
+#endif
         {
             if (Core.EditorVR.includeInBuilds)
                 return;
@@ -92,7 +104,11 @@ namespace UnityEditor.Experimental.EditorVR
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
+#if UNITY_2018_1_OR_NEWER
         public void OnPostprocessBuild(BuildReport report)
+#else
+        public void OnPostprocessBuild(BuildTarget target, string path)
+#endif
         {
             OnPostprocessBuild();
         }
