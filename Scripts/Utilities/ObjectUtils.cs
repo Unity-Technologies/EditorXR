@@ -246,13 +246,18 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 var fields = type.GetFields();
                 foreach (var field in fields)
                 {
-                    if (field.IsStatic) continue;
+                    if (field.IsStatic)
+                        continue;
+
                     field.SetValue(clonedTargetComponent, field.GetValue(sourceComponent));
                 }
+
                 var props = type.GetProperties();
                 foreach (var prop in props)
                 {
-                    if (!prop.CanWrite || !prop.CanWrite || prop.Name == "name") continue;
+                    if (!prop.CanWrite || !prop.CanWrite || prop.Name == "name")
+                        continue;
+
                     prop.SetValue(clonedTargetComponent, prop.GetValue(sourceComponent, null), null);
                 }
             }

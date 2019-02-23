@@ -1,13 +1,6 @@
 ﻿using ListView;
 using System.Collections.Generic;
 
-#if !UNITY_EDITOR
-class SerializedObject
-{
-    public UnityEngine.GameObject targetObject;
-}
-#endif
-
 namespace UnityEditor.Experimental.EditorVR.Data
 {
     class InspectorData : ListViewItemNestedData<InspectorData, int>
