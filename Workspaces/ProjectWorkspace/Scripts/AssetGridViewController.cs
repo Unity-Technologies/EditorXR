@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using ListView;
@@ -8,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, string>
+    sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, int>
     {
         const float k_PositionFollow = 0.4f;
 
@@ -213,7 +212,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             t.localPosition = Vector3.Lerp(t.localPosition, m_StartPosition + zOffset * Vector3.back + xOffset * Vector3.right, k_PositionFollow);
             t.localRotation = Quaternion.identity;
 
-            t.SetSiblingIndex(order);
+            if (t.GetSiblingIndex() != order)
+                t.SetSiblingIndex(order);
         }
 
         protected override AssetGridItem GetItem(AssetData data)
@@ -222,12 +222,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * jitterMargin) // Avoid jitter while scrolling rows in and out of view
                 return null;
 
+#if UNITY_EDITOR
             // If this AssetData hasn't fetched its asset yet, do so now
             if (data.asset == null)
             {
-                data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index));
+                data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid));
                 data.preview = data.asset as GameObject;
             }
+#endif
 
             var item = base.GetItem(data);
 
@@ -268,10 +270,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         static void LoadFallbackTexture(AssetGridItem item, AssetData data)
         {
             item.fallbackTexture = null;
+#if UNITY_EDITOR
             item.StartCoroutine(ObjectUtils.GetAssetPreview(
-                AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index)),
+                AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid)),
                 texture => item.fallbackTexture = texture));
+#endif
         }
     }
 }
-#endif

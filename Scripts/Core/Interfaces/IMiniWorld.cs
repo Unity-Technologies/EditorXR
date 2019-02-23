@@ -1,6 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -38,4 +36,3 @@ namespace UnityEditor.Experimental.EditorVR
         List<Renderer> ignoreList { set; }
     }
 }
-#endif

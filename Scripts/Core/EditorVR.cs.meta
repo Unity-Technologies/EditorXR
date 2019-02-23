@@ -1,22 +1,20 @@
 fileFormatVersion: 2
 guid: 1d288f1a40f3bc54bb07e9a5eb99d137
-timeCreated: 1492057075
-licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - m_PinnedToolButtonPrefab: {fileID: 114000011260412956, guid: 7221a75a049ac3949a505c7c2f06bd8e,
-      type: 2}
   - m_ProxyRayPrefab: {fileID: 114000010564953552, guid: 6c037b4595ca1ab4c921efeac9524073,
       type: 2}
+  - m_ProxyExtras: {instanceID: 0}
   - m_EventCameraPrefab: {fileID: 20000012271368486, guid: 6078fbea960c1014cba733bb3ec1d7ad,
-      type: 2}
-  - m_PreviewCameraPrefab: {fileID: 1000010893495554, guid: 66d2f6b9efc6b7842bea782607a65bd2,
       type: 2}
   - m_PlayerModelPrefab: {fileID: 1000013280737546, guid: 3dbbb2baa83f3994e94fe56a60c73252,
       type: 2}
-  - m_ProxyExtras: {instanceID: 0}
-  - m_UnityIcon: {fileID: 21300000, guid: 05f6f0555fbf99a429004b50ccd6ffa9, type: 3}
+  - m_PlayerFloorPrefab: {fileID: 1888626590568660, guid: b904665d3c595934b8950ea7c2a51972,
+      type: 2}
+  - m_PreviewCameraPrefab: {fileID: 1000010893495554, guid: 66d2f6b9efc6b7842bea782607a65bd2,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -31,4 +30,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

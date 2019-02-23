@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using ListView;
@@ -30,6 +29,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         Material m_UnlockIconMaterial;
+
+        [SerializeField]
+        Material m_SceneIconDarkMaterial;
+
+        [SerializeField]
+        Material m_SceneIconWhiteMaterial;
 
         Material m_TopDropZoneMaterial;
         Material m_BottomDropZoneMaterial;
@@ -89,6 +94,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             base.Setup();
 
             m_TextMaterial = Instantiate(m_TextMaterial);
+            m_SceneIconDarkMaterial = Instantiate(m_SceneIconDarkMaterial);
+            m_SceneIconWhiteMaterial = Instantiate(m_SceneIconWhiteMaterial);
             m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
             m_LockIconMaterial = Instantiate(m_LockIconMaterial);
             m_UnlockIconMaterial = Instantiate(m_UnlockIconMaterial);
@@ -118,6 +125,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             var parentMatrix = transform.worldToLocalMatrix;
             SetMaterialClip(m_TextMaterial, parentMatrix);
+            SetMaterialClip(m_SceneIconDarkMaterial, parentMatrix);
+            SetMaterialClip(m_SceneIconWhiteMaterial, parentMatrix);
             SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
             SetMaterialClip(m_LockIconMaterial, parentMatrix);
             SetMaterialClip(m_UnlockIconMaterial, parentMatrix);
@@ -184,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var go = data.gameObject;
             var kvp = new KeyValuePair<Transform, GameObject>(item.hoveringRayOrigin, go);
 
-            // Multiple rays can hover and unhover, so it's necessary to keep track of when hover state changes, so that 
+            // Multiple rays can hover and unhover, so it's necessary to keep track of when hover state changes, so that
             // highlights can be turned on or off
             if (item.hovering || m_HoveredGameObjects.Remove(kvp))
             {
@@ -327,7 +336,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override HierarchyListItem GetItem(HierarchyData data)
         {
             var item = base.GetItem(data);
-            item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial, m_UnlockIconMaterial);
+            item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial, m_UnlockIconMaterial,
+                m_SceneIconDarkMaterial, m_SceneIconWhiteMaterial);
             item.selectRow = SelectRow;
 
             item.setRowGrabbed = SetRowGrabbed;
@@ -480,4 +490,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

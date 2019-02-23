@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -40,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly FeedbackDictionary m_FeedbackRequests = new FeedbackDictionary();
 
         public ActionMap actionMap { get { return m_ProxyActionMap; } }
-        public bool ignoreLocking { get { return true; } }
+        public bool ignoreActionMapInputLocking { get { return true; } }
 
         public Node node { private get; set; }
 
@@ -83,18 +82,25 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     }
                 }
 
-                foreach (var affordance in m_Affordances)
+                for (var i = 0; i < m_Affordances.Length; i++)
                 {
-                    var affordanceTransform = affordance.transform;
-                    TransformInfo info;
-                    if (!m_TransformInfos.TryGetValue(affordanceTransform, out info))
+                    var affordance = m_Affordances[i];
+                    var transforms = affordance.transforms;
+                    foreach (var transform in transforms)
                     {
-                        info = new TransformInfo();
-                        m_TransformInfos[affordanceTransform] = info;
+                        TransformInfo info;
+                        if (!m_TransformInfos.TryGetValue(transform, out info))
+                        {
+                            info = new TransformInfo();
+                            m_TransformInfos[transform] = info;
+                        }
+
+                        info.initialPosition = transform.localPosition;
+                        info.initialRotation = transform.localRotation.eulerAngles;
                     }
 
-                    info.initialPosition = affordanceTransform.localPosition;
-                    info.initialRotation = affordanceTransform.localRotation.eulerAngles;
+                    if (m_Controls[i] == null)
+                        Debug.LogError(string.Format("Affordance defined for missing control {0}", affordance.control));
                 }
             }
 
@@ -110,24 +116,30 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 var affordance = m_Affordances[i];
                 var inputControl = m_Controls[i];
                 var controlIndex = affordance.control;
-                foreach (var definition in m_AffordanceDefinitions)
+                foreach (var affordanceDefinition in m_AffordanceDefinitions)
                 {
-                    if (definition.control == controlIndex)
+                    if (affordanceDefinition.control == controlIndex)
                     {
-                        var animationDefinition = definition.animationDefinition;
+                        var definitions = affordanceDefinition.animationDefinitions;
 
                         // Animate any values defined in the ProxyAffordanceMap's Affordance Definition
                         //Assume control values are [-1, 1]
-                        if (animationDefinition != null)
+                        if (definitions != null)
                         {
-                            var info = m_TransformInfos[affordance.transform];
-                            var handednessScalar = node == Node.RightHand && animationDefinition.reverseForRightHand ? -1 : 1;
-                            var min = animationDefinition.min * handednessScalar;
-                            var max = animationDefinition.max * handednessScalar;
-                            var offset = min + (inputControl.rawValue + 1) * (max - min) * 0.5f;
+                            var transforms = affordance.transforms;
+                            for (var j = 0; j < transforms.Length; j++)
+                            {
+                                var transform = transforms[j];
+                                var definition = definitions[j];
+                                var info = m_TransformInfos[transform];
+                                var handednessScalar = node == Node.RightHand && definition.reverseForRightHand ? -1 : 1;
+                                var min = definition.min * handednessScalar;
+                                var max = definition.max * handednessScalar;
+                                var offset = min + (inputControl.rawValue + 1) * (max - min) * 0.5f;
 
-                            info.positionOffset += animationDefinition.translateAxes.GetAxis() * offset;
-                            info.rotationOffset += animationDefinition.rotateAxes.GetAxis() * offset;
+                                info.positionOffset += definition.translateAxes.GetAxis() * offset;
+                                info.rotationOffset += definition.rotateAxes.GetAxis() * offset;
+                            }
                         }
 
                         break;
@@ -175,4 +187,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif

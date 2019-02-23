@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Threading;
@@ -23,6 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 #if INCLUDE_POLY_TOOLKIT
     [MainMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
+    [SpatialMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
     sealed class PolyWorkspace : Workspace, ISerializeWorkspace
     {
         const float k_MinScale = 0.05f;
@@ -506,4 +506,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     }
 #endif
 }
-#endif

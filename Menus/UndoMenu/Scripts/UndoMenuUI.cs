@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -19,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         MeshRenderer m_RedoButtonMeshRenderer;
-        
+
         Material m_UndoButtonMaterial;
         Material m_RedoButtonMaterial;
         Coroutine m_EngageCoroutine;
@@ -146,4 +145,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

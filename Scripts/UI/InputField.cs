@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 #if !UNITY_2017_2_OR_NEWER
 #pragma warning disable 649 // "never assigned to" warning
 #endif
@@ -6,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
         [SerializeField]
-        Text m_TextComponent;
+        TextMeshProUGUI m_TextComponent;
 
         [SerializeField]
         int m_CharacterLimit = 10;
@@ -143,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             var found = false;
             foreach (var w in allWorkspaces)
             {
-                if (w is InspectorWorkspace)
+                if (w is IInspectorWorkspace)
                 {
                     found = true;
                     break;
@@ -293,4 +293,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         protected abstract void CapsLock();
     }
 }
-#endif

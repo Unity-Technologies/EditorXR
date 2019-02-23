@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+    [EditorOnlyWorkspace]
     [MainMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]
+    [SpatialMenuItem("Profiler", "Workspaces", "Analyze your project's performance")]
     sealed class ProfilerWorkspace : EditorWindowWorkspace
     {
         RectTransform m_CaptureWindowRect;

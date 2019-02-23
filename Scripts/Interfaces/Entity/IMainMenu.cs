@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -65,4 +64,3 @@ namespace UnityEditor.Experimental.EditorVR
         void RemoveSettingsMenuItem(ISettingsMenuItemProvider provider);
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -134,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public Transform frontPanel { get { return m_WorkspaceUI.frontPanel; } }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         public Transform leftRayOrigin
         {
@@ -197,15 +196,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_ContentBounds = new Bounds(Vector3.up * startingBounds.y * 0.5f, startingBounds); // If custom bounds have been set, use them as the initial bounds
             UpdateBounds();
 
-            this.StopCoroutine(ref m_VisibilityCoroutine);
-
-            m_VisibilityCoroutine = StartCoroutine(AnimateShow());
+            this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());
         }
 
         public void Close()
         {
-            this.StopCoroutine(ref m_VisibilityCoroutine);
-            m_VisibilityCoroutine = StartCoroutine(AnimateHide());
+            this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateHide());
         }
 
         protected virtual void OnCloseClicked(Transform rayOrigin)
@@ -217,9 +213,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected virtual void OnResetClicked(Transform rayOrigin)
         {
             this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
-
-            this.StopCoroutine(ref m_ResetSizeCoroutine);
-            m_ResetSizeCoroutine = StartCoroutine(AnimateResetSize());
+            this.RestartCoroutine(ref m_ResetSizeCoroutine, AnimateResetSize());
         }
 
         protected void OnButtonHovered(Transform rayOrigin)
@@ -259,14 +253,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             const float kTargetDuration = 0.75f;
             while (currentDuration < kTargetDuration)
             {
-                currentDuration += Time.deltaTime;
+                currentDuration += Time.unscaledDeltaTime;
                 transform.localScale = scale;
-                scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
                 yield return null;
             }
 
             transform.localScale = targetScale;
-
             m_WorkspaceUI.highlightsVisible = false;
             m_VisibilityCoroutine = null;
         }
@@ -280,13 +273,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             const float kTargetDuration = 0.185f;
             while (currentDuration < kTargetDuration)
             {
-                currentDuration += Time.deltaTime;
+                currentDuration += Time.unscaledDeltaTime;
                 transform.localScale = scale;
-                scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                scale = MathUtilsExt.SmoothDamp(scale, targetScale, ref smoothVelocity, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
                 yield return null;
             }
-            transform.localScale = targetScale;
 
+            transform.localScale = targetScale;
             m_WorkspaceUI.highlightsVisible = false;
             m_VisibilityCoroutine = null;
             ObjectUtils.Destroy(gameObject);
@@ -304,13 +297,17 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             const float kTargetDuration = 0.75f;
             while (currentDuration < kTargetDuration)
             {
-                currentDuration += Time.deltaTime;
-                currentBoundsCenter = MathUtilsExt.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.deltaTime);
-                currentBoundsSize = MathUtilsExt.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.deltaTime);
+                currentDuration += Time.unscaledDeltaTime;
+                currentBoundsCenter = MathUtilsExt.SmoothDamp(currentBoundsCenter, targetBoundsCenter, ref smoothVelocityCenter, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
+                currentBoundsSize = MathUtilsExt.SmoothDamp(currentBoundsSize, targetBoundsSize, ref smoothVelocitySize, kTargetDuration, Mathf.Infinity, Time.unscaledDeltaTime);
                 contentBounds = new Bounds(currentBoundsCenter, currentBoundsSize);
                 OnBoundsChanged();
                 yield return null;
             }
+
+            contentBounds = new Bounds(targetBoundsCenter, targetBoundsSize);
+            OnBoundsChanged();
+            m_ResetSizeCoroutine = null;
         }
 
         public virtual void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -339,4 +336,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

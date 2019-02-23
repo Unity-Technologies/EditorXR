@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -13,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IActionsMenu
     {
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
+        const string k_SpatialDescription = "Perform actions based on selected-object context";
 
         [SerializeField]
         ActionMap m_ActionMap;
@@ -50,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public int priority { get { return 1; } }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         public List<ActionMenuData> menuActions
         {
@@ -177,4 +177,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

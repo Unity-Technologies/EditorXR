@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -121,4 +120,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public RequestData[] values;
     }
 }
-#endif

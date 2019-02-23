@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +14,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
+    [SpatialMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
     sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRequestFeedback, IControlHaptics, IRayToNode
     {
         class MiniWorldTooltip : ITooltip
@@ -23,9 +23,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 get
                 {
+#if UNITY_EDITOR
                     return PlayerSettings.stereoRenderingPath == StereoRenderingPath.MultiPass
                         ? string.Empty
                         : "Not currently working in single pass";
+#else
+                    return string.Empty;
+#endif
                 }
             }
         }
@@ -595,4 +599,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

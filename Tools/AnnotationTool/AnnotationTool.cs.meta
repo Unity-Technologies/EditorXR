@@ -1,18 +1,17 @@
 fileFormatVersion: 2
 guid: ecba8b13e3259e14eab642c0d0657d5c
-timeCreated: 1505345373
-licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
   - m_ActionMap: {fileID: 11400000, guid: 6615fd7d8b165fe43bc85867850097e5, type: 2}
+  - m_AnnotationPointerPrefab: {fileID: 1052926436026162, guid: 28f4cb78bebbacb4cac56871d9cb675d,
+      type: 2}
   - m_AnnotationMaterial: {fileID: 2100000, guid: 252a12e5980ef5b438bcc0dbc0d35529,
       type: 2}
   - m_BrushSizePrefab: {fileID: 1000012251850158, guid: 76909d1f493d664469c9e0f4726790a3,
       type: 2}
-  - m_ColorPickerActivatorPrefab: {fileID: 1000010255295176, guid: a643645e8043ba84a8109a98e55603ff,
-      type: 2}
-  - m_SettingsMenuItemPrefab: {fileID: 1000013404610172, guid: 9d3d2d6c1e56f4e49ab368e814bf8801,
+  - m_MenuPrefab: {fileID: 114165694704150928, guid: 8a41be7e1e6013f4a90551e09db75c7b,
       type: 2}
   executionOrder: 0
   icon: {instanceID: 0}

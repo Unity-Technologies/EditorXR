@@ -1,7 +1,7 @@
-﻿#if UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR.Actions
+﻿namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Play")]
+    [SpatialMenuItem("Play", "Actions", "Enter Play-Mode")]
     sealed class Play : BaseAction
     {
         public override void ExecuteAction()
@@ -12,4 +12,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif

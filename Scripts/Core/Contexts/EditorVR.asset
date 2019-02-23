@@ -3,7 +3,7 @@
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
@@ -12,10 +12,32 @@ MonoBehaviour:
   m_Name: EditorVR
   m_EditorClassIdentifier: 
   m_RenderScale: 1
-  m_CopySceneCameraSettings: 1
+  m_CopyMainCameraSettings: 1
+  m_CopyMainCameraImageEffectsToHmd: 1
+  m_CopyMainCameraImageEffectsToPresentationCamera: 1
+  m_DefaultMainMenu: {fileID: 11500000, guid: 52a6f827905e5da45b04e9ad17c95d45, type: 3}
+  m_DefaultAlternateMenu: {fileID: 11500000, guid: 11fd46c50e83ee74083fc3e7b3f226d9,
+    type: 3}
   m_DefaultToolStack:
   - {fileID: 11500000, guid: 882053426a5f76d46b5505d9a20be912, type: 3}
   - {fileID: 11500000, guid: aab8fcc587f237c4cb48fb7bc8a59909, type: 3}
   - {fileID: 11500000, guid: 367f6e7e8089d554ebdb3aff02883660, type: 3}
   - {fileID: 11500000, guid: 49e533569ecea994c856e43af713e5be, type: 3}
   - {fileID: 11500000, guid: 403957a6dcd8bfe4a905881513f309b0, type: 3}
+  m_HiddenTypes: []
+  m_DefaultMainMenuName: UnityEditor.Experimental.EditorVR.Menus.MainMenu, EXR, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  m_DefaultAlternateMenuName: UnityEditor.Experimental.EditorVR.Menus.RadialMenu,
+    EXR, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  m_DefaultToolStackNames:
+  - UnityEditor.Experimental.EditorVR.Tools.TransformTool, EXR, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  - UnityEditor.Experimental.EditorVR.Tools.SelectionTool, EXR, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  - UnityEditor.Experimental.EditorVR.Tools.VacuumTool, EXR, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  - UnityEditor.Experimental.EditorVR.Tools.MoveWorkspacesTool, EXR, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  - UnityEditor.Experimental.EditorVR.Tools.LocomotionTool, EXR, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  m_HiddenTypeNames: []

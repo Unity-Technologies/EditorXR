@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using ListView;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -20,13 +19,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Material m_BackingCubeMaterial;
 
         [SerializeField]
-        Material m_TextMaterial;
-
-        [SerializeField]
         Material m_UIMaterial;
 
         [SerializeField]
         Material m_UIMaskMaterial;
+
         [SerializeField]
         Material m_NoClipBackingCubeMaterial;
 
@@ -65,8 +62,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_RowCubeMaterial = Instantiate(m_RowCubeMaterial);
             m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
-            m_TextMaterial = Instantiate(m_TextMaterial);
-            m_TextMaterial.SetInt(k_MaterialStencilRef, stencilRef);
             m_UIMaterial = Instantiate(m_UIMaterial);
             m_UIMaterial.SetInt(k_MaterialStencilRef, stencilRef);
             m_UIMaskMaterial = Instantiate(m_UIMaskMaterial);
@@ -101,7 +96,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var parentMatrix = transform.worldToLocalMatrix;
             SetMaterialClip(m_RowCubeMaterial, parentMatrix);
             SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
-            SetMaterialClip(m_TextMaterial, parentMatrix);
             SetMaterialClip(m_UIMaterial, parentMatrix);
             SetMaterialClip(m_UIMaskMaterial, parentMatrix);
             SetMaterialClip(m_HighlightMaterial, parentMatrix);
@@ -124,6 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 depth = depth
             });
 
+            order = m_ListItems.Count - 1;
             while (m_UpdateStack.Count > 0)
             {
                 var stackData = m_UpdateStack.Pop();
@@ -153,7 +148,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
                         Recycle(index);
                     else
-                        UpdateInspectorItem(datum, order++, offset, depth, expanded, ref doneSettling);
+                        UpdateInspectorItem(datum, order--, offset, depth, expanded, ref doneSettling);
 
                     offset += itemSize.z;
 
@@ -203,8 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var targetPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
             var targetRotation = Quaternion.identity;
 
-            // order is reversed because Inspector draws bottom-to-top, hence the "0" below
-            UpdateItemTransform(t, 0, targetPosition, targetRotation, dontSettle, ref doneSettling);
+            UpdateItemTransform(t, order, targetPosition, targetRotation, dontSettle, ref doneSettling);
         }
 
         protected override InspectorListItem GetItem(InspectorData listData)
@@ -219,7 +213,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
                 var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
-                item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_TextMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
+                item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
 
                 var numberItem = item as InspectorNumberItem;
                 if (numberItem)
@@ -239,6 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             return item;
         }
 
+#if UNITY_EDITOR
         public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData, int> data, List<InspectorData> newData)
         {
             InspectorNumberItem arraySizeItem = null;
@@ -274,6 +269,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
         }
+#endif
 
         void ToggleExpanded(int index)
         {
@@ -303,7 +299,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             ObjectUtils.Destroy(m_RowCubeMaterial);
             ObjectUtils.Destroy(m_BackingCubeMaterial);
-            ObjectUtils.Destroy(m_TextMaterial);
             ObjectUtils.Destroy(m_UIMaterial);
             ObjectUtils.Destroy(m_UIMaskMaterial);
             ObjectUtils.Destroy(m_HighlightMaterial);
@@ -314,4 +309,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         GameObject m_RightHandTouchProxyPrefab;
 
-        bool m_IsOculus = false;
+        bool m_IsOculus;
 
         protected override void Awake()
         {
@@ -49,35 +48,42 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         static void PostAnimate(Affordance[] affordances, AffordanceDefinition[] affordanceDefinitions, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
         {
             var proxyInput = (ProxyAnimatorInput)input;
-            foreach (var button in affordances)
+            foreach (var affordance in affordances)
             {
-                AffordanceAnimationDefinition affordanceAnimationDefinition = null;
+                AffordanceAnimationDefinition[] definitions = null;
                 foreach (var definition in affordanceDefinitions)
                 {
-                    if (definition.control == button.control)
+                    if (definition.control == affordance.control)
                     {
-                        affordanceAnimationDefinition = definition.animationDefinition;
+                        definitions = definition.animationDefinitions;
                         break;
                     }
                 }
 
-                switch (button.control)
+                if (definitions == null)
+                    continue;
+
+                var transforms = affordance.transforms;
+                for (var i = 0; i < transforms.Length; i++)
                 {
-                    case VRInputDevice.VRControl.LeftStickButton:
-                        if (!proxyInput.stickButton.isHeld)
-                        {
-                            var buttonTransform = button.transform;
-                            var info = transformInfos[buttonTransform];
-                            info.rotationOffset = Vector3.zero;
-                            info.Apply(buttonTransform);
-                        }
-                        break;
-                    case VRInputDevice.VRControl.Analog0:
-                        // TODO: Support multiple transforms per control
-                        // Trackpad touch sphere
-                        //if (affordanceAnimationDefinition.translateAxes != 0)
-                        //    button.renderer.enabled = !Mathf.Approximately(proxyInput.stickX.value, 0) || !Mathf.Approximately(proxyInput.stickY.value, 0);
-                        break;
+                    var transform = transforms[i];
+                    switch (affordance.control)
+                    {
+                        case VRInputDevice.VRControl.LeftStickButton:
+                            if (!proxyInput.stickButton.isHeld)
+                            {
+                                var info = transformInfos[transform];
+                                info.rotationOffset = Vector3.zero;
+                                info.Apply(transform);
+                            }
+
+                            break;
+                        case VRInputDevice.VRControl.Analog0:
+                            // Trackpad touch sphere
+                            if (definitions.Length > i && definitions[i].translateAxes != 0)
+                                affordance.renderers[i].enabled = !Mathf.Approximately(proxyInput.stickX.value, 0) || !Mathf.Approximately(proxyInput.stickY.value, 0);
+                            break;
+                    }
                 }
             }
         }
@@ -95,4 +101,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif

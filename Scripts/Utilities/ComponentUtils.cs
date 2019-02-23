@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
@@ -22,6 +24,36 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
 
             return foundComponent;
+        }
+    }
+
+    public static class ComponentUtils
+    {
+        public static T GetOrAddIf<T>(GameObject go, bool option) where T : Component
+        {
+            T component = go.GetComponent<T>();
+#if UNITY_EDITOR
+            if (option && component == null)
+                component = Undo.AddComponent<T>(go);
+#else
+            if (option && component == null)
+                component = go.AddComponent<T>();
+#endif
+
+            return component;
+        }
+
+        public static MethodInfo GetMethodRecursively(this Type type, string name, BindingFlags bindingAttr)
+        {
+            var method = type.GetMethod(name, bindingAttr);
+            if (method != null)
+                return method;
+
+            var baseType = type.BaseType;
+            if (baseType != null)
+                method = type.BaseType.GetMethodRecursively(name, bindingAttr);
+
+            return method;
         }
     }
 }

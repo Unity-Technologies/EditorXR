@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -244,13 +243,17 @@ namespace UnityEditor.Experimental.EditorVR.UI
             {
                 float floatVal;
 
-                // Make sure that comma & period are interchangable.
+                // Make sure that comma & period are interchangeable.
                 m_Text = m_Text.Replace(',', '.');
 
                 if (!float.TryParse(m_Text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture.NumberFormat, out floatVal))
                 {
-#if UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR
+#if UNITY_2018_3_OR_NEWER
+                    ExpressionEvaluator.Evaluate<float>(m_Text, out floatVal);
+#elif UNITY_2017_2_OR_NEWER
                     floatVal = ExpressionEvaluator.Evaluate<float>(m_Text);
+#endif
 #endif
                 }
 
@@ -264,8 +267,13 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 int intVal;
                 if (!int.TryParse(m_Text, out intVal))
                 {
-#if UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR
+#if UNITY_2018_3_OR_NEWER
+                    ExpressionEvaluator.Evaluate<int>(m_Text, out intVal);
+                    m_Text = intVal.ToString(k_IntFieldFormatString);
+#elif UNITY_2017_2_OR_NEWER
                     m_Text = ExpressionEvaluator.Evaluate<int>(m_Text).ToString(k_IntFieldFormatString);
+#endif
 #endif
                 }
             }
@@ -277,4 +285,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
-#endif

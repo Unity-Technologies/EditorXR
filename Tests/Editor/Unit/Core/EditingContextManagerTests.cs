@@ -1,7 +1,7 @@
-﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Threading;
 using NUnit.Framework;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
     public class EditingContextManagerTests
     {
         GameObject go;
-        EditorVRContext context, context2;
+        EditorXRContext context, context2;
         EditingContextManager manager;
         EditingContextManagerSettings settings, newSettings;
         SetEditingContextImplementor contextSetter;
@@ -26,13 +26,13 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
             var transformTool = go.AddComponent<TransformTool>();
             var createPrimitiveTool = go.AddComponent<CreatePrimitiveTool>();
 
-            context = ScriptableObject.CreateInstance<EditorVRContext>();
+            context = ScriptableObject.CreateInstance<EditorXRContext>();
             context.name = "Some Other Context";
             context.m_DefaultToolStack = new List<MonoScript>();
             context.m_DefaultToolStack.Add(MonoScript.FromMonoBehaviour(transformTool));
             context.m_DefaultToolStack.Add(MonoScript.FromMonoBehaviour(createPrimitiveTool));
 
-            context2 = ScriptableObject.CreateInstance<EditorVRContext>();
+            context2 = ScriptableObject.CreateInstance<EditorXRContext>();
             context2.name = "Yet Another Context";
             context2.m_DefaultToolStack = context.m_DefaultToolStack;
 
@@ -40,6 +40,9 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
             settings.defaultContextName = "Custom Default Context";
             newSettings = ScriptableObject.CreateInstance<EditingContextManagerSettings>();
             newSettings.defaultContextName = "New Custom Default Context";
+
+            // Save once so that we can detect a change--without this, SaveProjectSettings_UpdatesProjectSettingsFile will fail on CloudBuild
+            EditingContextManager.SaveProjectSettings(settings);
         }
 
         [Test]
@@ -137,6 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         {
             var path = EditingContextManager.k_SettingsPath;
             var lastModTime = File.GetLastWriteTime(path);
+            Thread.Sleep(1000); // Wait one second to make sure modified time is later
             EditingContextManager.SaveProjectSettings(settings);
 
             Assert.AreEqual(JsonUtility.ToJson(settings, true), File.ReadAllText(path));
@@ -164,6 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         }
     }
 
-    class SetEditingContextImplementor : ISetEditingContext { }
+    class SetEditingContextImplementor : ISetEditingContext
+    {
+    }
 }
-#endif

@@ -33,98 +33,98 @@ MonoBehaviour:
     m_HiddenMaterial: {fileID: 0}
   m_AffordanceDefinitions:
   - m_Control: 2
-    m_AnimationDefinition:
-      m_TranslateAxes: 0
+    m_AnimationDefinitions:
+    - m_TranslateAxes: 0
       m_RotateAxes: 1
       m_Min: 20
       m_Max: -25
       m_ReverseForRightHand: 0
-    m_VisibilityDefinition:
-      m_VisibilityType: 0
+    m_VisibilityDefinitions:
+    - m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
       m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 3
-    m_AnimationDefinition:
-      m_TranslateAxes: 1
+    m_AnimationDefinitions:
+    - m_TranslateAxes: 1
       m_RotateAxes: 0
       m_Min: -0.00455765
       m_Max: 0.00455765
       m_ReverseForRightHand: 1
-    m_VisibilityDefinition:
-      m_VisibilityType: 0
+    m_VisibilityDefinitions:
+    - m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
       m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 17
-    m_AnimationDefinition:
-      m_TranslateAxes: 4
+    m_AnimationDefinitions:
+    - m_TranslateAxes: 4
       m_RotateAxes: 0
       m_Min: 0.001793736
       m_Max: -0.001793736
       m_ReverseForRightHand: 0
-    m_VisibilityDefinition:
-      m_VisibilityType: 0
+    m_VisibilityDefinitions:
+    - m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
       m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 18
-    m_AnimationDefinition:
-      m_TranslateAxes: 4
+    m_AnimationDefinitions:
+    - m_TranslateAxes: 4
       m_RotateAxes: 0
       m_Min: 0.001793736
       m_Max: -0.001793736
       m_ReverseForRightHand: 0
-    m_VisibilityDefinition:
-      m_VisibilityType: 0
+    m_VisibilityDefinitions:
+    - m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
       m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 22
-    m_AnimationDefinition:
-      m_TranslateAxes: 1
+    m_AnimationDefinitions:
+    - m_TranslateAxes: 1
       m_RotateAxes: 0
       m_Min: 0.0002774392
       m_Max: -0.0002774392
       m_ReverseForRightHand: 0
-    m_VisibilityDefinition:
-      m_VisibilityType: 0
+    m_VisibilityDefinitions:
+    - m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
       m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 0
-    m_AnimationDefinition:
-      m_TranslateAxes: 0
+    m_AnimationDefinitions:
+    - m_TranslateAxes: 0
       m_RotateAxes: 2
       m_Min: 15
       m_Max: -15
       m_ReverseForRightHand: 0
-    m_VisibilityDefinition:
-      m_VisibilityType: 0
+    m_VisibilityDefinitions:
+    - m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
       m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}
       m_HiddenAlpha: 0
       m_HiddenMaterial: {fileID: 0}
   - m_Control: 1
-    m_AnimationDefinition:
-      m_TranslateAxes: 0
+    m_AnimationDefinitions:
+    - m_TranslateAxes: 0
       m_RotateAxes: 4
       m_Min: 15
       m_Max: -15
       m_ReverseForRightHand: 0
-    m_VisibilityDefinition:
-      m_VisibilityType: 0
+    m_VisibilityDefinitions:
+    - m_VisibilityType: 0
       m_ColorProperty: _Color
       m_AlphaProperty: 
       m_HiddenColor: {r: 1, g: 1, b: 1, a: 0}

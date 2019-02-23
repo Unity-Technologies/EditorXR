@@ -65,14 +65,15 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 
             var sources = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
-            var editorVRFolder = sources.Any(s => s.Contains("EditorVR.cs") && s.Replace("EditorVR.cs", string.Empty).Contains("EditorVR"));
-            Assert.IsTrue(editorVRFolder, "EditorVR scripts must be under a folder named 'EditorVR'");
+            //TODO: Rename EditorVR class to EditorXR after merging playmode
+            var editorVRFolder = sources.Any(s => s.Contains("EditorVR.cs") && s.Replace("EditorVR.cs", string.Empty).Contains("EditorXR"));
+            Assert.IsTrue(editorVRFolder, "EditorXR scripts must be under a folder named 'EditorXR' in order for compile tests to ignore errors and warnings in other code");
 
             var output = EditorUtility.CompileCSharp(sources, references.ToArray(), defines, outputFile);
             foreach (var o in output)
             {
                 var line = o.ToLower();
-                if (line.Contains("editorvr"))
+                if (line.Contains("assets/editorxr") || line.Contains("assets\\editorxr"))
                     Assert.IsFalse(line.Contains("exception") || line.Contains("error") || line.Contains("warning"), string.Join("\n", output));
             }
         }

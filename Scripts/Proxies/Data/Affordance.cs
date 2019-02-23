@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -15,23 +14,22 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         VRInputDevice.VRControl m_Control;
 
         [SerializeField]
-        Transform m_Transform;
+        Transform[] m_Transforms;
 
         [SerializeField]
-        Renderer m_Renderer;
+        Renderer[] m_Renderers;
 
-        [Tooltip("(Optional) Specific material for this affordance. If null, all materials are used")]
+        [Tooltip("(Optional) Specific materials for this affordance. If null, all materials are used")]
         [SerializeField]
-        Material m_Material;
+        Material[] m_Materials;
 
         [SerializeField]
         AffordanceTooltip[] m_Tooltips;
 
         public VRInputDevice.VRControl control { get { return m_Control; } }
-        public Transform transform { get { return m_Transform; } }
-        public Renderer renderer { get { return m_Renderer; } }
-        public Material material { get { return m_Material; } }
+        public Transform[] transforms { get { return m_Transforms; } }
+        public Renderer[] renderers { get { return m_Renderers; } }
+        public Material[] materials { get { return m_Materials; } }
         public AffordanceTooltip[] tooltips { get { return m_Tooltips; } }
     }
 }
-#endif

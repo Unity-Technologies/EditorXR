@@ -1,7 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Core;
-
-namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implement this interface to create an editing context. You can also specify your own custom
@@ -15,9 +12,19 @@ namespace UnityEditor.Experimental.EditorVR
         string name { get; }
 
         /// <summary>
-        /// Bool denotes that the scene camera's (component) values should be cloned on the XR runtime camera
+        /// Bool denotes that the scene Main Camera (component) values should be cloned on the EditorXR runtime camera
         /// </summary>
-        bool copyExistingCameraSettings { get; }
+        bool copyMainCameraSettings { get; }
+
+        /// <summary>
+        /// Bool denotes that the scene's enabled Main Camera image effects should be cloned on the EditorXR HMD camera
+        /// </summary>
+        bool copyMainCameraImageEffectsToHMD { get; }
+
+        /// <summary>
+        /// Bool denotes that the scene's enabled Main Camera image effects should be cloned on the EditorXR presentation camera
+        /// </summary>
+        bool copyMainCameraImageEffectsToPresentationCamera { get; }
 
         /// <summary>
         /// Bool denotes that the EditorVR instance exists, having already been created in Setup()
@@ -35,4 +42,3 @@ namespace UnityEditor.Experimental.EditorVR
         void Dispose();
     }
 }
-#endif

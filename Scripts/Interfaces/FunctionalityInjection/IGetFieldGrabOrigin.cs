@@ -1,12 +1,12 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Implementors receive a field grab origin transform
-    /// </summary>    public interface IGetFieldGrabOrigin
+    /// </summary>
+    public interface IGetFieldGrabOrigin
     {
     }
 
@@ -24,4 +24,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

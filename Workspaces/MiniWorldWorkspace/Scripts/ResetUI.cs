@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
@@ -14,4 +13,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         UnityEngine.UI.Button m_ResetButton;
     }
 }
-#endif

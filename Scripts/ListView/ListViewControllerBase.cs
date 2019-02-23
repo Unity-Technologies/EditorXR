@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -201,7 +200,8 @@ namespace ListView
                 t.localRotation = targetRotation;
             }
 
-            t.SetSiblingIndex(order);
+            if (t.GetSiblingIndex() != order)
+                t.SetSiblingIndex(order);
         }
 
         protected virtual Vector3 GetObjectSize(GameObject g)
@@ -275,4 +275,3 @@ namespace ListView
         }
     }
 }
-#endif

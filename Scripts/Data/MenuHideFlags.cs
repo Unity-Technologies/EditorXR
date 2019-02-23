@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
@@ -19,4 +18,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Occluded = OverUI | OverWorkspace | HasDirectSelection
     }
 }
-#endif

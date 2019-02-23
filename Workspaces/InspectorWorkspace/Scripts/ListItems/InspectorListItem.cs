@@ -1,5 +1,5 @@
-#if UNITY_EDITOR
 using System;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_InputFields = GetComponentsInChildren<InputField>(true);
         }
 
-        public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+        public virtual void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
         {
             m_NoClipBackingCube = noClipBackingCube;
             m_NoClipHighlightMaterials = noClipHighlightMaterials;
@@ -118,13 +118,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             foreach (var graphic in graphics)
             {
                 graphic.material = uiMaterial;
-            }
-
-            // Texts need a specific shader
-            var texts = GetComponentsInChildren<Text>(true);
-            foreach (var text in texts)
-            {
-                text.material = textMaterial;
             }
 
             // Don't clip masks
@@ -153,8 +146,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public virtual void OnObjectModified()
         {
+#if UNITY_EDITOR
             if (data.serializedObject.targetObject) // An exception is thrown if the targetObject has been deleted
                 data.serializedObject.Update();
+#endif
         }
 
         public void UpdateClipTexts(Matrix4x4 parentMatrix, Vector3 clipExtents)
@@ -268,10 +263,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
 
-            var texts = clone.GetComponentsInChildren<Text>(true);
+            var texts = clone.GetComponentsInChildren<TextMeshProUGUI>(true);
             foreach (var text in texts)
             {
-                text.material = m_NoClipText;
+                text.fontMaterial = m_NoClipText;
             }
 
             var colliders = clone.GetComponentsInChildren<Collider>();
@@ -372,4 +367,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

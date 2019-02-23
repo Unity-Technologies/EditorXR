@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class ProjectFolderModule : MonoBehaviour
+    sealed class ProjectFolderModule : MonoBehaviour, ISystemModule
     {
         // Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
         const float k_MaxFrameTime = 0.01f;
@@ -27,13 +27,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void OnEnable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.projectChanged += UpdateProjectFolders;
+#else
             EditorApplication.projectWindowChanged += UpdateProjectFolders;
+#endif
             UpdateProjectFolders();
         }
 
         void OnDisable()
         {
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.projectChanged -= UpdateProjectFolders;
+#else
             EditorApplication.projectWindowChanged -= UpdateProjectFolders;
+#endif
         }
 
         public void AddConsumer(IUsesProjectFolderData consumer)
@@ -101,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 hp.SetSearchFilter("t:object", 0);
             }
             var name = hp.name;
-            var guid = hp.guid;
+            var guid = hp.guid.GetHashCode();
             var depth = hp.depth;
             var folderList = new List<FolderData>();
             var assetList = new List<AssetData>();

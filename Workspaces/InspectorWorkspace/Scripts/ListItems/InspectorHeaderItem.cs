@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -49,16 +48,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.Setup(data);
 
+#if UNITY_EDITOR
             var target = data.serializedObject.targetObject;
 
             StopAllCoroutines();
             StartCoroutine(GetAssetPreview());
 
             m_TargetGameObject = target as GameObject;
+#endif
 
             UpdateHeaderUI();
         }
 
+#if UNITY_EDITOR
         IEnumerator GetAssetPreview()
         {
             m_Icon.texture = null;
@@ -75,6 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (!m_Icon.texture)
                 m_Icon.texture = AssetPreview.GetMiniThumbnail(target);
         }
+#endif
 
         public void SetActive(bool active)
         {
@@ -101,6 +104,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 setLocked(locked);
         }
 
+#if UNITY_EDITOR
         void SetTag(int val, int[] values)
         {
             var tags = UnityEditorInternal.InternalEditorUtility.tags;
@@ -108,13 +112,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (!m_TargetGameObject.tag.Equals(tag))
                 m_TargetGameObject.tag = tag;
         }
+#endif
 
         void SetLayer(int val, int[] values)
         {
+#if UNITY_EDITOR
             var layers = UnityEditorInternal.InternalEditorUtility.layers;
             var layer = LayerMask.NameToLayer(layers[values[0]]);
             if (m_TargetGameObject.layer != layer)
                 m_TargetGameObject.layer = layer;
+#endif
         }
 
         protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
@@ -137,9 +144,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_NameField.ForceUpdateLabel();
         }
 
-        public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+        public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
         {
-            base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
+            base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
             m_Button.sharedMaterials = highlightMaterials;
         }
 
@@ -160,6 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_NameField.text = m_TargetGameObject.name;
             m_NameField.ForceUpdateLabel();
 
+#if UNITY_EDITOR
             if (m_TargetGameObject)
             {
                 var tags = UnityEditorInternal.InternalEditorUtility.tags;
@@ -176,7 +184,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     m_LayerDropDown.value = layerIndex;
                 m_LayerDropDown.valueChanged += SetLayer;
             }
+#endif
         }
     }
 }
-#endif

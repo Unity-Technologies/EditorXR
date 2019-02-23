@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -15,10 +14,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         VRInputDevice.VRControl m_Control;
 
         [SerializeField]
-        AffordanceAnimationDefinition m_AnimationDefinition;
+        AffordanceAnimationDefinition[] m_AnimationDefinitions;
 
         [SerializeField]
-        AffordanceVisibilityDefinition m_VisibilityDefinition;
+        AffordanceVisibilityDefinition[] m_VisibilityDefinitions;
 
         /// <summary>
         /// The control associated with this affordance
@@ -32,20 +31,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
         /// <summary>
         /// The visibility definition used to drive changes to the visual elements representing this affordance
         /// </summary>
-        public AffordanceVisibilityDefinition visibilityDefinition
+        public AffordanceVisibilityDefinition[] visibilityDefinitions
         {
-            get { return m_VisibilityDefinition; }
-            set { m_VisibilityDefinition = value; }
+            get { return m_VisibilityDefinitions; }
+            set { m_VisibilityDefinitions = value; }
         }
 
         /// <summary>
         /// The animation definition used to drive translation/rotation changes to the visual elements representing this affordance
         /// </summary>
-        public AffordanceAnimationDefinition animationDefinition
+        public AffordanceAnimationDefinition[] animationDefinitions
         {
-            get { return m_AnimationDefinition; }
-            set { m_AnimationDefinition = value; }
+            get { return m_AnimationDefinitions; }
+            set { m_AnimationDefinitions = value; }
         }
     }
 }
-#endif

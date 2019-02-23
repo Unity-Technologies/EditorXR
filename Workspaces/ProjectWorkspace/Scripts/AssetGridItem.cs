@@ -1,6 +1,7 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -14,8 +15,8 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash,
-        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IRayToNode
+    sealed class AssetGridItem : DraggableListItem<AssetData, int>, IPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
+        IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -29,8 +30,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const int k_AutoHidePreviewVertexCount = 10000;
         const int k_HidePreviewVertexCount = 100000;
 
+        const float k_CheckAssignDelayTime = 0.125f;
+
         [SerializeField]
-        Text m_Text;
+        TextMeshProUGUI m_Text;
 
         [SerializeField]
         BaseHandle m_Handle;
@@ -44,6 +47,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         Renderer m_Sphere;
 
+        [SerializeField]
+        Material m_PositiveAssignmentHighlightMaterial;
+
+        [SerializeField]
+        Material m_NegativeAssignmentHighlightMaterial;
+
         [HideInInspector]
         [SerializeField] // Serialized so that this remains set after cloning
         GameObject m_Icon;
@@ -53,6 +62,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [HideInInspector]
         [SerializeField] // Serialized so that this remains set after cloning
         Transform m_PreviewObjectTransform;
+
+        [SerializeField]
+        bool m_IncludeRaySelectForDrop;
 
         bool m_Setup;
         bool m_AutoHidePreview;
@@ -66,6 +78,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Coroutine m_VisibilityCoroutine;
 
         Material m_SphereMaterial;
+
+        // in priority order, the types of Components that you can assign this asset to
+        List<Type> m_AssignmentDependencyTypes = new List<Type>();
+
+        GameObject m_CachedDropSelection;
+        float m_LastDragSelectionChange;
+
+        // negative value means object has been checked and can't be assigned to
+        // positive means it can be assigned, 0 means it hasn't yet been checked
+        readonly Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
+
+        readonly List<Renderer> m_SelectionRenderers = new List<Renderer>();
+        readonly Dictionary<Renderer, Material> m_SelectionOriginalMaterials = new Dictionary<Renderer, Material>();
 
         public GameObject icon
         {
@@ -174,12 +199,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 m_Handle.dragStarted += OnDragStarted;
                 m_Handle.dragging += OnDragging;
+                m_Handle.dragging += OnDraggingFeedForward;
                 m_Handle.dragEnded += OnDragEnded;
 
                 m_Handle.hoverStarted += OnHoverStarted;
                 m_Handle.hoverEnded += OnHoverEnded;
 
                 m_Handle.getDropObject = GetDropObject;
+
+                AssetDropUtils.AssignmentDependencies.TryGetValue(data.type, out m_AssignmentDependencyTypes);
 
                 m_Setup = true;
             }
@@ -297,7 +325,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             base.OnDragStarted(handle, eventData);
 
             var rayOrigin = eventData.rayOrigin;
-            this.AddRayVisibilitySettings(rayOrigin, this, false, true);
+            this.AddRayVisibilitySettings(rayOrigin, this, m_IncludeRaySelectForDrop, true);
 
             var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
             var cloneItem = clone.GetComponent<AssetGridItem>();
@@ -339,11 +367,183 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (smoothMotion != null)
                 smoothMotion.enabled = false;
 
+            // setup our assignment dependency list with any known types
+            AssetDropUtils.AssignmentDependencies.TryGetValue(data.type, out m_AssignmentDependencyTypes);
+
             StartCoroutine(ShowGrabbedObject());
+        }
+
+
+
+        float PreviouslyFoundResult(GameObject go)
+        {
+            float previous;
+            m_ObjectAssignmentChecks.TryGetValue(go.GetInstanceID(), out previous);
+            return previous;
+        }
+
+        void SetAssignableHighlight(GameObject selection, Transform rayOrigin, bool assignable)
+        {
+            if (assignable)
+            {
+                // blinking green highlight = YES, object can have this asset assigned
+                var mat = m_PositiveAssignmentHighlightMaterial;
+                this.SetBlinkingHighlight(selection, true, rayOrigin, mat);
+            }
+            else
+            {
+                // solid red highlight = NO, object can't have this asset assigned
+                var mat = m_NegativeAssignmentHighlightMaterial;
+                this.SetHighlight(selection, true, rayOrigin, mat);
+            }
+        }
+
+        void StopHighlight(GameObject go, Transform rayOrigin = null)
+        {
+            this.SetBlinkingHighlight(go, false);
+            this.SetHighlight(go, false, rayOrigin, null, true);
+        }
+
+        void OnDraggingFeedForward(BaseHandle handle, HandleEventData eventData)
+        {
+            var rayOrigin = eventData.rayOrigin;
+            var selection = TryGetSelection(rayOrigin);
+
+            // we've just stopped hovering something, stop any highlights
+            if (selection == null && m_CachedDropSelection != null)
+            {
+                StopHighlight(m_CachedDropSelection, rayOrigin);
+                m_CachedDropSelection = null;
+                m_LastDragSelectionChange = Time.time;
+                RestoreOriginalSelectionMaterials();
+            }
+            else if (selection != null)
+            {
+                var time = Time.time;
+                var previous = PreviouslyFoundResult(selection);
+
+                if (selection != m_CachedDropSelection)
+                {
+                    StopHighlight(m_CachedDropSelection);
+                    // if we've previously checked this object, indicate the result again
+                    if (previous > 0f)
+                    {
+                        SetAssignableHighlight(selection, rayOrigin, true);
+                        PreviewMaterialOnSelection(selection);
+                    }
+                    else if (previous < 0f)
+                    {
+                        SetAssignableHighlight(selection, rayOrigin, false);
+                        RestoreOriginalSelectionMaterials();
+                    }
+
+                    m_CachedDropSelection = selection;
+                    m_LastDragSelectionChange = time;
+                    return;
+                }
+
+                if (previous == 0f)
+                {
+                    // avoid checking every object the selector passes over with a short delay
+                    if (time - m_LastDragSelectionChange > k_CheckAssignDelayTime)
+                    {
+                        var assignable = CheckAssignable(selection);
+                        SetAssignableHighlight(selection, rayOrigin, assignable);
+
+                        if (assignable)
+                            PreviewMaterialOnSelection(selection);
+                    }
+                }
+            }
+        }
+
+        void PreviewMaterialOnSelection(GameObject selection)
+        {
+            if (data.type != "Material" || selection == null)
+                return;
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
+
+            selection.GetComponentsInChildren(m_SelectionRenderers);
+
+            var material = (Material)data.asset;
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                m_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
+                renderer.sharedMaterial = material;
+            }
+        }
+
+        void RestoreOriginalSelectionMaterials()
+        {
+            if (m_SelectionRenderers.Count < 1)
+                return;
+
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                Material originalMaterial;
+                if (m_SelectionOriginalMaterials.TryGetValue(renderer, out originalMaterial))
+                    renderer.sharedMaterial = originalMaterial;
+            }
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
+        }
+
+        bool CheckAssignable(GameObject go, bool checkChildren = false)
+        {
+            // if our asset type has a component dependency, we might want to add that
+            // component for the user sometimes - filling in the blank on their intention
+            // ex: AudioClips & AudioSources, VideoClips & VideoPlayers
+            if (m_AssignmentDependencyTypes == null)
+            {
+                m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                return true;
+            }
+
+            foreach (var t in m_AssignmentDependencyTypes)
+            {
+                if (AssetDropUtils.AutoFillTypes.Contains(t))
+                {
+                    m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                    return true;
+                }
+            }
+
+            if (!checkChildren)
+            {
+                foreach (Type t in m_AssignmentDependencyTypes)
+                {
+                    if (go.GetComponent(t) != null)
+                    {
+                        m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                foreach (Type t in m_AssignmentDependencyTypes)
+                {
+                    if (go.GetComponentInChildren(t) != null)
+                    {
+                        m_ObjectAssignmentChecks[go.GetInstanceID()] = Time.time;
+                        return true;
+                    }
+
+                }
+            }
+
+            m_ObjectAssignmentChecks[go.GetInstanceID()] = -Time.time;
+            return false;
         }
 
         protected override void OnDragEnded(BaseHandle handle, HandleEventData eventData)
         {
+            m_ObjectAssignmentChecks.Clear();
+            StopHighlight(m_CachedDropSelection, eventData.rayOrigin);
+
             var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
             var rayOrigin = eventData.rayOrigin;
@@ -354,33 +554,101 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 var previewObjectTransform = gridItem.m_PreviewObjectTransform;
                 if (previewObjectTransform)
                 {
+#if UNITY_EDITOR
                     Undo.RegisterCreatedObjectUndo(previewObjectTransform.gameObject, "Place Scene Object");
+#endif
                     this.PlaceSceneObject(previewObjectTransform, m_PreviewPrefabScale);
                 }
                 else
                 {
-                    switch (data.type)
-                    {
-                        case "Prefab":
-                        case "Model":
-#if UNITY_EDITOR
-                            var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
-                            var transform = go.transform;
-                            transform.position = gridItem.transform.position;
-                            transform.rotation = MathUtilsExt.ConstrainYawRotation(gridItem.transform.rotation);
-#else
-                            var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-#endif
-
-                            this.AddToSpatialHash(go);
-                            Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
-                            break;
-                    }
+                    HandleAssetDropByType(rayOrigin, gridItem);
                 }
             }
 
             StartCoroutine(HideGrabbedObject(m_DragObject.gameObject, gridItem.m_Cube));
             base.OnDragEnded(handle, eventData);
+        }
+
+        void HandleAssetDropByType(Transform rayOrigin, AssetGridItem gridItem)
+        {
+            switch (data.type)
+            {
+                case "Prefab":
+                case "Model":
+                    PlaceModelOrPrefab(gridItem.transform, data);
+                    break;
+                case "AnimationClip":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignAnimationClipAction);
+                    break;
+                case "AudioClip":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AudioClipAction);
+                    break;
+                case "VideoClip":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.VideoClipAction);
+                    break;
+                case "Font":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignFontAction);
+                    break;
+                case "PhysicMaterial":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignPhysicMaterialAction);
+                    break;
+                case "Material":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignMaterialAction);
+                    break;
+                case "Script":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AttachScriptAction);
+                    break;
+                case "Shader":
+                    SelectAndPlace(rayOrigin, data, AssetDropUtils.AssignShaderAction);
+                    break;
+            }
+        }
+
+        void SelectAndPlace(Transform rayOrigin, AssetData data, Action<GameObject, AssetData> placeFunc)
+        {
+            var selection = TryGetSelection(rayOrigin);
+            if (selection != null)
+            {
+                placeFunc.Invoke(selection, data);
+                this.UpdateInspectors(selection, true);
+            }
+        }
+
+        void PlaceModelOrPrefab(Transform itemTransform, AssetData data)
+        {
+#if UNITY_EDITOR
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
+#else
+            var go = (GameObject)Instantiate(data.asset);
+#endif
+
+            var transform = go.transform;
+            transform.position = itemTransform.position;
+            transform.rotation = MathUtilsExt.ConstrainYawRotation(itemTransform.rotation);
+
+            this.AddToSpatialHash(go);
+
+#if UNITY_EDITOR
+            Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
+#endif
+        }
+
+        GameObject TryGetSelection(Transform rayOrigin, bool includeRays)
+        {
+            GameObject selection = null;
+            var directSelections = this.GetDirectSelection();
+            if (directSelections != null)
+                directSelections.TryGetValue(rayOrigin, out selection);
+
+            if (selection == null && includeRays)
+                selection = this.GetFirstGameObject(rayOrigin);
+
+            return selection;
+        }
+
+        GameObject TryGetSelection(Transform rayOrigin)
+        {
+            return TryGetSelection(rayOrigin, m_IncludeRaySelectForDrop);
         }
 
         void OnHoverStarted(BaseHandle handle, HandleEventData eventData)
@@ -597,6 +865,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             this.ClearFeedbackRequests();
         }
+
+        public void OnResetDirectSelectionState() {}
     }
 }
-#endif

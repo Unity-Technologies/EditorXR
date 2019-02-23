@@ -1,10 +1,10 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Utilities;
+﻿using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Paste", ActionMenuItemAttribute.DefaultActionSectionName, 6)]
+    [SpatialMenuItem("Paste", "Actions", "Paste a copied object")]
     sealed class Paste : BaseAction, IUsesSpatialHash, IUsesViewerScale
     {
         static float s_BufferDistance;
@@ -22,7 +22,9 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 
         public override void ExecuteAction()
         {
+#if UNITY_EDITOR
             Unsupported.PasteGameObjectsFromPasteboard();
+#endif
             var transforms = Selection.transforms;
             var bounds = ObjectUtils.GetBounds(transforms);
             foreach (var transform in transforms)
@@ -39,4 +41,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif

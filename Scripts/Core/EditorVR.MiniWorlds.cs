@@ -1,4 +1,3 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -188,7 +187,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             public MiniWorlds()
             {
+#if UNITY_EDITOR
+#if UNITY_2018_1_OR_NEWER
+                EditorApplication.hierarchyChanged += OnHierarchyChanged;
+#else
                 EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
+#endif
+#endif
                 IIsInMiniWorldMethods.isInMiniWorld = IsInMiniWorld;
             }
 
@@ -201,13 +206,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (miniWorld.Contains(rayOriginPosition) || miniWorld.Contains(pointerPosition))
                         return true;
                 }
+
                 return false;
             }
 
             internal override void OnDestroy()
             {
                 base.OnDestroy();
+#if UNITY_EDITOR
+#if UNITY_2018_1_OR_NEWER
+                EditorApplication.hierarchyChanged -= OnHierarchyChanged;
+#else
                 EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
+#endif
+#endif
             }
 
             public void LateBindInterfaceMethods(DirectSelection provider)
@@ -643,4 +655,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
-#endif
