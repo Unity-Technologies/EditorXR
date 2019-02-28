@@ -41,6 +41,10 @@ namespace UnityEditor.Experimental.EditorVR.Tests
             var references = new List<string>();
             ObjectUtils.ForEachAssembly(assembly =>
             {
+#if NET_4_6
+                if (assembly.IsDynamic)
+                    return;
+#endif
                 // Ignore project assemblies because they will cause conflicts
                 if (assembly.FullName.StartsWith("Assembly-CSharp", StringComparison.OrdinalIgnoreCase))
                     return;

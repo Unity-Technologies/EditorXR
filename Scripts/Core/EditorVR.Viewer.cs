@@ -87,7 +87,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
                 IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
 
+#if UNITY_EDITOR
                 VRView.hmdStatusChange += OnHMDStatusChange;
+#endif
 
                 preserveCameraRig = true;
 
@@ -98,7 +100,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 base.OnDestroy();
 
+#if UNITY_EDITOR
                 VRView.hmdStatusChange -= OnHMDStatusChange;
+#endif
 
                 var cameraRig = CameraUtils.GetCameraRig();
                 if (cameraRig)
@@ -182,12 +186,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     cameraRig.localPosition = Vector3.zero;
                 }
 
+#if UNITY_EDITOR
                 var hmdOnlyLayerMask = 0;
+#endif
                 if (!Application.isPlaying && evr.m_PreviewCameraPrefab)
                 {
                     var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
                     go.transform.SetParent(CameraUtils.GetCameraRig(), false);
 
+#if UNITY_EDITOR
                     customPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
                     if (customPreviewCamera != null)
                     {
@@ -196,7 +203,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         hmdOnlyLayerMask = customPreviewCamera.hmdOnlyLayerMask;
                         this.ConnectInterfaces(customPreviewCamera);
                     }
+#endif
                 }
+
 #if UNITY_EDITOR
                 VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
 #endif
@@ -204,8 +213,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             internal void UpdateCamera()
             {
+#if UNITY_EDITOR
                 if (customPreviewCamera != null)
                     customPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
+#endif
             }
 
             internal void AddPlayerFloor()

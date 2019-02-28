@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -233,7 +234,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             if (s_SpatialMenuUI == null)
             {
-                s_SpatialMenuUI = this.InstantiateUI(m_SpatialMenuUiPrefab.gameObject, VRView.cameraRig, rayOrigin: rayOrigin).GetComponent<SpatialMenuUI>();
+                s_SpatialMenuUI = this.InstantiateUI(m_SpatialMenuUiPrefab.gameObject, CameraUtils.GetCameraRig(), rayOrigin: rayOrigin).GetComponent<SpatialMenuUI>();
                 s_SpatialMenuUI.spatialMenuData = k_SpatialMenuData; // set shared reference to menu name/type, elements, and highlighted state
                 s_SpatialMenuUI.Setup();
                 s_SpatialMenuUI.returnToPreviousMenuLevel = ReturnToPreviousMenuLevel;

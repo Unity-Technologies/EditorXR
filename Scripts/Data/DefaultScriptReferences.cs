@@ -14,11 +14,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         const string k_ResourcesFolder = "Resources";
         const string k_Path = k_ParentFolder + "/" + k_ResourcesFolder + "/DefaultScriptReferences.asset";
 
+#pragma warning disable 649
         [SerializeField]
         GameObject m_ScriptPrefab;
 
         [SerializeField]
         List<ScriptableObject> m_EditingContexts;
+#pragma warning restore 649
 
         Dictionary<Type, GameObject> m_TypePrefabs = new Dictionary<Type, GameObject>();
 

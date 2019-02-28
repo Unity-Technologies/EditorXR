@@ -1,11 +1,11 @@
-﻿using System.IO;
-using UnityEngine;
+﻿using NUnit.Framework;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
-using NUnit.Framework;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Tools;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tests.Core
 {
@@ -97,8 +97,8 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         [Test]
         public void LoadProjectSettings_IfAssetNotFound()
         {
-            if (File.Exists(EditingContextManager.k_SettingsPath))
-                File.Delete(EditingContextManager.k_SettingsPath);
+            if (File.Exists(EditingContextManager.settingsPath))
+                File.Delete(EditingContextManager.settingsPath);
 
             var loaded = EditingContextManager.LoadProjectSettings();
             Assert.IsInstanceOf<EditingContextManagerSettings>(loaded);
@@ -126,8 +126,8 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         [Test]
         public void LoadUserSettings_ProjectSettingsFallback()
         {
-            if (File.Exists(EditingContextManager.k_UserSettingsPath))
-                File.Delete(EditingContextManager.k_UserSettingsPath);
+            if (File.Exists(EditingContextManager.userSettingsPath))
+                File.Delete(EditingContextManager.userSettingsPath);
 
             var projectSettings = EditingContextManager.LoadProjectSettings();
             var userSettings = EditingContextManager.LoadUserSettings();
@@ -138,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         [Test]
         public void SaveProjectSettings_UpdatesProjectSettingsFile()
         {
-            var path = EditingContextManager.k_SettingsPath;
+            var path = EditingContextManager.settingsPath;
             var lastModTime = File.GetLastWriteTime(path);
             Thread.Sleep(1000); // Wait one second to make sure modified time is later
             EditingContextManager.SaveProjectSettings(settings);
@@ -150,7 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         [Test]
         public void SaveUserSettings_UpdatesUserSettingsFile()
         {
-            var path = EditingContextManager.k_UserSettingsPath;
+            var path = EditingContextManager.userSettingsPath;
             var lastModTime = File.GetLastWriteTime(path);
             EditingContextManager.SaveUserSettings(newSettings);
 

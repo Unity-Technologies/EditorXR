@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 using UnityObject = UnityEngine.Object;
 
@@ -342,7 +342,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 }
                 else
                 {
-                    VRView.StartCoroutine(DestroyInSeconds(o, t));
+                    EditorMonoBehaviour.StartEditorCoroutine(DestroyInSeconds(o, t));
                 }
             }
 #endif

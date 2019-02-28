@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -115,3 +116,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
+#endif

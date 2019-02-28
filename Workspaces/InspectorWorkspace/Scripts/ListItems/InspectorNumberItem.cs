@@ -17,7 +17,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #pragma warning restore 649
 
         public SerializedPropertyType propertyType { get; private set; }
+
+#if UNITY_EDITOR
         public event Action<PropertyData> arraySizeChanged;
+#endif
 
         public override void Setup(InspectorData data)
         {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -190,3 +191,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
+#endif
