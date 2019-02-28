@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #pragma warning disable 649
         [SerializeField]
         GameObject m_UnlockAllPrefab;
-#pragma warning disable 649
+#pragma warning restore 649
 
         string m_BaseSearchQuery;
         string m_CachedSearchQuery;

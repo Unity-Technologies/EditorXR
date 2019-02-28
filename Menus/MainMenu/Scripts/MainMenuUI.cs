@@ -42,6 +42,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const float k_RotationEpsilon = 1f;
         const int k_FaceCount = 4;
 
+        const string k_UncategorizedFaceName = "Uncategorized";
+        static readonly Color k_MenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
+
 #pragma warning disable 649
         [SerializeField]
         MainMenuButton m_ButtonTemplatePrefab;
@@ -61,9 +64,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         Transform m_AlternateMenu;
 #pragma warning restore 649
-
-        readonly string k_UncategorizedFaceName = "Uncategorized";
-        readonly Color k_MenuFacesHiddenColor = new Color(1f, 1f, 1f, 0.5f);
 
         int m_TargetFaceIndex;
 

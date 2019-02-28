@@ -13,18 +13,11 @@ namespace UnityEditor.Experimental.EditorVR
         [Header("Haptic Pulses")]
         [SerializeField]
         HapticPulse m_HighlightPulse;
-
-        [SerializeField]
-        HapticPulse m_TooltipDisplayPulse;
 #pragma warning restore 649
 
-        Vector2 m_ExpandedTooltipDisplaySize;
         Coroutine m_VisibilityCoroutine;
-        Coroutine m_TooltipVisualsVisibilityCoroutine;
         Vector3 m_TextOriginalLocalPosition;
         bool m_Highlighted;
-        Vector3 m_OriginalBordersLocalScale;
-        float m_BordersOriginalAlpha;
         bool m_Visible;
 
         public override bool visible
@@ -110,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         void OnEnable()
         {
-            // Cacheing position here, as layout groups were altering the position when originally cacheing in Start()
+            // Caching position here, as layout groups were altering the position when originally caching in Start()
             m_TextOriginalLocalPosition = m_Text.transform.localPosition;
         }
 
@@ -148,8 +141,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         IEnumerator AnimateHighlight(bool isHighlighted)
         {
+            const float targetAlpha = 1f;
             var currentAlpha = m_CanvasGroup.alpha;
-            var targetAlpha = 1f;
             var alphaTransitionAmount = 0f;
             var textTransform = m_Text.transform;
             var textCurrentLocalPosition = textTransform.localPosition;

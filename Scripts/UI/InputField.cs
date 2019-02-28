@@ -1,7 +1,3 @@
-#if !UNITY_2017_2_OR_NEWER
-#pragma warning disable 649 // "never assigned to" warning
-#endif
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
