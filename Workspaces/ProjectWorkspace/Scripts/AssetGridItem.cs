@@ -32,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const float k_CheckAssignDelayTime = 0.125f;
 
+#pragma warning disable 649
         [SerializeField]
         TextMeshProUGUI m_Text;
 
@@ -57,14 +58,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField] // Serialized so that this remains set after cloning
         GameObject m_Icon;
 
-        GameObject m_IconPrefab;
-
         [HideInInspector]
         [SerializeField] // Serialized so that this remains set after cloning
         Transform m_PreviewObjectTransform;
 
         [SerializeField]
         bool m_IncludeRaySelectForDrop;
+#pragma warning restore 649
+
+        GameObject m_IconPrefab;
 
         bool m_Setup;
         bool m_AutoHidePreview;
@@ -244,10 +246,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (m_PreviewObjectTransform)
                 ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
 
-            if (!data.preview)
+            var preview = data.preview;
+            if (!preview)
                 return;
 
-            m_PreviewObjectTransform = Instantiate(data.preview).transform;
+            m_PreviewObjectTransform = Instantiate(preview).transform;
 
             m_PreviewObjectTransform.position = Vector3.zero;
             m_PreviewObjectTransform.rotation = Quaternion.identity;
@@ -330,22 +333,26 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
             var cloneItem = clone.GetComponent<AssetGridItem>();
 
+            var type = data.type;
             if (cloneItem.m_PreviewObjectTransform)
             {
                 m_PreviewObjectClone = cloneItem.m_PreviewObjectTransform;
 
 #if UNITY_EDITOR
-                var originalPosition = m_PreviewObjectClone.position;
-                var originalRotation = m_PreviewObjectClone.rotation;
-                var originalScale = m_PreviewObjectClone.localScale;
-                var restoreParent = m_PreviewObjectClone.parent;
-                m_PreviewObjectClone.SetParent(null); // HACK: MergePrefab deactivates the root transform when calling ConnectGameObjectToPrefab, which is EditorVR in this case
-                m_PreviewObjectClone = PrefabUtility.ConnectGameObjectToPrefab(m_PreviewObjectClone.gameObject, data.preview).transform;
-                m_PreviewObjectClone.SetParent(restoreParent);
-                m_PreviewObjectClone.position = originalPosition;
-                m_PreviewObjectClone.rotation = originalRotation;
-                m_PreviewObjectClone.localScale = originalScale;
-                cloneItem.m_PreviewObjectTransform = m_PreviewObjectClone;
+                if (type == AssetData.PrefabTypeString || type == AssetData.ModelTypeString)
+                {
+                    var originalPosition = m_PreviewObjectClone.position;
+                    var originalRotation = m_PreviewObjectClone.rotation;
+                    var originalScale = m_PreviewObjectClone.localScale;
+                    var restoreParent = m_PreviewObjectClone.parent;
+                    ObjectUtils.Destroy(m_PreviewObjectClone.gameObject);
+                    m_PreviewObjectClone = ((GameObject)PrefabUtility.InstantiatePrefab(data.asset)).transform;
+                    m_PreviewObjectClone.SetParent(restoreParent, false);
+                    m_PreviewObjectClone.position = originalPosition;
+                    m_PreviewObjectClone.rotation = originalRotation;
+                    m_PreviewObjectClone.localScale = originalScale;
+                    cloneItem.m_PreviewObjectTransform = m_PreviewObjectClone;
+                }
 #endif
 
                 cloneItem.m_Cube.gameObject.SetActive(false);
@@ -368,12 +375,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 smoothMotion.enabled = false;
 
             // setup our assignment dependency list with any known types
-            AssetDropUtils.AssignmentDependencies.TryGetValue(data.type, out m_AssignmentDependencyTypes);
+            AssetDropUtils.AssignmentDependencies.TryGetValue(type, out m_AssignmentDependencyTypes);
 
             StartCoroutine(ShowGrabbedObject());
         }
-
-
 
         float PreviouslyFoundResult(GameObject go)
         {
@@ -573,8 +578,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             switch (data.type)
             {
-                case "Prefab":
-                case "Model":
+                case AssetData.PrefabTypeString:
+                case AssetData.ModelTypeString:
                     PlaceModelOrPrefab(gridItem.transform, data);
                     break;
                 case "AnimationClip":

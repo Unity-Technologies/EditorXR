@@ -9,11 +9,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorObjectFieldItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
         TextMeshProUGUI m_FieldLabel;
 
         [SerializeField]
         MeshRenderer m_Button;
+#pragma warning restore 649
 
         Type m_ObjectType;
         string m_ObjectTypeName;

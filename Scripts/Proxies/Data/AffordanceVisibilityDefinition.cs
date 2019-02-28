@@ -9,6 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [Serializable]
     public class AffordanceVisibilityDefinition
     {
+#pragma warning disable 649
         [SerializeField]
         ProxyAffordanceMap.VisibilityControlType m_VisibilityType;
 
@@ -26,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         [SerializeField]
         Material m_HiddenMaterial;
+#pragma warning restore 649
 
         /// <summary>
         /// The hidden color of the material

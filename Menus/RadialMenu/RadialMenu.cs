@@ -14,6 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
         const string k_SpatialDescription = "Perform actions based on selected-object context";
 
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_ActionMap;
 
@@ -28,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         HapticPulse m_ButtonClickedPulse;
+#pragma warning restore 649
 
         RadialMenuUI m_RadialMenuUI;
         List<ActionMenuData> m_MenuActions;

@@ -8,27 +8,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class TooltipModule : MonoBehaviour, ISystemModule, IUsesViewerScale
     {
-        const float k_Delay = 0; // In case we want to bring back a delay
-        const float k_TransitionDuration = 0.1f;
-        const float k_UVScale = 100f;
-        const float k_UVScrollSpeed = 1.5f;
-        const float k_Offset = 0.05f;
-        const float k_TextOrientationWeight = 0.1f;
-        const float k_ChangeTransitionDuration = 0.1f;
-
-        const int k_PoolInitialCapacity = 16;
-
-        static readonly Quaternion k_FlipYRotation = Quaternion.AngleAxis(180f, Vector3.up);
-        static readonly Quaternion k_FlipZRotation = Quaternion.AngleAxis(180f, Vector3.forward);
-
-        static readonly Vector3[] k_Corners = new Vector3[4];
-
-        [SerializeField]
-        GameObject m_TooltipPrefab;
-
-        [SerializeField]
-        GameObject m_TooltipCanvasPrefab;
-
         class TooltipData
         {
             public float startTime;
@@ -64,6 +43,29 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 transitionTime = default(float);
             }
         }
+
+        const float k_Delay = 0; // In case we want to bring back a delay
+        const float k_TransitionDuration = 0.1f;
+        const float k_UVScale = 100f;
+        const float k_UVScrollSpeed = 1.5f;
+        const float k_Offset = 0.05f;
+        const float k_TextOrientationWeight = 0.1f;
+        const float k_ChangeTransitionDuration = 0.1f;
+
+        const int k_PoolInitialCapacity = 16;
+
+        static readonly Quaternion k_FlipYRotation = Quaternion.AngleAxis(180f, Vector3.up);
+        static readonly Quaternion k_FlipZRotation = Quaternion.AngleAxis(180f, Vector3.forward);
+
+        static readonly Vector3[] k_Corners = new Vector3[4];
+
+#pragma warning disable 649
+        [SerializeField]
+        GameObject m_TooltipPrefab;
+
+        [SerializeField]
+        GameObject m_TooltipCanvasPrefab;
+#pragma warning restore 649
 
         readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
         readonly Queue<TooltipUI> m_TooltipPool = new Queue<TooltipUI>(k_PoolInitialCapacity);

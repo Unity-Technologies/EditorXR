@@ -10,8 +10,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale,
         IRequestFeedback, IUsesNode
     {
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_ActionMap;
+#pragma warning restore 649
 
         float m_LastClickTime;
         readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();

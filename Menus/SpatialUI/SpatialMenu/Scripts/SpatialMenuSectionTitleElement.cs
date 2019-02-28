@@ -7,21 +7,23 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    sealed internal class SpatialMenuSectionTitleElement : SpatialMenuElement
+    sealed class SpatialMenuSectionTitleElement : SpatialMenuElement
     {
+#pragma warning disable 649
         [Header("Haptic Pulses")]
         [SerializeField]
         HapticPulse m_HighlightPulse;
 
         [SerializeField]
         HapticPulse m_TooltipDisplayPulse;
+#pragma warning restore 649
 
         Vector2 m_ExpandedTooltipDisplaySize;
         Coroutine m_VisibilityCoroutine;
         Coroutine m_TooltipVisualsVisibilityCoroutine;
         Vector3 m_TextOriginalLocalPosition;
         bool m_Highlighted;
-        Vector3 m_OriginalBordersLohocalScale;
+        Vector3 m_OriginalBordersLocalScale;
         float m_BordersOriginalAlpha;
         bool m_Visible;
 

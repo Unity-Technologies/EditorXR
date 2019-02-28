@@ -33,6 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const int k_AutoHidePreviewComplexity = 10000;
 
+#pragma warning disable 649
 #if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_Text;
@@ -56,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [HideInInspector]
         [SerializeField] // Serialized so that this remains set after cloning
         Transform m_PreviewObjectTransform;
+#pragma warning restore 649
 
         bool m_Setup;
         bool m_AutoHidePreview;

@@ -1,7 +1,7 @@
-﻿using System;
+﻿using ListView;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ListView;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -12,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     {
         const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
+#pragma warning disable 649
         [SerializeField]
         BaseHandle m_TopDropZone;
 
@@ -35,6 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         Material m_SceneIconWhiteMaterial;
+#pragma warning restore 649
 
         Material m_TopDropZoneMaterial;
         Material m_BottomDropZoneMaterial;

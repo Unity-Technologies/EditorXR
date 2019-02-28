@@ -18,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const string k_SettingsMenuSectionName = "Settings";
         const float k_MaxFlickDuration = 0.3f;
 
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_ActionMap;
 
@@ -38,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         HapticPulse m_ButtonHoverPulse;
+#pragma warning restore 649
 
         Transform m_AlternateMenuOrigin;
         Transform m_MenuOrigin;

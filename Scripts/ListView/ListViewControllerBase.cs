@@ -8,12 +8,7 @@ namespace ListView
 {
     public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler, IControlHaptics
     {
-        public float scrollOffset
-        {
-            get { return m_ScrollOffset; }
-            set { m_ScrollOffset = value; }
-        }
-
+#pragma warning disable 649
         [Tooltip("Distance (in meters) we have scrolled from initial position")]
         [SerializeField]
         protected float m_ScrollOffset;
@@ -40,28 +35,13 @@ namespace ListView
         [SerializeField]
         protected float m_SettleSpeed = 0.4f;
 
-        public float scrollSpeed
-        {
-            get { return m_ScrollSpeed; }
-            set { m_ScrollSpeed = value; }
-        }
-
         [SerializeField]
         float m_ScrollSpeed = 0.3f;
+#pragma warning restore 649
 
-        protected bool m_Settling;
         event Action settlingCompleted;
 
-        public Vector3 itemSize
-        {
-            get
-            {
-                if (!m_ItemSize.HasValue && m_Templates.Length > 0)
-                    m_ItemSize = GetObjectSize(m_Templates[0]);
-
-                return m_ItemSize ?? Vector3.zero;
-            }
-        }
+        protected bool m_Settling;
 
         protected Vector3? m_ItemSize;
 
@@ -76,6 +56,29 @@ namespace ListView
         protected Vector3 m_Extents;
 
         protected abstract float listHeight { get; }
+
+        public float scrollOffset
+        {
+            get { return m_ScrollOffset; }
+            set { m_ScrollOffset = value; }
+        }
+
+        public float scrollSpeed
+        {
+            get { return m_ScrollSpeed; }
+            set { m_ScrollSpeed = value; }
+        }
+
+        public Vector3 itemSize
+        {
+            get
+            {
+                if (!m_ItemSize.HasValue && m_Templates.Length > 0)
+                    m_ItemSize = GetObjectSize(m_Templates[0]);
+
+                return m_ItemSize ?? Vector3.zero;
+            }
+        }
 
         public virtual Vector3 size
         {

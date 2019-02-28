@@ -11,23 +11,11 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
     [RequiresLayer(k_HMDOnlyLayer)]
     sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera
     {
-        /// <summary>
-        /// The camera drawing the preview
-        /// </summary>
-        public Camera previewCamera { get { return m_SmoothCamera; } }
+        static readonly List<bool> k_HiddenEnabled = new List<bool>();
+        const string k_HMDOnlyLayer = "HMDOnly";
+        static readonly Rect k_DefaultCameraRect = new Rect(0f, 0f, 1f, 1f);
 
-        Camera m_SmoothCamera;
-
-        /// <summary>
-        /// The actual HMD camera (will be provided by system)
-        /// The VRView's camera, whose settings are copied by the SmoothCamera
-        /// </summary>
-        public Camera vrCamera
-        {
-            private get { return m_VRCamera; }
-            set { m_VRCamera = value; }
-        }
-
+#pragma warning disable 649
         [SerializeField]
         Camera m_VRCamera;
 
@@ -42,9 +30,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         [SerializeField]
         float m_SmoothingMultiplier = 3;
+#pragma warning restore 649
 
-        const string k_HMDOnlyLayer = "HMDOnly";
-        readonly Rect k_DefaultCameraRect = new Rect(0f, 0f, 1f, 1f);
+        Camera m_SmoothCamera;
 
         RenderTexture m_RenderTexture;
 
@@ -52,7 +40,20 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         Quaternion m_Rotation;
         int m_HMDOnlyLayerMask;
 
-        static readonly List<bool> k_HiddenEnabled = new List<bool>();
+        /// <summary>
+        /// The camera drawing the preview
+        /// </summary>
+        public Camera previewCamera { get { return m_SmoothCamera; } }
+
+        /// <summary>
+        /// The actual HMD camera (will be provided by system)
+        /// The VRView's camera, whose settings are copied by the SmoothCamera
+        /// </summary>
+        public Camera vrCamera
+        {
+            private get { return m_VRCamera; }
+            set { m_VRCamera = value; }
+        }
 
         /// <summary>
         /// A layer mask that controls what will always render in the HMD and not in the preview

@@ -12,14 +12,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         IUsesViewerScale, IControlHaptics, IRayToNode
     {
         const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
+        protected const float k_DoubleFaceMargin = FaceMargin * 2;
 
         public static readonly Vector3 DefaultBounds = new Vector3(0.7f, 0f, 0.4f);
         public static readonly Vector3 MinBounds = new Vector3(0.677f, 0f, 0.1f);
 
         public const float FaceMargin = 0.025f;
-        protected float DoubleFaceMargin = FaceMargin * 2;
         public const float HighlightMargin = 0.002f;
 
+#pragma warning disable 649
         [SerializeField]
         Vector3 m_MinBounds = MinBounds;
 
@@ -40,6 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         protected HapticPulse m_MovePulse;
+#pragma warning restore 649
 
         Bounds m_ContentBounds;
         BoxCollider m_OuterCollider;

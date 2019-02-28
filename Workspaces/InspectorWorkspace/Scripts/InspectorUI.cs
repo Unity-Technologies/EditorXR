@@ -5,28 +5,30 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorUI : MonoBehaviour
     {
-        public InspectorListViewController listView
-        {
-            get { return m_ListView; }
-        }
-
+#pragma warning disable 649
         [SerializeField]
         InspectorListViewController m_ListView;
 
-        public LinearHandle scrollHandle
-        {
-            get { return m_ScrollHandle; }
-        }
-
         [SerializeField]
         LinearHandle m_ScrollHandle;
+
+        [SerializeField]
+        RectTransform m_ListPanel;
+#pragma warning restore 649
 
         public RectTransform listPanel
         {
             get { return m_ListPanel; }
         }
 
-        [SerializeField]
-        RectTransform m_ListPanel;
+        public LinearHandle scrollHandle
+        {
+            get { return m_ScrollHandle; }
+        }
+
+        public InspectorListViewController listView
+        {
+            get { return m_ListView; }
+        }
     }
 }

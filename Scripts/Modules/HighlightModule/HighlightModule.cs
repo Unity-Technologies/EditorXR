@@ -19,11 +19,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         static readonly Dictionary<SkinnedMeshRenderer, Mesh> k_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
 
+#pragma warning disable 649
         [SerializeField]
         Material m_DefaultHighlightMaterial;
 
         [SerializeField]
         Material m_RayHighlightMaterial;
+#pragma warning restore 649
 
         readonly Dictionary<Material, Dictionary<GameObject, HighlightData>> m_Highlights = new Dictionary<Material, Dictionary<GameObject, HighlightData>>();
         readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();

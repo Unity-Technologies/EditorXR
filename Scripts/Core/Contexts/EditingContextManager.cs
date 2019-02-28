@@ -17,8 +17,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
     sealed class EditingContextManager : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
         UnityObject m_DefaultContext;
+#pragma warning restore 649
 
         internal const string k_SettingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
         internal const string k_UserSettingsPath = "Library/EditingContextManagerSettings.asset";

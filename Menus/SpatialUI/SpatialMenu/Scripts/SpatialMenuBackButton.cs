@@ -8,10 +8,12 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    internal class SpatialMenuBackButton : MonoBehaviour, IControlHaptics, IRayEnterHandler, IRayExitHandler
+    class SpatialMenuBackButton : MonoBehaviour, IControlHaptics, IRayEnterHandler, IRayExitHandler
     {
+#pragma warning disable 649
         [SerializeField]
         Button m_Button;
+#pragma warning restore 649
 
         Image m_ButtonImage;
         Vector3 m_VisibleLocalScale;

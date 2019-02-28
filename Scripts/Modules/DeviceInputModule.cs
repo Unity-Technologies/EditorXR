@@ -20,11 +20,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public int order;
         }
 
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_TrackedObjectActionMap;
 
         [SerializeField]
         ActionMap m_StandardToolActionMap;
+#pragma warning restore 649
 
         PlayerHandle m_PlayerHandle;
 

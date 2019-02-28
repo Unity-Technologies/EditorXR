@@ -10,8 +10,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     sealed class SelectionModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking, ISelectionChanged,
         IControlHaptics, IRayToNode, IContainsVRPlayerCompletely
     {
+#pragma warning disable 649
         [SerializeField]
         HapticPulse m_HoverPulse;
+#pragma warning restore 649
 
         GameObject m_CurrentGroupRoot;
         readonly Dictionary<GameObject, GameObject> m_GroupMap = new Dictionary<GameObject, GameObject>(); // Maps objects to their group parent
@@ -135,7 +137,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return groupParent;
 
 #if UNITY_EDITOR
+#if UNITY_2018_3_OR_NEWER
+            var groupRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(hoveredObject);
+#else
             var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
+#endif
 
             if (groupRoot)
                 return groupRoot;

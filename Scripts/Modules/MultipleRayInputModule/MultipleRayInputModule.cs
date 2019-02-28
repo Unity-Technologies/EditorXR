@@ -178,12 +178,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         static LayerMask s_LayerMask;
 
+#pragma warning disable 649
+        [SerializeField]
+        ActionMap m_UIActionMap;
+#pragma warning restore 649
+
         readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
 
         Camera m_EventCamera;
-
-        [SerializeField]
-        ActionMap m_UIActionMap;
 
         public Camera eventCamera
         {

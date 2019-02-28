@@ -5,6 +5,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
     public class SnappingModuleSettingsUI : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
         Toggle m_SnappingEnabled;
 
@@ -28,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         [SerializeField]
         Toggle m_DirectSnappingEnabled;
+#pragma warning restore 649
 
         public Toggle snappingEnabled
         {

@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR
     {
+#pragma warning disable 649
         [SerializeField]
         GameObject m_PlayerModelPrefab;
 
@@ -19,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         [SerializeField]
         GameObject m_PreviewCameraPrefab;
+#pragma warning restore 649
 
         class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces
         {

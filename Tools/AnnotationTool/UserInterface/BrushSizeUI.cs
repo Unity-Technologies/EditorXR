@@ -12,11 +12,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_MinSize = 0.625f;
         const float k_MaxSize = 12.5f;
 
+#pragma warning disable 649
         [SerializeField]
         RectTransform m_SliderHandle;
 
         [SerializeField]
         Slider m_Slider;
+#pragma warning restore 649
 
         Image m_SliderHandleImage;
         MenuHideFlags m_MenuHideFlags;
