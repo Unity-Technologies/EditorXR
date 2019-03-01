@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         [OneTimeSetUp]
         public void Setup()
         {
-            manager = EditingContextManager.s_Instance;
+            manager = EditingContextManager.instance;
             go = new GameObject("context test object");
             var transformTool = go.AddComponent<TransformTool>();
             var createPrimitiveTool = go.AddComponent<CreatePrimitiveTool>();
