@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -8,6 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     sealed class InspectorObjectFieldItem : InspectorPropertyItem
     {
 #pragma warning disable 649
@@ -115,5 +115,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             return obj == null || obj.GetType().IsAssignableFrom(m_ObjectType);
         }
     }
-}
+#else
+    sealed class InspectorObjectFieldItem : InspectorPropertyItem
+    {
+        [SerializeField]
+        TextMeshProUGUI m_FieldLabel;
+
+        [SerializeField]
+        MeshRenderer m_Button;
+    }
 #endif
+}

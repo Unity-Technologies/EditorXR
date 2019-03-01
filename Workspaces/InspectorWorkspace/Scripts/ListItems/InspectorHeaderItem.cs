@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -10,6 +9,7 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     sealed class InspectorHeaderItem : InspectorListItem
     {
 #pragma warning disable 649
@@ -190,5 +190,32 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #endif
         }
     }
-}
+#else
+    sealed class InspectorHeaderItem : InspectorListItem
+    {
+        [SerializeField]
+        RawImage m_Icon;
+
+        [SerializeField]
+        Toggle m_ActiveToggle;
+
+        [SerializeField]
+        StandardInputField m_NameField;
+
+        [SerializeField]
+        Toggle m_StaticToggle;
+
+        [SerializeField]
+        Toggle m_LockToggle;
+
+        [SerializeField]
+        DropDown m_TagDropDown;
+
+        [SerializeField]
+        DropDown m_LayerDropDown;
+
+        [SerializeField]
+        MeshRenderer m_Button;
+    }
 #endif
+}

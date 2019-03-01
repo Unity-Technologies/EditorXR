@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -7,11 +6,10 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     [MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
     sealed class InspectorWorkspace : Workspace, ISelectionChanged, IInspectorWorkspace
     {
-        public new static readonly Vector3 DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
-
 #pragma warning disable 649
         [SerializeField]
         GameObject m_ContentPrefab;
@@ -391,5 +389,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 UpdateCurrentObject(fullRebuild);
         }
     }
-}
+#else
+    [EditorOnlyWorkspace]
+    sealed class InspectorWorkspace : Workspace
+    {
+        [SerializeField]
+        GameObject m_ContentPrefab;
+
+        [SerializeField]
+        GameObject m_LockPrefab;
+    }
 #endif
+}

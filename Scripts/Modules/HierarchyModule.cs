@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -7,6 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
+#if UNITY_EDITOR
     sealed class HierarchyModule : MonoBehaviour, ISystemModule, ISelectionChanged
     {
         readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
@@ -260,5 +260,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
     }
-}
+#else
+    sealed class HierarchyModule : MonoBehaviour
+    {
+    }
 #endif
+}
