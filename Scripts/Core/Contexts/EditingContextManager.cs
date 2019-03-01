@@ -30,7 +30,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         IEditingContext m_CurrentContext;
 
-        internal static EditingContextManager s_Instance;
         static InputManager s_InputManager;
         static List<IEditingContext> s_AvailableContexts;
         static EditingContextManagerSettings s_Settings;
@@ -49,6 +48,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         Rect m_ContextPopupRect = new Rect(5, 0, 100, 20); // Position will be set based on window size
         Rect m_ContextLabelRect = new Rect(5, 0, 100, 20); // Position will be set based on window size
+
+        internal static EditingContextManager instance { get; private set; }
 
         internal static IEditingContext defaultContext
         {
@@ -107,7 +108,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Resources.UnloadUnusedAssets();
             InitializeInputManager();
             if (!Application.isPlaying)
-                s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditingContextManager>();
+                instance = ObjectUtils.CreateGameObjectWithComponent<EditingContextManager>();
         }
 
         static void OnVRViewDisabled()
@@ -115,7 +116,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             s_AutoOpened = false;
 #endif
-            ObjectUtils.Destroy(s_Instance.gameObject);
+            ObjectUtils.Destroy(instance.gameObject);
             if (s_InputManager)
                 ObjectUtils.Destroy(s_InputManager.gameObject);
         }
@@ -358,7 +359,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (Application.isPlaying)
             {
                 OnVRViewEnabled();
-                s_Instance = this;
+                instance = this;
                 SetEditingContext((IEditingContext)m_DefaultContext);
             }
         }
