@@ -19,6 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         const float k_HorizontalThreshold = 0.7f;
         static Color s_HandleDragColor = UnityBrandColorScheme.green;
 
+#pragma warning disable 649
         [SerializeField]
         List<KeyboardButton> m_Buttons = new List<KeyboardButton>();
 
@@ -33,6 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         [SerializeField]
         SmoothMotion m_SmoothMotion;
+#pragma warning restore 649
 
         bool m_EligibleForDrag;
         bool m_CurrentlyHorizontal;

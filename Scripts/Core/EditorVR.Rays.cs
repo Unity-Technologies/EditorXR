@@ -12,11 +12,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR
     {
+#pragma warning disable 649
         [SerializeField]
         DefaultProxyRay m_ProxyRayPrefab;
 
         [SerializeField]
         ProxyExtras m_ProxyExtras;
+#pragma warning restore 649
 
         class Rays : Nested, IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList
         {

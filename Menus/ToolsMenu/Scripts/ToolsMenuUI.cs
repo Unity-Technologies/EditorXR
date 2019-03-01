@@ -19,6 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const float k_RaySelectIconHighlightedZOffset = -0.0075f;
         const float k_SpatialSelectIconHighlightedZOffset = -0.02f;
 
+#pragma warning disable 649
         [SerializeField]
         Transform m_ButtonContainer;
 
@@ -31,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         Transform m_ButtonTooltipTarget;
+#pragma warning restore 649
 
         bool m_AllButtonsVisible;
         List<IToolsMenuButton> m_OrderedButtons;

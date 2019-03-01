@@ -22,122 +22,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
         const string k_MaterialColorTopProperty = "_ColorTop";
         const string k_MaterialColorBottomProperty = "_ColorBottom";
 
-        public event Action click;
-        public event Action hoverEnter;
-        public event Action hoverExit;
-
-        public Sprite iconSprite
-        {
-            set
-            {
-                m_IconSprite = value;
-                m_Icon.sprite = m_IconSprite;
-            }
-        }
-
-        Sprite m_IconSprite;
-
-        public bool pressed
-        {
-            get { return m_Pressed; }
-            set
-            {
-                if (value != m_Pressed && value) // proceed only if value is true after previously being false
-                {
-                    m_Pressed = value;
-
-                    this.StopCoroutine(ref m_IconHighlightCoroutine);
-
-                    m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
-                }
-            }
-        }
-
-        bool m_Pressed;
-
-        public bool highlighted
-        {
-            get { return m_Highlighted; }
-            set
-            {
-                if (m_Highlighted == value)
-                    return;
-
-                // Stop any existing icon highlight coroutines
-                this.StopCoroutine(ref m_IconHighlightCoroutine);
-
-                m_Highlighted = value;
-
-                // Stop any existing begin/end highlight coroutine
-                this.StopCoroutine(ref m_HighlightCoroutine);
-
-                if (!gameObject.activeInHierarchy)
-                    return;
-
-                if (m_Highlighted)
-                    this.RestartCoroutine(ref m_HighlightCoroutine, BeginHighlight());
-                else
-                    this.RestartCoroutine(ref m_HighlightCoroutine, EndHighlight());
-            }
-        }
-
-        bool m_Highlighted;
-
-        public bool alternateIconVisible
-        {
-            set
-            {
-                if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
-                    m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
-            }
-            get { return m_Icon.sprite == m_AlternateIconSprite; }
-        }
-
-        public bool visible
-        {
-            get { return m_Visible; }
-            set
-            {
-                if (m_Visible == value)
-                    return;
-
-                m_Visible = value;
-
-                if (m_Visible && !gameObject.activeSelf)
-                    gameObject.SetActive(true);
-
-                this.StopCoroutine(ref m_VisibilityCoroutine);
-                m_VisibilityCoroutine = value ? StartCoroutine(AnimateShow()) : StartCoroutine(AnimateHide());
-            }
-        }
-
-        bool m_Visible;
-
-        public float containerContentsAnimationSpeedMultiplier { set { m_ContainerContentsAnimationSpeedMultiplier = value; } }
-
-        public float iconHighlightedLocalZOffset
-        {
-            set
-            {
-                m_IconHighlightedLocalZOffset = value;
-                m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
-            }
-        }
-
-        public GradientPair normalGradientPair
-        {
-            get { return m_NormalGradientPair; }
-            set { m_NormalGradientPair = value; }
-        }
-
+#pragma warning disable 649
         [SerializeField]
         GradientPair m_NormalGradientPair;
-
-        public GradientPair highlightGradientPair
-        {
-            get { return m_HighlightGradientPair; }
-            set { m_HighlightGradientPair = value; }
-        }
 
         [SerializeField]
         GradientPair m_HighlightGradientPair;
@@ -209,6 +96,13 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         [SerializeField]
         float m_ContainerContentsAnimationSpeedMultiplier = 1f;
+#pragma warning restore 649
+
+        Sprite m_IconSprite;
+
+        bool m_Pressed;
+        bool m_Highlighted;
+        bool m_Visible;
 
         Material m_ButtonMaterial;
         Vector3 m_OriginalIconLocalPosition;
@@ -222,11 +116,116 @@ namespace UnityEditor.Experimental.EditorVR.UI
         // The initial button reveal coroutines, before highlighting occurs
         Coroutine m_VisibilityCoroutine;
         Coroutine m_ContentVisibilityCoroutine;
-        Coroutine m_HighlighCoroutine;
 
         // The visibility & highlight coroutines
         Coroutine m_HighlightCoroutine;
         Coroutine m_IconHighlightCoroutine;
+
+        public event Action click;
+        public event Action hoverEnter;
+        public event Action hoverExit;
+
+        public Sprite iconSprite
+        {
+            set
+            {
+                m_IconSprite = value;
+                m_Icon.sprite = m_IconSprite;
+            }
+        }
+
+        public bool pressed
+        {
+            get { return m_Pressed; }
+            set
+            {
+                if (value != m_Pressed && value) // proceed only if value is true after previously being false
+                {
+                    m_Pressed = value;
+
+                    this.StopCoroutine(ref m_IconHighlightCoroutine);
+
+                    m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
+                }
+            }
+        }
+
+        public bool highlighted
+        {
+            get { return m_Highlighted; }
+            set
+            {
+                if (m_Highlighted == value)
+                    return;
+
+                // Stop any existing icon highlight coroutines
+                this.StopCoroutine(ref m_IconHighlightCoroutine);
+
+                m_Highlighted = value;
+
+                // Stop any existing begin/end highlight coroutine
+                this.StopCoroutine(ref m_HighlightCoroutine);
+
+                if (!gameObject.activeInHierarchy)
+                    return;
+
+                if (m_Highlighted)
+                    this.RestartCoroutine(ref m_HighlightCoroutine, BeginHighlight());
+                else
+                    this.RestartCoroutine(ref m_HighlightCoroutine, EndHighlight());
+            }
+        }
+
+        public bool alternateIconVisible
+        {
+            set
+            {
+                if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
+                    m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
+            }
+            get { return m_Icon.sprite == m_AlternateIconSprite; }
+        }
+
+        public bool visible
+        {
+            get { return m_Visible; }
+            set
+            {
+                if (m_Visible == value)
+                    return;
+
+                m_Visible = value;
+
+                if (m_Visible && !gameObject.activeSelf)
+                    gameObject.SetActive(true);
+
+                this.StopCoroutine(ref m_VisibilityCoroutine);
+                m_VisibilityCoroutine = value ? StartCoroutine(AnimateShow()) : StartCoroutine(AnimateHide());
+            }
+        }
+
+        public float containerContentsAnimationSpeedMultiplier { set { m_ContainerContentsAnimationSpeedMultiplier = value; } }
+
+        public float iconHighlightedLocalZOffset
+        {
+            set
+            {
+                m_IconHighlightedLocalZOffset = value;
+                m_IconHighlightedLocalPosition = m_OriginalIconLocalPosition + Vector3.forward * m_IconHighlightedLocalZOffset;
+            }
+        }
+
+        public GradientPair normalGradientPair
+        {
+            get { return m_NormalGradientPair; }
+            set { m_NormalGradientPair = value; }
+        }
+
+        public GradientPair highlightGradientPair
+        {
+            get { return m_HighlightGradientPair; }
+            set { m_HighlightGradientPair = value; }
+        }
 
         public bool interactable
         {

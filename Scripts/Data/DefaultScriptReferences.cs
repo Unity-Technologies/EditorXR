@@ -14,11 +14,13 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         const string k_ResourcesFolder = "Resources";
         const string k_Path = k_ParentFolder + "/" + k_ResourcesFolder + "/DefaultScriptReferences.asset";
 
+#pragma warning disable 649
         [SerializeField]
         GameObject m_ScriptPrefab;
 
         [SerializeField]
         List<ScriptableObject> m_EditingContexts;
+#pragma warning restore 649
 
         Dictionary<Type, GameObject> m_TypePrefabs = new Dictionary<Type, GameObject>();
 
@@ -102,7 +104,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
+#if UNITY_2018_3_OR_NEWER
+            defaultScriptReferences.m_ScriptPrefab = PrefabUtility.SaveAsPrefabAsset(prefabsRoot, Path.ChangeExtension(k_Path, "prefab"));
+#else
             defaultScriptReferences.m_ScriptPrefab = PrefabUtility.CreatePrefab(Path.ChangeExtension(k_Path, "prefab"), prefabsRoot);
+#endif
             defaultScriptReferences.m_EditingContexts = EditingContextManager.GetEditingContextAssets().ConvertAll(ec => (ScriptableObject)ec);
 
             AssetDatabase.CreateAsset(defaultScriptReferences, k_Path);

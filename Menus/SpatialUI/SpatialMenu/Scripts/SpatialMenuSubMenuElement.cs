@@ -9,8 +9,9 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    sealed internal class SpatialMenuSubMenuElement : SpatialMenuElement
+    sealed class SpatialMenuSubMenuElement : SpatialMenuElement
     {
+#pragma warning disable 649
         [SerializeField]
         Image m_BackgroundImage;
 
@@ -43,6 +44,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         [SerializeField]
         HapticPulse m_TooltipDisplayPulse;
+#pragma warning restore 649
 
         RectTransform m_RectTransform;
         Vector2 m_OriginalSize;

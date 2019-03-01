@@ -1,8 +1,4 @@
-﻿#if !UNITY_2017_2_OR_NEWER
-#pragma warning disable 649 // "never assigned to" warning
-#endif
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -20,11 +16,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public int order;
         }
 
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_TrackedObjectActionMap;
 
         [SerializeField]
         ActionMap m_StandardToolActionMap;
+#pragma warning restore 649
 
         PlayerHandle m_PlayerHandle;
 

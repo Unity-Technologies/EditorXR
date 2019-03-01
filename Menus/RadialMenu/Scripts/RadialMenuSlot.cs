@@ -11,8 +11,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
     {
-        static Color s_FrameOpaqueColor;
-        static GradientPair s_GradientPair;
         static readonly Vector3 k_HiddenLocalScale = new Vector3(1f, 0f, 1f);
         const float k_IconHighlightedLocalYOffset = 0.006f;
         const string k_MaterialAlphaProperty = "_Alpha";
@@ -22,6 +20,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const string k_MaterialColorProperty = "_Color";
         const string k_MaterialStencilRefProperty = "_StencilRef";
 
+        static Color s_FrameOpaqueColor;
+        static GradientPair s_GradientPair;
+
+#pragma warning disable 649
         [SerializeField]
         MeshRenderer m_InsetMeshRenderer;
 
@@ -54,6 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         Transform m_TooltipSource;
+#pragma warning restore 649
 
         bool m_Pressed;
         bool m_Highlighted;
@@ -107,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 // Proceed only if value is true after previously being false
                 if (m_Highlighted && value != m_Pressed && value && gameObject.activeSelf)
                 {
-                    m_Pressed = value;
+                    m_Pressed = true;
 
                     this.StopCoroutine(ref m_IconHighlightCoroutine);
 
@@ -169,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             set
             {
-                if (value && m_Visible == value) // Allow false to fall through and perform hiding regardless of visibility
+                if (value && m_Visible) // Allow false to fall through and perform hiding regardless of visibility
                     return;
 
                 m_Visible = value;
@@ -394,23 +397,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             HighlightIcon();
 
             var opacity = Time.deltaTime;
-            var topColor = m_OriginalInsetGradientPair.a;
-            var bottomColor = m_OriginalInsetGradientPair.b;
             var initialFrameColor = m_FrameMaterial.color;
-            var currentFrameColor = initialFrameColor;
             while (opacity > 0)
             {
                 if (m_Highlighted)
                 {
                     opacity = Mathf.Clamp01(opacity + Time.deltaTime * 4); // stay highlighted
-                    currentFrameColor = Color.Lerp(initialFrameColor, s_FrameOpaqueColor, opacity);
+                    var currentFrameColor = Color.Lerp(initialFrameColor, s_FrameOpaqueColor, opacity);
                     m_FrameMaterial.SetColor(k_MaterialColorProperty, currentFrameColor);
                 }
                 else
                     opacity = Mathf.Clamp01(opacity - Time.deltaTime * 2);
 
-                topColor = Color.Lerp(m_OriginalInsetGradientPair.a, s_GradientPair.a, opacity * 2f);
-                bottomColor = Color.Lerp(m_OriginalInsetGradientPair.b, s_GradientPair.b, opacity);
+                var topColor = Color.Lerp(m_OriginalInsetGradientPair.a, s_GradientPair.a, opacity * 2f);
+                var bottomColor = Color.Lerp(m_OriginalInsetGradientPair.b, s_GradientPair.b, opacity);
 
                 m_InsetMaterial.SetColor(k_MaterialColorTopProperty, topColor);
                 m_InsetMaterial.SetColor(k_MaterialColorBottomProperty, bottomColor);

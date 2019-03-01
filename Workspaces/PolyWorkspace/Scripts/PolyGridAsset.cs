@@ -142,7 +142,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     {
         public string url;
     }
-#else
-    #pragma warning restore 618
+    #pragma warning restore 649
 #endif
 }

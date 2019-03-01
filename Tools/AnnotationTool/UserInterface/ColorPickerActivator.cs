@@ -8,6 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     public class ColorPickerActivator : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
     {
+#pragma warning disable 649
         [SerializeField]
         Transform m_TargetScale;
 
@@ -16,6 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         float m_PickerOffset = 0.045f;
+#pragma warning restore 649
 
         Coroutine m_HighlightCoroutine;
 

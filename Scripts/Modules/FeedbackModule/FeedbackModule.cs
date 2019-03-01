@@ -36,14 +36,17 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
+#pragma warning disable 649
         [SerializeField]
         GameObject m_SettingsMenuItemPrefab;
+#pragma warning restore 649
 
         readonly List<Toggle> m_Toggles = new List<Toggle>();
 
         Preferences m_Preferences;
 
         readonly List<IFeedbackReceiver> m_FeedbackReceivers = new List<IFeedbackReceiver>();
+        readonly Dictionary<Type, Queue<FeedbackRequest>> m_FeedbackRequestPool = new Dictionary<Type, Queue<FeedbackRequest>>();
 
         public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 
@@ -79,8 +82,6 @@ namespace UnityEditor.Experimental.EditorVR
         }
 
         public Transform rayOrigin { get { return null; } }
-
-        readonly Dictionary<Type, Queue<FeedbackRequest>> m_FeedbackRequestPool = new Dictionary<Type, Queue<FeedbackRequest>>();
 
         void Awake()
         {

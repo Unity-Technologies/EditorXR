@@ -21,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const string k_MaterialStencilRefProperty = "_StencilRef";
         readonly Vector3 k_ToolButtonActivePosition = new Vector3(0f, 0f, -0.035f);
 
+#pragma warning disable 649
         [SerializeField]
         GradientButton m_GradientButton;
 
@@ -71,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         Image m_ButtonIcon;
+#pragma warning restore 649
 
         Coroutine m_PositionCoroutine;
         Coroutine m_VisibilityCoroutine;

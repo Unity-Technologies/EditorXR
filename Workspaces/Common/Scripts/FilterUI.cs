@@ -17,6 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const string k_AllText = "All";
         const string k_MaterialStencilRefProperty = "_StencilRef";
 
+#pragma warning disable 649
 #if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_SummaryText;
@@ -60,11 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         WorkspaceButton m_SummaryButton;
-
-        public string searchQuery
-        {
-            get { return m_SearchQuery; }
-        }
+#pragma warning restore 649
 
         string m_SearchQuery = string.Empty;
 
@@ -76,6 +73,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         float m_HiddenButtonListYSpacing;
         List<string> m_FilterTypes;
         Material m_BackgroundMaterial;
+
+        public string searchQuery
+        {
+            get { return m_SearchQuery; }
+        }
 
         public List<string> filterList
         {

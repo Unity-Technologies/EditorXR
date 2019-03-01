@@ -32,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if UNITY_EDITOR
         DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
-#endif
 
         // To allow for alternate previews (e.g. smoothing)
         public static Camera customPreviewCamera
@@ -42,10 +41,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (s_ActiveView != null)
                 {
-#if UNITY_EDITOR
+
                     if (s_ExistingSceneMainCamera && !s_ActiveView.m_CustomPreviewCamera && EditingContextManager.defaultContext.copyMainCameraImageEffectsToPresentationCamera)
                         CopyImagesEffectsToCamera(value);
-#endif
 
                     s_ActiveView.m_CustomPreviewCamera = value;
                 }
@@ -59,10 +57,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         LayerMask? m_CullingMask;
         RenderTexture m_TargetTexture;
+
         bool m_ShowDeviceView;
-#if UNITY_EDITOR
         EditorWindow[] m_EditorWindows;
-#endif
 
         static VRView s_ActiveView;
 
@@ -114,6 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     s_ActiveView.m_CullingMask = value;
             }
         }
+#endif
 
         public static Vector3 headCenteredOrigin
         {
@@ -127,11 +125,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
+#if UNITY_EDITOR
         public static event Action viewEnabled;
         public static event Action viewDisabled;
         public static event Action<VRView> beforeOnGUI;
         public static event Action<VRView> afterOnGUI;
         public static event Action<bool> hmdStatusChange;
+#endif
 
         public Rect guiRect { get; private set; }
 
@@ -140,17 +140,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public static bool LeftMouseButtonHeld;
         public static bool MiddleMouseButtonHeld;
         public static bool RightMouseButtonHeld;
-
-        public static Coroutine StartCoroutine(IEnumerator routine)
-        {
-            if (s_ActiveView != null && s_ActiveView.m_CameraRig)
-            {
-                var mb = s_ActiveView.m_CameraRig.GetComponent<EditorMonoBehaviour>();
-                return mb.StartCoroutine(routine);
-            }
-
-            return null;
-        }
 
         public static void CreateCameraRig(ref Camera camera, ref Transform cameraRig)
         {

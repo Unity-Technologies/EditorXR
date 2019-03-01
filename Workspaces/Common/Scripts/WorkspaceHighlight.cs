@@ -14,8 +14,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Coroutine m_HighlightCoroutine;
         Material m_TopHighlightMaterial;
 
+#pragma warning disable 649
         [SerializeField]
         MeshRenderer m_TopHighlightRenderer;
+#pragma warning restore 649
 
         public bool visible
         {

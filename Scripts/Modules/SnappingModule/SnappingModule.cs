@@ -39,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         const string k_MaterialColorLeftProperty = "_ColorLeft";
         const string k_MaterialColorRightProperty = "_ColorRight";
 
+#pragma warning disable 649
         [SerializeField]
         GameObject m_GroundPlane;
 
@@ -50,6 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         Material m_ButtonHighlightMaterial;
+#pragma warning restore 649
 
         class SnappingState
         {

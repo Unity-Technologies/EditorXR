@@ -10,8 +10,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     [SpatialMenuItem("Locked Objects", "Workspaces", "View all locked objects in your scene(s)")]
     class LockedObjectsWorkspace : HierarchyWorkspace, IUsesGameObjectLocking
     {
+#pragma warning disable 649
         [SerializeField]
         GameObject m_UnlockAllPrefab;
+#pragma warning restore 649
 
         string m_BaseSearchQuery;
         string m_CachedSearchQuery;

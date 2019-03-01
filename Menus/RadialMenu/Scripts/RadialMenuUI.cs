@@ -12,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     {
         const int k_SlotCount = 16;
 
+#pragma warning disable 649
         [SerializeField]
         Sprite m_MissingActionIcon;
 
@@ -20,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         Transform m_SlotContainer;
+#pragma warning restore 649
 
         List<RadialMenuSlot> m_RadialMenuSlots;
         Coroutine m_VisibilityCoroutine;

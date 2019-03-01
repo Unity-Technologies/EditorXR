@@ -5,6 +5,7 @@ using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -57,15 +58,19 @@ namespace UnityEditor.Experimental.EditorVR
             NavigatingSubMenuContent,
         }
 
+        static readonly List<SpatialMenuData> k_SpatialMenuData = new List<SpatialMenuData>();
+        static readonly List<Transform> k_AllSpatialMenuRayOrigins = new List<Transform>();
+        static readonly List<ISpatialMenuProvider> k_SpatialMenuProviders = new List<ISpatialMenuProvider>();
+
         static SpatialMenu s_ControllingSpatialMenu;
         static SpatialMenuUI s_SpatialMenuUI;
-        static readonly List<SpatialMenuData> s_SpatialMenuData = new List<SpatialMenuData>();
-        static readonly List<Transform> s_AllSpatialMenuRayOrigins = new List<Transform>();
         static int s_SubMenuElementCount;
         static SpatialMenuData s_SubMenuData;
-        static readonly List<ISpatialMenuProvider> s_SpatialMenuProviders = new List<ISpatialMenuProvider>();
         static SpatialMenuState s_SpatialMenuState;
 
+        static int subMenuElementCount { get { return s_SubMenuData.spatialMenuElements.Count; } }
+
+#pragma warning disable 649
         [SerializeField]
         SpatialMenuUI m_SpatialMenuUiPrefab;
 
@@ -81,6 +86,7 @@ namespace UnityEditor.Experimental.EditorVR
 
         [SerializeField]
         HapticPulse m_NavigateBackPulse;
+#pragma warning restore 649
 
         bool m_Visible;
 
@@ -108,8 +114,6 @@ namespace UnityEditor.Experimental.EditorVR
         float m_TotalShowMenuCircularInputRotation;
         Coroutine m_CircularTriggerSelectionCyclingCoroutine;
         Transform m_RayOrigin;
-
-        int subMenuElementCount { get { return s_SubMenuData.spatialMenuElements.Count; } }
 
         bool visible
         {
@@ -154,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR
                         s_SubMenuData = null;
                         break;
                     case SpatialMenuState.NavigatingSubMenuContent:
-                        s_SubMenuData = s_SpatialMenuData.FirstOrDefault(x => x.highlighted);
+                        s_SubMenuData = k_SpatialMenuData.FirstOrDefault(x => x.highlighted);
                         this.Pulse(Node.None, m_MenuOpenPulse);
                         break;
                     case SpatialMenuState.Hidden:
@@ -184,8 +188,8 @@ namespace UnityEditor.Experimental.EditorVR
                 // has begun pointing at the spatial UI, which will override the input typs to ray-based interaction
                 // (taking the opposite hand, and pointing it at the menu)
 
-                if (!s_AllSpatialMenuRayOrigins.Contains(m_RayOrigin))
-                    s_AllSpatialMenuRayOrigins.Add(m_RayOrigin);
+                if (!k_AllSpatialMenuRayOrigins.Contains(m_RayOrigin))
+                    k_AllSpatialMenuRayOrigins.Add(m_RayOrigin);
             }
         }
 
@@ -230,8 +234,8 @@ namespace UnityEditor.Experimental.EditorVR
         {
             if (s_SpatialMenuUI == null)
             {
-                s_SpatialMenuUI = this.InstantiateUI(m_SpatialMenuUiPrefab.gameObject, VRView.cameraRig, rayOrigin: rayOrigin).GetComponent<SpatialMenuUI>();
-                s_SpatialMenuUI.spatialMenuData = s_SpatialMenuData; // set shared reference to menu name/type, elements, and highlighted state
+                s_SpatialMenuUI = this.InstantiateUI(m_SpatialMenuUiPrefab.gameObject, CameraUtils.GetCameraRig(), rayOrigin: rayOrigin).GetComponent<SpatialMenuUI>();
+                s_SpatialMenuUI.spatialMenuData = k_SpatialMenuData; // set shared reference to menu name/type, elements, and highlighted state
                 s_SpatialMenuUI.Setup();
                 s_SpatialMenuUI.returnToPreviousMenuLevel = ReturnToPreviousMenuLevel;
                 s_SpatialMenuUI.changeMenuState = ChangeMenuState;
@@ -249,26 +253,26 @@ namespace UnityEditor.Experimental.EditorVR
 
         void RefreshProviderData()
         {
-            foreach (var provider in s_SpatialMenuProviders)
+            foreach (var provider in k_SpatialMenuProviders)
             {
                 foreach (var menuData in provider.spatialMenuData)
                 {
                     // Prevent menus/tools/etc that are instantiated multiple times from adding their contents to the Spatial Menu
-                    if (!s_SpatialMenuData.Any(existingData => String.Equals(existingData.spatialMenuName, menuData.spatialMenuName)))
-                        s_SpatialMenuData.Add(menuData);
+                    if (!k_SpatialMenuData.Any(existingData => String.Equals(existingData.spatialMenuName, menuData.spatialMenuName)))
+                        k_SpatialMenuData.Add(menuData);
                 }
             }
         }
 
         public static void AddProvider(ISpatialMenuProvider provider)
         {
-            if (s_SpatialMenuProviders.Contains(provider))
+            if (k_SpatialMenuProviders.Contains(provider))
                 return;
 
-            s_SpatialMenuProviders.Add(provider);
+            k_SpatialMenuProviders.Add(provider);
 
             foreach (var menuElementSet in provider.spatialMenuData)
-                s_SpatialMenuData.Add(menuElementSet);
+                k_SpatialMenuData.Add(menuElementSet);
         }
 
         void ReturnToPreviousMenuLevel()
@@ -288,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR
             var divergenceThresholdConvertedToDot = Mathf.Sin(Mathf.Deg2Rad * kDivergenceThreshold);
             var spatialMenuUITransformPosition = s_SpatialMenuUI.adaptiveTransform != null ? s_SpatialMenuUI.adaptiveTransform.position : Vector3.zero;
             var viewerScale = this.GetViewerScale();
-            foreach (var origin in s_AllSpatialMenuRayOrigins)
+            foreach (var origin in k_AllSpatialMenuRayOrigins)
             {
                 if (origin == null)
                     continue;
@@ -377,7 +381,7 @@ namespace UnityEditor.Experimental.EditorVR
                 spatialMenuState = SpatialMenuState.NavigatingTopLevel;
                 s_SpatialMenuUI.spatialInterfaceInputMode = SpatialUIView.SpatialInterfaceInputMode.Neutral;
 
-                foreach (var data in s_SpatialMenuData)
+                foreach (var data in k_SpatialMenuData)
                 {
                     foreach (var element in data.spatialMenuElements)
                     {
@@ -510,7 +514,7 @@ namespace UnityEditor.Experimental.EditorVR
             if (s_SpatialMenuState == SpatialMenuState.NavigatingTopLevel)
             {
                 // User should return to the previously highligted position at this depth of the SpatialMenu
-                var menuElementCount = s_SpatialMenuData.Count;
+                var menuElementCount = k_SpatialMenuData.Count;
                 m_HighlightedTopLevelMenuElementPosition = (int)Mathf.Repeat(m_HighlightedTopLevelMenuElementPosition + elementPositionOffset, menuElementCount);
                 s_SpatialMenuUI.HighlightElementInCurrentlyDisplayedMenuSection(m_HighlightedTopLevelMenuElementPosition);
             }

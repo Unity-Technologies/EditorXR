@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -9,11 +10,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorObjectFieldItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
         TextMeshProUGUI m_FieldLabel;
 
         [SerializeField]
         MeshRenderer m_Button;
+#pragma warning restore 649
 
         Type m_ObjectType;
         string m_ObjectTypeName;
@@ -113,3 +116,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
+#endif

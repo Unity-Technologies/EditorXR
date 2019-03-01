@@ -6,7 +6,9 @@ namespace UnityEditor.Experimental.EditorVR.Data
 {
     sealed class AssetData : ListViewItemData<int>
     {
-        const string k_TemplateName = "AssetGridItem";
+        public const string PrefabTypeString = "Prefab";
+        public const string ModelTypeString = "Model";
+        static readonly string k_TemplateName = "AssetGridItem";
 
         public string guid { get; private set; }
 
@@ -43,13 +45,21 @@ namespace UnityEditor.Experimental.EditorVR.Data
             if (type == "GameObject")
             {
 #if UNITY_EDITOR
+#if UNITY_2018_3_OR_NEWER
+                switch (PrefabUtility.GetPrefabAssetType(asset))
+#else
                 switch (PrefabUtility.GetPrefabType(asset))
+#endif
                 {
+#if UNITY_2018_3_OR_NEWER
+                    case PrefabAssetType.Model:
+#else
                     case PrefabType.ModelPrefab:
-                        type = "Model";
+#endif
+                        type = ModelTypeString;
                         break;
                     default:
-                        type = "Prefab";
+                        type = PrefabTypeString;
                         break;
                 }
 #endif

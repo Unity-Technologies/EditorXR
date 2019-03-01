@@ -27,8 +27,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_ProxyActionMap;
+#pragma warning restore 649
 
         Affordance[] m_Affordances;
         AffordanceDefinition[] m_AffordanceDefinitions;
