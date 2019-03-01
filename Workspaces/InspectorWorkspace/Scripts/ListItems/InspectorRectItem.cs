@@ -14,6 +14,18 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         NumericInputField[] m_SizeFields;
 
+        public NumericInputField[] centerFields
+        {
+            get { return m_CenterFields; }
+            set { m_CenterFields = value; }
+        }
+
+        public NumericInputField[] sizeFields
+        {
+            get { return m_SizeFields; }
+            set { m_SizeFields = value; }
+        }
+
         public override void Setup(InspectorData data)
         {
             base.Setup(data);

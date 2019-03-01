@@ -8,6 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     {
         const string k_MaterialStencilRefProperty = "_StencilRef";
 
+#pragma warning disable 649
         [SerializeField]
         Image m_LockImage;
 
@@ -19,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         WorkspaceButton m_Button;
+#pragma warning restore 649
 
         public byte stencilRef { get; set; }
 

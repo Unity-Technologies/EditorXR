@@ -9,8 +9,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, ISystemModule
     {
+#pragma warning disable 649
         [SerializeField]
         HapticPulse m_MovingPulse; // The pulse performed while moving an element to a new target position in the user's FOV
+#pragma warning restore 649
 
         bool m_TestInFocus;
         Transform m_GazeTransform;

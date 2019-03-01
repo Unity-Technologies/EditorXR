@@ -88,6 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public delegate void AnnotationFinishedCallback(MeshFilter meshFilter);
         public static AnnotationFinishedCallback AnnotationFinished;
 
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_ActionMap;
 
@@ -102,6 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         AnnotationContextMenu m_MenuPrefab;
+#pragma warning restore 649
 
         Action<float> m_BrushSizeChanged;
 

@@ -16,11 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_HoverAlpha = 1;
         const float k_NormalAlpha = 0.95f;
 
-        public Button button
-        {
-            get { return m_Button; }
-        }
-
+#pragma warning disable 649
         [SerializeField]
         Button m_Button;
 
@@ -40,8 +36,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         Text m_Text;
 #endif
+#pragma warning restore 649
 
         Transform m_InteractingRayOrigin;
+
+        public Button button
+        {
+            get { return m_Button; }
+        }
 
 #if INCLUDE_TEXT_MESH_PRO
         public TextMeshProUGUI text { get { return m_Text; } }

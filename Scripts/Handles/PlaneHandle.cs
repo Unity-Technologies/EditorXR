@@ -17,9 +17,11 @@ namespace UnityEditor.Experimental.EditorVR.Handles
             public PlaneHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) {}
         }
 
+#pragma warning disable 649
         [FlagsProperty]
         [SerializeField]
         AxisFlags m_Constraints;
+#pragma warning restore 649
 
         Plane m_Plane;
         readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);

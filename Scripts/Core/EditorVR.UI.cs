@@ -9,8 +9,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR
     {
+#pragma warning disable 649
         [SerializeField]
         Camera m_EventCameraPrefab;
+#pragma warning restore 649
 
         class UI : Nested, IInterfaceConnector, IConnectInterfaces
         {
@@ -137,7 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return false;
             }
 
-            internal void UpdateManipulatorVisibilites()
+            internal void UpdateManipulatorVisibilities()
             {
                 var manipulatorsVisible = m_ManipulatorsHiddenRequests.Count == 0;
                 foreach (var controller in m_ManipulatorControllers)

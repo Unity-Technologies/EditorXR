@@ -6,8 +6,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorStringItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
         StandardInputField m_InputField;
+#pragma warning restore 649
 
         public override void Setup(InspectorData data)
         {

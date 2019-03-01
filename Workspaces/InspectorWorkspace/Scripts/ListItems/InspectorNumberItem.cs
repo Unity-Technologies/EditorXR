@@ -8,14 +8,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorNumberItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
         NumericInputField m_InputField;
 
         [SerializeField]
         WorkspaceButton[] m_IncrementDecrementButtons;
+#pragma warning restore 649
 
         public SerializedPropertyType propertyType { get; private set; }
+
+#if UNITY_EDITOR
         public event Action<PropertyData> arraySizeChanged;
+#endif
 
         public override void Setup(InspectorData data)
         {

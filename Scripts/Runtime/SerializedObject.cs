@@ -5,7 +5,7 @@ namespace UnityEditor.Experimental.EditorVR
 {
     public class SerializedObject
     {
-        public GameObject targetObject;
+        public Object targetObject;
     }
 }
 #endif

@@ -1,13 +1,15 @@
-﻿using UnityEngine;
-using UnityEditor.Experimental.EditorVR.Data;
+﻿using UnityEditor.Experimental.EditorVR.Data;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorBoolItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
         Toggle m_Toggle;
+#pragma warning restore 649
 
         public override void Setup(InspectorData data)
         {

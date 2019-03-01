@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#if UNITY_EDITOR
 using ListView;
+using System;
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -215,9 +216,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
                 item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
 
+#if UNITY_EDITOR
                 var numberItem = item as InspectorNumberItem;
                 if (numberItem)
                     numberItem.arraySizeChanged += OnArraySizeChanged;
+#endif
 
                 item.setup = true;
             }
@@ -309,3 +312,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
+#endif

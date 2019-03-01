@@ -7,8 +7,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     abstract class EditorWindowWorkspace : Workspace
     {
+#pragma warning disable 649
         [SerializeField]
         GameObject m_CaptureWindowPrefab;
+#pragma warning restore 649
 
         Transform m_CaptureWindow;
 

@@ -423,7 +423,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             GetNestedModule<Menus>().UpdateMenuVisibilities();
 
-            GetNestedModule<UI>().UpdateManipulatorVisibilites();
+            GetNestedModule<UI>().UpdateManipulatorVisibilities();
         }
 
         void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)

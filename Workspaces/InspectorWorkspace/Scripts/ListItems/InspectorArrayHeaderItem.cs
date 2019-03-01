@@ -9,8 +9,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         static readonly Quaternion k_ExpandedRotation = Quaternion.AngleAxis(90f, Vector3.forward);
         static readonly Quaternion k_NormalRotation = Quaternion.identity;
 
+#pragma warning disable 649
         [SerializeField]
         Button m_ExpandArrow;
+#pragma warning restore 649
 
         public override void UpdateSelf(float width, int depth, bool expanded)
         {

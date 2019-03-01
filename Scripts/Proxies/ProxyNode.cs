@@ -328,6 +328,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
 
+#pragma warning disable 649
         [SerializeField]
         float m_FadeInDuration = 0.5f;
 
@@ -365,6 +366,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [Tooltip("Affordance objects that store transform, renderer, and tooltip references")]
         [SerializeField]
         Affordance[] m_Affordances;
+#pragma warning restore 649
 
         readonly Dictionary<Renderer, AffordanceData> m_AffordanceData = new Dictionary<Renderer, AffordanceData>();
         readonly List<Tuple<Renderer, AffordanceData>> m_BodyData = new List<Tuple<Renderer, AffordanceData>>();

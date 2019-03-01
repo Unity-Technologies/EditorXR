@@ -7,24 +7,26 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     abstract class InspectorPropertyItem : InspectorListItem
     {
+#pragma warning disable 649
         [SerializeField]
         TextMeshProUGUI m_Label;
+
+        [SerializeField]
+        Transform m_TooltipTarget;
+
+        [SerializeField]
+        Transform m_TooltipSource;
+#pragma warning restore 649
 
         public Transform tooltipTarget
         {
             get { return m_TooltipTarget; }
         }
 
-        [SerializeField]
-        Transform m_TooltipTarget;
-
         public Transform tooltipSource
         {
             get { return m_TooltipSource; }
         }
-
-        [SerializeField]
-        Transform m_TooltipSource;
 
         public TextAlignment tooltipAlignment
         {

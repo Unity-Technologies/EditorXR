@@ -1,7 +1,3 @@
-#if !UNITY_2017_2_OR_NEWER
-#pragma warning disable 649 // "never assigned to" warning
-#endif
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         const float k_MoveKeyboardTime = 0.2f;
 
+#pragma warning disable 649
         [SerializeField]
         [FlagsProperty]
         SelectionFlags m_SelectionFlags = SelectionFlags.Ray | SelectionFlags.Direct;
@@ -47,6 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         [HideInInspector]
         [SerializeField] // Serialized so that this remains set after cloning
         protected string m_Text = string.Empty;
+#pragma warning restore 649
 
         bool m_KeyboardOpen;
 

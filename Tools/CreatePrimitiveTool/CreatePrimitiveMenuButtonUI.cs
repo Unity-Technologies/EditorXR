@@ -4,11 +4,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     public sealed class CreatePrimitiveMenuButtonUI : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
         Transform m_ShapeTransform;
 
         [SerializeField]
         RectTransform m_BackgroundGradientTransform;
+#pragma warning restore 649
 
         Vector3 m_OriginalShapeLocalScale;
         Vector2 m_OriginalBackgroundSizeDelta;

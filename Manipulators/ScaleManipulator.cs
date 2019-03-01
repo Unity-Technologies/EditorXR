@@ -5,8 +5,10 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
     sealed class ScaleManipulator : BaseManipulator
     {
+#pragma warning disable 649
         [SerializeField]
         BaseHandle m_UniformHandle;
+#pragma warning restore 649
 
         protected override void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
         {

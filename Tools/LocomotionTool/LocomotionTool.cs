@@ -15,6 +15,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
         IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
     {
+        [Serializable]
+        class Preferences
+        {
+            [SerializeField]
+            bool m_BlinkMode;
+
+            public bool blinkMode
+            {
+                get { return m_BlinkMode; }
+                set { m_BlinkMode = value; }
+            }
+        }
+
         const float k_FastMoveSpeed = 20f;
         const float k_SlowMoveSpeed = 1f;
         const float k_RotationDamping = 0.2f;
@@ -39,6 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         static readonly Vector3 k_RingOffset = new Vector3(0f, -0.3f, 0.5f);
 
+#pragma warning disable 649
         [SerializeField]
         GameObject m_BlinkVisualsPrefab;
 
@@ -53,19 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         GameObject m_RingPrefab;
-
-        [Serializable]
-        class Preferences
-        {
-            [SerializeField]
-            bool m_BlinkMode;
-
-            public bool blinkMode
-            {
-                get { return m_BlinkMode; }
-                set { m_BlinkMode = value; }
-            }
-        }
+#pragma warning restore 649
 
         Preferences m_Preferences;
 

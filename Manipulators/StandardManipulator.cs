@@ -6,6 +6,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
     sealed class StandardManipulator : BaseManipulator
     {
+#pragma warning disable 649
         [SerializeField]
         Transform m_PlaneHandlesParent;
 
@@ -17,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
         [SerializeField]
         float m_SphereHandleHideScale = 0.1f;
+#pragma warning restore 649
 
         void Update()
         {

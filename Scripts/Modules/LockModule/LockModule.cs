@@ -19,10 +19,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
+        const float k_MaxHoverTime = 2.0f;
+
+#pragma warning disable 649
         [SerializeField]
         Sprite m_LockIcon;
+
         [SerializeField]
         Sprite m_UnlockIcon;
+#pragma warning restore 649
 
         readonly LockModuleAction m_LockModuleAction = new LockModuleAction();
         public List<IAction> actions { get; private set; }
@@ -34,7 +39,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         GameObject m_CurrentHoverObject;
         Transform m_HoverRayOrigin;
         float m_HoverDuration;
-        const float k_MaxHoverTime = 2.0f;
 
         void Awake()
         {

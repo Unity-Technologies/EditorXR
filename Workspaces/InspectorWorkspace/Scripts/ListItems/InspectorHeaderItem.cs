@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -11,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorHeaderItem : InspectorListItem
     {
+#pragma warning disable 649
         [SerializeField]
         RawImage m_Icon;
 
@@ -23,11 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         Toggle m_StaticToggle;
 
-        public Toggle lockToggle
-        {
-            get { return m_LockToggle; }
-        }
-
         [SerializeField]
         Toggle m_LockToggle;
 
@@ -39,6 +36,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         MeshRenderer m_Button;
+#pragma warning restore 649
+
+        public Toggle lockToggle
+        {
+            get { return m_LockToggle; }
+        }
 
         GameObject m_TargetGameObject;
 
@@ -188,3 +191,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
+#endif

@@ -12,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const string k_BottomGradientProperty = "_ColorBottom";
         const string k_TopGradientProperty = "_ColorTop";
 
+#pragma warning disable 649
         [SerializeField]
         Renderer m_TitleIcon;
 
@@ -23,6 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         HapticPulse m_ButtonHoverPulse;
+#pragma warning restore 649
 
         Material m_TitleIconMaterial;
 
@@ -54,7 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
         }
 
-        private void OnDestroy()
+        void OnDestroy()
         {
             foreach (var button in m_Buttons)
             {

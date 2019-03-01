@@ -12,6 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         const float k_XOffset = 0.05f;
         const float k_ZOffset = 0.025f;
 
+#pragma warning disable 649
         [SerializeField]
         CanvasGroup m_CanvasGroup;
 
@@ -20,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         [SerializeField]
         float m_Delay = 2f;
+#pragma warning restore 649
 
         Vector3 m_FloorPosition;
         Transform m_Camera;

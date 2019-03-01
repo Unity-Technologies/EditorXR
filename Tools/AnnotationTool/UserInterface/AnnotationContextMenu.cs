@@ -8,6 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class AnnotationContextMenu : MonoBehaviour, IMenu
     {
+#pragma warning disable 649
         [SerializeField]
         Button m_CloseButton;
 
@@ -31,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         Slider m_ColorSlider;
+#pragma warning restore 649
 
         AnnotationTool.Preferences m_Preferences;
         bool m_InsideUIUpdate;

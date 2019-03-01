@@ -18,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const string k_FeedbackHintForJoystickController = "Click + flick left/right to undo/redo";
         const string k_FeedbackHintForTrackpadController = "Click left/right side to undo/redo";
 
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_ActionMap;
 
@@ -26,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         HapticPulse m_UndoPulse;
+#pragma warning restore 649
 
         UndoMenuUI m_UndoMenuUI;
         Transform m_AlternateMenuOrigin;

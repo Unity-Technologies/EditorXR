@@ -17,12 +17,14 @@ namespace UnityEditor.Experimental.EditorVR.Handles
             public LinearHandleEventData(Transform rayOrigin, bool direct) : base(rayOrigin, direct) {}
         }
 
+#pragma warning disable 649
         [SerializeField]
         bool m_OrientDragPlaneToRay = true;
 
         [FlagsProperty]
         [SerializeField]
         AxisFlags m_Constraints;
+#pragma warning restore 649
 
         readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
 
