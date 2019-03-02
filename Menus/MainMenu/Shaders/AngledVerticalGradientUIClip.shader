@@ -14,6 +14,7 @@
         _ColorMask("Color Mask", Float) = 15
 
         [Toggle(UNITY_UI_ALPHACLIP)] _UseUIAlphaClip("Use Alpha Clip", Float) = 0
+        _MainTex("Main Texture", 2D) = "white" {}
     }
 
     SubShader
