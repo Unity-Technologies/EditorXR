@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Reflection;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -10,6 +9,7 @@ using System.Threading;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
+#if UNITY_EDITOR
     /// <summary>
     /// Captures a RenderTexture representing an Editor window
     /// </summary>
@@ -179,5 +179,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         public static extern int SendMessage(IntPtr hWnd, int uMsg, int wParam, IntPtr lParam);
 #endif
     }
-}
+#else
+    sealed class EditorWindowCapture : MonoBehaviour
+    {
+    }
 #endif
+}

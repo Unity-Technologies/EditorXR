@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using ListView;
+﻿using ListView;
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -8,6 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     sealed class InspectorListViewController : NestedListViewController<InspectorData, InspectorListItem, int>, IUsesGameObjectLocking, IUsesStencilRef
     {
         const string k_MaterialStencilRef = "_StencilRef";
@@ -311,5 +311,35 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             ObjectUtils.Destroy(m_NoClipHighlightMaskMaterial);
         }
     }
-}
+#else
+    sealed class InspectorListViewController : NestedListViewController<InspectorData, InspectorListItem, int>
+    {
+        [SerializeField]
+        Material m_RowCubeMaterial;
+
+        [SerializeField]
+        Material m_BackingCubeMaterial;
+
+        [SerializeField]
+        Material m_UIMaterial;
+
+        [SerializeField]
+        Material m_UIMaskMaterial;
+
+        [SerializeField]
+        Material m_NoClipBackingCubeMaterial;
+
+        [SerializeField]
+        Material m_HighlightMaterial;
+
+        [SerializeField]
+        Material m_HighlightMaskMaterial;
+
+        [SerializeField]
+        Material m_NoClipHighlightMaterial;
+
+        [SerializeField]
+        Material m_NoClipHighlightMaskMaterial;
+    }
 #endif
+}

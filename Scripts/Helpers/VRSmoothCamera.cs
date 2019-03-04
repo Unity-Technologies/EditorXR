@@ -1,10 +1,10 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
+#if UNITY_EDITOR
     /// <summary>
     /// A preview camera that provides for smoothing of the position and look vector
     /// </summary>
@@ -23,7 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         [SerializeField]
         int m_TargetDisplay;
 
-        [SerializeField, Range(1, 180)]
+        [Range(1, 180)]
+        [SerializeField]
         int m_FieldOfView = 40;
 
         [SerializeField]
@@ -141,5 +142,25 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             }
         }
     }
-}
+#else
+    sealed class VRSmoothCamera : MonoBehaviour
+    {
+#pragma warning disable 649
+        [SerializeField]
+        Camera m_VRCamera;
+
+        [SerializeField]
+        int m_TargetDisplay;
+
+        [SerializeField]
+        int m_FieldOfView = 40;
+
+        [SerializeField]
+        float m_PullBackDistance = 0.8f;
+
+        [SerializeField]
+        float m_SmoothingMultiplier = 3;
+#pragma warning restore 649
+    }
 #endif
+}
