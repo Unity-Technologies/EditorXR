@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: RadialMenuFrameOuterBorder
   m_Shader: {fileID: 4800000, guid: b10f0b677131a2945855a113a27b7093, type: 3}
