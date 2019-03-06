@@ -158,28 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
         }
 
-        public List<IAction> actions
-        {
-            get
-            {
-                if (!this.IsSharedUpdater(this))
-                    return null;
-
-                if (m_Actions == null)
-                {
-                    m_Actions = new List<IAction>
-                    {
-                        m_PivotModeToggleAction,
-                        m_PivotRotationToggleAction,
-                        m_ManipulatorToggleAction
-                    };
-                }
-                return m_Actions;
-            }
-        }
-
-        List<IAction> m_Actions;
-
+#pragma warning disable 649
         [SerializeField]
         Sprite m_OriginCenterIcon;
 
@@ -212,6 +191,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         HapticPulse m_RotatePulse;
+#pragma warning restore 649
+
+        List<IAction> m_Actions;
 
         BaseManipulator m_CurrentManipulator;
 
@@ -253,6 +235,26 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public event Action<Transform, HashSet<Transform>> objectsGrabbed;
         public event Action<Transform, Transform[]> objectsDropped;
         public event Action<Transform, Transform> objectsTransferred;
+
+        public List<IAction> actions
+        {
+            get
+            {
+                if (!this.IsSharedUpdater(this))
+                    return null;
+
+                if (m_Actions == null)
+                {
+                    m_Actions = new List<IAction>
+                    {
+                        m_PivotModeToggleAction,
+                        m_PivotRotationToggleAction,
+                        m_ManipulatorToggleAction
+                    };
+                }
+                return m_Actions;
+            }
+        }
 
         public bool manipulatorVisible { private get; set; }
 

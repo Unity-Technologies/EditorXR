@@ -15,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             MaterialSwap
         }
 
+#pragma warning disable 649
         [Header("Non-Interactive Input-Device Body Elements")]
         [SerializeField]
         AffordanceVisibilityDefinition m_BodyVisibilityDefinition;
@@ -29,6 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [Header("Custom Affordance Overrides")]
         [SerializeField]
         AffordanceDefinition[] m_AffordanceDefinitions;
+#pragma warning restore 649
 
         /// <summary>
         /// Collection of affordance definitions representing a proxy

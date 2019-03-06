@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: RadialMenuIcon
   m_Shader: {fileID: 4800000, guid: bb5c2bef6f6cd59459628622758d17ff, type: 3}

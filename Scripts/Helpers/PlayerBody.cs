@@ -4,11 +4,13 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 {
     public class PlayerBody : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
         Collider m_OverShoulderTrigger;
 
         [SerializeField]
         Collider m_AboveHeadTrigger;
+#pragma warning restore 649
 
         public Collider overShoulderTrigger { get { return m_OverShoulderTrigger; } }
 

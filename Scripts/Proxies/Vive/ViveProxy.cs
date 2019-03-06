@@ -12,11 +12,13 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     sealed class ViveProxy : TwoHandedProxyBase
     {
+#pragma warning disable 649
         [SerializeField]
         GameObject m_LeftHandTouchProxyPrefab;
 
         [SerializeField]
         GameObject m_RightHandTouchProxyPrefab;
+#pragma warning restore 649
 
         bool m_IsOculus;
 

@@ -5,6 +5,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class ProjectUI : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
         FolderListViewController m_FolderListView;
 
@@ -22,6 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         WorkspaceHighlight m_FolderPanelHighlight;
+#pragma warning restore 649
 
         public FolderListViewController folderListView { get { return m_FolderListView; } }
         public LinearHandle folderScrollHandle { get { return m_FolderScrollHandle; } }

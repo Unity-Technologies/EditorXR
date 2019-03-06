@@ -39,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_BLockSelectDragThreshold = 0.01f;
         static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
 
+#pragma warning disable 649
         [SerializeField]
         Sprite m_Icon;
 
@@ -53,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         GameObject m_SettingsMenuItemPrefab;
+#pragma warning restore 649
 
         Preferences m_Preferences;
 

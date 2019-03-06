@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
+#if UNITY_EDITOR
     sealed class ProjectFolderModule : MonoBehaviour, ISystemModule
     {
         // Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
@@ -188,5 +188,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return new AssetData(hp.name, hp.guid, typeName);
         }
     }
-}
+#else
+    sealed class ProjectFolderModule : MonoBehaviour
+    {
+    }
 #endif
+}

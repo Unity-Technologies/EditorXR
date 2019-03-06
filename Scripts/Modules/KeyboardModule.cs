@@ -9,6 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class KeyboardModule : MonoBehaviour, ISystemModule, IRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
     {
+#pragma warning disable 649
         [SerializeField]
         KeyboardMallet m_KeyboardMalletPrefab;
 
@@ -17,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         KeyboardUI m_StandardKeyboardPrefab;
+#pragma warning restore 649
 
         readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
         KeyboardUI m_NumericKeyboard;

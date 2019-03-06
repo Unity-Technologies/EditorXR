@@ -15,10 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_Indent = 0.02f;
         const float k_HorizThreshold = 0.85f;
 
-        protected CuboidLayout m_CuboidLayout;
-
-        protected InputField[] m_InputFields;
-
+#pragma warning disable 649
         [SerializeField]
         BaseHandle m_Cube;
 
@@ -30,6 +27,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         Material m_DropHighlightMaterial;
+#pragma warning restore 649
+
+        protected CuboidLayout m_CuboidLayout;
+
+        protected InputField[] m_InputFields;
 
         ClipText[] m_ClipTexts;
 

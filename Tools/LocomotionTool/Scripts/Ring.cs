@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class Ring : MonoBehaviour
 {
+#pragma warning disable 649
     [SerializeField]
     Transform m_RingTransform;
 
@@ -40,6 +41,7 @@ public class Ring : MonoBehaviour
 
     [SerializeField]
     LineRenderer m_LineB;
+#pragma warning restore 649
 
     readonly Gradient m_OrigGradient = new Gradient();
     readonly Gradient m_CurrentGradient = new Gradient();

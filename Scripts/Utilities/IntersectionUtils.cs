@@ -275,11 +275,23 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var mf = obj.GetComponent<MeshFilter>();
             if (mf)
             {
-                if (collisionTester.sharedMesh != mf.sharedMesh)
-                {
-                    collisionTester.sharedMesh = mf.sharedMesh;
-                    collisionTester.transform.localScale = Vector3.one;
-                }
+                var mesh = mf.sharedMesh;
+
+#if !UNITY_EDITOR
+                // Player builds throw errors for non-readable meshes
+                if (!mesh.isReadable)
+                    return;
+#endif
+
+                // Non-triangle meshes cause physics error
+                if (mesh.GetTopology(0) != MeshTopology.Triangles)
+                    return;
+
+                if (collisionTester.sharedMesh == mesh)
+                    return;
+
+                collisionTester.sharedMesh = mf.sharedMesh;
+                collisionTester.transform.localScale = Vector3.one;
 
                 return;
             }

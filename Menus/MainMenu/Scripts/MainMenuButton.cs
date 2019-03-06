@@ -12,8 +12,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenuButton : MainMenuSelectable, ITooltip, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
     {
+#pragma warning disable 649
         [SerializeField]
         Button m_Button;
+#pragma warning restore 649
 
         CanvasGroup m_CanvasGroup;
 

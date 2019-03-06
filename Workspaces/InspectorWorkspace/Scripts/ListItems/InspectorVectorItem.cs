@@ -7,11 +7,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorVectorItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
         GameObject ZGroup;
 
         [SerializeField]
         GameObject WGroup;
+#pragma warning restore 649
 
         public override void Setup(InspectorData data)
         {

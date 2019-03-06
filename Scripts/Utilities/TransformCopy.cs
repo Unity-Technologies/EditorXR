@@ -10,17 +10,18 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             Local
         }
 
+#pragma warning disable 649
         [SerializeField]
         Transform m_SourceTransform;
 
         [SerializeField]
-        float m_XPositionPadding = 0f;
+        float m_XPositionPadding;
 
         [SerializeField]
-        float m_YPositionPadding = 0f;
+        float m_YPositionPadding;
 
         [SerializeField]
-        float m_ZPositionPadding = 0f;
+        float m_ZPositionPadding;
 
         [SerializeField]
         bool m_ParentUnderSource = true;
@@ -29,7 +30,8 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         Space m_Space;
 
         [SerializeField]
-        bool m_ForceAlwaysUpdate = false;
+        bool m_ForceAlwaysUpdate;
+#pragma warning restore 649
 
         Vector3 m_Padding;
 

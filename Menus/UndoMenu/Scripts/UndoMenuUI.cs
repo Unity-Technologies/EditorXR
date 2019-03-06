@@ -13,11 +13,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const float k_UndoPerformedAlpha = 1f;
         const string k_MaterialColorProperty = "_Color";
 
+#pragma warning disable 649
         [SerializeField]
         MeshRenderer m_UndoButtonMeshRenderer;
 
         [SerializeField]
         MeshRenderer m_RedoButtonMeshRenderer;
+#pragma warning restore 649
 
         Material m_UndoButtonMaterial;
         Material m_RedoButtonMaterial;

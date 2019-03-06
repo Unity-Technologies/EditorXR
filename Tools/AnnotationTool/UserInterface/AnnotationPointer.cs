@@ -9,8 +9,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_BottomRadius = 0.01f;
         const float k_YScale = 2.5f;
 
+#pragma warning disable 649
         [SerializeField]
         Material m_ConeMaterial;
+#pragma warning restore 649
 
         Material m_ConeMaterialInstance;
 

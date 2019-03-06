@@ -20,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     {
         static readonly Vector3 k_LocalOffset = Vector3.down * 0.15f;
 
+#pragma warning disable 649
         [SerializeField]
         MeshRenderer m_BorderOutline;
 
@@ -39,6 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         ScrollRect m_ScrollRect;
+#pragma warning restore 649
 
         Material m_BorderOutlineMaterial;
         Vector3 m_BorderOutlineOriginalLocalScale;

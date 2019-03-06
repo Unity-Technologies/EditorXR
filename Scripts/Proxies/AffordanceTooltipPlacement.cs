@@ -7,6 +7,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     {
         const FacingDirection k_AllDirections = (FacingDirection)0xFFF;
 
+#pragma warning disable 649
         [SerializeField]
         Transform m_TooltipTarget;
 
@@ -19,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [FlagsProperty]
         [SerializeField]
         FacingDirection m_FacingDirection = k_AllDirections;
+#pragma warning restore 649
 
         public Transform tooltipTarget { get { return m_TooltipTarget; } }
         public Transform tooltipSource { get { return m_TooltipSource; } }

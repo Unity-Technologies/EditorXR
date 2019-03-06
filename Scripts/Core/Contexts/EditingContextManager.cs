@@ -17,25 +17,29 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
     sealed class EditingContextManager : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
         UnityObject m_DefaultContext;
+#pragma warning restore 649
 
-        internal const string k_SettingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
-        internal const string k_UserSettingsPath = "Library/EditingContextManagerSettings.asset";
+        internal const string settingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
+        internal const string userSettingsPath = "Library/EditingContextManagerSettings.asset";
 
         const string k_AutoOpen = "EditorXR.EditingContextManager.AutoOpen";
         const string k_LaunchOnExitPlaymode = "EditorXR.EditingContextManager.LaunchOnExitPlaymode";
 
         IEditingContext m_CurrentContext;
 
-        internal static EditingContextManager s_Instance;
         static InputManager s_InputManager;
         static List<IEditingContext> s_AvailableContexts;
         static EditingContextManagerSettings s_Settings;
         static UnityObject s_DefaultContext;
+
+#if UNITY_EDITOR
         static bool s_AutoOpened;
         static bool s_UserWasPresent;
         static bool s_EnableXRFailed;
+#endif
 
         string[] m_ContextNames;
         int m_SelectedContextIndex;
@@ -44,6 +48,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         Rect m_ContextPopupRect = new Rect(5, 0, 100, 20); // Position will be set based on window size
         Rect m_ContextLabelRect = new Rect(5, 0, 100, 20); // Position will be set based on window size
+
+        internal static EditingContextManager instance { get; private set; }
 
         internal static IEditingContext defaultContext
         {
@@ -102,13 +108,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Resources.UnloadUnusedAssets();
             InitializeInputManager();
             if (!Application.isPlaying)
-                s_Instance = ObjectUtils.CreateGameObjectWithComponent<EditingContextManager>();
+                instance = ObjectUtils.CreateGameObjectWithComponent<EditingContextManager>();
         }
 
         static void OnVRViewDisabled()
         {
+#if UNITY_EDITOR
             s_AutoOpened = false;
-            ObjectUtils.Destroy(s_Instance.gameObject);
+#endif
+            ObjectUtils.Destroy(instance.gameObject);
             if (s_InputManager)
                 ObjectUtils.Destroy(s_InputManager.gameObject);
         }
@@ -351,7 +359,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (Application.isPlaying)
             {
                 OnVRViewEnabled();
-                s_Instance = this;
+                instance = this;
                 SetEditingContext((IEditingContext)m_DefaultContext);
             }
         }
@@ -447,8 +455,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static EditingContextManagerSettings LoadProjectSettings()
         {
             EditingContextManagerSettings settings = ScriptableObject.CreateInstance<EditingContextManagerSettings>();
-            if (File.Exists(k_SettingsPath))
-                JsonUtility.FromJsonOverwrite(File.ReadAllText(k_SettingsPath), settings);
+            if (File.Exists(settingsPath))
+                JsonUtility.FromJsonOverwrite(File.ReadAllText(settingsPath), settings);
 
             return settings;
         }
@@ -456,11 +464,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static EditingContextManagerSettings LoadUserSettings()
         {
             EditingContextManagerSettings settings;
-            if (File.Exists(k_UserSettingsPath)
-                && File.GetLastWriteTime(k_UserSettingsPath) > File.GetLastWriteTime(k_SettingsPath))
+            if (File.Exists(userSettingsPath)
+                && File.GetLastWriteTime(userSettingsPath) > File.GetLastWriteTime(settingsPath))
             {
                 settings = ScriptableObject.CreateInstance<EditingContextManagerSettings>();
-                JsonUtility.FromJsonOverwrite(File.ReadAllText(k_UserSettingsPath), settings);
+                JsonUtility.FromJsonOverwrite(File.ReadAllText(userSettingsPath), settings);
             }
             else
                 settings = LoadProjectSettings();
@@ -471,24 +479,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static void ResetProjectSettings()
         {
 #if UNITY_EDITOR
-            File.Delete(k_UserSettingsPath);
+            File.Delete(userSettingsPath);
 
             if (EditorUtility.DisplayDialog("Delete Project Settings?", "Would you like to remove the project-wide settings, too?", "Yes", "No"))
-                File.Delete(k_SettingsPath);
+                File.Delete(settingsPath);
 #endif
         }
 
         internal static void SaveProjectSettings(EditingContextManagerSettings settings)
         {
 #if UNITY_EDITOR
-            File.WriteAllText(k_SettingsPath, JsonUtility.ToJson(settings, true));
+            File.WriteAllText(settingsPath, JsonUtility.ToJson(settings, true));
 #endif
         }
 
         internal static void SaveUserSettings(EditingContextManagerSettings settings)
         {
 #if UNITY_EDITOR
-            File.WriteAllText(k_UserSettingsPath, JsonUtility.ToJson(settings, true));
+            File.WriteAllText(userSettingsPath, JsonUtility.ToJson(settings, true));
 #endif
         }
 

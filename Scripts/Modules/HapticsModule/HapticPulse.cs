@@ -5,6 +5,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [CreateAssetMenu(menuName = "EditorXR/Haptic Pulse", fileName = "NewHapticPulse.asset")]
     public class HapticPulse : ScriptableObject
     {
+#pragma warning disable 649
         [SerializeField]
         [Range(0.001f, 1f)]
         float m_Duration = 0.25f;
@@ -18,6 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         [SerializeField]
         bool m_FadeOut;
+#pragma warning restore 649
 
         // Don't allow public setting of value; use inspector-set values
         public float duration

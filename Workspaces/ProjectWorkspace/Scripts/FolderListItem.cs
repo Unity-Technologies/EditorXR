@@ -14,6 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         const float k_ExpandArrowRotateSpeed = 0.4f;
 
+#pragma warning disable 649
         [SerializeField]
         TextMeshProUGUI m_Text;
 
@@ -34,6 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         [SerializeField]
         Color m_SelectedColor;
+#pragma warning restore 649
 
         Color m_NormalColor;
 

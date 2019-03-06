@@ -9,6 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     public class ColorPickerUI : MonoBehaviour, IPointerExitHandler
     {
+#pragma warning disable 649
         [SerializeField]
         float m_FadeTime;
 
@@ -29,6 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         Slider m_BrightnessSlider;
+#pragma warning restore 649
 
         Vector3 m_PickerTargetPosition;
 

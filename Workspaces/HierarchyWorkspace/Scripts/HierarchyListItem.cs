@@ -16,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const float k_ExpandArrowRotateSpeed = 0.4f;
 
+#pragma warning disable 649
         [SerializeField]
         TextMeshProUGUI m_Text;
 
@@ -67,6 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [Tooltip("The fraction of the cube height to use for stacking grabbed rows")]
         [SerializeField]
         float m_StackingFraction = 0.3f;
+#pragma warning restore 649
 
         Color m_NormalColor;
         Color m_NormalTextColor;
@@ -241,7 +243,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             UpdateArrow(expanded);
 
 #if UNITY_EDITOR
+#if UNITY_2018_3_OR_NEWER
+            var isPrefab = gameObject && PrefabUtility.GetPrefabInstanceStatus(gameObject) == PrefabInstanceStatus.Connected;
+#else
             var isPrefab = gameObject && PrefabUtility.GetPrefabType(gameObject) == PrefabType.PrefabInstance;
+#endif
 #else
             var isPrefab = false;
 #endif

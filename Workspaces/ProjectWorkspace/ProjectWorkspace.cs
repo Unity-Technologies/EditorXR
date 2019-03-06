@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         bool m_AssetGridDragging;
         bool m_FolderPanelDragging;
 
+#pragma warning disable 649
         [SerializeField]
         GameObject m_ContentPrefab;
 
@@ -35,6 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         GameObject m_FilterPrefab;
+#pragma warning restore 649
 
         ProjectUI m_ProjectUI;
         FilterUI m_FilterUI;

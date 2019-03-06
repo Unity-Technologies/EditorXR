@@ -10,6 +10,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [CreateAssetMenu(menuName = "EditorXR/Editing Context")]
     class EditorXRContext : ScriptableObject, IEditingContext
     {
+        static EditorVR s_Instance; // Used only by PreferencesGUI
+
+#pragma warning disable 649
         [SerializeField]
         float m_RenderScale = 1f;
 
@@ -51,9 +54,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         [HideInInspector]
         List<string> m_HiddenTypeNames;
+#pragma warning restore 649
 
         EditorVR m_Instance;
-        static EditorVR s_Instance; // Used only by PreferencesGUI
 
         public bool copyMainCameraSettings { get { return m_CopyMainCameraSettings; } }
 

@@ -423,7 +423,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             GetNestedModule<Menus>().UpdateMenuVisibilities();
 
-            GetNestedModule<UI>().UpdateManipulatorVisibilites();
+            GetNestedModule<UI>().UpdateManipulatorVisibilities();
         }
 
         void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
@@ -536,10 +536,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 manager.gameObject.hideFlags = hideFlags;
             }
 
-            foreach (var manager in Resources.FindObjectsOfTypeAll<EditingContextManager>())
-            {
-                manager.gameObject.hideFlags = hideFlags;
-            }
+            EditingContextManager.instance.gameObject.hideFlags = hideFlags;
 
             foreach (var child in GetComponentsInChildren<Transform>(true))
             {

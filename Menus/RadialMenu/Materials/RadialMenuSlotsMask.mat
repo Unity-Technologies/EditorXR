@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: RadialMenuSlotsMask
   m_Shader: {fileID: 4800000, guid: da29182e4499c6740bf4e5dc3198313a, type: 3}

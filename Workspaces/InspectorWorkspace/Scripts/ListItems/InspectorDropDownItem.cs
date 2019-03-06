@@ -14,8 +14,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const string k_Nothing = "Nothing";
         const string k_Everything = "Everything";
 
+#pragma warning disable 649
         [SerializeField]
         DropDown m_DropDown;
+#pragma warning restore 649
 
         public override void Setup(InspectorData data)
         {

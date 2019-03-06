@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -7,16 +6,17 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     [MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
     sealed class InspectorWorkspace : Workspace, ISelectionChanged, IInspectorWorkspace
     {
-        public new static readonly Vector3 DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
-
+#pragma warning disable 649
         [SerializeField]
         GameObject m_ContentPrefab;
 
         [SerializeField]
         GameObject m_LockPrefab;
+#pragma warning restore 649
 
         InspectorUI m_InspectorUI;
         GameObject m_SelectedObject;
@@ -342,7 +342,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var listView = m_InspectorUI.listView;
             var bounds = contentBounds;
             size.y = float.MaxValue; // Add height for dropdowns
-            size.x -= DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
+            size.x -= k_DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
             size.z -= FaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             bounds.size = size;
             listView.size = bounds.size;
@@ -389,5 +389,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 UpdateCurrentObject(fullRebuild);
         }
     }
-}
+#else
+    [EditorOnlyWorkspace]
+    sealed class InspectorWorkspace : Workspace
+    {
+        [SerializeField]
+        GameObject m_ContentPrefab;
+
+        [SerializeField]
+        GameObject m_LockPrefab;
+    }
 #endif
+}

@@ -1,10 +1,10 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
+#if UNITY_EDITOR
     /// <summary>
     /// Updates a RawImage texture with data from an EditorWindowCapture
     /// </summary>
@@ -88,5 +88,20 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             }
         }
     }
-}
+#else
+    sealed class EditorWindowCaptureUpdater : MonoBehaviour
+    {
+        [SerializeField]
+        EditorWindowCapture m_EditorWindowCapture;
+
+        [SerializeField]
+        RawImage m_RawImage;
+
+        [SerializeField]
+        Material m_Material;
+
+        [SerializeField]
+        bool m_LockAspect;
+    }
 #endif
+}

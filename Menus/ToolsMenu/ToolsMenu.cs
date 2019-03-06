@@ -18,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
 
+#pragma warning disable 649
         [SerializeField]
         Sprite m_MainMenuIcon;
 
@@ -38,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         HapticPulse m_HidingPulse; // The pulse performed when ending a spatial selection
+#pragma warning restore 649
 
         float m_AllowToolToggleBeforeThisTime;
         Vector3 m_SpatialScrollStartPosition;

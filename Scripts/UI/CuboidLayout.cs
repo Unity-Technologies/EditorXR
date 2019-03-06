@@ -1,7 +1,7 @@
 ﻿using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEditor.Experimental.EditorVR.Utilities;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         const float k_LayerHeight = 0.004f;
         const float k_ExtraSpace = 0.00055f; // To avoid Z-fighting
 
+#pragma warning disable 649
         [SerializeField]
         RectTransform[] m_TargetTransforms;
 
@@ -23,6 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         [SerializeField]
         GameObject m_HighlightCubePrefab;
+#pragma warning restore 649
 
         Transform[] m_CubeTransforms;
         Transform[] m_HighlightCubeTransforms;

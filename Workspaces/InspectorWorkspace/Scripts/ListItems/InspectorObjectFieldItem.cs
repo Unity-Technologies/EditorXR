@@ -7,13 +7,16 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     sealed class InspectorObjectFieldItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
         TextMeshProUGUI m_FieldLabel;
 
         [SerializeField]
         MeshRenderer m_Button;
+#pragma warning restore 649
 
         Type m_ObjectType;
         string m_ObjectTypeName;
@@ -112,4 +115,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             return obj == null || obj.GetType().IsAssignableFrom(m_ObjectType);
         }
     }
+#else
+    sealed class InspectorObjectFieldItem : InspectorPropertyItem
+    {
+        [SerializeField]
+        TextMeshProUGUI m_FieldLabel;
+
+        [SerializeField]
+        MeshRenderer m_Button;
+    }
+#endif
 }

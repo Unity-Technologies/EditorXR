@@ -12,10 +12,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const string k_MiniWorldCameraTag = "MiniWorldCamera";
         const float k_MinScale = 0.001f;
 
+        static int s_DefaultLayer;
+
+#pragma warning disable 649
         [SerializeField]
         Shader m_ClipShader;
+#pragma warning restore 649
 
-        static int s_DefaultLayer;
+        List<Renderer> m_IgnoreList = new List<Renderer>();
+
+        Camera m_MiniCamera;
+
+        int[] m_IgnoredObjectLayer;
+        bool[] m_IgnoreObjectRendererEnabled;
 
         public List<Renderer> ignoreList
         {
@@ -30,13 +39,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
         }
-
-        List<Renderer> m_IgnoreList = new List<Renderer>();
-
-        Camera m_MiniCamera;
-
-        int[] m_IgnoredObjectLayer;
-        bool[] m_IgnoreObjectRendererEnabled;
 
         public MiniWorld miniWorld { private get; set; }
         public LayerMask cullingMask { private get; set; }
