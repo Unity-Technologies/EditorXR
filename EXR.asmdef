@@ -2,15 +2,19 @@
     "name": "EXR",
     "references": [
         "EXR-Dependencies",
-        "SteamVR",
         "input-prototype",
         "VRLR",
         "Unity.TextMeshPro",
-        "PolyToolkit",
-        "Oculus.VR"
+        "UnityEngine.SpatialTracking",
+        "PolyToolkit"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": []
 }

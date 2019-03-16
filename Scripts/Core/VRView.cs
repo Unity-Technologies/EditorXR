@@ -10,9 +10,6 @@ using UnityEngine.SpatialTracking;
 using UnityEngine.XR;
 using InputTracking = UnityEngine.XR.InputTracking;
 using TrackingSpaceType = UnityEngine.XR.TrackingSpaceType;
-#if ENABLE_STEAMVR_INPUT
-using Valve.VR;
-#endif
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
