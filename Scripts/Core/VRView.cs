@@ -524,17 +524,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal static bool GetIsUserPresent()
         {
-#if UNITY_2017_2_OR_NEWER
-#if ENABLE_OVR_INPUT
-            if (XRSettings.loadedDeviceName == "Oculus")
-                return OVRPlugin.userPresent;
-#endif
-#if ENABLE_STEAMVR_INPUT
-            if (XRSettings.loadedDeviceName == "OpenVR")
-                return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
-#endif
-#endif
-            return false;
+            return XRDevice.userPresence == UserPresenceState.Present;
         }
 
         void SetGameViewsAutoRepaint(bool enabled)
