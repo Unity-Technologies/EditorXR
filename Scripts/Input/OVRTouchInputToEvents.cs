@@ -1,9 +1,9 @@
-﻿using System;
-using UnityEditor.Experimental.EditorVR;
+﻿#if UNITY_EDITOR
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputNew;
-
-[assembly: OptionalDependency("OVRInput", "ENABLE_OVR_INPUT")]
+using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Input
 {
@@ -12,66 +12,79 @@ namespace UnityEditor.Experimental.EditorVR.Input
     /// </summary>
     sealed class OVRTouchInputToEvents : BaseInputToEvents
     {
-#if ENABLE_OVR_INPUT
         const uint k_ControllerCount = 2;
         const int k_AxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
         const float k_DeadZone = 0.05f;
+
+        List<XRNodeState> m_NodeStates = new List<XRNodeState>();
 
         float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount];
         Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
         Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
 
-        static readonly OVRInput.Button[] k_Buttons;
 
-        static OVRTouchInputToEvents()
+        static readonly VRInputDevice.VRControl[] k_Buttons =
         {
-            k_Buttons = (OVRInput.Button[])Enum.GetValues(typeof(OVRInput.Button));
-        }
+            VRInputDevice.VRControl.Action1,
+            VRInputDevice.VRControl.Action2,
+            VRInputDevice.VRControl.LeftStickButton
+        };
 
         public void Update()
         {
-            // Manually update the Touch input
-            OVRInput.Update();
-
-            if ((OVRInput.GetActiveController() & OVRInput.Controller.Touch) == 0)
+            active = false;
+            foreach (var device in UnityEngine.Input.GetJoystickNames())
             {
-                active = false;
-                return;
+                if (device.IndexOf("Oculus Touch Controller", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    active = true;
+                    break;
+                }
             }
-            active = true;
+
+            if (!active)
+                return;
 
             for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left;
                 (int)hand <= (int)VRInputDevice.Handedness.Right;
                 hand++)
             {
-                OVRInput.Controller controller = hand == VRInputDevice.Handedness.Left
-                    ? OVRInput.Controller.LTouch
-                    : OVRInput.Controller.RTouch;
-                int ovrIndex = controller == OVRInput.Controller.LTouch ? 0 : 1;
                 int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4;
 
                 // TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
-                SendButtonEvents(controller, deviceIndex);
-                SendAxisEvents(controller, ovrIndex, deviceIndex);
-                SendTrackingEvents(controller, ovrIndex, deviceIndex);
+                SendButtonEvents(hand, deviceIndex);
+                SendAxisEvents(hand, deviceIndex);
+                SendTrackingEvents(hand, deviceIndex);
             }
         }
 
-        private bool GetAxis(OVRInput.Controller controller, VRInputDevice.VRControl axis, out float value)
+        bool GetAxis(VRInputDevice.Handedness hand, VRInputDevice.VRControl axis, out float value)
         {
             switch (axis)
             {
                 case VRInputDevice.VRControl.Trigger1:
-                    value = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, controller);
+                    if (hand == VRInputDevice.Handedness.Left)
+                        value = UnityEngine.Input.GetAxis("XRI_Left_Trigger");
+                    else
+                        value = UnityEngine.Input.GetAxis("XRI_Right_Trigger");
                     return true;
                 case VRInputDevice.VRControl.Trigger2:
-                    value = OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger, controller);
+                    if (hand == VRInputDevice.Handedness.Left)
+                        value = UnityEngine.Input.GetAxis("XRI_Left_Grip");
+                    else
+                        value = UnityEngine.Input.GetAxis("XRI_Right_Grip");
                     return true;
                 case VRInputDevice.VRControl.LeftStickX:
-                    value = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).x;
+                    if (hand == VRInputDevice.Handedness.Left)
+                        value = UnityEngine.Input.GetAxis("XRI_Left_Primary2DAxis_Horizontal");
+                    else
+                        value = UnityEngine.Input.GetAxis("XRI_Right_Primary2DAxis_Horizontal");
                     return true;
                 case VRInputDevice.VRControl.LeftStickY:
-                    value = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).y;
+                    if (hand == VRInputDevice.Handedness.Left)
+                        value = -1f * UnityEngine.Input.GetAxis("XRI_Left_Primary2DAxis_Vertical");
+                    else
+                        value = -1f * UnityEngine.Input.GetAxis("XRI_Right_Primary2DAxis_Vertical");
                     return true;
             }
 
@@ -79,14 +92,14 @@ namespace UnityEditor.Experimental.EditorVR.Input
             return false;
         }
 
-        private void SendAxisEvents(OVRInput.Controller controller, int ovrIndex, int deviceIndex)
+        void SendAxisEvents(VRInputDevice.Handedness hand, int deviceIndex)
         {
             for (var axis = 0; axis < k_AxisCount; ++axis)
             {
                 float value;
-                if (GetAxis(controller, (VRInputDevice.VRControl)axis, out value))
+                if (GetAxis(hand, (VRInputDevice.VRControl)axis, out value))
                 {
-                    if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], value))
+                    if (Mathf.Approximately(m_LastAxisValues[(int)hand, axis], value))
                         continue;
 
                     if (Mathf.Abs(value) < k_DeadZone)
@@ -98,64 +111,78 @@ namespace UnityEditor.Experimental.EditorVR.Input
                     inputEvent.controlIndex = axis;
                     inputEvent.value = value;
 
-                    m_LastAxisValues[ovrIndex, axis] = inputEvent.value;
+                    m_LastAxisValues[(int)hand, axis] = inputEvent.value;
 
                     InputSystem.QueueEvent(inputEvent);
                 }
             }
         }
 
-        private int GetButtonIndex(OVRInput.Button button)
+        string GetButtonAxis(VRInputDevice.Handedness hand, VRInputDevice.VRControl button)
         {
             switch (button)
             {
-                case OVRInput.Button.One:
-                    return (int)VRInputDevice.VRControl.Action1;
+                case VRInputDevice.VRControl.Action1:
+                    if (hand == VRInputDevice.Handedness.Left)
+                        return "XRI_Left_PrimaryButton";
+                    else
+                        return "XRI_Right_PrimaryButton";
 
-                case OVRInput.Button.Two:
-                    return (int)VRInputDevice.VRControl.Action2;
+                case VRInputDevice.VRControl.Action2:
+                    if (hand == VRInputDevice.Handedness.Left)
+                        return "XRI_Left_SecondaryButton";
+                    else
+                        return "XRI_Right_SecondaryButton";
 
-                case OVRInput.Button.PrimaryThumbstick:
-                    return (int)VRInputDevice.VRControl.LeftStickButton;
+                case VRInputDevice.VRControl.LeftStickButton:
+                    if (hand == VRInputDevice.Handedness.Left)
+                        return "XRI_Left_Primary2DAxisClick";
+                    else
+                        return "XRI_Right_Primary2DAxisClick";
             }
 
             // Not all buttons are currently mapped
-            return -1;
+            return null;
         }
 
-        private void SendButtonEvents(OVRInput.Controller ovrController, int deviceIndex)
+        void SendButtonEvents(VRInputDevice.Handedness hand, int deviceIndex)
         {
-            foreach (OVRInput.Button button in k_Buttons)
+            foreach (VRInputDevice.VRControl button in k_Buttons)
             {
-                int buttonIndex = GetButtonIndex(button);
-                if (buttonIndex >= 0)
+                var axis = GetButtonAxis(hand, button);
+
+                bool isDown = UnityEngine.Input.GetButtonDown(axis);
+                bool isUp = UnityEngine.Input.GetButtonUp(axis);
+
+                if (isDown || isUp)
                 {
-                    bool isDown = OVRInput.GetDown(button, ovrController);
-                    bool isUp = OVRInput.GetUp(button, ovrController);
+                    var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
+                    inputEvent.deviceType = typeof(VRInputDevice);
+                    inputEvent.deviceIndex = deviceIndex;
+                    inputEvent.controlIndex = (int)button;
+                    inputEvent.value = isDown ? 1.0f : 0.0f;
 
-                    if (isDown || isUp)
-                    {
-                        var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
-                        inputEvent.deviceType = typeof(VRInputDevice);
-                        inputEvent.deviceIndex = deviceIndex;
-                        inputEvent.controlIndex = buttonIndex;
-                        inputEvent.value = isDown ? 1.0f : 0.0f;
-
-                        InputSystem.QueueEvent(inputEvent);
-                    }
+                    InputSystem.QueueEvent(inputEvent);
                 }
             }
         }
 
-        private void SendTrackingEvents(OVRInput.Controller ovrController, int ovrIndex, int deviceIndex)
+        void SendTrackingEvents(VRInputDevice.Handedness hand, int deviceIndex)
         {
-            if (!OVRInput.GetControllerPositionTracked(ovrController))
-                return;
+            XRNode node = hand == VRInputDevice.Handedness.Left ? XRNode.LeftHand : XRNode.RightHand;
 
-            var localPosition = OVRInput.GetLocalControllerPosition(ovrController);
-            var localRotation = OVRInput.GetLocalControllerRotation(ovrController);
+            InputTracking.GetNodeStates(m_NodeStates);
 
-            if (localPosition == m_LastPositionValues[ovrIndex] && localRotation == m_LastRotationValues[ovrIndex])
+            foreach (var nodeState in m_NodeStates)
+            {
+                if (nodeState.nodeType == node && !nodeState.tracked)
+                    return;
+            }
+
+            var localPosition = InputTracking.GetLocalPosition(node);
+            var localRotation = InputTracking.GetLocalRotation(node);
+
+            if (localPosition == m_LastPositionValues[(int)hand] && localRotation == m_LastRotationValues[(int)hand])
                 return;
 
             var inputEvent = InputSystem.CreateEvent<VREvent>();
@@ -164,11 +191,11 @@ namespace UnityEditor.Experimental.EditorVR.Input
             inputEvent.localPosition = localPosition;
             inputEvent.localRotation = localRotation;
 
-            m_LastPositionValues[ovrIndex] = inputEvent.localPosition;
-            m_LastRotationValues[ovrIndex] = inputEvent.localRotation;
+            m_LastPositionValues[(int)hand] = inputEvent.localPosition;
+            m_LastRotationValues[(int)hand] = inputEvent.localRotation;
 
             InputSystem.QueueEvent(inputEvent);
         }
-#endif
     }
 }
+#endif
