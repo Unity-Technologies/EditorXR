@@ -7,6 +7,7 @@ using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorXR.LegacyInputHelpers;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -147,6 +148,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Initialize()
         {
+            SeedXRInputBindings.UpdateInputManager();
+
 #if UNITY_EDITOR
 #if UNITY_2018_2_OR_NEWER
             DrivenRectTransformTracker.StopRecordingUndo();
