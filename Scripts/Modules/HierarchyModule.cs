@@ -40,11 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnEnable()
         {
 #if UNITY_EDITOR
-#if UNITY_2018_1_OR_NEWER
             EditorApplication.hierarchyChanged += UpdateHierarchyData;
-#else
-            EditorApplication.hierarchyWindowChanged += UpdateHierarchyData;
-#endif
 #endif
             UpdateHierarchyData();
         }
@@ -52,11 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnDisable()
         {
 #if UNITY_EDITOR
-#if UNITY_2018_1_OR_NEWER
             EditorApplication.hierarchyChanged -= UpdateHierarchyData;
-#else
-            EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
-#endif
 #endif
         }
 

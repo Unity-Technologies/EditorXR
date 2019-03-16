@@ -137,11 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return groupParent;
 
 #if UNITY_EDITOR
-#if UNITY_2018_3_OR_NEWER
             var groupRoot = PrefabUtility.GetOutermostPrefabInstanceRoot(hoveredObject);
-#else
-            var groupRoot = PrefabUtility.FindPrefabRoot(hoveredObject);
-#endif
 
             if (groupRoot)
                 return groupRoot;

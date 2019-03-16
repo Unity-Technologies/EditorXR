@@ -188,11 +188,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public MiniWorlds()
             {
 #if UNITY_EDITOR
-#if UNITY_2018_1_OR_NEWER
                 EditorApplication.hierarchyChanged += OnHierarchyChanged;
-#else
-                EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
-#endif
 #endif
                 IIsInMiniWorldMethods.isInMiniWorld = IsInMiniWorld;
             }
@@ -214,11 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 base.OnDestroy();
 #if UNITY_EDITOR
-#if UNITY_2018_1_OR_NEWER
                 EditorApplication.hierarchyChanged -= OnHierarchyChanged;
-#else
-                EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
-#endif
 #endif
             }
 

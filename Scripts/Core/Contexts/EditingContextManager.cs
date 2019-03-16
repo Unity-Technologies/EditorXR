@@ -281,7 +281,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 #endif
 
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR
         static void OnPlayModeStateChanged(PlayModeStateChange stateChange)
         {
             if (stateChange == PlayModeStateChange.ExitingEditMode)

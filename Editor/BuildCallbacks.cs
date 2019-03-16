@@ -6,17 +6,11 @@ using UnityEditor.Compilation;
 using UnityEditorInternal;
 using UnityEngine;
 
-#if UNITY_2018_1_OR_NEWER
 using UnityEditor.Build.Reporting;
-#endif
 
 namespace UnityEditor.Experimental.EditorVR
 {
-#if UNITY_2018_1_OR_NEWER
     class BuildCallbacks : IPreprocessBuildWithReport, IPostprocessBuildWithReport
-#else
-    class BuildCallbacks : IPreprocessBuild, IPostprocessBuild
-#endif
     {
         [Serializable]
         class AssemblyDefinition
@@ -78,11 +72,7 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
-#if UNITY_2018_1_OR_NEWER
         public void OnPreprocessBuild(BuildReport report)
-#else
-        public void OnPreprocessBuild(BuildTarget target, string path)
-#endif
         {
             if (Core.EditorVR.includeInBuilds)
                 return;
@@ -103,11 +93,7 @@ namespace UnityEditor.Experimental.EditorVR
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
         }
 
-#if UNITY_2018_1_OR_NEWER
         public void OnPostprocessBuild(BuildReport report)
-#else
-        public void OnPostprocessBuild(BuildTarget target, string path)
-#endif
         {
             OnPostprocessBuild();
         }

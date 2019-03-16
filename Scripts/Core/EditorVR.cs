@@ -12,11 +12,10 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
-[assembly: OptionalDependency("UnityEngine.DrivenRectTransformTracker+BlockUndoCCU", "UNDO_PATCH")]
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-#if UNITY_2017_2_OR_NEWER
+#if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
@@ -151,11 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             SeedXRInputBindings.UpdateInputManager();
 
 #if UNITY_EDITOR
-#if UNITY_2018_2_OR_NEWER
             DrivenRectTransformTracker.StopRecordingUndo();
-#elif UNDO_PATCH
-            DrivenRectTransformTracker.BlockUndo = true;
-#endif
 #endif
             Nested.evr = this; // Set this once for the convenience of all nested classes
             m_DefaultTools = DefaultTools;
@@ -398,11 +393,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
 #if UNITY_EDITOR
-#if UNITY_2018_2_OR_NEWER
             DrivenRectTransformTracker.StartRecordingUndo();
-#elif UNDO_PATCH
-            DrivenRectTransformTracker.BlockUndo = false;
-#endif
 #endif
         }
 
@@ -564,7 +555,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
             {
-                var message = "EditorVR requires Unity 2017.2 or above.";
+                var message = "EditorVR requires Unity 2018.3 or above.";
                 var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
                 switch (result)
                 {
