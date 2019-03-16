@@ -78,7 +78,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             bool IsSharedUpdater(ILinkedObject linkedObject)
             {
                 var type = linkedObject.GetType();
-                return m_LinkedObjects[type].IndexOf(linkedObject) == 0;
+                List<ILinkedObject> list;
+                if (m_LinkedObjects.TryGetValue(type, out list))
+                    return m_LinkedObjects[type].IndexOf(linkedObject) == 0;
+
+                return false;
             }
 
             internal static bool IsDefaultTool(Type type)

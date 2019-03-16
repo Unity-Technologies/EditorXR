@@ -351,9 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // Always render camera into a RT
             CreateCameraTargetTexture(ref m_TargetTexture, cameraRect, false);
             m_Camera.targetTexture = m_TargetTexture;
-#if UNITY_2017_2_OR_NEWER
             XRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
-#endif
         }
 
         void OnGUI()
