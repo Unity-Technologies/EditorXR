@@ -49,9 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Debug.Log(caps.numChannels);
             Debug.Log(caps.supportsBuffer);
             Debug.Log(caps.supportsImpulse);
-            Debug.Log(caps.bufferMaxSize);
             Debug.Log(caps.bufferFrequencyHz);
-            Debug.Log(caps.bufferOptimalSize);
             m_GeneratedHapticClip = new MemoryStream();
 #endif
         }
