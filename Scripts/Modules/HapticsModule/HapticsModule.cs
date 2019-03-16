@@ -23,6 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         InputDevice m_LeftHand;
         InputDevice m_RightHand;
         MemoryStream m_GeneratedHapticClip;
+        HapticCapabilities m_Capabilites;
 
         /// <summary>
         /// Allow for a single warning that informs the user of an attempted pulse with a length greater than 0.8f
@@ -33,12 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             m_LeftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
             m_RightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-            HapticCapabilities caps;
-            m_LeftHand.TryGetHapticCapabilities(out caps);
-            Debug.Log(caps.numChannels);
-            Debug.Log(caps.supportsBuffer);
-            Debug.Log(caps.supportsImpulse);
-            Debug.Log(caps.bufferFrequencyHz);
+            m_LeftHand.TryGetHapticCapabilities(out m_Capabilites);
             m_GeneratedHapticClip = new MemoryStream();
         }
 
@@ -105,30 +101,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (node == Node.None)
                 {
                     StopPulses();
-                    m_LeftHand.SendHapticBuffer(0, buffer);
-                    m_RightHand.SendHapticBuffer(0, buffer);
+                    if (m_Capabilites.supportsBuffer)
+                    {
+                        m_LeftHand.SendHapticBuffer(0, buffer);
+                        m_RightHand.SendHapticBuffer(0, buffer);
+                    }
+                    else
+                    {
+                        m_LeftHand.SendHapticImpulse(0, intensity, duration);
+                        m_RightHand.SendHapticImpulse(0, intensity, duration);
+                    }
                 }
                 else
                 {
                     StopPulses(node);
-                    channel.SendHapticBuffer(0, buffer);
+                    if (m_Capabilites.supportsBuffer)
+                        channel.SendHapticBuffer(0, buffer);
+                    else
+                        channel.SendHapticImpulse(0, intensity, duration);
                 }
             }
-#if ENABLE_OVR_INPUT
-            else
-            {
-                // Allow multiple short clips to play simultaneously
-                if (channel != null)
-                {
-                    channel.Mix(m_GeneratedHapticClip);
-                }
-                else
-                {
-                    m_RHapticsChannel.Mix(m_GeneratedHapticClip);
-                    m_LHapticsChannel.Mix(m_GeneratedHapticClip);
-                }
-            }
-#endif
         }
 
         public void StopPulses(Node node)
