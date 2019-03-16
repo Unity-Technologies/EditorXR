@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -22,6 +24,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         OVRHaptics.OVRHapticsChannel m_LHapticsChannel;
         OVRHaptics.OVRHapticsChannel m_RHapticsChannel;
         OVRHapticsClip m_GeneratedHapticClip;
+#else
+        InputDevice m_LeftHand;
+        InputDevice m_RightHand;
+        MemoryStream m_GeneratedHapticClip;
 #endif
 
         /// <summary>
@@ -35,6 +41,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_LHapticsChannel = OVRHaptics.LeftChannel;
             m_RHapticsChannel = OVRHaptics.RightChannel;
             m_GeneratedHapticClip = new OVRHapticsClip();
+#else
+            m_LeftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
+            m_RightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+            HapticCapabilities caps;
+            m_LeftHand.TryGetHapticCapabilities(out caps);
+            Debug.Log(caps.numChannels);
+            Debug.Log(caps.supportsBuffer);
+            Debug.Log(caps.supportsImpulse);
+            Debug.Log(caps.bufferMaxSize);
+            Debug.Log(caps.bufferFrequencyHz);
+            Debug.Log(caps.bufferOptimalSize);
+            m_GeneratedHapticClip = new MemoryStream();
 #endif
         }
 
@@ -62,6 +80,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if ENABLE_OVR_INPUT
             m_GeneratedHapticClip.Reset();
+#else
+            m_GeneratedHapticClip.Seek(0, SeekOrigin.Begin);
+            m_GeneratedHapticClip.SetLength(0);
+#endif
 
             var duration = hapticPulse.duration * durationMultiplier;
             var intensity = hapticPulse.intensity * intensityMultiplier;
@@ -94,7 +116,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 else if (fadeOut && i > durationFadeOutPosition)
                     sampleShaped = Mathf.Lerp(0, intensity, (duration - i) / fadeOutSampleCount);
 
-                m_GeneratedHapticClip.WriteSample(Convert.ToByte(sampleShaped));
+                var sampleByte = Convert.ToByte(sampleShaped);
+#if ENABLE_OVR_INPUT
+                m_GeneratedHapticClip.WriteSample(sampleByte);
+#else
+                m_GeneratedHapticClip.WriteByte(sampleByte);
+#endif
             }
 
             const float kMaxSimultaneousClipDuration = 0.25f;
@@ -103,6 +130,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 // Prevent multiple long clips from playing back simultaneously
                 // If the new clip has a long duration, stop playback of any existing clips in order to prevent haptic feedback noise
+#if ENABLE_OVR_INPUT
                 if (channel != null)
                 {
                     channel.Preempt(m_GeneratedHapticClip);
@@ -112,7 +140,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     m_RHapticsChannel.Preempt(m_GeneratedHapticClip);
                     m_LHapticsChannel.Preempt(m_GeneratedHapticClip);
                 }
+#else
+                StopPulses();
+                var buffer = m_GeneratedHapticClip.GetBuffer();
+                if (node == Node.None)
+                {
+                    m_LeftHand.SendHapticBuffer(0, buffer);
+                    m_RightHand.SendHapticBuffer(0, buffer);
+                }
+                else
+                {
+                    channel.SendHapticBuffer(0, buffer);
+                }
+#endif
             }
+#if ENABLE_OVR_INPUT
             else
             {
                 // Allow multiple short clips to play simultaneously
@@ -131,12 +173,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void StopPulses(Node node)
         {
-#if ENABLE_OVR_INPUT
             var channel = GetTargetChannel(node);
+#if ENABLE_OVR_INPUT
             if (channel != null)
                 channel.Clear();
             else
                 Debug.LogWarning("Only null, or valid ray origins can stop pulse playback.");
+#else
+            channel.StopHaptics();
 #endif
         }
 
@@ -145,6 +189,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #if ENABLE_OVR_INPUT
             m_RHapticsChannel.Clear();
             m_LHapticsChannel.Clear();
+#else
+            m_LeftHand.StopHaptics();
+            m_RightHand.StopHaptics();
 #endif
         }
 
@@ -169,6 +216,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             return channel;
+        }
+#else
+        InputDevice GetTargetChannel(Node node)
+        {
+            if (node == Node.LeftHand)
+                return m_LeftHand;
+            if (node == Node.RightHand)
+                return m_RightHand;
+
+            return default(InputDevice);
         }
 #endif
     }
