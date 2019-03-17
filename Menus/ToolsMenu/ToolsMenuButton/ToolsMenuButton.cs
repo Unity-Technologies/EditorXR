@@ -478,11 +478,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_InsetMaterial);
-            ObjectUtils.Destroy(m_IconMaterial);
-            ObjectUtils.Destroy(m_CloseInsetMaterial);
-            ObjectUtils.Destroy(m_CloseButtonMaskMaterial);
             ObjectUtils.Destroy(m_FrameMaterial);
+            ObjectUtils.Destroy(m_IconMaterial);
+            ObjectUtils.Destroy(m_MaskMaterial);
+            ObjectUtils.Destroy(m_CloseButtonMaskMaterial);
 
             this.StopCoroutine(ref m_PositionCoroutine);
             this.StopCoroutine(ref m_VisibilityCoroutine);
