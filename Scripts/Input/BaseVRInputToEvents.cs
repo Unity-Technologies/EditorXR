@@ -32,16 +32,17 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
         public void Update()
         {
-            active = false;
+            var deviceActive = false;
             foreach (var device in UnityEngine.Input.GetJoystickNames())
             {
                 if (device.IndexOf(DeviceName, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    active = true;
+                    deviceActive = true;
                     break;
                 }
             }
 
+            active = deviceActive;
             if (!active)
                 return;
 
