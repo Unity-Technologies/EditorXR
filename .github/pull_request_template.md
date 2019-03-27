@@ -4,7 +4,7 @@
 
 ### Testing status
 
-[Explanation of what’s been tested, how it was tested, and existing or new automation tests. Can include manual testing by self and/or QA. Specify test plans. Rarely acceptable to have no testing.]
+[Explanation of what’s been tested, how it was tested, and changes to existing or new automation tests. Testing can include manual testing by self and/or QA. Specify test plans; Rarely acceptable to have no testing.]
 
 ### Technical / Halo risk
 
