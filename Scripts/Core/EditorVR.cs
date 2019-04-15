@@ -393,6 +393,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 nested.OnDestroy();
             }
 
+            // Suppress MissingReferenceException in tests
+            EditorApplication.delayCall -= OnSelectionChanged;
+
 #if UNITY_EDITOR
             DrivenRectTransformTracker.StartRecordingUndo();
 #endif
