@@ -7,7 +7,6 @@ using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEditor.Experimental.EditorXR.LegacyInputHelpers;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -81,6 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static Type DefaultMenu { private get; set; }
         internal static Type DefaultAlternateMenu { private get; set; }
         internal static Type[] HiddenTypes { private get; set; }
+        internal static Action UpdateInputManager { private get; set; }
 
         class DeviceData
         {
@@ -147,7 +147,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Initialize()
         {
-            SeedXRInputBindings.UpdateInputManager();
+            if (UpdateInputManager != null)
+                UpdateInputManager();
 
 #if UNITY_EDITOR
             DrivenRectTransformTracker.StopRecordingUndo();

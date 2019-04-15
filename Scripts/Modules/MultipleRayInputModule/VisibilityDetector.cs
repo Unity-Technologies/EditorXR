@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         float m_FOVReduction = 0.75f;
 
         readonly Vector3[] m_Corners = new Vector3[4];
-        Plane[] m_Planes = new Plane[6];
+        readonly Plane[] m_Planes = new Plane[6];
         readonly HashSet<IWillRender> m_Visibles = new HashSet<IWillRender>();
         readonly List<IWillRender> m_WillRenders = new List<IWillRender>();
 

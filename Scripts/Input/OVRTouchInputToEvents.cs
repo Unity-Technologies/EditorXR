@@ -1,11 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.InputNew;
-using UnityEngine.XR;
-
-namespace UnityEditor.Experimental.EditorVR.Input
+﻿namespace UnityEditor.Experimental.EditorVR.Input
 {
     sealed class OVRTouchInputToEvents : BaseVRInputToEvents
     {
@@ -15,4 +8,3 @@ namespace UnityEditor.Experimental.EditorVR.Input
         }
     }
 }
-#endif
