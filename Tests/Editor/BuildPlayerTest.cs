@@ -1,4 +1,5 @@
-﻿#if !UNITY_CLOUD_BUILD
+﻿#if UNITY_2018_3_OR_NEWER
+#if !UNITY_CLOUD_BUILD
 using NUnit.Framework;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
@@ -58,4 +59,5 @@ namespace UnityEditor.Experimental.EditorVR.Tests
         }
     }
 }
+#endif
 #endif
