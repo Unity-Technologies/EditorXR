@@ -48,9 +48,9 @@ If you plan on making changes to EditorXR and/or contributing back, then you'll 
 ### Assembly Definitions
 In order to support a variety of platform configurations, and to optionally strip its code out of player builds, EditorXR uses assembly definitions. Some of EditorXR's dependencies do not include assembly definitions in their current forms, so after importing EditorXR (in Unity 2018.3 and below), you must add them.
 
-For easy set-up, EditorXR includes a .unitypackage (`Patches/Dependencies_asmdef.unitypackage`) containing an assembly definition for the PolyToolkit, which is also referenced by EditorXR.
+For easy set-up, EditorXR includes a .unitypackage (`Patches/Dependencies_asmdef.unitypackage`) containing an assembly definition for the PolyToolkit and UnityEngine.SpatialTracking, which are referenced by EditorXR. Simply import it via Assets > Import Package > Custom Package...
 
-This is not required for Unity versions 2019.1 and above, though you will need an assembly definition in order to reference PolyToolkit.
+This is not required for Unity versions 2019.1 and above, though you will need to add an assembly definition in order to reference PolyToolkit.
 
 ## All contributions are subject to the [Unity Contribution Agreement (UCA)](https://unity3d.com/legal/licenses/Unity_Contribution_Agreement)
 By making a pull request, you are confirming agreement to the terms and conditions of the UCA, including that your Contributions are your original creation and that you have complete right and authority to make your Contributions.

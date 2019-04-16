@@ -3,11 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
 using UnityEditorInternal;
 using UnityEngine;
-
-using UnityEditor.Build.Reporting;
 
 namespace UnityEditor.Experimental.EditorVR
 {
