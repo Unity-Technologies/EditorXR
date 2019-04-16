@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if UNITY_2018_3_OR_NEWER
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -31,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
             context.m_DefaultToolStack = new List<MonoScript>();
             context.m_DefaultToolStack.Add(MonoScript.FromMonoBehaviour(transformTool));
             context.m_DefaultToolStack.Add(MonoScript.FromMonoBehaviour(createPrimitiveTool));
+            ObjectUtils.Destroy(go);
 
             context2 = ScriptableObject.CreateInstance<EditorXRContext>();
             context2.name = "Yet Another Context";
@@ -161,10 +163,10 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         [OneTimeTearDown]
         public void Cleanup()
         {
-            ObjectUtils.Destroy(go);
             manager.SetEditingContext(EditingContextManager.defaultContext);
             ObjectUtils.Destroy(context);
             ObjectUtils.Destroy(context2);
+            VRView.activeView.Close();
         }
     }
 
@@ -172,3 +174,4 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
     {
     }
 }
+#endif

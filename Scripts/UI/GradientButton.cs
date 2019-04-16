@@ -263,6 +263,11 @@ namespace UnityEditor.Experimental.EditorVR.UI
 #endif
         }
 
+        void OnDestroy()
+        {
+            ObjectUtils.Destroy(m_ButtonMaterial);
+        }
+
         void OnEnable()
         {
             m_ContentContainer.gameObject.SetActive(true);

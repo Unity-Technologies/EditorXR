@@ -1,3 +1,4 @@
+#if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -188,11 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             public MiniWorlds()
             {
 #if UNITY_EDITOR
-#if UNITY_2018_1_OR_NEWER
                 EditorApplication.hierarchyChanged += OnHierarchyChanged;
-#else
-                EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
-#endif
 #endif
                 IIsInMiniWorldMethods.isInMiniWorld = IsInMiniWorld;
             }
@@ -214,11 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 base.OnDestroy();
 #if UNITY_EDITOR
-#if UNITY_2018_1_OR_NEWER
                 EditorApplication.hierarchyChanged -= OnHierarchyChanged;
-#else
-                EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
-#endif
 #endif
             }
 
@@ -655,3 +648,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
+#endif

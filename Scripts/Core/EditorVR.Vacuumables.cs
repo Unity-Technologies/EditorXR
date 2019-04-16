@@ -1,3 +1,4 @@
+#if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -22,3 +23,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
+#endif

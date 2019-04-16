@@ -149,49 +149,60 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Selection.activeObject = settings;
         }
 
-        [PreferenceItem("EditorXR")]
-        static void PreferencesGUI()
+#if UNITY_2018_3_OR_NEWER
+        [SettingsProvider]
+        static SettingsProvider CreateSettingsProvider()
         {
-            EditorGUILayout.LabelField("Context Manager", EditorStyles.boldLabel);
-
-            // Auto open an EditorXR context
+            var provider = new SettingsProvider("Project/EditorXR", SettingsScope.Project)
             {
-                const string title = "Auto open";
-                const string tooltip = "Automatically open an EditorXR context when the HMD is being worn";
-
-                using (var change = new EditorGUI.ChangeCheckScope())
+                label = "EditorXR",
+                guiHandler = (searchContext) =>
                 {
-                    autoOpen = EditorGUILayout.Toggle(new GUIContent(title, tooltip), autoOpen);
+                    EditorGUILayout.LabelField("Context Manager", EditorStyles.boldLabel);
 
-                    if (change.changed)
-                        OnAutoOpenStateChanged();
-
-                    if (s_EnableXRFailed)
+                    // Auto open an EditorXR context
                     {
-                        const float retryButtonWidth = 70f;
-                        EditorGUILayout.HelpBox("Failed to initialize XR session. Check that your device and platform software are working properly.", MessageType.Warning);
-                        if (GUILayout.Button("Retry", GUILayout.Width(retryButtonWidth)))
+                        const string title = "Auto open";
+                        const string tooltip = "Automatically open an EditorXR context when the HMD is being worn";
+
+                        using (var change = new EditorGUI.ChangeCheckScope())
                         {
-                            s_EnableXRFailed = false;
-                            OnAutoOpenStateChanged();
+                            autoOpen = EditorGUILayout.Toggle(new GUIContent(title, tooltip), autoOpen);
+
+                            if (change.changed)
+                                OnAutoOpenStateChanged();
+
+                            if (s_EnableXRFailed)
+                            {
+                                const float retryButtonWidth = 70f;
+                                EditorGUILayout.HelpBox("Failed to initialize XR session. Check that your device and platform software are working properly.", MessageType.Warning);
+                                if (GUILayout.Button("Retry", GUILayout.Width(retryButtonWidth)))
+                                {
+                                    s_EnableXRFailed = false;
+                                    OnAutoOpenStateChanged();
+                                }
+                            }
+                        }
+                    }
+
+                    var contextTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
+                    foreach (var contextType in contextTypes)
+                    {
+                        var preferencesGUIMethod = contextType.GetMethod("PreferencesGUI", BindingFlags.Static | BindingFlags.NonPublic);
+                        if (preferencesGUIMethod != null)
+                        {
+                            EditorGUILayout.Space();
+                            EditorGUILayout.Space();
+                            EditorGUILayout.LabelField(contextType.Name.Replace("Context", string.Empty), EditorStyles.boldLabel);
+                            preferencesGUIMethod.Invoke(null, null);
                         }
                     }
                 }
-            }
+            };
 
-            var contextTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
-            foreach (var contextType in contextTypes)
-            {
-                var preferencesGUIMethod = contextType.GetMethod("PreferencesGUI", BindingFlags.Static | BindingFlags.NonPublic);
-                if (preferencesGUIMethod != null)
-                {
-                    EditorGUILayout.Space();
-                    EditorGUILayout.Space();
-                    EditorGUILayout.LabelField(contextType.Name.Replace("Context", string.Empty), EditorStyles.boldLabel);
-                    preferencesGUIMethod.Invoke(null, null);
-                }
-            }
+            return provider;
         }
+#endif
 
         static void OnAutoOpenStateChanged()
         {
@@ -272,7 +283,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 #endif
 
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+#if UNITY_EDITOR
         static void OnPlayModeStateChanged(PlayModeStateChange stateChange)
         {
             if (stateChange == PlayModeStateChange.ExitingEditMode)

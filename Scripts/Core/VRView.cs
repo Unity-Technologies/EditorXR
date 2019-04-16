@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Linq;
 using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -10,9 +9,6 @@ using UnityEngine.SpatialTracking;
 using UnityEngine.XR;
 using InputTracking = UnityEngine.XR.InputTracking;
 using TrackingSpaceType = UnityEngine.XR.TrackingSpaceType;
-#if ENABLE_STEAMVR_INPUT
-using Valve.VR;
-#endif
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -117,11 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             get
             {
-#if UNITY_2017_2_OR_NEWER
                 return XRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary ? Vector3.up * HeadHeight : Vector3.zero;
-#else
-                return Vector3.zero;
-#endif
             }
         }
 
@@ -249,9 +241,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // VRSettings.enabled latches the reference pose for the current camera
             var currentCamera = Camera.current;
             Camera.SetupCurrent(m_Camera);
-#if UNITY_2017_2_OR_NEWER
             XRSettings.enabled = true;
-#endif
             Camera.SetupCurrent(currentCamera);
 
             if (viewEnabled != null)
@@ -288,9 +278,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (viewDisabled != null)
                 viewDisabled();
 
-#if UNITY_2017_2_OR_NEWER
             XRSettings.enabled = false;
-#endif
 
             EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
             EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
@@ -313,10 +301,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return;
 
             var cameraTransform = m_Camera.transform;
-#if UNITY_2017_2_OR_NEWER
             cameraTransform.localPosition = InputTracking.GetLocalPosition(XRNode.Head);
             cameraTransform.localRotation = InputTracking.GetLocalRotation(XRNode.Head);
-#endif
         }
 
         public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)
@@ -364,9 +350,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // Always render camera into a RT
             CreateCameraTargetTexture(ref m_TargetTexture, cameraRect, false);
             m_Camera.targetTexture = m_TargetTexture;
-#if UNITY_2017_2_OR_NEWER
             XRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
-#endif
         }
 
         void OnGUI()
@@ -433,21 +417,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 if (e.type == EventType.Repaint)
                 {
-                    // Legacy fix for dark colors in device view in Linear color space
-#if !UNITY_2018_3_OR_NEWER
-#if UNITY_2018_1_OR_NEWER
-                    GL.sRGBWrite = false;
-#else
-                    GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-#endif
-#endif
-
                     var renderTexture = customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_TargetTexture;
                     GUI.DrawTexture(guiRect, renderTexture, ScaleMode.StretchToFill, false);
-
-#if !UNITY_2018_3_OR_NEWER
-                    GL.sRGBWrite = false;
-#endif
                 }
             }
 
@@ -471,14 +442,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!m_Camera.gameObject.activeInHierarchy)
                 return;
 
-#if UNITY_2017_2_OR_NEWER
             if (!XRDevice.isPresent)
                 return;
-#endif
-
-#if UNITY_2018_1_OR_NEWER && !UNITY_2018_3_OR_NEWER
-            GL.sRGBWrite = (QualitySettings.activeColorSpace == ColorSpace.Linear);
-#endif
 
             UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
@@ -486,10 +451,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
-
-#if UNITY_2018_1_OR_NEWER && !UNITY_2018_3_OR_NEWER
-            GL.sRGBWrite = false;
-#endif
         }
 
         private void Update()
@@ -524,17 +485,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal static bool GetIsUserPresent()
         {
-#if UNITY_2017_2_OR_NEWER
-#if ENABLE_OVR_INPUT
-            if (XRSettings.loadedDeviceName == "Oculus")
-                return OVRPlugin.userPresent;
-#endif
-#if ENABLE_STEAMVR_INPUT
-            if (XRSettings.loadedDeviceName == "OpenVR")
-                return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
-#endif
-#endif
-            return false;
+            return XRDevice.userPresence == UserPresenceState.Present;
         }
 
         void SetGameViewsAutoRepaint(bool enabled)

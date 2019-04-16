@@ -62,6 +62,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
         }
 
+#if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR
         [MenuItem("Assets/Create/EditorXR/Default Script References")]
         static void UpdateScriptReferences()
@@ -104,11 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             if (!Directory.Exists(directory))
                 Directory.CreateDirectory(directory);
 
-#if UNITY_2018_3_OR_NEWER
             defaultScriptReferences.m_ScriptPrefab = PrefabUtility.SaveAsPrefabAsset(prefabsRoot, Path.ChangeExtension(k_Path, "prefab"));
-#else
-            defaultScriptReferences.m_ScriptPrefab = PrefabUtility.CreatePrefab(Path.ChangeExtension(k_Path, "prefab"), prefabsRoot);
-#endif
             defaultScriptReferences.m_EditingContexts = EditingContextManager.GetEditingContextAssets().ConvertAll(ec => (ScriptableObject)ec);
 
             AssetDatabase.CreateAsset(defaultScriptReferences, k_Path);
@@ -117,6 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             AssetDatabase.SaveAssets();
         }
+#endif
 #endif
     }
 }

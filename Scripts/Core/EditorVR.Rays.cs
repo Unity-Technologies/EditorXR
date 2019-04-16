@@ -1,3 +1,4 @@
+#if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -550,3 +551,4 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
     }
 }
+#endif

@@ -11,14 +11,13 @@ using UnityEngine;
 using UnityEngine.InputNew;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
-[assembly: OptionalDependency("UnityEngine.DrivenRectTransformTracker+BlockUndoCCU", "UNDO_PATCH")]
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-#if UNITY_2017_2_OR_NEWER
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
+#if UNITY_2018_3_OR_NEWER
     [RequiresTag(k_VRPlayerTag)]
     sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
@@ -81,6 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static Type DefaultMenu { private get; set; }
         internal static Type DefaultAlternateMenu { private get; set; }
         internal static Type[] HiddenTypes { private get; set; }
+        internal static Action UpdateInputManager { private get; set; }
 
         class DeviceData
         {
@@ -126,10 +126,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (!PlayerSettings.virtualRealitySupported)
                     Debug.Log("<color=orange>EditorXR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->XR Settings</color>");
 #endif
-
-#if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
-                Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
-#endif
             }
 
             // Add EVR tags and layers if they don't exist
@@ -151,12 +147,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Initialize()
         {
+            if (UpdateInputManager != null)
+                UpdateInputManager();
+
 #if UNITY_EDITOR
-#if UNITY_2018_2_OR_NEWER
             DrivenRectTransformTracker.StopRecordingUndo();
-#elif UNDO_PATCH
-            DrivenRectTransformTracker.BlockUndo = true;
-#endif
 #endif
             Nested.evr = this; // Set this once for the convenience of all nested classes
             m_DefaultTools = DefaultTools;
@@ -398,12 +393,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 nested.OnDestroy();
             }
 
+            // Suppress MissingReferenceException in tests
+            EditorApplication.delayCall -= OnSelectionChanged;
+
 #if UNITY_EDITOR
-#if UNITY_2018_2_OR_NEWER
             DrivenRectTransformTracker.StartRecordingUndo();
-#elif UNDO_PATCH
-            DrivenRectTransformTracker.BlockUndo = false;
-#endif
 #endif
         }
 
@@ -557,7 +551,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
     }
 #else
-    internal class NoEditorVR
+    class NoEditorVR
     {
         const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 
@@ -565,7 +559,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
             {
-                var message = "EditorVR requires Unity 2017.2 or above.";
+                var message = "EditorVR requires Unity 2018.3.12 or above.";
                 var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
                 switch (result)
                 {
