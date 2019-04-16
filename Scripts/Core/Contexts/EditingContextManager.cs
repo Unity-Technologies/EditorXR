@@ -149,6 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Selection.activeObject = settings;
         }
 
+#if UNITY_2018_3_OR_NEWER
         [SettingsProvider]
         static SettingsProvider CreateSettingsProvider()
         {
@@ -201,6 +202,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             return provider;
         }
+#endif
 
         static void OnAutoOpenStateChanged()
         {

@@ -44,6 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
         {
             if (type == "GameObject")
             {
+#if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR
                 switch (PrefabUtility.GetPrefabAssetType(asset))
                 {
@@ -54,6 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
                         type = PrefabTypeString;
                         break;
                 }
+#endif
 #endif
             }
         }

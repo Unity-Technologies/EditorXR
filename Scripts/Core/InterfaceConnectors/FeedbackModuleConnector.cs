@@ -1,4 +1,5 @@
-﻿namespace UnityEditor.Experimental.EditorVR.Core
+﻿#if UNITY_2018_3_OR_NEWER
+namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR
     {
@@ -20,3 +21,4 @@
         }
     }
 }
+#endif

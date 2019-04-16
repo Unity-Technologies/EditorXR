@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_2018_3_OR_NEWER
+using System.Collections.Generic;
 
 // Copied from UnityEditor.XR.LegacyInputHelpers
 namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
@@ -723,3 +724,4 @@ namespace UnityEditor.Experimental.EditorXR.LegacyInputHelpers
         #endregion
     }
 }
+#endif

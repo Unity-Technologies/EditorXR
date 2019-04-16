@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if UNITY_2018_3_OR_NEWER
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -173,3 +174,4 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
     {
     }
 }
+#endif

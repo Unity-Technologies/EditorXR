@@ -14,10 +14,10 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-#if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
+#if UNITY_2018_3_OR_NEWER
     [RequiresTag(k_VRPlayerTag)]
     sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
@@ -551,7 +551,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
     }
 #else
-    internal class NoEditorVR
+    class NoEditorVR
     {
         const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";
 
