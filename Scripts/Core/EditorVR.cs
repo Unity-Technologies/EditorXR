@@ -559,7 +559,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             if (EditorPrefs.GetBool(k_ShowCustomEditorWarning, true))
             {
-                var message = "EditorVR requires Unity 2018.3 or above.";
+                var message = "EditorVR requires Unity 2018.3.12 or above.";
                 var result = EditorUtility.DisplayDialogComplex("Update Unity", message, "Download", "Ignore", "Remind Me Again");
                 switch (result)
                 {
