@@ -1,40 +1,16 @@
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace ListView
 {
-    public abstract class ListViewController<TData, TItem, TIndex> : ListViewControllerBase, IInstantiateUI, IConnectInterfaces, IControlHaptics, IRayToNode
+    public abstract class ListViewController<TData, TItem, TIndex> : ListViewControllerBase
         where TData : ListViewItemData<TIndex>
         where TItem : ListViewItem<TData, TIndex>
     {
-#pragma warning disable 649
-        [Header("Unassigned haptic pulses will not be performed")]
-        [SerializeField]
-        HapticPulse m_ItemClickPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemHoverStartPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemHoverEndPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemDragStartPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemDraggingPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemDragEndPulse;
-#pragma warning restore 649
-
         protected List<TData> m_Data;
 
         protected readonly Dictionary<string, ListViewItemTemplate<TItem>> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate<TItem>>();
         protected readonly Dictionary<TIndex, TItem> m_ListItems = new Dictionary<TIndex, TItem>();
-        protected readonly Dictionary<TIndex, Transform> m_GrabbedRows = new Dictionary<TIndex, Transform>();
 
         public virtual List<TData> data
         {
@@ -97,9 +73,6 @@ namespace ListView
 
         protected virtual void Recycle(TIndex index)
         {
-            if (m_GrabbedRows.ContainsKey(index))
-                return;
-
             TItem item;
             if (m_ListItems.TryGetValue(index, out item))
             {
@@ -128,24 +101,6 @@ namespace ListView
             }
 
             UpdateItem(item.transform, order, offset, ref doneSettling);
-        }
-
-        protected virtual void SetRowGrabbed(TIndex index, Transform rayOrigin, bool grabbed)
-        {
-            if (grabbed)
-                m_GrabbedRows[index] = rayOrigin;
-            else
-                m_GrabbedRows.Remove(index);
-        }
-
-        protected virtual TItem GetGrabbedRow(Transform rayOrigin)
-        {
-            foreach (var row in m_GrabbedRows)
-            {
-                if (row.Value == rayOrigin)
-                    return GetListItem(row.Key);
-            }
-            return null;
         }
 
         protected TItem GetListItem(TIndex index)
@@ -179,17 +134,8 @@ namespace ListView
             }
             else
             {
-                item = this.InstantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<TItem>();
-                this.ConnectInterfaces(item);
+                item = InstantiateItem(data);
                 item.Setup(data);
-
-                // Hookup input events for new items.
-                item.hoverStart += OnItemHoverStart;
-                item.hoverEnd += OnItemHoverEnd;
-                item.dragStart += OnItemDragStart;
-                item.dragging += OnItemDragging;
-                item.dragEnd += OnItemDragEnd;
-                item.click += OnItemClicked;
             }
 
             m_ListItems[data.index] = item;
@@ -201,40 +147,9 @@ namespace ListView
             return item;
         }
 
-        public void OnItemHoverStart(Node node)
+        protected virtual TItem InstantiateItem(TData data)
         {
-            if (m_ItemHoverStartPulse)
-                this.Pulse(node, m_ItemHoverStartPulse);
-        }
-
-        public void OnItemHoverEnd(Node node)
-        {
-            if (m_ItemHoverEndPulse)
-                this.Pulse(node, m_ItemHoverEndPulse);
-        }
-
-        public void OnItemDragStart(Node node)
-        {
-            if (m_ItemDragStartPulse)
-                this.Pulse(node, m_ItemDragStartPulse);
-        }
-
-        public void OnItemDragging(Node node)
-        {
-            if (m_ItemDraggingPulse)
-                this.Pulse(node, m_ItemDraggingPulse);
-        }
-
-        public void OnItemDragEnd(Node node)
-        {
-            if (m_ItemDragEndPulse)
-                this.Pulse(node, m_ItemDragEndPulse);
-        }
-
-        public void OnItemClicked(Node node)
-        {
-            if (m_ItemClickPulse)
-                this.Pulse(node, m_ItemClickPulse);
+            return Instantiate(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<TItem>();
         }
     }
 }

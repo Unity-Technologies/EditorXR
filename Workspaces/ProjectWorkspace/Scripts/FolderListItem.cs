@@ -1,5 +1,4 @@
-﻿using ListView;
-using System;
+﻿using System;
 using TMPro;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-    sealed class FolderListItem : ListViewItem<FolderData, int>
+    sealed class FolderListItem : EditorXRListViewItem<FolderData, int>
     {
         const float k_Margin = 0.01f;
         const float k_Indent = 0.02f;

@@ -1,4 +1,3 @@
-using ListView;
 using UnityEngine;
 
 #if INCLUDE_POLY_TOOLKIT
@@ -7,7 +6,7 @@ using PolyToolkit;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class PolyGridViewController : ListViewController<PolyGridAsset, PolyGridItem, string>, IPoly
+    class PolyGridViewController : EditorXRListViewController<PolyGridAsset, PolyGridItem, string>, IPoly
     {
         const int k_RequestSize = 100;
 

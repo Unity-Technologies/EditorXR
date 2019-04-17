@@ -1,5 +1,4 @@
-﻿using ListView;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -8,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class HierarchyListViewController : NestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, ISetHighlight
+    sealed class HierarchyListViewController : EditorXRNestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, ISetHighlight
     {
         const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 

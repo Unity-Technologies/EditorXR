@@ -1,5 +1,4 @@
-﻿using ListView;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 #if !UNITY_EDITOR
@@ -25,7 +24,7 @@ class HierarchyProperty
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    sealed class HierarchyData : ListViewItemNestedData<HierarchyData, int>
+    sealed class HierarchyData : EditorXRListViewItemNestedData<HierarchyData, int>
     {
         const string k_TemplateName = "HierarchyListItem";
 

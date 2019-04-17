@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class DraggableListItem<TData, TIndex> : ListViewItem<TData, TIndex>, IGetPreviewOrigin, IUsesViewerScale, IRayToNode
+    class DraggableListItem<TData, TIndex> : EditorXRListViewItem<TData, TIndex>, IGetPreviewOrigin, IUsesViewerScale, IRayToNode
         where TData : ListViewItemData<TIndex>
     {
         const float k_MagnetizeDuration = 0.5f;

@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ListView;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class FolderListViewController : NestedListViewController<FolderData, FolderListItem, int>
+    sealed class FolderListViewController : EditorXRNestedListViewController<FolderData, FolderListItem, int>
     {
         const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 

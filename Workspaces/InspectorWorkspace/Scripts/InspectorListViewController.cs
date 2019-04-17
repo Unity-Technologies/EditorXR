@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 #if UNITY_EDITOR
-    sealed class InspectorListViewController : NestedListViewController<InspectorData, InspectorListItem, int>, IUsesGameObjectLocking, IUsesStencilRef
+    sealed class InspectorListViewController : EditorXRNestedListViewController<InspectorData, InspectorListItem, int>, IUsesGameObjectLocking, IUsesStencilRef
     {
         const string k_MaterialStencilRef = "_StencilRef";
         const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped

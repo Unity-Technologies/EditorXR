@@ -1,4 +1,3 @@
-using ListView;
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -7,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, int>
+    sealed class AssetGridViewController : EditorXRListViewController<AssetData, AssetGridItem, int>
     {
         const float k_PositionFollow = 0.4f;
 

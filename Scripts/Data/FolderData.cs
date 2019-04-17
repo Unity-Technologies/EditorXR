@@ -1,9 +1,8 @@
-﻿using ListView;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-    sealed class FolderData : ListViewItemNestedData<FolderData, int>
+    sealed class FolderData : EditorXRListViewItemNestedData<FolderData, int>
     {
         const string k_TemplateName = "FolderListItem";
 

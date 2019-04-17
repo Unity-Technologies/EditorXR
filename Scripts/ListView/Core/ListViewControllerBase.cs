@@ -1,12 +1,10 @@
 ﻿using System;
-using UnityEditor.Experimental.EditorVR;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 namespace ListView
 {
-    public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler, IControlHaptics
+    public abstract class ListViewControllerBase : MonoBehaviour, IScrollHandler
     {
 #pragma warning disable 649
         [Tooltip("Distance (in meters) we have scrolled from initial position")]
@@ -28,9 +26,6 @@ namespace ListView
         [Tooltip("Item template prefabs (at least one is required)")]
         [SerializeField]
         protected GameObject[] m_Templates;
-
-        [SerializeField]
-        HapticPulse m_ScrollPulse;
 
         [SerializeField]
         protected float m_SettleSpeed = 0.4f;
@@ -97,9 +92,6 @@ namespace ListView
         void Update()
         {
             UpdateView();
-
-            if (m_Scrolling)
-                this.Pulse(Node.None, m_ScrollPulse);
         }
 
         protected abstract void Setup();
