@@ -16,9 +16,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         NumericInputField[] m_ExtentsFields;
 #pragma warning restore 649
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
             UpdateInputFields();
         }

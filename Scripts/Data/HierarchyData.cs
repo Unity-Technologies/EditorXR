@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.ListView;
 using UnityEngine;
 
 #if !UNITY_EDITOR
@@ -24,7 +25,7 @@ class HierarchyProperty
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    sealed class HierarchyData : EditorXRListViewItemNestedData<HierarchyData, int>
+    sealed class HierarchyData : NestedListViewItemData<HierarchyData, int>
     {
         const string k_TemplateName = "HierarchyListItem";
 
@@ -33,25 +34,16 @@ namespace UnityEditor.Experimental.EditorVR
         public HashSet<string> types { get; set; }
 
 #if UNITY_EDITOR
-        public override int index
-        {
-            get { return instanceID; }
-        }
-
-        public int instanceID { private get; set; }
-
-        public GameObject gameObject { get { return (GameObject)EditorUtility.InstanceIDToObject(instanceID); } }
+        public GameObject gameObject { get { return (GameObject)EditorUtility.InstanceIDToObject(index); } }
 
         public HierarchyData(HierarchyProperty property)
         {
             template = k_TemplateName;
             name = property.name;
-            instanceID = property.instanceID;
+            // TODO: Hierarchy indices at runtime
+            index = property.instanceID;
         }
 #else
-        // TODO: Hierarchy indices at runtime
-        public override int index { get; protected set; }
-
         public GameObject gameObject { get { return null; } }
 #endif
     }

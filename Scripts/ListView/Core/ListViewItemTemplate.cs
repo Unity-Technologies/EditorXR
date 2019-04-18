@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-namespace ListView
+namespace Unity.Labs.ListView
 {
-    public class ListViewItemTemplate<TItem>
+    public sealed class ListViewItemTemplate<TItem>
     {
         public readonly GameObject prefab;
-        public readonly List<TItem> pool = new List<TItem>();
+        public readonly Queue<TItem> pool = new Queue<TItem>();
 
         public ListViewItemTemplate(GameObject prefab)
         {

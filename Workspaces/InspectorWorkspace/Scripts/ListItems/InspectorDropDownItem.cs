@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-#if UNITY_EDITOR
-using UnityEditorInternal;
-#endif
 using UnityEngine;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
+
+#if UNITY_EDITOR
+using UnityEditorInternal;
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -19,9 +20,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         DropDown m_DropDown;
 #pragma warning restore 649
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
             UpdateDropdown();
         }

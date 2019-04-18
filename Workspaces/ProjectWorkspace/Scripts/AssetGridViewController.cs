@@ -74,14 +74,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
+
             m_OnRecycleComplete = OnRecycleComplete;
         }
 
-        protected override void Setup()
+        protected override void Start()
         {
-            base.Setup();
+            base.Start();
 
             m_ScrollOffset = itemSize.z * 0.5f;
 
@@ -96,12 +98,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.ComputeConditions();
 
-            var itemSize = m_ItemSize.Value;
-            m_NumPerRow = (int)(m_Size.x / itemSize.x);
+            m_NumPerRow = (int)(m_Size.x / m_ItemSize.x);
             if (m_NumPerRow < 1) // Early out if item size exceeds bounds size
                 return;
 
-            m_StartPosition = m_Extents.z * Vector3.forward + (m_Extents.x - itemSize.x * 0.5f) * Vector3.left;
+            m_StartPosition = m_Extents.z * Vector3.forward + (m_Extents.x - m_ItemSize.x * 0.5f) * Vector3.left;
 
             // Snap back if list scrolled too far
             m_ScrollReturn = float.MaxValue;
@@ -110,12 +111,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_ScrollReturn = -listHeight + m_ScaleFactor;
 
                 if (m_Data.Count % m_NumPerRow == 0)
-                    m_ScrollReturn += itemSize.z;
+                    m_ScrollReturn += m_ItemSize.z;
             }
             // if we only have one row, snap back as soon as that row would be hidden
-            else if (listHeight == itemSize.z && -m_ScrollOffset > 0)
+            else if (listHeight == m_ItemSize.z && -m_ScrollOffset > 0)
             {
-                m_ScrollReturn = itemSize.z / 2;
+                m_ScrollReturn = m_ItemSize.z / 2;
             }
         }
 
@@ -172,14 +173,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void OnRecycleComplete(AssetGridItem gridItem)
         {
             gridItem.gameObject.SetActive(false);
-            m_TemplateDictionary[gridItem.data.template].pool.Add(gridItem);
+            m_TemplateDictionary[gridItem.data.template].pool.Enqueue(gridItem);
         }
 
         protected override void UpdateVisibleItem(AssetData data, int order, float offset, ref bool doneSettling)
         {
             AssetGridItem item;
             if (!m_ListItems.TryGetValue(data.index, out item))
-                item = GetItem(data);
+                GetNewItem(data, out item);
 
             if (item)
                 UpdateGridItem(item, order, (int)offset);
@@ -205,7 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             item.UpdateTransforms(m_ScaleFactor);
 
-            var itemSize = m_ItemSize.Value;
+            var itemSize = m_ItemSize;
             var t = item.transform;
             var zOffset = itemSize.z * (count / m_NumPerRow) + m_ScrollOffset;
             var xOffset = itemSize.x * (count % m_NumPerRow);
@@ -217,11 +218,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 t.SetSiblingIndex(order);
         }
 
-        protected override AssetGridItem GetItem(AssetData data)
+        protected override bool GetNewItem(AssetData data, out AssetGridItem item)
         {
             const float jitterMargin = 0.125f;
             if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * jitterMargin) // Avoid jitter while scrolling rows in and out of view
-                return null;
+            {
+                item = null;
+                return false;
+            }
 
 #if UNITY_EDITOR
             // If this AssetData hasn't fetched its asset yet, do so now
@@ -232,7 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 #endif
 
-            var item = base.GetItem(data);
+            var instantiated = base.GetNewItem(data, out item);
 
             item.transform.localPosition = m_StartPosition;
 
@@ -265,7 +269,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         LoadFallbackTexture(item, data);
                     break;
             }
-            return item;
+
+            return instantiated;
         }
 
         static void LoadFallbackTexture(AssetGridItem item, AssetData data)

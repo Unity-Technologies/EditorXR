@@ -59,9 +59,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        protected override void Setup()
+        protected override void Start()
         {
-            base.Setup();
+            base.Start();
 
             m_TextMaterial = Instantiate(m_TextMaterial);
             m_ExpandArrowMaterial = Instantiate(m_ExpandArrowMaterial);
@@ -81,42 +81,43 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var index = data.index;
             FolderListItem item;
             if (!m_ListItems.TryGetValue(index, out item))
-                item = GetItem(data);
+                GetNewItem(data, out item);
 
             item.UpdateSelf(m_Size.x - k_ClipMargin, depth, expanded, index == selectedFolder);
 
             SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
 
-            UpdateItem(item.transform, order, offset, ref doneSettling);
+            UpdateItem(item, order, offset, ref doneSettling);
         }
 
-        protected override void UpdateNestedItems(List<FolderData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        protected override void UpdateNestedItems(ref int order, ref float offset, ref bool doneSettling, int depth = 0)
         {
             m_UpdateStack.Push(new UpdateData
             {
-                data = data,
+                data = m_Data,
                 depth = depth
             });
 
             while (m_UpdateStack.Count > 0)
             {
                 var stackData = m_UpdateStack.Pop();
-                data = stackData.data;
+                var nestedData = stackData.data;
                 depth = stackData.depth;
 
                 var i = stackData.index;
-                for (; i < data.Count; i++)
+                for (; i < nestedData.Count; i++)
                 {
-                    var datum = data[i];
+                    var datum = nestedData[i];
                     var index = datum.index;
                     bool expanded;
                     if (!m_ExpandStates.TryGetValue(index, out expanded))
                         m_ExpandStates[index] = false;
 
-                    if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
+                    var localOffset = offset + m_ScrollOffset;
+                    if (localOffset + itemSize.z < 0 || localOffset > m_Size.z)
                         Recycle(index);
                     else
-                        UpdateFolderItem(datum, order++, offset + m_ScrollOffset, depth, expanded, ref doneSettling);
+                        UpdateFolderItem(datum, order++, localOffset, depth, expanded, ref doneSettling);
 
                     offset += itemSize.z;
 
@@ -126,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         {
                             m_UpdateStack.Push(new UpdateData
                             {
-                                data = data,
+                                data = nestedData,
                                 depth = depth,
 
                                 index = i + 1
@@ -146,28 +147,30 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        protected override FolderListItem GetItem(FolderData listData)
+        protected override bool GetNewItem(FolderData listData, out FolderListItem item)
         {
-            var item = base.GetItem(listData);
-            item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
-            item.selectFolder = SelectFolder;
+            var instantiated = base.GetNewItem(listData, out item);
 
-            item.toggleExpanded = ToggleExpanded;
+            if (instantiated)
+            {
+                item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial);
+                item.selectFolder = SelectFolder;
+            }
 
             bool expanded;
             if (m_ExpandStates.TryGetValue(listData.index, out expanded))
                 item.UpdateArrow(expanded, true);
 
-            return item;
+            return instantiated;
         }
 
-        void ToggleExpanded(int index)
+        protected override void ToggleExpanded(FolderData datum)
         {
+            var index = datum.index;
             if (data.Count == 1 && m_ListItems[index].data == data[0]) // Do not collapse Assets folder
                 return;
 
-            m_ExpandStates[index] = !m_ExpandStates[index];
-            StartSettling();
+            base.ToggleExpanded(datum);
         }
 
         void SelectFolder(int guid)

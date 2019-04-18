@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.ListView;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-    class InspectorData : EditorXRListViewItemNestedData<InspectorData, int>
+    class InspectorData : NestedListViewItemData<InspectorData, int>
     {
         public SerializedObject serializedObject { get; private set; }
 

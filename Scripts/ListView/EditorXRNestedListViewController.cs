@@ -1,13 +1,12 @@
-﻿using ListView;
-using System.Collections.Generic;
+﻿using Unity.Labs.ListView;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     abstract class EditorXRNestedListViewController<TData, TItem, TIndex> : NestedListViewController<TData, TItem, TIndex>, IInstantiateUI, IConnectInterfaces, IControlHaptics, IRayToNode
-        where TData : ListViewItemNestedData<TData, TIndex>
-        where TItem : EditorXRListViewItem<TData, TIndex>
+        where TData : INestedListViewItemData<TData, TIndex>
+        where TItem : EditorXRListViewItem<TData, TIndex>, INestedListViewItem<TData, TIndex>
     {
 #pragma warning disable 649
         [SerializeField]
@@ -34,32 +33,12 @@ namespace UnityEditor.Experimental.EditorVR
         HapticPulse m_ItemDragEndPulse;
 #pragma warning restore 649
 
-        protected readonly Dictionary<TIndex, Transform> m_GrabbedRows = new Dictionary<TIndex, Transform>();
-
         protected override void Recycle(TIndex index)
         {
             if (m_GrabbedRows.ContainsKey(index))
                 return;
 
             base.Recycle(index);
-        }
-
-        protected virtual void SetRowGrabbed(TIndex index, Transform rayOrigin, bool grabbed)
-        {
-            if (grabbed)
-                m_GrabbedRows[index] = rayOrigin;
-            else
-                m_GrabbedRows.Remove(index);
-        }
-
-        protected virtual TItem GetGrabbedRow(Transform rayOrigin)
-        {
-            foreach (var row in m_GrabbedRows)
-            {
-                if (row.Value == rayOrigin)
-                    return GetListItem(row.Key);
-            }
-            return null;
         }
 
         protected override void UpdateView()

@@ -11,9 +11,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Toggle m_Toggle;
 #pragma warning restore 649
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
 #if UNITY_EDITOR
             m_Toggle.isOn = m_SerializedProperty.boolValue;

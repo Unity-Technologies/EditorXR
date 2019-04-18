@@ -1,7 +1,7 @@
 using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
-using ListView;
+using Unity.Labs.ListView;
 
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
@@ -35,7 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public Texture2D thumbnail { get { return m_Thumbnail; } }
         public bool initialized { get { return m_Initialized; } }
         public long complexity { get { return m_Complexity; } }
-        public override string index { get { return m_Asset.name; } } // PolyAsset.name is the GUID
 
         public event Action<PolyGridAsset, GameObject> modelImportCompleted;
         public event Action<PolyGridAsset, Texture2D> thumbnailImportCompleted;
@@ -54,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
 #if INCLUDE_POLY_TOOLKIT
             m_Asset = asset;
+            index = asset.name; // PolyAsset.name is the GUID
             m_Container = container;
             m_Complexity = 0L;
             foreach (var format in asset.formats)

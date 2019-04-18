@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-    sealed class FolderListItem : EditorXRListViewItem<FolderData, int>
+    sealed class FolderListItem : EditorXRNestedListViewItem<FolderData, int>
     {
         const float k_Margin = 0.01f;
         const float k_Indent = 0.02f;
@@ -44,20 +44,15 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         Transform m_CubeTransform;
 
-        public Material cubeMaterial
-        {
-            get { return m_CubeRenderer.sharedMaterial; }
-        }
+        public Material cubeMaterial { get { return m_CubeRenderer.sharedMaterial; } }
 
-        public Action<int> toggleExpanded { private get; set; }
         public Action<int> selectFolder { private get; set; }
 
-        public override void Setup(FolderData listData)
+        public override void Setup(FolderData listData, bool firstTime = true)
         {
-            base.Setup(listData);
+            base.Setup(listData, firstTime);
 
-            // First time setup
-            if (m_CubeRenderer == null)
+            if (firstTime)
             {
                 // Cube material might change for hover state, so we always instance it
                 m_CubeRenderer = m_Cube.GetComponent<Renderer>();
@@ -129,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
         {
-            toggleExpanded(data.index);
+            ToggleExpanded();
         }
 
         void SelectFolder(BaseHandle handle, HandleEventData eventData)

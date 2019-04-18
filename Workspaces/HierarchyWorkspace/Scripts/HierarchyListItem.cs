@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class HierarchyListItem : DraggableListItem<HierarchyData, int>, IUsesViewerBody, IGetFieldGrabOrigin
+    sealed class HierarchyListItem : NestedDraggableListItem<HierarchyData, int>, IUsesViewerBody, IGetFieldGrabOrigin
     {
         const float k_Margin = 0.01f;
         const float k_Indent = 0.02f;
@@ -100,7 +100,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public Action<int> toggleLock { private get; set; }
 
-        public Action<int> toggleExpanded { private get; set; }
         public Action<int, bool> setExpanded { private get; set; }
         public Func<int, bool> isExpanded { private get; set; }
 
@@ -110,12 +109,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public bool isStillSettling { private set; get; }
 
-        public override void Setup(HierarchyData data)
+        public override void Setup(HierarchyData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
             // First time setup
-            if (cubeMaterial == null)
+            if (firstTime)
             {
                 // Cube material might change for hover state, so we always instance it
                 m_CubeRenderer = m_Cube.GetComponent<Renderer>();
@@ -286,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void OnClick(BaseHandle handle, PointerEventData pointerEventData)
         {
             SelectFolder();
-            toggleExpanded(data.index);
+            ToggleExpanded();
         }
 
         protected override void OnDragStarted(BaseHandle handle, HandleEventData eventData, Vector3 dragStart)
@@ -437,7 +436,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void ToggleExpanded(BaseHandle handle, HandleEventData eventData)
         {
-            toggleExpanded(data.index);
+            ToggleExpanded();
         }
 
         void SelectFolder()
