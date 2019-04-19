@@ -23,7 +23,6 @@ namespace Unity.Labs.ListView
         public Action<Action> startSettling { get; set; }
         public Action endSettling { get; set; }
         public TData data { get; set; }
-        public Func<TIndex, IListViewItem<TData, TIndex>> getListItem { get; set; }
 
         public void SetActive(bool active)
         {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -125,12 +126,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override void UpdateItems()
         {
             var parentMatrix = transform.worldToLocalMatrix;
-            SetMaterialClip(m_TextMaterial, parentMatrix);
-            SetMaterialClip(m_SceneIconDarkMaterial, parentMatrix);
-            SetMaterialClip(m_SceneIconWhiteMaterial, parentMatrix);
-            SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
-            SetMaterialClip(m_LockIconMaterial, parentMatrix);
-            SetMaterialClip(m_UnlockIconMaterial, parentMatrix);
+            ClipText.SetMaterialClip(m_TextMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_SceneIconDarkMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_SceneIconWhiteMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_ExpandArrowMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_LockIconMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_UnlockIconMaterial, parentMatrix, m_Extents);
 
             m_VisibleItemHeight = 0;
 
@@ -209,8 +210,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             item.UpdateSelf(width, depth, expanded, index == m_SelectedRow, locked);
 
             var worldToLocalMatrix = transform.worldToLocalMatrix;
-            SetMaterialClip(item.cubeMaterial, worldToLocalMatrix);
-            SetMaterialClip(item.dropZoneMaterial, worldToLocalMatrix);
+            ClipText.SetMaterialClip(item.cubeMaterial, worldToLocalMatrix, m_Extents);
+            ClipText.SetMaterialClip(item.dropZoneMaterial, worldToLocalMatrix, m_Extents);
 
             m_VisibleItemHeight += itemSize.z;
             UpdateItem(item, order, offset + m_ScrollOffset, ref doneSettling);
@@ -249,6 +250,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         var item = GetListItem(index);
                         if (item && item.isStillSettling) // "Hang on" to settle state until grabbed object is settled in the list
                             doneSettling = false;
+
                         continue;
                     }
 
@@ -353,6 +355,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 item.setExpanded = SetExpanded;
                 item.isExpanded = GetExpanded;
+
+                item.getListItem = GetListItem;
             }
 
             item.UpdateArrow(GetExpanded(data.index), true);

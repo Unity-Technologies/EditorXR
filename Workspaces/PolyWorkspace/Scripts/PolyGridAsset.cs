@@ -11,9 +11,10 @@ using PolyToolkit;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    public class PolyGridAsset : ListViewItemData<string>, IWeb
+    public class PolyGridAsset : IListViewItemData<string>, IWeb
     {
         const int k_MaxPreviewComplexity = 2500;
+        static readonly string k_TemplateName = "PolyGridItem";
 
 #if INCLUDE_POLY_TOOLKIT
         static PolyImportOptions s_Options;
@@ -30,6 +31,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         bool m_Initialized; // Whether the download/import process has started
         bool m_Importing;
 
+        public string template { get { return k_TemplateName; } }
+
+        public string index { get; private set; }
         public PolyAsset asset { get { return m_Asset; } }
         public GameObject prefab { get { return m_Prefab; } }
         public Texture2D thumbnail { get { return m_Thumbnail; } }
@@ -61,8 +65,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_Complexity = Math.Max(m_Complexity, format.formatComplexity.triangleCount);
             }
 #endif
-
-            template = "PolyGridItem";
         }
 
         public void Initialize()

@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
     public abstract class EditorXRListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>, IInstantiateUI, IConnectInterfaces, IControlHaptics, IRayToNode
-        where TData : IListViewItemData<TIndex>
+        where TData : class, IListViewItemData<TIndex>
         where TItem : EditorXRListViewItem<TData, TIndex>
     {
 #pragma warning disable 649

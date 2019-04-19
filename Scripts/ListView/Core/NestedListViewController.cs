@@ -8,8 +8,8 @@ using System.Diagnostics;
 namespace Unity.Labs.ListView
 {
     public abstract class NestedListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>
-        where TData : INestedListViewItemData<TData, TIndex>
-        where TItem : INestedListViewItem<TData, TIndex>
+        where TData : class, INestedListViewItemData<TData, TIndex>
+        where TItem : class, INestedListViewItem<TData, TIndex>
     {
         protected struct UpdateData
         {
@@ -75,20 +75,6 @@ namespace Unity.Labs.ListView
             }
 
             return default(TData);
-        }
-
-        protected void RecycleRecursively(TData datum)
-        {
-            Recycle(datum.index);
-
-            var children = datum.children;
-            if (children != null)
-            {
-                foreach (var child in children)
-                {
-                    RecycleRecursively(child);
-                }
-            }
         }
 
         protected override void UpdateItems()

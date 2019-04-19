@@ -5,20 +5,21 @@ using UnityEngine;
 namespace Unity.Labs.ListView
 {
     public abstract class ListViewController<TData, TItem, TIndex> : ListViewControllerBase
-        where TData : IListViewItemData<TIndex>
-        where TItem : IListViewItem<TData, TIndex>
+        where TData : class, IListViewItemData<TIndex>
+        where TItem : class, IListViewItem<TData, TIndex>
     {
         protected List<TData> m_Data;
         IListViewItem<TData, TIndex> m_LastUpdatedItemItem;
 
         protected readonly Dictionary<string, ListViewItemTemplate<TItem>> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate<TItem>>();
         protected readonly Dictionary<TIndex, TItem> m_ListItems = new Dictionary<TIndex, TItem>();
+
+        // Items can be "grabbed" and temporarily removed from the list
         protected readonly Dictionary<TIndex, Transform> m_GrabbedRows = new Dictionary<TIndex, Transform>();
 
         // Local method use only -- created here to reduce garbage collection
         Action<Action> m_StartSettling;
         Action m_EndSettling;
-        Func<TIndex, IListViewItem<TData, TIndex>> m_GetListItem;
 
         public virtual List<TData> data
         {
@@ -52,7 +53,6 @@ namespace Unity.Labs.ListView
 
             m_StartSettling = StartSettling;
             m_EndSettling = EndSettling;
-            m_GetListItem = index => GetListItem(index);
         }
 
         protected virtual void Start()
@@ -192,7 +192,6 @@ namespace Unity.Labs.ListView
                 item.Setup(datum, true);
                 item.startSettling = m_StartSettling;
                 item.endSettling = m_EndSettling;
-                item.getListItem = m_GetListItem;
             }
 
             m_ListItems[datum.index] = item;
@@ -203,9 +202,9 @@ namespace Unity.Labs.ListView
             return !pooled;
         }
 
-        protected virtual TItem InstantiateItem(TData data)
+        protected virtual TItem InstantiateItem(TData datum)
         {
-            return Instantiate(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<TItem>();
+            return Instantiate(m_TemplateDictionary[datum.template].prefab, transform, false).GetComponent<TItem>();
         }
     }
 }

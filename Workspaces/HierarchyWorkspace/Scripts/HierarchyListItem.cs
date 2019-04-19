@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.ListView;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -108,6 +109,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public int extraSpace { get; private set; }
 
         public bool isStillSettling { private set; get; }
+
+        public Func<int, HierarchyListItem> getListItem { private get; set; }
 
         public override void Setup(HierarchyData data, bool firstTime)
         {
@@ -332,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 foreach (var child in data.children)
                 {
-                    var item = getListItem(child.index) as HierarchyListItem;
+                    var item = getListItem(child.index);
                     if (item)
                     {
                         visibleChildren.Add(item);

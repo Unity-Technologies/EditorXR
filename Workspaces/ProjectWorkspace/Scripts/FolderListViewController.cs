@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -70,8 +71,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override void UpdateItems()
         {
             var parentMatrix = transform.worldToLocalMatrix;
-            SetMaterialClip(m_TextMaterial, parentMatrix);
-            SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
+            ClipText.SetMaterialClip(m_TextMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_ExpandArrowMaterial, parentMatrix, m_Extents);
 
             base.UpdateItems();
         }
@@ -85,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             item.UpdateSelf(m_Size.x - k_ClipMargin, depth, expanded, index == selectedFolder);
 
-            SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
+            ClipText.SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix, m_Extents);
 
             UpdateItem(item, order, offset, ref doneSettling);
         }

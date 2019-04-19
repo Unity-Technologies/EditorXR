@@ -227,12 +227,6 @@ namespace Unity.Labs.ListView
             }
         }
 
-        protected void SetMaterialClip(Material material, Matrix4x4 parentMatrix)
-        {
-            material.SetMatrix("_ParentMatrix", parentMatrix);
-            material.SetVector("_ClipExtents", m_Extents);
-        }
-
         public virtual void OnScroll(PointerEventData eventData)
         {
             if (m_Settling)

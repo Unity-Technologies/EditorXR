@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Unity.Labs.ListView;
 using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -95,12 +96,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_StartPosition = m_Extents.z * Vector3.back;
 
             var parentMatrix = transform.worldToLocalMatrix;
-            SetMaterialClip(m_RowCubeMaterial, parentMatrix);
-            SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
-            SetMaterialClip(m_UIMaterial, parentMatrix);
-            SetMaterialClip(m_UIMaskMaterial, parentMatrix);
-            SetMaterialClip(m_HighlightMaterial, parentMatrix);
-            SetMaterialClip(m_HighlightMaskMaterial, parentMatrix);
+            ClipText.SetMaterialClip(m_RowCubeMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_BackingCubeMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_UIMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_UIMaskMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_HighlightMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_HighlightMaskMaterial, parentMatrix, m_Extents);
         }
 
         public void OnObjectModified()

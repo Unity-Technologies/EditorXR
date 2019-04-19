@@ -18,8 +18,6 @@ namespace Unity.Labs.ListView
     public interface IListViewItem<TData, TIndex> : IListViewItem where TData : IListViewItemData<TIndex>
     {
         TData data { get; set; }
-        Func<TIndex, IListViewItem<TData, TIndex>> getListItem { set; }
-
         void Setup(TData datum, bool firstTime);
     }
 }
