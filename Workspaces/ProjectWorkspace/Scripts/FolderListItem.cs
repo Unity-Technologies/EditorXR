@@ -1,6 +1,7 @@
 ﻿using ListView;
 using System;
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -151,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
         void OnDestroy()
         {
             if (m_CubeRenderer)
-                ObjectUtils.Destroy(m_CubeRenderer.sharedMaterial);
+                UnityObjectUtils.Destroy(m_CubeRenderer.sharedMaterial);
         }
     }
 }

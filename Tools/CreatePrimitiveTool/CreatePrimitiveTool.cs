@@ -1,3 +1,4 @@
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -188,7 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_ToolMenu);
+            UnityObjectUtils.Destroy(m_ToolMenu);
 
             if (rayOrigin == null)
                 return;

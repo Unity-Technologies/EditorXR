@@ -1,9 +1,9 @@
 {
     "name": "EXR-Tests-Editor",
     "references": [
-        "EXR-Tests",
-        "EXR-Utilities-Editor",
-        "EXR"
+        "EXR",
+        "Unity.Labs.Utils",
+        "Unity.Labs.Utils.Editor"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"
@@ -12,5 +12,9 @@
         "Editor"
     ],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
 }

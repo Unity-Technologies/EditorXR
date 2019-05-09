@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -57,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
             if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
             {
-                var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
+                var selectionColor = EditorMaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
                 selectionColor.a = 1;
 #if UNITY_EDITOR
                 m_RayHighlightMaterial.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -166,15 +167,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_MultiselectRayColor = m_NormalRayColor;
             m_MultiselectRayColor = MaterialUtils.HueShift(m_MultiselectRayColor, k_MultiselectHueShift);
 
-            tooltipTarget = ObjectUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
+            tooltipTarget = EditorXRUtils.CreateEmptyGameObject("SelectionTool Tooltip Target", rayOrigin).transform;
             tooltipTarget.localPosition = this.GetDeviceType() == DeviceType.Oculus ? k_TouchTooltipPosition : k_ViveTooltipPosition;
             tooltipTarget.localRotation = k_TooltipRotation;
 
-            m_BlockSelectCube = ObjectUtils.Instantiate(m_BlockSelectCube, transform);
+            m_BlockSelectCube = EditorXRUtils.Instantiate(m_BlockSelectCube, transform);
             m_BlockSelectCube.SetActive(false);
             m_BlockSelectCubeRenderer = m_BlockSelectCube.GetComponent<Renderer>();
 
-            m_BlockSelectSphere = ObjectUtils.Instantiate(m_BlockSelectSphere, transform);
+            m_BlockSelectSphere = EditorXRUtils.Instantiate(m_BlockSelectSphere, transform);
             m_BlockSelectSphere.SetActive(false);
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
@@ -182,7 +183,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_BlockSelectCube);
+            UnityObjectUtils.Destroy(m_BlockSelectCube);
             this.ClearFeedbackRequests();
         }
 

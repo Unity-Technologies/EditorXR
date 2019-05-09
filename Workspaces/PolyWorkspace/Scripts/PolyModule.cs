@@ -1,6 +1,6 @@
 using System;
 using System.Text;
-using UnityEditor.Experimental.EditorVR;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
@@ -80,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void Awake()
         {
             PolyApi.Init(new PolyAuthConfig(Encoding.UTF8.GetString(Convert.FromBase64String(k_APIKey)), "", ""));
-            m_Container = ObjectUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
+            m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
         }
 
         void OnDestroy()

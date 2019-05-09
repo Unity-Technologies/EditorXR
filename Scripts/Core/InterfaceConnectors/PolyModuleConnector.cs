@@ -1,5 +1,5 @@
 #if UNITY_2018_3_OR_NEWER
-using UnityEditor.Experimental.EditorVR;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Modules;
 
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]

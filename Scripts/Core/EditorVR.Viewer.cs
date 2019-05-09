@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -109,11 +110,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (cameraRig)
                     cameraRig.transform.parent = null;
 
-                ObjectUtils.Destroy(m_PlayerBody.gameObject);
-                ObjectUtils.Destroy(m_PlayerFloor);
+                UnityObjectUtils.Destroy(m_PlayerBody.gameObject);
+                UnityObjectUtils.Destroy(m_PlayerFloor);
 
                 if (customPreviewCamera != null)
-                    ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
+                    UnityObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
             }
 
             public void ConnectInterface(object target, object userData = null)
@@ -192,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
                 if (!Application.isPlaying && evr.m_PreviewCameraPrefab)
                 {
-                    var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
+                    var go = EditorXRUtils.Instantiate(evr.m_PreviewCameraPrefab);
                     go.transform.SetParent(CameraUtils.GetCameraRig(), false);
 
 #if UNITY_EDITOR
@@ -222,12 +223,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             internal void AddPlayerFloor()
             {
-                m_PlayerFloor = ObjectUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
+                m_PlayerFloor = EditorXRUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
             }
 
             internal void AddPlayerModel()
             {
-                m_PlayerBody = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
+                m_PlayerBody = EditorXRUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
                 var renderer = m_PlayerBody.GetComponent<Renderer>();
                 evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
                 var playerObjects = m_PlayerBody.GetComponentsInChildren<Renderer>(true);

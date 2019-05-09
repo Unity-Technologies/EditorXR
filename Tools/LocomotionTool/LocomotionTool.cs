@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -192,11 +193,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     ((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
                 }
 
-                var instance = ObjectUtils.Instantiate(m_RingPrefab, cameraRig, false);
+                var instance = EditorXRUtils.Instantiate(m_RingPrefab, cameraRig, false);
                 m_Ring = instance.GetComponent<Ring>();
             }
 
-            m_BlinkVisualsGO = ObjectUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
+            m_BlinkVisualsGO = EditorXRUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
             m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
             m_BlinkVisuals.ignoreList = this.GetVRPlayerObjects();
             m_BlinkVisualsGO.SetActive(false);
@@ -204,7 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_BlinkVisualsGO.transform.localPosition = Vector3.zero;
             m_BlinkVisualsGO.transform.localRotation = Quaternion.identity;
 
-            var viewerScaleObject = ObjectUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
+            var viewerScaleObject = EditorXRUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
             m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
             viewerScaleObject.SetActive(false);
 
@@ -229,10 +230,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             this.ClearFeedbackRequests();
 
             if (m_ViewerScaleVisuals)
-                ObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
+                UnityObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
 
             if (m_Ring)
-                ObjectUtils.Destroy(m_Ring.gameObject);
+                UnityObjectUtils.Destroy(m_Ring.gameObject);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -155,11 +156,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             base.Setup();
 
-            ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
             m_MiniWorldUI = GetComponentInChildren<MiniWorldUI>();
             m_GridMaterial = MaterialUtils.GetMaterialClone(m_MiniWorldUI.grid);
 
-            var resetUI = ObjectUtils.Instantiate(m_RecenterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<ResetUI>();
+            var resetUI = EditorXRUtils.Instantiate(m_RecenterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<ResetUI>();
             resetUI.resetButton.onClick.AddListener(ResetChessboard);
             foreach (var mb in resetUI.GetComponentsInChildren<MonoBehaviour>())
             {
@@ -167,7 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 
             var parent = m_WorkspaceUI.frontPanel.parent;
-            m_LocatePlayerUI = ObjectUtils.Instantiate(m_LocatePlayerPrefab, parent, false).transform;
+            m_LocatePlayerUI = EditorXRUtils.Instantiate(m_LocatePlayerPrefab, parent, false).transform;
             m_PlayerDirectionButton = m_LocatePlayerUI.GetChild(0);
             foreach (var mb in m_LocatePlayerUI.GetComponentsInChildren<MonoBehaviour>())
             {
@@ -176,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     button.onClick.AddListener(RecenterOnPlayer);
             }
 
-            m_PlayerDirectionArrow = ObjectUtils.Instantiate(m_PlayerDirectionArrowPrefab, parent, false).transform;
+            m_PlayerDirectionArrow = EditorXRUtils.Instantiate(m_PlayerDirectionArrowPrefab, parent, false).transform;
 
             // Set up MiniWorld
             m_MiniWorld = GetComponentInChildren<MiniWorld>();
@@ -184,7 +185,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_MiniWorld.referenceTransform.localScale = Vector3.one * k_InitReferenceScale;
 
             // Set up Zoom Slider
-            var sliderObject = ObjectUtils.Instantiate(m_ZoomSliderPrefab, m_WorkspaceUI.frontPanel, false);
+            var sliderObject = EditorXRUtils.Instantiate(m_ZoomSliderPrefab, m_WorkspaceUI.frontPanel, false);
             m_ZoomSliderUI = sliderObject.GetComponentInChildren<ZoomSliderUI>();
             m_ZoomSliderUI.sliding += OnSliding;
             m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_ZoomSliderMax);
@@ -517,7 +518,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected override void OnDestroy()
         {
-            ObjectUtils.Destroy(m_GridMaterial);
+            UnityObjectUtils.Destroy(m_GridMaterial);
             base.OnDestroy();
         }
 

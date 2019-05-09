@@ -1,6 +1,7 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
@@ -55,7 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_Material);
+            UnityObjectUtils.Destroy(m_Material);
         }
 
         void LateUpdate()

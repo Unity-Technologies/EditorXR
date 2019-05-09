@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -730,7 +731,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         BaseManipulator CreateManipulator(GameObject prefab)
         {
-            var go = ObjectUtils.Instantiate(prefab, transform, active: false);
+            var go = EditorXRUtils.Instantiate(prefab, transform, active: false);
             go.SetActive(false);
             var manipulator = go.GetComponent<BaseManipulator>();
             manipulator.translate = Translate;
@@ -750,10 +751,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var manipulatorGameObject = m_CurrentManipulator.gameObject;
             manipulatorGameObject.SetActive(manipulatorVisible);
 
-            m_SelectionBounds = ObjectUtils.GetBounds(selectionTransforms);
+            m_SelectionBounds = BoundsUtils.GetBounds(selectionTransforms);
 
             var manipulatorTransform = manipulatorGameObject.transform;
-            var activeTransform = Selection.activeTransform ?? selectionTransforms[0];
+            var activeTransform = Selection.activeTransform;
+            if (activeTransform == null)
+                activeTransform = selectionTransforms[0];
+
             manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? activeTransform.position : m_SelectionBounds.center;
             manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global && m_CurrentManipulator == m_StandardManipulator
                 ? Quaternion.identity : activeTransform.rotation;

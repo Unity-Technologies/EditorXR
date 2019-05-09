@@ -1,6 +1,6 @@
 ﻿using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using Button = UnityEditor.Experimental.EditorVR.UI.Button;
@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_NameText.text = type.Name;
 
             StopAllCoroutines();
-            StartCoroutine(ObjectUtils.GetAssetPreview(target, texture => m_Icon.texture = texture));
+            StartCoroutine(EditorUtils.GetAssetPreview(target, texture => m_Icon.texture = texture));
 
             var enabled = EditorUtility.GetObjectEnabled(target);
             m_EnabledToggle.gameObject.SetActive(enabled != -1);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.Utils.GUI;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;

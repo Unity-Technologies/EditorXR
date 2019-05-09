@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -186,7 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             var target = m_Submenus.Pop();
             target.SetActive(false);
-            ObjectUtils.Destroy(target, .1f);
+            UnityObjectUtils.Destroy(target, .1f);
 
             if (m_Submenus.Count > 1)
                 m_Submenus.Last().SetActive(true);
@@ -198,7 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             foreach (var submenu in m_Submenus)
             {
-                ObjectUtils.Destroy(submenu);
+                UnityObjectUtils.Destroy(submenu);
             }
         }
     }

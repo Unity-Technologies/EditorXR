@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -88,7 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     foreach (var button in m_VisibilityButtons)
                     {
-                        ObjectUtils.Destroy(button.gameObject);
+                        UnityObjectUtils.Destroy(button.gameObject);
                     }
                 }
 
@@ -101,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_VisibilityButtons = new FilterButtonUI[m_FilterTypes.Count];
                 for (int i = 0; i < m_VisibilityButtons.Length; i++)
                 {
-                    var button = ObjectUtils.Instantiate(m_ButtonPrefab, m_ButtonList, false).GetComponent<FilterButtonUI>();
+                    var button = EditorXRUtils.Instantiate(m_ButtonPrefab, m_ButtonList, false).GetComponent<FilterButtonUI>();
                     m_VisibilityButtons[i] = button;
 
                     button.clicked += rayOrigin => { OnFilterClick(button); };
@@ -151,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_BackgroundMaterial);
+            UnityObjectUtils.Destroy(m_BackgroundMaterial);
         }
 
         public void SetListVisibility(bool show)

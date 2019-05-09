@@ -606,7 +606,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             internal IMenu SpawnMenu(Type menuType, Transform rayOrigin)
             {
-                var spawnedMenu = (IMenu)ObjectUtils.AddComponent(menuType, evr.gameObject);
+                var spawnedMenu = (IMenu)EditorXRUtils.AddComponent(menuType, evr.gameObject);
                 this.ConnectInterfaces(spawnedMenu, rayOrigin);
 
                 return spawnedMenu;

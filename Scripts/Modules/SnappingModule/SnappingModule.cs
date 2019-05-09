@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -82,7 +82,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     var objRotation = transform.rotation;
 
                     transform.rotation = Quaternion.identity;
-                    identityBounds = ObjectUtils.GetBounds(transform);
+                    identityBounds = BoundsUtils.GetBounds(transform);
                     transform.rotation = objRotation;
                 }
                 else
@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         transform.transform.RotateAround(position, axis, -angle);
                     }
 
-                    identityBounds = ObjectUtils.GetBounds(transforms);
+                    identityBounds = BoundsUtils.GetBounds(transforms);
 
                     foreach (var transform in transforms)
                     {
@@ -109,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public void OnDestroy()
             {
                 if (widget)
-                    ObjectUtils.Destroy(widget.gameObject);
+                    UnityObjectUtils.Destroy(widget.gameObject);
             }
         }
 
@@ -376,7 +376,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void Awake()
         {
-            m_GroundPlane = ObjectUtils.Instantiate(m_GroundPlane, transform);
+            m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlane, transform);
             m_GroundPlane.SetActive(false);
 
             m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
@@ -413,7 +413,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         {
                             if (widget == null)
                             {
-                                widget = ObjectUtils.Instantiate(m_Widget, transform).transform;
+                                widget = EditorXRUtils.Instantiate(m_Widget, transform).transform;
                                 state.widget = widget;
                             }
 

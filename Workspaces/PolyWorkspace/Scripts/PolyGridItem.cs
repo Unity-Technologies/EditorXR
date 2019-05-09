@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -146,7 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_IconMaterial.mainTexture = null;
 
             if (m_PreviewObjectTransform)
-                ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
+                UnityObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
 
             m_SetupTime = Time.time;
             UpdateRepresentation();
@@ -280,12 +281,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_PreviewPrefabScale = m_PreviewObjectTransform.localScale;
 
             // Normalize total scale to 1
-            m_PreviewBounds = ObjectUtils.GetBounds(m_PreviewObjectTransform);
+            m_PreviewBounds = BoundsUtils.GetBounds(m_PreviewObjectTransform);
 
             // Don't show a preview if there are no renderers
             if (m_PreviewBounds.size == Vector3.zero)
             {
-                ObjectUtils.Destroy(previewObject);
+                UnityObjectUtils.Destroy(previewObject);
                 return;
             }
 
@@ -332,7 +333,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     m_PreviewObjectClone.localScale = m_PreviewTargetScale;
 
                     // Destroy label
-                    ObjectUtils.Destroy(cloneItem.m_TextPanel.gameObject);
+                    UnityObjectUtils.Destroy(cloneItem.m_TextPanel.gameObject);
                 }
 
                 m_DragObject = clone.transform;
@@ -518,7 +519,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 transitionAmount += Time.deltaTime * transitionAddMultiplier;
                 yield return null;
             }
-            ObjectUtils.Destroy(itemToHide);
+            UnityObjectUtils.Destroy(itemToHide);
         }
 
         void ShowGrabFeedback(Node node)

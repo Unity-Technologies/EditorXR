@@ -1,4 +1,5 @@
 using System;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -44,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void Awake()
         {
-            localBounds = ObjectUtils.GetBounds(transform);
+            localBounds = BoundsUtils.GetBounds(transform);
             m_TitleIconMaterial = MaterialUtils.GetMaterialClone(m_TitleIcon);
             m_TitleIconMaterial.SetColor(k_TopGradientProperty, UnityBrandColorScheme.saturatedSessionGradient.a);
             m_TitleIconMaterial.SetColor(k_BottomGradientProperty, UnityBrandColorScheme.saturatedSessionGradient.b);

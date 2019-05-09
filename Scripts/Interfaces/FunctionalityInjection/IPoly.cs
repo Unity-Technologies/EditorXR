@@ -1,4 +1,4 @@
-using UnityEditor.Experimental.EditorVR;
+using Unity.Labs.Utils;
 
 #if INCLUDE_POLY_TOOLKIT
 using System;

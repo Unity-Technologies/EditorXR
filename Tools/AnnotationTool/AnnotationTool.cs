@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -160,14 +161,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (m_BrushSizeUI)
             {
                 this.DisconnectInterfaces(m_BrushSizeUI, rayOrigin);
-                ObjectUtils.Destroy(m_BrushSizeUI.gameObject);
+                UnityObjectUtils.Destroy(m_BrushSizeUI.gameObject);
             }
 
             if (m_ToolMenu)
-                ObjectUtils.Destroy(m_ToolMenu);
+                UnityObjectUtils.Destroy(m_ToolMenu);
 
             if (m_AnnotationPointer)
-                ObjectUtils.Destroy(m_AnnotationPointer.gameObject);
+                UnityObjectUtils.Destroy(m_AnnotationPointer.gameObject);
 
             this.ClearFeedbackRequests();
         }
@@ -264,7 +265,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void SetupBrushUI()
         {
-            m_AnnotationPointer = ObjectUtils.Instantiate(m_AnnotationPointerPrefab, rayOrigin, false).GetComponent<AnnotationPointer>();
+            m_AnnotationPointer = EditorXRUtils.Instantiate(m_AnnotationPointerPrefab, rayOrigin, false).GetComponent<AnnotationPointer>();
             m_OriginalAnnotationPointerLocalScale = m_AnnotationPointer.transform.localScale;
             var brushSize = m_Preferences.brushSize;
             m_AnnotationPointer.Resize(brushSize);
@@ -746,7 +747,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 if (meshFilters.Length == 0)
                 {
-                    ObjectUtils.Destroy(group);
+                    UnityObjectUtils.Destroy(group);
                     continue;
                 }
 
@@ -782,7 +783,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     var go = meshFilter.gameObject;
                     this.RemoveFromSpatialHash(go);
-                    ObjectUtils.Destroy(go);
+                    UnityObjectUtils.Destroy(go);
                 }
             }
         }

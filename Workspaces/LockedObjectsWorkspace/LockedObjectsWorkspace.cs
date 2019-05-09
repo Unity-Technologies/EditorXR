@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             if (m_UnlockAllPrefab)
             {
-                var unlockAllUI = ObjectUtils.Instantiate(m_UnlockAllPrefab, m_WorkspaceUI.frontPanel, false);
+                var unlockAllUI = EditorXRUtils.Instantiate(m_UnlockAllPrefab, m_WorkspaceUI.frontPanel, false);
                 foreach (var mb in unlockAllUI.GetComponentsInChildren<MonoBehaviour>())
                 {
                     this.ConnectInterfaces(mb);

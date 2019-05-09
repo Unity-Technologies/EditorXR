@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using UnityEditor.Experimental.EditorVR.Helpers;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -161,7 +161,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (defaultContext.copyMainCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
                 {
                     GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, hideFlags);
-                    camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
+                    camera = EditorXRUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
 
                     if (camera.nearClipPlane > nearClipPlane)
                     {
@@ -269,7 +269,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 // Copying of certain image effects can cause Unity to crash when copied
                 if (targetMethodFound)
-                    ObjectUtils.CopyComponent(potentialImageEffect, targetCameraGO);
+                    EditorXRUtils.CopyComponent(potentialImageEffect, targetCameraGO);
             }
         }
 

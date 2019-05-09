@@ -146,7 +146,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return pooledTooltip;
             }
 
-            var tooltipObject = ObjectUtils.Instantiate(m_TooltipPrefab, m_TooltipCanvas);
+            var tooltipObject = EditorXRUtils.Instantiate(m_TooltipPrefab, m_TooltipCanvas);
             tooltipObject.GetComponents(k_TooltipUIs);
 
             var tooltipUI = k_TooltipUIs[0]; // We expect exactly one TooltipUI on the prefab root

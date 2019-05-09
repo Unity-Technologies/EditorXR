@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -388,7 +389,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         private void OnDestroy()
         {
-            ObjectUtils.Destroy(m_TargetMeshMaterial);
+            UnityObjectUtils.Destroy(m_TargetMeshMaterial);
         }
 
         IEnumerator IncreaseEmission()

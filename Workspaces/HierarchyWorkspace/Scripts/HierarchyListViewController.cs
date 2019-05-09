@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Handles;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -485,10 +485,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_TextMaterial);
-            ObjectUtils.Destroy(m_ExpandArrowMaterial);
-            ObjectUtils.Destroy(m_LockIconMaterial);
-            ObjectUtils.Destroy(m_UnlockIconMaterial);
+            UnityObjectUtils.Destroy(m_TextMaterial);
+            UnityObjectUtils.Destroy(m_ExpandArrowMaterial);
+            UnityObjectUtils.Destroy(m_LockIconMaterial);
+            UnityObjectUtils.Destroy(m_UnlockIconMaterial);
         }
     }
 }

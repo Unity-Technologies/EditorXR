@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections;
-using UnityEditor.Experimental.EditorVR;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -265,7 +265,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_ButtonMaterial);
+            UnityObjectUtils.Destroy(m_ButtonMaterial);
         }
 
         void OnEnable()

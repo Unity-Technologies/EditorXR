@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -21,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void DeleteSceneObject(GameObject sceneObject)
         {
             this.RemoveFromSpatialHash(sceneObject);
-            ObjectUtils.Destroy(sceneObject, withUndo: true);
+            UnityObjectUtils.Destroy(sceneObject, withUndo: true);
         }
 
         IEnumerator PlaceSceneObjectCoroutine(Transform obj, Vector3 targetScale)
@@ -35,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             obj.parent = null;
             var startScale = obj.localScale;
-            var startPosition = ObjectUtils.GetBounds(obj).center;
+            var startPosition = BoundsUtils.GetBounds(obj).center;
             var pivotOffset = obj.position - startPosition;
             var startRotation = obj.rotation;
             var targetRotation = MathUtilsExt.ConstrainYawRotation(startRotation);
@@ -48,7 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var scaleDiff = targetScale.magnitude / startScale.magnitude;
             var targetPivotOffset = rotationDiff * pivotOffset * scaleDiff;
             obj.position = startPosition + targetPivotOffset;
-            var bounds = ObjectUtils.GetBounds(obj);
+            var bounds = BoundsUtils.GetBounds(obj);
             obj.localScale = origScale;
             obj.localRotation = startRotation;
             obj.position = startPosition + pivotOffset;
@@ -101,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var startPositions = new Vector3[length];
             var startRotations = new Quaternion[length];
             var startScales = new Vector3[length];
-            var center = ObjectUtils.GetBounds(transforms).center;
+            var center = BoundsUtils.GetBounds(transforms).center;
             var pivot = Vector3.zero;
 
             //Get bounds at target scale and rotation (scaled and rotated from bounds center)
@@ -122,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
             pivot /= length;
 
-            var bounds = ObjectUtils.GetBounds(transforms);
+            var bounds = BoundsUtils.GetBounds(transforms);
 
             for (var i = 0; i < length; i++)
             {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -55,7 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnEnable()
         {
-            m_MiniCamera = (Camera)ObjectUtils.CreateGameObjectWithComponent(typeof(Camera));
+            m_MiniCamera = (Camera)EditorXRUtils.CreateGameObjectWithComponent(typeof(Camera));
             var go = m_MiniCamera.gameObject;
             go.name = "MiniWorldCamera";
             go.tag = k_MiniWorldCameraTag;
@@ -66,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void OnDisable()
         {
             Camera.onPostRender -= RenderMiniWorld;
-            ObjectUtils.Destroy(m_MiniCamera.gameObject);
+            UnityObjectUtils.Destroy(m_MiniCamera.gameObject);
         }
 
         void RenderMiniWorld(Camera camera)

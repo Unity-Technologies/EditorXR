@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -173,7 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             m_MenuFacesMaterial = MaterialUtils.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());
             m_MenuFacesColor = m_MenuFacesMaterial.color;
-            localBounds = ObjectUtils.GetBounds(transform);
+            localBounds = BoundsUtils.GetBounds(transform);
         }
 
         public void Setup()
@@ -207,18 +208,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         {
             foreach (var kvp in m_Faces)
             {
-                ObjectUtils.Destroy(kvp.Value.gameObject);
+                UnityObjectUtils.Destroy(kvp.Value.gameObject);
             }
 
             foreach (var material in m_MaterialsToCleanup)
             {
-                ObjectUtils.Destroy(material);
+                UnityObjectUtils.Destroy(material);
             }
         }
 
         public MainMenuButton CreateFaceButton(ButtonData buttonData)
         {
-            var button = ObjectUtils.Instantiate(m_ButtonTemplatePrefab.gameObject);
+            var button = EditorXRUtils.Instantiate(m_ButtonTemplatePrefab.gameObject);
             button.name = buttonData.name;
             var mainMenuButton = button.GetComponent<MainMenuButton>();
 
@@ -241,7 +242,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public GameObject CreateCustomButton(GameObject prefab, string sectionName)
         {
-            var button = ObjectUtils.Instantiate(prefab);
+            var button = EditorXRUtils.Instantiate(prefab);
 
             if (string.IsNullOrEmpty(sectionName))
                 sectionName = k_UncategorizedFaceName;

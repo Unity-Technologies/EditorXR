@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
@@ -238,11 +238,11 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 
     void OnDestroy()
     {
-        ObjectUtils.Destroy(m_VisualsMaterial);
+        UnityObjectUtils.Destroy(m_VisualsMaterial);
 
         foreach (var sphere in m_Spheres)
         {
-            ObjectUtils.Destroy(sphere.gameObject);
+            UnityObjectUtils.Destroy(sphere.gameObject);
         }
     }
 }

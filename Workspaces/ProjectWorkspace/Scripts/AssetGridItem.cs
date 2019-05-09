@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -109,10 +110,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
 
                 if (m_Icon)
-                    ObjectUtils.Destroy(m_Icon);
+                    UnityObjectUtils.Destroy(m_Icon);
 
                 m_IconPrefab = value;
-                m_Icon = ObjectUtils.Instantiate(m_IconPrefab, transform, false);
+                m_Icon = EditorXRUtils.Instantiate(m_IconPrefab, transform, false);
                 m_Icon.transform.localPosition = Vector3.up * 0.5f;
                 m_Icon.transform.localRotation = Quaternion.AngleAxis(90, Vector3.down);
                 m_Icon.transform.localScale = Vector3.one;
@@ -127,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             set
             {
                 if (m_SphereMaterial)
-                    ObjectUtils.Destroy(m_SphereMaterial);
+                    UnityObjectUtils.Destroy(m_SphereMaterial);
 
                 m_SphereMaterial = Instantiate(value);
                 m_SphereMaterial.renderQueue = k_PreviewRenderQueue;
@@ -158,7 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
 
                 if (m_SphereMaterial)
-                    ObjectUtils.Destroy(m_SphereMaterial);
+                    UnityObjectUtils.Destroy(m_SphereMaterial);
 
                 m_SphereMaterial = new Material(Shader.Find("Standard")) { mainTexture = value };
                 m_SphereMaterial.renderQueue = k_PreviewRenderQueue;
@@ -244,7 +245,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void InstantiatePreview()
         {
             if (m_PreviewObjectTransform)
-                ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
+                UnityObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
 
             var preview = data.preview;
             if (!preview)
@@ -258,12 +259,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_PreviewPrefabScale = m_PreviewObjectTransform.localScale;
 
             // Normalize total scale to 1
-            m_PreviewBounds = ObjectUtils.GetBounds(m_PreviewObjectTransform);
+            m_PreviewBounds = BoundsUtils.GetBounds(m_PreviewObjectTransform);
 
             // Don't show a preview if there are no renderers
             if (m_PreviewBounds.size == Vector3.zero)
             {
-                ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
+                UnityObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
                 return;
             }
 
@@ -306,7 +307,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             // Do not show previews over a max vert count
             if (vertCount > k_HidePreviewVertexCount)
             {
-                ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
+                UnityObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
                 return;
             }
 
@@ -345,7 +346,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     var originalRotation = m_PreviewObjectClone.rotation;
                     var originalScale = m_PreviewObjectClone.localScale;
                     var restoreParent = m_PreviewObjectClone.parent;
-                    ObjectUtils.Destroy(m_PreviewObjectClone.gameObject);
+                    UnityObjectUtils.Destroy(m_PreviewObjectClone.gameObject);
                     m_PreviewObjectClone = ((GameObject)PrefabUtility.InstantiatePrefab(data.asset)).transform;
                     m_PreviewObjectClone.SetParent(restoreParent, false);
                     m_PreviewObjectClone.position = originalPosition;
@@ -364,7 +365,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_PreviewObjectClone.localScale = m_PreviewTargetScale;
 
                 // Destroy label
-                ObjectUtils.Destroy(cloneItem.m_TextPanel.gameObject);
+                UnityObjectUtils.Destroy(cloneItem.m_TextPanel.gameObject);
             }
 
             m_DragObject = clone.transform;
@@ -764,9 +765,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void OnDestroy()
         {
             if (m_SphereMaterial)
-                ObjectUtils.Destroy(m_SphereMaterial);
+                UnityObjectUtils.Destroy(m_SphereMaterial);
 
-            ObjectUtils.Destroy(m_Cube.sharedMaterial);
+            UnityObjectUtils.Destroy(m_Cube.sharedMaterial);
         }
 
         // Animate the LocalScale of the asset towards a common/unified scale
@@ -854,7 +855,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 
             cubeRenderer.sharedMaterial = null; // Drop material so it won't be destroyed (shared with cube in list)
-            ObjectUtils.Destroy(itemToHide);
+            UnityObjectUtils.Destroy(itemToHide);
         }
 
         void ShowGrabFeedback(Node node)

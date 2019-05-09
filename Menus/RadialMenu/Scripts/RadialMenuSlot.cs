@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -269,10 +269,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_InsetMaterial);
-            ObjectUtils.Destroy(m_IconMaterial);
-            ObjectUtils.Destroy(m_FrameMaterial);
-            ObjectUtils.Destroy(m_MaskMaterial);
+            UnityObjectUtils.Destroy(m_InsetMaterial);
+            UnityObjectUtils.Destroy(m_IconMaterial);
+            UnityObjectUtils.Destroy(m_FrameMaterial);
+            UnityObjectUtils.Destroy(m_MaskMaterial);
         }
 
         public void CorrectIconRotation()

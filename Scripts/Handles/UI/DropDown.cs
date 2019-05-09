@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -161,7 +161,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 // Clear existing options
                 var children = listTransform.Cast<Transform>().ToList(); // Copy list, since destroying children changes count
                 foreach (var child in children)
-                    ObjectUtils.Destroy(child.gameObject);
+                    UnityObjectUtils.Destroy(child.gameObject);
 
                 m_Toggles = new Toggle[m_Options.Length];
 

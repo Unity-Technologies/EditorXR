@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -44,7 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void Awake()
         {
-            localBounds = ObjectUtils.GetBounds(transform);
+            localBounds = BoundsUtils.GetBounds(transform);
 #if UNITY_EDITOR
             // We record property modifications on creation and modification of these UI elements, which will look odd when undone
             Undo.postprocessModifications += PostProcessModifications;

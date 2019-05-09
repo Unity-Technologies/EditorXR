@@ -42,13 +42,13 @@ namespace UnityEditor.Experimental.EditorVR.UI
             m_CubeTransforms = new Transform[m_TargetTransforms.Length];
             for (var i = 0; i < m_CubeTransforms.Length; i++)
             {
-                m_CubeTransforms[i] = ObjectUtils.Instantiate(m_CubePrefab, m_TargetTransforms[i], false).transform;
+                m_CubeTransforms[i] = EditorXRUtils.Instantiate(m_CubePrefab, m_TargetTransforms[i], false).transform;
             }
 
             m_HighlightCubeTransforms = new Transform[m_TargetHighlightTransforms.Length];
             for (var i = 0; i < m_TargetHighlightTransforms.Length; i++)
             {
-                m_HighlightCubeTransforms[i] = ObjectUtils.Instantiate(m_HighlightCubePrefab, m_TargetHighlightTransforms[i], false).transform;
+                m_HighlightCubeTransforms[i] = EditorXRUtils.Instantiate(m_HighlightCubePrefab, m_TargetHighlightTransforms[i], false).transform;
             }
         }
 
