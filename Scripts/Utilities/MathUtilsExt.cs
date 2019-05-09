@@ -73,18 +73,6 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         }
 
         /// <summary>
-        /// Returns a rotation which only contains the yaw component of the given rotation
-        /// </summary>
-        /// <param name="rotation">The rotation we would like to constrain</param>
-        /// <returns>A yaw-only rotation which matches the input's yaw</returns>
-        public static Quaternion ConstrainYawRotation(Quaternion rotation)
-        {
-            rotation.x = 0;
-            rotation.z = 0;
-            return rotation;
-        }
-
-        /// <summary>
         /// Get the position and rotation difference between two objects for the purpose of maintaining that offset
         /// </summary>
         /// <param name="from">The object whose position will be changing (parent)</param>

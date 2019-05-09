@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var startPosition = BoundsUtils.GetBounds(obj).center;
             var pivotOffset = obj.position - startPosition;
             var startRotation = obj.rotation;
-            var targetRotation = MathUtilsExt.ConstrainYawRotation(startRotation);
+            var targetRotation = startRotation.ConstrainYaw();
 
             //Get bounds at target scale and rotation (scaled and rotated from bounds center)
             var origScale = obj.localScale;

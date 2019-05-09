@@ -630,7 +630,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var transform = go.transform;
             transform.position = itemTransform.position;
-            transform.rotation = MathUtilsExt.ConstrainYawRotation(itemTransform.rotation);
+            transform.rotation = itemTransform.rotation.ConstrainYaw();
 
             this.AddToSpatialHash(go);
 

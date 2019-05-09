@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
@@ -183,7 +184,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 var workspaceTransform = allWorkspaces[i].transform;
                 var deltaRotation = rayOrigin.rotation * Quaternion.Inverse(m_RayOriginStartRotation);
                 var deltaPosition = rayOrigin.position - m_RayOriginStartPosition;
-                var yawRotation = MathUtilsExt.ConstrainYawRotation(deltaRotation);
+                var yawRotation = deltaRotation.ConstrainYaw();
                 var localOffset = m_WorkspacePositions[i] - m_RayOriginStartPosition;
                 workspaceTransform.position = m_RayOriginStartPosition + deltaPosition * kMoveMultiplier +
                                               yawRotation * localOffset;

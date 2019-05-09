@@ -361,8 +361,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void MagnetizeTransform(Transform fieldGrabOrigin, Transform transform, float stackingOffset = 0)
         {
-            var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation)
-                * Quaternion.AngleAxis(90, Vector3.left);
+            var rotation = CameraUtils.GetMainCamera().transform.rotation.ConstrainYaw() * Quaternion.AngleAxis(90, Vector3.left);
             var stackingDirection = rotation * Vector3.one;
             MathUtilsExt.LerpTransform(transform, fieldGrabOrigin.position - stackingDirection * stackingOffset, rotation, m_DragLerp);
         }

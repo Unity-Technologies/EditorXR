@@ -218,7 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 return;
 
             var cameraTransform = CameraUtils.GetMainCamera().transform;
-            var cameraYaw = MathUtilsExt.ConstrainYawRotation(cameraTransform.localRotation);
+            var cameraYaw = cameraTransform.localRotation.ConstrainYaw();
             var ringTransform = m_Ring.transform;
             ringTransform.localPosition = cameraTransform.localPosition + cameraYaw * k_RingOffset;
             ringTransform.localRotation = cameraYaw;
@@ -701,7 +701,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                                 rayToRay.y = 0; // Use for yaw rotation
 
-                                var pivotYaw = MathUtilsExt.ConstrainYawRotation(cameraRig.rotation);
+                                var pivotYaw = cameraRig.rotation.ConstrainYaw();
 
                                 if (!m_Scaling)
                                 {

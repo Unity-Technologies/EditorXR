@@ -152,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var cameraRigScale = cameraRig.localScale.x;
                 m_Preferences.cameraRigScale = cameraRigScale;
                 m_Preferences.cameraPosition = cameraTransform.position;
-                m_Preferences.cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
+                m_Preferences.cameraRotation = cameraTransform.rotation.ConstrainYaw();
             }
 
             public void OnDeserializePreferences(object obj)
@@ -165,7 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var camera = CameraUtils.GetMainCamera();
                 var cameraRig = CameraUtils.GetCameraRig();
                 var cameraTransform = camera.transform;
-                var cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
+                var cameraRotation = cameraTransform.rotation.ConstrainYaw();
                 var inverseRotation = Quaternion.Inverse(cameraRotation);
                 cameraRig.position = Vector3.zero;
                 cameraRig.rotation = inverseRotation * preferences.cameraRotation;
@@ -277,7 +277,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     renderer.enabled = false;
                 }
 
-                var rotationDiff = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
+                var rotationDiff = (Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation).ConstrainYaw();
                 var cameraDiff = cameraRig.position - mainCamera.position;
                 cameraDiff.y = 0;
                 var rotationOffset = rotationDiff * cameraDiff - cameraDiff;

@@ -288,7 +288,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (m_DragClone)
             {
                 var fieldGrabOrigin = this.GetFieldGrabOriginForRayOrigin(rayOrigin);
-                var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation);
+                var rotation = CameraUtils.GetMainCamera().transform.rotation.ConstrainYaw();
                 MathUtilsExt.LerpTransform(m_DragClone, fieldGrabOrigin.position, rotation, m_DragLerp);
             }
         }

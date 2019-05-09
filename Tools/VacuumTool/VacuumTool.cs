@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -113,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             offset *= this.GetViewerScale();
 
             var camera = CameraUtils.GetMainCamera().transform;
-            var destPosition = camera.position + MathUtilsExt.ConstrainYawRotation(camera.rotation) * offset;
+            var destPosition = camera.position + camera.rotation.ConstrainYaw() * offset;
             var destRotation = Quaternion.LookRotation(camera.forward) * defaultTilt;
 
             var currentValue = 0f;

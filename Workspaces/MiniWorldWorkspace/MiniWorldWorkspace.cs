@@ -394,7 +394,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 var midPoint = rayOriginPosition + rayToRay * 0.5f;
                 m_StartScale = referenceTransform.localScale.x;
                 m_StartDistance = rayToRay.magnitude;
-                m_StartMidPoint = MathUtilsExt.ConstrainYawRotation(referenceTransform.rotation) * midPoint;
+                m_StartMidPoint = referenceTransform.rotation.ConstrainYaw() * midPoint;
                 m_StartDirection = rayToRay;
                 m_StartDirection.y = 0;
                 m_StartOffset = m_StartMidPoint * m_StartScale;
