@@ -1,13 +1,14 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Handles;
+﻿using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
     sealed class ScaleManipulator : BaseManipulator
     {
+#pragma warning disable 649
         [SerializeField]
         BaseHandle m_UniformHandle;
+#pragma warning restore 649
 
         protected override void OnHandleDragging(BaseHandle handle, HandleEventData eventData)
         {
@@ -38,4 +39,3 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         }
     }
 }
-#endif

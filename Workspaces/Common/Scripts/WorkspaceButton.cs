@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -17,97 +16,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const string k_MaterialColorTopProperty = "_ColorTop";
         const string k_MaterialColorBottomProperty = "_ColorBottom";
 
-        public event Action<Transform> clicked;
-        public event Action<Transform> hovered;
-
-        public bool autoHighlight
-        {
-            get { return m_AutoHighlight; }
-            set { m_AutoHighlight = value; }
-        }
-
+#pragma warning disable 649
         [SerializeField]
         bool m_AutoHighlight = true;
-
-        public Sprite iconSprite
-        {
-            set
-            {
-                m_IconSprite = value;
-                m_Icon.sprite = m_IconSprite;
-            }
-        }
-
-        Sprite m_IconSprite;
-
-        public Color customHighlightColor
-        {
-            get { return m_CustomHighlightColor; }
-            set { m_CustomHighlightColor = value; }
-        }
 
         [Header("Extras")]
         [SerializeField]
         Color m_CustomHighlightColor = UnityBrandColorScheme.light;
 
-        public bool pressed
-        {
-            get { return m_Pressed; }
-            set
-            {
-                if (m_Highlighted && value != m_Pressed && value) // proceed only if value is true after previously being false
-                {
-                    m_Pressed = value;
-
-                    this.StopCoroutine(ref m_IconHighlightCoroutine);
-
-                    m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
-                }
-            }
-        }
-
-        bool m_Pressed;
-
-        public bool highlighted
-        {
-            set
-            {
-                if (m_Highlighted == value)
-                    return;
-                else
-                {
-                    // Stop any existing icon highlight coroutines
-                    this.StopCoroutine(ref m_IconHighlightCoroutine);
-
-                    m_Highlighted = value;
-
-                    // Stop any existing begin/end highlight coroutine
-                    this.StopCoroutine(ref m_HighlightCoroutine);
-
-                    if (!gameObject.activeInHierarchy)
-                        return;
-
-                    m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
-                }
-            }
-        }
-
-        bool m_Highlighted;
-
-        public bool alternateIconVisible
-        {
-            set
-            {
-                if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
-                    m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
-            }
-            get { return m_Icon.sprite == m_AlternateIconSprite; }
-        }
-
         [SerializeField]
         Sprite m_AlternateIconSprite;
-
-        public MeshRenderer buttonMeshRenderer { get { return m_ButtonMeshRenderer; } }
 
         [SerializeField]
         MeshRenderer m_ButtonMeshRenderer;
@@ -141,6 +59,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         [Range(0f, 2f)]
         float m_DelayBeforeReveal = 0.25f;
+#pragma warning restore 649
+
+        Sprite m_IconSprite;
+
+        bool m_Pressed;
+        bool m_Highlighted;
 
         GradientPair m_OriginalGradientPair;
         GradientPair m_HighlightGradientPair;
@@ -164,6 +88,82 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         // The already visible, highlight coroutines
         Coroutine m_HighlightCoroutine;
         Coroutine m_IconHighlightCoroutine;
+
+        public event Action<Transform> clicked;
+        public event Action<Transform> hovered;
+
+        public bool autoHighlight
+        {
+            get { return m_AutoHighlight; }
+            set { m_AutoHighlight = value; }
+        }
+
+        public Sprite iconSprite
+        {
+            set
+            {
+                m_IconSprite = value;
+                m_Icon.sprite = m_IconSprite;
+            }
+        }
+
+        public Color customHighlightColor
+        {
+            get { return m_CustomHighlightColor; }
+            set { m_CustomHighlightColor = value; }
+        }
+
+        public bool pressed
+        {
+            get { return m_Pressed; }
+            set
+            {
+                if (m_Highlighted && value != m_Pressed && value) // proceed only if value is true after previously being false
+                {
+                    m_Pressed = value;
+
+                    this.StopCoroutine(ref m_IconHighlightCoroutine);
+
+                    m_IconHighlightCoroutine = StartCoroutine(IconContainerContentsBeginHighlight(true));
+                }
+            }
+        }
+
+        public bool highlighted
+        {
+            set
+            {
+                if (m_Highlighted == value)
+                    return;
+                else
+                {
+                    // Stop any existing icon highlight coroutines
+                    this.StopCoroutine(ref m_IconHighlightCoroutine);
+
+                    m_Highlighted = value;
+
+                    // Stop any existing begin/end highlight coroutine
+                    this.StopCoroutine(ref m_HighlightCoroutine);
+
+                    if (!gameObject.activeInHierarchy)
+                        return;
+
+                    m_HighlightCoroutine = m_Highlighted ? StartCoroutine(BeginHighlight()) : StartCoroutine(EndHighlight());
+                }
+            }
+        }
+
+        public bool alternateIconVisible
+        {
+            set
+            {
+                if (m_AlternateIconSprite) // Only allow sprite swapping if an alternate sprite exists
+                    m_Icon.sprite = value ? m_AlternateIconSprite : m_OriginalIconSprite; // If true, set the icon sprite back to the original sprite
+            }
+            get { return m_Icon.sprite == m_AlternateIconSprite; }
+        }
+
+        public MeshRenderer buttonMeshRenderer { get { return m_ButtonMeshRenderer; } }
 
         public Button button { get { return m_Button; } }
 
@@ -491,4 +491,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

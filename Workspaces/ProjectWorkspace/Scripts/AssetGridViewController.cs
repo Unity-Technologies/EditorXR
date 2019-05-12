@@ -1,20 +1,36 @@
-#if UNITY_EDITOR
+using ListView;
 using System;
 using System.Collections.Generic;
-using ListView;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, string>
+    sealed class AssetGridViewController : ListViewController<AssetData, AssetGridItem, int>
     {
         const float k_PositionFollow = 0.4f;
+
+#pragma warning disable 649
+        [SerializeField]
+        float m_ScaleFactor = 0.05f;
+
+        [SerializeField]
+        string[] m_IconTypes;
+
+        [SerializeField]
+        GameObject[] m_Icons;
+#pragma warning restore 649
 
         Transform m_GrabbedObject;
 
         int m_NumPerRow;
+
+        float m_LastHiddenItemOffset;
+
+        readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
+
+        Action<AssetGridItem> m_OnRecycleComplete;
 
         public float scaleFactor
         {
@@ -26,21 +42,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        [SerializeField]
-        float m_ScaleFactor = 0.05f;
-
-        [SerializeField]
-        string[] m_IconTypes;
-
-        [SerializeField]
-        GameObject[] m_Icons;
-
-        float m_LastHiddenItemOffset;
-
-        readonly Dictionary<string, GameObject> m_IconDictionary = new Dictionary<string, GameObject>();
-
-        Action<AssetGridItem> m_OnRecyleComplete;
-
         public Func<string, bool> matchesFilter { private get; set; }
 
         protected override float listHeight
@@ -51,7 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     return 0;
 
                 var numRows = Mathf.CeilToInt(m_Data.Count / m_NumPerRow);
-                return Mathf.Clamp(numRows, 1, Int32.MaxValue) * itemSize.z;
+                return Mathf.Clamp(numRows, 1, int.MaxValue) * itemSize.z;
             }
         }
 
@@ -76,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void Awake()
         {
-            m_OnRecyleComplete = OnRecycleComplete;
+            m_OnRecycleComplete = OnRecycleComplete;
         }
 
         protected override void Setup()
@@ -166,7 +167,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_ListItems.Remove(index);
 
-            item.SetVisibility(false, m_OnRecyleComplete);
+            item.SetVisibility(false, m_OnRecycleComplete);
         }
 
         void OnRecycleComplete(AssetGridItem gridItem)
@@ -223,12 +224,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (Mathf.Abs(scrollOffset - m_LastHiddenItemOffset) < itemSize.z * jitterMargin) // Avoid jitter while scrolling rows in and out of view
                 return null;
 
+#if UNITY_EDITOR
             // If this AssetData hasn't fetched its asset yet, do so now
             if (data.asset == null)
             {
-                data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index));
+                data.asset = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid));
                 data.preview = data.asset as GameObject;
             }
+#endif
 
             var item = base.GetItem(data);
 
@@ -269,10 +272,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         static void LoadFallbackTexture(AssetGridItem item, AssetData data)
         {
             item.fallbackTexture = null;
+#if UNITY_EDITOR
             item.StartCoroutine(ObjectUtils.GetAssetPreview(
-                AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.index)),
+                AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(data.guid)),
                 texture => item.fallbackTexture = texture));
+#endif
         }
     }
 }
-#endif

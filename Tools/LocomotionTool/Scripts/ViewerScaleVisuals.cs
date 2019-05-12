@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR;
+﻿using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,6 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class ViewerScaleVisuals : MonoBehaviour, IUsesViewerScale
     {
+#pragma warning disable 649
         [SerializeField]
         float m_IconTranslateCoefficient = -0.16f;
 
@@ -36,6 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         GameObject m_IconPrefab;
+#pragma warning restore 649
 
         float m_LineWidth;
 
@@ -103,4 +104,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif

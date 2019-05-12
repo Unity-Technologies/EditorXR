@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections;
+﻿using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -10,6 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     public class HintIcon : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
         bool m_HideOnInitialize = true;
 
@@ -33,6 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         bool m_SlightlyRandomizeHideDuration = true;
+#pragma warning restore 649
 
         readonly Vector3 k_HiddenScale = Vector3.zero;
 
@@ -143,4 +144,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

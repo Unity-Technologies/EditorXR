@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+#if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -7,16 +7,17 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     [MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
     sealed class InspectorWorkspace : Workspace, ISelectionChanged, IInspectorWorkspace
     {
-        public new static readonly Vector3 DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
-
+#pragma warning disable 649
         [SerializeField]
         GameObject m_ContentPrefab;
 
         [SerializeField]
         GameObject m_LockPrefab;
+#pragma warning restore 649
 
         InspectorUI m_InspectorUI;
         GameObject m_SelectedObject;
@@ -45,7 +46,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var listView = m_InspectorUI.listView;
             this.ConnectInterfaces(listView);
             listView.data = new List<InspectorData>();
-            listView.arraySizeChanged += OnArraySizeChanged;
 
             var scrollHandle = m_InspectorUI.scrollHandle;
             scrollHandle.dragStarted += OnScrollDragStarted;
@@ -61,11 +61,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             scrollHandleTransform.localScale = new Vector3(1.03f, 0.02f, 1.02f); // Extra space for scrolling
             scrollHandleTransform.localPosition = new Vector3(0f, -0.01f, 0f); // Offset from content for collision purposes
 
+#if UNITY_EDITOR
+            listView.arraySizeChanged += OnArraySizeChanged;
+
             if (Selection.activeGameObject)
                 OnSelectionChanged();
 
             Undo.postprocessModifications += OnPostprocessModifications;
             Undo.undoRedoPerformed += UpdateCurrentObject;
+#endif
 
             // Propagate initial bounds
             OnBoundsChanged();
@@ -143,8 +147,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (fullReload)
             {
                 var inspectorData = new List<InspectorData>();
-                var objectChildren = new List<InspectorData>();
 
+#if UNITY_EDITOR
+                var objectChildren = new List<InspectorData>();
                 foreach (var component in selection.GetComponents<Component>())
                 {
                     var obj = new SerializedObject(component);
@@ -164,6 +169,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 var objectData = new InspectorData("InspectorHeaderItem", new SerializedObject(selection), objectChildren);
                 inspectorData.Add(objectData);
+#else
+                // TODO: Runtime serialization
+#endif
 
                 listView.data = inspectorData;
             }
@@ -173,6 +181,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
+        void UpdateCurrentObject(bool fullReload)
+        {
+            if (m_SelectedObject)
+                UpdateInspectorData(m_SelectedObject, fullReload);
+        }
+
+#if UNITY_EDITOR
         UndoPropertyModification[] OnPostprocessModifications(UndoPropertyModification[] modifications)
         {
             if (!m_SelectedObject || !IncludesCurrentObject(modifications))
@@ -204,12 +219,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 
             return false;
-        }
-
-        void UpdateCurrentObject(bool fullReload)
-        {
-            if (m_SelectedObject)
-                UpdateInspectorData(m_SelectedObject, fullReload);
         }
 
         PropertyData SerializedPropertyToPropertyData(SerializedProperty property, SerializedObject obj)
@@ -326,6 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             return false;
         }
+#endif
 
         protected override void OnBoundsChanged()
         {
@@ -333,7 +343,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var listView = m_InspectorUI.listView;
             var bounds = contentBounds;
             size.y = float.MaxValue; // Add height for dropdowns
-            size.x -= DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
+            size.x -= k_DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
             size.z -= FaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             bounds.size = size;
             listView.size = bounds.size;
@@ -354,17 +364,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             OnButtonClicked(null);
         }
 
+#if UNITY_EDITOR
         protected override void OnDestroy()
         {
             Undo.postprocessModifications -= OnPostprocessModifications;
             Undo.undoRedoPerformed -= UpdateCurrentObject;
-#if UNITY_2018_1_OR_NEWER
             EditorApplication.hierarchyChanged -= UpdateCurrentObject;
-#else
-            EditorApplication.hierarchyWindowChanged -= UpdateCurrentObject;
-#endif
             base.OnDestroy();
         }
+#endif
 
         void OnLockButtonClicked(Transform rayOrigin)
         {
@@ -378,5 +386,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 UpdateCurrentObject(fullRebuild);
         }
     }
+#else
+    [EditorOnlyWorkspace]
+    sealed class InspectorWorkspace : Workspace
+    {
+        [SerializeField]
+        GameObject m_ContentPrefab;
+
+        [SerializeField]
+        GameObject m_LockPrefab;
+    }
+#endif
 }
 #endif

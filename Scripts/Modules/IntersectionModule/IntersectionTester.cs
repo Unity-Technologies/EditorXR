@@ -1,15 +1,16 @@
-#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class IntersectionTester : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
         Transform[] m_RayTransforms;
 
         [SerializeField]
         bool m_ShowRays;
+#pragma warning restore 649
 
         bool m_Active = true;
         Ray[] m_Rays;
@@ -71,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
+        //TODO: What's up with this?
 #if !UNITY_EDITOR
 #pragma warning disable 109
 #endif
@@ -99,4 +101,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

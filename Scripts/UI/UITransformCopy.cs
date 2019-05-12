@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Extensions;
+﻿using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
@@ -10,6 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         Transform m_TargetTransform;
 
+#pragma warning disable 649
         [SerializeField]
         RectTransform m_SourceRectTransform;
 
@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         float m_XPositionPadding = 0.005f;
 
         [SerializeField]
-        float m_YPositionPadding = 0f;
+        float m_YPositionPadding;
 
         [SerializeField]
         float m_ZPositionPadding = 0.00055f;
@@ -26,10 +26,11 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         float m_XScalePadding = 0.01f;
 
         [SerializeField]
-        float m_YScalePadding = 0f;
+        float m_YScalePadding;
 
         [SerializeField]
         bool m_ParentUnderSource = true;
+#pragma warning restore 649
 
         void Awake()
         {
@@ -68,4 +69,3 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         }
     }
 }
-#endif

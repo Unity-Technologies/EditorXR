@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
@@ -8,15 +7,16 @@ namespace UnityEditor.Experimental.EditorVR.Actions
     /// </summary>
     abstract class BaseAction : MonoBehaviour, IAction
     {
+#pragma warning disable 649
+        [SerializeField]
+        Sprite m_Icon;
+#pragma warning restore 649
+
         public Sprite icon
         {
             get { return m_Icon; }
         }
 
-        [SerializeField]
-        Sprite m_Icon;
-
         public abstract void ExecuteAction();
     }
 }
-#endif

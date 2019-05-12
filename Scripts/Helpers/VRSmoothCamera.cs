@@ -1,10 +1,10 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
+#if UNITY_EDITOR
     /// <summary>
     /// A preview camera that provides for smoothing of the position and look vector
     /// </summary>
@@ -12,12 +12,40 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
     [RequiresLayer(k_HMDOnlyLayer)]
     sealed class VRSmoothCamera : MonoBehaviour, IPreviewCamera
     {
+        static readonly List<bool> k_HiddenEnabled = new List<bool>();
+        const string k_HMDOnlyLayer = "HMDOnly";
+        static readonly Rect k_DefaultCameraRect = new Rect(0f, 0f, 1f, 1f);
+
+#pragma warning disable 649
+        [SerializeField]
+        Camera m_VRCamera;
+
+        [SerializeField]
+        int m_TargetDisplay;
+
+        [Range(1, 180)]
+        [SerializeField]
+        int m_FieldOfView = 40;
+
+        [SerializeField]
+        float m_PullBackDistance = 0.8f;
+
+        [SerializeField]
+        float m_SmoothingMultiplier = 3;
+#pragma warning restore 649
+
+        Camera m_SmoothCamera;
+
+        RenderTexture m_RenderTexture;
+
+        Vector3 m_Position;
+        Quaternion m_Rotation;
+        int m_HMDOnlyLayerMask;
+
         /// <summary>
         /// The camera drawing the preview
         /// </summary>
         public Camera previewCamera { get { return m_SmoothCamera; } }
-
-        Camera m_SmoothCamera;
 
         /// <summary>
         /// The actual HMD camera (will be provided by system)
@@ -28,32 +56,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             private get { return m_VRCamera; }
             set { m_VRCamera = value; }
         }
-
-        [SerializeField]
-        Camera m_VRCamera;
-
-        [SerializeField]
-        int m_TargetDisplay;
-
-        [SerializeField, Range(1, 180)]
-        int m_FieldOfView = 40;
-
-        [SerializeField]
-        float m_PullBackDistance = 0.8f;
-
-        [SerializeField]
-        float m_SmoothingMultiplier = 3;
-
-        const string k_HMDOnlyLayer = "HMDOnly";
-        readonly Rect k_DefaultCameraRect = new Rect(0f, 0f, 1f, 1f);
-
-        RenderTexture m_RenderTexture;
-
-        Vector3 m_Position;
-        Quaternion m_Rotation;
-        int m_HMDOnlyLayerMask;
-
-        static readonly List<bool> k_HiddenEnabled = new List<bool>();
 
         /// <summary>
         /// A layer mask that controls what will always render in the HMD and not in the preview
@@ -93,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         {
             m_SmoothCamera.CopyFrom(m_VRCamera); // This copies the transform as well
             var vrCameraTexture = m_VRCamera.targetTexture;
+#if UNITY_EDITOR
             if (vrCameraTexture && (!m_RenderTexture || m_RenderTexture.width != vrCameraTexture.width || m_RenderTexture.height != vrCameraTexture.height))
             {
                 var guiRect = new Rect(0f, 0f, vrCameraTexture.width, vrCameraTexture.height);
@@ -100,6 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 VRView.activeView.CreateCameraTargetTexture(ref m_RenderTexture, cameraRect, false);
                 m_RenderTexture.name = "Smooth Camera RT";
             }
+#endif
 
             m_SmoothCamera.targetTexture = m_RenderTexture;
             m_SmoothCamera.targetDisplay = m_TargetDisplay;
@@ -138,5 +142,25 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             }
         }
     }
-}
+#else
+    sealed class VRSmoothCamera : MonoBehaviour
+    {
+#pragma warning disable 649
+        [SerializeField]
+        Camera m_VRCamera;
+
+        [SerializeField]
+        int m_TargetDisplay;
+
+        [SerializeField]
+        int m_FieldOfView = 40;
+
+        [SerializeField]
+        float m_PullBackDistance = 0.8f;
+
+        [SerializeField]
+        float m_SmoothingMultiplier = 3;
+#pragma warning restore 649
+    }
 #endif
+}

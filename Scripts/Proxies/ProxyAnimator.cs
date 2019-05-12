@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -28,8 +27,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_ProxyActionMap;
+#pragma warning restore 649
 
         Affordance[] m_Affordances;
         AffordanceDefinition[] m_AffordanceDefinitions;
@@ -40,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly FeedbackDictionary m_FeedbackRequests = new FeedbackDictionary();
 
         public ActionMap actionMap { get { return m_ProxyActionMap; } }
-        public bool ignoreLocking { get { return true; } }
+        public bool ignoreActionMapInputLocking { get { return true; } }
 
         public Node node { private get; set; }
 
@@ -188,4 +189,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif

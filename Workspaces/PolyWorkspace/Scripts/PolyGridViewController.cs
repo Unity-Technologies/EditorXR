@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using ListView;
 using UnityEngine;
 
@@ -14,6 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const float k_PositionFollow = 0.4f;
 
+#pragma warning disable 649
         [SerializeField]
         float m_ScaleFactor = 0.05f;
 
@@ -31,6 +31,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         GameObject[] m_Icons;
+#pragma warning restore 649
 
         Transform m_GrabbedObject;
 
@@ -272,4 +273,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

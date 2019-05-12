@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +11,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
+    [SpatialMenuItem("Selection", "Tools", "Select & manipulate objects in the scene")]
     sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
         ISetHighlight, ISelectObject, ISetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
         ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
@@ -39,6 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_BLockSelectDragThreshold = 0.01f;
         static readonly Quaternion k_TooltipRotation = Quaternion.AngleAxis(90, Vector3.right);
 
+#pragma warning disable 649
         [SerializeField]
         Sprite m_Icon;
 
@@ -53,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         GameObject m_SettingsMenuItemPrefab;
+#pragma warning restore 649
 
         Preferences m_Preferences;
 
@@ -83,7 +85,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<GameObject> m_BlockSelectHoverGameObjects = new List<GameObject>();
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
+
 
         public Transform rayOrigin { get; set; }
         public Node node { private get; set; }
@@ -556,8 +559,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     ((SelectionTool)linkedObject).m_Preferences = m_Preferences;
                 }
 
-                m_SphereToggle.isOn = m_Preferences.sphereMode;
-                m_CubeToggle.isOn = !m_Preferences.sphereMode;
+                if (m_SphereToggle)
+                    m_SphereToggle.isOn = m_Preferences.sphereMode;
+
+                if (m_CubeToggle)
+                    m_CubeToggle.isOn = !m_Preferences.sphereMode;
             }
         }
 
@@ -611,4 +617,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif

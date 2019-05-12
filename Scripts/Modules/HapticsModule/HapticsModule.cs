@@ -1,11 +1,13 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_2018_3_OR_NEWER
 using System;
+using System.IO;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
+using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HapticsModule : MonoBehaviour
+    sealed class HapticsModule : MonoBehaviour, ISystemModule
     {
         public const float MaxDuration = 0.8f;
 
@@ -19,11 +21,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// </summary>
         public float masterIntensity { set { m_MasterIntensity = Mathf.Clamp(value, 0f, 10f); } }
 
-#if ENABLE_OVR_INPUT
-        OVRHaptics.OVRHapticsChannel m_LHapticsChannel;
-        OVRHaptics.OVRHapticsChannel m_RHapticsChannel;
-        OVRHapticsClip m_GeneratedHapticClip;
-#endif
+        InputDevice m_LeftHand;
+        InputDevice m_RightHand;
+        MemoryStream m_GeneratedHapticClip;
+        HapticCapabilities m_Capabilites;
 
         /// <summary>
         /// Allow for a single warning that informs the user of an attempted pulse with a length greater than 0.8f
@@ -32,20 +33,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void Start()
         {
-#if ENABLE_OVR_INPUT
-            m_LHapticsChannel = OVRHaptics.LeftChannel;
-            m_RHapticsChannel = OVRHaptics.RightChannel;
-            m_GeneratedHapticClip = new OVRHapticsClip();
-#endif
+            m_LeftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
+            m_RightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
+            m_LeftHand.TryGetHapticCapabilities(out m_Capabilites);
+            m_GeneratedHapticClip = new MemoryStream();
         }
-
-#if ENABLE_OVR_INPUT
-        void LateUpdate()
-        {
-            // Perform a manual update of OVR haptics
-            OVRHaptics.Process();
-        }
-#endif
 
         /// <summary>
         /// Pulse haptic feedback
@@ -61,8 +53,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (Mathf.Approximately(m_MasterIntensity, 0))
                 return;
 
-#if ENABLE_OVR_INPUT
-            m_GeneratedHapticClip.Reset();
+            // Reset buffer
+            m_GeneratedHapticClip.Seek(0, SeekOrigin.Begin);
+            m_GeneratedHapticClip.SetLength(0);
 
             var duration = hapticPulse.duration * durationMultiplier;
             var intensity = hapticPulse.intensity * intensityMultiplier;
@@ -95,7 +88,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 else if (fadeOut && i > durationFadeOutPosition)
                     sampleShaped = Mathf.Lerp(0, intensity, (duration - i) / fadeOutSampleCount);
 
-                m_GeneratedHapticClip.WriteSample(Convert.ToByte(sampleShaped));
+                var sampleByte = Convert.ToByte(sampleShaped);
+                m_GeneratedHapticClip.WriteByte(sampleByte);
             }
 
             const float kMaxSimultaneousClipDuration = 0.25f;
@@ -104,74 +98,53 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 // Prevent multiple long clips from playing back simultaneously
                 // If the new clip has a long duration, stop playback of any existing clips in order to prevent haptic feedback noise
-                if (channel != null)
+                var buffer = m_GeneratedHapticClip.GetBuffer();
+                if (node == Node.None)
                 {
-                    channel.Preempt(m_GeneratedHapticClip);
+                    StopPulses();
+                    if (m_Capabilites.supportsBuffer)
+                    {
+                        m_LeftHand.SendHapticBuffer(0, buffer);
+                        m_RightHand.SendHapticBuffer(0, buffer);
+                    }
+                    else
+                    {
+                        m_LeftHand.SendHapticImpulse(0, intensity, duration);
+                        m_RightHand.SendHapticImpulse(0, intensity, duration);
+                    }
                 }
                 else
                 {
-                    m_RHapticsChannel.Preempt(m_GeneratedHapticClip);
-                    m_LHapticsChannel.Preempt(m_GeneratedHapticClip);
+                    StopPulses(node);
+                    if (m_Capabilites.supportsBuffer)
+                        channel.SendHapticBuffer(0, buffer);
+                    else
+                        channel.SendHapticImpulse(0, intensity, duration);
                 }
             }
-            else
-            {
-                // Allow multiple short clips to play simultaneously
-                if (channel != null)
-                {
-                    channel.Mix(m_GeneratedHapticClip);
-                }
-                else
-                {
-                    m_RHapticsChannel.Mix(m_GeneratedHapticClip);
-                    m_LHapticsChannel.Mix(m_GeneratedHapticClip);
-                }
-            }
-#endif
         }
 
         public void StopPulses(Node node)
         {
-#if ENABLE_OVR_INPUT
             var channel = GetTargetChannel(node);
-            if (channel != null)
-                channel.Clear();
-            else
-                Debug.LogWarning("Only null, or valid ray origins can stop pulse playback.");
-#endif
+            channel.StopHaptics();
         }
 
         public void StopPulses()
         {
-#if ENABLE_OVR_INPUT
-            m_RHapticsChannel.Clear();
-            m_LHapticsChannel.Clear();
-#endif
+            m_LeftHand.StopHaptics();
+            m_RightHand.StopHaptics();
         }
 
-#if ENABLE_OVR_INPUT
-        OVRHaptics.OVRHapticsChannel GetTargetChannel(Node node)
+        InputDevice GetTargetChannel(Node node)
         {
-            OVRHaptics.OVRHapticsChannel channel = null;
-            if (node == Node.None)
-                return channel;
+            if (node == Node.LeftHand)
+                return m_LeftHand;
+            if (node == Node.RightHand)
+                return m_RightHand;
 
-            switch (node)
-            {
-                case Node.LeftHand:
-                    channel = m_LHapticsChannel;
-                    break;
-                case Node.RightHand:
-                    channel = m_RHapticsChannel;
-                    break;
-                default:
-                    Debug.LogWarning("Invalid node. Could not fetch haptics channel.");
-                    break;
-            }
-
-            return channel;
+            return default(InputDevice);
         }
-#endif
     }
 }
 #endif

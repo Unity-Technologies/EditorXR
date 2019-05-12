@@ -1,0 +1,16 @@
+{
+    "name": "EXR-Tests-Editor",
+    "references": [
+        "EXR-Tests",
+        "EXR-Utilities-Editor",
+        "EXR"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

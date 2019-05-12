@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,12 +6,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class ZoomSliderUI : MonoBehaviour
     {
-        public Slider zoomSlider { get { return m_ZoomSlider; } }
-
+#pragma warning disable 649
         [SerializeField]
         Slider m_ZoomSlider;
+#pragma warning restore 649
 
         public event Action<float> sliding;
+
+        public Slider zoomSlider { get { return m_ZoomSlider; } }
 
         public void ZoomSlider(float value)
         {
@@ -21,4 +22,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

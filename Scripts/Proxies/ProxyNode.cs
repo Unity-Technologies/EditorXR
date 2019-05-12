@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -329,6 +328,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
 
+#pragma warning disable 649
         [SerializeField]
         float m_FadeInDuration = 0.5f;
 
@@ -366,6 +366,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [Tooltip("Affordance objects that store transform, renderer, and tooltip references")]
         [SerializeField]
         Affordance[] m_Affordances;
+#pragma warning restore 649
 
         readonly Dictionary<Renderer, AffordanceData> m_AffordanceData = new Dictionary<Renderer, AffordanceData>();
         readonly List<Tuple<Renderer, AffordanceData>> m_BodyData = new List<Tuple<Renderer, AffordanceData>>();
@@ -406,6 +407,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// The transform that the display/preview objects will be parented under
         /// </summary>
         public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
+
         void Awake()
         {
             // Don't allow setup if affordances are invalid
@@ -567,7 +569,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 m_FacingAngleWeights.z += k_LastFacingAngleWeight;
                 return zDot > 0 ? FacingDirection.Front : FacingDirection.Back;
             }
-                
+
             m_FacingAngleWeights.y += k_LastFacingAngleWeight;
             return yDot > 0 ? FacingDirection.Top : FacingDirection.Bottom;
         }
@@ -808,4 +810,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif

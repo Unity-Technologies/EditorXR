@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -139,6 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         static readonly Vector3 k_BaseFrontPanelRotation = Vector3.zero;
         static readonly Vector3 k_MaxFrontPanelRotation = new Vector3(90f, 0f, 0f);
 
+#pragma warning disable 649
         [SerializeField]
         Transform m_SceneContainer;
 
@@ -246,6 +246,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         WorkspaceButton m_ResizeButton;
+#pragma warning restore 649
 
         BoxCollider m_FrameCollider;
         Bounds m_Bounds;
@@ -347,6 +348,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     handle.gameObject.SetActive(!value);
                 }
+
+                m_ResizeButton.gameObject.SetActive(!value);
             }
         }
 
@@ -1044,4 +1047,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

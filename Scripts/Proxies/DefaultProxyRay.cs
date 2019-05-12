@@ -1,7 +1,5 @@
-#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -17,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             public bool coneVisible;
         }
 
+#pragma warning disable 649
         [SerializeField]
         VRLineRenderer m_LineRenderer;
 
@@ -28,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         [SerializeField]
         MeshFilter m_Cone;
+#pragma warning restore 649
 
         Vector3 m_TipStartScale;
         Transform m_ConeTransform;
@@ -251,4 +251,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif

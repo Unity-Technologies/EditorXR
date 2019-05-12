@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenuUI : MonoBehaviour, IUsesViewerScale, IInstantiateUI,
-        IConnectInterfaces, IControlSpatialHinting, IUsesRayOrigin
+        IConnectInterfaces, IControlSpatialHinting, IUsesRayOrigin, IUsesStencilRef
     {
         const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
         const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -20,6 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const float k_RaySelectIconHighlightedZOffset = -0.0075f;
         const float k_SpatialSelectIconHighlightedZOffset = -0.02f;
 
+#pragma warning disable 649
         [SerializeField]
         Transform m_ButtonContainer;
 
@@ -32,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         Transform m_ButtonTooltipTarget;
+#pragma warning restore 649
 
         bool m_AllButtonsVisible;
         List<IToolsMenuButton> m_OrderedButtons;
@@ -46,6 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         Quaternion m_HintContentContainerInitialRotation;
         Vector3 m_HintContentWorldPosition;
         Vector3 m_DragTarget;
+
+        public byte stencilRef { get; set; }
 
         public int maxButtonCount { get; set; }
 
@@ -193,6 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             button.iconHighlightedLocalZOffset = k_RaySelectIconHighlightedZOffset;
             button.tooltipTarget = m_ButtonTooltipTarget;
             button.hovered += OnButtonHover;
+            button.stencilRef = stencilRef;
 
             bool allowSecondaryButton = false; // Secondary button is the close button
             var insertPosition = k_MenuButtonOrderPosition;
@@ -427,7 +431,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 m_OrderedButtons.Remove(button);
                 button.destroy();
-                button = m_OrderedButtons[k_ActiveToolOrderPosition]; // Assign next ordered button
+
+                // Return to the selection tool, as the active tool, when closing a tool via the secondary close button on a ToolsMenuButton
+                for (int i = 0; i < m_OrderedButtons.Count; ++i)
+                {
+                    if (IsSelectionToolButton(m_OrderedButtons[i]))
+                    {
+                        button = m_OrderedButtons[i];
+                        break;
+                    }
+                }
 
                 if (buttonSelected != null)
                     buttonSelected(rayOrigin, button.toolType); // Select the new active tool button
@@ -544,4 +557,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

@@ -1,11 +1,11 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Handles;
+﻿using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class ProjectUI : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
         FolderListViewController m_FolderListView;
 
@@ -23,6 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         WorkspaceHighlight m_FolderPanelHighlight;
+#pragma warning restore 649
 
         public FolderListViewController folderListView { get { return m_FolderListView; } }
         public LinearHandle folderScrollHandle { get { return m_FolderScrollHandle; } }
@@ -32,4 +33,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public WorkspaceHighlight folderPanelHighlight { get { return m_FolderPanelHighlight; } }
     }
 }
-#endif

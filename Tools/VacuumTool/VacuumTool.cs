@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -11,8 +10,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale,
         IRequestFeedback, IUsesNode
     {
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_ActionMap;
+#pragma warning restore 649
 
         float m_LastClickTime;
         readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
@@ -21,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<ProxyFeedbackRequest> m_Feedback = new List<ProxyFeedbackRequest>();
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         public List<IVacuumable> vacuumables { private get; set; }
 
@@ -133,4 +134,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif

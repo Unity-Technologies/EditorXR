@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -9,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces, ISerializePreferences
+    sealed class WorkspaceModule : MonoBehaviour, ISystemModule, IConnectInterfaces, ISerializePreferences
     {
         [Serializable]
         class Preferences
@@ -90,6 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         internal Transform rightRayOrigin { private get; set; }
 
         internal bool preserveWorkspaces { get; set; }
+        internal Type[] HiddenTypes { private get; set; }
 
         static WorkspaceModule()
         {
@@ -149,6 +149,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var workspaceType = Type.GetType(workspaceLayout.name);
                 if (workspaceType != null)
                 {
+                    if (HiddenTypes.Contains(workspaceType))
+                        continue;
+
                     CreateWorkspace(workspaceType, workspace =>
                     {
                         workspace.transform.localPosition = layout.localPosition;
@@ -172,11 +175,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return;
 
             // HACK: MiniWorldWorkspace is not working in single pass yet
+#if UNITY_EDITOR
             if (t == typeof(MiniWorldWorkspace) && PlayerSettings.stereoRenderingPath != StereoRenderingPath.MultiPass)
             {
                 Debug.LogWarning("The MiniWorld workspace is not working on single pass, currently.");
                 return;
             }
+#endif
 
             var cameraTransform = CameraUtils.GetMainCamera().transform;
 
@@ -253,4 +258,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

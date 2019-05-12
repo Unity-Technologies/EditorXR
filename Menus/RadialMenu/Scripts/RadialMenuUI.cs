@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,10 +8,11 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces
+    sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces, IRequestStencilRef
     {
         const int k_SlotCount = 16;
 
+#pragma warning disable 649
         [SerializeField]
         Sprite m_MissingActionIcon;
 
@@ -21,11 +21,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         Transform m_SlotContainer;
+#pragma warning restore 649
 
         List<RadialMenuSlot> m_RadialMenuSlots;
         Coroutine m_VisibilityCoroutine;
         RadialMenuSlot m_HighlightedButton;
         float m_PhaseOffset; // Correcting the coordinates, based on actions count, so that the menu is centered at the bottom
+
+        public byte stencilRef { get; set; }
 
         public Transform alternateMenuOrigin
         {
@@ -36,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     return;
 
                 m_AlternateMenuOrigin = value;
-                transform.SetParent(m_AlternateMenuOrigin);
+                transform.SetParent(m_AlternateMenuOrigin, false);
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
             }
@@ -201,12 +204,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void Setup()
         {
+            stencilRef = this.RequestStencilRef();
             m_RadialMenuSlots = new List<RadialMenuSlot>();
             Material slotBorderMaterial = null;
 
             for (int i = 0; i < k_SlotCount; ++i)
             {
                 var menuSlot = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
+                menuSlot.stencilRef = stencilRef; // Setting from the UI so there is a single ref ID for all buttons; the buttons cleanup their own materials.
                 this.ConnectInterfaces(menuSlot);
                 menuSlot.orderIndex = i;
                 m_RadialMenuSlots.Add(menuSlot);
@@ -360,4 +365,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

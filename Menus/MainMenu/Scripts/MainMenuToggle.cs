@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
@@ -12,8 +11,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenuToggle : MainMenuSelectable, IRayEnterHandler, IRayExitHandler, IPointerClickHandler
     {
+#pragma warning disable 649
         [SerializeField]
         Toggle m_Toggle;
+#pragma warning restore 649
 
         CanvasGroup m_CanvasGroup;
 
@@ -61,4 +62,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

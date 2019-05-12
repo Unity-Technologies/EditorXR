@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking
+    sealed class HighlightModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking
     {
         struct HighlightData
         {
@@ -20,16 +19,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         static readonly Dictionary<SkinnedMeshRenderer, Mesh> k_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
 
+#pragma warning disable 649
         [SerializeField]
         Material m_DefaultHighlightMaterial;
 
         [SerializeField]
         Material m_RayHighlightMaterial;
+#pragma warning restore 649
 
         readonly Dictionary<Material, Dictionary<GameObject, HighlightData>> m_Highlights = new Dictionary<Material, Dictionary<GameObject, HighlightData>>();
         readonly Dictionary<Node, HashSet<Transform>> m_NodeMap = new Dictionary<Node, HashSet<Transform>>();
 
-        Dictionary<int, IEnumerator> m_Blinking = new Dictionary<int, IEnumerator>();               // instanceID-keyed 
+        Dictionary<int, IEnumerator> m_Blinking = new Dictionary<int, IEnumerator>();               // instanceID-keyed
         Dictionary<GameObject, float> m_LastBlinkStartTimes = new Dictionary<GameObject, float>();
 
         // Local method use only -- created here to reduce garbage collection
@@ -58,7 +59,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 var selectionColor = MaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
                 selectionColor.a = 1;
+#if UNITY_EDITOR
                 m_RayHighlightMaterial.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
+#else
+                m_RayHighlightMaterial.color = selectionColor;
+#endif
             }
         }
 
@@ -211,7 +216,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin, 
+        public IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin,
             Material material, bool force, float dutyPercent, float cycleLength)
         {
             if (!active)
@@ -233,7 +238,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return blinker;
         }
 
-        IEnumerator BlinkHighlight(GameObject go, bool active, Transform rayOrigin, Material material, 
+        IEnumerator BlinkHighlight(GameObject go, bool active, Transform rayOrigin, Material material,
             bool force, float onTime, float cycleLength)
         {
             while (enabled)
@@ -254,4 +259,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +14,7 @@ using Button = UnityEngine.UI.Button;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)", typeof(MiniWorldTooltip))]
+    [SpatialMenuItem("MiniWorld", "Workspaces", "Edit a smaller version of your scene(s)")]
     sealed class MiniWorldWorkspace : Workspace, ISerializeWorkspace, IRequestFeedback, IControlHaptics, IRayToNode
     {
         class MiniWorldTooltip : ITooltip
@@ -23,51 +23,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 get
                 {
+#if UNITY_EDITOR
                     return PlayerSettings.stereoRenderingPath == StereoRenderingPath.MultiPass
                         ? string.Empty
                         : "Not currently working in single pass";
+#else
+                    return string.Empty;
+#endif
                 }
             }
         }
-
-        static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
-
-        static readonly Vector3 k_LocatePlayerOffset = new Vector3(0.1385f, 0.035f, -0.05f);
-        static readonly float k_LocatePlayerArrowOffset = 0.05f;
-
-        const float k_InitReferenceScale = 15f; // We want to see a big region by default
-
-        const string k_LeftActionString = "Move Resize Left";
-        const string k_RightActionString = "Move Resize Right";
-
-        const string k_MoveFeedbackString = "Move Miniworld View";
-        const string k_ScaleFeedbackString = "Scale Miniworld View";
-
-        // Scales larger or smaller than this spam errors in the console
-        const float k_MinScale = 0.01f;
-        const float k_MaxScale = 1e12f;
-
-        // Scale slider min/max (maps to referenceTransform uniform scale)
-        const float k_ZoomSliderMin = 0.5f;
-        const float k_ZoomSliderMax = 200f;
-
-        [SerializeField]
-        GameObject m_ContentPrefab;
-
-        [SerializeField]
-        GameObject m_RecenterUIPrefab;
-
-        [SerializeField]
-        GameObject m_LocatePlayerPrefab;
-
-        [SerializeField]
-        GameObject m_PlayerDirectionArrowPrefab;
-
-        [SerializeField]
-        GameObject m_ZoomSliderPrefab;
-
-        [SerializeField]
-        HapticPulse m_EnterExitPulse;
 
         [Serializable]
         class Preferences
@@ -99,6 +64,47 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 set { m_ZoomSliderValue = value; }
             }
         }
+
+        static readonly float k_InitReferenceYOffset = DefaultBounds.y / 2.05f; // Show more space above ground than below
+
+        static readonly Vector3 k_LocatePlayerOffset = new Vector3(0.1385f, 0.035f, -0.05f);
+        static readonly float k_LocatePlayerArrowOffset = 0.05f;
+
+        const float k_InitReferenceScale = 15f; // We want to see a big region by default
+
+        const string k_LeftActionString = "Move Resize Left";
+        const string k_RightActionString = "Move Resize Right";
+
+        const string k_MoveFeedbackString = "Move Miniworld View";
+        const string k_ScaleFeedbackString = "Scale Miniworld View";
+
+        // Scales larger or smaller than this spam errors in the console
+        const float k_MinScale = 0.01f;
+        const float k_MaxScale = 1e12f;
+
+        // Scale slider min/max (maps to referenceTransform uniform scale)
+        const float k_ZoomSliderMin = 0.5f;
+        const float k_ZoomSliderMax = 200f;
+
+#pragma warning disable 649
+        [SerializeField]
+        GameObject m_ContentPrefab;
+
+        [SerializeField]
+        GameObject m_RecenterUIPrefab;
+
+        [SerializeField]
+        GameObject m_LocatePlayerPrefab;
+
+        [SerializeField]
+        GameObject m_PlayerDirectionArrowPrefab;
+
+        [SerializeField]
+        GameObject m_ZoomSliderPrefab;
+
+        [SerializeField]
+        HapticPulse m_EnterExitPulse;
+#pragma warning restore 649
 
         MiniWorldUI m_MiniWorldUI;
         MiniWorld m_MiniWorld;
@@ -595,4 +601,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

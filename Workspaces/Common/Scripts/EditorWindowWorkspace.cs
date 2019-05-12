@@ -1,14 +1,16 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Handles;
+﻿using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     abstract class EditorWindowWorkspace : Workspace
     {
+#pragma warning disable 649
         [SerializeField]
         GameObject m_CaptureWindowPrefab;
+#pragma warning restore 649
 
         Transform m_CaptureWindow;
 
@@ -65,5 +67,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_Capture.SendEvent(eventData.rayOrigin, transform, EventType.MouseUp);
         }
     }
-}
+#else
+    abstract class EditorWindowWorkspace : Workspace
+    {
+        [SerializeField]
+        GameObject m_CaptureWindowPrefab;
+    }
 #endif
+}

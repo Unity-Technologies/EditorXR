@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -12,4 +11,3 @@ interface IUsesRayOrigins
     /// </summary>
     List<Transform> otherRayOrigins { set; }
 }
-#endif

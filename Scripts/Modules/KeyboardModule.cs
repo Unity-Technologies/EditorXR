@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -8,8 +7,9 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class KeyboardModule : MonoBehaviour, IRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
+    sealed class KeyboardModule : MonoBehaviour, ISystemModule, IRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
     {
+#pragma warning disable 649
         [SerializeField]
         KeyboardMallet m_KeyboardMalletPrefab;
 
@@ -18,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         KeyboardUI m_StandardKeyboardPrefab;
+#pragma warning restore 649
 
         readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
         KeyboardUI m_NumericKeyboard;
@@ -118,4 +119,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

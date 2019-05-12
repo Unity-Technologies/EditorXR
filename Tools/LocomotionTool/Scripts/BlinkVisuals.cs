@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
@@ -10,6 +9,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 {
     const float k_Epsilon = 0.001f;
 
+#pragma warning disable 649
     [SerializeField]
     float m_LineWidth = 1f;
 
@@ -48,6 +48,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 
     [SerializeField]
     GameObject m_ArcLocator;
+#pragma warning restore 649
 
     float m_SpherePosition;
     VRLineRenderer m_LineRenderer;
@@ -245,4 +246,3 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
         }
     }
 }
-#endif

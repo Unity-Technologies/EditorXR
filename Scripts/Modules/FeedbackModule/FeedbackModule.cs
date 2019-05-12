@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
@@ -22,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR
         public abstract void Reset();
     }
 
-    public class FeedbackModule : MonoBehaviour, ISettingsMenuItemProvider, ISerializePreferences
+    public class FeedbackModule : MonoBehaviour, ISystemModule, ISettingsMenuItemProvider, ISerializePreferences
     {
         [Serializable]
         class Preferences
@@ -37,14 +36,17 @@ namespace UnityEditor.Experimental.EditorVR
             }
         }
 
+#pragma warning disable 649
         [SerializeField]
         GameObject m_SettingsMenuItemPrefab;
+#pragma warning restore 649
 
         readonly List<Toggle> m_Toggles = new List<Toggle>();
 
         Preferences m_Preferences;
 
         readonly List<IFeedbackReceiver> m_FeedbackReceivers = new List<IFeedbackReceiver>();
+        readonly Dictionary<Type, Queue<FeedbackRequest>> m_FeedbackRequestPool = new Dictionary<Type, Queue<FeedbackRequest>>();
 
         public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 
@@ -80,8 +82,6 @@ namespace UnityEditor.Experimental.EditorVR
         }
 
         public Transform rayOrigin { get { return null; } }
-
-        readonly Dictionary<Type, Queue<FeedbackRequest>> m_FeedbackRequestPool = new Dictionary<Type, Queue<FeedbackRequest>>();
 
         void Awake()
         {
@@ -204,4 +204,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

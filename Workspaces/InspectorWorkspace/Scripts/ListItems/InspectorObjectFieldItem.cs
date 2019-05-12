@@ -1,20 +1,22 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     sealed class InspectorObjectFieldItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
-        Text m_FieldLabel;
+        TextMeshProUGUI m_FieldLabel;
 
         [SerializeField]
         MeshRenderer m_Button;
+#pragma warning restore 649
 
         Type m_ObjectType;
         string m_ObjectTypeName;
@@ -23,8 +25,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.Setup(data);
 
+#if UNITY_EDITOR
             m_ObjectTypeName = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
             m_ObjectType = ObjectUtils.TypeNameToType(m_ObjectTypeName);
+#endif
 
             OnObjectModified();
         }
@@ -34,6 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (!IsAssignable(obj))
                 return false;
 
+#if UNITY_EDITOR
             if (obj == null && m_SerializedProperty.objectReferenceValue == null)
                 return true;
 
@@ -41,6 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 return true;
 
             m_SerializedProperty.objectReferenceValue = obj;
+#endif
 
             FinalizeModifications();
 
@@ -62,6 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void UpdateUI()
         {
+#if UNITY_EDITOR
             var obj = m_SerializedProperty.objectReferenceValue;
             if (obj == null)
             {
@@ -74,11 +81,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 return;
             }
             m_FieldLabel.text = string.Format("{0} ({1})", obj.name, obj.GetType().Name);
+#endif
         }
 
         protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
         {
+#if UNITY_EDITOR
             return m_SerializedProperty.objectReferenceValue;
+#else
+            return null;
+#endif
         }
 
         protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
@@ -92,9 +104,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             SetObject(dropObject as Object);
         }
 
-        public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material textMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
+        public override void SetMaterials(Material rowMaterial, Material backingCubeMaterial, Material uiMaterial, Material uiMaskMaterial, Material noClipBackingCube, Material[] highlightMaterials, Material[] noClipHighlightMaterials)
         {
-            base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, textMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
+            base.SetMaterials(rowMaterial, backingCubeMaterial, uiMaterial, uiMaskMaterial, noClipBackingCube, highlightMaterials, noClipHighlightMaterials);
             m_Button.sharedMaterials = highlightMaterials;
         }
 
@@ -103,5 +115,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             return obj == null || obj.GetType().IsAssignableFrom(m_ObjectType);
         }
     }
-}
+#else
+    sealed class InspectorObjectFieldItem : InspectorPropertyItem
+    {
+        [SerializeField]
+        TextMeshProUGUI m_FieldLabel;
+
+        [SerializeField]
+        MeshRenderer m_Button;
+    }
 #endif
+}

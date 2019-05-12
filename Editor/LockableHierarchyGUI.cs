@@ -4,11 +4,13 @@ using UnityEngine;
 [InitializeOnLoad]
 class LockableHierarchyGUI : ScriptableSingleton<LockableHierarchyGUI>
 {
+#pragma warning disable 649
     [SerializeField]
     Texture2D m_LockIcon;
 
     [SerializeField]
     Texture2D m_UnlockIcon;
+#pragma warning restore 649
 
     static LockableHierarchyGUI()
     {

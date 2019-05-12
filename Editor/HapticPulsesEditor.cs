@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if UNITY_2018_3_OR_NEWER
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
@@ -134,3 +135,4 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
+#endif

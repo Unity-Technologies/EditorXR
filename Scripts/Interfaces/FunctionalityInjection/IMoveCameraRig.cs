@@ -1,11 +1,11 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Decorates types that need to move the camera rig
-    /// </summary>    public interface IMoveCameraRig
+    /// </summary>
+    public interface IMoveCameraRig
     {
     }
 
@@ -26,4 +26,3 @@ namespace UnityEditor.Experimental.EditorVR
         }
     }
 }
-#endif

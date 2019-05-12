@@ -1,16 +1,11 @@
-﻿#if UNITY_EDITOR
-#if !UNITY_2017_2_OR_NEWER
-#pragma warning disable 649 // "never assigned to" warning
-#endif
-
-using System;
+﻿using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SceneObjectModule : MonoBehaviour, IUsesSpatialHash
+    sealed class SceneObjectModule : MonoBehaviour, ISystemModule, IUsesSpatialHash
     {
         const float k_InstantiateFOVDifference = -5f;
         const float k_GrowDuration = 0.5f;
@@ -87,7 +82,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Selection.activeGameObject = go;
 
             this.AddToSpatialHash(go);
+#if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
+#endif
         }
 
         public void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
@@ -180,8 +177,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             Selection.objects = objects;
+#if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
+#endif
         }
     }
 }
-#endif

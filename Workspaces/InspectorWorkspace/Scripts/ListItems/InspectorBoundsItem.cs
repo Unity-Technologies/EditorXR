@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -9,11 +8,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorBoundsItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
         NumericInputField[] m_CenterFields;
 
         [SerializeField]
         NumericInputField[] m_ExtentsFields;
+#pragma warning restore 649
 
         public override void Setup(InspectorData data)
         {
@@ -26,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             base.FirstTimeSetup();
 
+#if UNITY_EDITOR
             for (var i = 0; i < m_CenterFields.Length; i++)
             {
                 var index = i;
@@ -40,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         data.serializedObject.ApplyModifiedProperties();
                 });
             }
+#endif
         }
 
         public override void OnObjectModified()
@@ -50,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void UpdateInputFields()
         {
+#if UNITY_EDITOR
             var bounds = m_SerializedProperty.boundsValue;
 
             for (var i = 0; i < m_CenterFields.Length; i++)
@@ -57,10 +61,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_CenterFields[i].text = bounds.center[i].ToString();
                 m_ExtentsFields[i].text = bounds.extents[i].ToString();
             }
+#endif
         }
 
         bool SetValue(string input, int index, bool center = false)
         {
+#if UNITY_EDITOR
             float value;
             if (!float.TryParse(input, out value))
                 return false;
@@ -82,6 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 return true;
             }
+#endif
 
             return false;
         }
@@ -89,19 +96,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override object GetDropObjectForFieldBlock(Transform fieldBlock)
         {
             object dropObject = null;
-            var inputfields = fieldBlock.GetComponentsInChildren<NumericInputField>();
+#if UNITY_EDITOR
+            var inputFields = fieldBlock.GetComponentsInChildren<NumericInputField>();
 
-            if (inputfields.Length > 3) // If we've grabbed all of the fields
+            if (inputFields.Length > 3) // If we've grabbed all of the fields
                 dropObject = m_SerializedProperty.boundsValue;
-            if (inputfields.Length > 1) // If we've grabbed one vector
+            if (inputFields.Length > 1) // If we've grabbed one vector
             {
-                if (m_CenterFields.Intersect(inputfields).Any())
+                if (m_CenterFields.Intersect(inputFields).Any())
                     dropObject = m_SerializedProperty.boundsValue.center;
                 else
                     dropObject = m_SerializedProperty.boundsValue.extents;
             }
-            else if (inputfields.Length > 0) // If we've grabbed a single field
-                dropObject = inputfields[0].text;
+            else if (inputFields.Length > 0) // If we've grabbed a single field
+                dropObject = inputFields[0].text;
+#endif
 
             return dropObject;
         }
@@ -135,6 +144,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
 
+#if UNITY_EDITOR
             if (dropObject is Bounds)
             {
                 m_SerializedProperty.boundsValue = (Bounds)dropObject;
@@ -143,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
                 FinalizeModifications();
             }
+#endif
         }
     }
 }
-#endif

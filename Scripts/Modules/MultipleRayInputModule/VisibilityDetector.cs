@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -11,8 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         float m_FOVReduction = 0.75f;
 
         readonly Vector3[] m_Corners = new Vector3[4];
-        // Should be readonly, but needs to be set by CalculateFrustumPlanes in 2017.2
-        Plane[] m_Planes = new Plane[6];
+        readonly Plane[] m_Planes = new Plane[6];
         readonly HashSet<IWillRender> m_Visibles = new HashSet<IWillRender>();
         readonly List<IWillRender> m_WillRenders = new List<IWillRender>();
 
@@ -32,11 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var projection = Matrix4x4.Perspective(camera.fieldOfView * m_FOVReduction, camera.aspect,
                 camera.nearClipPlane, camera.farClipPlane);
             var worldToProjection = projection * camera.worldToCameraMatrix;
-#if UNITY_2017_3_OR_NEWER
             GeometryUtility.CalculateFrustumPlanes(worldToProjection, m_Planes);
-#else
-            m_Planes = GeometryUtility.CalculateFrustumPlanes(worldToProjection);
-#endif
 
             m_WillRenders.Clear();
             GetComponentsInChildren(m_WillRenders);
@@ -66,4 +60,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

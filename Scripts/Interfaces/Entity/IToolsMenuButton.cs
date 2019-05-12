@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -116,6 +115,10 @@ namespace UnityEditor.Experimental.EditorVR
         /// Performed when a hover action is detected by this button
         /// </summary>
         event Action hovered;
+
+        /// <summary>
+        /// Shared stencil ID for all buttons in this menu instance
+        /// </summary>
+        byte stencilRef { set; }
     }
 }
-#endif

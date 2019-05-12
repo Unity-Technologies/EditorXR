@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
@@ -11,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [Serializable]
     public class AffordanceAnimationDefinition
     {
+#pragma warning disable 649
         [FlagsProperty]
         [SerializeField]
         AxisFlags m_TranslateAxes;
@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         [SerializeField]
         bool m_ReverseForRightHand;
+#pragma warning restore 649
 
         /// <summary>
         /// The axes on which to perform translation of an affordance
@@ -54,4 +55,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public bool reverseForRightHand { get { return m_ReverseForRightHand; } }
     }
 }
-#endif

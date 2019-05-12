@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
@@ -17,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         const float k_IconTextMinSpacing = 4;
         const float k_IconTextSpacing = 14;
 
+#pragma warning disable 649
         [SerializeField]
         RawImage m_DottedLine;
 
@@ -53,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         [SerializeField]
         SkinnedMeshRenderer m_BackgroundOutlineRenderer;
+#pragma warning restore 649
 
         int m_OriginalRightPaddingAmount;
         int m_OriginalTopPaddingAmount;
@@ -129,4 +130,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -19,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const string k_FeedbackHintForJoystickController = "Click + flick left/right to undo/redo";
         const string k_FeedbackHintForTrackpadController = "Click left/right side to undo/redo";
 
+#pragma warning disable 649
         [SerializeField]
         ActionMap m_ActionMap;
 
@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         HapticPulse m_UndoPulse;
+#pragma warning restore 649
 
         UndoMenuUI m_UndoMenuUI;
         Transform m_AlternateMenuOrigin;
@@ -47,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Bounds localBounds { get { return default(Bounds); } }
         public int priority { get { return 0; } }
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         public Transform alternateMenuOrigin
         {
@@ -112,7 +113,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (!(engage.wasJustPressed || !m_TrackpadController && (engage.isHeld || m_StillEngagedAfterStickRelease)))
                 return;
 
-            consumeControl(engage);
+            if (!m_TrackpadController)
+                consumeControl(engage);
+
             m_UndoMenuUI.engaged = true;
 
             var navigateXControl = undoMenuInput.navigateX;
@@ -120,14 +123,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var undoRedoPerformed = false;
             if (navigateX < -k_UndoRedoThreshold && (m_TrackpadController || m_PrevNavigateX > -k_UndoRedoThreshold))
             {
+#if UNITY_EDITOR
                 Undo.PerformUndo();
+#endif
                 m_UndoMenuUI.StartPerformedAnimation(true);
                 ShowUndoPerformedFeedback(true);
                 undoRedoPerformed = true;
             }
             else if (navigateX > k_UndoRedoThreshold && (m_TrackpadController || m_PrevNavigateX < k_UndoRedoThreshold))
             {
+#if UNITY_EDITOR
                 Undo.PerformRedo();
+#endif
                 m_UndoMenuUI.StartPerformedAnimation(false);
                 ShowUndoPerformedFeedback(false);
                 undoRedoPerformed = true;
@@ -186,4 +193,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections;
+﻿using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -10,6 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     {
         const string k_ShaderLineRadiusPropertyName = "_lineRadius";
 
+#pragma warning disable 649
         [SerializeField]
         VRLineRenderer m_ScrollLineRenderer;
 
@@ -21,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         MeshRenderer m_MeshRenderer;
+#pragma warning restore 649
 
         Coroutine m_ScrollArrowPulseCoroutine;
         float m_PulseDuration;
@@ -91,4 +92,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

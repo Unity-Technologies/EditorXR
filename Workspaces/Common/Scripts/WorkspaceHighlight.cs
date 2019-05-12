@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections;
+﻿using System.Collections;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -15,8 +14,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Coroutine m_HighlightCoroutine;
         Material m_TopHighlightMaterial;
 
+#pragma warning disable 649
         [SerializeField]
         MeshRenderer m_TopHighlightRenderer;
+#pragma warning restore 649
 
         public bool visible
         {
@@ -91,4 +92,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

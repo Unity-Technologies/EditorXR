@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,7 +15,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     sealed class FilterUI : MonoBehaviour, IUsesStencilRef
     {
         const string k_AllText = "All";
+        const string k_MaterialStencilRefProperty = "_StencilRef";
 
+#pragma warning disable 649
 #if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_SummaryText;
@@ -60,11 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         WorkspaceButton m_SummaryButton;
-
-        public string searchQuery
-        {
-            get { return m_SearchQuery; }
-        }
+#pragma warning restore 649
 
         string m_SearchQuery = string.Empty;
 
@@ -76,6 +73,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         float m_HiddenButtonListYSpacing;
         List<string> m_FilterTypes;
         Material m_BackgroundMaterial;
+
+        public string searchQuery
+        {
+            get { return m_SearchQuery; }
+        }
 
         public List<string> filterList
         {
@@ -135,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void Start()
         {
             m_BackgroundMaterial = MaterialUtils.GetMaterialClone(m_Background);
-            m_BackgroundMaterial.SetInt("_StencilRef", stencilRef);
+            m_BackgroundMaterial.SetInt(k_MaterialStencilRefProperty, stencilRef);
 
             if (m_VisibilityButton)
             {
@@ -302,4 +304,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

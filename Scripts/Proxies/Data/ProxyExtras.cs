@@ -1,17 +1,16 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-    [CreateAssetMenu(menuName = "EditorVR/ProxyExtras")]
-
     /// <summary>
     /// Spawn additional objects around a proxy node
     /// </summary>
+    [CreateAssetMenu(menuName = "EditorXR/Proxy Extras")]
     sealed class ProxyExtras : ScriptableObject
     {
+#pragma warning disable 649
         [Serializable]
         struct ProxyExtraData
         {
@@ -25,6 +24,12 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             /// </summary>
             public GameObject prefab;
         }
+
+        [SerializeField]
+        ProxyExtraData[] m_Extras;
+#pragma warning restore 649
+
+        Dictionary<Node, List<GameObject>> m_Data;
 
         public Dictionary<Node, List<GameObject>> data
         {
@@ -50,11 +55,5 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 return m_Data;
             }
         }
-
-        Dictionary<Node, List<GameObject>> m_Data;
-
-        [SerializeField]
-        ProxyExtraData[] m_Extras;
     }
 }
-#endif

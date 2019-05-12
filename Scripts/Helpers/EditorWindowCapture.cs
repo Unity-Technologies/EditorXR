@@ -1,16 +1,15 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Reflection;
 using UnityEngine;
 using Object = UnityEngine.Object;
 #if UNITY_EDITOR_WIN
 using System.Runtime.InteropServices;
 using System.Threading;
-
 #endif
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
+#if UNITY_EDITOR
     /// <summary>
     /// Captures a RenderTexture representing an Editor window
     /// </summary>
@@ -20,15 +19,18 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         // Mouse events are expected to be relative to the window, but our quad only displays the inner GUI
         static readonly Vector2 k_WindowOffset = new Vector2(0, 22f);
 
+#pragma warning disable 649
         [SerializeField]
         string m_WindowClass;
 
         [SerializeField]
         Rect m_Position = new Rect(0f, 0f, 600f, 400f);
+#pragma warning restore 649
 
         EditorWindow m_Window;
         Object m_GuiView;
         MethodInfo m_GrabPixels;
+        Rect m_ScaledRect;
 
         /// <summary>
         /// RenderTexture that represents the captured Editor Window
@@ -69,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 // NOTE: Uncomment To grab any and all GUIViews
                 //foreach (UnityEngine.Object view in Resources.FindObjectsOfTypeAll(guiViewType))
                 //{
-                //    Debug.Log(view.name);             
+                //    Debug.Log(view.name);
                 //}
 
                 var parentField = windowType.GetField("m_Parent", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -80,6 +82,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                 repaint.Invoke(m_Window, null);
 
                 m_GrabPixels = guiViewType.GetMethod("GrabPixels", BindingFlags.Instance | BindingFlags.NonPublic);
+
+                // Convert to GUI Rect (handles high-DPI screens)
+                m_ScaledRect = EditorGUIUtility.PointsToPixels(m_Position);
 
                 capture = true;
             }
@@ -99,7 +104,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         {
             if (m_Window && capture)
             {
-                var rect = m_Position;
+                var rect = m_ScaledRect;
 
                 // GrabPixels is relative to the GUIView and not the desktop, so we don't care about the offset
                 rect.x = 0f;
@@ -118,7 +123,6 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
                     texture = new RenderTexture(width, height, 0);
                     texture.wrapMode = TextureWrapMode.Repeat;
                 }
-
 
                 k_GrabPixelsArgs[0] = texture;
                 k_GrabPixelsArgs[1] = rect;
@@ -175,5 +179,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         public static extern int SendMessage(IntPtr hWnd, int uMsg, int wParam, IntPtr lParam);
 #endif
     }
-}
+#else
+    sealed class EditorWindowCapture : MonoBehaviour
+    {
+    }
 #endif
+}

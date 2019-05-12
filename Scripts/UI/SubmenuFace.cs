@@ -1,14 +1,13 @@
-#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     class SubmenuFace : MonoBehaviour, IControlHaptics, IRayToNode
     {
+#pragma warning disable 649
         [SerializeField]
         MainMenuButton m_BackButton;
 
@@ -17,6 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         HapticPulse m_ButtonHoverPulse;
+#pragma warning restore 649
 
         public GradientPair gradientPair { get; set; }
 
@@ -38,4 +38,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

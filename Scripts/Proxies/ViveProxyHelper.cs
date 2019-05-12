@@ -1,11 +1,11 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     class ViveProxyHelper : MonoBehaviour
     {
+#pragma warning disable 649
         [Serializable]
         public class AffordanceTooltipPlacementOverride
         {
@@ -21,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         [SerializeField]
         AffordanceTooltipPlacementOverride[] m_LeftPlacementOverrides;
+#pragma warning restore 649
 
         /// <summary>
         /// Tooltip placement arrays to be replaced on the right hand controller
@@ -28,4 +29,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         internal AffordanceTooltipPlacementOverride[] leftPlacementOverrides { get { return m_LeftPlacementOverrides; } }
     }
 }
-#endif

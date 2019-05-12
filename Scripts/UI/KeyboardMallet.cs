@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -7,25 +6,27 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
     sealed class KeyboardMallet : MonoBehaviour
     {
+#pragma warning disable 649
         [SerializeField]
-        private Transform m_StemOrigin;
+        Transform m_StemOrigin;
 
         [SerializeField]
-        private float m_StemLength = 0.06f;
+        float m_StemLength = 0.06f;
 
         [SerializeField]
-        private float m_StemWidth = 0.003125f;
+        float m_StemWidth = 0.003125f;
 
         [SerializeField]
-        private Transform m_Bulb;
+        Transform m_Bulb;
 
         [SerializeField]
-        private float m_BulbRadius;
+        float m_BulbRadius;
 
         [SerializeField]
-        private Collider m_BulbCollider;
+        Collider m_BulbCollider;
+#pragma warning restore 649
 
-        private KeyboardButton m_CurrentButton;
+        KeyboardButton m_CurrentButton;
 
         Coroutine m_ShowHideCoroutine;
 
@@ -97,7 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             }
         }
 
-        private IEnumerator HideMallet()
+        IEnumerator HideMallet()
         {
             m_Open = false;
 
@@ -126,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             m_ShowHideCoroutine = null;
         }
 
-        private IEnumerator ShowMallet()
+        IEnumerator ShowMallet()
         {
             var stemScale = m_StemOrigin.localScale;
             var currentLength = m_StemOrigin.localScale.y;
@@ -154,4 +155,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
-#endif

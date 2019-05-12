@@ -1,18 +1,19 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
     sealed class GridCellSizeAdjuster : MonoBehaviour
     {
-        RectTransform m_LayoutGroupTransform;
-
+#pragma warning disable 649
         [SerializeField]
         GridLayoutGroup m_LayoutGroup;
 
         [SerializeField]
         float m_XScalePadding = 0.01f;
+#pragma warning restore 649
+
+        RectTransform m_LayoutGroupTransform;
 
         void Awake()
         {
@@ -38,4 +39,3 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         }
     }
 }
-#endif

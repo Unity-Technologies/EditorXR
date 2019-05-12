@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -7,16 +6,25 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [RequiresTag(k_MiniWorldCameraTag)]
     [RequiresTag(ShowInMiniWorldTag)]
-    sealed class MiniWorldRenderer : MonoBehaviour
+    sealed class MiniWorldRenderer : MonoBehaviour, IScriptReference
     {
         public const string ShowInMiniWorldTag = "ShowInMiniWorld";
         const string k_MiniWorldCameraTag = "MiniWorldCamera";
         const float k_MinScale = 0.001f;
 
+        static int s_DefaultLayer;
+
+#pragma warning disable 649
         [SerializeField]
         Shader m_ClipShader;
+#pragma warning restore 649
 
-        static int s_DefaultLayer;
+        List<Renderer> m_IgnoreList = new List<Renderer>();
+
+        Camera m_MiniCamera;
+
+        int[] m_IgnoredObjectLayer;
+        bool[] m_IgnoreObjectRendererEnabled;
 
         public List<Renderer> ignoreList
         {
@@ -31,13 +39,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
         }
-
-        List<Renderer> m_IgnoreList = new List<Renderer>();
-
-        Camera m_MiniCamera;
-
-        int[] m_IgnoredObjectLayer;
-        bool[] m_IgnoreObjectRendererEnabled;
 
         public MiniWorld miniWorld { private get; set; }
         public LayerMask cullingMask { private get; set; }
@@ -105,8 +106,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     }
                 }
 
-                // Because this is a manual render it is necessary to set the target texture to whatever the active RT 
-                // is, which would either be the left/right eye in the case of VR rendering, or the custom SceneView RT 
+                // Because this is a manual render it is necessary to set the target texture to whatever the active RT
+                // is, which would either be the left/right eye in the case of VR rendering, or the custom SceneView RT
                 // in the case of the SceneView rendering, etc.
                 m_MiniCamera.targetTexture = RenderTexture.active;
 
@@ -128,4 +129,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

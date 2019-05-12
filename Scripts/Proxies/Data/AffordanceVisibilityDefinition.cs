@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -10,6 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [Serializable]
     public class AffordanceVisibilityDefinition
     {
+#pragma warning disable 649
         [SerializeField]
         ProxyAffordanceMap.VisibilityControlType m_VisibilityType;
 
@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         [SerializeField]
         Material m_HiddenMaterial;
+#pragma warning restore 649
 
         /// <summary>
         /// The hidden color of the material
@@ -64,4 +65,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public string alphaProperty { get { return m_AlphaProperty; } }
     }
 }
-#endif

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HierarchyModule : MonoBehaviour, ISelectionChanged
+#if UNITY_EDITOR
+    sealed class HierarchyModule : MonoBehaviour, ISystemModule, ISelectionChanged
     {
         readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
         readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
@@ -39,20 +40,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void OnEnable()
         {
-#if UNITY_2018_1_OR_NEWER
+#if UNITY_EDITOR
             EditorApplication.hierarchyChanged += UpdateHierarchyData;
-#else
-            EditorApplication.hierarchyWindowChanged += UpdateHierarchyData;
 #endif
             UpdateHierarchyData();
         }
 
         void OnDisable()
         {
-#if UNITY_2018_1_OR_NEWER
+#if UNITY_EDITOR
             EditorApplication.hierarchyChanged -= UpdateHierarchyData;
-#else
-            EditorApplication.hierarchyWindowChanged -= UpdateHierarchyData;
 #endif
         }
 
@@ -256,5 +253,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
     }
+#else
+    sealed class HierarchyModule : MonoBehaviour
+    {
+    }
+#endif
 }
 #endif

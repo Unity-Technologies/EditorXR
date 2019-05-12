@@ -30,7 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
         public void NoEditorVR()
         {
             var defines = EditorUserBuildSettings.activeScriptCompilationDefines.ToList();
-            defines.Remove("UNITY_2017_2_OR_NEWER");
+            defines.Remove("UNITY_2018_3_OR_NEWER");
             TestCompile(defines.ToArray());
         }
 
@@ -41,6 +41,10 @@ namespace UnityEditor.Experimental.EditorVR.Tests
             var references = new List<string>();
             ObjectUtils.ForEachAssembly(assembly =>
             {
+#if NET_4_6
+                if (assembly.IsDynamic)
+                    return;
+#endif
                 // Ignore project assemblies because they will cause conflicts
                 if (assembly.FullName.StartsWith("Assembly-CSharp", StringComparison.OrdinalIgnoreCase))
                     return;
@@ -65,14 +69,15 @@ namespace UnityEditor.Experimental.EditorVR.Tests
 
             var sources = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
-            var editorVRFolder = sources.Any(s => s.Contains("EditorVR.cs") && s.Replace("EditorVR.cs", string.Empty).Contains("EditorVR"));
-            Assert.IsTrue(editorVRFolder, "EditorVR scripts must be under a folder named 'EditorVR'");
+            //TODO: Rename EditorVR class to EditorXR after merging playmode
+            var editorVRFolder = sources.Any(s => s.Contains("EditorVR.cs") && s.Replace("EditorVR.cs", string.Empty).Contains("EditorXR"));
+            Assert.IsTrue(editorVRFolder, "EditorXR scripts must be under a folder named 'EditorXR' in order for compile tests to ignore errors and warnings in other code");
 
             var output = EditorUtility.CompileCSharp(sources, references.ToArray(), defines, outputFile);
             foreach (var o in output)
             {
                 var line = o.ToLower();
-                if (line.Contains("editorvr"))
+                if (line.Contains("assets/editorxr") || line.Contains("assets\\editorxr"))
                     Assert.IsFalse(line.Contains("exception") || line.Contains("error") || line.Contains("warning"), string.Join("\n", output));
             }
         }

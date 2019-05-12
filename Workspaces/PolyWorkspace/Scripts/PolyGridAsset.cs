@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
@@ -143,8 +142,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     {
         public string url;
     }
-#else
-    #pragma warning restore 618
+    #pragma warning restore 649
 #endif
 }
-#endif

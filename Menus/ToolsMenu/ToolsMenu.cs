@@ -1,10 +1,10 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
+using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -18,6 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
 
+#pragma warning disable 649
         [SerializeField]
         Sprite m_MainMenuIcon;
 
@@ -38,10 +39,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         HapticPulse m_HidingPulse; // The pulse performed when ending a spatial selection
+#pragma warning restore 649
 
         float m_AllowToolToggleBeforeThisTime;
         Vector3 m_SpatialScrollStartPosition;
         ToolsMenuUI m_ToolsMenuUI;
+        Type activeButtonType; // used to prevent re-selection of the currently active tool
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
@@ -63,13 +66,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public SpatialScrollModule.SpatialScrollData spatialScrollData { get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get; private set; }
 
         public Transform rayOrigin { get; set; }
 
         public bool mainMenuActivatorInteractable
         {
-            set { PreviewToolsMenuButton.interactable = value; }
+            set
+            {
+                if (PreviewToolsMenuButton != null)
+                    PreviewToolsMenuButton.interactable = value;
+            }
         }
 
         void Awake()
@@ -86,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void CreateToolsMenuUI()
         {
-            m_ToolsMenuUI = this.InstantiateUI(m_ToolsMenuPrefab.gameObject, rayOrigin, true, rayOrigin).GetComponent<ToolsMenuUI>();
+            m_ToolsMenuUI = this.InstantiateUI(m_ToolsMenuPrefab.gameObject, rayOrigin, false, rayOrigin).GetComponent<ToolsMenuUI>();
             m_ToolsMenuUI.maxButtonCount = k_MaxButtonCount;
             m_ToolsMenuUI.mainMenuActivatorSelected = this.MainMenuActivatorSelected;
             m_ToolsMenuUI.buttonHovered += OnButtonHover;
@@ -96,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             // Alternate menu origin isn't set when awake or start run
             var toolsMenuUITransform = m_ToolsMenuUI.transform;
-            toolsMenuUITransform.SetParent(alternateMenuOrigin);
+            toolsMenuUITransform.SetParent(alternateMenuOrigin, false);
             toolsMenuUITransform.localPosition = Vector3.zero;
             toolsMenuUITransform.localRotation = Quaternion.identity;
         }
@@ -241,6 +248,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 CloseMenu();
             }
+            else if (spatialScrollData == null && (toolslMenuInput.show.wasJustPressed || toolslMenuInput.show.isHeld))
+            {
+                // Consume the control to activate spatial scrolling - so nothing else fires accidentally when attempting to engage this feature
+                if (toolslMenuInput.select.rawValue > 0.0f)
+                {
+                    consumeControl(toolslMenuInput.select);
+                }
+            }
         }
 
         void OnButtonClick()
@@ -256,6 +271,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void OnButtonSelected(Transform rayOrigin, Type buttonType)
         {
+            if (buttonType != typeof(SelectionTool) && buttonType == activeButtonType)
+                return;
+
+            activeButtonType = buttonType;
             this.SelectTool(rayOrigin, buttonType, false);
         }
 
@@ -314,4 +333,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

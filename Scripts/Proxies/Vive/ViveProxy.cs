@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,19 +12,19 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     sealed class ViveProxy : TwoHandedProxyBase
     {
+#pragma warning disable 649
         [SerializeField]
         GameObject m_LeftHandTouchProxyPrefab;
 
         [SerializeField]
         GameObject m_RightHandTouchProxyPrefab;
+#pragma warning restore 649
 
         bool m_IsOculus;
 
         protected override void Awake()
         {
-#if UNITY_2017_2_OR_NEWER
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
-#endif
 
             if (m_IsOculus)
             {
@@ -102,4 +101,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
     }
 }
-#endif

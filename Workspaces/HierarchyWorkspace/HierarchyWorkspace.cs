@@ -7,11 +7,14 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+    [EditorOnlyWorkspace]
     [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
+    [SpatialMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
     class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
     {
         protected const string k_Locked = "Locked";
 
+#pragma warning disable 649
         [SerializeField]
         GameObject m_ContentPrefab;
 
@@ -23,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         GameObject m_CreateEmptyPrefab;
+#pragma warning restore 649
 
         HierarchyUI m_HierarchyUI;
         protected FilterUI m_FilterUI;
@@ -149,18 +153,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var size = contentBounds.size;
             var listView = m_HierarchyUI.listView;
             size.y = float.MaxValue; // Add height for dropdowns
-            size.x -= DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
-            size.z -= DoubleFaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
+            size.x -= k_DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
+            size.z -= k_DoubleFaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             listView.size = size;
         }
 
         static void SelectRow(int index)
         {
+#if UNITY_EDITOR
             var gameObject = EditorUtility.InstanceIDToObject(index) as GameObject;
             if (gameObject && Selection.activeGameObject != gameObject)
                 Selection.activeGameObject = gameObject;
             else
                 Selection.activeGameObject = null;
+#else
+            //TODO: Object indices in play mode
+#endif
         }
 
         void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

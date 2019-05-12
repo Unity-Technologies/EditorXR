@@ -1,22 +1,22 @@
-﻿#if UNITY_EDITOR
-using ListView;
+﻿using ListView;
 using System;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-    sealed class FolderListItem : ListViewItem<FolderData, string>
+    sealed class FolderListItem : ListViewItem<FolderData, int>
     {
         const float k_Margin = 0.01f;
         const float k_Indent = 0.02f;
 
         const float k_ExpandArrowRotateSpeed = 0.4f;
 
+#pragma warning disable 649
         [SerializeField]
-        Text m_Text;
+        TextMeshProUGUI m_Text;
 
         [SerializeField]
         BaseHandle m_Cube;
@@ -35,6 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         [SerializeField]
         Color m_SelectedColor;
+#pragma warning restore 649
 
         Color m_NormalColor;
 
@@ -49,8 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Data
             get { return m_CubeRenderer.sharedMaterial; }
         }
 
-        public Action<string> toggleExpanded { private get; set; }
-        public Action<string> selectFolder { private get; set; }
+        public Action<int> toggleExpanded { private get; set; }
+        public Action<int> selectFolder { private get; set; }
 
         public override void Setup(FolderData listData)
         {
@@ -81,7 +82,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         public void SetMaterials(Material textMaterial, Material expandArrowMaterial)
         {
-            m_Text.material = textMaterial;
+            m_Text.fontMaterial = textMaterial;
             m_ExpandArrow.GetComponent<Renderer>().sharedMaterial = expandArrowMaterial;
         }
 
@@ -154,4 +155,3 @@ namespace UnityEditor.Experimental.EditorVR.Data
         }
     }
 }
-#endif

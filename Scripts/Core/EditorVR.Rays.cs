@@ -1,8 +1,9 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+#if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Manipulators;
+using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -12,11 +13,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR
     {
+#pragma warning disable 649
         [SerializeField]
         DefaultProxyRay m_ProxyRayPrefab;
 
         [SerializeField]
         ProxyExtras m_ProxyExtras;
+#pragma warning restore 649
 
         class Rays : Nested, IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList
         {
@@ -106,13 +109,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var mainMenu = deviceData.mainMenu;
                 var customMenu = deviceData.customMenu;
 
-                if (mainMenu.menuHideFlags == 0 || (customMenu != null && customMenu.menuHideFlags == 0))
+                if (mainMenu != null)
                 {
-                    AddVisibilitySettings(rayOrigin, mainMenu, false, false);
-                }
-                else
-                {
-                    RemoveVisibilitySettings(rayOrigin, mainMenu);
+                    // Hide the cone and ray if the main menu or custom menu are open
+                    if (mainMenu.menuHideFlags == 0 || customMenu != null && customMenu.menuHideFlags == 0)
+                        AddVisibilitySettings(rayOrigin, mainMenu, false, false);
+
+                    // Show the ray if the menu is not hidden but the custom menu is overriding it, and is also hidden
+                    else if ((mainMenu.menuHideFlags & MenuHideFlags.Hidden) == 0 || customMenu != null && customMenu.menuHideFlags != 0)
+                        AddVisibilitySettings(rayOrigin, mainMenu, true, true, 1);
+                    else
+                        RemoveVisibilitySettings(rayOrigin, mainMenu);
                 }
             }
 
@@ -137,10 +144,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             internal void CreateAllProxies()
             {
                 var deviceInputModule = evr.GetModule<DeviceInputModule>();
+                var cameraRig = CameraUtils.GetCameraRig();
                 foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
                 {
-                    var component = ObjectUtils.CreateGameObjectWithComponent(proxyType, VRView.cameraRig, false);
-                    var proxy = (IProxy)component;
+                    var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
                     this.ConnectInterfaces(proxy);
                     proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
                     proxy.activeChanged += () => OnProxyActiveChanged(proxy);
@@ -223,7 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             }
 
                             rayOrigin.name = string.Format("{0} Ray Origin", node);
-                            var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin).transform;
+                            var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin, false).transform;
                             rayTransform.position = rayOrigin.position;
                             rayTransform.rotation = rayOrigin.rotation;
                             var dpr = rayTransform.GetComponent<DefaultProxyRay>();
@@ -374,10 +381,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (renderer && !renderer.CompareTag(k_VRPlayerTag))
                     return renderer.gameObject;
 
-                var enumerator = evr.GetNestedModule<MiniWorlds>().rays.GetEnumerator();
-                while (enumerator.MoveNext())
+                foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
                 {
-                    var miniWorldRay = enumerator.Current.Value;
+                    var miniWorldRay = kvp.Value;
                     if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
                     {
                         tester = miniWorldRay.tester;
@@ -389,7 +395,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             return renderer.gameObject;
                     }
                 }
-                enumerator.Dispose();
 
                 return null;
             }
@@ -456,9 +461,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var cameraPosition = camera.transform.position;
                 var matrix = camera.worldToCameraMatrix;
 
+                // Include inactive children to avoid constantly polling for manipulators until first selection is made
                 if (!m_StandardManipulator)
                 {
-                    m_StandardManipulator = evr.GetComponentInChildren<StandardManipulator>();
+                    m_StandardManipulator = evr.GetComponentInChildren<StandardManipulator>(true);
                     if (m_StandardManipulator)
                         ConnectInterface(m_StandardManipulator);
                 }
@@ -467,7 +473,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_StandardManipulator.AdjustScale(cameraPosition, matrix);
 
                 if (!m_ScaleManipulator)
-                    m_ScaleManipulator = evr.GetComponentInChildren<ScaleManipulator>();
+                    m_ScaleManipulator = evr.GetComponentInChildren<ScaleManipulator>(true);
 
                 if (m_ScaleManipulator)
                     m_ScaleManipulator.AdjustScale(cameraPosition, matrix);

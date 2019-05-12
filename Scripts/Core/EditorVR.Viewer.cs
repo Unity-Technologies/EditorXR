@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
+#if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,11 +12,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     partial class EditorVR
     {
+#pragma warning disable 649
         [SerializeField]
         GameObject m_PlayerModelPrefab;
 
         [SerializeField]
+        GameObject m_PlayerFloorPrefab;
+
+        [SerializeField]
         GameObject m_PreviewCameraPrefab;
+#pragma warning restore 649
 
         class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces
         {
@@ -25,8 +30,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 [SerializeField]
                 Vector3 m_CameraPosition;
+
                 [SerializeField]
                 Quaternion m_CameraRotation;
+
                 [SerializeField]
                 float m_CameraRigScale = 1;
 
@@ -58,6 +65,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             static Collider[] s_CachedColliders = new Collider[k_MaxCollisionCheck];
 
             PlayerBody m_PlayerBody;
+            GameObject m_PlayerFloor;
+
             float m_OriginalNearClipPlane;
             float m_OriginalFarClipPlane;
             readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
@@ -79,7 +88,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
                 IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
 
+#if UNITY_EDITOR
                 VRView.hmdStatusChange += OnHMDStatusChange;
+#endif
 
                 preserveCameraRig = true;
 
@@ -90,12 +101,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 base.OnDestroy();
 
+#if UNITY_EDITOR
                 VRView.hmdStatusChange -= OnHMDStatusChange;
+#endif
 
                 var cameraRig = CameraUtils.GetCameraRig();
-                cameraRig.transform.parent = null;
+                if (cameraRig)
+                    cameraRig.transform.parent = null;
 
                 ObjectUtils.Destroy(m_PlayerBody.gameObject);
+                ObjectUtils.Destroy(m_PlayerFloor);
 
                 if (customPreviewCamera != null)
                     ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -172,12 +187,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     cameraRig.localPosition = Vector3.zero;
                 }
 
+#if UNITY_EDITOR
                 var hmdOnlyLayerMask = 0;
-                if (evr.m_PreviewCameraPrefab)
+#endif
+                if (!Application.isPlaying && evr.m_PreviewCameraPrefab)
                 {
                     var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
                     go.transform.SetParent(CameraUtils.GetCameraRig(), false);
 
+#if UNITY_EDITOR
                     customPreviewCamera = go.GetComponentInChildren<IPreviewCamera>();
                     if (customPreviewCamera != null)
                     {
@@ -186,14 +204,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         hmdOnlyLayerMask = customPreviewCamera.hmdOnlyLayerMask;
                         this.ConnectInterfaces(customPreviewCamera);
                     }
+#endif
                 }
+
+#if UNITY_EDITOR
                 VRView.cullingMask = UnityEditor.Tools.visibleLayers | hmdOnlyLayerMask;
+#endif
             }
 
             internal void UpdateCamera()
             {
+#if UNITY_EDITOR
                 if (customPreviewCamera != null)
                     customPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
+#endif
+            }
+
+            internal void AddPlayerFloor()
+            {
+                m_PlayerFloor = ObjectUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
             }
 
             internal void AddPlayerModel()

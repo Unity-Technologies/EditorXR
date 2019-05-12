@@ -72,6 +72,7 @@ Camera:
   m_TargetEye: 3
   m_HDR: 0
   m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
@@ -87,7 +88,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e5712d6399895443a64ab36cf027878, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_VRCamera: {fileID: 0}
+  m_VRCamera: {fileID: 20000011108369806}
   m_TargetDisplay: 0
   m_FieldOfView: 40
   m_PullBackDistance: 0.8

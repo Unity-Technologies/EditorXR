@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Threading;
@@ -23,6 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 #if INCLUDE_POLY_TOOLKIT
     [MainMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
+    [SpatialMenuItem("Poly", "Workspaces", "Import models from Google Poly")]
     sealed class PolyWorkspace : Workspace, ISerializeWorkspace
     {
         const float k_MinScale = 0.05f;
@@ -58,6 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
+#pragma warning disable 649
         [SerializeField]
         GameObject m_ContentPrefab;
 
@@ -66,6 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         GameObject m_SliderPrefab;
+#pragma warning restore 649
 
         bool m_Scrolling;
 
@@ -409,8 +411,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             var size = contentBounds.size;
             var gridView = m_PolyUI.gridView;
-            size.x -= DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
-            size.z -= DoubleFaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
+            size.x -= k_DoubleFaceMargin; // Shrink the content width, so that there is space allowed to grab and scroll
+            size.z -= k_DoubleFaceMargin; // Reduce the height of the inspector contents as to fit within the bounds of the workspace
             gridView.size = size;
         }
 
@@ -506,4 +508,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     }
 #endif
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class LockModule : MonoBehaviour, IActions, ISelectionChanged
+    sealed class LockModule : MonoBehaviour, ISystemModule, IActions, ISelectionChanged
     {
         class LockModuleAction : IAction, ITooltip
         {
@@ -20,29 +19,33 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
+        const float k_MaxHoverTime = 2.0f;
+
+#pragma warning disable 649
         [SerializeField]
         Sprite m_LockIcon;
+
         [SerializeField]
         Sprite m_UnlockIcon;
+#pragma warning restore 649
 
         readonly LockModuleAction m_LockModuleAction = new LockModuleAction();
         public List<IAction> actions { get; private set; }
 
-        // TODO: This should go away once the alternate menu stays open or if locking/unlocking from alternate menu goes 
+        // TODO: This should go away once the alternate menu stays open or if locking/unlocking from alternate menu goes
         // away entirely (e.g. because of HierarchyWorkspace)
         public Action<Transform, GameObject> updateAlternateMenu { private get; set; }
 
         GameObject m_CurrentHoverObject;
         Transform m_HoverRayOrigin;
         float m_HoverDuration;
-        const float k_MaxHoverTime = 2.0f;
 
         void Awake()
         {
             m_LockModuleAction.execute = ToggleLocked;
             UpdateAction(null);
 
-            actions = new List<IAction>() { m_LockModuleAction };
+            actions = new List<IAction> { m_LockModuleAction };
         }
 
         public bool IsLocked(GameObject go)
@@ -143,4 +146,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

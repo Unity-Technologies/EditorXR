@@ -1,9 +1,8 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    [CreateAssetMenu(menuName = "EditorVR/Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
+    [CreateAssetMenu(menuName = "EditorXR/Proxy Affordance Map", fileName = "NewProxyAffordanceMap.asset")]
     public class ProxyAffordanceMap : ScriptableObject
     {
         /// <summary>
@@ -16,6 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             MaterialSwap
         }
 
+#pragma warning disable 649
         [Header("Non-Interactive Input-Device Body Elements")]
         [SerializeField]
         AffordanceVisibilityDefinition m_BodyVisibilityDefinition;
@@ -30,6 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [Header("Custom Affordance Overrides")]
         [SerializeField]
         AffordanceDefinition[] m_AffordanceDefinitions;
+#pragma warning restore 649
 
         /// <summary>
         /// Collection of affordance definitions representing a proxy
@@ -52,4 +53,3 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public AffordanceAnimationDefinition defaultAnimationDefinition { get { return m_DefaultAffordanceAnimationDefinition; } }
     }
 }
-#endif

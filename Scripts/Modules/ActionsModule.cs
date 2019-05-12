@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,13 +6,15 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class ActionsModule : MonoBehaviour, IConnectInterfaces
+    sealed class ActionsModule : MonoBehaviour, ISystemModule, IConnectInterfaces, ISpatialMenuProvider
     {
-        public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
-
         List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
         readonly List<IAction> m_Actions = new List<IAction>();
         readonly List<IActionsMenu> m_ActionsMenus = new List<IActionsMenu>();
+        readonly List<SpatialMenu.SpatialMenuData> m_SpatialMenuData = new List<SpatialMenu.SpatialMenuData>();
+
+        public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
+        public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
 
         public void RemoveActions(List<IAction> actions)
         {
@@ -28,6 +29,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void SpawnActions()
         {
+            m_SpatialMenuData.Clear();
+            var spatialMenuActions = new List<SpatialMenu.SpatialMenuElementContainer>();
+            var spatialMenuData = new SpatialMenu.SpatialMenuData("Actions", "Perform actions on selected object", spatialMenuActions);
+            m_SpatialMenuData.Add(spatialMenuData);
+
             IEnumerable<Type> actionTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IAction));
             foreach (Type actionType in actionTypes)
             {
@@ -36,22 +42,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     continue;
 
                 var action = ObjectUtils.AddComponent(actionType, gameObject) as IAction;
-                var attribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
-
                 this.ConnectInterfaces(action);
 
-                if (attribute != null)
+                var defaultActionAttribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
+                if (defaultActionAttribute != null)
                 {
                     var actionMenuData = new ActionMenuData()
                     {
-                        name = attribute.name,
-                        sectionName = attribute.sectionName,
-                        priority = attribute.priority,
+                        name = defaultActionAttribute.name,
+                        sectionName = defaultActionAttribute.sectionName,
+                        priority = defaultActionAttribute.priority,
                         action = action,
                     };
 
                     m_MenuActions.Add(actionMenuData);
                 }
+
+                var spatialMenuAttribute = (SpatialMenuItemAttribute)actionType.GetCustomAttributes(typeof(SpatialMenuItemAttribute), false).FirstOrDefault();
+                if (spatialMenuAttribute != null)
+                    spatialMenuActions.Add(new SpatialMenu.SpatialMenuElementContainer(spatialMenuAttribute.name, spatialMenuAttribute.description, (node) => action.ExecuteAction()));
 
                 m_Actions.Add(action);
             }
@@ -73,4 +82,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,32 +18,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
 {
     sealed class DropDown : MonoBehaviour
     {
-        Coroutine m_ShowDropdownCoroutine;
-        Coroutine m_HideDropdownCoroutine;
-        float m_HiddenDropdownItemYSpacing;
-        float m_VisibleDropdownItemYSpacing;
-        float m_VisibleBackgroundMeshLocalYScale;
-        float m_PreviousXRotation;
-        Vector3 m_OptionsPanelOriginalLocalPosition;
-
-        public string[] options
-        {
-            get { return m_Options; }
-            set
-            {
-                m_Options = value;
-                SetupOptions();
-            }
-        }
-
+#pragma warning disable 649
         [SerializeField]
         string[] m_Options;
-
-        public bool multiSelect
-        {
-            get { return m_MultiSelect; }
-            set { m_MultiSelect = value; }
-        }
 
         [SerializeField]
         bool m_MultiSelect;
@@ -72,18 +48,24 @@ namespace UnityEditor.Experimental.EditorVR.UI
         [SerializeField]
         Transform m_BackgroundMeshTransform;
 
-        public int value
-        {
-            get { return m_Value; }
-            set
-            {
-                m_Value = value;
-                UpdateLabel();
-            }
-        }
-
         [SerializeField]
         int m_Value;
+
+        [SerializeField]
+        int[] m_Values = new int[0];
+#pragma warning restore 649
+
+        Coroutine m_ShowDropdownCoroutine;
+        Coroutine m_HideDropdownCoroutine;
+        float m_HiddenDropdownItemYSpacing;
+        float m_VisibleDropdownItemYSpacing;
+        float m_VisibleBackgroundMeshLocalYScale;
+        float m_PreviousXRotation;
+        Vector3 m_OptionsPanelOriginalLocalPosition;
+
+        Toggle[] m_Toggles;
+
+        public event Action<int, int[]> valueChanged;
 
         public int[] values
         {
@@ -96,12 +78,31 @@ namespace UnityEditor.Experimental.EditorVR.UI
             }
         }
 
-        [SerializeField]
-        int[] m_Values = new int[0];
+        public bool multiSelect
+        {
+            get { return m_MultiSelect; }
+            set { m_MultiSelect = value; }
+        }
 
-        Toggle[] m_Toggles;
+        public int value
+        {
+            get { return m_Value; }
+            set
+            {
+                m_Value = value;
+                UpdateLabel();
+            }
+        }
 
-        public event Action<int, int[]> valueChanged;
+        public string[] options
+        {
+            get { return m_Options; }
+            set
+            {
+                m_Options = value;
+                SetupOptions();
+            }
+        }
 
         void Awake()
         {
@@ -330,4 +331,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
-#endif

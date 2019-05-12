@@ -1,7 +1,7 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -15,7 +15,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class AssetGridItem : DraggableListItem<AssetData, string>, IPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
+    sealed class AssetGridItem : DraggableListItem<AssetData, int>, IPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
         IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
     {
         const float k_PreviewDuration = 0.1f;
@@ -32,8 +32,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const float k_CheckAssignDelayTime = 0.125f;
 
+#pragma warning disable 649
         [SerializeField]
-        Text m_Text;
+        TextMeshProUGUI m_Text;
 
         [SerializeField]
         BaseHandle m_Handle;
@@ -57,14 +58,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField] // Serialized so that this remains set after cloning
         GameObject m_Icon;
 
-        GameObject m_IconPrefab;
-
         [HideInInspector]
         [SerializeField] // Serialized so that this remains set after cloning
         Transform m_PreviewObjectTransform;
 
         [SerializeField]
         bool m_IncludeRaySelectForDrop;
+#pragma warning restore 649
+
+        GameObject m_IconPrefab;
 
         bool m_Setup;
         bool m_AutoHidePreview;
@@ -88,6 +90,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         // negative value means object has been checked and can't be assigned to
         // positive means it can be assigned, 0 means it hasn't yet been checked
         readonly Dictionary<int, float> m_ObjectAssignmentChecks = new Dictionary<int, float>();
+
+        readonly List<Renderer> m_SelectionRenderers = new List<Renderer>();
+        readonly Dictionary<Renderer, Material> m_SelectionOriginalMaterials = new Dictionary<Renderer, Material>();
 
         public GameObject icon
         {
@@ -241,10 +246,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (m_PreviewObjectTransform)
                 ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
 
-            if (!data.preview)
+            var preview = data.preview;
+            if (!preview)
                 return;
 
-            m_PreviewObjectTransform = Instantiate(data.preview).transform;
+            m_PreviewObjectTransform = Instantiate(preview).transform;
 
             m_PreviewObjectTransform.position = Vector3.zero;
             m_PreviewObjectTransform.rotation = Quaternion.identity;
@@ -327,22 +333,26 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var clone = Instantiate(gameObject, transform.position, transform.rotation, transform.parent);
             var cloneItem = clone.GetComponent<AssetGridItem>();
 
+            var type = data.type;
             if (cloneItem.m_PreviewObjectTransform)
             {
                 m_PreviewObjectClone = cloneItem.m_PreviewObjectTransform;
 
 #if UNITY_EDITOR
-                var originalPosition = m_PreviewObjectClone.position;
-                var originalRotation = m_PreviewObjectClone.rotation;
-                var originalScale = m_PreviewObjectClone.localScale;
-                var restoreParent = m_PreviewObjectClone.parent;
-                m_PreviewObjectClone.SetParent(null); // HACK: MergePrefab deactivates the root transform when calling ConnectGameObjectToPrefab, which is EditorVR in this case
-                m_PreviewObjectClone = PrefabUtility.ConnectGameObjectToPrefab(m_PreviewObjectClone.gameObject, data.preview).transform;
-                m_PreviewObjectClone.SetParent(restoreParent);
-                m_PreviewObjectClone.position = originalPosition;
-                m_PreviewObjectClone.rotation = originalRotation;
-                m_PreviewObjectClone.localScale = originalScale;
-                cloneItem.m_PreviewObjectTransform = m_PreviewObjectClone;
+                if (type == AssetData.PrefabTypeString || type == AssetData.ModelTypeString)
+                {
+                    var originalPosition = m_PreviewObjectClone.position;
+                    var originalRotation = m_PreviewObjectClone.rotation;
+                    var originalScale = m_PreviewObjectClone.localScale;
+                    var restoreParent = m_PreviewObjectClone.parent;
+                    ObjectUtils.Destroy(m_PreviewObjectClone.gameObject);
+                    m_PreviewObjectClone = ((GameObject)PrefabUtility.InstantiatePrefab(data.asset)).transform;
+                    m_PreviewObjectClone.SetParent(restoreParent, false);
+                    m_PreviewObjectClone.position = originalPosition;
+                    m_PreviewObjectClone.rotation = originalRotation;
+                    m_PreviewObjectClone.localScale = originalScale;
+                    cloneItem.m_PreviewObjectTransform = m_PreviewObjectClone;
+                }
 #endif
 
                 cloneItem.m_Cube.gameObject.SetActive(false);
@@ -365,12 +375,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 smoothMotion.enabled = false;
 
             // setup our assignment dependency list with any known types
-            AssetDropUtils.AssignmentDependencies.TryGetValue(data.type, out m_AssignmentDependencyTypes);
+            AssetDropUtils.AssignmentDependencies.TryGetValue(type, out m_AssignmentDependencyTypes);
 
             StartCoroutine(ShowGrabbedObject());
         }
-
-
 
         float PreviouslyFoundResult(GameObject go)
         {
@@ -412,6 +420,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 StopHighlight(m_CachedDropSelection, rayOrigin);
                 m_CachedDropSelection = null;
                 m_LastDragSelectionChange = Time.time;
+                RestoreOriginalSelectionMaterials();
             }
             else if (selection != null)
             {
@@ -422,10 +431,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     StopHighlight(m_CachedDropSelection);
                     // if we've previously checked this object, indicate the result again
-                    if(previous > 0f)
+                    if (previous > 0f)
+                    {
                         SetAssignableHighlight(selection, rayOrigin, true);
+                        PreviewMaterialOnSelection(selection);
+                    }
                     else if (previous < 0f)
+                    {
                         SetAssignableHighlight(selection, rayOrigin, false);
+                        RestoreOriginalSelectionMaterials();
+                    }
 
                     m_CachedDropSelection = selection;
                     m_LastDragSelectionChange = time;
@@ -439,10 +454,46 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     {
                         var assignable = CheckAssignable(selection);
                         SetAssignableHighlight(selection, rayOrigin, assignable);
+
+                        if (assignable)
+                            PreviewMaterialOnSelection(selection);
                     }
                 }
             }
+        }
 
+        void PreviewMaterialOnSelection(GameObject selection)
+        {
+            if (data.type != "Material" || selection == null)
+                return;
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
+
+            selection.GetComponentsInChildren(m_SelectionRenderers);
+
+            var material = (Material)data.asset;
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                m_SelectionOriginalMaterials.Add(renderer, renderer.sharedMaterial);
+                renderer.sharedMaterial = material;
+            }
+        }
+
+        void RestoreOriginalSelectionMaterials()
+        {
+            if (m_SelectionRenderers.Count < 1)
+                return;
+
+            foreach (var renderer in m_SelectionRenderers)
+            {
+                Material originalMaterial;
+                if (m_SelectionOriginalMaterials.TryGetValue(renderer, out originalMaterial))
+                    renderer.sharedMaterial = originalMaterial;
+            }
+
+            m_SelectionRenderers.Clear();
+            m_SelectionOriginalMaterials.Clear();
         }
 
         bool CheckAssignable(GameObject go, bool checkChildren = false)
@@ -508,7 +559,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 var previewObjectTransform = gridItem.m_PreviewObjectTransform;
                 if (previewObjectTransform)
                 {
+#if UNITY_EDITOR
                     Undo.RegisterCreatedObjectUndo(previewObjectTransform.gameObject, "Place Scene Object");
+#endif
                     this.PlaceSceneObject(previewObjectTransform, m_PreviewPrefabScale);
                 }
                 else
@@ -525,8 +578,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             switch (data.type)
             {
-                case "Prefab":
-                case "Model":
+                case AssetData.PrefabTypeString:
+                case AssetData.ModelTypeString:
                     PlaceModelOrPrefab(gridItem.transform, data);
                     break;
                 case "AnimationClip":
@@ -570,15 +623,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
 #if UNITY_EDITOR
             var go = (GameObject)PrefabUtility.InstantiatePrefab(data.asset);
+#else
+            var go = (GameObject)Instantiate(data.asset);
+#endif
+
             var transform = go.transform;
             transform.position = itemTransform.position;
             transform.rotation = MathUtilsExt.ConstrainYawRotation(itemTransform.rotation);
-#else
-            var go = (GameObject)Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation);
-#endif
 
             this.AddToSpatialHash(go);
+
+#if UNITY_EDITOR
             Undo.RegisterCreatedObjectUndo(go, "Project Workspace");
+#endif
         }
 
         GameObject TryGetSelection(Transform rayOrigin, bool includeRays)
@@ -821,4 +878,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public void OnResetDirectSelectionState() {}
     }
 }
-#endif

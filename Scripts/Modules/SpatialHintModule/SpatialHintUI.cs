@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System.Collections;
+﻿using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -11,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     {
         readonly Color k_PrimaryArrowColor = Color.white;
 
+#pragma warning disable 649
         [Header("Scroll Visuals")]
         [SerializeField]
         CanvasGroup m_ScrollVisualsCanvasGroup;
@@ -33,6 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         [SerializeField]
         HintIcon[] m_SecondaryDirectionalHintArrows;
+#pragma warning restore 649
 
         bool m_Visible;
         bool m_PreScrollArrowsVisible;
@@ -282,4 +283,3 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         }
     }
 }
-#endif

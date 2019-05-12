@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -9,10 +8,6 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 {
     class BaseManipulator : MonoBehaviour, IManipulator
     {
-        protected const float k_BaseManipulatorSize = 0.3f;
-        const float k_MinHandleTipDirectionDelta = 0.01f;
-        const float k_LazyFollow = 40f;
-
         class HandleTip
         {
             public Renderer renderer;
@@ -21,6 +16,12 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
             public Vector3? positionOffset;
         }
 
+        const float k_MinHandleTipDirectionDelta = 0.01f;
+        const float k_LazyFollow = 40f;
+
+        protected const float k_BaseManipulatorSize = 0.3f;
+
+#pragma warning disable 649
         [SerializeField]
         Renderer m_HandleTip;
 
@@ -41,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
 
         [SerializeField]
         float m_HandleHoverAlpha = 0.8f;
+#pragma warning restore 649
 
         readonly Dictionary<Type, float> m_ScaleBumps = new Dictionary<Type, float>();
         readonly Dictionary<Transform, HandleTip> m_HandleTips = new Dictionary<Transform, HandleTip>();
@@ -309,4 +311,3 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         }
     }
 }
-#endif

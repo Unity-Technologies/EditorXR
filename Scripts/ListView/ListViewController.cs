@@ -1,9 +1,6 @@
-#if UNITY_EDITOR
-using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
 namespace ListView
@@ -12,6 +9,33 @@ namespace ListView
         where TData : ListViewItemData<TIndex>
         where TItem : ListViewItem<TData, TIndex>
     {
+#pragma warning disable 649
+        [Header("Unassigned haptic pulses will not be performed")]
+        [SerializeField]
+        HapticPulse m_ItemClickPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemHoverStartPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemHoverEndPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemDragStartPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemDraggingPulse;
+
+        [SerializeField]
+        HapticPulse m_ItemDragEndPulse;
+#pragma warning restore 649
+
+        protected List<TData> m_Data;
+
+        protected readonly Dictionary<string, ListViewItemTemplate<TItem>> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate<TItem>>();
+        protected readonly Dictionary<TIndex, TItem> m_ListItems = new Dictionary<TIndex, TItem>();
+        protected readonly Dictionary<TIndex, Transform> m_GrabbedRows = new Dictionary<TIndex, Transform>();
+
         public virtual List<TData> data
         {
             get { return m_Data; }
@@ -31,31 +55,6 @@ namespace ListView
                 scrollOffset = 0;
             }
         }
-
-        [Header("Unassigned haptic pulses will not be performed")]
-        [SerializeField]
-        HapticPulse m_ItemClickPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemHoverStartPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemHoverEndPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemDragStartPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemDraggingPulse;
-
-        [SerializeField]
-        HapticPulse m_ItemDragEndPulse;
-
-        protected List<TData> m_Data;
-
-        protected readonly Dictionary<string, ListViewItemTemplate<TItem>> m_TemplateDictionary = new Dictionary<string, ListViewItemTemplate<TItem>>();
-        protected readonly Dictionary<TIndex, TItem> m_ListItems = new Dictionary<TIndex, TItem>();
-        protected readonly Dictionary<TIndex, Transform> m_GrabbedRows = new Dictionary<TIndex, Transform>();
 
         protected override float listHeight { get { return m_Data.Count * itemSize.z; } }
 
@@ -239,4 +238,3 @@ namespace ListView
         }
     }
 }
-#endif

@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -11,6 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     [Serializable]
     class Affordance
     {
+#pragma warning disable 649
         [SerializeField]
         VRInputDevice.VRControl m_Control;
 
@@ -26,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         [SerializeField]
         AffordanceTooltip[] m_Tooltips;
+#pragma warning restore 649
 
         public VRInputDevice.VRControl control { get { return m_Control; } }
         public Transform[] transforms { get { return m_Transforms; } }
@@ -34,4 +35,3 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public AffordanceTooltip[] tooltips { get { return m_Tooltips; } }
     }
 }
-#endif

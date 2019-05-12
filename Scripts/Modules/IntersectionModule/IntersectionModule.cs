@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -7,21 +6,21 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking, IGetVRPlayerObjects
+    sealed class IntersectionModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking, IGetVRPlayerObjects
     {
-        const int k_MaxTestsPerTester = 250;
-
         class RayIntersection
         {
             public GameObject go;
             public float distance;
         }
-        
+
         class DirectIntersection
         {
             public Renderer renderer;
             public Vector3 contactPoint;
         }
+
+        const int k_MaxTestsPerTester = 250;
 
         [SerializeField]
         Vector3 m_PlayerBoundsMargin = new Vector3(0.25f, 0.25f, 0.25f);
@@ -29,6 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly Dictionary<IntersectionTester, DirectIntersection> m_IntersectedObjects = new Dictionary<IntersectionTester, DirectIntersection>();
         readonly List<IntersectionTester> m_Testers = new List<IntersectionTester>();
         readonly Dictionary<Transform, RayIntersection> m_RaycastGameObjects = new Dictionary<Transform, RayIntersection>(); // Stores which gameobject the proxies' ray origins are pointing at
+        readonly Dictionary<Transform, bool> m_RayoriginEnabled = new Dictionary<Transform, bool>();
         readonly List<GameObject> m_StandardIgnoreList = new List<GameObject>();
 
         SpatialHash<Renderer> m_SpatialHash;
@@ -56,6 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void Awake()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
+            IControlInputIntersectionMethods.setRayOriginEnabled = SetRayOriginEnabled;
         }
 
         internal void Setup(SpatialHash<Renderer> hash)
@@ -193,11 +194,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return null;
         }
 
+        internal void SetRayOriginEnabled(Transform rayOrigin, bool enabled)
+        {
+            m_RayoriginEnabled[rayOrigin] = enabled;
+        }
+
         internal void UpdateRaycast(Transform rayOrigin, float distance)
         {
+            if (!m_RayoriginEnabled.ContainsKey(rayOrigin))
+                m_RayoriginEnabled[rayOrigin] = true;
+
             GameObject go;
             RaycastHit hit;
             Raycast(new Ray(rayOrigin.position, rayOrigin.forward), out hit, out go, distance);
+
+            if (!m_RayoriginEnabled[rayOrigin])
+            {
+                go = null;
+                hit.distance = 0;
+            }
+
             m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
         }
 
@@ -305,4 +321,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

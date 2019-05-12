@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +7,14 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+
+#if !UNITY_EDITOR
+public enum PivotRotation
+{
+    Local,
+    Global,
+}
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
@@ -76,7 +83,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (suspended)
                     return;
 
+#if UNITY_EDITOR
                 Undo.RecordObjects(grabbedObjects, "Move");
+#endif
 
                 var rayOriginRotation = rayOrigin.rotation;
                 var pivot = pivotPoint;
@@ -115,7 +124,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (suspended)
                     return;
 
+#if UNITY_EDITOR
                 Undo.RecordObjects(grabbedObjects, "Move");
+#endif
 
                 var thisPosition = pivotPoint;
                 var otherPosition = otherGrabData.pivotPoint;
@@ -193,28 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
         }
 
-        public List<IAction> actions
-        {
-            get
-            {
-                if (!this.IsSharedUpdater(this))
-                    return null;
-
-                if (m_Actions == null)
-                {
-                    m_Actions = new List<IAction>
-                    {
-                        m_PivotModeToggleAction,
-                        m_PivotRotationToggleAction,
-                        m_ManipulatorToggleAction
-                    };
-                }
-                return m_Actions;
-            }
-        }
-
-        List<IAction> m_Actions;
-
+#pragma warning disable 649
         [SerializeField]
         Sprite m_OriginCenterIcon;
 
@@ -247,6 +237,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         HapticPulse m_RotatePulse;
+#pragma warning restore 649
+
+        List<IAction> m_Actions;
 
         BaseManipulator m_CurrentManipulator;
 
@@ -287,6 +280,26 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public event Action<Transform, Transform[]> objectsDropped;
         public event Action<Transform, Transform> objectsTransferred;
 
+        public List<IAction> actions
+        {
+            get
+            {
+                if (!this.IsSharedUpdater(this))
+                    return null;
+
+                if (m_Actions == null)
+                {
+                    m_Actions = new List<IAction>
+                    {
+                        m_PivotModeToggleAction,
+                        m_PivotRotationToggleAction,
+                        m_ManipulatorToggleAction
+                    };
+                }
+                return m_Actions;
+            }
+        }
+
         public bool manipulatorVisible { private get; set; }
 
         public bool manipulatorDragging
@@ -305,7 +318,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Node node { private get; set; }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
-        public bool ignoreLocking { get { return false; } }
+        public bool ignoreActionMapInputLocking { get { return false; } }
 
         void Start()
         {
@@ -452,7 +465,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         // A direct selection has been made. Hide the manipulator until the selection changes
                         m_DirectSelected = true;
 
+#if UNITY_EDITOR
                         Undo.IncrementCurrentGroup();
+#endif
                     }
                 }
 
@@ -484,7 +499,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                             DropHeldObjects(Node.LeftHand);
                         }
                         hasLeft = false;
+#if UNITY_EDITOR
                         Undo.PerformUndo();
+#endif
                     }
 
                     if (leftInput.select.wasJustReleased)
@@ -515,7 +532,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                              DropHeldObjects(Node.RightHand);
                         }
                         hasRight = false;
+#if UNITY_EDITOR
                         Undo.PerformUndo();
+#endif
                     }
 
                     if (rightInput.select.wasJustReleased)
@@ -604,7 +623,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, k_LazyFollowRotate * deltaTime);
 
                 var selectionTransforms = Selection.transforms;
+#if UNITY_EDITOR
                 Undo.RecordObjects(selectionTransforms, "Move");
+#endif
 
                 foreach (var t in selectionTransforms)
                 {
@@ -738,7 +759,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         static void OnDragStarted()
         {
+#if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
+#endif
         }
 
         void OnDragEnded(Transform rayOrigin)
@@ -917,4 +940,3 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
     }
 }
-#endif

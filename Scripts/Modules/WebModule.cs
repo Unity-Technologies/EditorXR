@@ -1,4 +1,3 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +7,7 @@ using UnityEngine.Networking;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class WebModule : MonoBehaviour
+    public class WebModule : MonoBehaviour, ISystemModule
     {
         class DownloadRequest
         {
@@ -217,4 +216,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif

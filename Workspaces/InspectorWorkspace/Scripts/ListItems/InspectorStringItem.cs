@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Data;
+﻿using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
@@ -7,8 +6,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorStringItem : InspectorPropertyItem
     {
+#pragma warning disable 649
         [SerializeField]
         StandardInputField m_InputField;
+#pragma warning restore 649
 
         public override void Setup(InspectorData data)
         {
@@ -28,6 +29,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             base.Setup(data);
 
             var val = string.Empty;
+
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.String:
@@ -37,6 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     val = m_SerializedProperty.intValue.ToString();
                     break;
             }
+#endif
 
             m_InputField.text = val;
             m_InputField.ForceUpdateLabel();
@@ -50,6 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         bool SetValueIfPossible(string input)
         {
+#if UNITY_EDITOR
             switch (m_SerializedProperty.propertyType)
             {
                 case SerializedPropertyType.String:
@@ -76,6 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     }
                     break;
             }
+#endif
 
             return false;
         }
@@ -97,4 +103,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

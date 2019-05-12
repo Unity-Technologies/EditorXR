@@ -1,6 +1,6 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -16,11 +16,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const float k_ExpandArrowRotateSpeed = 0.4f;
 
+#pragma warning disable 649
         [SerializeField]
-        Text m_Text;
+        TextMeshProUGUI m_Text;
 
         [SerializeField]
-        Text m_SceneText;
+        TextMeshProUGUI m_SceneText;
 
         [SerializeField]
         BaseHandle m_Lock;
@@ -33,6 +34,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         Transform m_SceneIcon;
+
+        [SerializeField]
+        Renderer m_SceneIconRenderer;
 
         [SerializeField]
         BaseHandle m_DropZone;
@@ -64,6 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [Tooltip("The fraction of the cube height to use for stacking grabbed rows")]
         [SerializeField]
         float m_StackingFraction = 0.3f;
+#pragma warning restore 649
 
         Color m_NormalColor;
         Color m_NormalTextColor;
@@ -176,15 +181,20 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             hovering = false;
         }
 
-        public void SetMaterials(Material textMaterial, Material expandArrowMaterial, Material lockIconMaterial, Material unlockIconMaterial)
+        public void SetMaterials(Material textMaterial, Material expandArrowMaterial, Material lockIconMaterial, Material unlockIconMaterial,
+            Material sceneIconDarkMaterial, Material sceneIconWhiteMaterial)
         {
-            m_Text.material = textMaterial;
-            m_SceneText.material = textMaterial;
+            m_Text.fontMaterial = textMaterial;
+            m_SceneText.fontMaterial = textMaterial;
             m_ExpandArrowMaterial = expandArrowMaterial;
             m_ExpandArrowRenderer.sharedMaterial = expandArrowMaterial;
             m_LockIconMaterial = lockIconMaterial;
             m_UnlockIconMaterial = unlockIconMaterial;
             m_LockRenderer.sharedMaterial = unlockIconMaterial;
+            var materials = new Material[2];
+            materials[0] = sceneIconDarkMaterial;
+            materials[1] = sceneIconWhiteMaterial;
+            m_SceneIconRenderer.sharedMaterials = materials;
         }
 
         public void UpdateSelf(float width, int depth, bool? expanded, bool selected, bool locked)
@@ -232,7 +242,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             UpdateArrow(expanded);
 
-            var isPrefab = gameObject && PrefabUtility.GetPrefabType(gameObject) == PrefabType.PrefabInstance;
+#if UNITY_EDITOR && UNITY_2018_3_OR_NEWER
+            var isPrefab = gameObject && PrefabUtility.GetPrefabInstanceStatus(gameObject) == PrefabInstanceStatus.Connected;
+#else
+            var isPrefab = false;
+#endif
 
             // Set selected/hover/normal color
             if (selected)
@@ -308,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_ExpandArrowRenderer.sharedMaterial = m_NoClipExpandArrow;
             m_CubeRenderer.sharedMaterial = m_NoClipBackingCube;
             m_Text.transform.localRotation = Quaternion.AngleAxis(90, Vector3.right);
-            m_Text.material = m_NoClipText;
+            m_Text.fontMaterial = m_NoClipText;
 
             m_DropZone.gameObject.SetActive(false);
             m_Cube.GetComponent<Collider>().enabled = false;
@@ -364,7 +378,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 if (this.IsOverShoulder(transform))
                 {
+#if UNITY_EDITOR
                     ObjectUtils.Destroy(EditorUtility.InstanceIDToObject(data.index));
+#else
+                    // TODO: Hierarchy indices
+#endif
                 }
 
                 // OnHierarchyChanged doesn't happen until next frame--delay un-grab so the object doesn't start moving to the wrong spot
@@ -553,4 +571,3 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
     }
 }
-#endif

@@ -1,15 +1,17 @@
-﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Utilities;
+﻿using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
     [ActionMenuItem("Duplicate", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
+    [SpatialMenuItem("Duplicate", "Actions", "Duplicate the selected object at the currently focused position")]
     sealed class Duplicate : BaseAction, IUsesSpatialHash, IUsesViewerScale
     {
         public override void ExecuteAction()
         {
+#if UNITY_EDITOR
             Unsupported.DuplicateGameObjectsUsingPasteboard();
+#endif
             var selection = Selection.transforms;
             var bounds = ObjectUtils.GetBounds(selection);
             foreach (var s in selection)
@@ -26,4 +28,3 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         }
     }
 }
-#endif

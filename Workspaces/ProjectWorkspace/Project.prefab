@@ -241,6 +241,7 @@ MeshRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 1e584586efda064418cc580c65ad9b5f, type: 2}
   m_StaticBatchInfo:
@@ -275,6 +276,7 @@ MeshRenderer:
   m_MotionVectors: 0
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 1e584586efda064418cc580c65ad9b5f, type: 2}
   m_StaticBatchInfo:
@@ -396,7 +398,7 @@ MonoBehaviour:
   m_ItemDragStartPulse: {fileID: 0}
   m_ItemDraggingPulse: {fileID: 0}
   m_ItemDragEndPulse: {fileID: 0}
-  m_TextMaterial: {fileID: 2100000, guid: 2569ce4f009c407448c0df4aa8d7db55, type: 2}
+  m_TextMaterial: {fileID: 2100000, guid: 18b3c8b3b6f8e1b4288e427b6a8aee60, type: 2}
   m_ExpandArrowMaterial: {fileID: 2100000, guid: 41165fc29d3ea90418665f906b7fa247,
     type: 2}
 --- !u!114 &114000011690277160

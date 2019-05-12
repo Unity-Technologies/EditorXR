@@ -1,13 +1,12 @@
-#if UNITY_EDITOR
 using System;
 using System.Collections;
-using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
-using UnityEditor.Experimental.EditorVR.Extensions;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
@@ -30,40 +29,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
         const float k_KeyResponsePositionAmplitude = 0.02f;
         const float k_KeyResponseScaleAmplitude = 0.08f;
 
-        public Text textComponent
-        {
-            get { return m_TextComponent; }
-            set { m_TextComponent = value; }
-        }
-
+#pragma warning disable 649
         [SerializeField]
-        Text m_TextComponent;
-
-        public Material targetMeshMaterial
-        {
-            get { return m_TargetMeshMaterial; }
-        }
-
-        Material m_TargetMeshMaterial;
-
-        public Color targetMeshBaseColor
-        {
-            get { return m_TargetMeshBaseColor; }
-        }
-
-        Color m_TargetMeshBaseColor;
-
-        public CanvasGroup canvasGroup
-        {
-            get
-            {
-                return !m_CanvasGroup
-                    ? GetComponentInChildren<CanvasGroup>(true)
-                    : m_CanvasGroup;
-            }
-        }
-
-        CanvasGroup m_CanvasGroup;
+        TextMeshProUGUI m_TextComponent;
 
         [SerializeField]
         char m_Character;
@@ -87,6 +55,13 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         [SerializeField]
         WorkspaceButton m_WorkspaceButton;
+#pragma warning restore 649
+
+        Material m_TargetMeshMaterial;
+
+        Color m_TargetMeshBaseColor;
+
+        CanvasGroup m_CanvasGroup;
 
         float m_HoldStartTime;
         float m_RepeatWaitTime;
@@ -101,6 +76,32 @@ namespace UnityEditor.Experimental.EditorVR.UI
         Action<char> m_KeyPress;
         Func<bool> m_PressOnHover;
         Func<bool> m_InTransition;
+
+        public TextMeshProUGUI textComponent
+        {
+            get { return m_TextComponent; }
+            set { m_TextComponent = value; }
+        }
+
+        public Material targetMeshMaterial
+        {
+            get { return m_TargetMeshMaterial; }
+        }
+
+        public Color targetMeshBaseColor
+        {
+            get { return m_TargetMeshBaseColor; }
+        }
+
+        public CanvasGroup canvasGroup
+        {
+            get
+            {
+                return !m_CanvasGroup
+                    ? GetComponentInChildren<CanvasGroup>(true)
+                    : m_CanvasGroup;
+            }
+        }
 
         void Awake()
         {
@@ -490,4 +491,3 @@ namespace UnityEditor.Experimental.EditorVR.UI
         }
     }
 }
-#endif

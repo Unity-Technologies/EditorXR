@@ -1,18 +1,12 @@
-﻿#if UNITY_EDITOR
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class SpatialScrollModule : MonoBehaviour, IUsesViewerScale, IControlHaptics, IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
+    public sealed class SpatialScrollModule : MonoBehaviour, ISystemModule, IUsesViewerScale, IControlHaptics,
+        IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
     {
-        [SerializeField]
-        HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection
-
-        // Collection housing objects whose scroll data is being processed
-        readonly List<IControlSpatialScrolling> m_ScrollCallers = new List<IControlSpatialScrolling>();
-
         public class SpatialScrollData : INodeToRay
         {
             public SpatialScrollData(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
@@ -104,6 +98,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
+#pragma warning disable 649
+        [SerializeField]
+        HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection
+#pragma warning restore 649
+
+        // Collection housing objects whose scroll data is being processed
+        readonly List<IControlSpatialScrolling> m_ScrollCallers = new List<IControlSpatialScrolling>();
+
         internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
         {
             // Continue processing of spatial scrolling for a given caller,
@@ -177,4 +179,3 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 }
-#endif
