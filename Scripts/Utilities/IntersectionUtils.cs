@@ -30,15 +30,15 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             {
                 var ray = tester.rays[j];
 
-                //Transform rays to world space
+                //Transform rays to world space, then to object's local space
                 var testerTransform = tester.transform;
-                ray.origin = testerTransform.TransformPoint(ray.origin);
-                ray.direction = testerTransform.TransformDirection(ray.direction);
+                var objectTransform = obj.transform;
+                ray.origin = objectTransform.InverseTransformPoint(testerTransform.TransformPoint(ray.origin));
+                ray.direction = objectTransform.InverseTransformDirection(testerTransform.TransformDirection(ray.direction));
 
                 RaycastHit hit;
                 if (TestRay(collisionTester, transform, ray, out hit))
                 {
-                    //GizmoModule.instance.DrawSphere(hit.point, 0.05f, Color.cyan);
                     collisionPoint = hit.point;
                     return true;
                 }

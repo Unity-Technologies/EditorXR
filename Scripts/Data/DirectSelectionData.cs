@@ -6,7 +6,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Stores the state of a direct selection
     /// </summary>
-    public sealed class DirectSelectionData
+    public struct DirectSelectionData
     {
         /// <summary>
         /// The object which is selected
