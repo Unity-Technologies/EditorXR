@@ -101,7 +101,8 @@ namespace Unity.Labs.ListView
 
         protected virtual void ComputeConditions()
         {
-            m_StartPosition = (m_Extents.z - m_ItemSize.z * 0.5f) * Vector3.forward;
+            var itemHeight = m_ItemSize.z;
+            m_StartPosition = (m_Extents.z - itemHeight * 0.5f) * Vector3.forward;
 
             if (m_Scrolling)
             {
@@ -139,7 +140,6 @@ namespace Unity.Labs.ListView
 
             // Snap back if list scrolled too far
             const float epsilon = 1e-6f;
-            var itemHeight = itemSize.z;
             if (listHeight > 0 && -m_ScrollOffset >= listHeight - itemHeight)
                 m_ScrollReturn = -listHeight + itemHeight + epsilon;
         }
