@@ -46,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             float m_StartDistance;
             bool m_UseUp;
 
-            public Transform[] grabbedObjects { get; private set; }
+            public Transform[] grabbedTransforms { get; private set; }
             public TransformInput input { get; private set; }
             public Transform rayOrigin { get; private set; }
             public TwoHandedManipulateMode twoHandedManipulateMode { get; set; }
@@ -55,11 +55,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             Vector3 pivotPoint { get { return rayOrigin.position + rayOrigin.rotation * m_GrabOffset; } }
 
-            public GrabData(Transform rayOrigin, TransformInput input, Transform[] grabbedObjects, Vector3 contactPoint)
+            public GrabData(Transform rayOrigin, TransformInput input, Transform[] grabbedTransforms, Vector3 contactPoint)
             {
                 this.rayOrigin = rayOrigin;
                 this.input = input;
-                this.grabbedObjects = grabbedObjects;
+                this.grabbedTransforms = grabbedTransforms;
                 var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
                 m_GrabOffset = inverseRotation * (contactPoint - rayOrigin.position);
                 CaptureInitialTransforms();
@@ -68,13 +68,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             void CaptureInitialTransforms()
             {
-                var length = grabbedObjects.Length;
+                var length = grabbedTransforms.Length;
                 m_OriginalPositions = new Vector3[length];
                 m_OriginalRotations = new Quaternion[length];
                 m_OriginalScales = new Vector3[length];
                 for (var i = 0; i < length; i++)
                 {
-                    var grabbedTransform = grabbedObjects[i];
+                    var grabbedTransform = grabbedTransforms[i];
                     m_OriginalPositions[i] = grabbedTransform.position;
                     m_OriginalRotations[i] = grabbedTransform.rotation;
                     m_OriginalScales[i] = grabbedTransform.localScale;
@@ -86,14 +86,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (suspended)
                     return;
 
-                var length = grabbedObjects.Length;
+                var length = grabbedTransforms.Length;
                 m_PositionOffsets = new Vector3[length];
                 m_RotationOffsets = new Quaternion[length];
                 m_InitialScales = new Vector3[length];
                 var pivot = pivotPoint;
                 for (var i = 0; i < length; i++)
                 {
-                    var grabbedTransform = grabbedObjects[i];
+                    var grabbedTransform = grabbedTransforms[i];
 
                     var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
                     m_PositionOffsets[i] = inverseRotation * (grabbedTransform.position - pivot);
@@ -108,14 +108,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     return;
 
 #if UNITY_EDITOR
-                Undo.RecordObjects(grabbedObjects, "Move");
+                Undo.RecordObjects(grabbedTransforms, "Move");
 #endif
 
                 var rayOriginRotation = rayOrigin.rotation;
                 var pivot = pivotPoint;
-                for (var i = 0; i < grabbedObjects.Length; i++)
+                for (var i = 0; i < grabbedTransforms.Length; i++)
                 {
-                    var grabbedObject = grabbedObjects[i];
+                    var grabbedObject = grabbedTransforms[i];
                     var position = grabbedObject.position;
                     var rotation = grabbedObject.rotation;
                     var targetPosition = pivot + rayOriginRotation * m_PositionOffsets[i];
@@ -149,7 +149,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     return;
 
 #if UNITY_EDITOR
-                Undo.RecordObjects(grabbedObjects, "Move");
+                Undo.RecordObjects(grabbedTransforms, "Move");
 #endif
 
                 var thisPosition = pivotPoint;
@@ -166,9 +166,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     var grabRotation = Quaternion.LookRotation(rayToRay, m_UseUp ? upVector : forward);
                     var rotationOffset = grabRotation * (m_UseUp ? m_UpRotationOffset : m_ForwardRotationOffset);
 
-                    for (var i = 0; i < grabbedObjects.Length; i++)
+                    for (var i = 0; i < grabbedTransforms.Length; i++)
                     {
-                        var grabbedObject = grabbedObjects[i];
+                        var grabbedObject = grabbedTransforms[i];
 
                         if (twoHandedManipulateMode == TwoHandedManipulateMode.RotateOnly)
                         {
@@ -222,9 +222,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 m_UpRotationOffset = Quaternion.Inverse(Quaternion.LookRotation(rayToRay, upVector));
                 m_ForwardRotationOffset = Quaternion.Inverse(Quaternion.LookRotation(rayToRay, forward));
 
-                for (var i = 0; i < grabbedObjects.Length; i++)
+                for (var i = 0; i < grabbedTransforms.Length; i++)
                 {
-                    var grabbedObject = grabbedObjects[i];
+                    var grabbedObject = grabbedTransforms[i];
                     m_PositionOffsets[i] = grabbedObject.position - m_StartMidPoint;
                     m_RotationOffsets[i] = grabbedObject.rotation;
                 }
@@ -237,10 +237,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             public void Cancel()
             {
-                var length = grabbedObjects.Length;
+                var length = grabbedTransforms.Length;
                 for (var i = 0; i < length; i++)
                 {
-                    var grabbedTransform = grabbedObjects[i];
+                    var grabbedTransform = grabbedTransforms[i];
                     grabbedTransform.position = m_OriginalPositions[i];
                     grabbedTransform.rotation = m_OriginalRotations[i];
                     grabbedTransform.localScale = m_OriginalScales[i];
@@ -487,7 +487,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     // Check if the other hand is already grabbing for two-handed scale
                     var otherData = grabbingNode == Node.LeftHand ? m_RightGrabData : m_LeftGrabData;
 
-                    if (otherData != null && !otherData.grabbedObjects.Contains(directHoveredObject.transform))
+                    if (otherData != null && !otherData.grabbedTransforms.Contains(directHoveredObject.transform))
                         otherData = null;
 
                     if (otherData != null)
@@ -769,7 +769,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform[] GetHeldObjects(Node node)
         {
             var grabData = GrabDataForNode(node);
-            return grabData == null ? null : grabData.grabbedObjects;
+            return grabData == null ? null : grabData.grabbedTransforms;
         }
 
         public void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset = default(Vector3))
@@ -800,7 +800,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 return;
 
             var grabData = GrabDataForNode(node);
-            var grabbedObjects = grabData.grabbedObjects;
+            var grabbedObjects = grabData.grabbedTransforms;
             var rayOrigin = grabData.rayOrigin;
 
             if (objectsDropped != null)
