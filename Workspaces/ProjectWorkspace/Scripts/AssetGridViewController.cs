@@ -176,14 +176,16 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_TemplateDictionary[gridItem.data.template].pool.Enqueue(gridItem);
         }
 
-        protected override void UpdateVisibleItem(AssetData data, int order, float offset, ref bool doneSettling)
+        protected override AssetGridItem UpdateVisibleItem(AssetData datum, int order, float offset, ref bool doneSettling)
         {
             AssetGridItem item;
-            if (!m_ListItems.TryGetValue(data.index, out item))
-                GetNewItem(data, out item);
+            if (!m_ListItems.TryGetValue(datum.index, out item))
+                GetNewItem(datum, out item);
 
             if (item)
                 UpdateGridItem(item, order, (int)offset);
+
+            return item;
         }
 
         public override void OnScrollEnded()

@@ -118,7 +118,7 @@ namespace Unity.Labs.ListView
             item.SetActive(false);
         }
 
-        protected virtual void UpdateVisibleItem(TData datum, int order, float offset, ref bool doneSettling)
+        protected virtual TItem UpdateVisibleItem(TData datum, int order, float offset, ref bool doneSettling)
         {
             TItem item;
             var index = datum.index;
@@ -127,6 +127,8 @@ namespace Unity.Labs.ListView
 
             m_LastUpdatedItemItem = item;
             UpdateItem(item, order, offset, ref doneSettling);
+
+            return item;
         }
 
         protected virtual void SetRowGrabbed(TIndex index, Transform rayOrigin, bool grabbed)
