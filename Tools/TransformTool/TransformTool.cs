@@ -173,8 +173,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         if (twoHandedManipulateMode == TwoHandedManipulateMode.RotateOnly)
                         {
                             var targetPosition = midPoint + rotationOffset * m_PositionOffsets[i];
-                            if (grabbedObject.position != targetPosition)
-                                grabbedObject.position = targetPosition;
+                            var currentPosition = grabbedObject.position;
+                            if (currentPosition != targetPosition)
+                                grabbedObject.position = Vector3.Lerp(currentPosition, targetPosition, k_DirectLazyFollowTranslate);
 
                             var targetScale = m_InitialScales[i];
                             if (grabbedObject.localScale != targetScale)
@@ -183,8 +184,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         else
                         {
                             var targetPosition = midPoint + rotationOffset * m_PositionOffsets[i] * scaleFactor;
-                            if (grabbedObject.position != targetPosition)
-                                grabbedObject.position = targetPosition;
+                            var currentPosition = grabbedObject.position;
+                            if (currentPosition != targetPosition)
+                                grabbedObject.position = Vector3.Lerp(currentPosition, targetPosition, k_DirectLazyFollowTranslate);
 
                             var targetScale = m_InitialScales[i] * scaleFactor;
                             if (grabbedObject.localScale != targetScale)
@@ -192,9 +194,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         }
 
                         if (twoHandedManipulateMode == TwoHandedManipulateMode.ScaleOnly)
-                            grabbedObject.rotation = m_RotationOffsets[i];
+                            grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, m_RotationOffsets[i], k_DirectLazyFollowRotate);
                         else
-                            grabbedObject.rotation = rotationOffset * m_RotationOffsets[i];
+                            grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotationOffset * m_RotationOffsets[i], k_DirectLazyFollowRotate);
                     }
                 }
             }
