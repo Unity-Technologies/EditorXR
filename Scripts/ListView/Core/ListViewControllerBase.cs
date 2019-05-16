@@ -137,10 +137,11 @@ namespace Unity.Labs.ListView
 
             m_ScrollReturn = float.MaxValue;
 
-            var itemHeight = itemSize.z;
             // Snap back if list scrolled too far
+            const float epsilon = 1e-6f;
+            var itemHeight = itemSize.z;
             if (listHeight > 0 && -m_ScrollOffset >= listHeight - itemHeight)
-                m_ScrollReturn = -listHeight + itemHeight;
+                m_ScrollReturn = -listHeight + itemHeight + epsilon;
         }
 
         protected abstract void UpdateItems();
