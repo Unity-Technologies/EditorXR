@@ -42,9 +42,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             Vector3 m_StartMidPoint;
             Quaternion m_UpRotationOffset;
             Quaternion m_ForwardRotationOffset;
-            Vector3 m_GrabOffset;
             float m_StartDistance;
             bool m_UseUp;
+
+            readonly Vector3 m_GrabOffset;
 
             public Transform[] grabbedTransforms { get; private set; }
             public TransformInput input { get; private set; }
@@ -183,7 +184,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         }
                         else
                         {
-                            var targetPosition = midPoint + rotationOffset * m_PositionOffsets[i] * scaleFactor;
+                            var offset = m_PositionOffsets[i] * scaleFactor;
+                            if (twoHandedManipulateMode != TwoHandedManipulateMode.ScaleOnly)
+                                offset = rotationOffset * offset;
+
+                            var targetPosition = midPoint + offset;
                             var currentPosition = grabbedObject.position;
                             if (currentPosition != targetPosition)
                                 grabbedObject.position = Vector3.Lerp(currentPosition, targetPosition, k_DirectLazyFollowTranslate);
@@ -503,6 +508,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     if (transformInput.select.wasJustPressed)
                     {
+                        Debug.Log("grab");
+
                         this.ClearSnappingState(directRayOrigin);
 
                         consumeControl(transformInput.select);
