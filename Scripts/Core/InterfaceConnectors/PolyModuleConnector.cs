@@ -2,7 +2,9 @@
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Modules;
 
+#if UNITY_EDITOR
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+#endif
 
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Core

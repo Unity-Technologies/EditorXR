@@ -56,16 +56,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void Awake()
         {
             m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
+#if UNITY_EDITOR
             if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
             {
                 var selectionColor = EditorMaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
                 selectionColor.a = 1;
-#if UNITY_EDITOR
                 m_RayHighlightMaterial.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
-#else
-                m_RayHighlightMaterial.color = selectionColor;
-#endif
             }
+#endif
         }
 
         void LateUpdate()

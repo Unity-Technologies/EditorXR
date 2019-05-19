@@ -1,18 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
-
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -27,10 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         CanvasGroup m_CanvasGroup;
 
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_FaceTitle;
-#endif
 
         [SerializeField]
         Transform m_GridTransform;
@@ -72,12 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public string title
         {
-            set
-            {
-#if INCLUDE_TEXT_MESH_PRO
-                m_FaceTitle.text = value;
-#endif
-            }
+            set { m_FaceTitle.text = value; }
         }
 
         public bool visible { set { this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateVisibility(value)); } }

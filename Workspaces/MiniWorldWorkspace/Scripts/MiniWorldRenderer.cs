@@ -5,8 +5,10 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
+#if UNITY_EDITOR
     [RequiresTag(k_MiniWorldCameraTag)]
     [RequiresTag(ShowInMiniWorldTag)]
+#endif
     sealed class MiniWorldRenderer : MonoBehaviour, IScriptReference
     {
         public const string ShowInMiniWorldTag = "ShowInMiniWorld";

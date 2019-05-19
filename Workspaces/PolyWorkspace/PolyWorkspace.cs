@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Threading;
-using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 
@@ -16,7 +15,11 @@ using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine.InputNew;
 #endif
 
+#if UNITY_EDITOR
+using Unity.Labs.Utils;
+
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {

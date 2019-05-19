@@ -71,31 +71,34 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         public static Component CreateGameObjectWithComponent(Type type, Transform parent = null,
             bool worldPositionStays = true, bool runInEditMode = true)
         {
-            Component component;
-            if (Application.isPlaying)
-            {
-                var go = new GameObject(type.Name);
-                go.transform.SetParent(parent, false);
-                component = AddComponent(type, go);
-            }
 #if UNITY_EDITOR
+            if (Application.isPlaying)
+                return RuntimeCreateGameObjectWithComponent(type, parent, worldPositionStays);
+
+            var go = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type);
+            var component = go.GetComponent(type);
+            if (component)
+            {
+                component.gameObject.SetRunInEditModeRecursively(runInEditMode);
+                component.transform.SetParent(parent, worldPositionStays);
+            }
             else
             {
-                var go = EditorUtility.CreateGameObjectWithHideFlags(type.Name, hideFlags, type);
-                component = go.GetComponent(type);
-                if (component)
-                {
-                    component.gameObject.SetRunInEditModeRecursively(runInEditMode);
-                    component.transform.SetParent(parent, worldPositionStays);
-                }
-                else
-                {
-                    UnityObject.DestroyImmediate(go);
-                }
+                UnityObject.DestroyImmediate(go);
             }
-#endif
 
             return component;
+#else
+            return RuntimeCreateGameObjectWithComponent(type, parent, worldPositionStays);
+#endif
+        }
+
+        static Component RuntimeCreateGameObjectWithComponent(Type type, Transform parent = null,
+            bool worldPositionStays = true)
+        {
+            var go = new GameObject(type.Name);
+            go.transform.SetParent(parent, worldPositionStays);
+            return AddComponent(type, go);
         }
 
         public static T AddComponent<T>(GameObject go) where T : Component

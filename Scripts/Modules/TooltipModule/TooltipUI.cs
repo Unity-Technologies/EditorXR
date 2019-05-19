@@ -1,13 +1,7 @@
 using System;
-using Unity.Labs.Utils;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
-
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -29,13 +23,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         Image m_Icon;
 
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TMP_Text m_TextLeft;
 
         [SerializeField]
         TMP_Text m_TextRight;
-#endif
         [SerializeField]
         CanvasGroup m_LeftTextCanvasGroup;
 
@@ -85,21 +77,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 case TextAlignment.Center:
                 case TextAlignment.Left:
-                    // Treat center as left justified, aside from horizontal offset placement
-#if INCLUDE_TEXT_MESH_PRO
+                    // Treat center as left justified, aside from horizontal offset placementO
                     m_TextRight.text = text;
                     m_TextRight.gameObject.SetActive(validText);
                     m_TextLeft.gameObject.SetActive(false);
-#endif
                     m_RightSpacer.minWidth = validText ? iconVisible ? k_IconTextSpacing : 0 : 0;
                     m_LeftSpacer.minWidth = validText ? iconVisible ? k_IconTextMinSpacing : 8 : 0;
                     break;
                 case TextAlignment.Right:
-#if INCLUDE_TEXT_MESH_PRO
                     m_TextLeft.text = text;
                     m_TextRight.gameObject.SetActive(false);
                     m_TextLeft.gameObject.SetActive(validText);
-#endif
                     m_RightSpacer.minWidth = validText ? iconVisible ? k_IconTextMinSpacing : 8 : 0;
                     m_LeftSpacer.minWidth = validText ? iconVisible ? k_IconTextSpacing : 0 : 0;
                     break;

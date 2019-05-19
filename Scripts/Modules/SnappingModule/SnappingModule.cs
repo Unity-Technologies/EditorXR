@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -8,12 +9,6 @@ using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
-
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -874,7 +869,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         void SetupUI()
         {
-#if INCLUDE_TEXT_MESH_PRO
             var snappingEnabledUI = m_SnappingModuleSettingsUI.snappingEnabled;
             var text = snappingEnabledUI.GetComponentInChildren<TextMeshProUGUI>();
             snappingEnabledUI.isOn = !m_Preferences.disableAll;
@@ -889,7 +883,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var handle = snappingEnabledUI.GetComponent<BaseHandle>();
             handle.hoverStarted += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Enable snapping" : "Disable snapping"; };
             handle.hoverEnded += (baseHandle, data) => { text.text = m_Preferences.disableAll ? "Snapping disabled" : "Snapping enabled"; };
-#endif
 
             var groundSnappingUI = m_SnappingModuleSettingsUI.groundSnappingEnabled;
             groundSnappingUI.isOn = m_Preferences.groundSnappingEnabled;
@@ -953,12 +946,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     toggle.graphic.gameObject.SetActive(!m_Preferences.disableAll);
             }
 
-#if INCLUDE_TEXT_MESH_PRO
             foreach (var text in m_SnappingModuleSettingsUI.GetComponentsInChildren<TextMeshProUGUI>(true))
             {
                 text.color = m_Preferences.disableAll ? Color.gray : Color.white;
             }
-#endif
         }
 
         void SetSessionGradientMaterial(GradientPair gradientPair)

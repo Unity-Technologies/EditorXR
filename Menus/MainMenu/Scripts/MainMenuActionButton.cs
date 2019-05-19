@@ -1,13 +1,7 @@
 ﻿using System;
-using Unity.Labs.Utils;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
-
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -19,10 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         [SerializeField]
         Sprite m_Icon;
 
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_NameText;
-#endif
 
         public Func<Action, bool> buttonPressed { get; set; }
     }

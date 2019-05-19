@@ -10,15 +10,16 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
+#if UNITY_EDITOR
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-#if UNITY_EDITOR
-    [InitializeOnLoad]
-#endif
 #if UNITY_2018_3_OR_NEWER
+#if UNITY_EDITOR
     [RequiresTag(k_VRPlayerTag)]
+#endif
     sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
         const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
@@ -541,16 +542,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
 #endif
         }
-
-#if !INCLUDE_TEXT_MESH_PRO
-        static EditorVR()
-        {
-            if (Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro") == null)
-                Debug.LogWarning("EditorVR requires TextMesh Pro. Please open the package manager and install Text Mesh Pro");
-        }
-#endif
     }
 #else
+#if UNITY_EDITOR
+    [InitializeOnLoad]
+#endif
     class NoEditorVR
     {
         const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";

@@ -1,12 +1,9 @@
 ﻿using System;
-using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -50,11 +47,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (button.interactable)
             {
                 var descriptionText = string.Empty;
-#if INCLUDE_TEXT_MESH_PRO
                 // We can't use ?? because it breaks on destroyed references
                 if (m_Description)
                     descriptionText = m_Description.text;
-#endif
 
                 if (hovered != null)
                     hovered(eventData.rayOrigin, toolType, descriptionText);

@@ -1,15 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -19,19 +16,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const string k_MaterialStencilRefProperty = "_StencilRef";
 
 #pragma warning disable 649
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_SummaryText;
 
         [SerializeField]
         TextMeshProUGUI m_DescriptionText;
-#else
-        [SerializeField]
-        Text m_SummaryText;
-
-        [SerializeField]
-        Text m_DescriptionText;
-#endif
 
         [SerializeField]
         RectTransform m_ButtonList;
@@ -115,13 +104,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public byte stencilRef { get; set; }
 
-#if INCLUDE_TEXT_MESH_PRO
         public TextMeshProUGUI summaryText { get { return m_SummaryText; } }
         public TextMeshProUGUI descriptionText { get { return m_DescriptionText; } }
-#else
-        public Text summaryText { get; set; }
-        public Text descriptionText { get; set; }
-#endif
 
         public bool addDefaultOption { private get; set; }
 
