@@ -1,6 +1,5 @@
 ﻿using System;
 using Unity.Labs.Utils.GUI;
-using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core

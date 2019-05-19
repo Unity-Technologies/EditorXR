@@ -1,7 +1,5 @@
-using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
-using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {

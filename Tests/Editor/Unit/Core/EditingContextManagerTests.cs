@@ -1,8 +1,8 @@
 ﻿#if UNITY_2018_3_OR_NEWER
+using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using NUnit.Framework;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Tools;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Linq;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
