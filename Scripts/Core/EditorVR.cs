@@ -167,7 +167,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             AddModule<SerializedPreferencesModule>(); // Added here in case any nested modules have preference serialization
             AddNestedModule(typeof(SerializedPreferencesModuleConnector));
 
-            var nestedClassTypes = ReflectionUtils.GetExtensionsOfClass(typeof(Nested));
+            var nestedClassTypes = new List<Type>();
+            typeof(Nested).GetExtensionsOfClass(nestedClassTypes);
             foreach (var type in nestedClassTypes)
             {
                 AddNestedModule(type);
