@@ -91,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 }
             };
 
-            var defaultReferenceTypes = CollectionPool<List<Type>, Type>.GetCollection();
+            var defaultReferenceTypes = new List<Type>();
             typeof(IEditor).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(IProxy).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(ITool).GetImplementationsOfInterface(defaultReferenceTypes);
