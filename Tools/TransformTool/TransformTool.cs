@@ -25,9 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     {
         enum TwoHandedManipulateMode
         {
+            ScaleOnly,
             RotateAndScale,
-            RotateOnly,
-            ScaleOnly
+            RotateOnly // Disabled until visual improvement is implemented
         }
 
         class GrabData
@@ -508,8 +508,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     if (transformInput.select.wasJustPressed)
                     {
-                        Debug.Log("grab");
-
                         this.ClearSnappingState(directRayOrigin);
 
                         consumeControl(transformInput.select);
@@ -613,7 +611,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     var rightCancel = rightInput.cancel;
 
                     var scaleGrabData = m_ScaleFirstNode == Node.LeftHand ? m_LeftGrabData : m_RightGrabData;
-                    if (leftCancel.wasJustReleased)
+                    if (leftCancel.wasJustPressed)
                     {
                         if (scaleGrabData.twoHandedManipulateMode == TwoHandedManipulateMode.ScaleOnly)
                             scaleGrabData.twoHandedManipulateMode = TwoHandedManipulateMode.RotateAndScale;
@@ -623,29 +621,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         ShowScaleOptionsFeedback(scaleGrabData.twoHandedManipulateMode);
                     }
 
-                    if (rightCancel.wasJustReleased)
-                    {
-                        if (scaleGrabData.twoHandedManipulateMode == TwoHandedManipulateMode.RotateOnly)
-                            scaleGrabData.twoHandedManipulateMode = TwoHandedManipulateMode.RotateAndScale;
-                        else
-                            scaleGrabData.twoHandedManipulateMode = TwoHandedManipulateMode.RotateOnly;
-
-                        ShowScaleOptionsFeedback(scaleGrabData.twoHandedManipulateMode);
-                    }
-
-                    var leftCancelHeld = leftCancel.isHeld;
-                    var rightCancelHeld = rightCancel.isHeld;
-                    if (m_ScaleCancelFeedback.Count == 0 && (leftCancelHeld || rightCancelHeld))
-                        ShowScaleCancelFeedback();
-                    else if (!leftCancelHeld && !rightCancelHeld)
-                        HideScaleCancelFeedback();
-
-                    if (leftCancelHeld && rightCancelHeld) // Cancel scaling
+                    if (rightCancel.wasJustPressed)
                     {
                         HideScaleOptionFeedback();
-                        HideScaleCancelFeedback();
                         m_Scaling = false;
-                        if (m_ScaleFirstNode ==  Node.LeftHand)
+                        if (m_ScaleFirstNode == Node.LeftHand)
                             m_LeftGrabData.Cancel();
                         else
                             m_RightGrabData.Cancel();
@@ -1024,30 +1004,20 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             ShowFeedback(m_ScaleFeedback, "Select", "Scale", node);
         }
 
-        void ShowScaleOptionsFeedback(TwoHandedManipulateMode mode = TwoHandedManipulateMode.RotateAndScale)
+        void ShowScaleOptionsFeedback(TwoHandedManipulateMode mode = TwoHandedManipulateMode.ScaleOnly)
         {
             HideScaleOptionFeedback();
             switch (mode)
             {
-                case TwoHandedManipulateMode.RotateAndScale:
-                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Scale Only", Node.LeftHand);
-                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Rotate Only", Node.RightHand);
-                    return;
                 case TwoHandedManipulateMode.ScaleOnly:
-                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Rotate and Scale", Node.LeftHand);
-                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Rotate Only", Node.RightHand);
+                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Press to Rotate and Scale", Node.LeftHand);
+                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Press to Cancel", Node.RightHand);
                     return;
-                case TwoHandedManipulateMode.RotateOnly:
-                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Scale Only", Node.LeftHand);
-                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Rotate and Scale", Node.RightHand);
+                case TwoHandedManipulateMode.RotateAndScale:
+                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Press to Scale Only", Node.LeftHand);
+                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Press to Cancel", Node.RightHand);
                     return;
             }
-        }
-
-        void ShowScaleCancelFeedback()
-        {
-            ShowFeedback(m_ScaleCancelFeedback, "Cancel", "Cancel", Node.LeftHand);
-            ShowFeedback(m_ScaleCancelFeedback, "Cancel", "Cancel", Node.RightHand);
         }
 
         void HideFeedback(List<ProxyFeedbackRequest> requests)
@@ -1072,11 +1042,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         void HideScaleOptionFeedback()
         {
             HideFeedback(m_ScaleOptionFeedback);
-        }
-
-        void HideScaleCancelFeedback()
-        {
-            HideFeedback(m_ScaleCancelFeedback);
         }
     }
 }
