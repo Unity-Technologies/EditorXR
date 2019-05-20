@@ -1,7 +1,7 @@
-using ListView;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.ListView;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -9,8 +9,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class DraggableListItem<TData, TIndex> : ListViewItem<TData, TIndex>, IGetPreviewOrigin, IUsesViewerScale, IRayToNode
-        where TData : ListViewItemData<TIndex>
+    class DraggableListItem<TData, TIndex> : EditorXRListViewItem<TData, TIndex>, IGetPreviewOrigin, IUsesViewerScale, IRayToNode
+        where TData : IListViewItemData<TIndex>
     {
         const float k_MagnetizeDuration = 0.5f;
         protected const float k_DragDeadzone = 0.025f;

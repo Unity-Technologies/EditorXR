@@ -52,7 +52,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Transform m_PreviewObjectTransform;
 #pragma warning restore 649
 
-        bool m_Setup;
         bool m_AutoHidePreview;
         Vector3 m_PreviewPrefabScale;
         Vector3 m_PreviewTargetScale;
@@ -98,12 +97,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_SetImportingColor = SetImportingColor;
         }
 
-        public override void Setup(PolyGridAsset listData)
+        public override void Setup(PolyGridAsset listData, bool firstTime)
         {
-            base.Setup(listData);
+            base.Setup(listData, firstTime);
 
             // First time setup
-            if (!m_Setup)
+            if (firstTime)
             {
                 m_IconScale = m_Icon.transform.localScale;
 
@@ -117,8 +116,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_Handle.hoverEnded += OnHoverEnded;
 
                 m_IconMaterial = MaterialUtils.GetMaterialClone(m_Icon.GetComponent<Renderer>());
-
-                m_Setup = true;
             }
 
             m_Hovered = false;

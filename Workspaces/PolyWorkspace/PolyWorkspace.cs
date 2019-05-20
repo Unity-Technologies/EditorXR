@@ -426,7 +426,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_WorkspaceUI.topHighlight.visible = true;
             m_WorkspaceUI.amplifyTopHighlight = false;
 
-            m_PolyUI.gridView.OnBeginScrolling();
+            m_PolyUI.gridView.OnScrollStarted();
         }
 
         void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

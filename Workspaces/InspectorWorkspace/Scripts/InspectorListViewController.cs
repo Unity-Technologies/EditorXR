@@ -1,16 +1,18 @@
-﻿using ListView;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Unity.Labs.ListView;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
+using UnityEditor.Experimental.EditorVR.UI;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
 #if UNITY_EDITOR
-    sealed class InspectorListViewController : NestedListViewController<InspectorData, InspectorListItem, int>, IUsesGameObjectLocking, IUsesStencilRef
+    sealed class InspectorListViewController : EditorXRNestedListViewController<InspectorData, InspectorListItem, int>, IUsesGameObjectLocking, IUsesStencilRef
     {
-        const string k_MaterialStencilRef = "_StencilRef";
+        static readonly int k_StencilRef = Shader.PropertyToID("_StencilRef");
         const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
         [SerializeField]
@@ -57,21 +59,21 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
 
-        protected override void Setup()
+        protected override void Start()
         {
-            base.Setup();
+            base.Start();
 
             m_RowCubeMaterial = Instantiate(m_RowCubeMaterial);
             m_BackingCubeMaterial = Instantiate(m_BackingCubeMaterial);
             m_UIMaterial = Instantiate(m_UIMaterial);
-            m_UIMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+            m_UIMaterial.SetInt(k_StencilRef, stencilRef);
             m_UIMaskMaterial = Instantiate(m_UIMaskMaterial);
-            m_UIMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+            m_UIMaskMaterial.SetInt(k_StencilRef, stencilRef);
 
             m_HighlightMaterial = Instantiate(m_HighlightMaterial);
-            m_HighlightMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+            m_HighlightMaterial.SetInt(k_StencilRef, stencilRef);
             m_HighlightMaskMaterial = Instantiate(m_HighlightMaskMaterial);
-            m_HighlightMaskMaterial.SetInt(k_MaterialStencilRef, stencilRef);
+            m_HighlightMaskMaterial.SetInt(k_StencilRef, stencilRef);
 
             m_NoClipBackingCubeMaterial = Instantiate(m_NoClipBackingCubeMaterial);
             m_NoClipHighlightMaterial = Instantiate(m_NoClipHighlightMaterial);
@@ -95,12 +97,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_StartPosition = m_Extents.z * Vector3.back;
 
             var parentMatrix = transform.worldToLocalMatrix;
-            SetMaterialClip(m_RowCubeMaterial, parentMatrix);
-            SetMaterialClip(m_BackingCubeMaterial, parentMatrix);
-            SetMaterialClip(m_UIMaterial, parentMatrix);
-            SetMaterialClip(m_UIMaskMaterial, parentMatrix);
-            SetMaterialClip(m_HighlightMaterial, parentMatrix);
-            SetMaterialClip(m_HighlightMaskMaterial, parentMatrix);
+            ClipText.SetMaterialClip(m_RowCubeMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_BackingCubeMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_UIMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_UIMaskMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_HighlightMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_HighlightMaskMaterial, parentMatrix, m_Extents);
         }
 
         public void OnObjectModified()
@@ -111,11 +113,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        protected override void UpdateNestedItems(List<InspectorData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        protected override void UpdateNestedItems(ref int order, ref float offset, ref bool doneSettling, int depth = 0)
         {
             m_UpdateStack.Push(new UpdateData
             {
-                data = data,
+                data = m_Data,
                 depth = depth
             });
 
@@ -123,13 +125,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             while (m_UpdateStack.Count > 0)
             {
                 var stackData = m_UpdateStack.Pop();
-                data = stackData.data;
+                var nestedData = stackData.data;
                 depth = stackData.depth;
 
                 var i = stackData.index;
-                for (; i < data.Count; i++)
+                for (; i < nestedData.Count; i++)
                 {
-                    var datum = data[i];
+                    var datum = nestedData[i];
                     var serializedObject = datum.serializedObject;
                     if (serializedObject == null || serializedObject.targetObject == null)
                     {
@@ -144,14 +146,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         m_ExpandStates[index] = false;
 
                     m_ItemSize = m_TemplateSizes[datum.template];
-                    var itemSize = m_ItemSize.Value;
 
-                    if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
+                    var localOffset = offset + scrollOffset;
+                    if (localOffset + m_ItemSize.z < 0 || localOffset > m_Size.z)
                         Recycle(index);
                     else
                         UpdateInspectorItem(datum, order--, offset, depth, expanded, ref doneSettling);
 
-                    offset += itemSize.z;
+                    offset += m_ItemSize.z;
 
                     if (datum.children != null)
                     {
@@ -159,7 +161,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         {
                             m_UpdateStack.Push(new UpdateData
                             {
-                                data = data,
+                                data = nestedData,
                                 depth = depth,
 
                                 index = i + 1
@@ -184,34 +186,33 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             InspectorListItem item;
             if (!m_ListItems.TryGetValue(data.index, out item))
             {
-                item = GetItem(data);
-                UpdateItem(item.transform, order, offset, true, ref doneSettling);
+                GetNewItem(data, out item);
+                UpdateItem(item, order, offset, true, ref doneSettling);
             }
 
             item.UpdateSelf(m_Size.x - k_ClipMargin, depth, expanded);
             item.UpdateClipTexts(transform.worldToLocalMatrix, m_Extents);
 
-            UpdateItem(item.transform, order, offset, false, ref doneSettling);
+            UpdateItem(item, order, offset, false, ref doneSettling);
         }
 
-        void UpdateItem(Transform t, int order, float offset, bool dontSettle, ref bool doneSettling)
+        void UpdateItem(InspectorListItem item, int order, float offset, bool dontSettle, ref bool doneSettling)
         {
             var targetPosition = m_StartPosition + (offset + m_ScrollOffset) * Vector3.forward;
             var targetRotation = Quaternion.identity;
 
-            UpdateItemTransform(t, order, targetPosition, targetRotation, dontSettle, ref doneSettling);
+            UpdateItemTransform(item, order, targetPosition, targetRotation, dontSettle, ref doneSettling);
         }
 
-        protected override InspectorListItem GetItem(InspectorData listData)
+        protected override bool GetNewItem(InspectorData listData, out InspectorListItem item)
         {
-            var item = base.GetItem(listData);
+            var instantiated = base.GetNewItem(listData, out item);
 
-            item.setRowGrabbed = SetRowGrabbed;
-            item.getGrabbedRow = GetGrabbedRow;
-            item.toggleExpanded = ToggleExpanded;
-
-            if (!item.setup)
+            if (instantiated)
             {
+                item.setRowGrabbed = SetRowGrabbed;
+                item.getGrabbedRow = GetGrabbedRow;
+
                 var highlightMaterials = new[] { m_HighlightMaterial, m_HighlightMaskMaterial };
                 var noClipHighlightMaterials = new[] { m_NoClipHighlightMaterial, m_NoClipHighlightMaskMaterial };
                 item.SetMaterials(m_RowCubeMaterial, m_BackingCubeMaterial, m_UIMaterial, m_UIMaskMaterial, m_NoClipBackingCubeMaterial, highlightMaterials, noClipHighlightMaterials);
@@ -221,8 +222,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (numberItem)
                     numberItem.arraySizeChanged += OnArraySizeChanged;
 #endif
-
-                item.setup = true;
             }
 
             var headerItem = item as InspectorHeaderItem;
@@ -233,11 +232,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 headerItem.lockToggle.isOn = this.IsLocked(go);
             }
 
-            return item;
+            return instantiated;
         }
 
 #if UNITY_EDITOR
-        public void OnBeforeChildrenChanged(ListViewItemNestedData<InspectorData, int> data, List<InspectorData> newData)
+        public void OnBeforeChildrenChanged(INestedListViewItemData<InspectorData, int> data, List<InspectorData> newData)
         {
             InspectorNumberItem arraySizeItem = null;
             var children = data.children;
@@ -273,12 +272,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 #endif
-
-        void ToggleExpanded(int index)
-        {
-            m_ExpandStates[index] = !m_ExpandStates[index];
-            StartSettling();
-        }
 
         void OnArraySizeChanged(PropertyData element)
         {

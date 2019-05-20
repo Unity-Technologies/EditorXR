@@ -179,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_WorkspaceUI.topHighlight.visible = true;
             m_WorkspaceUI.amplifyTopHighlight = false;
 
-            m_HierarchyUI.listView.OnBeginScrolling();
+            m_HierarchyUI.listView.OnScrollStarted();
         }
 
         void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

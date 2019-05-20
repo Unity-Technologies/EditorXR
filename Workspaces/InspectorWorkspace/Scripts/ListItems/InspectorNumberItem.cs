@@ -22,9 +22,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public event Action<PropertyData> arraySizeChanged;
 #endif
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
 #if UNITY_EDITOR
             propertyType = m_SerializedProperty.propertyType;

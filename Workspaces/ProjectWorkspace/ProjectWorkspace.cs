@@ -250,9 +250,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void OnScrollDragStarted(BaseHandle handle, HandleEventData eventData)
         {
             if (handle == m_ProjectUI.folderScrollHandle)
-                m_ProjectUI.folderListView.OnBeginScrolling();
+                m_ProjectUI.folderListView.OnScrollStarted();
             else if (handle == m_ProjectUI.assetScrollHandle)
-                m_ProjectUI.assetGridView.OnBeginScrolling();
+                m_ProjectUI.assetGridView.OnScrollStarted();
         }
 
         void OnScrollDragging(BaseHandle handle, HandleEventData eventData)

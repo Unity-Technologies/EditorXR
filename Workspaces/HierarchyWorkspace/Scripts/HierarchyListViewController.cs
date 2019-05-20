@@ -1,14 +1,14 @@
-﻿using ListView;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Handles;
+using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class HierarchyListViewController : NestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, ISetHighlight
+    sealed class HierarchyListViewController : EditorXRNestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, ISetHighlight
     {
         const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -91,9 +91,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public Func<string, bool> matchesFilter { private get; set; }
         public Func<string> getSearchQuery { private get; set; }
 
-        protected override void Setup()
+        protected override void Start()
         {
-            base.Setup();
+            base.Start();
 
             m_TextMaterial = Instantiate(m_TextMaterial);
             m_SceneIconDarkMaterial = Instantiate(m_SceneIconDarkMaterial);
@@ -126,12 +126,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override void UpdateItems()
         {
             var parentMatrix = transform.worldToLocalMatrix;
-            SetMaterialClip(m_TextMaterial, parentMatrix);
-            SetMaterialClip(m_SceneIconDarkMaterial, parentMatrix);
-            SetMaterialClip(m_SceneIconWhiteMaterial, parentMatrix);
-            SetMaterialClip(m_ExpandArrowMaterial, parentMatrix);
-            SetMaterialClip(m_LockIconMaterial, parentMatrix);
-            SetMaterialClip(m_UnlockIconMaterial, parentMatrix);
+            ClipText.SetMaterialClip(m_TextMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_SceneIconDarkMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_SceneIconWhiteMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_ExpandArrowMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_LockIconMaterial, parentMatrix, m_Extents);
+            ClipText.SetMaterialClip(m_UnlockIconMaterial, parentMatrix, m_Extents);
 
             m_VisibleItemHeight = 0;
 
@@ -154,33 +154,33 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void UpdateDropZones()
         {
             var width = m_Size.x - k_ClipMargin;
-            var dropZoneTransform = m_TopDropZone.transform;
-            var dropZoneScale = dropZoneTransform.localScale;
+            var topDropZoneTransform = m_TopDropZone.transform;
+            var dropZoneScale = topDropZoneTransform.localScale;
             dropZoneScale.x = width;
-            dropZoneTransform.localScale = dropZoneScale;
+            topDropZoneTransform.localScale = dropZoneScale;
 
             var extentsZ = m_Extents.z;
-            var dropZonePosition = dropZoneTransform.localPosition;
+            var dropZonePosition = topDropZoneTransform.localPosition;
             dropZonePosition.z = extentsZ + dropZoneScale.z * 0.5f;
-            dropZoneTransform.localPosition = dropZonePosition;
+            topDropZoneTransform.localPosition = dropZonePosition;
 
-            dropZoneTransform = m_BottomDropZone.transform;
-            dropZoneScale = dropZoneTransform.localScale;
+            var bottomDropZoneTransform = m_BottomDropZone.transform;
+            dropZoneScale = bottomDropZoneTransform.localScale;
             dropZoneScale.x = width;
-            var itemSize = m_ItemSize.Value.z;
+            var itemSize = m_ItemSize.z;
             var extraSpace = extentsZ - m_VisibleItemHeight - scrollOffset % itemSize;
             dropZoneScale.z = extraSpace;
 
-            dropZoneTransform.localScale = dropZoneScale;
+            bottomDropZoneTransform.localScale = dropZoneScale;
 
-            dropZonePosition = dropZoneTransform.localPosition;
+            dropZonePosition = bottomDropZoneTransform.localPosition;
             dropZonePosition.z = dropZoneScale.z * 0.5f - extentsZ;
-            dropZoneTransform.localPosition = dropZonePosition;
+            bottomDropZoneTransform.localPosition = dropZonePosition;
 
             if (extraSpace < m_BottomDropZoneStartHeight)
             {
                 dropZoneScale.z = m_BottomDropZoneStartHeight;
-                dropZoneTransform.localScale = dropZoneScale;
+                bottomDropZoneTransform.localScale = dropZoneScale;
                 dropZonePosition.z = -dropZoneScale.z * 0.5f - extentsZ;
             }
         }
@@ -190,7 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var index = data.index;
             HierarchyListItem item;
             if (!m_ListItems.TryGetValue(index, out item))
-                item = GetItem(data);
+                GetNewItem(data, out item);
 
             var go = data.gameObject;
             var kvp = new KeyValuePair<Transform, GameObject>(item.hoveringRayOrigin, go);
@@ -209,35 +209,36 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var locked = this.IsLocked(data.gameObject);
             item.UpdateSelf(width, depth, expanded, index == m_SelectedRow, locked);
 
-            SetMaterialClip(item.cubeMaterial, transform.worldToLocalMatrix);
-            SetMaterialClip(item.dropZoneMaterial, transform.worldToLocalMatrix);
+            var worldToLocalMatrix = transform.worldToLocalMatrix;
+            ClipText.SetMaterialClip(item.cubeMaterial, worldToLocalMatrix, m_Extents);
+            ClipText.SetMaterialClip(item.dropZoneMaterial, worldToLocalMatrix, m_Extents);
 
             m_VisibleItemHeight += itemSize.z;
-            UpdateItem(item.transform, order, offset + m_ScrollOffset, ref doneSettling);
+            UpdateItem(item, order, offset + m_ScrollOffset, ref doneSettling);
 
             var extraSpace = item.extraSpace * itemSize.z;
             offset += extraSpace;
             m_VisibleItemHeight += extraSpace;
         }
 
-        protected override void UpdateNestedItems(List<HierarchyData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        protected override void UpdateNestedItems(ref int order, ref float offset, ref bool doneSettling, int depth = 0)
         {
             m_UpdateStack.Push(new UpdateData
             {
-                data = data,
+                data = m_Data,
                 depth = depth
             });
 
             while (m_UpdateStack.Count > 0)
             {
                 var stackData = m_UpdateStack.Pop();
-                data = stackData.data;
+                var nestedData = stackData.data;
                 depth = stackData.depth;
 
                 var i = stackData.index;
-                for (; i < data.Count; i++)
+                for (; i < nestedData.Count; i++)
                 {
-                    var datum = data[i];
+                    var datum = nestedData[i];
                     var index = datum.index;
                     bool expanded;
                     m_ExpandStates.TryGetValue(index, out expanded);
@@ -249,12 +250,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         var item = GetListItem(index);
                         if (item && item.isStillSettling) // "Hang on" to settle state until grabbed object is settled in the list
                             doneSettling = false;
+
                         continue;
                     }
 
                     var hasChildren = datum.children != null;
 
-                    var shouldRecycle = offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z;
+                    var localOffset = offset + m_ScrollOffset;
+                    var shouldRecycle = localOffset + itemSize.z < 0 || localOffset > m_Size.z;
 
                     if (m_HasLockedQuery || m_HasFilterQuery)
                     {
@@ -284,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                         {
                             m_UpdateStack.Push(new UpdateData
                             {
-                                data = data,
+                                data = nestedData,
                                 index = i + 1
                             });
 
@@ -310,7 +313,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                             {
                                 m_UpdateStack.Push(new UpdateData
                                 {
-                                    data = data,
+                                    data = nestedData,
                                     depth = depth,
 
                                     index = i + 1
@@ -335,25 +338,30 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
         }
 
-        protected override HierarchyListItem GetItem(HierarchyData data)
+        protected override bool GetNewItem(HierarchyData data, out HierarchyListItem item)
         {
-            var item = base.GetItem(data);
-            item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial, m_UnlockIconMaterial,
-                m_SceneIconDarkMaterial, m_SceneIconWhiteMaterial);
-            item.selectRow = SelectRow;
+            var instantiated = base.GetNewItem(data, out item);
 
-            item.setRowGrabbed = SetRowGrabbed;
-            item.getGrabbedRow = GetGrabbedRow;
+            if (instantiated)
+            {
+                item.SetMaterials(m_TextMaterial, m_ExpandArrowMaterial, m_LockIconMaterial, m_UnlockIconMaterial,
+                    m_SceneIconDarkMaterial, m_SceneIconWhiteMaterial);
+                item.selectRow = SelectRow;
 
-            item.toggleLock = ToggleLock;
+                item.setRowGrabbed = SetRowGrabbed;
+                item.getGrabbedRow = GetGrabbedRow;
 
-            item.toggleExpanded = ToggleExpanded;
-            item.setExpanded = SetExpanded;
-            item.isExpanded = GetExpanded;
+                item.toggleLock = ToggleLock;
+
+                item.setExpanded = SetExpanded;
+                item.isExpanded = GetExpanded;
+
+                item.getListItem = GetListItem;
+            }
 
             item.UpdateArrow(GetExpanded(data.index), true);
 
-            return item;
+            return instantiated;
         }
 
         protected override void SetRowGrabbed(int index, Transform rayOrigin, bool grabbed)
@@ -371,17 +379,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 var go = data.gameObject;
                 this.SetLocked(go, !this.IsLocked(go));
             }
-        }
-
-        void ToggleExpanded(int index)
-        {
-            bool expanded;
-            if (!m_ExpandStates.TryGetValue(index, out expanded))
-                m_ExpandStates[index] = true;
-            else
-                m_ExpandStates[index] = !expanded;
-
-            StartSettling();
         }
 
         public void SelectRow(int index)

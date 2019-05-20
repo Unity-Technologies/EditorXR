@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -11,7 +10,7 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    abstract class InspectorListItem : DraggableListItem<InspectorData, int>, ISetHighlight, IGetFieldGrabOrigin
+    abstract class InspectorListItem : NestedDraggableListItem<InspectorData, int>, ISetHighlight, IGetFieldGrabOrigin
     {
         const float k_Indent = 0.02f;
         const float k_HorizThreshold = 0.85f;
@@ -39,30 +38,22 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Material m_NoClipBackingCube;
         Material[] m_NoClipHighlightMaterials;
 
-        bool m_Setup;
         bool m_HorizontalDrag;
 
         Transform m_DragClone;
         protected NumericInputField m_DraggedField;
-
-        public bool setup { get; set; }
-
-        public Action<int> toggleExpanded { private get; set; }
 
         protected override bool singleClickDrag
         {
             get { return false; }
         }
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime = false)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
-            if (!m_Setup)
-            {
-                m_Setup = true;
+            if (firstTime)
                 FirstTimeSetup();
-            }
         }
 
         protected virtual void FirstTimeSetup()
@@ -363,10 +354,5 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
 
         protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject) {}
-
-        public void ToggleExpanded()
-        {
-            toggleExpanded(data.index);
-        }
     }
 }

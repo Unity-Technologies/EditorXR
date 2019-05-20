@@ -185,9 +185,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public float scaleFactor { private get; set; }
 
-        public override void Setup(AssetData listData)
+        public override void Setup(AssetData listData, bool firstTime)
         {
-            base.Setup(listData);
+            base.Setup(listData, firstTime);
 
             m_PreviewCoroutine = null;
             m_VisibilityCoroutine = null;
