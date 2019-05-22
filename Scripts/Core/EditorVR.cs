@@ -3,22 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEditor.Experimental.EditorVR;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
+#if UNITY_EDITOR
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-#if UNITY_EDITOR
-    [InitializeOnLoad]
-#endif
 #if UNITY_2018_3_OR_NEWER
+#if UNITY_EDITOR
     [RequiresTag(k_VRPlayerTag)]
+#endif
     sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
     {
         const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
@@ -166,7 +167,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             AddModule<SerializedPreferencesModule>(); // Added here in case any nested modules have preference serialization
             AddNestedModule(typeof(SerializedPreferencesModuleConnector));
 
-            var nestedClassTypes = ObjectUtils.GetExtensionsOfClass(typeof(Nested));
+            var nestedClassTypes = new List<Type>();
+            typeof(Nested).GetExtensionsOfClass(nestedClassTypes);
             foreach (var type in nestedClassTypes)
             {
                 AddNestedModule(type);
@@ -452,7 +454,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var type = typeof(T);
             if (!m_Modules.TryGetValue(type, out module))
             {
-                module = ObjectUtils.AddComponent<T>(gameObject);
+                module = EditorXRUtils.AddComponent<T>(gameObject);
                 m_Modules.Add(type, module);
 
                 foreach (var nested in m_NestedModules.Values)
@@ -523,7 +525,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void SetHideFlags(HideFlags hideFlags)
         {
-            ObjectUtils.hideFlags = hideFlags;
+            EditorXRUtils.hideFlags = hideFlags;
 
             foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
             {
@@ -541,16 +543,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
 #endif
         }
-
-#if !INCLUDE_TEXT_MESH_PRO
-        static EditorVR()
-        {
-            if (Type.GetType("TMPro.TextMeshProUGUI, Unity.TextMeshPro") == null)
-                Debug.LogWarning("EditorVR requires TextMesh Pro. Please open the package manager and install Text Mesh Pro");
-        }
-#endif
     }
 #else
+#if UNITY_EDITOR
+    [InitializeOnLoad]
+#endif
     class NoEditorVR
     {
         const string k_ShowCustomEditorWarning = "EditorVR.ShowCustomEditorWarning";

@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -287,7 +288,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (m_DragClone)
             {
                 var fieldGrabOrigin = this.GetFieldGrabOriginForRayOrigin(rayOrigin);
-                var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation);
+                var rotation = CameraUtils.GetMainCamera().transform.rotation.ConstrainYaw();
                 MathUtilsExt.LerpTransform(m_DragClone, fieldGrabOrigin.position, rotation, m_DragLerp);
             }
         }
@@ -322,7 +323,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             EditorApplication.delayCall += () =>
             {
                 if (m_DragClone)
-                    ObjectUtils.Destroy(m_DragClone.gameObject);
+                    UnityObjectUtils.Destroy(m_DragClone.gameObject);
             };
 
             if (!m_DragObject)

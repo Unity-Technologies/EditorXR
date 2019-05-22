@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -108,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Resources.UnloadUnusedAssets();
             InitializeInputManager();
             if (!Application.isPlaying)
-                instance = ObjectUtils.CreateGameObjectWithComponent<EditingContextManager>();
+                instance = EditorXRUtils.CreateGameObjectWithComponent<EditingContextManager>();
         }
 
         static void OnVRViewDisabled()
@@ -116,9 +117,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             s_AutoOpened = false;
 #endif
-            ObjectUtils.Destroy(instance.gameObject);
+            UnityObjectUtils.Destroy(instance.gameObject);
             if (s_InputManager)
-                ObjectUtils.Destroy(s_InputManager.gameObject);
+                UnityObjectUtils.Destroy(s_InputManager.gameObject);
         }
 
 #if UNITY_EDITOR
@@ -185,7 +186,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         }
                     }
 
-                    var contextTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
+                    var contextTypes = CollectionPool<List<Type>, Type>.GetCollection();
+                    typeof(IEditingContext).GetImplementationsOfInterface(contextTypes);
                     foreach (var contextType in contextTypes)
                     {
                         var preferencesGUIMethod = contextType.GetMethod("PreferencesGUI", BindingFlags.Static | BindingFlags.NonPublic);
@@ -197,6 +199,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             preferencesGUIMethod.Invoke(null, null);
                         }
                     }
+
+                    CollectionPool<List<Type>, Type>.RecycleCollection(contextTypes);
                 }
             };
 
@@ -427,8 +431,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
 #if UNITY_EDITOR
             var availableContexts = new List<IEditingContext>();
-            var types = ObjectUtils.GetImplementationsOfInterface(typeof(IEditingContext));
-            var searchString = "t: " + string.Join(" t: ", types.Select(t => t.FullName).ToArray());
+            var contextTypes = CollectionPool<List<Type>, Type>.GetCollection();
+            typeof(IEditingContext).GetImplementationsOfInterface(contextTypes);
+            var searchString = "t: " + string.Join(" t: ", contextTypes.Select(t => t.FullName).ToArray());
+            CollectionPool<List<Type>, Type>.RecycleCollection(contextTypes);
             var assets = AssetDatabase.FindAssets(searchString);
 
             foreach (var asset in assets)
@@ -518,7 +524,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var managers = Resources.FindObjectsOfTypeAll<InputManager>();
             foreach (var m in managers)
             {
-                ObjectUtils.Destroy(m.gameObject);
+                UnityObjectUtils.Destroy(m.gameObject);
             }
 
             managers = Resources.FindObjectsOfTypeAll<InputManager>();
@@ -540,13 +546,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             s_InputManager = managers[0];
             var go = s_InputManager.gameObject;
-            ObjectUtils.SetRunInEditModeRecursively(go, true);
+            go.SetRunInEditModeRecursively(true);
 
             // These components were allocating memory every frame and aren't currently used in EditorVR
-            ObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
-            ObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
-            ObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
-            ObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
+            UnityObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
+            UnityObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
+            UnityObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
+            UnityObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
         }
     }
 }

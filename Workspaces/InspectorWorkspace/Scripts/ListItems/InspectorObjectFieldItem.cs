@@ -1,7 +1,7 @@
 ﻿using System;
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -26,8 +26,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             base.Setup(data);
 
 #if UNITY_EDITOR
-            m_ObjectTypeName = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
-            m_ObjectType = ObjectUtils.TypeNameToType(m_ObjectTypeName);
+            m_ObjectTypeName = EditorUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
+            m_ObjectType = EditorUtils.TypeNameToType(m_ObjectTypeName);
 #endif
 
             OnObjectModified();

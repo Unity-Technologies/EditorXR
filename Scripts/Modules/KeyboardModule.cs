@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // Check if the prefab has already been instantiated
             if (m_NumericKeyboard == null)
             {
-                m_NumericKeyboard = ObjectUtils.Instantiate(m_NumericKeyboardPrefab.gameObject, CameraUtils.GetCameraRig(), false).GetComponent<KeyboardUI>();
+                m_NumericKeyboard = EditorXRUtils.Instantiate(m_NumericKeyboardPrefab.gameObject, CameraUtils.GetCameraRig(), false).GetComponent<KeyboardUI>();
                 var smoothMotions = m_NumericKeyboard.GetComponentsInChildren<SmoothMotion>(true);
                 foreach (var smoothMotion in smoothMotions)
                 {
@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // Check if the prefab has already been instantiated
             if (m_StandardKeyboard == null)
             {
-                m_StandardKeyboard = ObjectUtils.Instantiate(m_StandardKeyboardPrefab.gameObject, CameraUtils.GetCameraRig(), false).GetComponent<KeyboardUI>();
+                m_StandardKeyboard = EditorXRUtils.Instantiate(m_StandardKeyboardPrefab.gameObject, CameraUtils.GetCameraRig(), false).GetComponent<KeyboardUI>();
                 var smoothMotions = m_StandardKeyboard.GetComponentsInChildren<SmoothMotion>(true);
                 foreach (var smoothMotion in smoothMotions)
                 {
@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void SpawnKeyboardMallet(Transform rayOrigin)
         {
-            var malletTransform = ObjectUtils.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOrigin).transform;
+            var malletTransform = EditorXRUtils.Instantiate(m_KeyboardMalletPrefab.gameObject, rayOrigin).transform;
             malletTransform.position = rayOrigin.position;
             malletTransform.rotation = rayOrigin.rotation;
             var mallet = malletTransform.GetComponent<KeyboardMallet>();

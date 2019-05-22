@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -56,7 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         internal void Setup(SpatialHash<Renderer> hash)
         {
             m_SpatialHash = hash;
-            m_CollisionTester = ObjectUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
+            m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
         }
 
         void Update()
@@ -346,8 +347,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         internal bool ContainsVRPlayerCompletely(GameObject obj)
         {
-            var objectBounds = ObjectUtils.GetBounds(obj.transform);
-            var playerBounds = ObjectUtils.GetBounds(this.GetVRPlayerObjects());
+            var objectBounds = BoundsUtils.GetBounds(obj.transform);
+            var playerBounds = BoundsUtils.GetBounds(this.GetVRPlayerObjects());
             playerBounds.extents += m_PlayerBoundsMargin;
             return objectBounds.ContainsCompletely(playerBounds);
         }

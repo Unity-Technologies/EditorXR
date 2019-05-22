@@ -1,6 +1,7 @@
 #if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -91,7 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 public void OnObjectsGrabbed(HashSet<Transform> heldObjects, Transform rayOrigin)
                 {
-                    var center = ObjectUtils.GetBounds(heldObjects.ToArray()).center;
+                    var center = BoundsUtils.GetBounds(heldObjects.ToArray()).center;
 
                     m_GrabData.Clear();
                     foreach (var heldObject in heldObjects)
@@ -232,14 +233,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             /// </summary>
             static Transform InstantiateMiniWorldRay()
             {
-                var miniWorldRay = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject).transform;
-                ObjectUtils.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
+                var miniWorldRay = EditorXRUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject).transform;
+                UnityObjectUtils.Destroy(miniWorldRay.GetComponent<DefaultProxyRay>());
 
                 var renderers = miniWorldRay.GetComponentsInChildren<Renderer>();
                 foreach (var renderer in renderers)
                 {
                     if (!renderer.GetComponentInParent<IntersectionTester>())
-                        ObjectUtils.Destroy(renderer.gameObject);
+                        UnityObjectUtils.Destroy(renderer.gameObject);
                     else
                         renderer.enabled = false;
                 }

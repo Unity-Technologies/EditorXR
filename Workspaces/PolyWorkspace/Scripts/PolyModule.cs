@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
@@ -10,7 +9,11 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 #endif
 
+#if UNITY_EDITOR
+using Unity.Labs.Utils;
+
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+#endif
 
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -80,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void Awake()
         {
             PolyApi.Init(new PolyAuthConfig(Encoding.UTF8.GetString(Convert.FromBase64String(k_APIKey)), "", ""));
-            m_Container = ObjectUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
+            m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
         }
 
         void OnDestroy()

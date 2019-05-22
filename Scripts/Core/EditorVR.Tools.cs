@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Tools;
@@ -28,7 +29,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             public Tools()
             {
-                allTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
+                allTools = new List<Type>();
+                typeof(ITool).GetImplementationsOfInterface(allTools);
 
                 ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
                 ISelectToolMethods.selectTool = SelectTool;
@@ -166,7 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
 
                     if (!toolsMenu)
-                        toolsMenu = ObjectUtils.AddComponent<Experimental.EditorVR.Menus.ToolsMenu>(evr.gameObject);
+                        toolsMenu = EditorXRUtils.AddComponent<Experimental.EditorVR.Menus.ToolsMenu>(evr.gameObject);
 
                     toolsMenu.enabled = true;
                     this.ConnectInterfaces(toolsMenu, rayOrigin);
@@ -175,7 +177,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     toolsMenu.setButtonForType(typeof(IMainMenu), null);
                     toolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
 
-                    var spatialMenu = ObjectUtils.AddComponent<SpatialMenu>(evr.gameObject);
+                    var spatialMenu = EditorXRUtils.AddComponent<SpatialMenu>(evr.gameObject);
                     this.ConnectInterfaces(spatialMenu, rayOrigin);
                     spatialMenu.Setup();
                 }
@@ -198,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return null;
 
                 var deviceSlots = new HashSet<DeviceSlot>();
-                var tool = ObjectUtils.AddComponent(toolType, evr.gameObject) as ITool;
+                var tool = EditorXRUtils.AddComponent(toolType, evr.gameObject) as ITool;
                 var actionMapInput = evr.GetModule<DeviceInputModule>().CreateActionMapInputForObject(tool, device);
                 if (actionMapInput != null)
                 {
@@ -401,7 +403,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                         {
                                             otherDeviceData.currentTool = otherToolData.tool;
                                             this.DisconnectInterfaces(otherTool, otherDeviceData.rayOrigin);
-                                            ObjectUtils.Destroy((MonoBehaviour)otherTool);
+                                            UnityObjectUtils.Destroy((MonoBehaviour)otherTool);
                                         }
                                     }
                                 }
@@ -423,7 +425,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (tool is IExclusiveMode)
                         SetToolsEnabled(deviceData, true);
 
-                    ObjectUtils.Destroy((MonoBehaviour)tool);
+                    UnityObjectUtils.Destroy((MonoBehaviour)tool);
                 }
             }
 

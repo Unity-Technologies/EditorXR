@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
@@ -153,13 +154,13 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         int m_TargetDisplay;
 
         [SerializeField]
-        int m_FieldOfView = 40;
+        int m_FieldOfView;
 
         [SerializeField]
-        float m_PullBackDistance = 0.8f;
+        float m_PullBackDistance;
 
         [SerializeField]
-        float m_SmoothingMultiplier = 3;
+        float m_SmoothingMultiplier;
 #pragma warning restore 649
     }
 #endif

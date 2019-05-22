@@ -1,6 +1,6 @@
 ﻿using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             base.Setup(data);
 
 #if UNITY_EDITOR
-            m_TypeLabel.text = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
+            m_TypeLabel.text = EditorUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
 #endif
         }
     }

@@ -1,6 +1,6 @@
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 public class Ring : MonoBehaviour
@@ -152,6 +152,6 @@ public class Ring : MonoBehaviour
 
     void OnDestroy()
     {
-        ObjectUtils.Destroy(m_RingMat);
+        UnityObjectUtils.Destroy(m_RingMat);
     }
 }

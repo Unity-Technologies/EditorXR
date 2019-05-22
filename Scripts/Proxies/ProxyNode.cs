@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -318,7 +319,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             {
                 foreach (var kvp in m_MaterialDictionary)
                 {
-                    ObjectUtils.Destroy(kvp.Key);
+                    UnityObjectUtils.Destroy(kvp.Key);
                 }
             }
         }
@@ -539,7 +540,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             foreach (var tuple in m_BodyData)
             {
-                ObjectUtils.Destroy(tuple.firstElement);
+                UnityObjectUtils.Destroy(tuple.firstElement);
             }
         }
 

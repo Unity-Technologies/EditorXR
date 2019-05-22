@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -73,14 +74,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             base.Setup();
 
-            var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            var contentPrefab = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
             m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
             m_HierarchyUI.listView.lockedQueryString = k_Locked;
             hierarchyData = m_HierarchyData;
 
             if (m_FilterPrefab)
             {
-                m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+                m_FilterUI = EditorXRUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
                 foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
                 {
                     this.ConnectInterfaces(mb);
@@ -90,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             if (m_FocusPrefab)
             {
-                var focusUI = ObjectUtils.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
+                var focusUI = EditorXRUtils.Instantiate(m_FocusPrefab, m_WorkspaceUI.frontPanel, false);
                 foreach (var mb in focusUI.GetComponentsInChildren<MonoBehaviour>())
                 {
                     this.ConnectInterfaces(mb);
@@ -102,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             if (m_CreateEmptyPrefab)
             {
-                var createEmptyUI = ObjectUtils.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
+                var createEmptyUI = EditorXRUtils.Instantiate(m_CreateEmptyPrefab, m_WorkspaceUI.frontPanel, false);
                 foreach (var mb in createEmptyUI.GetComponentsInChildren<MonoBehaviour>())
                 {
                     this.ConnectInterfaces(mb);
@@ -224,7 +225,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 return;
 
             var mainCamera = CameraUtils.GetMainCamera().transform;
-            var bounds = ObjectUtils.GetBounds(Selection.transforms);
+            var bounds = BoundsUtils.GetBounds(Selection.transforms);
 
             var size = bounds.size;
             size.y = 0;

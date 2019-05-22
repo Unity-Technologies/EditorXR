@@ -1,9 +1,9 @@
-﻿using System;
+﻿using ListView;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using ListView;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -209,8 +209,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_TextMaterial);
-            ObjectUtils.Destroy(m_ExpandArrowMaterial);
+            UnityObjectUtils.Destroy(m_TextMaterial);
+            UnityObjectUtils.Destroy(m_ExpandArrowMaterial);
         }
     }
 }

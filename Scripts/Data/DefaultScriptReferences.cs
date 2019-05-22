@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
@@ -80,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                     if (t.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any())
                         continue;
 
-                    var mb = (MonoBehaviour)ObjectUtils.CreateGameObjectWithComponent(t, runInEditMode: false);
+                    var mb = (MonoBehaviour)EditorXRUtils.CreateGameObjectWithComponent(t, runInEditMode: false);
                     if (mb)
                     {
                         mb.gameObject.hideFlags = HideFlags.None;
@@ -90,16 +91,18 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 }
             };
 
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(IEditor)).ToList());
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)).ToList());
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList());
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(ISystemModule)).ToList());
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(IMainMenu)).ToList());
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(IToolsMenu)).ToList());
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(IAlternateMenu)).ToList());
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(IAction)).ToList());
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList());
-            create(ObjectUtils.GetImplementationsOfInterface(typeof(IScriptReference)).ToList());
+            var defaultReferenceTypes = new List<Type>();
+            typeof(IEditor).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(IProxy).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(ITool).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(ISystemModule).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(IMainMenu).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(IToolsMenu).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(IAlternateMenu).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(IAction).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(IWorkspace).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(IScriptReference).GetImplementationsOfInterface(defaultReferenceTypes);
+            create(defaultReferenceTypes);
 
             var directory = Path.GetDirectoryName(k_Path);
             if (!Directory.Exists(directory))

@@ -210,7 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             for (int i = 0; i < k_SlotCount; ++i)
             {
-                var menuSlot = ObjectUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
+                var menuSlot = EditorXRUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
                 menuSlot.stencilRef = stencilRef; // Setting from the UI so there is a single ref ID for all buttons; the buttons cleanup their own materials.
                 this.ConnectInterfaces(menuSlot);
                 menuSlot.orderIndex = i;

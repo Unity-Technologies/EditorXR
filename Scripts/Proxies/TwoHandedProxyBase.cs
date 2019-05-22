@@ -93,8 +93,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected virtual void Awake()
         {
-            m_LeftHand = ObjectUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
-            m_RightHand = ObjectUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
+            m_LeftHand = EditorXRUtils.Instantiate(m_LeftHandProxyPrefab, transform).transform;
+            m_RightHand = EditorXRUtils.Instantiate(m_RightHandProxyPrefab, transform).transform;
 
             m_LeftProxyNode = m_LeftHand.GetComponent<ProxyNode>();
             m_RightProxyNode = m_RightHand.GetComponent<ProxyNode>();

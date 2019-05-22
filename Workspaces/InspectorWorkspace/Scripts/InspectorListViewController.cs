@@ -1,8 +1,8 @@
 ﻿using ListView;
 using System;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
@@ -300,15 +300,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_RowCubeMaterial);
-            ObjectUtils.Destroy(m_BackingCubeMaterial);
-            ObjectUtils.Destroy(m_UIMaterial);
-            ObjectUtils.Destroy(m_UIMaskMaterial);
-            ObjectUtils.Destroy(m_HighlightMaterial);
-            ObjectUtils.Destroy(m_HighlightMaskMaterial);
-            ObjectUtils.Destroy(m_NoClipBackingCubeMaterial);
-            ObjectUtils.Destroy(m_NoClipHighlightMaterial);
-            ObjectUtils.Destroy(m_NoClipHighlightMaskMaterial);
+            UnityObjectUtils.Destroy(m_RowCubeMaterial);
+            UnityObjectUtils.Destroy(m_BackingCubeMaterial);
+            UnityObjectUtils.Destroy(m_UIMaterial);
+            UnityObjectUtils.Destroy(m_UIMaskMaterial);
+            UnityObjectUtils.Destroy(m_HighlightMaterial);
+            UnityObjectUtils.Destroy(m_HighlightMaskMaterial);
+            UnityObjectUtils.Destroy(m_NoClipBackingCubeMaterial);
+            UnityObjectUtils.Destroy(m_NoClipHighlightMaterial);
+            UnityObjectUtils.Destroy(m_NoClipHighlightMaskMaterial);
         }
     }
 #else
