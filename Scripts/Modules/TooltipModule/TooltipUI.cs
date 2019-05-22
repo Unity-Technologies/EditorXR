@@ -77,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 case TextAlignment.Center:
                 case TextAlignment.Left:
-                    // Treat center as left justified, aside from horizontal offset placementO
+                    // Treat center as left justified, aside from horizontal offset placement
                     m_TextRight.text = text;
                     m_TextRight.gameObject.SetActive(validText);
                     m_TextLeft.gameObject.SetActive(false);
