@@ -21,9 +21,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Type m_ObjectType;
         string m_ObjectTypeName;
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
 #if UNITY_EDITOR
             m_ObjectTypeName = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);

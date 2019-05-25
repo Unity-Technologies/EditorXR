@@ -1,10 +1,15 @@
+﻿using System;
 using System.Collections.Generic;
 
-namespace ListView
+#if LISTVIEW_TESTS
+using System.Diagnostics;
+#endif
+
+namespace Unity.Labs.ListView
 {
-    class NestedListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>
-        where TData : ListViewItemNestedData<TData, TIndex>
-        where TItem : ListViewItem<TData, TIndex>
+    public abstract class NestedListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>
+        where TData : class, INestedListViewItemData<TData, TIndex>
+        where TItem : class, INestedListViewItem<TData, TIndex>
     {
         protected struct UpdateData
         {
@@ -14,13 +19,14 @@ namespace ListView
             public int index;
         }
 
-        protected override float listHeight { get { return m_ExpandedDataLength; } }
+        protected override float listHeight
+        {
+            get { return m_ExpandedDataLength; }
+        }
 
         protected float m_ExpandedDataLength;
 
         protected readonly Dictionary<TIndex, bool> m_ExpandStates = new Dictionary<TIndex, bool>();
-
-        protected readonly Stack<UpdateData> m_UpdateStack = new Stack<UpdateData>();
 
         public override List<TData> data
         {
@@ -29,18 +35,27 @@ namespace ListView
             {
                 m_Data = value;
 
-                // Update visible rows
-                var items = new Dictionary<TIndex, TItem>(m_ListItems);
-                foreach (var row in items)
+                // Update visible rows if data has changed, recycle if data is missing
+                foreach (var row in new Dictionary<TIndex, TItem>(m_ListItems))
                 {
                     var index = row.Key;
                     var newData = GetRowRecursive(m_Data, index);
                     if (newData != null)
-                        row.Value.Setup(newData);
+                        row.Value.Setup(newData, false);
                     else
                         Recycle(index);
                 }
             }
+        }
+
+        // Local method use only -- created here to reduce garbage collection
+        Action<TData> m_ToggleExpanded;
+        protected readonly Stack<UpdateData> m_UpdateStack = new Stack<UpdateData>();
+
+        protected override void Awake()
+        {
+            base.Awake();
+            m_ToggleExpanded = ToggleExpanded;
         }
 
         static TData GetRowRecursive(List<TData> data, TIndex index)
@@ -50,74 +65,70 @@ namespace ListView
                 if (datum.index.Equals(index))
                     return datum;
 
-                if (datum.children != null)
+                var children = datum.children;
+                if (children != null)
                 {
-                    var result = GetRowRecursive(datum.children, index);
+                    var result = GetRowRecursive(children, index);
                     if (result != null)
                         return result;
                 }
             }
-            return null;
-        }
 
-        protected void RecycleRecursively(TData data)
-        {
-            Recycle(data.index);
-
-            if (data.children != null)
-            {
-                foreach (var child in data.children)
-                {
-                    RecycleRecursively(child);
-                }
-            }
+            return default(TData);
         }
 
         protected override void UpdateItems()
         {
             var doneSettling = true;
-            var count = 0f;
+            var offset = 0f;
             var order = 0;
 
-            UpdateNestedItems(m_Data, ref order, ref count, ref doneSettling);
-            m_ExpandedDataLength = count;
+            UpdateNestedItems(ref order, ref offset, ref doneSettling);
+            m_ExpandedDataLength = offset;
 
             if (m_Settling && doneSettling)
                 EndSettling();
         }
 
-        protected virtual void UpdateNestedItems(List<TData> data, ref int order, ref float offset, ref bool doneSettling, int depth = 0)
+        protected virtual void UpdateNestedItems(ref int order, ref float offset, ref bool doneSettling, int depth = 0)
         {
+#if LISTVIEW_TESTS
+            Debug.Assert(m_UpdateStack.Count == 0);
+#endif
+
+            // We assume that this stack is empty because of the while loop below;
+            // It is possible for it to contain data if an exception is thrown inside the loop
             m_UpdateStack.Push(new UpdateData
             {
-                data = data,
+                data = m_Data,
                 depth = depth
             });
 
+            var itemWidth = m_ItemSize.z;
+            var listWidth = m_Size.z;
             while (m_UpdateStack.Count > 0)
             {
                 var stackData = m_UpdateStack.Pop();
-                data = stackData.data;
+                var nestedData = stackData.data;
                 depth = stackData.depth;
 
                 var i = stackData.index;
-                for (; i < data.Count; i++)
+                for (; i < nestedData.Count; i++)
                 {
-                    var datum = data[i];
+                    var datum = nestedData[i];
 
                     var index = datum.index;
                     bool expanded;
                     if (!m_ExpandStates.TryGetValue(index, out expanded))
                         m_ExpandStates[index] = false;
 
-                    var itemSize = m_ItemSize.Value;
-
-                    if (offset + scrollOffset + itemSize.z < 0 || offset + scrollOffset > m_Size.z)
+                    var localOffset = offset + m_ScrollOffset;
+                    if (localOffset + itemWidth < 0 || localOffset > listWidth)
                         Recycle(index);
                     else
-                        UpdateNestedItem(datum, order++, offset, depth, ref doneSettling);
+                        UpdateNestedItem(datum, order++, localOffset, depth, ref doneSettling);
 
-                    offset += itemSize.z;
+                    offset += itemWidth;
 
                     if (datum.children != null)
                     {
@@ -125,9 +136,8 @@ namespace ListView
                         {
                             m_UpdateStack.Push(new UpdateData
                             {
-                                data = data,
+                                data = nestedData,
                                 depth = depth,
-
                                 index = i + 1
                             });
 
@@ -145,14 +155,15 @@ namespace ListView
             }
         }
 
-        protected virtual void UpdateNestedItem(TData data, int order, float count, int depth, ref bool doneSettling)
+        protected virtual void UpdateNestedItem(TData datum, int order, float offset, int depth, ref bool doneSettling)
         {
-            UpdateVisibleItem(data, order, count, ref doneSettling);
+            UpdateVisibleItem(datum, order, offset, ref doneSettling);
         }
 
-        protected void RecycleChildren(TData data)
+        protected void RecycleChildren(TData datum)
         {
-            foreach (var child in data.children)
+            var children = datum.children;
+            foreach (var child in children)
             {
                 Recycle(child.index);
 
@@ -179,23 +190,42 @@ namespace ListView
             var index = container.index;
             if (index.Equals(targetIndex))
             {
-                if (-scrollOffset > scrollHeight || -scrollOffset + m_Size.z < scrollHeight)
-                    scrollOffset = -scrollHeight;
+                if (-m_ScrollOffset > scrollHeight || -m_ScrollOffset + m_Size.z < scrollHeight)
+                    m_ScrollOffset = -scrollHeight;
+
                 return;
             }
 
-            scrollHeight += itemSize.z;
+            scrollHeight += m_ItemSize.z;
 
             if (GetExpanded(index))
             {
-                if (container.children != null)
+                var children = container.children;
+                if (children != null)
                 {
-                    foreach (var child in container.children)
+                    foreach (var child in children)
                     {
                         ScrollToIndex(child, targetIndex, ref scrollHeight);
                     }
                 }
             }
+        }
+
+        protected override bool GetNewItem(TData datum, out TItem item)
+        {
+            var instantiated = base.GetNewItem(datum, out item);
+            if (instantiated)
+                item.toggleExpanded += m_ToggleExpanded;
+
+            return instantiated;
+        }
+
+        protected virtual void ToggleExpanded(TData datum)
+        {
+            bool expanded;
+            m_ExpandStates.TryGetValue(datum.index, out expanded);
+            m_ExpandStates[datum.index] = !expanded;
+            StartSettling();
         }
     }
 }

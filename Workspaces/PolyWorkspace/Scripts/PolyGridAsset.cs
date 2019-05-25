@@ -1,7 +1,7 @@
 using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
-using ListView;
+using Unity.Labs.ListView;
 
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
@@ -11,9 +11,10 @@ using PolyToolkit;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    public class PolyGridAsset : ListViewItemData<string>, IWeb
+    public class PolyGridAsset : IListViewItemData<string>, IWeb
     {
         const int k_MaxPreviewComplexity = 2500;
+        static readonly string k_TemplateName = "PolyGridItem";
 
 #if INCLUDE_POLY_TOOLKIT
         static PolyImportOptions s_Options;
@@ -30,12 +31,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         bool m_Initialized; // Whether the download/import process has started
         bool m_Importing;
 
+        public string template { get { return k_TemplateName; } }
+
+        public string index { get; private set; }
         public PolyAsset asset { get { return m_Asset; } }
         public GameObject prefab { get { return m_Prefab; } }
         public Texture2D thumbnail { get { return m_Thumbnail; } }
         public bool initialized { get { return m_Initialized; } }
         public long complexity { get { return m_Complexity; } }
-        public override string index { get { return m_Asset.name; } } // PolyAsset.name is the GUID
 
         public event Action<PolyGridAsset, GameObject> modelImportCompleted;
         public event Action<PolyGridAsset, Texture2D> thumbnailImportCompleted;
@@ -54,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
 #if INCLUDE_POLY_TOOLKIT
             m_Asset = asset;
+            index = asset.name; // PolyAsset.name is the GUID
             m_Container = container;
             m_Complexity = 0L;
             foreach (var format in asset.formats)
@@ -61,8 +65,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_Complexity = Math.Max(m_Complexity, format.formatComplexity.triangleCount);
             }
 #endif
-
-            template = "PolyGridItem";
         }
 
         public void Initialize()

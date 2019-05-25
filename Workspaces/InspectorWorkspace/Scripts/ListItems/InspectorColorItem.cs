@@ -7,9 +7,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorColorItem : InspectorPropertyItem
     {
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
             UpdateInputFields();
         }
