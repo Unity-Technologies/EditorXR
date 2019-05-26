@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -97,7 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
         {
             foreach (var handle in m_AllHandles)
             {
-                ObjectUtils.Destroy(handle.GetComponent<Renderer>().sharedMaterial);
+                UnityObjectUtils.Destroy(handle.GetComponent<Renderer>().sharedMaterial);
             }
         }
 
@@ -128,7 +129,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
             var manipulatorPosition = worldToCameraMatrix.MultiplyPoint3x4(transform.position);
             cameraPosition = worldToCameraMatrix.MultiplyPoint3x4(cameraPosition);
             var delta = worldToCameraMatrix.inverse.MultiplyPoint3x4(cameraPosition - manipulatorPosition) - originalCameraPosition;
-            transform.localScale = Vector3.one * delta.magnitude * k_BaseManipulatorSize;
+            transform.localScale = delta.magnitude * k_BaseManipulatorSize * Vector3.one;
         }
 
         protected virtual void UpdateHandleTip(BaseHandle handle, HandleEventData eventData, bool active)
@@ -140,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Manipulators
             {
                 handleTipRenderer = m_HandleTip;
                 if (m_HandleTips.Count > 0)
-                    handleTipRenderer = ObjectUtils.Instantiate(handleTipRenderer.gameObject, transform).GetComponent<Renderer>();
+                    handleTipRenderer = EditorXRUtils.Instantiate(handleTipRenderer.gameObject, transform).GetComponent<Renderer>();
 
                 handleTip = new HandleTip { renderer = handleTipRenderer };
                 m_HandleTips[rayOrigin] = handleTip;

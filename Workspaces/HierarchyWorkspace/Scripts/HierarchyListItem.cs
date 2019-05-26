@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Labs.ListView;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -362,8 +363,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void MagnetizeTransform(Transform fieldGrabOrigin, Transform transform, float stackingOffset = 0)
         {
-            var rotation = MathUtilsExt.ConstrainYawRotation(CameraUtils.GetMainCamera().transform.rotation)
-                * Quaternion.AngleAxis(90, Vector3.left);
+            var rotation = CameraUtils.GetMainCamera().transform.rotation.ConstrainYaw() * Quaternion.AngleAxis(90, Vector3.left);
             var stackingDirection = rotation * Vector3.one;
             MathUtilsExt.LerpTransform(transform, fieldGrabOrigin.position - stackingDirection * stackingOffset, rotation, m_DragLerp);
         }
@@ -381,7 +381,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (this.IsOverShoulder(transform))
                 {
 #if UNITY_EDITOR
-                    ObjectUtils.Destroy(EditorUtility.InstanceIDToObject(data.index));
+                    UnityObjectUtils.Destroy(EditorUtility.InstanceIDToObject(data.index));
 #else
                     // TODO: Hierarchy indices
 #endif
@@ -568,8 +568,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(cubeMaterial);
-            ObjectUtils.Destroy(dropZoneMaterial);
+            UnityObjectUtils.Destroy(cubeMaterial);
+            UnityObjectUtils.Destroy(dropZoneMaterial);
         }
     }
 }

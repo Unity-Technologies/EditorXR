@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Text;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -229,7 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 if (m_PreviewToolType != null) // Show the highlight if the preview type is valid; hide otherwise
                 {
-                    var tempToolGo = ObjectUtils.AddComponent(m_PreviewToolType, gameObject);
+                    var tempToolGo = EditorXRUtils.AddComponent(m_PreviewToolType, gameObject);
                     var tempTool = tempToolGo as ITool;
                     if (tempTool != null)
                     {
@@ -237,7 +238,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         if (iMenuIcon != null)
                             previewIcon = iMenuIcon.icon;
 
-                        ObjectUtils.Destroy(tempToolGo);
+                        UnityObjectUtils.Destroy(tempToolGo);
                     }
 
                     // Show the grayscale highlight when previewing a tool on this button
@@ -478,10 +479,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_FrameMaterial);
-            ObjectUtils.Destroy(m_IconMaterial);
-            ObjectUtils.Destroy(m_MaskMaterial);
-            ObjectUtils.Destroy(m_CloseButtonMaskMaterial);
+            UnityObjectUtils.Destroy(m_FrameMaterial);
+            UnityObjectUtils.Destroy(m_IconMaterial);
+            UnityObjectUtils.Destroy(m_MaskMaterial);
+            UnityObjectUtils.Destroy(m_CloseButtonMaskMaterial);
 
             this.StopCoroutine(ref m_PositionCoroutine);
             this.StopCoroutine(ref m_VisibilityCoroutine);
@@ -598,7 +599,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
             transform.localScale = targetScale;
             m_VisibilityCoroutine = null;
-            ObjectUtils.Destroy(gameObject, 0.1f);
+            UnityObjectUtils.Destroy(gameObject, 0.1f);
         }
 
         IEnumerator AnimateVisibility(bool show = true)

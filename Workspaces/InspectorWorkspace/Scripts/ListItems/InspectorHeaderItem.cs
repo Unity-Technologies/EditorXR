@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEngine;
@@ -55,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var target = data.serializedObject.targetObject;
 
             StopAllCoroutines();
-            StartCoroutine(GetAssetPreview());
+            StartCoroutine(EditorUtils.GetAssetPreview(target, texture => m_Icon.texture = texture));
 
             m_TargetGameObject = target as GameObject;
 #endif
@@ -63,26 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             UpdateHeaderUI();
         }
 
-#if UNITY_EDITOR
-        IEnumerator GetAssetPreview()
-        {
-            m_Icon.texture = null;
-
-            var target = data.serializedObject.targetObject;
-            m_Icon.texture = AssetPreview.GetAssetPreview(target);
-
-            while (AssetPreview.IsLoadingAssetPreview(target.GetInstanceID()))
-            {
-                m_Icon.texture = AssetPreview.GetAssetPreview(target);
-                yield return null;
-            }
-
-            if (!m_Icon.texture)
-                m_Icon.texture = AssetPreview.GetMiniThumbnail(target);
-        }
-#endif
-
-        public void SetTargetGameObjectActive(bool active)
+        public override void SetActive(bool active)
         {
             if (m_TargetGameObject != null && m_TargetGameObject.activeSelf != active)
                 m_TargetGameObject.SetActive(active);

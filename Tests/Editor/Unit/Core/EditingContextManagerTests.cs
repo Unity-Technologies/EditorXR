@@ -3,9 +3,9 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Tools;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tests.Core
@@ -32,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
             context.m_DefaultToolStack = new List<MonoScript>();
             context.m_DefaultToolStack.Add(MonoScript.FromMonoBehaviour(transformTool));
             context.m_DefaultToolStack.Add(MonoScript.FromMonoBehaviour(createPrimitiveTool));
-            ObjectUtils.Destroy(go);
+            UnityObjectUtils.Destroy(go);
 
             context2 = ScriptableObject.CreateInstance<EditorXRContext>();
             context2.name = "Yet Another Context";
@@ -164,8 +164,8 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Core
         public void Cleanup()
         {
             manager.SetEditingContext(EditingContextManager.defaultContext);
-            ObjectUtils.Destroy(context);
-            ObjectUtils.Destroy(context2);
+            UnityObjectUtils.Destroy(context);
+            UnityObjectUtils.Destroy(context2);
             VRView.activeView.Close();
         }
     }

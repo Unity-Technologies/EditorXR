@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -9,10 +11,6 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -34,13 +32,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const int k_AutoHidePreviewComplexity = 10000;
 
 #pragma warning disable 649
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_Text;
-#else
-        [SerializeField]
-        Text m_Text;
-#endif
 
         [SerializeField]
         BaseHandle m_Handle;
@@ -143,7 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_IconMaterial.mainTexture = null;
 
             if (m_PreviewObjectTransform)
-                ObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
+                UnityObjectUtils.Destroy(m_PreviewObjectTransform.gameObject);
 
             m_SetupTime = Time.time;
             UpdateRepresentation();
@@ -277,12 +270,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_PreviewPrefabScale = m_PreviewObjectTransform.localScale;
 
             // Normalize total scale to 1
-            m_PreviewBounds = ObjectUtils.GetBounds(m_PreviewObjectTransform);
+            m_PreviewBounds = BoundsUtils.GetBounds(m_PreviewObjectTransform);
 
             // Don't show a preview if there are no renderers
             if (m_PreviewBounds.size == Vector3.zero)
             {
-                ObjectUtils.Destroy(previewObject);
+                UnityObjectUtils.Destroy(previewObject);
                 return;
             }
 
@@ -329,7 +322,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                     m_PreviewObjectClone.localScale = m_PreviewTargetScale;
 
                     // Destroy label
-                    ObjectUtils.Destroy(cloneItem.m_TextPanel.gameObject);
+                    UnityObjectUtils.Destroy(cloneItem.m_TextPanel.gameObject);
                 }
 
                 m_DragObject = clone.transform;
@@ -515,7 +508,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 transitionAmount += Time.deltaTime * transitionAddMultiplier;
                 yield return null;
             }
-            ObjectUtils.Destroy(itemToHide);
+            UnityObjectUtils.Destroy(itemToHide);
         }
 
         void ShowGrabFeedback(Node node)

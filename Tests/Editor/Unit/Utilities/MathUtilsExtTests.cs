@@ -1,5 +1,4 @@
-﻿#if UNITY_5_6_OR_NEWER
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -35,16 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests.Utilities
             Assert.AreEqual(dampedExpected, damped);
         }
 
-        [Test]
-        public void ConstrainYawRotation()
-        {
-            var rotation = new Quaternion(4, 3, 2, 1);
-            var newRotation = MathUtilsExt.ConstrainYawRotation(rotation);
-            Assert.AreEqual(new Quaternion(0, rotation.y, 0, rotation.w), newRotation);
-        }
-
         [TearDown]
         public void Cleanup() { }
     }
 }
-#endif

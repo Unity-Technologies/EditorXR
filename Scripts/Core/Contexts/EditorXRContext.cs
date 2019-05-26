@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.XR;
@@ -82,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_HiddenTypeNames != null)
                 EditorVR.HiddenTypes = m_HiddenTypeNames.Select(GetTypeSafe).ToArray();
 
-            s_Instance = m_Instance = ObjectUtils.CreateGameObjectWithComponent<EditorVR>();
+            s_Instance = m_Instance = EditorXRUtils.CreateGameObjectWithComponent<EditorVR>();
 
             if (Application.isPlaying)
             {
@@ -106,7 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
             if (m_Instance)
-                ObjectUtils.Destroy(m_Instance.gameObject);
+                UnityObjectUtils.Destroy(m_Instance.gameObject);
 
             s_Instance = m_Instance = null;
         }

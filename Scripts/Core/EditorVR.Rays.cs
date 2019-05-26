@@ -1,6 +1,8 @@
 #if UNITY_2018_3_OR_NEWER
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Menus;
@@ -61,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             internal override void OnDestroy()
             {
                 foreach (var proxy in m_Proxies)
-                    ObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
+                    UnityObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
             }
 
             public void ConnectInterface(object target, object userData = null)
@@ -145,15 +147,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 var deviceInputModule = evr.GetModule<DeviceInputModule>();
                 var cameraRig = CameraUtils.GetCameraRig();
-                foreach (var proxyType in ObjectUtils.GetImplementationsOfInterface(typeof(IProxy)))
+                var proxyTypes = CollectionPool<List<Type>, Type>.GetCollection();
+                typeof(IProxy).GetImplementationsOfInterface(proxyTypes);
+                foreach (var proxyType in proxyTypes)
                 {
-                    var proxy = (IProxy)ObjectUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
+                    var proxy = (IProxy)EditorXRUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
                     this.ConnectInterfaces(proxy);
                     proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
                     proxy.activeChanged += () => OnProxyActiveChanged(proxy);
 
                     m_Proxies.Add(proxy);
                 }
+
+                CollectionPool<List<Type>, Type>.RecycleCollection(proxyTypes);
             }
 
             void OnProxyActiveChanged(IProxy proxy)
@@ -230,7 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             }
 
                             rayOrigin.name = string.Format("{0} Ray Origin", node);
-                            var rayTransform = ObjectUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin, false).transform;
+                            var rayTransform = EditorXRUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin, false).transform;
                             rayTransform.position = rayOrigin.position;
                             rayTransform.rotation = rayOrigin.rotation;
                             var dpr = rayTransform.GetComponent<DefaultProxyRay>();

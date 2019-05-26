@@ -6,7 +6,10 @@
         "VRLR",
         "Unity.TextMeshPro",
         "UnityEngine.SpatialTracking",
-        "PolyToolkit"
+        "PolyToolkit",
+        "Unity.Labs.Utils",
+        "Unity.Labs.Utils.Editor",
+        "Unity.Labs.ListViewFramework"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
@@ -15,6 +18,5 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": []
+    "defineConstraints": []
 }

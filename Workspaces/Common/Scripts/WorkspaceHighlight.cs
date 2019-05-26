@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -50,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_TopHighlightMaterial);
+            UnityObjectUtils.Destroy(m_TopHighlightMaterial);
         }
 
         IEnumerator ShowHighlight()

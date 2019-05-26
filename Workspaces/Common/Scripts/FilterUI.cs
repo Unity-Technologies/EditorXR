@@ -1,14 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -18,19 +16,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const string k_MaterialStencilRefProperty = "_StencilRef";
 
 #pragma warning disable 649
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_SummaryText;
 
         [SerializeField]
         TextMeshProUGUI m_DescriptionText;
-#else
-        [SerializeField]
-        Text m_SummaryText;
-
-        [SerializeField]
-        Text m_DescriptionText;
-#endif
 
         [SerializeField]
         RectTransform m_ButtonList;
@@ -88,7 +78,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     foreach (var button in m_VisibilityButtons)
                     {
-                        ObjectUtils.Destroy(button.gameObject);
+                        UnityObjectUtils.Destroy(button.gameObject);
                     }
                 }
 
@@ -101,7 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 m_VisibilityButtons = new FilterButtonUI[m_FilterTypes.Count];
                 for (int i = 0; i < m_VisibilityButtons.Length; i++)
                 {
-                    var button = ObjectUtils.Instantiate(m_ButtonPrefab, m_ButtonList, false).GetComponent<FilterButtonUI>();
+                    var button = EditorXRUtils.Instantiate(m_ButtonPrefab, m_ButtonList, false).GetComponent<FilterButtonUI>();
                     m_VisibilityButtons[i] = button;
 
                     button.clicked += rayOrigin => { OnFilterClick(button); };
@@ -114,13 +104,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public byte stencilRef { get; set; }
 
-#if INCLUDE_TEXT_MESH_PRO
         public TextMeshProUGUI summaryText { get { return m_SummaryText; } }
         public TextMeshProUGUI descriptionText { get { return m_DescriptionText; } }
-#else
-        public Text summaryText { get; set; }
-        public Text descriptionText { get; set; }
-#endif
 
         public bool addDefaultOption { private get; set; }
 
@@ -151,7 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_BackgroundMaterial);
+            UnityObjectUtils.Destroy(m_BackgroundMaterial);
         }
 
         public void SetListVisibility(bool show)

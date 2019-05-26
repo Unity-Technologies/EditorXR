@@ -1,6 +1,6 @@
 using System;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Menus;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -69,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void Awake()
         {
-            localBounds = ObjectUtils.GetBounds(transform);
+            localBounds = BoundsUtils.GetBounds(transform);
 
             // Link up the UI Controls
             m_CloseButton.onClick.AddListener(Close);

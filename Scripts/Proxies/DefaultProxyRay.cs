@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -247,7 +248,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_RayMaterial);
+            UnityObjectUtils.Destroy(m_RayMaterial);
         }
     }
 }

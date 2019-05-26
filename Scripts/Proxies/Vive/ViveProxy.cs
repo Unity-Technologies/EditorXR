@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
             base.Awake();
-            m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
+            m_InputToEvents = EditorXRUtils.AddComponent<ViveInputToEvents>(gameObject);
 
             var proxyHelper = m_LeftHand.GetComponent<ViveProxyHelper>();
             if (proxyHelper)

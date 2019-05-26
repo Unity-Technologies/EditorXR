@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         protected override void Awake()
         {
             base.Awake();
-            m_InputToEvents = ObjectUtils.AddComponent<OVRTouchInputToEvents>(gameObject);
+            m_InputToEvents = EditorXRUtils.AddComponent<OVRTouchInputToEvents>(gameObject);
         }
 
         protected override IEnumerator Start()

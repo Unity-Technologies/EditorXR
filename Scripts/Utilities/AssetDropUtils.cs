@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 using UnityEngine.Video;
-using UnityEditor.Experimental.EditorVR.Data;
 
 namespace UnityEditor.Experimental.EditorVR.Utilities
 {

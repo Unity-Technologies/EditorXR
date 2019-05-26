@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -87,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             if (selectedAction == null)
             {
-                ObjectUtils.Destroy(gameObject);
+                UnityObjectUtils.Destroy(gameObject);
                 return;
             }
 

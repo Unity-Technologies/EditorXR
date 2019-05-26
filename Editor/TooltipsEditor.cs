@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.Utils;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.UI
@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
     sealed class TooltipsEditor : EditorWindow
     {
         readonly Dictionary<Type, ITooltip> m_TooltipAttributes = new Dictionary<Type, ITooltip>();
-        IEnumerable<Type> m_TooltipClasses;
+        readonly List<Type> m_TooltipClasses = new List<Type>();
         readonly Dictionary<ITooltip, GameObject> m_TooltipsInPrefabs = new Dictionary<ITooltip, GameObject>();
 
         Vector2 m_Scroll;
@@ -53,7 +53,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 }
             }
 
-            m_TooltipClasses = ObjectUtils.GetImplementationsOfInterface(typeof(ITooltip));
+            m_TooltipClasses.Clear();
+            typeof(ITooltip).GetImplementationsOfInterface(m_TooltipClasses);
         }
 
         void CollectTooltipAttributes(Type type)

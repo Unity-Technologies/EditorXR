@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Tools;
@@ -214,7 +215,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnDestroy()
         {
             if (m_MainMenuUI)
-                ObjectUtils.Destroy(m_MainMenuUI.gameObject);
+                UnityObjectUtils.Destroy(m_MainMenuUI.gameObject);
         }
 
         void CreateFaceButtons()
@@ -435,7 +436,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (m_SettingsMenus.TryGetValue(provider, out instance))
             {
                 if (instance)
-                    ObjectUtils.Destroy(instance);
+                    UnityObjectUtils.Destroy(instance);
 
                 m_SettingsMenus.Remove(provider);
             }
@@ -456,7 +457,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (m_SettingsMenuItems.TryGetValue(provider, out instance))
             {
                 if (instance)
-                    ObjectUtils.Destroy(instance);
+                    UnityObjectUtils.Destroy(instance);
 
                 m_SettingsMenuItems.Remove(provider);
             }

@@ -1,5 +1,4 @@
 using System;
-using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using Unity.Labs.ListView;
 
@@ -7,7 +6,11 @@ using Unity.Labs.ListView;
 using PolyToolkit;
 #endif
 
+#if UNITY_EDITOR
+using Unity.Labs.Utils;
+
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {

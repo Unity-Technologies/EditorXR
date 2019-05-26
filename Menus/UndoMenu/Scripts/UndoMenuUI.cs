@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -82,8 +83,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_UndoButtonMaterial);
-            ObjectUtils.Destroy(m_RedoButtonMaterial);
+            UnityObjectUtils.Destroy(m_UndoButtonMaterial);
+            UnityObjectUtils.Destroy(m_RedoButtonMaterial);
         }
 
         IEnumerator AnimateEngage(bool engaging)

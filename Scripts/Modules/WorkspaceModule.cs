@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -93,7 +94,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         static WorkspaceModule()
         {
-            workspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
+            workspaceTypes = new List<Type>();
+            typeof(IWorkspace).GetImplementationsOfInterface(workspaceTypes);
         }
 
         void Awake()
@@ -104,7 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         void OnDestroy()
         {
             while (m_Workspaces.Count > 0)
-                ObjectUtils.Destroy(m_Workspaces[0].transform.gameObject);
+                UnityObjectUtils.Destroy(m_Workspaces[0].transform.gameObject);
         }
 
         public object OnSerializePreferences()
@@ -185,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             var cameraTransform = CameraUtils.GetMainCamera().transform;
 
-            var workspace = (IWorkspace)ObjectUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
+            var workspace = (IWorkspace)EditorXRUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
             m_Workspaces.Add(workspace);
             workspace.destroyed += OnWorkspaceDestroyed;
             this.ConnectInterfaces(workspace);

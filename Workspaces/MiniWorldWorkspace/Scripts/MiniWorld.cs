@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -82,9 +83,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         private void OnEnable()
         {
             if (!referenceTransform)
-                referenceTransform = ObjectUtils.CreateEmptyGameObject("MiniWorldReference").transform;
+                referenceTransform = EditorXRUtils.CreateEmptyGameObject("MiniWorldReference").transform;
 
-            m_MiniWorldRenderer = ObjectUtils.AddComponent<MiniWorldRenderer>(CameraUtils.GetMainCamera().gameObject);
+            m_MiniWorldRenderer = EditorXRUtils.AddComponent<MiniWorldRenderer>(CameraUtils.GetMainCamera().gameObject);
             m_MiniWorldRenderer.miniWorld = this;
             m_MiniWorldRenderer.cullingMask = m_RendererCullingMask;
 
@@ -95,10 +96,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         private void OnDisable()
         {
             if (referenceTransform)
-                ObjectUtils.Destroy(referenceTransform.gameObject);
+                UnityObjectUtils.Destroy(referenceTransform.gameObject);
 
             if (m_MiniWorldRenderer)
-                ObjectUtils.Destroy(m_MiniWorldRenderer);
+                UnityObjectUtils.Destroy(m_MiniWorldRenderer);
         }
     }
 }
