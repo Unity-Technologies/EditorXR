@@ -60,9 +60,6 @@ Shader "Ring"
 			#pragma multi_compile_shadowcaster
 			#pragma multi_compile UNITY_PASS_SHADOWCASTER
 			#pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
-			#if ( SHADER_API_D3D11 || SHADER_API_GLCORE || SHADER_API_GLES3 || SHADER_API_METAL || SHADER_API_VULKAN )
-				#define CAN_SKIP_VPOS
-			#endif
 			sampler3D _DitherMaskLOD;
 			struct v2f
 			{
@@ -86,11 +83,7 @@ Shader "Ring"
 				TRANSFER_SHADOW_CASTER_NORMALOFFSET( o )
 				return o;
 			}
-			fixed4 frag( v2f IN
-			#if !defined( CAN_SKIP_VPOS )
-			, UNITY_VPOS_TYPE vpos : VPOS
-			#endif
-			) : SV_Target
+			fixed4 frag( v2f IN) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID( IN );
 				Input surfIN;
@@ -101,9 +94,7 @@ Shader "Ring"
 				SurfaceOutput o;
 				UNITY_INITIALIZE_OUTPUT( SurfaceOutput, o )
 				surf( surfIN, o );
-				#if defined( CAN_SKIP_VPOS )
 				float2 vpos = IN.pos;
-				#endif
 				half alphaRef = tex3D( _DitherMaskLOD, float3( vpos.xy * 0.25, o.Alpha * 0.9375 ) ).a;
 				clip( alphaRef - 0.01 );
 				SHADOW_CASTER_FRAGMENT( IN )
