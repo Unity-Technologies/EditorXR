@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DragAndDropModule : MonoBehaviour, IModule
+    sealed class DragAndDropModule : MonoBehaviour, IModuleDependency<MultipleRayInputModule>
     {
         readonly Dictionary<Transform, IDroppable> m_Droppables = new Dictionary<Transform, IDroppable>();
         readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();
@@ -87,6 +87,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (dropReceiver != null && dropReceiver.CanDrop(dropObject))
                     dropReceiver.ReceiveDrop(droppable.GetDropObject());
             }
+        }
+
+        public void ConnectDependency(MultipleRayInputModule dependency)
+        {
+            dependency.rayEntered += OnRayEntered;
+            dependency.rayExited += OnRayExited;
+            dependency.dragStarted += OnDragStarted;
+            dependency.dragEnded += OnDragEnded;
         }
 
         public void LoadModule() { }

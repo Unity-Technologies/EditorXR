@@ -8,7 +8,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, IModule
+    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics,
+        IModule, IConnectInterfaces
     {
 #pragma warning disable 649
         [SerializeField]
@@ -143,6 +144,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             adaptiveElement.adaptiveElementRepositionCoroutine = null;
             adaptiveElement.beingMoved = false;
             adaptiveElement.resetAdaptivePosition = false;
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var adaptsPosition = target as IAdaptPosition;
+            if (adaptsPosition != null)
+                ControlObject(adaptsPosition);
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var adaptsPosition = target as IAdaptPosition;
+            if (adaptsPosition != null)
+                FreeObject(adaptsPosition);
         }
     }
 }

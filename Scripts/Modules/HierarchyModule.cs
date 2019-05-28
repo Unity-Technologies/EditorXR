@@ -9,7 +9,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class HierarchyModule : MonoBehaviour, ISelectionChanged, IModuleDependency<Core.EditorVR>
+    sealed class HierarchyModule : MonoBehaviour, ISelectionChanged, IModuleDependency<Core.EditorVR>, IInterfaceConnector
     {
         readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
         readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
@@ -257,6 +257,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     types.Add(typeName);
                     allTypes.Add(typeName);
                 }
+            }
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var usesHierarchyData = target as IUsesHierarchyData;
+            if (usesHierarchyData != null)
+            {
+                AddConsumer(usesHierarchyData);
+
+                var filterUI = target as IFilterUI;
+                if (filterUI != null)
+                    AddConsumer(filterUI);
+            }
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var usesHierarchy = target as IUsesHierarchyData;
+            if (usesHierarchy != null)
+            {
+                RemoveConsumer(usesHierarchy);
+
+                var filterUI = target as IFilterUI;
+                if (filterUI != null)
+                    RemoveConsumer(filterUI);
             }
         }
     }

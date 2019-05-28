@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -8,7 +9,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : MonoBehaviour, IModule, IUsesGameObjectLocking, IGetVRPlayerObjects
+    sealed class IntersectionModule : MonoBehaviour, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
+        IGetVRPlayerObjects, IInterfaceConnector
     {
         class RayIntersection
         {
@@ -55,19 +57,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float distance;
         }
 
+        public void ConnectDependency(SpatialHashModule dependency)
+        {
+            m_SpatialHash = dependency.spatialHash;
+            m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
+        }
+
         public void LoadModule()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
             IControlInputIntersectionMethods.setRayOriginEnabled = SetRayOriginEnabled;
+
+            IRaycastMethods.raycast = Raycast;
+            ICheckBoundsMethods.checkBounds = CheckBounds;
+            ICheckSphereMethods.checkSphere = CheckSphere;
+            IContainsVRPlayerCompletelyMethods.containsVRPlayerCompletely = ContainsVRPlayerCompletely;
         }
 
         public void UnloadModule() { }
-
-        internal void Setup(SpatialHash<Renderer> hash)
-        {
-            m_SpatialHash = hash;
-            m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
-        }
 
         void Update()
         {
@@ -323,5 +330,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             playerBounds.extents += m_PlayerBoundsMargin;
             return objectBounds.ContainsCompletely(playerBounds);
         }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var standardIgnoreList = target as IStandardIgnoreList;
+            if (standardIgnoreList != null)
+            {
+                standardIgnoreList.ignoreList = this.standardIgnoreList;
+            }
+        }
+
+        public void DisconnectInterface(object target, object userData = null) { }
     }
 }

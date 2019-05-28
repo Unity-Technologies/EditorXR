@@ -85,6 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             PolyApi.Init(new PolyAuthConfig(Encoding.UTF8.GetString(Convert.FromBase64String(k_APIKey)), "", ""));
             m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
+            IPolyMethods.getAssetList = GetAssetList;
         }
 
         public void UnloadModule()

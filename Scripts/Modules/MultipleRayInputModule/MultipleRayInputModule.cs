@@ -233,6 +233,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             s_LayerMask = LayerMask.GetMask("UI");
             m_TempRayEvent = new RayEventData(eventSystem);
             InputUtils.GetBindingDictionaryFromActionMap(m_UIActionMap, m_Controls);
+
+            IIsHoveringOverUIMethods.isHoveringOverUI = IsHoveringOverUI;
+            IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
         }
 
         public void UnloadModule()

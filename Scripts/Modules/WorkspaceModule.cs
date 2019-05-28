@@ -10,7 +10,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class WorkspaceModule : MonoBehaviour, IModule, IConnectInterfaces, ISerializePreferences
+    sealed class WorkspaceModule : MonoBehaviour, IModuleDependency<DeviceInputModule>, IConnectInterfaces,
+        ISerializePreferences, IInterfaceConnector
     {
         [Serializable]
         class Preferences
@@ -99,9 +100,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             typeof(IWorkspace).GetImplementationsOfInterface(workspaceTypes);
         }
 
+        public void ConnectDependency(DeviceInputModule dependency)
+        {
+            workspaceCreated += workspace => { dependency.UpdatePlayerHandleMaps(); };
+        }
+
         public void LoadModule()
         {
-            preserveWorkspaces = true;
+            preserveWorkspaces = Core.EditorVR.preserveLayout;
+            HiddenTypes = Core.EditorVR.HiddenTypes;
+
+            ICreateWorkspaceMethods.createWorkspace = CreateWorkspace;
+            IResetWorkspacesMethods.resetWorkspaceRotations = ResetWorkspaceRotations;
+            IUpdateInspectorsMethods.updateInspectors = UpdateInspectors;
         }
 
         public void UnloadModule()
@@ -250,14 +261,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void AddInspector(IInspectorWorkspace inspectorWorkspace)
+        void AddInspector(IInspectorWorkspace inspectorWorkspace)
         {
             m_Inspectors.Add(inspectorWorkspace);
         }
 
-        public void RemoveInspector(IInspectorWorkspace inspectorWorkspace)
+        void RemoveInspector(IInspectorWorkspace inspectorWorkspace)
         {
             m_Inspectors.Remove(inspectorWorkspace);
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var allWorkspaces = target as IAllWorkspaces;
+            if (allWorkspaces != null)
+                allWorkspaces.allWorkspaces = workspaces;
+
+            var inspectorWorkspace = target as IInspectorWorkspace;
+            if (inspectorWorkspace != null)
+                AddInspector(inspectorWorkspace);
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var inspectorWorkspace = target as IInspectorWorkspace;
+            if (inspectorWorkspace != null)
+                RemoveInspector(inspectorWorkspace);
         }
     }
 }

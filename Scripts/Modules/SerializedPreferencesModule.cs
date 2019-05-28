@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SerializedPreferencesModule : MonoBehaviour, IModule
+    sealed class SerializedPreferencesModule : MonoBehaviour, IModule, IInterfaceConnector
     {
         List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
         SerializedPreferences m_Preferences;
@@ -159,5 +159,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void LoadModule() { }
 
         public void UnloadModule() { }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var serializePreferences = target as ISerializePreferences;
+            if (serializePreferences != null)
+                AddSerializer(serializePreferences);
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var serializePreferences = target as ISerializePreferences;
+            if (serializePreferences != null)
+                RemoveSerializer(serializePreferences);
+        }
     }
 }

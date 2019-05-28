@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class ActionsModule : MonoBehaviour, IModule, IConnectInterfaces, ISpatialMenuProvider
+    sealed class ActionsModule : MonoBehaviour, IModule, IConnectInterfaces, ISpatialMenuProvider, IInterfaceConnector
     {
         List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
         readonly List<IAction> m_Actions = new List<IAction>();
@@ -16,6 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly List<SpatialMenu.SpatialMenuData> m_SpatialMenuData = new List<SpatialMenu.SpatialMenuData>();
 
         public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
+
         public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
 
         public void RemoveActions(List<IAction> actions)
@@ -84,6 +86,52 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             foreach (var actionsMenu in m_ActionsMenus)
             {
                 actionsMenu.menuActions = m_MenuActions;
+            }
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var toolActions = target as IActions;
+            if (toolActions != null)
+            {
+                // Delay connecting actions to allow tool / module to initialize first
+                EditorApplication.delayCall += () =>
+                {
+                    var actions = toolActions.actions;
+                    if (actions != null)
+                    {
+                        foreach (var action in actions)
+                        {
+                            var actionMenuData = new ActionMenuData()
+                            {
+                                name = action.GetType().Name,
+                                sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
+                                priority = int.MaxValue,
+                                action = action,
+                            };
+                            menuActions.Add(actionMenuData);
+                        }
+
+                        UpdateAlternateMenuActions();
+                    }
+                };
+            }
+
+            var actionsMenu = target as IActionsMenu;
+            if (actionsMenu != null)
+            {
+                actionsMenu.menuActions = menuActions;
+                AddActionsMenu(actionsMenu);
+            }
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var toolActions = target as IActions;
+            if (toolActions != null)
+            {
+                RemoveActions(toolActions.actions);
+                UpdateAlternateMenuActions();
             }
         }
     }

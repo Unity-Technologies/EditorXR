@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.ModuleLoader;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DeviceInputModule : MonoBehaviour, IModule
+    sealed class DeviceInputModule : MonoBehaviour, IModuleDependency<Core.EditorVR>,
+        IModuleDependency<EditorXRToolModule>, IInterfaceConnector
     {
         class InputProcessor
         {
@@ -52,9 +54,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<InputControl> k_RemoveList = new List<InputControl>();
         ConsumeControlDelegate m_ConsumeControl;
 
+        public void ConnectDependency(Core.EditorVR dependency)
+        {
+            processInput = dependency.ProcessInput;
+            inputDeviceForRayOrigin = rayOrigin =>
+                (from deviceData in dependency.deviceData
+                    where deviceData.rayOrigin == rayOrigin
+                    select deviceData.inputDevice).FirstOrDefault();
+        }
+
+        public void ConnectDependency(EditorXRToolModule dependency)
+        {
+            updatePlayerHandleMaps = dependency.UpdatePlayerHandleMaps;
+        }
+
         public void LoadModule()
         {
             m_ConsumeControl = ConsumeControl;
+
+            InitializePlayerHandle();
+            CreateDefaultActionMapInputs();
         }
 
         public void UnloadModule() { }
@@ -343,6 +362,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         m_IgnoreLocking.Remove(processor.input);
                 }
             }
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var trackedObjectMap = target as ITrackedObjectActionMap;
+            if (trackedObjectMap != null)
+                trackedObjectMap.trackedObjectInput = trackedObjectInput;
+
+            var processInput = target as IProcessInput;
+            if (processInput != null && !(target is ITool)) // Tools have their input processed separately
+                AddInputProcessor(processInput, userData);
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var processInput = target as IProcessInput;
+            if (processInput != null)
+                RemoveInputProcessor(processInput);
         }
     }
 }

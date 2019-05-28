@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.Labs.ModuleLoader;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class ProjectFolderModule : MonoBehaviour, IModule
+    sealed class ProjectFolderModule : MonoBehaviour, IModule, IInterfaceConnector
     {
         // Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
         const float k_MaxFrameTime = 0.01f;
@@ -187,6 +188,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void LoadModule() { }
 
         public void UnloadModule() { }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var usesProjectFolderData = target as IUsesProjectFolderData;
+            if (usesProjectFolderData != null)
+            {
+                AddConsumer(usesProjectFolderData);
+
+                var filterUI = target as IFilterUI;
+                if (filterUI != null)
+                    AddConsumer(filterUI);
+            }
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var usesProjectFolderData = target as IUsesProjectFolderData;
+            if (usesProjectFolderData != null)
+            {
+                RemoveConsumer(usesProjectFolderData);
+
+                var filterUI = target as IFilterUI;
+                if (filterUI != null)
+                    RemoveConsumer(filterUI);
+            }
+        }
     }
 #else
     sealed class ProjectFolderModule : MonoBehaviour

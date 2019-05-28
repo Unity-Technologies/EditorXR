@@ -38,6 +38,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_RightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             m_LeftHand.TryGetHapticCapabilities(out m_Capabilites);
             m_GeneratedHapticClip = new MemoryStream();
+
+            IControlHapticsMethods.pulse = Pulse;
+            IControlHapticsMethods.stopPulses = StopPulses;
         }
 
         public void UnloadModule() { }

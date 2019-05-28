@@ -182,7 +182,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void LoadModule() { }
+        public void LoadModule()
+        {
+            IControlSpatialScrollingMethods.performSpatialScroll = PerformScroll;
+            IControlSpatialScrollingMethods.endSpatialScroll = EndScroll;
+        }
 
         public void UnloadModule() { }
     }

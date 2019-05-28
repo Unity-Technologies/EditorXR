@@ -216,7 +216,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_CompletedTransfers.Clear();
         }
 
-        public void LoadModule() { }
+        public void LoadModule()
+        {
+            IWebMethods.download = Download;
+            IWebMethods.downloadTexture = DownloadTexture;
+            IWebMethods.downloadToDisk = Download;
+        }
 
         public void UnloadModule() { }
     }

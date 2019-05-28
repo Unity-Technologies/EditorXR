@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HighlightModule : MonoBehaviour, IModule, IUsesGameObjectLocking
+    sealed class HighlightModule : MonoBehaviour, IModule, IUsesGameObjectLocking, IInterfaceConnector
     {
         struct HighlightData
         {
@@ -65,6 +66,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_RayHighlightMaterial.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
             }
 #endif
+
+            ISetHighlightMethods.setHighlight = SetHighlight;
+            ISetHighlightMethods.setBlinkingHighlight = SetBlinkingHighlight;
         }
 
         public void UnloadModule() { }
@@ -266,6 +270,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 yield return null;
             }
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var customHighlight = target as ICustomHighlight;
+            if (customHighlight != null)
+                this.customHighlight += customHighlight.OnHighlight;
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var customHighlight = target as ICustomHighlight;
+            if (customHighlight != null)
+                this.customHighlight -= customHighlight.OnHighlight;
         }
     }
 }

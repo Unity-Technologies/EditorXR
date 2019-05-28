@@ -158,7 +158,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void LoadModule() { }
+        public void LoadModule()
+        {
+            ISelectObjectMethods.getSelectionCandidate = GetSelectionCandidate;
+            ISelectObjectMethods.selectObject = SelectObject;
+            ISelectObjectMethods.selectObjects = SelectObjects;
+            IUsesGroupingMethods.makeGroup = MakeGroup;
+        }
 
         public void UnloadModule() { }
     }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Manipulators;
@@ -13,8 +14,18 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    partial class EditorVR
+    class EditorXRRayModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<HighlightModule>,
+        IModuleDependency<IntersectionModule>, IModuleDependency<EditorXRMiniWorldModule>,
+        IModuleDependency<DeviceInputModule>, IModuleDependency<MultipleRayInputModule>,
+        IModuleDependency<KeyboardModule>, IModuleDependency<WorkspaceModule>, IModuleDependency<EditorXRViewerModule>,
+        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<EditorXRUIModule>,
+        IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
+        IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList
     {
+        internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
+
+        const float k_DefaultRayLength = 100f;
+
 #pragma warning disable 649
         [SerializeField]
         DefaultProxyRay m_ProxyRayPrefab;
@@ -23,543 +34,601 @@ namespace UnityEditor.Experimental.EditorVR.Core
         ProxyExtras m_ProxyExtras;
 #pragma warning restore 649
 
-        class Rays : Nested, IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList
+        internal Dictionary<Transform, DefaultProxyRay> defaultRays
         {
-            internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
+            get { return m_DefaultRays; }
+        }
 
-            const float k_DefaultRayLength = 100f;
+        readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 
-            internal Dictionary<Transform, DefaultProxyRay> defaultRays { get { return m_DefaultRays; } }
+        readonly List<IProxy> m_Proxies = new List<IProxy>();
 
-            readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
+        StandardManipulator m_StandardManipulator;
+        ScaleManipulator m_ScaleManipulator;
+        EditorVR m_EditorVR;
+        HighlightModule m_HighlightModule;
+        EditorXRMiniWorldModule m_MiniWorldModule;
+        IntersectionModule m_IntersectionModule;
+        DeviceInputModule m_DeviceInputModule;
+        MultipleRayInputModule m_MultipleRayInputModule;
+        KeyboardModule m_KeyboardModule;
+        WorkspaceModule m_WorkspaceModule;
+        EditorXRViewerModule m_ViewerModule;
+        EditorXRDirectSelectionModule m_DirectSelectionModule;
+        EditorXRUIModule m_UIModule;
+        EditorXRMenuModule m_MenuModule;
+        EditorXRToolModule m_ToolModule;
 
-            readonly List<IProxy> m_Proxies = new List<IProxy>();
+        internal DefaultProxyRay proxyRayPrefab { get { return m_ProxyRayPrefab; } }
 
-            StandardManipulator m_StandardManipulator;
-            ScaleManipulator m_ScaleManipulator;
+        internal Transform lastSelectionRayOrigin { get; private set; }
 
-            internal Transform lastSelectionRayOrigin { get; private set; }
+        public List<GameObject> ignoreList { private get; set; }
 
-            public List<GameObject> ignoreList { private get; set; }
+        public void ConnectDependency(HighlightModule dependency)
+        {
+            m_HighlightModule = dependency;
+        }
 
-            public Rays()
+        public void ConnectDependency(EditorXRMiniWorldModule dependency)
+        {
+            m_MiniWorldModule = dependency;
+        }
+
+        public void ConnectDependency(IntersectionModule dependency)
+        {
+            m_IntersectionModule = dependency;
+            ignoreList = dependency.standardIgnoreList;
+        }
+
+        public void ConnectDependency(DeviceInputModule dependency)
+        {
+            m_DeviceInputModule = dependency;
+        }
+
+        public void ConnectDependency(MultipleRayInputModule dependency)
+        {
+            m_MultipleRayInputModule = dependency;
+        }
+
+        public void ConnectDependency(KeyboardModule dependency)
+        {
+            m_KeyboardModule = dependency;
+        }
+
+        public void ConnectDependency(WorkspaceModule dependency)
+        {
+            m_WorkspaceModule = dependency;
+        }
+
+        public void ConnectDependency(EditorXRViewerModule dependency)
+        {
+            m_ViewerModule = dependency;
+        }
+
+        public void ConnectDependency(EditorXRDirectSelectionModule dependency)
+        {
+            m_DirectSelectionModule = dependency;
+        }
+
+        public void ConnectDependency(EditorXRUIModule dependency)
+        {
+            m_UIModule = dependency;
+        }
+
+        public void ConnectDependency(EditorXRMenuModule dependency)
+        {
+            m_MenuModule = dependency;
+        }
+
+        public void ConnectDependency(EditorXRToolModule dependency)
+        {
+            m_ToolModule = dependency;
+        }
+
+        public void LoadModule()
+        {
+            ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
+            IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
+
+            IRayVisibilitySettingsMethods.removeRayVisibilitySettings = RemoveVisibilitySettings;
+            IRayVisibilitySettingsMethods.addRayVisibilitySettings = AddVisibilitySettings;
+
+            IForEachRayOriginMethods.forEachRayOrigin = IterateRayOrigins;
+            IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
+            IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
+            IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
+            IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
+            INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
+            IGetRayVisibilityMethods.isRayVisible = IsRayActive;
+            IGetRayVisibilityMethods.isConeVisible = IsConeActive;
+
+            CreateAllProxies();
+        }
+
+        public void UnloadModule()
+        {
+            foreach (var proxy in m_Proxies)
+                UnityObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var rayOrigin = userData as Transform;
+            if (rayOrigin)
             {
-                ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
-                IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
+                var evrDeviceData = m_EditorVR.deviceData;
 
-                IRayVisibilitySettingsMethods.removeRayVisibilitySettings = RemoveVisibilitySettings;
-                IRayVisibilitySettingsMethods.addRayVisibilitySettings = AddVisibilitySettings;
+                var ray = target as IUsesRayOrigin;
+                if (ray != null)
+                    ray.rayOrigin = rayOrigin;
 
-                IForEachRayOriginMethods.forEachRayOrigin = IterateRayOrigins;
-                IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
-                IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
-                IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
-                IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
-                INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
-                IGetRayVisibilityMethods.isRayVisible = IsRayActive;
-                IGetRayVisibilityMethods.isConeVisible = IsConeActive;
-            }
-
-            internal override void OnDestroy()
-            {
-                foreach (var proxy in m_Proxies)
-                    UnityObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
-            }
-
-            public void ConnectInterface(object target, object userData = null)
-            {
-                var rayOrigin = userData as Transform;
-                if (rayOrigin)
+                var rayOrigins = target as IUsesRayOrigins;
+                if (rayOrigins != null)
                 {
-                    var evrDeviceData = evr.m_DeviceData;
-
-                    var ray = target as IUsesRayOrigin;
-                    if (ray != null)
-                        ray.rayOrigin = rayOrigin;
-
-                    var rayOrigins = target as IUsesRayOrigins;
-                    if (rayOrigins != null)
+                    List<Transform> otherRayOrigins = new List<Transform>();
+                    this.ForEachRayOrigin(ro =>
                     {
-                        List<Transform> otherRayOrigins = new List<Transform>();
-                        this.ForEachRayOrigin(ro =>
-                        {
-                            if (ro != rayOrigin)
-                                otherRayOrigins.Add(ro);
-                        });
-                        rayOrigins.otherRayOrigins = otherRayOrigins;
-                    }
-
-                    var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
-
-                    var handedRay = target as IUsesNode;
-                    if (handedRay != null && deviceData != null)
-                        handedRay.node = deviceData.node;
+                        if (ro != rayOrigin)
+                            otherRayOrigins.Add(ro);
+                    });
+                    rayOrigins.otherRayOrigins = otherRayOrigins;
                 }
 
-                var selectionModule = target as SelectionModule;
-                if (selectionModule)
-                {
-                    selectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
-                    selectionModule.overrideSelectObject = OverrideSelectObject;
-                }
+                var deviceData = evrDeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+
+                var handedRay = target as IUsesNode;
+                if (handedRay != null && deviceData != null)
+                    handedRay.node = deviceData.node;
             }
 
-            public void DisconnectInterface(object target, object userData = null) { }
-
-            internal static void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
+            var selectionModule = target as SelectionModule;
+            if (selectionModule)
             {
-                var mainMenu = deviceData.mainMenu;
-                var customMenu = deviceData.customMenu;
+                selectionModule.selected += SetLastSelectionRayOrigin; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+                selectionModule.overrideSelectObject = OverrideSelectObject;
+            }
+        }
 
-                if (mainMenu != null)
-                {
-                    // Hide the cone and ray if the main menu or custom menu are open
-                    if (mainMenu.menuHideFlags == 0 || customMenu != null && customMenu.menuHideFlags == 0)
-                        AddVisibilitySettings(rayOrigin, mainMenu, false, false);
+        public void DisconnectInterface(object target, object userData = null) { }
 
-                    // Show the ray if the menu is not hidden but the custom menu is overriding it, and is also hidden
-                    else if ((mainMenu.menuHideFlags & MenuHideFlags.Hidden) == 0 || customMenu != null && customMenu.menuHideFlags != 0)
-                        AddVisibilitySettings(rayOrigin, mainMenu, true, true, 1);
-                    else
-                        RemoveVisibilitySettings(rayOrigin, mainMenu);
-                }
+        internal void UpdateRayForDevice(DeviceData deviceData, Transform rayOrigin)
+        {
+            var mainMenu = deviceData.mainMenu;
+            var customMenu = deviceData.customMenu;
+
+            if (mainMenu != null)
+            {
+                // Hide the cone and ray if the main menu or custom menu are open
+                if (mainMenu.menuHideFlags == 0 || customMenu != null && customMenu.menuHideFlags == 0)
+                    AddVisibilitySettings(rayOrigin, mainMenu, false, false);
+
+                // Show the ray if the menu is not hidden but the custom menu is overriding it, and is also hidden
+                else if ((mainMenu.menuHideFlags & MenuHideFlags.Hidden) == 0 || customMenu != null && customMenu.menuHideFlags != 0)
+                    AddVisibilitySettings(rayOrigin, mainMenu, true, true, 1);
+                else
+                    RemoveVisibilitySettings(rayOrigin, mainMenu);
+            }
+        }
+
+        void SetLastSelectionRayOrigin(Transform rayOrigin)
+        {
+            lastSelectionRayOrigin = rayOrigin;
+        }
+
+        static bool OverrideSelectObject(GameObject hoveredObject)
+        {
+            // The player head can hovered, but not selected (only directly manipulated)
+            if (hoveredObject && hoveredObject.CompareTag(EditorVR.VRPlayerTag))
+            {
+                // Clear the selection so that we do not manipulate it when moving the player head
+                Selection.activeObject = null;
+                return true;
             }
 
-            void SetLastSelectionRayOrigin(Transform rayOrigin)
+            return false;
+        }
+
+        internal void CreateAllProxies()
+        {
+            var cameraRig = CameraUtils.GetCameraRig();
+            var proxyTypes = CollectionPool<List<Type>, Type>.GetCollection();
+            typeof(IProxy).GetImplementationsOfInterface(proxyTypes);
+            foreach (var proxyType in proxyTypes)
             {
-                lastSelectionRayOrigin = rayOrigin;
+                var proxy = (IProxy)EditorXRUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
+                this.ConnectInterfaces(proxy);
+                proxy.trackedObjectInput = m_DeviceInputModule.trackedObjectInput;
+                proxy.activeChanged += () => OnProxyActiveChanged(proxy);
+
+                m_Proxies.Add(proxy);
             }
 
-            static bool OverrideSelectObject(GameObject hoveredObject)
+            CollectionPool<List<Type>, Type>.RecycleCollection(proxyTypes);
+        }
+
+        void OnProxyActiveChanged(IProxy proxy)
+        {
+            proxy.hidden = !proxy.active;
+
+            if (proxy.active)
             {
-                // The player head can hovered, but not selected (only directly manipulated)
-                if (hoveredObject && hoveredObject.CompareTag(k_VRPlayerTag))
+                var evrDeviceData = m_EditorVR.deviceData;
+                if (!evrDeviceData.Any(dd => dd.proxy == proxy))
                 {
-                    // Clear the selection so that we do not manipulate it when moving the player head
-                    Selection.activeObject = null;
-                    return true;
-                }
-
-                return false;
-            }
-
-            internal void CreateAllProxies()
-            {
-                var deviceInputModule = evr.GetModule<DeviceInputModule>();
-                var cameraRig = CameraUtils.GetCameraRig();
-                var proxyTypes = CollectionPool<List<Type>, Type>.GetCollection();
-                typeof(IProxy).GetImplementationsOfInterface(proxyTypes);
-                foreach (var proxyType in proxyTypes)
-                {
-                    var proxy = (IProxy)EditorXRUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
-                    this.ConnectInterfaces(proxy);
-                    proxy.trackedObjectInput = deviceInputModule.trackedObjectInput;
-                    proxy.activeChanged += () => OnProxyActiveChanged(proxy);
-
-                    m_Proxies.Add(proxy);
-                }
-
-                CollectionPool<List<Type>, Type>.RecycleCollection(proxyTypes);
-            }
-
-            void OnProxyActiveChanged(IProxy proxy)
-            {
-                proxy.hidden = !proxy.active;
-
-                if (proxy.active)
-                {
-                    var evrDeviceData = evr.m_DeviceData;
-                    if (!evrDeviceData.Any(dd => dd.proxy == proxy))
+                    foreach (var rayOriginPair in proxy.rayOrigins)
                     {
-                        var inputModule = evr.GetModule<MultipleRayInputModule>();
-                        var deviceInputModule = evr.GetModule<DeviceInputModule>();
-                        var keyboardModule = evr.GetModule<KeyboardModule>();
-                        var highlightModule = evr.GetModule<HighlightModule>();
-                        var workspaceModule = evr.GetModule<WorkspaceModule>();
-                        var intersectionModule = evr.GetModule<IntersectionModule>();
-                        var ui = evr.GetNestedModule<UI>();
+                        var node = rayOriginPair.Key;
+                        var rayOrigin = rayOriginPair.Value;
 
-                        foreach (var rayOriginPair in proxy.rayOrigins)
+                        var systemDevices = m_DeviceInputModule.GetSystemDevices();
+                        for (int j = 0; j < systemDevices.Count; j++)
                         {
-                            var node = rayOriginPair.Key;
-                            var rayOrigin = rayOriginPair.Value;
+                            var device = systemDevices[j];
 
-                            var systemDevices = deviceInputModule.GetSystemDevices();
-                            for (int j = 0; j < systemDevices.Count; j++)
+                            // Find device tagged with the node that matches this RayOrigin node
+                            var deviceNode = m_DeviceInputModule.GetDeviceNode(device);
+                            if (deviceNode == node)
                             {
-                                var device = systemDevices[j];
+                                var deviceData = new DeviceData();
+                                evrDeviceData.Add(deviceData);
+                                deviceData.proxy = proxy;
+                                deviceData.node = node;
+                                deviceData.rayOrigin = rayOrigin;
+                                deviceData.inputDevice = device;
 
-                                // Find device tagged with the node that matches this RayOrigin node
-                                var deviceNode = deviceInputModule.GetDeviceNode(device);
-                                if (deviceNode == node)
+                                // Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
+                                m_MultipleRayInputModule.AddRaycastSource(proxy, node, rayOrigin, source =>
                                 {
-                                    var deviceData = new DeviceData();
-                                    evrDeviceData.Add(deviceData);
-                                    deviceData.proxy = proxy;
-                                    deviceData.node = node;
-                                    deviceData.rayOrigin = rayOrigin;
-                                    deviceData.inputDevice = device;
-
-                                    // Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-                                    inputModule.AddRaycastSource(proxy, node, rayOrigin, source =>
+                                    // Do not invalidate UI raycasts in the middle of a drag operation
+                                    if (!source.draggedObject)
                                     {
-                                        // Do not invalidate UI raycasts in the middle of a drag operation
-                                        if (!source.draggedObject)
-                                        {
-                                            var sourceRayOrigin = source.rayOrigin;
-                                            if (evr.GetNestedModule<DirectSelection>().IsHovering(sourceRayOrigin))
-                                                return false;
-
-                                            var hoveredObject = source.hoveredObject;
-
-                                            // The manipulator needs rays to go through scene objects in order to work
-                                            var isManipulator = hoveredObject && hoveredObject.GetComponentInParent<IManipulator>() != null;
-                                            float sceneObjectDistance;
-                                            var raycastObject = intersectionModule.GetFirstGameObject(sourceRayOrigin, out sceneObjectDistance);
-                                            var uiDistance = source.eventData.pointerCurrentRaycast.distance;
-
-                                            // If the distance to a scene object is less than the distance to the hovered UI, invalidate the UI raycast
-                                            if (!isManipulator && raycastObject && sceneObjectDistance < uiDistance && !ignoreList.Contains(raycastObject))
-                                                return false;
-                                        }
-
-                                        if (!Menus.IsValidHover(source))
+                                        var sourceRayOrigin = source.rayOrigin;
+                                        if (m_DirectSelectionModule.IsHovering(sourceRayOrigin))
                                             return false;
 
-                                        // Proceed only for raycast sources that haven't been blocked via IBlockUIInteraction
-                                        if (source.blocked)
+                                        var hoveredObject = source.hoveredObject;
+
+                                        // The manipulator needs rays to go through scene objects in order to work
+                                        var isManipulator = hoveredObject && hoveredObject.GetComponentInParent<IManipulator>() != null;
+                                        float sceneObjectDistance;
+                                        var raycastObject = m_IntersectionModule.GetFirstGameObject(sourceRayOrigin, out sceneObjectDistance);
+                                        var uiDistance = source.eventData.pointerCurrentRaycast.distance;
+
+                                        // If the distance to a scene object is less than the distance to the hovered UI, invalidate the UI raycast
+                                        if (!isManipulator && raycastObject && sceneObjectDistance < uiDistance && !ignoreList.Contains(raycastObject))
                                             return false;
-
-                                        return true;
-                                    });
-                                }
-                            }
-
-                            rayOrigin.name = string.Format("{0} Ray Origin", node);
-                            var rayTransform = EditorXRUtils.Instantiate(evr.m_ProxyRayPrefab.gameObject, rayOrigin, false).transform;
-                            rayTransform.position = rayOrigin.position;
-                            rayTransform.rotation = rayOrigin.rotation;
-                            var dpr = rayTransform.GetComponent<DefaultProxyRay>();
-                            dpr.SetColor(highlightModule.highlightColor);
-                            m_DefaultRays.Add(rayOrigin, dpr);
-
-                            keyboardModule.SpawnKeyboardMallet(rayOrigin);
-
-                            var proxyExtras = evr.m_ProxyExtras;
-                            if (proxyExtras)
-                            {
-                                var extraData = proxyExtras.data;
-                                List<GameObject> prefabs;
-                                if (extraData.TryGetValue(rayOriginPair.Key, out prefabs))
-                                {
-                                    foreach (var prefab in prefabs)
-                                    {
-                                        var go = ui.InstantiateUI(prefab);
-                                        go.transform.SetParent(rayOriginPair.Value, false);
                                     }
+
+                                    if (!m_MenuModule.IsValidHover(source))
+                                        return false;
+
+                                    // Proceed only for raycast sources that haven't been blocked via IBlockUIInteraction
+                                    if (source.blocked)
+                                        return false;
+
+                                    return true;
+                                });
+                            }
+                        }
+
+                        rayOrigin.name = string.Format("{0} Ray Origin", node);
+                        var rayTransform = EditorXRUtils.Instantiate(m_ProxyRayPrefab.gameObject, rayOrigin, false).transform;
+                        rayTransform.position = rayOrigin.position;
+                        rayTransform.rotation = rayOrigin.rotation;
+                        var dpr = rayTransform.GetComponent<DefaultProxyRay>();
+                        dpr.SetColor(m_HighlightModule.highlightColor);
+                        m_DefaultRays.Add(rayOrigin, dpr);
+
+                        m_KeyboardModule.SpawnKeyboardMallet(rayOrigin);
+
+                        var proxyExtras = m_ProxyExtras;
+                        if (proxyExtras)
+                        {
+                            var extraData = proxyExtras.data;
+                            List<GameObject> prefabs;
+                            if (extraData.TryGetValue(rayOriginPair.Key, out prefabs))
+                            {
+                                foreach (var prefab in prefabs)
+                                {
+                                    var go = m_UIModule.InstantiateUI(prefab);
+                                    go.transform.SetParent(rayOriginPair.Value, false);
                                 }
                             }
-
-                            var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
-                            tester.active = proxy.active;
-                            intersectionModule.AddTester(tester);
-
-                            highlightModule.AddRayOriginForNode(node, rayOrigin);
-
-                            switch (node)
-                            {
-                                case Node.LeftHand:
-                                    workspaceModule.leftRayOrigin = rayOrigin;
-                                    break;
-                                case Node.RightHand:
-                                    workspaceModule.rightRayOrigin = rayOrigin;
-                                    break;
-                            }
                         }
 
-                        evr.GetNestedModule<Tools>().SpawnDefaultTools(proxy);
-                    }
-                }
-            }
+                        var tester = rayOriginPair.Value.GetComponentInChildren<IntersectionTester>();
+                        tester.active = proxy.active;
+                        m_IntersectionModule.AddTester(tester);
 
-            internal static void UpdateRaycasts()
-            {
-                var intersectionModule = evr.GetModule<IntersectionModule>();
-                var distance = k_DefaultRayLength * Viewer.GetViewerScale();
-                foreach (var deviceData in evr.m_DeviceData)
-                {
-                    var proxy = deviceData.proxy;
-                    if (!proxy.active)
-                        continue;
+                        m_HighlightModule.AddRayOriginForNode(node, rayOrigin);
 
-                    intersectionModule.UpdateRaycast(deviceData.rayOrigin, distance);
-                }
-            }
-
-            internal void UpdateDefaultProxyRays()
-            {
-                var intersectionModule = evr.GetModule<IntersectionModule>();
-                var inputModule = evr.GetModule<MultipleRayInputModule>();
-
-                // Set ray lengths based on renderer bounds
-                foreach (var proxy in m_Proxies)
-                {
-                    if (!proxy.active)
-                        continue;
-
-                    foreach (var kvp in proxy.rayOrigins)
-                    {
-                        var rayOrigin = kvp.Value;
-                        var distance = k_DefaultRayLength * Viewer.GetViewerScale();
-
-                        // Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
-                        // object, so visually show the ray terminating there instead of the object; UI is already given
-                        // priority on the input side)
-                        var uiEventData = inputModule.GetPointerEventData(rayOrigin);
-                        if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
+                        switch (node)
                         {
-                            // Set ray length to distance to UI objects
-                            distance = uiEventData.pointerCurrentRaycast.distance;
+                            case Node.LeftHand:
+                                m_WorkspaceModule.leftRayOrigin = rayOrigin;
+                                break;
+                            case Node.RightHand:
+                                m_WorkspaceModule.rightRayOrigin = rayOrigin;
+                                break;
                         }
-                        else
-                        {
-                            float hitDistance;
-                            if (intersectionModule.GetFirstGameObject(rayOrigin, out hitDistance))
-                                distance = hitDistance;
-                        }
-
-                        m_DefaultRays[rayOrigin].SetLength(distance);
                     }
+
+                    m_ToolModule.SpawnDefaultTools(proxy);
                 }
             }
+        }
 
-            internal static void ForEachProxyDevice(ForEachProxyDeviceCallback callback, bool activeOnly = true)
+        internal void UpdateRaycasts()
+        {
+            var distance = k_DefaultRayLength * m_ViewerModule.GetViewerScale();
+            foreach (var deviceData in m_EditorVR.deviceData)
             {
-                var evrDeviceData = evr.m_DeviceData;
-                for (var i = 0; i < evrDeviceData.Count; i++)
-                {
-                    var deviceData = evrDeviceData[i];
-                    var proxy = deviceData.proxy;
-                    if (activeOnly && !proxy.active)
-                        continue;
+                var proxy = deviceData.proxy;
+                if (!proxy.active)
+                    continue;
 
-                    callback(deviceData);
-                }
+                m_IntersectionModule.UpdateRaycast(deviceData.rayOrigin, distance);
             }
+        }
 
-            static void IterateRayOrigins(ForEachRayOriginCallback callback)
+        internal void UpdateDefaultProxyRays()
+        {
+            // Set ray lengths based on renderer bounds
+            foreach (var proxy in m_Proxies)
             {
-                var evrDeviceData = evr.m_DeviceData;
-                for (var i = 0; i < evrDeviceData.Count; i++)
+                if (!proxy.active)
+                    continue;
+
+                foreach (var kvp in proxy.rayOrigins)
                 {
-                    var deviceData = evrDeviceData[i];
-                    var proxy = deviceData.proxy;
-                    if (!proxy.active)
-                        continue;
+                    var rayOrigin = kvp.Value;
+                    var distance = k_DefaultRayLength *  m_ViewerModule.GetViewerScale();
 
-                    callback(deviceData.rayOrigin);
-                }
-            }
-
-            internal static IProxy GetProxyForRayOrigin(Transform rayOrigin)
-            {
-                IProxy result = null;
-                var deviceData = evr.m_DeviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
-                if (deviceData != null)
-                    result = deviceData.proxy;
-
-                return result;
-            }
-
-            static GameObject GetFirstGameObject(Transform rayOrigin)
-            {
-                var intersectionModule = evr.GetModule<IntersectionModule>();
-
-                float distance;
-                var go = intersectionModule.GetFirstGameObject(rayOrigin, out distance);
-                if (go)
-                    return go;
-
-                // If a raycast did not find an object use the spatial hash as a final test
-                var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
-                Vector3 collisionPoint;
-                var renderer = intersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
-                if (renderer && !renderer.CompareTag(k_VRPlayerTag))
-                    return renderer.gameObject;
-
-                foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
-                {
-                    var miniWorldRay = kvp.Value;
-                    if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
+                    // Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
+                    // object, so visually show the ray terminating there instead of the object; UI is already given
+                    // priority on the input side)
+                    var uiEventData = m_MultipleRayInputModule.GetPointerEventData(rayOrigin);
+                    if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
                     {
-                        tester = miniWorldRay.tester;
-                        if (!tester.active)
-                            continue;
-
-                        renderer = intersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
-                        if (renderer)
-                            return renderer.gameObject;
+                        // Set ray length to distance to UI objects
+                        distance = uiEventData.pointerCurrentRaycast.distance;
                     }
+                    else
+                    {
+                        float hitDistance;
+                        if (m_IntersectionModule.GetFirstGameObject(rayOrigin, out hitDistance))
+                            distance = hitDistance;
+                    }
+
+                    m_DefaultRays[rayOrigin].SetLength(distance);
                 }
-
-                return null;
             }
+        }
 
-            Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
+        internal void ForEachProxyDevice(ForEachProxyDeviceCallback callback, bool activeOnly = true)
+        {
+            var evrDeviceData = m_EditorVR.deviceData;
+            for (var i = 0; i < evrDeviceData.Count; i++)
             {
-                foreach (var proxy in m_Proxies)
+                var deviceData = evrDeviceData[i];
+                var proxy = deviceData.proxy;
+                if (activeOnly && !proxy.active)
+                    continue;
+
+                callback(deviceData);
+            }
+        }
+
+        void IterateRayOrigins(ForEachRayOriginCallback callback)
+        {
+            var evrDeviceData = m_EditorVR.deviceData;
+            for (var i = 0; i < evrDeviceData.Count; i++)
+            {
+                var deviceData = evrDeviceData[i];
+                var proxy = deviceData.proxy;
+                if (!proxy.active)
+                    continue;
+
+                callback(deviceData.rayOrigin);
+            }
+        }
+
+        internal IProxy GetProxyForRayOrigin(Transform rayOrigin)
+        {
+            IProxy result = null;
+            var deviceData = m_EditorVR.deviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+            if (deviceData != null)
+                result = deviceData.proxy;
+
+            return result;
+        }
+
+        GameObject GetFirstGameObject(Transform rayOrigin)
+        {
+            float distance;
+            var go = m_IntersectionModule.GetFirstGameObject(rayOrigin, out distance);
+            if (go)
+                return go;
+
+            // If a raycast did not find an object use the spatial hash as a final test
+            var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+            Vector3 collisionPoint;
+            var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
+            if (renderer && !renderer.CompareTag(EditorVR.VRPlayerTag))
+                return renderer.gameObject;
+
+            foreach (var kvp in m_MiniWorldModule.rays)
+            {
+                var miniWorldRay = kvp.Value;
+                if (miniWorldRay.originalRayOrigin.Equals(rayOrigin))
                 {
-                    Transform previewOrigin;
-                    if (proxy.previewOrigins.TryGetValue(rayOrigin, out previewOrigin))
-                        return previewOrigin;
-                }
+                    tester = miniWorldRay.tester;
+                    if (!tester.active)
+                        continue;
 
-                return null;
-            }
-
-            Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
-            {
-                foreach (var proxy in m_Proxies)
-                {
-                    Transform fieldGrabOrigins;
-                    if (proxy.fieldGrabOrigins.TryGetValue(rayOrigin, out fieldGrabOrigins))
-                        return fieldGrabOrigins;
-                }
-
-                return null;
-            }
-
-            static bool IsRayActive(Transform rayOrigin)
-            {
-                var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-                return dpr == null || dpr.rayVisible;
-            }
-
-            static bool IsConeActive(Transform rayOrigin)
-            {
-                var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-                return dpr == null || dpr.coneVisible;
-            }
-
-            internal static void AddVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
-            {
-                if (rayOrigin)
-                {
-                    var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-                    if (dpr)
-                        dpr.AddVisibilitySettings(caller, rayVisible, coneVisible, priority);
+                    renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
+                    if (renderer)
+                        return renderer.gameObject;
                 }
             }
 
-            internal static void RemoveVisibilitySettings(Transform rayOrigin, object obj)
-            {
-                if (!rayOrigin) // Prevent MissingReferenceException on closing EVR
-                    return;
+            return null;
+        }
 
+        Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
+        {
+            foreach (var proxy in m_Proxies)
+            {
+                Transform previewOrigin;
+                if (proxy.previewOrigins.TryGetValue(rayOrigin, out previewOrigin))
+                    return previewOrigin;
+            }
+
+            return null;
+        }
+
+        Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
+        {
+            foreach (var proxy in m_Proxies)
+            {
+                Transform fieldGrabOrigins;
+                if (proxy.fieldGrabOrigins.TryGetValue(rayOrigin, out fieldGrabOrigins))
+                    return fieldGrabOrigins;
+            }
+
+            return null;
+        }
+
+        static bool IsRayActive(Transform rayOrigin)
+        {
+            var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+            return dpr == null || dpr.rayVisible;
+        }
+
+        static bool IsConeActive(Transform rayOrigin)
+        {
+            var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+            return dpr == null || dpr.coneVisible;
+        }
+
+        internal void AddVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
+        {
+            if (rayOrigin)
+            {
                 var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
                 if (dpr)
-                    dpr.RemoveVisibilitySettings(obj);
+                    dpr.AddVisibilitySettings(caller, rayVisible, coneVisible, priority);
             }
+        }
 
-            internal void PreProcessRaycastSource(Transform rayOrigin)
+        internal void RemoveVisibilitySettings(Transform rayOrigin, object obj)
+        {
+            if (!rayOrigin) // Prevent MissingReferenceException on closing m_EditorVR
+                return;
+
+            var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+            if (dpr)
+                dpr.RemoveVisibilitySettings(obj);
+        }
+
+        internal void PreProcessRaycastSource(Transform rayOrigin)
+        {
+            var camera = CameraUtils.GetMainCamera();
+            var cameraPosition = camera.transform.position;
+            var matrix = camera.worldToCameraMatrix;
+
+            // Include inactive children to avoid constantly polling for manipulators until first selection is made
+            if (!m_StandardManipulator)
             {
-                var camera = CameraUtils.GetMainCamera();
-                var cameraPosition = camera.transform.position;
-                var matrix = camera.worldToCameraMatrix;
-
-                // Include inactive children to avoid constantly polling for manipulators until first selection is made
-                if (!m_StandardManipulator)
-                {
-                    m_StandardManipulator = evr.GetComponentInChildren<StandardManipulator>(true);
-                    if (m_StandardManipulator)
-                        ConnectInterface(m_StandardManipulator);
-                }
-
+                m_StandardManipulator = m_EditorVR.GetComponentInChildren<StandardManipulator>(true);
                 if (m_StandardManipulator)
-                    m_StandardManipulator.AdjustScale(cameraPosition, matrix);
-
-                if (!m_ScaleManipulator)
-                    m_ScaleManipulator = evr.GetComponentInChildren<ScaleManipulator>(true);
-
-                if (m_ScaleManipulator)
-                    m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
+                    ConnectInterface(m_StandardManipulator);
             }
 
-            static Node RequestNodeFromRayOrigin(Transform rayOrigin)
-            {
-                if (rayOrigin == null)
-                    return Node.None;
+            if (m_StandardManipulator)
+                m_StandardManipulator.AdjustScale(cameraPosition, matrix);
 
-                foreach (var deviceData in evr.m_DeviceData)
-                {
-                    if (!deviceData.proxy.active)
-                        continue;
+            if (!m_ScaleManipulator)
+                m_ScaleManipulator = m_EditorVR.GetComponentInChildren<ScaleManipulator>(true);
 
-                    if (deviceData.rayOrigin == rayOrigin)
-                        return deviceData.node;
-                }
+            if (m_ScaleManipulator)
+                m_ScaleManipulator.AdjustScale(cameraPosition, matrix);
+        }
 
-                foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
-                {
-                    if (kvp.Key == rayOrigin)
-                        return kvp.Value.node;
-                }
-
+        Node RequestNodeFromRayOrigin(Transform rayOrigin)
+        {
+            if (rayOrigin == null)
                 return Node.None;
+
+            foreach (var deviceData in m_EditorVR.deviceData)
+            {
+                if (!deviceData.proxy.active)
+                    continue;
+
+                if (deviceData.rayOrigin == rayOrigin)
+                    return deviceData.node;
             }
 
-            static Transform RequestRayOriginFromNode(Node node)
+            foreach (var kvp in m_MiniWorldModule.rays)
             {
-                if (node == Node.None)
-                    return null;
+                if (kvp.Key == rayOrigin)
+                    return kvp.Value.node;
+            }
 
-                foreach (var deviceData in evr.m_DeviceData)
-                {
-                    if (!deviceData.proxy.active)
-                        continue;
+            return Node.None;
+        }
 
-                    if (deviceData.node == node)
-                        return deviceData.rayOrigin;
-                }
-
-                foreach (var kvp in evr.GetNestedModule<MiniWorlds>().rays)
-                {
-                    if (kvp.Value.node == node)
-                        return kvp.Value.originalRayOrigin;
-                }
-
+        Transform RequestRayOriginFromNode(Node node)
+        {
+            if (node == Node.None)
                 return null;
-            }
 
-            static void SetDefaultRayColor(Transform rayOrigin, Color color)
+            foreach (var deviceData in m_EditorVR.deviceData)
             {
-                if (rayOrigin)
-                {
-                    var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-                    if (dpr)
-                    {
-                        dpr.SetColor(color);
-                    }
-                }
+                if (!deviceData.proxy.active)
+                    continue;
 
-                var highlightModule = evr.GetModule<HighlightModule>();
-                highlightModule.highlightColor = color;
+                if (deviceData.node == node)
+                    return deviceData.rayOrigin;
             }
 
-            static Color GetDefaultRayColor(Transform rayOrigin)
+            foreach (var kvp in m_MiniWorldModule.rays)
             {
-                if (rayOrigin)
-                {
-                    var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
-                    if (dpr)
-                    {
-                        return dpr.GetColor();
-                    }
-                }
-
-                var highlightModule = evr.GetModule<HighlightModule>();
-                return highlightModule.highlightColor;
+                if (kvp.Value.node == node)
+                    return kvp.Value.originalRayOrigin;
             }
+
+            return null;
+        }
+
+        void SetDefaultRayColor(Transform rayOrigin, Color color)
+        {
+            if (rayOrigin)
+            {
+                var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+                if (dpr)
+                    dpr.SetColor(color);
+            }
+
+            m_HighlightModule.highlightColor = color;
+        }
+
+        Color GetDefaultRayColor(Transform rayOrigin)
+        {
+            if (rayOrigin)
+            {
+                var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+                if (dpr)
+                    return dpr.GetColor();
+            }
+
+            return m_HighlightModule.highlightColor;
+        }
+
+        public void ConnectDependency(EditorVR dependency)
+        {
+            m_EditorVR = dependency;
         }
     }
 }

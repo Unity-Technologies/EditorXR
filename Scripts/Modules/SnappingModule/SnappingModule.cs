@@ -379,6 +379,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
 
             widgetEnabled = true;
+
+            IUsesSnappingMethods.manipulatorSnap = ManipulatorSnap;
+            IUsesSnappingMethods.directSnap = DirectSnap;
+            IUsesSnappingMethods.clearSnappingState = ClearSnappingState;
         }
 
         public void UnloadModule()

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : MonoBehaviour, IModule, IUsesViewerScale
+    sealed class TooltipModule : MonoBehaviour, IModuleDependency<MultipleRayInputModule>, IUsesViewerScale
     {
         class TooltipData
         {
@@ -80,11 +80,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<ITooltip> k_TooltipList = new List<ITooltip>();
         static readonly List<TooltipUI> k_TooltipUIs = new List<TooltipUI>();
 
+        public void ConnectDependency(MultipleRayInputModule dependency)
+        {
+            dependency.rayEntered += OnRayEntered;
+            dependency.rayHovering += OnRayHovering;
+            dependency.rayExited += OnRayExited;
+        }
+
         public void LoadModule()
         {
             m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
             m_TooltipCanvas.SetParent(transform);
             m_TooltipScale = m_TooltipPrefab.transform.localScale;
+
+            ISetTooltipVisibilityMethods.showTooltip = ShowTooltip;
+            ISetTooltipVisibilityMethods.hideTooltip = HideTooltip;
         }
 
         public void UnloadModule() { }

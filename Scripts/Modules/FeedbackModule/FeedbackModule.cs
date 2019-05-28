@@ -16,7 +16,8 @@ namespace UnityEditor.Experimental.EditorVR
         public abstract void Reset();
     }
 
-    public class FeedbackModule : MonoBehaviour, IModule, ISettingsMenuItemProvider, ISerializePreferences
+    public class FeedbackModule : MonoBehaviour, IModule, ISettingsMenuItemProvider, ISerializePreferences,
+        IInterfaceConnector
     {
         [Serializable]
         class Preferences
@@ -193,6 +194,20 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 toggle.isOn = m_Preferences.enabled;
             }
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var serializePreferences = target as IFeedbackReceiver;
+            if (serializePreferences != null)
+                AddReceiver(serializePreferences);
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var serializePreferences = target as IFeedbackReceiver;
+            if (serializePreferences != null)
+                RemoveReceiver(serializePreferences);
         }
     }
 }

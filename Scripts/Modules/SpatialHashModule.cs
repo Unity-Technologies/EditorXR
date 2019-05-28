@@ -16,7 +16,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public Func<GameObject, bool> shouldExcludeObject { private get; set; }
 
-        public void LoadModule() { }
+        public void LoadModule()
+        {
+            shouldExcludeObject = go => go.GetComponentInParent<Core.EditorVR>();
+            Setup();
+
+            IUsesSpatialHashMethods.addToSpatialHash = AddObject;
+            IUsesSpatialHashMethods.removeFromSpatialHash = RemoveObject;
+        }
 
         public void UnloadModule() { }
 

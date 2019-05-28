@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.ModuleLoader;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class LockModule : MonoBehaviour, IModule, IActions, ISelectionChanged
+    sealed class LockModule : MonoBehaviour, IModuleDependency<EditorXRMenuModule>, IActions, ISelectionChanged
     {
         class LockModuleAction : IAction, ITooltip
         {
@@ -41,12 +42,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Transform m_HoverRayOrigin;
         float m_HoverDuration;
 
+        public void ConnectDependency(EditorXRMenuModule dependency)
+        {
+            updateAlternateMenu = (rayOrigin, o) => dependency.SetAlternateMenuVisibility(rayOrigin, o != null);
+        }
+
         public void LoadModule()
         {
             m_LockModuleAction.execute = ToggleLocked;
             UpdateAction(null);
 
             actions = new List<IAction> { m_LockModuleAction };
+
+            IUsesGameObjectLockingMethods.setLocked = SetLocked;
+            IUsesGameObjectLockingMethods.isLocked = IsLocked;
         }
 
         public void UnloadModule() { }
