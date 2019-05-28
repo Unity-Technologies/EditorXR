@@ -29,7 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         const float k_MaxRayDot = -0.5f;
         const float k_RayExtra = 0.02f;
 
-        const float k_WidgetScale = 0.03f;
+        const float k_WidgetScale = 0.02f;
 
         const string k_MaterialColorLeftProperty = "_ColorLeft";
         const string k_MaterialColorRightProperty = "_ColorRight";
@@ -97,6 +97,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         transform.transform.RotateAround(position, axis, angle);
                     }
                 }
+
                 identityBounds.center -= position;
                 this.identityBounds = identityBounds;
             }
@@ -723,6 +724,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -839,6 +841,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 state = new SnappingState(transforms, position, rotation);
                 states[firstObject] = state;
             }
+
             return state;
         }
 
@@ -851,6 +854,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 {
                     kvp.Value.OnDestroy();
                 }
+
                 m_SnappingStates.Remove(rayOrigin);
             }
         }
@@ -864,6 +868,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     kvp.Value.OnDestroy();
                 }
             }
+
             m_SnappingStates.Clear();
         }
 
