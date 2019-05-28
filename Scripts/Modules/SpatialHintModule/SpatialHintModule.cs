@@ -1,10 +1,11 @@
-﻿using UnityEditor.Experimental.EditorVR.Core;
+﻿using Unity.Labs.ModuleLoader;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class SpatialHintModule : MonoBehaviour, ISystemModule, IConnectInterfaces, IInstantiateUI,
+    public sealed class SpatialHintModule : MonoBehaviour, IModule, IConnectInterfaces, IInstantiateUI,
         INodeToRay, IRayVisibilitySettings
     {
         public enum SpatialHintStateFlags
@@ -71,15 +72,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        Vector3 spatialHintScrollVisualsRotation { set { m_SpatialHintUI.scrollVisualsRotation = value; } }
+        Vector3 spatialHintScrollVisualsRotation
+        {
+            set { m_SpatialHintUI.scrollVisualsRotation = value; }
+        }
 
-        Transform spatialHintContentContainer { get { return m_SpatialHintUI.contentContainer; } }
+        Transform spatialHintContentContainer
+        {
+            get { return m_SpatialHintUI.contentContainer; }
+        }
 
-        void Awake()
+        public void LoadModule()
         {
             m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
             this.ConnectInterfaces(m_SpatialHintUI);
         }
+
+        public void UnloadModule() { }
 
         internal void PulseScrollArrows()
         {

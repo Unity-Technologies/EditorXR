@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : MonoBehaviour, ISystemModule, IUsesViewerScale
+    sealed class TooltipModule : MonoBehaviour, IModule, IUsesViewerScale
     {
         class TooltipData
         {
@@ -79,12 +80,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<ITooltip> k_TooltipList = new List<ITooltip>();
         static readonly List<TooltipUI> k_TooltipUIs = new List<TooltipUI>();
 
-        void Start()
+        public void LoadModule()
         {
             m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
             m_TooltipCanvas.SetParent(transform);
             m_TooltipScale = m_TooltipPrefab.transform.localScale;
         }
+
+        public void UnloadModule() { }
 
         void Update()
         {

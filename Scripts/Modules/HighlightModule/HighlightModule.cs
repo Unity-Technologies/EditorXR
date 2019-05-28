@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -8,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HighlightModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking
+    sealed class HighlightModule : MonoBehaviour, IModule, IUsesGameObjectLocking
     {
         struct HighlightData
         {
@@ -53,7 +54,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             set { m_RayHighlightMaterial.color = value; }
         }
 
-        void Awake()
+        public void LoadModule()
         {
             m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
 #if UNITY_EDITOR
@@ -65,6 +66,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 #endif
         }
+
+        public void UnloadModule() { }
 
         void LateUpdate()
         {

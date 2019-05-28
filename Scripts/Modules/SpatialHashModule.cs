@@ -1,22 +1,24 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SpatialHashModule : MonoBehaviour, ISystemModule
+    sealed class SpatialHashModule : MonoBehaviour, IModule
     {
         readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
+        readonly SpatialHash<Renderer> m_SpatialHash = new SpatialHash<Renderer>();
 
-        public SpatialHash<Renderer> spatialHash { get; private set; }
+        public SpatialHash<Renderer> spatialHash { get { return m_SpatialHash; } }
+
         public Func<GameObject, bool> shouldExcludeObject { private get; set; }
 
-        void Awake()
-        {
-            spatialHash = new SpatialHash<Renderer>();
-        }
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
 
         internal void Setup()
         {

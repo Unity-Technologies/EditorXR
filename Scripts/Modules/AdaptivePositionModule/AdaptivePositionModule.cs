@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, ISystemModule
+    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, IModule
     {
 #pragma warning disable 649
         [SerializeField]
@@ -21,11 +22,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Collection of objects whose position is controlled by this module
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
 
-        void Awake()
+        public void LoadModule()
         {
             m_GazeTransform = CameraUtils.GetMainCamera().transform;
             m_WorldspaceAnchorTransform = m_GazeTransform.parent;
         }
+
+        public void UnloadModule() { }
 
         void Update()
         {

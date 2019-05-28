@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class HierarchyModule : MonoBehaviour, ISystemModule, ISelectionChanged
+    sealed class HierarchyModule : MonoBehaviour, ISelectionChanged, IModuleDependency<Core.EditorVR>
     {
         readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
         readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
@@ -24,9 +25,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<Component> k_Components = new List<Component>();
         static readonly Dictionary<Type, string> k_TypeNames = new Dictionary<Type, string>();
 
-        void Awake()
+        public void ConnectDependency(Core.EditorVR dependency)
         {
-            m_IgnoreList.Add(gameObject); // Ignore EditorVR
+            m_IgnoreList.Add(dependency.gameObject);  // Ignore EditorVR
+        }
+
+        public void LoadModule()
+        {
             foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
             {
                 m_IgnoreList.Add(manager.gameObject);
@@ -37,6 +42,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_IgnoreList.Add(manager.gameObject);
             }
         }
+
+        public void UnloadModule() { }
 
         void OnEnable()
         {

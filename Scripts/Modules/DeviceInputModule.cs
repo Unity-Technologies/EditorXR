@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DeviceInputModule : MonoBehaviour, ISystemModule
+    sealed class DeviceInputModule : MonoBehaviour, IModule
     {
         class InputProcessor
         {
@@ -51,10 +52,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<InputControl> k_RemoveList = new List<InputControl>();
         ConsumeControlDelegate m_ConsumeControl;
 
-        void Awake()
+        public void LoadModule()
         {
             m_ConsumeControl = ConsumeControl;
         }
+
+        public void UnloadModule() { }
 
         public List<InputDevice> GetSystemDevices()
         {

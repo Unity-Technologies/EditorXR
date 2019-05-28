@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -11,7 +12,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     // Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-    sealed class MultipleRayInputModule : BaseInputModule, ISystemModule, IUsesPointer, IConnectInterfaces
+    sealed class MultipleRayInputModule : BaseInputModule, IModule, IUsesPointer, IConnectInterfaces
     {
         public class RaycastSource : ICustomActionMap, IRequestFeedback
         {
@@ -27,12 +28,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             MultipleRayInputModule m_Owner;
             readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
 
-            public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
+            public GameObject currentObject
+            {
+                get { return hoveredObject ? hoveredObject : draggedObject; }
+            }
 
-            public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
+            public bool hasObject
+            {
+                get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; }
+            }
 
-            public ActionMap actionMap { get { return m_Owner.m_UIActionMap; } }
-            public bool ignoreActionMapInputLocking { get { return false; } }
+            public ActionMap actionMap
+            {
+                get { return m_Owner.m_UIActionMap; }
+            }
+
+            public bool ignoreActionMapInputLocking
+            {
+                get { return false; }
+            }
 
             public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<RaycastSource, bool> validationCallback)
             {
@@ -168,6 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 {
                     this.RemoveFeedbackRequest(request);
                 }
+
                 requests.Clear();
             }
 
@@ -213,16 +228,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Local method use only -- created here to reduce garbage collection
         RayEventData m_TempRayEvent;
 
-        protected override void Awake()
+        public void LoadModule()
         {
-            base.Awake();
-
             s_LayerMask = LayerMask.GetMask("UI");
             m_TempRayEvent = new RayEventData(eventSystem);
             InputUtils.GetBindingDictionaryFromActionMap(m_UIActionMap, m_Controls);
         }
 
-        protected override void OnDestroy()
+        public void UnloadModule()
         {
             foreach (var source in m_RaycastSources)
             {
@@ -324,6 +337,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                         transform = transform.parent;
                     }
+
                     return;
                 }
             }
@@ -405,6 +419,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     {
                         eventData.clickCount = 1;
                     }
+
                     eventData.clickTime = time;
                 }
 

@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SceneObjectModule : MonoBehaviour, ISystemModule, IUsesSpatialHash
+    sealed class SceneObjectModule : MonoBehaviour, IModule, IUsesSpatialHash
     {
         const float k_InstantiateFOVDifference = -5f;
         const float k_GrowDuration = 0.5f;
@@ -28,6 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         IEnumerator PlaceSceneObjectCoroutine(Transform obj, Vector3 targetScale)
         {
             var go = obj.gameObject;
+
             // Don't let us direct select while placing
             this.RemoveFromSpatialHash(go);
 
@@ -79,6 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 obj.rotation = Quaternion.Lerp(startRotation, targetRotation, tSquared);
                 yield return null;
             }
+
             obj.localScale = targetScale;
             Selection.activeGameObject = go;
 
@@ -121,6 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 transform.rotation = targetRotations[i];
                 transform.localScale = targetScales[i];
             }
+
             pivot /= length;
 
             var bounds = BoundsUtils.GetBounds(transforms);
@@ -182,5 +186,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Undo.IncrementCurrentGroup();
 #endif
         }
+
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
     }
 }

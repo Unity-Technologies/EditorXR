@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class SpatialScrollModule : MonoBehaviour, ISystemModule, IUsesViewerScale, IControlHaptics,
+    public sealed class SpatialScrollModule : MonoBehaviour, IModule, IUsesViewerScale, IControlHaptics,
         IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
     {
         public class SpatialScrollData : INodeToRay
@@ -90,7 +91,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// <summary>
             /// Bool denoting that the scroll trigger magnitude has been exceeded
             /// </summary>
-            public bool passedMinDragActivationThreshold { get { return spatialDirection != null; } }
+            public bool passedMinDragActivationThreshold
+            {
+                get { return spatialDirection != null; }
+            }
 
             public void UpdateExistingScrollData(Vector3 newPosition)
             {
@@ -177,5 +181,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
         }
+
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
     }
 }

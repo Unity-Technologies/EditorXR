@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -13,7 +14,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-    sealed class SnappingModule : MonoBehaviour, ISystemModule, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
+    sealed class SnappingModule : MonoBehaviour, IModule, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
         IRaycast, IStandardIgnoreList
     {
         const float k_GroundPlaneScale = 1000f;
@@ -370,7 +371,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
         Transform[] m_SingleTransformArray = new Transform[1];
 
-        void Awake()
+        public void LoadModule()
         {
             m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlane, transform);
             m_GroundPlane.SetActive(false);
@@ -378,6 +379,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
 
             widgetEnabled = true;
+        }
+
+        public void UnloadModule()
+        {
         }
 
         public object OnSerializePreferences()

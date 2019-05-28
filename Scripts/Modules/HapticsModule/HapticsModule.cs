@@ -1,13 +1,14 @@
 ﻿#if UNITY_2018_3_OR_NEWER
 using System;
 using System.IO;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HapticsModule : MonoBehaviour, ISystemModule
+    sealed class HapticsModule : MonoBehaviour, IModule
     {
         public const float MaxDuration = 0.8f;
 
@@ -31,13 +32,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// </summary>
         bool m_SampleLengthWarningShown;
 
-        void Start()
+        public void LoadModule()
         {
             m_LeftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
             m_RightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             m_LeftHand.TryGetHapticCapabilities(out m_Capabilites);
             m_GeneratedHapticClip = new MemoryStream();
         }
+
+        public void UnloadModule() { }
 
         /// <summary>
         /// Pulse haptic feedback

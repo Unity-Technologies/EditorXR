@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -20,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
     [RequiresTag(k_VRPlayerTag)]
 #endif
-    sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces
+    sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces, IModule
     {
         const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
@@ -164,7 +165,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             HandleInitialization();
 
             m_Interfaces = (Interfaces)AddNestedModule(typeof(Interfaces));
-            AddModule<SerializedPreferencesModule>(); // Added here in case any nested modules have preference serialization
             AddNestedModule(typeof(SerializedPreferencesModuleConnector));
 
             var nestedClassTypes = new List<Type>();
@@ -175,16 +175,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             LateBindNestedModules(nestedClassTypes);
-
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                AddModule<HierarchyModule>();
-                AddModule<ProjectFolderModule>();
-            }
-#endif
-
-            AddModule<AdaptivePositionModule>();
 
             var viewer = GetNestedModule<Viewer>();
             viewer.preserveCameraRig = preserveLayout;
@@ -202,8 +192,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             GetNestedModule<UI>().Initialize();
 
-            AddModule<KeyboardModule>();
-
             var multipleRayInputModule = GetModule<MultipleRayInputModule>();
 
             var dragAndDropModule = AddModule<DragAndDropModule>();
@@ -218,13 +206,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             multipleRayInputModule.rayHovering += tooltipModule.OnRayHovering;
             multipleRayInputModule.rayExited += tooltipModule.OnRayExited;
 
-            AddModule<ActionsModule>();
-            AddModule<HighlightModule>();
-
             var lockModule = AddModule<LockModule>();
             lockModule.updateAlternateMenu = (rayOrigin, o) => Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
-
-            AddModule<SelectionModule>();
 
             var spatialHashModule = AddModule<SpatialHashModule>();
             spatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
@@ -236,8 +219,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             // TODO: Support module dependencies via ConnectInterfaces
             GetNestedModule<Rays>().ignoreList = intersectionModule.standardIgnoreList;
-
-            AddModule<SnappingModule>();
 
             var vacuumables = GetNestedModule<Vacuumables>();
 
@@ -274,20 +255,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 return false;
             };
-
-            AddModule<HapticsModule>();
-            AddModule<GazeDivergenceModule>();
-            AddModule<SpatialHintModule>();
-            AddModule<SpatialScrollModule>();
-
-            AddModule<FeedbackModule>();
-
-            AddModule<WebModule>();
-
-            //TODO: External module support (removes need for CCU in this instance)
-#if INCLUDE_POLY_TOOLKIT
-            AddModule<PolyModule>();
-#endif
 
             viewer.AddPlayerModel();
             viewer.AddPlayerFloor();
@@ -542,6 +509,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
 #endif
+        }
+
+        public void LoadModule()
+        {
+
+        }
+
+        public void UnloadModule()
+        {
         }
     }
 #else

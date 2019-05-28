@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -9,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class WorkspaceModule : MonoBehaviour, ISystemModule, IConnectInterfaces, ISerializePreferences
+    sealed class WorkspaceModule : MonoBehaviour, IModule, IConnectInterfaces, ISerializePreferences
     {
         [Serializable]
         class Preferences
@@ -98,12 +99,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             typeof(IWorkspace).GetImplementationsOfInterface(workspaceTypes);
         }
 
-        void Awake()
+        public void LoadModule()
         {
             preserveWorkspaces = true;
         }
 
-        void OnDestroy()
+        public void UnloadModule()
         {
             while (m_Workspaces.Count > 0)
                 UnityObjectUtils.Destroy(m_Workspaces[0].transform.gameObject);

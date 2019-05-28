@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SelectionModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking, ISelectionChanged,
+    sealed class SelectionModule : MonoBehaviour, IModule, IUsesGameObjectLocking, ISelectionChanged,
         IControlHaptics, IRayToNode, IContainsVRPlayerCompletely
     {
 #pragma warning disable 649
@@ -156,5 +157,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_GroupMap[child.gameObject] = parent;
             }
         }
+
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
     }
 }

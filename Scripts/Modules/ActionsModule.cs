@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class ActionsModule : MonoBehaviour, ISystemModule, IConnectInterfaces, ISpatialMenuProvider
+    sealed class ActionsModule : MonoBehaviour, IModule, IConnectInterfaces, ISpatialMenuProvider
     {
         List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
         readonly List<IAction> m_Actions = new List<IAction>();
@@ -23,10 +24,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_MenuActions.AddRange(m_MenuActions.Where(a => !actions.Contains(a.action)));
         }
 
-        void Start()
+        public void LoadModule()
         {
             SpawnActions();
         }
+
+        public void UnloadModule() { }
 
         void SpawnActions()
         {

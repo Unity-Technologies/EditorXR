@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
@@ -15,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR
         public abstract void Reset();
     }
 
-    public class FeedbackModule : MonoBehaviour, ISystemModule, ISettingsMenuItemProvider, ISerializePreferences
+    public class FeedbackModule : MonoBehaviour, IModule, ISettingsMenuItemProvider, ISerializePreferences
     {
         [Serializable]
         class Preferences
@@ -75,19 +76,18 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Transform rayOrigin { get { return null; } }
 
-        void Awake()
+        public void LoadModule()
         {
             IRequestFeedbackMethods.addFeedbackRequest = AddFeedbackRequest;
             IRequestFeedbackMethods.removeFeedbackRequest = RemoveFeedbackRequest;
             IRequestFeedbackMethods.clearFeedbackRequests = ClearFeedbackRequests;
             IRequestFeedbackMethods.getFeedbackRequestObject = GetFeedbackRequestObject;
-        }
 
-        void Start()
-        {
             if (m_Preferences == null)
                 m_Preferences = new Preferences();
         }
+
+        public void UnloadModule() { }
 
         public void AddReceiver(IFeedbackReceiver feedbackReceiver)
         {

@@ -4,13 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class ProjectFolderModule : MonoBehaviour, ISystemModule
+    sealed class ProjectFolderModule : MonoBehaviour, IModule
     {
         // Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
         const float k_MaxFrameTime = 0.01f;
@@ -25,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly HashSet<string> m_AssetTypes = new HashSet<string>();
         float m_ProjectFolderLoadStartTime;
         float m_ProjectFolderLoadYieldTime;
+        IModule m_ModuleImplementation;
 
         void OnEnable()
         {
@@ -101,6 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 hp = new HierarchyProperty(HierarchyType.Assets);
                 hp.SetSearchFilter("t:object", 0);
             }
+
             var name = hp.name;
             var guid = hp.guid.GetHashCode();
             var depth = hp.depth;
@@ -180,6 +183,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             return new AssetData(hp.name, hp.guid, typeName);
         }
+
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
     }
 #else
     sealed class ProjectFolderModule : MonoBehaviour

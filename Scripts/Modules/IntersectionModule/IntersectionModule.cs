@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking, IGetVRPlayerObjects
+    sealed class IntersectionModule : MonoBehaviour, IModule, IUsesGameObjectLocking, IGetVRPlayerObjects
     {
         class RayIntersection
         {
@@ -54,11 +55,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float distance;
         }
 
-        void Awake()
+        public void LoadModule()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
             IControlInputIntersectionMethods.setRayOriginEnabled = SetRayOriginEnabled;
         }
+
+        public void UnloadModule() { }
 
         internal void Setup(SpatialHash<Renderer> hash)
         {

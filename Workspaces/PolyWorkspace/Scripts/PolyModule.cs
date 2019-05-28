@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ using Unity.Labs.Utils;
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class PolyModule : MonoBehaviour, ISystemModule, IWeb
+    public class PolyModule : MonoBehaviour, IModule, IWeb
     {
         class RequestHandler
         {
@@ -80,13 +81,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         Transform m_Container;
 
-        void Awake()
+        public void LoadModule()
         {
             PolyApi.Init(new PolyAuthConfig(Encoding.UTF8.GetString(Convert.FromBase64String(k_APIKey)), "", ""));
             m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
         }
 
-        void OnDestroy()
+        public void UnloadModule()
         {
             k_AssetCache.Clear();
             PolyApi.Shutdown();

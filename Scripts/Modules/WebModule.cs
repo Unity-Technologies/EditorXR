@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Unity.Labs.ModuleLoader;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class WebModule : MonoBehaviour, ISystemModule
+    public class WebModule : MonoBehaviour, IModule
     {
         class DownloadRequest
         {
@@ -214,5 +215,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_CompletedRequests.Clear();
             m_CompletedTransfers.Clear();
         }
+
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
     }
 }

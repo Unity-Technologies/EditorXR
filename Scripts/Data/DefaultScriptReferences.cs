@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -95,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             typeof(IEditor).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(IProxy).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(ITool).GetImplementationsOfInterface(defaultReferenceTypes);
-            typeof(ISystemModule).GetImplementationsOfInterface(defaultReferenceTypes);
+            typeof(IModule).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(IMainMenu).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(IToolsMenu).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(IAlternateMenu).GetImplementationsOfInterface(defaultReferenceTypes);

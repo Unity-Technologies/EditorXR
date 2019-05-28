@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -7,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class KeyboardModule : MonoBehaviour, ISystemModule, IRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
+    sealed class KeyboardModule : MonoBehaviour, IModule, IRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
     {
 #pragma warning disable 649
         [SerializeField]
@@ -26,10 +27,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         ForEachRayOriginCallback m_UpdateKeyboardMallets;
 
-        void Awake()
+        public void LoadModule()
         {
             m_UpdateKeyboardMallets = UpdateKeyboardMallets;
         }
+
+        public void UnloadModule() { }
 
         public KeyboardUI SpawnNumericKeyboard()
         {

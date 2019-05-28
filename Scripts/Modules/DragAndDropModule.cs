@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DragAndDropModule : MonoBehaviour, ISystemModule
+    sealed class DragAndDropModule : MonoBehaviour, IModule
     {
         readonly Dictionary<Transform, IDroppable> m_Droppables = new Dictionary<Transform, IDroppable>();
         readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();
@@ -87,5 +88,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     dropReceiver.ReceiveDrop(droppable.GetDropObject());
             }
         }
+
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
     }
 }

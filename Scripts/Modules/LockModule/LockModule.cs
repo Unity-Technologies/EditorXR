@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class LockModule : MonoBehaviour, ISystemModule, IActions, ISelectionChanged
+    sealed class LockModule : MonoBehaviour, IModule, IActions, ISelectionChanged
     {
         class LockModuleAction : IAction, ITooltip
         {
@@ -40,13 +41,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Transform m_HoverRayOrigin;
         float m_HoverDuration;
 
-        void Awake()
+        public void LoadModule()
         {
             m_LockModuleAction.execute = ToggleLocked;
             UpdateAction(null);
 
             actions = new List<IAction> { m_LockModuleAction };
         }
+
+        public void UnloadModule() { }
 
         public bool IsLocked(GameObject go)
         {

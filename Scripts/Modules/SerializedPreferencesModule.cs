@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SerializedPreferencesModule : MonoBehaviour, ISystemModule
+    sealed class SerializedPreferencesModule : MonoBehaviour, IModule
     {
         List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
         SerializedPreferences m_Preferences;
@@ -154,5 +155,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 serializer.OnDeserializePreferences(payload);
             }
         }
+
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
     }
 }
