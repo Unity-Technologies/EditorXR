@@ -37,18 +37,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
     [RequiresTag(VRPlayerTag)]
 #endif
-    sealed partial class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces, IModuleDependency<EditorXRRayModule>,
+    sealed class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces, IModuleDependency<EditorXRRayModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRMenuModule>,
-        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<KeyboardModule>, IModuleDependency<DeviceInputModule>,
-        IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMiniWorldModule>, IInterfaceConnector
+        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<KeyboardModule>,
+        IModuleDependency<DeviceInputModule>,IModuleDependency<EditorXRUIModule>,
+        IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<SerializedPreferencesModule>, IInterfaceConnector
     {
         internal const string VRPlayerTag = "VRPlayer";
         const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
         const string k_IncludeInBuilds = "EditorVR.IncludeInBuilds";
         const string k_SerializedPreferences = "EditorVR.SerializedPreferences";
-
-        Dictionary<Type, MonoBehaviour> m_Modules = new Dictionary<Type, MonoBehaviour>();
 
         event Action selectionChanged;
 
@@ -65,6 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         DeviceInputModule m_DeviceInputModule;
         EditorXRUIModule m_UIModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
+        SerializedPreferencesModule m_SerializedPreferencesModule;
 
         public static HideFlags defaultHideFlags
         {
@@ -195,7 +195,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             while (!m_ViewerModule.hmdReady)
                 yield return null;
 
-            GetModule<SerializedPreferencesModule>().SetupWithPreferences(serializedPreferences);
+            m_SerializedPreferencesModule.SetupWithPreferences(serializedPreferences);
 
             m_HasDeserialized = true;
         }
@@ -257,7 +257,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal void Shutdown()
         {
             if (m_HasDeserialized)
-                serializedPreferences = GetModule<SerializedPreferencesModule>().SerializePreferences();
+                serializedPreferences = m_SerializedPreferencesModule.SerializePreferences();
         }
 
         void OnDestroy()
@@ -306,13 +306,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         process.ProcessInput(toolData.input, consumeControl);
                 }
             }
-        }
-
-        T GetModule<T>() where T : MonoBehaviour
-        {
-            MonoBehaviour module;
-            m_Modules.TryGetValue(typeof(T), out module);
-            return (T)module;
         }
 
         internal void SetHideFlags(HideFlags hideFlags)
@@ -374,6 +367,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void ConnectDependency(EditorXRMiniWorldModule dependency)
         {
             m_MiniWorldModule = dependency;
+        }
+
+        public void ConnectDependency(SerializedPreferencesModule dependency)
+        {
+            m_SerializedPreferencesModule = dependency;
         }
 
         public void LoadModule()
