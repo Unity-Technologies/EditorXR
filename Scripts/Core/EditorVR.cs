@@ -35,7 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
     [RequiresTag(VRPlayerTag)]
 #endif
-    [ModuleLoadOrder(ModuleOrders.EditorVRLoadOrder)]
+    [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
     sealed class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces, IModuleDependency<EditorXRRayModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRMenuModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<KeyboardModule>,

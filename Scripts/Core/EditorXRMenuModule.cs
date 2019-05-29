@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public float autoShowTime;
     }
 
-    [ModuleLoadOrder(ModuleOrders.MenuModuleLoadOrder)]
+    [ModuleOrder(ModuleOrders.MenuModuleLoadOrder)]
     class EditorXRMenuModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
