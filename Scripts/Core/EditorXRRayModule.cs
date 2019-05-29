@@ -148,6 +148,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             foreach (var proxy in m_Proxies)
             {
+                if (proxy == null || proxy as MonoBehaviour == null)
+                    continue;
+
                 UnityObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
             }
         }
@@ -383,6 +386,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 foreach (var kvp in proxy.rayOrigins)
                 {
                     var rayOrigin = kvp.Value;
+                    if (!rayOrigin)
+                    {
+                        Debug.Log("null rayorigin in " + proxy);
+                        continue;
+                    }
+
                     var distance = k_DefaultRayLength *  m_ViewerModule.GetViewerScale();
 
                     // Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the

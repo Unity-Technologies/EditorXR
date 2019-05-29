@@ -143,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_PlayerFloor)
                 UnityObjectUtils.Destroy(m_PlayerFloor);
 
-            if (customPreviewCamera != null)
+            if (customPreviewCamera != null && customPreviewCamera as MonoBehaviour != null)
                 UnityObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
         }
 
@@ -246,7 +246,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal void UpdateCamera()
         {
 #if UNITY_EDITOR
-            if (customPreviewCamera != null)
+            if (customPreviewCamera != null && customPreviewCamera as MonoBehaviour != null)
                 customPreviewCamera.enabled = VRView.showDeviceView && VRView.customPreviewCamera != null;
 #endif
         }

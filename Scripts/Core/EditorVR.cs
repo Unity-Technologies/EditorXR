@@ -28,6 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public IToolsMenu toolsMenu;
         public readonly List<IAlternateMenu> alternateMenus = new List<IAlternateMenu>();
         public IAlternateMenu alternateMenu;
+        public SpatialMenu spatialMenu;
         public readonly Dictionary<IMenu, MenuHideData> menuHideData = new Dictionary<IMenu, MenuHideData>();
     }
 
@@ -178,30 +179,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_RayModule.CreateAllProxies();
         }
 
-        IEnumerator Start()
+        void Start()
         {
             Initialize();
-
-            var leftHandFound = false;
-            var rightHandFound = false;
-
-            // Some components depend on both hands existing (e.g. MiniWorldWorkspace), so make sure they exist before restoring
-            while (!(leftHandFound && rightHandFound))
-            {
-                m_RayModule.ForEachProxyDevice(deviceData =>
-                {
-                    if (deviceData.node == Node.LeftHand)
-                        leftHandFound = true;
-
-                    if (deviceData.node == Node.RightHand)
-                        rightHandFound = true;
-                });
-
-                yield return null;
-            }
-
-            while (!m_ViewerModule.hmdReady)
-                yield return null;
 
             m_SerializedPreferencesModule.SetupWithPreferences(serializedPreferences);
 
@@ -260,22 +240,56 @@ namespace UnityEditor.Experimental.EditorVR.Core
         void OnDisable()
         {
             Selection.selectionChanged -= OnSelectionChanged;
-        }
 
-        internal void Shutdown()
-        {
-            if (m_HasDeserialized)
-                serializedPreferences = m_SerializedPreferencesModule.SerializePreferences();
-        }
-
-        void OnDestroy()
-        {
             // Suppress MissingReferenceException in tests
             EditorApplication.delayCall -= OnSelectionChanged;
 
 #if UNITY_EDITOR
             DrivenRectTransformTracker.StartRecordingUndo();
 #endif
+
+            foreach (var device in deviceData)
+            {
+                var behavior = device.mainMenu as MonoBehaviour;
+                if (behavior)
+                    UnityObjectUtils.Destroy(behavior);
+
+                behavior = device.alternateMenu as MonoBehaviour;
+                if (behavior)
+                    UnityObjectUtils.Destroy(behavior);
+
+                behavior = device.toolsMenu as MonoBehaviour;
+                if (behavior)
+                    UnityObjectUtils.Destroy(behavior);
+
+                behavior = device.customMenu as MonoBehaviour;
+                if (behavior)
+                    UnityObjectUtils.Destroy(behavior);
+
+                behavior = device.spatialMenu;
+                if (behavior)
+                    UnityObjectUtils.Destroy(behavior);
+
+                foreach (var menu in device.alternateMenus)
+                {
+                    behavior = menu as MonoBehaviour;
+                    if (behavior)
+                        UnityObjectUtils.Destroy(behavior);
+                }
+
+                foreach (var tool in device.toolData)
+                {
+                    behavior = tool.tool as MonoBehaviour;
+                    if (behavior)
+                        UnityObjectUtils.Destroy(behavior);
+                }
+            }
+        }
+
+        internal void Shutdown()
+        {
+            if (m_HasDeserialized)
+                serializedPreferences = m_SerializedPreferencesModule.SerializePreferences();
         }
 
         void Update()

@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         const string k_ShowDeviceView = "VRView.ShowDeviceView";
         const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
         const string k_CameraName = "VRCamera";
-        const HideFlags k_HideFlags = HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
+        const HideFlags k_HideFlags = HideFlags.None;// HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
 
         static Camera s_ExistingSceneMainCamera;
         static bool s_ExistingSceneMainCameraEnabledState;
@@ -442,12 +442,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!m_Camera.gameObject.activeInHierarchy)
                 return;
 
-            if (!XRDevice.isPresent)
-                return;
-
-            UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
             {
+                if (XRDevice.isPresent)
+                    UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
+                else
+                    m_Camera.Render();
+
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
