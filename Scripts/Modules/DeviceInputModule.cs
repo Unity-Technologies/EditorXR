@@ -74,6 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             InitializePlayerHandle();
             CreateDefaultActionMapInputs();
+            EditingContextManager.InitializeInputManager();
         }
 
         public void UnloadModule() { }

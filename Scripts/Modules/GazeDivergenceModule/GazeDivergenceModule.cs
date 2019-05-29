@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     /// Allows an implementer to test for a given transforms'
     /// position residing within an angular threshold of the HMD
     /// </summary>
-    public sealed class GazeDivergenceModule : MonoBehaviour, IModule
+    public sealed class GazeDivergenceModule : IModuleBehaviorCallbacks
     {
         const float k_StableGazeThreshold = 0.25f;
 
@@ -33,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UnloadModule() { }
 
-        void Update()
+        public void OnBehaviorUpdate()
         {
             var currentGazeSourceRotation = m_GazeSourceTransform.rotation;
             var gazeRotationDifference = Quaternion.Angle(currentGazeSourceRotation, m_PreviousGazeRotation);
@@ -50,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// A value greater than 1 will increase the rate at which the gaze velocity returns to the stable gaze threshold value (faster)
         /// </summary>
         /// <param name="rateAtWhichGazeVelocityReturnsToStableThreshold">The rate at which gaze velocity returns to stable threshold</param>
-        public void SetGazeDivergenceRecoverySpeed (float rateAtWhichGazeVelocityReturnsToStableThreshold)
+        void SetGazeDivergenceRecoverySpeed (float rateAtWhichGazeVelocityReturnsToStableThreshold)
         {
             const float minSpeed = 0.01f;
             rateAtWhichGazeVelocityReturnsToStableThreshold = Mathf.Abs(rateAtWhichGazeVelocityReturnsToStableThreshold); // don't allow negative values
@@ -67,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// <param name="divergenceThreshold">Threshold, in degrees, via doc product conversion of this angular value</param>
         /// <param name="disregardTemporalStability">If true, mandate that divergence detection occur, regardless of the gaze being stable</param>
         /// <returns>True if the object is beyond the divergence threshold, False if it is within the defined range</returns>
-        public bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold, bool disregardTemporalStability = true)
+        bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold, bool disregardTemporalStability = true)
         {
             var isAbove = false;
             if (disregardTemporalStability || gazeStable) // validate that the gaze is stable if disregarding temporal stability
@@ -83,5 +83,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             return isAbove;
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

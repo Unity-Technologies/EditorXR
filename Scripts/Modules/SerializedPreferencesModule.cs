@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SerializedPreferencesModule : MonoBehaviour, IModule, IInterfaceConnector
+    sealed class SerializedPreferencesModule : IModule, IInterfaceConnector
     {
         List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
         SerializedPreferences m_Preferences;

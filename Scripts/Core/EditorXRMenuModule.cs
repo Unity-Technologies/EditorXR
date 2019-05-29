@@ -19,7 +19,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public float autoShowTime;
     }
 
-    partial class EditorXRMenuModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
+    [ModuleLoadOrder(ModuleOrders.MenuModuleLoadOrder)]
+    class EditorXRMenuModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>,
@@ -43,6 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         DeviceInputModule m_DeviceInputModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
         EditorXRUIModule m_UIModule;
+        EditorXRToolModule m_ToolModule;
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<DeviceData> k_ActiveDeviceData = new List<DeviceData>();
@@ -57,10 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void ConnectDependency(EditorXRToolModule dependency)
         {
-            m_MainMenuTools = dependency.allTools.Where(t =>
-            {
-                return !EditorXRToolModule.IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
-            }).ToList(); // Don't show tools that can't be selected/toggled
+            m_ToolModule = dependency;
         }
 
         public void ConnectDependency(EditorXRRayModule dependency)
@@ -97,6 +96,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 
         public void UnloadModule() { }
+
+        public void Initialize()
+        {
+            m_MainMenuTools = m_ToolModule.allTools.Where(t =>
+            {
+                return !EditorXRToolModule.IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
+            }).ToList(); // Don't show tools that can't be selected/toggled
+        }
 
         public void ConnectInterface(object target, object userData = null)
         {

@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class WebModule : MonoBehaviour, IModule
+    public class WebModule : IModuleBehaviorCallbacks
     {
         class DownloadRequest
         {
@@ -131,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             });
         }
 
-        void Update()
+        public void OnBehaviorUpdate()
         {
             foreach (var kvp in m_Requests)
             {
@@ -224,5 +224,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadModule() { }
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

@@ -5,6 +5,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
+    // TODO: Remove load order when switching to non-static FI
+    [ModuleLoadOrder(ModuleOrders.SpatialHintModuleLoadOrder)]
     public sealed class SpatialHintModule : MonoBehaviour, IModule, IConnectInterfaces, IInstantiateUI,
         INodeToRay, IRayVisibilitySettings
     {

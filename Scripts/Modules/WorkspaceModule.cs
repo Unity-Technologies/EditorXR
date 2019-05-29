@@ -10,8 +10,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class WorkspaceModule : MonoBehaviour, IModuleDependency<DeviceInputModule>, IConnectInterfaces,
-        ISerializePreferences, IInterfaceConnector
+    sealed class WorkspaceModule : IModuleDependency<DeviceInputModule>, IConnectInterfaces, ISerializePreferences,
+        IInterfaceConnector
     {
         [Serializable]
         class Preferences

@@ -149,7 +149,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void UnloadModule()
         {
             foreach (var proxy in m_Proxies)
+            {
                 UnityObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
+            }
         }
 
         public void ConnectInterface(object target, object userData = null)

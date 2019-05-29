@@ -12,9 +12,9 @@ using Unity.Labs.ModuleLoader;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRViewerModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<SpatialHashModule>, IModuleDependency<IntersectionModule>,
-        IInterfaceConnector, ISerializePreferences, IConnectInterfaces
+    class EditorXRViewerModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<IntersectionModule>,
+        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>,IInterfaceConnector,
+        ISerializePreferences, IConnectInterfaces
     {
 
         [Serializable]
@@ -125,9 +125,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
 
             preserveCameraRig = EditorVR.preserveLayout;
-            InitializeCamera();
-            AddPlayerModel();
-            AddPlayerFloor();
         }
 
         public void UnloadModule()
@@ -140,8 +137,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (cameraRig)
                 cameraRig.transform.parent = null;
 
-            UnityObjectUtils.Destroy(m_PlayerBody.gameObject);
-            UnityObjectUtils.Destroy(m_PlayerFloor);
+            if (m_PlayerBody)
+                UnityObjectUtils.Destroy(m_PlayerBody.gameObject);
+
+            if (m_PlayerFloor)
+                UnityObjectUtils.Destroy(m_PlayerFloor);
 
             if (customPreviewCamera != null)
                 UnityObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
@@ -203,7 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             cameraRig.position = preferences.cameraPosition - cameraTransform.position;
         }
 
-        internal void InitializeCamera()
+        void InitializeCamera()
         {
             var cameraRig = CameraUtils.GetCameraRig();
             cameraRig.parent = m_EditorVR.transform; // Parent the camera rig under EditorVR
@@ -382,6 +382,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             camera.nearClipPlane = m_OriginalNearClipPlane * scale;
             camera.farClipPlane = m_OriginalFarClipPlane * scale;
             Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / scale);
+        }
+
+        public void Initialize()
+        {
+            InitializeCamera();
+            AddPlayerModel();
+            AddPlayerFloor();
         }
     }
 }

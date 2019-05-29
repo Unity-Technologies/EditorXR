@@ -9,7 +9,7 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRUIModule : IModuleDependency<EditorVR>, IModuleDependency<MultipleRayInputModule>,
+    class EditorXRUIModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<MultipleRayInputModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
         IInterfaceConnector, IConnectInterfaces
     {

@@ -83,7 +83,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_HiddenTypeNames != null)
                 EditorVR.HiddenTypes = m_HiddenTypeNames.Select(GetTypeSafe).ToArray();
 
-            s_Instance = m_Instance = EditorXRUtils.CreateGameObjectWithComponent<EditorVR>();
+            var editorVRs = Resources.FindObjectsOfTypeAll<EditorVR>();
+            if (editorVRs.Length == 0)
+            {
+                Debug.LogWarning("EditorVR Module not loaded");
+                return;
+            }
+
+            s_Instance = m_Instance = editorVRs[0];
+            m_Instance.enabled = true;
 
             if (Application.isPlaying)
             {
@@ -107,7 +115,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
             if (m_Instance)
-                UnityObjectUtils.Destroy(m_Instance.gameObject);
+                m_Instance.enabled = false;
 
             s_Instance = m_Instance = null;
         }

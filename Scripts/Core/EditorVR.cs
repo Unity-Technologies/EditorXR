@@ -1,11 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -37,6 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
     [RequiresTag(VRPlayerTag)]
 #endif
+    [ModuleLoadOrder(ModuleOrders.EditorVRLoadOrder)]
     sealed class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces, IModuleDependency<EditorXRRayModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRMenuModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<KeyboardModule>,
@@ -147,6 +146,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
         }
 
+        void Awake()
+        {
+            enabled = false;
+        }
+
         void Initialize()
         {
             if (UpdateInputManager != null)
@@ -168,6 +172,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             // In case we have anything selected at start, set up manipulators, inspector, etc.
             EditorApplication.delayCall += OnSelectionChanged;
+
+            m_ViewerModule.Initialize();
+            m_MenuModule.Initialize();
         }
 
         IEnumerator Start()
