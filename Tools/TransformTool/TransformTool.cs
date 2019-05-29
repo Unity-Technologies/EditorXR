@@ -1051,5 +1051,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             HideFeedback(m_ScaleOptionFeedback);
         }
+
+        void OnDestroy()
+        {
+            if (m_ScaleManipulator)
+                UnityObjectUtils.Destroy(m_ScaleManipulator.gameObject);
+
+            if (m_StandardManipulator)
+                UnityObjectUtils.Destroy(m_StandardManipulator.gameObject);
+        }
     }
 }

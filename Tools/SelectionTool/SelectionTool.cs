@@ -184,6 +184,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         void OnDestroy()
         {
             UnityObjectUtils.Destroy(m_BlockSelectCube);
+            UnityObjectUtils.Destroy(m_BlockSelectSphere);
             this.ClearFeedbackRequests();
         }
 

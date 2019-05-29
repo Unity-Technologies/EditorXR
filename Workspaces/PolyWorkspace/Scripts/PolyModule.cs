@@ -84,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void LoadModule()
         {
             PolyApi.Init(new PolyAuthConfig(Encoding.UTF8.GetString(Convert.FromBase64String(k_APIKey)), "", ""));
-            m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
+
             IPolyMethods.getAssetList = GetAssetList;
         }
 
@@ -92,6 +92,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             k_AssetCache.Clear();
             PolyApi.Shutdown();
+        }
+
+        internal void Initialize()
+        {
+            m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
+        }
+
+        internal void Shutdown()
+        {
+            if (m_Container)
+                UnityObjectUtils.Destroy(m_Container);
         }
 
         public void GetAssetList(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,

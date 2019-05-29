@@ -73,12 +73,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             m_ConsumeControl = ConsumeControl;
 
-            InitializePlayerHandle();
-            CreateDefaultActionMapInputs();
             EditingContextManager.InitializeInputManager();
         }
 
-        public void UnloadModule() { }
+        public void Initialize()
+        {
+            InitializePlayerHandle();
+            CreateDefaultActionMapInputs();
+        }
+
+        public void Shutdown()
+        {
+            PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
+        }
+
+        public void UnloadModule()
+        {
+        }
 
         public List<InputDevice> GetSystemDevices()
         {
@@ -100,11 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
             m_PlayerHandle.global = true;
             m_PlayerHandle.processAll = true;
-        }
-
-        void OnDestroy()
-        {
-            PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
         }
 
         /// <summary>

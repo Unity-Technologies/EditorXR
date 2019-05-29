@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using Unity.Labs.ModuleLoader;
@@ -41,7 +40,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRMenuModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<KeyboardModule>,
         IModuleDependency<DeviceInputModule>,IModuleDependency<EditorXRUIModule>,
-        IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<SerializedPreferencesModule>, IInterfaceConnector
+        IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<SerializedPreferencesModule>,
+        IModuleDependency<SpatialHintModule>, IModuleDependency<TooltipModule>,IModuleDependency<IntersectionModule>,
+        IModuleDependency<SnappingModule>, IInterfaceConnector
     {
         internal const string VRPlayerTag = "VRPlayer";
         const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
@@ -65,6 +66,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRUIModule m_UIModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
         SerializedPreferencesModule m_SerializedPreferencesModule;
+        SpatialHintModule m_SpatialHintModule;
+        TooltipModule m_TooltipModule;
+        IntersectionModule m_IntersectionModule;
+        SnappingModule m_SnappingModule;
 
         public static HideFlags defaultHideFlags
         {
@@ -174,6 +179,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // In case we have anything selected at start, set up manipulators, inspector, etc.
             EditorApplication.delayCall += OnSelectionChanged;
 
+            // TODO: Better way to call init on everything
+            m_SnappingModule.Initialize();
+            m_IntersectionModule.Initialize();
+            m_UIModule.Initialize();
+            m_TooltipModule.Initialize();
+            m_SpatialHintModule.Initialize();
+            m_DeviceInputModule.Initialize();
             m_ViewerModule.Initialize();
             m_MenuModule.Initialize();
             m_RayModule.CreateAllProxies();
@@ -288,6 +300,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void Shutdown()
         {
+            m_SnappingModule.Shutdown();
+            m_IntersectionModule.Shutdown();
+            m_UIModule.Shutdown();
+            m_DeviceInputModule.Shutdown();
+            m_SpatialHintModule.Shutdown();
+            m_TooltipModule.Shutdown();
+
             if (m_HasDeserialized)
                 serializedPreferences = m_SerializedPreferencesModule.SerializePreferences();
         }
@@ -394,6 +413,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void ConnectDependency(SerializedPreferencesModule dependency)
         {
             m_SerializedPreferencesModule = dependency;
+        }
+
+        public void ConnectDependency(SpatialHintModule dependency)
+        {
+            m_SpatialHintModule = dependency;
+        }
+
+        public void ConnectDependency(TooltipModule dependency)
+        {
+            m_TooltipModule = dependency;
+        }
+
+        public void ConnectDependency(IntersectionModule dependency)
+        {
+            m_IntersectionModule = dependency;
+        }
+
+        public void ConnectDependency(SnappingModule dependency)
+        {
+            m_SnappingModule = dependency;
         }
 
         public void LoadModule()

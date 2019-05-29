@@ -60,7 +60,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void ConnectDependency(SpatialHashModule dependency)
         {
             m_SpatialHash = dependency.spatialHash;
-            m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
         }
 
         public void LoadModule()
@@ -75,6 +74,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadModule() { }
+
+        internal void Initialize()
+        {
+            m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
+        }
+
+        internal void Shutdown()
+        {
+            if (m_CollisionTester)
+                UnityObjectUtils.Destroy(m_CollisionTester.gameObject);
+        }
 
         void Update()
         {
@@ -212,6 +222,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         internal void UpdateRaycast(Transform rayOrigin, float distance)
         {
+            if (!rayOrigin)
+                return;
+
             if (!m_RayoriginEnabled.ContainsKey(rayOrigin))
                 m_RayoriginEnabled[rayOrigin] = true;
 

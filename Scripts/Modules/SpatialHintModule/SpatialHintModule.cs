@@ -1,4 +1,5 @@
 ﻿using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
@@ -86,9 +87,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void LoadModule()
         {
-            m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
-            this.ConnectInterfaces(m_SpatialHintUI);
-
             IControlSpatialHintingMethods.setSpatialHintState = SetState;
             IControlSpatialHintingMethods.setSpatialHintPosition = SetPosition;
             IControlSpatialHintingMethods.setSpatialHintContainerRotation = SetContainerRotation;
@@ -106,6 +104,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadModule() { }
+
+        public void Initialize()
+        {
+            m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
+            this.ConnectInterfaces(m_SpatialHintUI);
+        }
+
+        public void Shutdown()
+        {
+            if (m_SpatialHintUI)
+                UnityObjectUtils.Destroy(m_SpatialHintUI.gameObject);
+        }
 
         internal void PulseScrollArrows()
         {

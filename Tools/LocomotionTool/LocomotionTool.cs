@@ -219,6 +219,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             var cameraTransform = CameraUtils.GetMainCamera().transform;
             var cameraYaw = cameraTransform.localRotation.ConstrainYaw();
+            if (!m_Ring)
+                return;
+
             var ringTransform = m_Ring.transform;
             ringTransform.localPosition = cameraTransform.localPosition + cameraYaw * k_RingOffset;
             ringTransform.localRotation = cameraYaw;
@@ -277,6 +280,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         // HACK: Because we don't get mouse input through action maps, just use Update
         void Update()
         {
+            if (!cameraRig)
+                return;
+
             var mouseDelta = VRView.MouseDelta;
 
             if (VRView.LeftMouseButtonHeld)

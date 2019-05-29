@@ -1,6 +1,7 @@
 #if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -84,13 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (customPreviewCamera != null)
                 m_MultipleRayInputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
 
-            m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_EditorVR.transform).GetComponent<Camera>();
-            m_EventCamera.enabled = false;
-            m_MultipleRayInputModule.eventCamera = m_EventCamera;
-
             m_MultipleRayInputModule.preProcessRaycastSource = m_RayModule.PreProcessRaycastSource;
-
-            Initialize();
         }
 
         public void UnloadModule() { }
@@ -132,6 +127,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void Initialize()
         {
+            m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_EditorVR.transform).GetComponent<Camera>();
+            m_EventCamera.enabled = false;
+            m_MultipleRayInputModule.eventCamera = m_EventCamera;
+        }
+
+        internal void Shutdown()
+        {
+            if (m_EventCamera)
+                UnityObjectUtils.Destroy(m_EventCamera.gameObject);
         }
 
         internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)

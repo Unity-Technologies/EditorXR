@@ -373,9 +373,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void LoadModule()
         {
-            m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlane, transform);
-            m_GroundPlane.SetActive(false);
-
             m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
 
             widgetEnabled = true;
@@ -387,6 +384,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UnloadModule()
         {
+        }
+
+        internal void Initialize()
+        {
+            m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlane, transform);
+            m_GroundPlane.SetActive(false);
+        }
+
+        internal void Shutdown()
+        {
+            UnityObjectUtils.Destroy(m_GroundPlane);
         }
 
         public object OnSerializePreferences()

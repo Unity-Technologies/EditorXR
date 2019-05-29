@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -89,8 +90,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void LoadModule()
         {
-            m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
-            m_TooltipCanvas.SetParent(transform);
             m_TooltipScale = m_TooltipPrefab.transform.localScale;
 
             ISetTooltipVisibilityMethods.showTooltip = ShowTooltip;
@@ -98,6 +97,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadModule() { }
+
+        internal void Initialize()
+        {
+            m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
+            m_TooltipCanvas.SetParent(transform);
+        }
+
+        internal void Shutdown()
+        {
+            if (m_TooltipCanvas)
+                UnityObjectUtils.Destroy(m_TooltipCanvas.gameObject);
+        }
 
         void Update()
         {
