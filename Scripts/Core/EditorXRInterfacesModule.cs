@@ -17,18 +17,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
             IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
+
+            foreach (var module in ModuleLoaderCore.instance.modules)
+            {
+                var connector = module as IInterfaceConnector;
+                if (connector != null)
+                    AttachInterfaceConnector(connector);
+            }
         }
 
-        public void UnloadModule() { }
-
-        internal void AttachInterfaceConnectors(object target)
+        public void UnloadModule()
         {
-            var connector = target as IInterfaceConnector;
-            if (connector != null)
-            {
-                connectInterfaces += connector.ConnectInterface;
-                disconnectInterfaces += connector.DisconnectInterface;
-            }
+            connectInterfaces = null;
+            disconnectInterfaces = null;
+        }
+
+        internal void AttachInterfaceConnector(IInterfaceConnector connector)
+        {
+            connectInterfaces += connector.ConnectInterface;
+            disconnectInterfaces += connector.DisconnectInterface;
         }
 
         void ConnectInterfaces(object target, object userData = null)

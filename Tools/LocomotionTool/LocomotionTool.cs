@@ -238,6 +238,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            //TODO: Fix update before start
+            if (m_Preferences == null)
+                return;
+
             m_LocomotionInput = (LocomotionInput)input;
 
             this.SetUIBlockedForRayOrigin(rayOrigin, true);
@@ -822,7 +826,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             foreach (var linkedObject in linkedObjects)
             {
                 var locomotionTool = (LocomotionTool)linkedObject;
-
                 if (!locomotionTool.m_Crawling && !locomotionTool.m_BlinkVisuals.gameObject.activeInHierarchy)
                 {
                     var rayOrigin = locomotionTool.rayOrigin;

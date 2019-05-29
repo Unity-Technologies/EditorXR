@@ -142,8 +142,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
             IGetRayVisibilityMethods.isRayVisible = IsRayActive;
             IGetRayVisibilityMethods.isConeVisible = IsConeActive;
-
-            CreateAllProxies();
         }
 
         public void UnloadModule()

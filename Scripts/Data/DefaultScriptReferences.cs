@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                     foreach (var c in components)
                     {
                         if (c)
-                            m_TypePrefabs.Add(c.GetType(), typePrefab.gameObject);
+                            m_TypePrefabs[c.GetType()] = typePrefab.gameObject;
                     }
                 }
             }

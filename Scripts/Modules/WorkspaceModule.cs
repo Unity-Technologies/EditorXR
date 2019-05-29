@@ -92,7 +92,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         internal Transform rightRayOrigin { private get; set; }
 
         internal bool preserveWorkspaces { get; set; }
-        internal Type[] HiddenTypes { private get; set; }
 
         static WorkspaceModule()
         {
@@ -108,7 +107,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void LoadModule()
         {
             preserveWorkspaces = Core.EditorVR.preserveLayout;
-            HiddenTypes = Core.EditorVR.HiddenTypes;
 
             ICreateWorkspaceMethods.createWorkspace = CreateWorkspace;
             IResetWorkspacesMethods.resetWorkspaceRotations = ResetWorkspaceRotations;
@@ -163,7 +161,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var workspaceType = Type.GetType(workspaceLayout.name);
                 if (workspaceType != null)
                 {
-                    if (HiddenTypes.Contains(workspaceType))
+                    if (Core.EditorVR.HiddenTypes.Contains(workspaceType))
                         continue;
 
                     CreateWorkspace(workspaceType, workspace =>

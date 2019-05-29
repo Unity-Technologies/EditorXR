@@ -175,6 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             m_ViewerModule.Initialize();
             m_MenuModule.Initialize();
+            m_RayModule.CreateAllProxies();
         }
 
         IEnumerator Start()

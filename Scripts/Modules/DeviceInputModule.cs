@@ -9,6 +9,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
+    [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
     sealed class DeviceInputModule : MonoBehaviour, IModuleDependency<Core.EditorVR>,
         IModuleDependency<EditorXRToolModule>, IInterfaceConnector
     {

@@ -83,21 +83,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_HiddenTypeNames != null)
                 EditorVR.HiddenTypes = m_HiddenTypeNames.Select(GetTypeSafe).ToArray();
 
-            var editorVRs = Resources.FindObjectsOfTypeAll<EditorVR>();
-            if (editorVRs.Length == 0)
-            {
-                Debug.LogWarning("EditorVR Module not loaded");
-                return;
-            }
-
-            s_Instance = m_Instance = editorVRs[0];
-            m_Instance.enabled = true;
-
             if (Application.isPlaying)
             {
+                s_Instance = m_Instance = EditorXRUtils.CreateGameObjectWithComponent<EditorVR>();
+
                 var camera = CameraUtils.GetMainCamera();
                 var cameraRig = m_Instance.transform;
                 VRView.CreateCameraRig(ref camera, ref cameraRig);
+            }
+            else
+            {
+                var editorVRs = Resources.FindObjectsOfTypeAll<EditorVR>();
+                if (editorVRs.Length == 0)
+                {
+                    Debug.LogWarning("EditorVR Module not loaded");
+                    return;
+                }
+
+                s_Instance = m_Instance = editorVRs[0];
+                m_Instance.enabled = true;
             }
 
             XRSettings.eyeTextureResolutionScale = m_RenderScale;
@@ -115,7 +119,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
             if (m_Instance)
-                m_Instance.enabled = false;
+            {
+                if (Application.isPlaying)
+                    UnityObjectUtils.Destroy(m_Instance.gameObject);
+                else
+                    m_Instance.enabled = false;
+            }
 
             s_Instance = m_Instance = null;
         }

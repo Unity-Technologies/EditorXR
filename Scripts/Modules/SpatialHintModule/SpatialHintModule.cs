@@ -97,6 +97,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             IControlSpatialHintingMethods.setSpatialHintDragThresholdTriggerPosition = SetDragThresholdTriggerPosition;
             IControlSpatialHintingMethods.pulseSpatialHintScrollArrows = PulseScrollArrows;
             IControlSpatialHintingMethods.setSpatialHintControlNode = SetSpatialHintControlNode;
+
+            // TODO: Remove when replacin FI
+            foreach (var module in ModuleLoaderCore.instance.modules)
+            {
+                this.ConnectInterfaces(module);
+            }
         }
 
         public void UnloadModule() { }
