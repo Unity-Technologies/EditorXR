@@ -209,9 +209,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             var cameraRig = CameraUtils.GetCameraRig();
             cameraRig.parent = m_EditorVR.transform; // Parent the camera rig under EditorVR
-            cameraRig.hideFlags = EditorVR.defaultHideFlags;
             var viewerCamera = CameraUtils.GetMainCamera();
-            viewerCamera.gameObject.hideFlags = EditorVR.defaultHideFlags;
             m_OriginalNearClipPlane = viewerCamera.nearClipPlane;
             m_OriginalFarClipPlane = viewerCamera.farClipPlane;
             if (XRSettings.loadedDeviceName == "OpenVR")
@@ -320,7 +318,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             m_EditorVR.StartCoroutine(UpdateCameraRig(endPosition, viewDirection, () =>
             {
-                playerHead.hideFlags = EditorVR.defaultHideFlags;
                 playerHead.parent = mainCamera;
                 playerHead.localRotation = Quaternion.identity;
                 playerHead.localPosition = Vector3.zero;

@@ -43,7 +43,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<SerializedPreferencesModule>, IInterfaceConnector
     {
         internal const string VRPlayerTag = "VRPlayer";
-        const string k_ShowGameObjects = "EditorVR.ShowGameObjects";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
         const string k_IncludeInBuilds = "EditorVR.IncludeInBuilds";
         const string k_SerializedPreferences = "EditorVR.SerializedPreferences";
@@ -64,23 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRUIModule m_UIModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
         SerializedPreferencesModule m_SerializedPreferencesModule;
-
-        public static HideFlags defaultHideFlags
-        {
-            get
-            {
-                if (Application.isPlaying)
-                    return HideFlags.None;
-
-                return showGameObjects ? HideFlags.DontSaveInEditor : HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
-            }
-        }
-
-        internal static bool showGameObjects
-        {
-            get { return EditorPrefs.GetBool(k_ShowGameObjects, false); }
-            set { EditorPrefs.SetBool(k_ShowGameObjects, value); }
-        }
 
         internal static bool preserveLayout
         {
@@ -109,7 +91,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static void ResetPreferences()
         {
 #if UNITY_EDITOR
-            EditorPrefs.DeleteKey(k_ShowGameObjects);
             EditorPrefs.DeleteKey(k_PreserveLayout);
             EditorPrefs.DeleteKey(k_IncludeInBuilds);
             EditorPrefs.DeleteKey(k_SerializedPreferences);
@@ -158,10 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if UNITY_EDITOR
             DrivenRectTransformTracker.StopRecordingUndo();
-#endif
 
-            SetHideFlags(defaultHideFlags);
-#if UNITY_EDITOR
             if (!Application.isPlaying)
                 ClearDeveloperConsoleIfNecessary();
 #endif
@@ -345,27 +323,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         process.ProcessInput(toolData.input, consumeControl);
                 }
             }
-        }
-
-        internal void SetHideFlags(HideFlags hideFlags)
-        {
-            EditorXRUtils.hideFlags = hideFlags;
-
-            foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
-            {
-                manager.gameObject.hideFlags = hideFlags;
-            }
-
-            EditingContextManager.instance.gameObject.hideFlags = hideFlags;
-
-            foreach (var child in GetComponentsInChildren<Transform>(true))
-            {
-                child.gameObject.hideFlags = hideFlags;
-            }
-
-#if UNITY_EDITOR
-            EditorApplication.DirtyHierarchyWindowSorting(); // Otherwise objects aren't shown/hidden in hierarchy window
-#endif
         }
 
         public void ConnectDependency(EditorXRRayModule dependency)

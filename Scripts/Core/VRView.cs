@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         const string k_ShowDeviceView = "VRView.ShowDeviceView";
         const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
         const string k_CameraName = "VRCamera";
-        const HideFlags k_HideFlags = HideFlags.None;// HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
+        const HideFlags k_HideFlags = HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
 
         static Camera s_ExistingSceneMainCamera;
         static bool s_ExistingSceneMainCameraEnabledState;

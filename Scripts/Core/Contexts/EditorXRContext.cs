@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -155,14 +156,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorGUILayout.BeginVertical();
 
             // Show EditorXR GameObjects
+            using (var changed = new EditorGUI.ChangeCheckScope())
             {
                 const string title = "Show EditorXR GameObjects";
                 const string tooltip = "Normally, EditorXR GameObjects are hidden in the Hierarchy. Would you like to show them?";
 
-                EditorGUI.BeginChangeCheck();
-                EditorVR.showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.showGameObjects);
-                if (EditorGUI.EndChangeCheck() && s_Instance)
-                    s_Instance.SetHideFlags(EditorVR.defaultHideFlags);
+                var debugSettings = ModuleLoaderDebugSettings.instance;
+                var hideFlags = debugSettings.moduleHideFlags;
+                var showGameObjects = (hideFlags & HideFlags.HideInHierarchy) == 0;
+                showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
+                if (changed.changed)
+                    debugSettings.SetModuleHideFlags(showGameObjects ? hideFlags & ~HideFlags.HideInHierarchy : hideFlags | HideFlags.HideInHierarchy);
             }
 
             // Preserve Layout
