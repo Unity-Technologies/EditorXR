@@ -183,14 +183,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void Start()
         {
-            if (this.IsSharedUpdater(this) && m_Preferences == null)
+            if (this.IsSharedUpdater(this))
             {
-                m_Preferences = new Preferences();
-
-                // Share one preferences object across all instances
-                foreach (var linkedObject in linkedObjects)
+                if (m_Preferences == null)
                 {
-                    ((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
+                    m_Preferences = new Preferences();
+
+                    // Share one preferences object across all instances
+                    foreach (var linkedObject in linkedObjects)
+                    {
+                        ((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
+                    }
                 }
 
                 var instance = EditorXRUtils.Instantiate(m_RingPrefab, cameraRig, false);

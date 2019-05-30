@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRViewerModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<IntersectionModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>,IInterfaceConnector,
-        ISerializePreferences, IConnectInterfaces
+        ISerializePreferences, IConnectInterfaces, IInitializableModule
     {
 
         [Serializable]
@@ -80,6 +80,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRDirectSelectionModule m_DirectSelectionModule;
         SpatialHashModule m_SpatialHashModule;
         IntersectionModule m_IntersectionModule;
+
+        public int order { get { return 0; } }
 
         internal IPreviewCamera customPreviewCamera { get; private set; }
 
@@ -390,6 +392,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             AddPlayerModel();
             AddPlayerFloor();
         }
+
+        public void Shutdown() { }
     }
 }
 #endif

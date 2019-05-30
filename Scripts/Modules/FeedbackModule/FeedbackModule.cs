@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR
     }
 
     public class FeedbackModule : MonoBehaviour, IModule, ISettingsMenuItemProvider, ISerializePreferences,
-        IInterfaceConnector
+        IInterfaceConnector, IInitializableModule
     {
         [Serializable]
         class Preferences
@@ -77,6 +77,8 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Transform rayOrigin { get { return null; } }
 
+        public int order { get { return 0; } }
+
         public void LoadModule()
         {
             IRequestFeedbackMethods.addFeedbackRequest = AddFeedbackRequest;
@@ -88,7 +90,18 @@ namespace UnityEditor.Experimental.EditorVR
                 m_Preferences = new Preferences();
         }
 
-        public void UnloadModule() { }
+        public void Initialize()
+        {
+            m_Toggles.Clear();
+            m_FeedbackReceivers.Clear();
+            m_FeedbackRequestPool.Clear();
+        }
+
+        public void Shutdown() { }
+
+        public void UnloadModule()
+        {
+        }
 
         public void AddReceiver(IFeedbackReceiver feedbackReceiver)
         {

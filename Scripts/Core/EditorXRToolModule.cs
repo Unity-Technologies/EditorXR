@@ -25,8 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRRayModule>,
         IInterfaceConnector, IConnectInterfaces
     {
-        internal List<Type> allTools { get; private set; }
-
+        readonly List<Type> m_AllTools = new List<Type>();
         readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
         EditorVR m_EditorVR;
         EditorXRVacuumableModule m_VacuumablesModule;
@@ -34,6 +33,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRMenuModule m_MenuModule;
         DeviceInputModule m_DeviceInputModule;
         EditorXRRayModule m_RayModule;
+
+        internal List<Type> allTools { get { return m_AllTools; } }
 
         public void ConnectDependency(EditorVR dependency)
         {
@@ -67,15 +68,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            allTools = new List<Type>();
-            typeof(ITool).GetImplementationsOfInterface(allTools);
+            typeof(ITool).GetImplementationsOfInterface(m_AllTools);
 
             ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
             ISelectToolMethods.selectTool = SelectTool;
             ISelectToolMethods.isToolActive = IsToolActive;
         }
 
-        public void UnloadModule() { }
+        public void UnloadModule()
+        {
+            m_LinkedObjects.Clear();
+            m_AllTools.Clear();
+        }
 
         public void ConnectInterface(object target, object userData = null)
         {
@@ -101,7 +105,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (linkedObject != null)
             {
                 // Delay removal of linked objects in case shutdown logic relies on them
-                // Specifically, SerialzePreferences in AnnotationTool calls IsSharedUpdater
+                // Specifically, SerializePreferences in AnnotationTool calls IsSharedUpdater
                 EditorApplication.delayCall += () =>
                 {
                     var type = target.GetType();

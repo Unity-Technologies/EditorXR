@@ -8,7 +8,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : MonoBehaviour, IModuleDependency<MultipleRayInputModule>, IUsesViewerScale
+    sealed class TooltipModule : MonoBehaviour, IModuleDependency<MultipleRayInputModule>, IUsesViewerScale,
+        IInitializableModule
     {
         class TooltipData
         {
@@ -76,6 +77,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Transform m_TooltipCanvas;
         Vector3 m_TooltipScale;
 
+        public int order { get { return 0; } }
+
         // Local method use only -- created here to reduce garbage collection
         static readonly List<ITooltip> k_TooltipsToRemove = new List<ITooltip>();
         static readonly List<ITooltip> k_TooltipList = new List<ITooltip>();
@@ -98,13 +101,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UnloadModule() { }
 
-        internal void Initialize()
+        public void Initialize()
         {
             m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
             m_TooltipCanvas.SetParent(transform);
+
+            m_Tooltips.Clear();
+            m_TooltipPool.Clear();
+            m_TooltipDataPool.Clear();
         }
 
-        internal void Shutdown()
+        public void Shutdown()
         {
             if (m_TooltipCanvas)
                 UnityObjectUtils.Destroy(m_TooltipCanvas.gameObject);

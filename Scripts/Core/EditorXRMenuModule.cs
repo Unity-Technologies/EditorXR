@@ -23,8 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRMenuModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<EditorXRUIModule>,
-        IInterfaceConnector, IConnectInterfaces
+        IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
         const float k_MainMenuAutoShowDelay = 0.25f;
@@ -45,6 +44,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRDirectSelectionModule m_DirectSelectionModule;
         EditorXRUIModule m_UIModule;
         EditorXRToolModule m_ToolModule;
+
+        public int order { get { return 1; } }
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<DeviceData> k_ActiveDeviceData = new List<DeviceData>();
@@ -104,6 +105,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return !EditorXRToolModule.IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
             }).ToList(); // Don't show tools that can't be selected/toggled
         }
+
+        public void Shutdown() { }
 
         public void ConnectInterface(object target, object userData = null)
         {

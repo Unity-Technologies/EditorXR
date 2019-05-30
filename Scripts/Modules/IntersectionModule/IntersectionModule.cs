@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class IntersectionModule : MonoBehaviour, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
-        IGetVRPlayerObjects, IInterfaceConnector
+        IGetVRPlayerObjects, IInterfaceConnector, IInitializableModule
     {
         class RayIntersection
         {
@@ -47,6 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
         public List<GameObject> standardIgnoreList { get { return m_StandardIgnoreList; } }
 
+        public int order { get { return 0; } }
+
         // Local method use only -- created here to reduce garbage collection
         readonly List<Renderer> m_Intersections = new List<Renderer>();
         readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
@@ -75,12 +77,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UnloadModule() { }
 
-        internal void Initialize()
+        public void Initialize()
         {
             m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
+
+            m_IntersectedObjects.Clear();
+            m_Testers.Clear();
+            m_RaycastGameObjects.Clear();
+            m_RayoriginEnabled.Clear();
+            m_StandardIgnoreList.Clear();
         }
 
-        internal void Shutdown()
+        public void Shutdown()
         {
             if (m_CollisionTester)
                 UnityObjectUtils.Destroy(m_CollisionTester.gameObject);

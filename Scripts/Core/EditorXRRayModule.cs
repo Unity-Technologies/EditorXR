@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<KeyboardModule>, IModuleDependency<WorkspaceModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<EditorXRUIModule>,
         IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
-        IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList
+        IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -64,6 +64,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal Transform lastSelectionRayOrigin { get; private set; }
 
         public List<GameObject> ignoreList { private get; set; }
+
+        public int order { get { return 0; } }
 
         public void ConnectDependency(HighlightModule dependency)
         {
@@ -232,7 +234,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return false;
         }
 
-        internal void CreateAllProxies()
+        public void Initialize()
         {
             var cameraRig = CameraUtils.GetCameraRig();
             var proxyTypes = CollectionPool<List<Type>, Type>.GetCollection();
@@ -249,6 +251,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             CollectionPool<List<Type>, Type>.RecycleCollection(proxyTypes);
         }
+
+        public void Shutdown() { }
 
         void OnProxyActiveChanged(IProxy proxy)
         {

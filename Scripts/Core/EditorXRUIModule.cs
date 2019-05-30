@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRUIModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<MultipleRayInputModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
-        IInterfaceConnector, IConnectInterfaces
+        IInterfaceConnector, IConnectInterfaces, IInitializableModule
     {
         const byte k_MinStencilRef = 2;
 
@@ -45,6 +45,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRViewerModule m_ViewerModule;
         EditorXRRayModule m_RayModule;
         KeyboardModule m_KeyboardModule;
+
+        public int order { get { return 0; } }
 
         public void ConnectDependency(EditorVR dependency)
         {
@@ -125,14 +127,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_ManipulatorControllers.Remove(manipulatorController);
         }
 
-        internal void Initialize()
+        public void Initialize()
         {
             m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_EditorVR.transform).GetComponent<Camera>();
             m_EventCamera.enabled = false;
             m_MultipleRayInputModule.eventCamera = m_EventCamera;
         }
 
-        internal void Shutdown()
+        public void Shutdown()
         {
             if (m_EventCamera)
                 UnityObjectUtils.Destroy(m_EventCamera.gameObject);

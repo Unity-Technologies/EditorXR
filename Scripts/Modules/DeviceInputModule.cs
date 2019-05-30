@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
     sealed class DeviceInputModule : MonoBehaviour, IModuleDependency<Core.EditorVR>,
-        IModuleDependency<EditorXRToolModule>, IInterfaceConnector
+        IModuleDependency<EditorXRToolModule>, IInterfaceConnector, IInitializableModule
     {
         class InputProcessor
         {
@@ -45,6 +45,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
         public Action<List<ActionMapInput>> updatePlayerHandleMaps;
         public Func<Transform, InputDevice> inputDeviceForRayOrigin;
+
+        public int order { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
@@ -87,9 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
         }
 
-        public void UnloadModule()
-        {
-        }
+        public void UnloadModule() { }
 
         public List<InputDevice> GetSystemDevices()
         {

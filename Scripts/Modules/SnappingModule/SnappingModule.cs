@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
     sealed class SnappingModule : MonoBehaviour, IModule, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
-        IRaycast, IStandardIgnoreList
+        IRaycast, IStandardIgnoreList, IInitializableModule
     {
         const float k_GroundPlaneScale = 1000f;
 
@@ -367,6 +367,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public Transform rayOrigin { get { return null; } }
 
+        public int order { get { return 0; } }
+
         // Local method use only -- created here to reduce garbage collection
         readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
         Transform[] m_SingleTransformArray = new Transform[1];
@@ -386,13 +388,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
         }
 
-        internal void Initialize()
+        public void Initialize()
         {
             m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlane, transform);
             m_GroundPlane.SetActive(false);
+
+            m_SnappingStates.Clear();
         }
 
-        internal void Shutdown()
+        public void Shutdown()
         {
             UnityObjectUtils.Destroy(m_GroundPlane);
         }
