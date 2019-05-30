@@ -42,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<DeviceInputModule>,IModuleDependency<EditorXRUIModule>,
         IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<SerializedPreferencesModule>, IInterfaceConnector
     {
+        const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         internal const string VRPlayerTag = "VRPlayer";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
         const string k_IncludeInBuilds = "EditorVR.IncludeInBuilds";
@@ -94,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorPrefs.DeleteKey(k_PreserveLayout);
             EditorPrefs.DeleteKey(k_IncludeInBuilds);
             EditorPrefs.DeleteKey(k_SerializedPreferences);
+            ModuleLoaderDebugSettings.instance.SetModuleHideFlags(k_DefaultHideFlags);
 #endif
         }
 
