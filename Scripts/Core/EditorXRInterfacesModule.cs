@@ -20,11 +20,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
             IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
             IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
 
-            foreach (var module in ModuleLoaderCore.instance.modules)
+            var modules = ModuleLoaderCore.instance.modules;
+            foreach (var module in modules)
             {
                 var connector = module as IInterfaceConnector;
                 if (connector != null)
                     AttachInterfaceConnector(connector);
+            }
+
+            // TODO: Remove when replacing FI
+            foreach (var module in modules)
+            {
+                ConnectInterfaces(module);
             }
         }
 
@@ -37,6 +44,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void UnloadModule()
         {
+            // TODO: Remove when replacing FI
+            foreach (var module in ModuleLoaderCore.instance.modules)
+            {
+                DisconnectInterfaces(module);
+            }
+
             connectInterfaces = null;
             disconnectInterfaces = null;
         }

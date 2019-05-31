@@ -93,13 +93,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void Shutdown()
         {
             m_LinkedObjects.Clear();
-            foreach (var device in m_EditorVR.deviceData)
-            {
-                foreach (var toolData in device.toolData)
-                {
-                    this.DisconnectInterfaces(toolData.tool);
-                }
-            }
         }
 
         public void ConnectInterface(object target, object userData = null)

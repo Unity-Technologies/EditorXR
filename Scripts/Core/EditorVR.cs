@@ -243,36 +243,49 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             foreach (var device in deviceData)
             {
-                var behavior = device.mainMenu as MonoBehaviour;
+                var mainMenu = device.mainMenu;
+                this.DisconnectInterfaces(mainMenu);
+                var behavior = mainMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
-                behavior = device.alternateMenu as MonoBehaviour;
+                var alternateMenu = device.alternateMenu;
+                this.DisconnectInterfaces(alternateMenu);
+                behavior = alternateMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
-                behavior = device.toolsMenu as MonoBehaviour;
+                var toolsMenu = device.toolsMenu;
+                this.DisconnectInterfaces(toolsMenu);
+                behavior = toolsMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
-                behavior = device.customMenu as MonoBehaviour;
+                var customMenu = device.customMenu;
+                this.DisconnectInterfaces(customMenu);
+                behavior = customMenu as MonoBehaviour;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
-                behavior = device.spatialMenu;
+                var spatialMenu = device.spatialMenu;
+                this.DisconnectInterfaces(spatialMenu);
+                behavior = spatialMenu;
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
                 foreach (var menu in device.alternateMenus)
                 {
+                    this.DisconnectInterfaces(menu);
                     behavior = menu as MonoBehaviour;
                     if (behavior)
                         UnityObjectUtils.Destroy(behavior);
                 }
 
-                foreach (var tool in device.toolData)
+                foreach (var toolData in device.toolData)
                 {
-                    behavior = tool.tool as MonoBehaviour;
+                    var tool = toolData.tool;
+                    this.DisconnectInterfaces(tool);
+                    behavior = tool as MonoBehaviour;
                     if (behavior)
                         UnityObjectUtils.Destroy(behavior);
                 }
