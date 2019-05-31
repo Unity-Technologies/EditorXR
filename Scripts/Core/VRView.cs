@@ -333,6 +333,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 renderTexture = new RenderTexture(0, 0, 24, format);
                 renderTexture.name = "Scene RT";
                 renderTexture.antiAliasing = msaa;
+                // Leave this here or the editor will crash on destroying mini worlds
+                renderTexture.hideFlags = HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
             }
 
             if (renderTexture.width != width || renderTexture.height != height)
