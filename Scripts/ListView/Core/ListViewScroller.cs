@@ -3,7 +3,7 @@ using UnityEngine.EventSystems;
 
 namespace Unity.Labs.ListView
 {
-    public abstract class ListViewScroller : MonoBehaviour, IScrollHandler
+    public class ListViewScroller : MonoBehaviour, IScrollHandler
     {
         [SerializeField]
         protected ListViewControllerBase m_ListView;
