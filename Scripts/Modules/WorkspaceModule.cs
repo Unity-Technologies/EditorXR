@@ -152,9 +152,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void OnDeserializePreferences(object obj)
         {
-            if (!preserveWorkspaces)
-                return;
-
             m_Preferences = (Preferences)obj;
         }
 
@@ -266,6 +263,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void CreateSerializedWorkspaces()
         {
+            if (!preserveWorkspaces)
+                return;
+
             foreach (var workspaceLayout in m_Preferences.workspaceLayouts)
             {
                 var layout = workspaceLayout;

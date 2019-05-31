@@ -8,8 +8,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : MonoBehaviour, IModuleDependency<MultipleRayInputModule>, IUsesViewerScale,
-        IInitializableModule
+    sealed class TooltipModule : MonoBehaviour, IModuleDependency<MultipleRayInputModule>,
+        IModuleDependency<Core.EditorVR>, IUsesViewerScale, IInitializableModule
     {
         class TooltipData
         {
@@ -77,6 +77,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Transform m_TooltipCanvas;
         Vector3 m_TooltipScale;
 
+        Core.EditorVR m_EditorVR;
+
         public int order { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
@@ -89,6 +91,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             dependency.rayEntered += OnRayEntered;
             dependency.rayHovering += OnRayHovering;
             dependency.rayExited += OnRayExited;
+        }
+
+        public void ConnectDependency(Core.EditorVR dependency)
+        {
+            m_EditorVR = dependency;
         }
 
         public void LoadModule()
@@ -104,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void Initialize()
         {
             m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
-            m_TooltipCanvas.SetParent(transform);
+            m_TooltipCanvas.SetParent(m_EditorVR.transform);
 
             m_Tooltips.Clear();
             m_TooltipPool.Clear();

@@ -86,6 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 {
                     this.ConnectInterfaces(mb);
                 }
+
                 m_FilterUI.filterList = m_FilterList;
             }
 

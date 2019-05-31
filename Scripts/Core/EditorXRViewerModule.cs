@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRViewerModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<IntersectionModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>,IInterfaceConnector,
-        ISerializePreferences, IConnectInterfaces, IInitializableModule
+        ISerializePreferences, IConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks
     {
 
         [Serializable]
@@ -404,6 +404,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             UnityObjectUtils.Destroy(m_PlayerFloor);
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
+        {
+            UpdateCamera();
+        }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }
 #endif

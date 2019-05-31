@@ -20,7 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<KeyboardModule>, IModuleDependency<WorkspaceModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<EditorXRUIModule>,
         IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
-        IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule
+        IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
+        ISelectionChanged, IModuleBehaviorCallbacks
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -656,6 +657,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             m_EditorVR = dependency;
         }
+
+        public void OnSelectionChanged()
+        {
+            m_MenuModule.UpdateAlternateMenuOnSelectionChanged(lastSelectionRayOrigin);
+        }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
+        {
+            UpdateRaycasts();
+
+            UpdateDefaultProxyRays();
+        }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }
 #endif

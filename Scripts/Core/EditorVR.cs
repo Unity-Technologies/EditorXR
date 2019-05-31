@@ -36,10 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [RequiresTag(VRPlayerTag)]
 #endif
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
-    sealed class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces, IModuleDependency<EditorXRRayModule>,
-        IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRMenuModule>,
-        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<KeyboardModule>,
-        IModuleDependency<DeviceInputModule>,IModuleDependency<EditorXRUIModule>,
+    sealed class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces,
         IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<SerializedPreferencesModule>, IInterfaceConnector
     {
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
@@ -55,13 +52,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         bool m_HasDeserialized;
 
         static bool s_IsInitialized;
-        EditorXRRayModule m_RayModule;
-        EditorXRViewerModule m_ViewerModule;
-        EditorXRMenuModule m_MenuModule;
-        EditorXRDirectSelectionModule m_DirectSelectionModule;
-        KeyboardModule m_KeyboardModule;
-        DeviceInputModule m_DeviceInputModule;
-        EditorXRUIModule m_UIModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
         SerializedPreferencesModule m_SerializedPreferencesModule;
 
@@ -132,7 +122,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         void Awake()
         {
             enabled = false;
-            ComponentUtils.GetOrAddIf<ModuleCallbacksBehaviour>(gameObject, true).StartRunInEditMode();
+
+            // TODO: Find a way to reconcile callback owner
+            ModuleLoaderCore.instance.OnBehaviorAwake();
         }
 
         void Initialize()
@@ -210,8 +202,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             if (selectionChanged != null)
                 selectionChanged();
-
-            m_MenuModule.UpdateAlternateMenuOnSelectionChanged(m_RayModule.lastSelectionRayOrigin);
         }
 
         void OnEnable()
@@ -235,6 +225,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_SerializedPreferencesModule.SetupWithPreferences(serializedPreferences);
 
             m_HasDeserialized = true;
+
+            // TODO: Find a way to reconcile callback owner
+            //ModuleLoaderCore.instance.OnBehaviorEnable();
         }
 
         void OnDisable()
@@ -300,6 +293,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (behavior != null)
                     behavior.StopRunInEditMode();
             }
+
+            // TODO: Find a way to reconcile callback owner
+            //ModuleLoaderCore.instance.OnBehaviorDisable();
         }
 
         internal void Shutdown()
@@ -317,21 +313,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Update()
         {
-            m_ViewerModule.UpdateCamera();
-
-            m_RayModule.UpdateRaycasts();
-
-            m_RayModule.UpdateDefaultProxyRays();
-
-            m_DirectSelectionModule.UpdateDirectSelection();
-
-            m_KeyboardModule.UpdateKeyboardMallets();
-
-            m_DeviceInputModule.ProcessInput();
-
-            m_MenuModule.UpdateMenuVisibilities();
-
-            m_UIModule.UpdateManipulatorVisibilities();
+            // TODO: Find a way to reconcile callback owner
+            ModuleLoaderCore.instance.OnBehaviorUpdate();
         }
 
         internal void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
@@ -351,41 +334,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         process.ProcessInput(toolData.input, consumeControl);
                 }
             }
-        }
-
-        public void ConnectDependency(EditorXRRayModule dependency)
-        {
-            m_RayModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRViewerModule dependency)
-        {
-            m_ViewerModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRMenuModule dependency)
-        {
-            m_MenuModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRDirectSelectionModule dependency)
-        {
-            m_DirectSelectionModule = dependency;
-        }
-
-        public void ConnectDependency(KeyboardModule dependency)
-        {
-            m_KeyboardModule = dependency;
-        }
-
-        public void ConnectDependency(DeviceInputModule dependency)
-        {
-            m_DeviceInputModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRUIModule dependency)
-        {
-            m_UIModule = dependency;
         }
 
         public void ConnectDependency(EditorXRMiniWorldModule dependency)

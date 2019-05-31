@@ -7,7 +7,7 @@ using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public abstract class FeedbackRequest
     {

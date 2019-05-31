@@ -10,8 +10,9 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
+    [ModuleBehaviorCallbackOrder(ModuleOrders.DeviceInputModuleBehaviorOrder)]
     sealed class DeviceInputModule : MonoBehaviour, IModuleDependency<Core.EditorVR>,
-        IModuleDependency<EditorXRToolModule>, IInterfaceConnector, IInitializableModule
+        IModuleDependency<EditorXRToolModule>, IInterfaceConnector, IInitializableModule, IModuleBehaviorCallbacks
     {
         class InputProcessor
         {
@@ -391,5 +392,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (processInput != null)
                 RemoveInputProcessor(processInput);
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
+        {
+            ProcessInput();
+        }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

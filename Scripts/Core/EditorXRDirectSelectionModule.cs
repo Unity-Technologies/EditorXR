@@ -10,10 +10,11 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
+    [ModuleBehaviorCallbackOrder(ModuleOrders.DirectSelectionModuleBehaviorOrder)]
     class EditorXRDirectSelectionModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRMiniWorldModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<SceneObjectModule>,
         IModuleDependency<IntersectionModule>, IModuleDependency<EditorXRViewerModule>, IInitializableModule,
-        IInterfaceConnector
+        IInterfaceConnector, IModuleBehaviorCallbacks
     {
         readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
         readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
@@ -329,6 +330,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_DirectSelectionUsers.Clear();
             m_TwoHandedScalers.Clear();
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
+        {
+            UpdateDirectSelection();
+        }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }
 #endif

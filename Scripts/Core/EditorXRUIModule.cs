@@ -10,9 +10,10 @@ using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
+    [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
     class EditorXRUIModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<MultipleRayInputModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
-        IInterfaceConnector, IConnectInterfaces, IInitializableModule
+        IInterfaceConnector, IConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks
     {
         const byte k_MinStencilRef = 2;
 
@@ -192,6 +193,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             return stencilRef++;
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
+        {
+            UpdateManipulatorVisibilities();
+        }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }
 #endif

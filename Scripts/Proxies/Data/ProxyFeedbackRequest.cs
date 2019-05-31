@@ -1,5 +1,5 @@
 using System;
-using UnityEngine;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies

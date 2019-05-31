@@ -20,10 +20,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
     }
 
     [ModuleOrder(ModuleOrders.MenuModuleLoadOrder)]
+    [ModuleBehaviorCallbackOrder(ModuleOrders.MenuModuleBehaviorOrder)]
     class EditorXRMenuModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule
+        IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
+        IModuleBehaviorCallbacks
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
         const float k_MainMenuAutoShowDelay = 0.25f;
@@ -672,6 +674,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             return false;
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
+        {
+            UpdateMenuVisibilities();
+        }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }
 #endif

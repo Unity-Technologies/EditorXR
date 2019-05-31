@@ -9,7 +9,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class HierarchyModule : MonoBehaviour, ISelectionChanged, IModuleDependency<Core.EditorVR>, IInterfaceConnector
+    sealed class HierarchyModule : MonoBehaviour, IModule, ISelectionChanged, IInterfaceConnector
     {
         readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
         readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
@@ -25,13 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<Component> k_Components = new List<Component>();
         static readonly Dictionary<Type, string> k_TypeNames = new Dictionary<Type, string>();
 
-        public void ConnectDependency(Core.EditorVR dependency)
-        {
-            m_IgnoreList.Add(dependency.gameObject);  // Ignore EditorVR
-        }
-
         public void LoadModule()
         {
+            m_IgnoreList.Add(ModuleLoaderCore.instance.GetModuleParent());  // Ignore Module parent
             foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
             {
                 m_IgnoreList.Add(manager.gameObject);

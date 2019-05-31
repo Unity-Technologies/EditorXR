@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -109,7 +110,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Resources.UnloadUnusedAssets();
             InitializeInputManager();
             if (!Application.isPlaying)
+            {
                 instance = EditorXRUtils.CreateGameObjectWithComponent<EditingContextManager>();
+                instance.transform.SetParent(ModuleLoaderCore.instance.GetModuleParent().transform);
+            }
         }
 
         static void OnVRViewDisabled()
@@ -547,6 +551,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             s_InputManager = managers[0];
             var go = s_InputManager.gameObject;
             go.SetRunInEditModeRecursively(true);
+            go.transform.SetParent(ModuleLoaderCore.instance.GetModuleParent().transform);
 
             // These components were allocating memory every frame and aren't currently used in EditorVR
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
