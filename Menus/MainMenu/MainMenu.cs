@@ -440,6 +440,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 m_SettingsMenus.Remove(provider);
             }
+
             provider.settingsMenuInstance = null;
         }
 
@@ -461,6 +462,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 m_SettingsMenuItems.Remove(provider);
             }
+
             provider.settingsMenuItemInstance = null;
         }
 

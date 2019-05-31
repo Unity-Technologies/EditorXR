@@ -11,8 +11,9 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRDirectSelectionModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRMiniWorldModule>,
-        IModuleDependency<EditorXRRayModule>, IModuleDependency<SceneObjectModule>, 
-        IModuleDependency<IntersectionModule>, IModuleDependency<EditorXRViewerModule>, IInterfaceConnector
+        IModuleDependency<EditorXRRayModule>, IModuleDependency<SceneObjectModule>,
+        IModuleDependency<IntersectionModule>, IModuleDependency<EditorXRViewerModule>, IInitializableModule,
+        IInterfaceConnector
     {
         readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
         readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
@@ -30,6 +31,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public event Action<Transform, HashSet<Transform>> objectsGrabbed;
         public event Action<Transform, Transform[]> objectsDropped;
         public event Action<Transform, Transform> objectsTransferred;
+
+        public int order { get { return 0; } }
 
         public void ConnectDependency(EditorVR dependency)
         {
@@ -71,10 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             IUsesPointerMethods.getPointerLength = GetPointerLength;
         }
 
-        public void UnloadModule()
-        {
-
-        }
+        public void UnloadModule() { }
 
         public void ConnectInterface(object target, object userData = null)
         {
@@ -310,6 +310,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 usesDirectSelection.OnResetDirectSelectionState();
             }
+        }
+
+        public void Initialize()
+        {
+            m_DirectSelections.Clear();
+            m_GrabbedObjects.Clear();
+            m_ObjectGrabbers.Clear();
+            m_DirectSelectionUsers.Clear();
+            m_TwoHandedScalers.Clear();
+        }
+
+        public void Shutdown()
+        {
+            m_DirectSelections.Clear();
+            m_GrabbedObjects.Clear();
+            m_ObjectGrabbers.Clear();
+            m_DirectSelectionUsers.Clear();
+            m_TwoHandedScalers.Clear();
         }
     }
 }

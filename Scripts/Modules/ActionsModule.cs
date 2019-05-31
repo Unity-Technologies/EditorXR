@@ -31,7 +31,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             SpawnActions();
         }
 
-        public void UnloadModule() { }
+        public void UnloadModule()
+        {
+            m_MenuActions.Clear();
+        }
 
         void SpawnActions()
         {
@@ -40,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var spatialMenuData = new SpatialMenu.SpatialMenuData("Actions", "Perform actions on selected object", spatialMenuActions);
             m_SpatialMenuData.Add(spatialMenuData);
 
+            m_MenuActions.Clear();
             var actionTypes = CollectionPool<List<Type>, Type>.GetCollection();
             typeof(IAction).GetImplementationsOfInterface(actionTypes);
             foreach (var actionType in actionTypes)

@@ -19,7 +19,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             CenteredScrolling,
         }
 
+#pragma warning disable 649
         [SerializeField]
+        SpatialHintUI m_SpatialHintUIPrefab;
+#pragma warning restore 649
+
         SpatialHintUI m_SpatialHintUI;
 
         SpatialHintStateFlags m_State;
@@ -109,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
-            m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
+            m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUIPrefab.gameObject).GetComponent<SpatialHintUI>();
             this.ConnectInterfaces(m_SpatialHintUI);
         }
 

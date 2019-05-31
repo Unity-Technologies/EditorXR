@@ -371,7 +371,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal float GetViewerScale()
         {
-            return CameraUtils.GetCameraRig().localScale.x;
+            var cameraRig = CameraUtils.GetCameraRig();
+            if (!cameraRig)
+                return 1;
+
+            return cameraRig.localScale.x;
         }
 
         void SetViewerScale(float scale)
@@ -385,12 +389,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
+            m_VRPlayerObjects.Clear();
             InitializeCamera();
             AddPlayerModel();
             AddPlayerFloor();
         }
 
-        public void Shutdown() { }
+        public void Shutdown()
+        {
+            foreach (var playerObject in m_VRPlayerObjects)
+            {
+                UnityObjectUtils.Destroy(playerObject);
+            }
+
+            UnityObjectUtils.Destroy(m_PlayerFloor);
+        }
     }
 }
 #endif

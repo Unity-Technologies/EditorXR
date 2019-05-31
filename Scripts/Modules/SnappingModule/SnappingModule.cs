@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #pragma warning disable 649
         [SerializeField]
-        GameObject m_GroundPlane;
+        GameObject m_GroundPlanePrefab;
 
         [SerializeField]
         GameObject m_Widget;
@@ -48,6 +48,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         Material m_ButtonHighlightMaterial;
 #pragma warning restore 649
+
+        GameObject m_GroundPlane;
 
         class SnappingState
         {
@@ -390,10 +392,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
-            m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlane, transform);
+            m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlanePrefab, transform);
             m_GroundPlane.SetActive(false);
 
-            m_SnappingStates.Clear();
+            Reset();
         }
 
         public void Shutdown()
@@ -439,7 +441,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                             var distanceToCamera = Vector3.Distance(camera.transform.position, state.snappingPosition);
                             widget.position = state.snappingPosition;
                             widget.rotation = state.snappingRotation;
-                            widget.localScale = Vector3.one * k_WidgetScale * distanceToCamera;
+                            widget.localScale = k_WidgetScale * distanceToCamera * Vector3.one;
                         }
                         else if (state.widget != null)
                             widget.gameObject.SetActive(false);
@@ -449,12 +451,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_GroundPlane.SetActive(shouldActivateGroundPlane);
 
                 if (shouldActivateGroundPlane)
-                    m_GroundPlane.transform.localScale = Vector3.one * k_GroundPlaneScale * this.GetViewerScale();
+                    m_GroundPlane.transform.localScale = k_GroundPlaneScale * this.GetViewerScale() * Vector3.one;
             }
             else
             {
                 m_GroundPlane.SetActive(false);
-                m_Widget.SetActive(false);
             }
         }
 

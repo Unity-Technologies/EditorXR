@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         event Action<object, object> connectInterfaces;
         event Action<object, object> disconnectInterfaces;
 
-        public int order { get { return 0; } }
+        public int order { get { return -1; } }
 
         public void LoadModule()
         {
@@ -30,14 +30,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
-            connectInterfaces = null;
-            disconnectInterfaces = null;
             m_ConnectedInterfaces.Clear();
         }
 
         public void Shutdown() { }
 
-        public void UnloadModule() { }
+        public void UnloadModule()
+        {
+            connectInterfaces = null;
+            disconnectInterfaces = null;
+        }
 
         void AttachInterfaceConnector(IInterfaceConnector connector)
         {

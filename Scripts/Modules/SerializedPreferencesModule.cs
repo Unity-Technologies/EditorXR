@@ -9,9 +9,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class SerializedPreferencesModule : IModule, IInterfaceConnector
     {
-        List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
-        SerializedPreferences m_Preferences;
-
         [Serializable]
         internal class SerializedPreferences : ISerializationCallbackReceiver
         {
@@ -77,6 +74,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 set { m_Payload = value; }
             }
         }
+
+        readonly List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
+        SerializedPreferences m_Preferences;
+
+        public int order { get { return -1; } }
 
         public void AddSerializer(ISerializePreferences serializer)
         {

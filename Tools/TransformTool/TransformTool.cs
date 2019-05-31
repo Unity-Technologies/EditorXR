@@ -429,10 +429,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
-            //TODO: Fix update before start
-            if (!m_CurrentManipulator)
-                return;
-
             m_Input = (TransformInput)input;
 
             if (!this.IsSharedUpdater(this))

@@ -93,6 +93,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         internal bool preserveWorkspaces { get; set; }
 
+        Preferences m_Preferences;
+
         static WorkspaceModule()
         {
             workspaceTypes = new List<Type>();
@@ -153,32 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (!preserveWorkspaces)
                 return;
 
-            var preferences = (Preferences)obj;
-
-            foreach (var workspaceLayout in preferences.workspaceLayouts)
-            {
-                var layout = workspaceLayout;
-                var workspaceType = Type.GetType(workspaceLayout.name);
-                if (workspaceType != null)
-                {
-                    if (Core.EditorVR.HiddenTypes.Contains(workspaceType))
-                        continue;
-
-                    CreateWorkspace(workspaceType, workspace =>
-                    {
-                        workspace.transform.localPosition = layout.localPosition;
-                        workspace.transform.localRotation = layout.localRotation;
-                        workspace.contentBounds = layout.contentBounds;
-
-                        var serializeWorkspace = workspace as ISerializeWorkspace;
-                        if (serializeWorkspace != null)
-                        {
-                            var payload = JsonUtility.FromJson(layout.payload, Type.GetType(layout.payloadType));
-                            serializeWorkspace.OnDeserializeWorkspace(payload);
-                        }
-                    });
-                }
-            }
+            m_Preferences = (Preferences)obj;
         }
 
         internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
@@ -285,6 +262,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var inspectorWorkspace = target as IInspectorWorkspace;
             if (inspectorWorkspace != null)
                 RemoveInspector(inspectorWorkspace);
+        }
+
+        public void CreateSerializedWorkspaces()
+        {
+            foreach (var workspaceLayout in m_Preferences.workspaceLayouts)
+            {
+                var layout = workspaceLayout;
+                var workspaceType = Type.GetType(workspaceLayout.name);
+                if (workspaceType != null)
+                {
+                    if (Core.EditorVR.HiddenTypes.Contains(workspaceType))
+                        continue;
+
+                    CreateWorkspace(workspaceType, workspace =>
+                    {
+                        workspace.transform.localPosition = layout.localPosition;
+                        workspace.transform.localRotation = layout.localRotation;
+                        workspace.contentBounds = layout.contentBounds;
+
+                        var serializeWorkspace = workspace as ISerializeWorkspace;
+                        if (serializeWorkspace != null)
+                        {
+                            var payload = JsonUtility.FromJson(layout.payload, Type.GetType(layout.payloadType));
+                            serializeWorkspace.OnDeserializeWorkspace(payload);
+                        }
+                    });
+                }
+            }
         }
     }
 }

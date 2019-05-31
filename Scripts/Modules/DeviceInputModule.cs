@@ -80,12 +80,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
+            m_InputProcessors.Clear();
             InitializePlayerHandle();
             CreateDefaultActionMapInputs();
         }
 
         public void Shutdown()
         {
+            m_InputProcessors.Clear();
             PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
         }
 

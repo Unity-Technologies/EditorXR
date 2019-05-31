@@ -5,7 +5,6 @@ using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
@@ -130,7 +129,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         static void HighlightObject(GameObject go, Material material)
         {
-            k_MeshFilters.Clear();
             go.GetComponentsInChildren(k_MeshFilters);
             foreach (var meshFilter in k_MeshFilters)
             {
@@ -146,7 +144,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
 
-            k_SkinnedMeshRenderers.Clear();
             go.GetComponentsInChildren(k_SkinnedMeshRenderers);
             foreach (var skinnedMeshRenderer in k_SkinnedMeshRenderers)
             {

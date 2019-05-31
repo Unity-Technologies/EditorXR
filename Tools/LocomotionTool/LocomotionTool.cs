@@ -1011,14 +1011,27 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     locomotionTool.ShowCrawlFeedback();
                     locomotionTool.ShowMainButtonFeedback();
                 }
-
-                //Setting toggles on this tool's menu will set them on other tool menus
-                if (m_BlinkToggle)
-                    m_BlinkToggle.isOn = m_Preferences.blinkMode;
-
-                if (m_FlyToggle)
-                    m_FlyToggle.isOn = !m_Preferences.blinkMode;
             }
+            else
+            {
+                // Share one preferences object across all instances
+                foreach (var linkedObject in linkedObjects)
+                {
+                    var locomotionTool = (LocomotionTool)linkedObject;
+                    var preferences = locomotionTool.m_Preferences;
+                    if (preferences != null)
+                        m_Preferences = preferences;
+                }
+
+                ShowCrawlFeedback();
+                ShowMainButtonFeedback();
+            }
+
+            if (m_BlinkToggle)
+                m_BlinkToggle.isOn = m_Preferences.blinkMode;
+
+            if (m_FlyToggle)
+                m_FlyToggle.isOn = !m_Preferences.blinkMode;
         }
     }
 }

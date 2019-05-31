@@ -148,13 +148,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void UnloadModule()
         {
+            CleanupProxies();
+        }
+
+        void CleanupProxies()
+        {
             foreach (var proxy in m_Proxies)
             {
-                if (proxy == null || proxy as MonoBehaviour == null)
+                var behavior = proxy as MonoBehaviour;
+                if (behavior == null)
                     continue;
 
-                UnityObjectUtils.Destroy(((MonoBehaviour)proxy).gameObject);
+                this.DisconnectInterfaces(proxy);
+                UnityObjectUtils.Destroy(behavior.gameObject);
             }
+
+            m_Proxies.Clear();
         }
 
         public void ConnectInterface(object target, object userData = null)
@@ -252,7 +261,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             CollectionPool<List<Type>, Type>.RecycleCollection(proxyTypes);
         }
 
-        public void Shutdown() { }
+        public void Shutdown()
+        {
+            CleanupProxies();
+        }
 
         void OnProxyActiveChanged(IProxy proxy)
         {
@@ -362,6 +374,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
 
                     m_ToolModule.SpawnDefaultTools(proxy);
+                    m_WorkspaceModule.CreateSerializedWorkspaces();
                 }
             }
         }

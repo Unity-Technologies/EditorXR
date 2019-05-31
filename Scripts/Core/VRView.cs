@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -21,7 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         const string k_ShowDeviceView = "VRView.ShowDeviceView";
         const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
         const string k_CameraName = "VRCamera";
-        const HideFlags k_HideFlags = HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
 
         static Camera s_ExistingSceneMainCamera;
         static bool s_ExistingSceneMainCameraEnabledState;
@@ -135,7 +135,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public static void CreateCameraRig(ref Camera camera, ref Transform cameraRig)
         {
-            var hideFlags = Application.isPlaying ? HideFlags.None : k_HideFlags;
+            var debugSettings = ModuleLoaderDebugSettings.instance;
+            var hideFlags = Application.isPlaying ? HideFlags.None : debugSettings.moduleHideFlags;
 
             const float nearClipPlane = 0.01f;
             const float farClipPlane = 1000f;
@@ -332,7 +333,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 renderTexture = new RenderTexture(0, 0, 24, format);
                 renderTexture.name = "Scene RT";
                 renderTexture.antiAliasing = msaa;
-                renderTexture.hideFlags = k_HideFlags;
             }
 
             if (renderTexture.width != width || renderTexture.height != height)

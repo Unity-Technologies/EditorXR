@@ -22,10 +22,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     class EditorXRToolModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRVacuumableModule>,
         IModuleDependency<LockModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
-        IModuleDependency<EditorXRRayModule>,
-        IInterfaceConnector, IConnectInterfaces
+        IModuleDependency<EditorXRRayModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule
     {
-        readonly List<Type> m_AllTools = new List<Type>();
+        static readonly List<Type> k_AllTools = new List<Type>();
+
         readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
         EditorVR m_EditorVR;
         EditorXRVacuumableModule m_VacuumablesModule;
@@ -34,7 +34,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
         DeviceInputModule m_DeviceInputModule;
         EditorXRRayModule m_RayModule;
 
-        internal List<Type> allTools { get { return m_AllTools; } }
+        internal List<Type> allTools { get { return k_AllTools; } }
+
+        public int order { get { return 0; } }
+
+        static EditorXRToolModule()
+        {
+            typeof(ITool).GetImplementationsOfInterface(k_AllTools);
+        }
 
         public void ConnectDependency(EditorVR dependency)
         {
@@ -68,8 +75,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            typeof(ITool).GetImplementationsOfInterface(m_AllTools);
-
             ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
             ISelectToolMethods.selectTool = SelectTool;
             ISelectToolMethods.isToolActive = IsToolActive;
@@ -78,7 +83,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void UnloadModule()
         {
             m_LinkedObjects.Clear();
-            m_AllTools.Clear();
+        }
+
+        public void Initialize()
+        {
+            m_LinkedObjects.Clear();
+        }
+
+        public void Shutdown()
+        {
+            m_LinkedObjects.Clear();
+            foreach (var device in m_EditorVR.deviceData)
+            {
+                foreach (var toolData in device.toolData)
+                {
+                    this.DisconnectInterfaces(toolData.tool);
+                }
+            }
         }
 
         public void ConnectInterface(object target, object userData = null)
@@ -173,7 +194,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     }
                 }
 
-                IMainMenu mainMenu = null;
+                IMainMenu mainMenu;
                 var menuHideData = deviceData.menuHideData;
                 if (EditorVR.DefaultMenu != null)
                 {
@@ -197,8 +218,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 hideData.hideFlags = 0;
 
                 // Setup ToolsMenu
-                Experimental.EditorVR.Menus.ToolsMenu toolsMenu = null;
-                var toolsMenus = m_EditorVR.gameObject.GetComponents<Experimental.EditorVR.Menus.ToolsMenu>();
+                ToolsMenu toolsMenu = null;
+                var toolsMenus = m_EditorVR.gameObject.GetComponents<ToolsMenu>();
                 foreach (var m in toolsMenus)
                 {
                     if (!m.enabled)
@@ -209,7 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 if (!toolsMenu)
-                    toolsMenu = EditorXRUtils.AddComponent<Experimental.EditorVR.Menus.ToolsMenu>(m_EditorVR.gameObject);
+                    toolsMenu = EditorXRUtils.AddComponent<ToolsMenu>(m_EditorVR.gameObject);
 
                 toolsMenu.enabled = true;
                 this.ConnectInterfaces(toolsMenu, rayOrigin);

@@ -169,15 +169,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        void Start()
-        {
-            Initialize();
-
-            m_SerializedPreferencesModule.SetupWithPreferences(serializedPreferences);
-
-            m_HasDeserialized = true;
-        }
-
 #if UNITY_EDITOR
         static void ClearDeveloperConsoleIfNecessary()
         {
@@ -224,7 +215,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnEnable()
         {
+            deviceData.Clear();
             Selection.selectionChanged += OnSelectionChanged;
+
+            var currentAssembly = typeof(EditorVR).Assembly;
+            foreach (var module in ModuleLoaderCore.instance.modules)
+            {
+                if (module.GetType().Assembly != currentAssembly)
+                    continue;
+
+                var behavior = module as MonoBehaviour;
+                if (behavior != null)
+                    behavior.StartRunInEditMode();
+            }
+
+            Initialize();
+
+            m_SerializedPreferencesModule.SetupWithPreferences(serializedPreferences);
+
+            m_HasDeserialized = true;
         }
 
         void OnDisable()
@@ -273,6 +282,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     if (behavior)
                         UnityObjectUtils.Destroy(behavior);
                 }
+            }
+
+            deviceData.Clear();
+
+            var currentAssembly = typeof(EditorVR).Assembly;
+            foreach (var module in ModuleLoaderCore.instance.modules)
+            {
+                if (module.GetType().Assembly != currentAssembly)
+                    continue;
+
+                if (ReferenceEquals(module, this))
+                    continue;
+
+                var behavior = module as MonoBehaviour;
+                if (behavior != null)
+                    behavior.StopRunInEditMode();
             }
         }
 
@@ -372,13 +397,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_SerializedPreferencesModule = dependency;
         }
 
-        public void LoadModule()
-        {
-
-        }
+        public void LoadModule() { }
 
         public void UnloadModule()
         {
+            var activeView = VRView.activeView;
+            if (activeView)
+                activeView.Close();
         }
 
         public void ConnectInterface(object target, object userData = null)
