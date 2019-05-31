@@ -132,6 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         void Awake()
         {
             enabled = false;
+            ComponentUtils.GetOrAddIf<ModuleCallbacksBehaviour>(gameObject, true).StartRunInEditMode();
         }
 
         void Initialize()
