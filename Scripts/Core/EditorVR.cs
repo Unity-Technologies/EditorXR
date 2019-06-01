@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
@@ -121,13 +122,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Awake()
         {
-            enabled = false;
+            if (!Application.isPlaying)
+                enabled = false;
 
             // TODO: Find a way to reconcile callback owner
             ModuleLoaderCore.instance.OnBehaviorAwake();
         }
 
-        void Initialize()
+        internal void Initialize()
         {
             if (UpdateInputManager != null)
                 UpdateInputManager();
@@ -160,6 +162,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 module.Initialize();
             }
+
+            m_SerializedPreferencesModule.SetupWithPreferences(serializedPreferences);
+
+            m_HasDeserialized = true;
         }
 
 #if UNITY_EDITOR
@@ -209,22 +215,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
             deviceData.Clear();
             Selection.selectionChanged += OnSelectionChanged;
 
-            var currentAssembly = typeof(EditorVR).Assembly;
-            foreach (var module in ModuleLoaderCore.instance.modules)
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
             {
-                if (module.GetType().Assembly != currentAssembly)
-                    continue;
+                var currentAssembly = typeof(EditorVR).Assembly;
+                foreach (var module in ModuleLoaderCore.instance.modules)
+                {
+                    if (module.GetType().Assembly != currentAssembly)
+                        continue;
 
-                var behavior = module as MonoBehaviour;
-                if (behavior != null)
-                    behavior.StartRunInEditMode();
+                    var behavior = module as MonoBehaviour;
+                    if (behavior != null)
+                        behavior.StartRunInEditMode();
+                }
             }
+#endif
 
-            Initialize();
-
-            m_SerializedPreferencesModule.SetupWithPreferences(serializedPreferences);
-
-            m_HasDeserialized = true;
+            if (!Application.isPlaying)
+                Initialize();
 
             // TODO: Find a way to reconcile callback owner
             //ModuleLoaderCore.instance.OnBehaviorEnable();
@@ -273,7 +281,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (behavior)
                     UnityObjectUtils.Destroy(behavior);
 
-                foreach (var menu in device.alternateMenus)
+                foreach (var menu in device.alternateMenus.ToList())
                 {
                     this.DisconnectInterfaces(menu);
                     behavior = menu as MonoBehaviour;
@@ -281,7 +289,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         UnityObjectUtils.Destroy(behavior);
                 }
 
-                foreach (var toolData in device.toolData)
+                foreach (var toolData in device.toolData.ToList())
                 {
                     var tool = toolData.tool;
                     this.DisconnectInterfaces(tool);
@@ -293,19 +301,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             deviceData.Clear();
 
-            var currentAssembly = typeof(EditorVR).Assembly;
-            foreach (var module in ModuleLoaderCore.instance.modules)
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
             {
-                if (module.GetType().Assembly != currentAssembly)
-                    continue;
+                var currentAssembly = typeof(EditorVR).Assembly;
+                foreach (var module in ModuleLoaderCore.instance.modules)
+                {
+                    if (module.GetType().Assembly != currentAssembly)
+                        continue;
 
-                if (ReferenceEquals(module, this))
-                    continue;
+                    if (ReferenceEquals(module, this))
+                        continue;
 
-                var behavior = module as MonoBehaviour;
-                if (behavior != null)
-                    behavior.StopRunInEditMode();
+                    var behavior = module as MonoBehaviour;
+                    if (behavior != null)
+                        behavior.StopRunInEditMode();
+                }
             }
+#endif
 
             // TODO: Find a way to reconcile callback owner
             //ModuleLoaderCore.instance.OnBehaviorDisable();
@@ -363,6 +376,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void UnloadModule()
         {
+            Debug.Log("unload\n" + Environment.StackTrace);
             var activeView = VRView.activeView;
             if (activeView)
                 activeView.Close();
@@ -380,6 +394,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var selectionChanged = target as ISelectionChanged;
             if (selectionChanged != null)
                 this.selectionChanged -= selectionChanged.OnSelectionChanged;
+        }
+
+        void OnDestroy()
+        {
+            Debug.Log("destroyed\n" + Environment.StackTrace);
         }
     }
 #else

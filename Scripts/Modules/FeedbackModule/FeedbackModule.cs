@@ -50,6 +50,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             set
             {
+                if (value == null)
+                    return;
+
                 var toggle = value.GetComponent<Toggle>();
                 if (m_Preferences != null)
                     toggle.isOn = m_Preferences.enabled;

@@ -86,11 +86,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (Application.isPlaying)
             {
-                s_Instance = m_Instance = EditorXRUtils.CreateGameObjectWithComponent<EditorVR>();
-
                 var camera = CameraUtils.GetMainCamera();
-                var cameraRig = m_Instance.transform;
-                VRView.CreateCameraRig(ref camera, ref cameraRig);
+                Transform cameraRig;
+                VRView.CreateCameraRig(ref camera, out cameraRig);
+
+                ModuleLoaderCore.ReloadModules();
+
+                var editorVRs = Resources.FindObjectsOfTypeAll<EditorVR>();
+                if (editorVRs.Length == 0)
+                {
+                    Debug.LogWarning("EditorVR Module not loaded");
+                    return;
+                }
+
+                s_Instance = m_Instance = editorVRs[0];
+                m_Instance.enabled = true;
+                m_Instance.Initialize();
             }
             else
             {
@@ -118,6 +129,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Dispose()
         {
+            if (m_Instance == null)
+                return;
+
             m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
             if (m_Instance)
             {

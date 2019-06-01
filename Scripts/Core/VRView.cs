@@ -133,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public static bool MiddleMouseButtonHeld;
         public static bool RightMouseButtonHeld;
 
-        public static void CreateCameraRig(ref Camera camera, ref Transform cameraRig)
+        public static void CreateCameraRig(ref Camera camera, out Transform cameraRig)
         {
             var debugSettings = ModuleLoaderDebugSettings.instance;
             var hideFlags = Application.isPlaying ? HideFlags.None : debugSettings.moduleHideFlags;
@@ -231,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             autoRepaintOnSceneChange = true;
             s_ActiveView = this;
-            CreateCameraRig(ref m_Camera, ref m_CameraRig);
+            CreateCameraRig(ref m_Camera, out m_CameraRig);
 
             m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
             m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
