@@ -35,6 +35,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 if (defaultScriptReferences.m_TypePrefabs.TryGetValue(type, out prefab))
                 {
                     var go = Instantiate(prefab);
+                    go.SetHideFlagsRecursively(EditorXRUtils.hideFlags);
                     return (MonoBehaviour)go.GetComponent(type);
                 }
             }

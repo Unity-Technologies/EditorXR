@@ -135,9 +135,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public static void CreateCameraRig(ref Camera camera, out Transform cameraRig)
         {
-            var debugSettings = ModuleLoaderDebugSettings.instance;
-            var hideFlags = Application.isPlaying ? HideFlags.None : debugSettings.moduleHideFlags;
-
             const float nearClipPlane = 0.01f;
             const float farClipPlane = 1000f;
 
@@ -145,12 +142,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // ReSharper disable once RedundantAssignment
             GameObject rigGO = null;
 
+            var debugSettings = ModuleLoaderDebugSettings.instance;
+            var hideFlags = debugSettings.moduleHideFlags;
+
             if (Application.isPlaying)
             {
                 camera.nearClipPlane = nearClipPlane;
                 camera.farClipPlane = farClipPlane;
+                camera.gameObject.hideFlags = hideFlags;
 
-                rigGO = new GameObject("VRCameraRig");
+                rigGO = new GameObject("VRCameraRig") { hideFlags = hideFlags };
             }
 #if UNITY_EDITOR
             else

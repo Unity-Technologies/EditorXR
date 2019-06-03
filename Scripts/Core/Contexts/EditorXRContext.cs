@@ -90,7 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 Transform cameraRig;
                 VRView.CreateCameraRig(ref camera, out cameraRig);
 
-                ModuleLoaderCore.ReloadModules();
+                ModuleLoaderCore.instance.ReloadModules();
 
                 var editorVRs = Resources.FindObjectsOfTypeAll<EditorVR>();
                 if (editorVRs.Length == 0)

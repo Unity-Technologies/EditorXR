@@ -110,7 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
-            m_TooltipCanvas = Instantiate(m_TooltipCanvasPrefab).transform;
+            m_TooltipCanvas = EditorXRUtils.Instantiate(m_TooltipCanvasPrefab).transform;
             m_TooltipCanvas.SetParent(m_EditorVR.transform);
 
             m_Tooltips.Clear();

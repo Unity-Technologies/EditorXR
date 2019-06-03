@@ -122,6 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void Awake()
         {
+            EditorXRUtils.hideFlags = ModuleLoaderDebugSettings.instance.moduleHideFlags;
             if (!Application.isPlaying)
                 enabled = false;
 
