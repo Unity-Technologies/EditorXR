@@ -55,7 +55,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void Awake()
         {
             s_DefaultLayer = LayerMask.NameToLayer("Default");
-            Debug.Log(gameObject.name);
         }
 
         void OnEnable()
@@ -65,7 +64,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var go = m_MiniCamera.gameObject;
             go.name = "MiniWorldCamera";
             go.tag = k_MiniWorldCameraTag;
-            Debug.Log(go.hideFlags);
             go.SetActive(false);
             Camera.onPostRender += RenderMiniWorld;
         }
@@ -73,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void OnDisable()
         {
             Camera.onPostRender -= RenderMiniWorld;
-            //UnityObjectUtils.Destroy(m_MiniCamera.gameObject);
+            UnityObjectUtils.Destroy(m_MiniCamera.gameObject);
         }
 
         void RenderMiniWorld(Camera camera)
