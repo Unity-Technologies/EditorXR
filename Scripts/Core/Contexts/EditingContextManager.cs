@@ -306,6 +306,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnEnable()
         {
+            ModuleLoaderCore.instance.OnBehaviorEnable();
+
             ISetEditingContextMethods.getAvailableEditingContexts = GetAvailableEditingContexts;
             ISetEditingContextMethods.getPreviousEditingContexts = GetPreviousEditingContexts;
             ISetEditingContextMethods.setEditingContext = SetEditingContext;
@@ -329,6 +331,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnDisable()
         {
+            ModuleLoaderCore.instance.OnBehaviorDisable();
+
             if (Application.isPlaying)
             {
                 OnVRViewDisabled();
@@ -360,6 +364,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
             ISetEditingContextMethods.restorePreviousEditingContext = null;
 
             SaveUserSettings(settings);
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                foreach (var module in ModuleLoaderCore.instance.modules)
+                {
+                    var behavior = module as MonoBehaviour;
+                    if (behavior != null)
+                        behavior.StopRunInEditMode();
+                }
+            }
+#endif
         }
 
         void Awake()
@@ -377,12 +393,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 VRView.afterOnGUI += OnVRViewGUI;
 #endif
 
+            EditorXRUtils.hideFlags = ModuleLoaderDebugSettings.instance.moduleHideFlags;
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            if (Application.isPlaying)
+                moduleLoaderCore.ReloadModules();
+
+            moduleLoaderCore.OnBehaviorAwake();
+
             if (Application.isPlaying)
             {
                 OnVRViewEnabled();
                 instance = this;
                 SetEditingContext((IEditingContext)m_DefaultContext);
             }
+#if UNITY_EDITOR
+            else
+            {
+                foreach (var module in ModuleLoaderCore.instance.modules)
+                {
+                    var behavior = module as MonoBehaviour;
+                    if (behavior != null)
+                        behavior.StartRunInEditMode();
+                }
+            }
+#endif
         }
 
 #if UNITY_EDITOR
@@ -560,6 +594,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
+        }
+
+        void OnDestroy()
+        {
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            moduleLoaderCore.OnBehaviorDestroy();
+
+            if (Application.isPlaying)
+                moduleLoaderCore.UnloadModules();
         }
     }
 }

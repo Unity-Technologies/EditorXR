@@ -13,8 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [CreateAssetMenu(menuName = "EditorXR/Editing Context")]
     class EditorXRContext : ScriptableObject, IEditingContext
     {
-        static EditorVR s_Instance; // Used only by PreferencesGUI
-
 #pragma warning disable 649
         [SerializeField]
         float m_RenderScale = 1f;
@@ -60,6 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #pragma warning restore 649
 
         EditorVR m_Instance;
+        Camera m_ExistingCamera;
 
         public bool copyMainCameraSettings { get { return m_CopyMainCameraSettings; } }
 
@@ -87,10 +86,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (Application.isPlaying)
             {
                 var camera = CameraUtils.GetMainCamera();
+                m_ExistingCamera = camera;
                 Transform cameraRig;
                 VRView.CreateCameraRig(ref camera, out cameraRig);
-
-                ModuleLoaderCore.instance.ReloadModules();
 
                 var editorVRs = Resources.FindObjectsOfTypeAll<EditorVR>();
                 if (editorVRs.Length == 0)
@@ -99,9 +97,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return;
                 }
 
-                s_Instance = m_Instance = editorVRs[0];
-                m_Instance.enabled = true;
-                m_Instance.Initialize();
+                m_Instance = editorVRs[0];
             }
             else
             {
@@ -112,9 +108,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return;
                 }
 
-                s_Instance = m_Instance = editorVRs[0];
-                m_Instance.enabled = true;
+                m_Instance = editorVRs[0];
             }
+
+            m_Instance.Initialize();
 
             XRSettings.eyeTextureResolutionScale = m_RenderScale;
         }
@@ -132,6 +129,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_Instance == null)
                 return;
 
+            if (m_ExistingCamera && Application.isPlaying)
+                UnityObjectUtils.Destroy(m_ExistingCamera.gameObject);
+
             m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
             if (m_Instance)
             {
@@ -141,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_Instance.enabled = false;
             }
 
-            s_Instance = m_Instance = null;
+            m_Instance = null;
         }
 
 #if UNITY_EDITOR

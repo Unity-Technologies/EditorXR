@@ -120,18 +120,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
         }
 
-        void Awake()
-        {
-            EditorXRUtils.hideFlags = ModuleLoaderDebugSettings.instance.moduleHideFlags;
-            if (!Application.isPlaying)
-                enabled = false;
-
-            // TODO: Find a way to reconcile callback owner
-            ModuleLoaderCore.instance.OnBehaviorAwake();
-        }
-
         internal void Initialize()
         {
+            deviceData.Clear();
+            Selection.selectionChanged += OnSelectionChanged;
+
             if (UpdateInputManager != null)
                 UpdateInputManager();
 
@@ -211,36 +204,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 selectionChanged();
         }
 
-        void OnEnable()
+        internal void Shutdown()
         {
-            deviceData.Clear();
-            Selection.selectionChanged += OnSelectionChanged;
-
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
+            foreach (var module in ModuleLoaderCore.instance.modules)
             {
-                var currentAssembly = typeof(EditorVR).Assembly;
-                foreach (var module in ModuleLoaderCore.instance.modules)
-                {
-                    if (module.GetType().Assembly != currentAssembly)
-                        continue;
-
-                    var behavior = module as MonoBehaviour;
-                    if (behavior != null)
-                        behavior.StartRunInEditMode();
-                }
+                var initializable = module as IInitializableModule;
+                if (initializable != null)
+                    initializable.Shutdown();
             }
-#endif
 
-            if (!Application.isPlaying)
-                Initialize();
+            if (m_HasDeserialized)
+                serializedPreferences = m_SerializedPreferencesModule.SerializePreferences();
 
-            // TODO: Find a way to reconcile callback owner
-            //ModuleLoaderCore.instance.OnBehaviorEnable();
-        }
-
-        void OnDisable()
-        {
             Selection.selectionChanged -= OnSelectionChanged;
 
             // Suppress MissingReferenceException in tests
@@ -301,41 +276,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             deviceData.Clear();
-
-#if UNITY_EDITOR
-            if (!Application.isPlaying)
-            {
-                var currentAssembly = typeof(EditorVR).Assembly;
-                foreach (var module in ModuleLoaderCore.instance.modules)
-                {
-                    if (module.GetType().Assembly != currentAssembly)
-                        continue;
-
-                    if (ReferenceEquals(module, this))
-                        continue;
-
-                    var behavior = module as MonoBehaviour;
-                    if (behavior != null)
-                        behavior.StopRunInEditMode();
-                }
-            }
-#endif
-
-            // TODO: Find a way to reconcile callback owner
-            //ModuleLoaderCore.instance.OnBehaviorDisable();
-        }
-
-        internal void Shutdown()
-        {
-            foreach (var module in ModuleLoaderCore.instance.modules)
-            {
-                var initializable = module as IInitializableModule;
-                if (initializable != null)
-                    initializable.Shutdown();
-            }
-
-            if (m_HasDeserialized)
-                serializedPreferences = m_SerializedPreferencesModule.SerializePreferences();
         }
 
         void Update()

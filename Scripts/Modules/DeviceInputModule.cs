@@ -75,8 +75,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void LoadModule()
         {
             m_ConsumeControl = ConsumeControl;
-
-            EditingContextManager.InitializeInputManager();
         }
 
         public void Initialize()
