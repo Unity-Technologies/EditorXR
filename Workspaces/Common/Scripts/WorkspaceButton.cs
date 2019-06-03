@@ -187,6 +187,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void ResetColors()
         {
+            if (!m_ButtonMaterial)
+                return;
+
             m_ButtonMaterial.SetColor(k_MaterialColorTopProperty, m_OriginalGradientPair.a);
             m_ButtonMaterial.SetColor(k_MaterialColorBottomProperty, m_OriginalGradientPair.b);
         }

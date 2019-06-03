@@ -377,7 +377,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void UnloadModule()
         {
-            Debug.Log("unload\n" + Environment.StackTrace);
             var activeView = VRView.activeView;
             if (activeView)
                 activeView.Close();
@@ -395,11 +394,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var selectionChanged = target as ISelectionChanged;
             if (selectionChanged != null)
                 this.selectionChanged -= selectionChanged.OnSelectionChanged;
-        }
-
-        void OnDestroy()
-        {
-            Debug.Log("destroyed\n" + Environment.StackTrace);
         }
     }
 #else

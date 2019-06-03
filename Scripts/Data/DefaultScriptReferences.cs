@@ -73,6 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var defaultScriptReferences = CreateInstance<DefaultScriptReferences>();
 
             var prefabsRoot = new GameObject(Path.GetFileNameWithoutExtension(k_Path));
+            prefabsRoot.SetActive(false);
             Action<ICollection> create = types =>
             {
                 foreach (Type t in types)
@@ -83,7 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                     if (t.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any())
                         continue;
 
-                    var mb = (MonoBehaviour)EditorXRUtils.CreateGameObjectWithComponent(t, runInEditMode: false);
+                    var mb = (MonoBehaviour)EditorXRUtils.CreateGameObjectWithComponent(t, prefabsRoot.transform, runInEditMode: false);
                     if (mb)
                     {
                         mb.gameObject.hideFlags = HideFlags.None;

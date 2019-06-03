@@ -1,25 +1,26 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SpatialHashModule : MonoBehaviour, IModule
+    sealed class SpatialHashModule : MonoBehaviour, IInitializableModule
     {
         readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
-        readonly SpatialHash<Renderer> m_SpatialHash = new SpatialHash<Renderer>();
+        SpatialHash<Renderer> m_SpatialHash;
+        Coroutine m_UpdateCoroutine;
 
         public SpatialHash<Renderer> spatialHash { get { return m_SpatialHash; } }
 
         public Func<GameObject, bool> shouldExcludeObject { private get; set; }
 
+        public int order { get { return -1; } }
+
         public void LoadModule()
         {
             shouldExcludeObject = go => go.GetComponentInParent<Core.EditorVR>();
-            Setup();
 
             IUsesSpatialHashMethods.addToSpatialHash = AddObject;
             IUsesSpatialHashMethods.removeFromSpatialHash = RemoveObject;
@@ -27,10 +28,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UnloadModule() { }
 
-        internal void Setup()
+        public void Initialize()
         {
+            m_SpatialHash = new SpatialHash<Renderer>();
             SetupObjects();
-            StartCoroutine(UpdateDynamicObjects());
+            m_UpdateCoroutine = StartCoroutine(UpdateDynamicObjects());
+        }
+
+        public void Shutdown()
+        {
+            m_SpatialHash = null;
+            StopCoroutine(m_UpdateCoroutine);
         }
 
         void SetupObjects()

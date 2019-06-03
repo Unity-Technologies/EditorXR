@@ -275,6 +275,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (Core.EditorVR.HiddenTypes.Contains(workspaceType))
                         continue;
 
+                    if (Application.isPlaying && workspaceType.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any())
+                        continue;
+
                     CreateWorkspace(workspaceType, workspace =>
                     {
                         workspace.transform.localPosition = layout.localPosition;

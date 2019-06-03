@@ -78,18 +78,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        event Action m_FakeActiveChanged;
+        event Action fakeActiveChanged;
 
         public event Action activeChanged
         {
             add
             {
-                m_FakeActiveChanged += value;
+                fakeActiveChanged += value;
                 m_InputToEvents.activeChanged += value;
             }
             remove
             {
-                m_FakeActiveChanged -= value;
+                fakeActiveChanged -= value;
                 m_InputToEvents.activeChanged -= value;
             }
         }
@@ -115,7 +115,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public void FakeActivate()
         {
             m_FakeActive = true;
-            m_FakeActiveChanged();
+            fakeActiveChanged();
         }
 
         protected virtual void Awake()

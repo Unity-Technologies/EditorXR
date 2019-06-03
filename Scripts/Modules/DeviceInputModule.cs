@@ -89,7 +89,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void Shutdown()
         {
             m_InputProcessors.Clear();
-            PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
+            if (m_PlayerHandle != null)
+                PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
         }
 
         public void UnloadModule() { }

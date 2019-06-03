@@ -320,6 +320,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
 
+                ModuleLoaderCore.instance.GetModuleParent().SetRunInEditModeRecursively(true);
+
                 SetEditingContext(defaultContext);
             }
 #endif

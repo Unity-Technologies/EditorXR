@@ -180,6 +180,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             var camera = CameraUtils.GetMainCamera();
             var cameraRig = CameraUtils.GetCameraRig();
+            if (!cameraRig || !camera)
+                return;
+
             var cameraTransform = camera.transform;
             var cameraRigScale = cameraRig.localScale.x;
             m_Preferences.cameraRigScale = cameraRigScale;

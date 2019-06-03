@@ -49,6 +49,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int order { get { return 0; } }
 
+        SpatialHashModule m_SpatialHashModule;
+
         // Local method use only -- created here to reduce garbage collection
         readonly List<Renderer> m_Intersections = new List<Renderer>();
         readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
@@ -61,7 +63,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void ConnectDependency(SpatialHashModule dependency)
         {
-            m_SpatialHash = dependency.spatialHash;
+            m_SpatialHashModule = dependency;
         }
 
         public void LoadModule()
@@ -81,6 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
 
+            m_SpatialHash = m_SpatialHashModule.spatialHash;
             m_IntersectedObjects.Clear();
             m_Testers.Clear();
             m_RaycastGameObjects.Clear();
