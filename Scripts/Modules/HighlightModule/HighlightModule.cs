@@ -10,7 +10,8 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.HighlightModuleBehaviorOrder)]
-    sealed class HighlightModule : ScriptableSettings<HighlightModule>, IModuleBehaviorCallbacks, IUsesGameObjectLocking, IInterfaceConnector
+    sealed class HighlightModule : ScriptableSettings<HighlightModule>, IModuleBehaviorCallbacks, IUsesGameObjectLocking,
+        IInterfaceConnector
     {
         struct HighlightData
         {
@@ -37,6 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Dictionary<GameObject, float> m_LastBlinkStartTimes = new Dictionary<GameObject, float>();
 
         Material m_RayHighlightMaterialCopy;
+        Transform m_ModuleParent;
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<KeyValuePair<Material, GameObject>> k_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
@@ -71,6 +73,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             ISetHighlightMethods.setHighlight = SetHighlight;
             ISetHighlightMethods.setBlinkingHighlight = SetBlinkingHighlight;
+
+            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
         }
 
         public void UnloadModule() { }
@@ -112,6 +116,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             foreach (var obj in Selection.gameObjects)
             {
                 if (!obj)
+                    continue;
+
+                if (obj.transform.IsChildOf(m_ModuleParent))
                     continue;
 
                 HighlightObject(obj, m_RayHighlightMaterialCopy);
@@ -186,6 +193,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void SetHighlight(GameObject go, bool active, Transform rayOrigin = null, Material material = null, bool force = false, float duration = 0f)
         {
             if (go == null)
+                return;
+
+            if (go.transform.IsChildOf(m_ModuleParent))
                 return;
 
             if (!force && active && this.IsLocked(go))
