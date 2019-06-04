@@ -1,5 +1,4 @@
 ﻿using Unity.Labs.ModuleLoader;
-using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -18,6 +17,9 @@ namespace UnityEditor.Experimental.EditorVR
         /// </summary>
         void Shutdown();
 
+        /// <summary>
+        /// Used to sort initializable modules before calling Instantiate. Shutdown is called according to module order
+        /// </summary>
         int order { get; }
     }
 }
