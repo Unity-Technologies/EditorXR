@@ -281,8 +281,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (viewDisabled != null)
                 viewDisabled();
 
-            XRSettings.enabled = false;
-
             EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
             EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
 
@@ -290,6 +288,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (m_CameraRig)
                 DestroyImmediate(m_CameraRig.gameObject, true);
+
+            XRSettings.enabled = false;
 
             Assert.IsNotNull(s_ActiveView, "EditorXR should have an active view");
             s_ActiveView = null;
