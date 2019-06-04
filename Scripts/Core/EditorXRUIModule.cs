@@ -81,9 +81,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             ISetManipulatorsVisibleMethods.setManipulatorsVisible = SetManipulatorsVisible;
             IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
 
-            // Create event system, input module, and event camera
-            m_EditorVR.gameObject.AddComponent<EventSystem>().StartRunInEditMode();
-
             var customPreviewCamera = m_ViewerModule.customPreviewCamera;
             if (customPreviewCamera != null)
                 m_MultipleRayInputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;

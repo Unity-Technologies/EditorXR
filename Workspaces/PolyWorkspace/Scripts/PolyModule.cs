@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
+using Unity.Labs.Utils;
 
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
@@ -10,8 +11,6 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 #endif
 
 #if UNITY_EDITOR
-using Unity.Labs.Utils;
-
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 #endif
 

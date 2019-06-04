@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : MonoBehaviour, IModuleDependency<MultipleRayInputModule>,
+    sealed class TooltipModule : ScriptableSettings<TooltipModule>, IModuleDependency<MultipleRayInputModule>,
         IModuleDependency<Core.EditorVR>, IUsesViewerScale, IInitializableModule
     {
         class TooltipData
@@ -274,7 +274,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void OnRayEntered(GameObject gameObject, RayEventData eventData)
         {
-            if (gameObject == this.gameObject)
+            if (gameObject == m_EditorVR.gameObject)
                 return;
 
             k_TooltipList.Clear();
@@ -287,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void OnRayHovering(GameObject gameObject, RayEventData eventData)
         {
-            if (gameObject == this.gameObject)
+            if (gameObject == m_EditorVR.gameObject)
                 return;
 
             k_TooltipList.Clear();
@@ -300,7 +300,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void OnRayExited(GameObject gameObject, RayEventData eventData)
         {
-            if (gameObject && gameObject != this.gameObject)
+            if (gameObject && gameObject != m_EditorVR.gameObject)
             {
                 k_TooltipList.Clear();
                 gameObject.GetComponents(k_TooltipList);
@@ -401,8 +401,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 m_Tooltips.Remove(tooltip);
 
-                if (gameObject.activeInHierarchy && tooltipData.tooltipUI)
-                    StartCoroutine(AnimateHide(tooltip, tooltipData));
+                if (m_EditorVR.gameObject.activeInHierarchy && tooltipData.tooltipUI)
+                    m_EditorVR.StartCoroutine(AnimateHide(tooltip, tooltipData));
             }
         }
 

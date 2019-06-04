@@ -570,7 +570,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 m_StandardManipulator = m_EditorVR.GetComponentInChildren<StandardManipulator>(true);
                 if (m_StandardManipulator)
-                    ConnectInterface(m_StandardManipulator);
+                    this.ConnectInterfaces(m_StandardManipulator);
             }
 
             if (m_StandardManipulator)

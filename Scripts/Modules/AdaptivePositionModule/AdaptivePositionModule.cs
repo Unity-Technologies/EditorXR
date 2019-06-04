@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -8,8 +9,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics,
-        IModule, IConnectInterfaces
+    public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics,
+        IModuleBehaviorCallbacks, IModuleDependency<Core.EditorVR>, IInterfaceConnector
     {
 #pragma warning disable 649
         [SerializeField]
@@ -19,9 +20,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         bool m_TestInFocus;
         Transform m_GazeTransform;
         Transform m_WorldspaceAnchorTransform; // The player transform under which anchored objects will be parented
+        Core.EditorVR m_EditorVR;
 
         // Collection of objects whose position is controlled by this module
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
+
+        void IModuleDependency<Core.EditorVR>.ConnectDependency(Core.EditorVR dependency)
+        {
+            m_EditorVR = dependency;
+        }
 
         public void LoadModule()
         {
@@ -31,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UnloadModule() { }
 
-        void Update()
+        public void OnBehaviorUpdate()
         {
             if (m_AdaptivePositionElements.Count > 0)
             {
@@ -40,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     var repositionCoroutine = element.adaptiveElementRepositionCoroutine;
                     if (element.resetAdaptivePosition)
                     {
-                        this.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
+                        m_EditorVR.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
                         element.adaptiveElementRepositionCoroutine = repositionCoroutine;
                         return;
                     }
@@ -81,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                         if (moveElement)
                         {
-                            this.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
+                            m_EditorVR.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
                             element.adaptiveElementRepositionCoroutine = repositionCoroutine;
                         }
                     }
@@ -121,7 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var adaptiveTransform = adaptiveElement.adaptiveTransform;
             var currentPosition = adaptiveTransform.position;
             var targetPosition = m_GazeTransform.position;
-            targetPosition = targetPosition + this.GetViewerScale() * m_GazeTransform.forward * adaptiveElement.adaptivePositionRestDistance;
+            targetPosition = targetPosition + this.GetViewerScale() * adaptiveElement.adaptivePositionRestDistance * m_GazeTransform.forward;
             if (!adaptiveElement.resetAdaptivePosition)
             {
                 this.Pulse(Node.None, m_MovingPulse);
@@ -159,5 +166,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (adaptsPosition != null)
                 FreeObject(adaptsPosition);
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

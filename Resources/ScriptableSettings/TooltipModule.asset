@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42531cab117a2db4bb168cd9158d0b46, type: 3}
+  m_Name: TooltipModule
+  m_EditorClassIdentifier: 
+  m_TooltipPrefab: {fileID: 1000013663370456, guid: 0b7435b9e20b90949b516c08f26c81f0,
+    type: 3}
+  m_TooltipCanvasPrefab: {fileID: 1000012000199744, guid: c5a8b49d02d6a7b4bb0d73a25d9512f6,
+    type: 3}

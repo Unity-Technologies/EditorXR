@@ -236,7 +236,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             IIsHoveringOverUIMethods.isHoveringOverUI = IsHoveringOverUI;
             IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
-            runInEditMode = true;
         }
 
         public void UnloadModule()

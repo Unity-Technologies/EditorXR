@@ -317,9 +317,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void UnloadModule()
         {
+#if UNITY_EDITOR
             var activeView = VRView.activeView;
             if (activeView)
                 activeView.Close();
+#endif
         }
 
         public void ConnectInterface(object target, object userData = null)
