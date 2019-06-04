@@ -71,6 +71,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         void OnDisable()
         {
             Camera.onPostRender -= RenderMiniWorld;
+            // Unset target texture so we don't destroy it and crash the editor
+            m_MiniCamera.targetTexture = null;
             UnityObjectUtils.Destroy(m_MiniCamera.gameObject);
         }
 

@@ -9,8 +9,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics,
-        IModuleBehaviorCallbacks, IInterfaceConnector
+    public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IInitializableModule,
+        IModuleBehaviorCallbacks, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, IInterfaceConnector
     {
 #pragma warning disable 649
         [SerializeField]
@@ -23,6 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         // Collection of objects whose position is controlled by this module
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
+
+        public int order { get { return 0; } }
 
         public void LoadModule()
         {
@@ -170,5 +172,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void Initialize()
+        {
+            m_AdaptivePositionElements.Clear();
+        }
+
+        public void Shutdown()
+        {
+            m_AdaptivePositionElements.Clear();
+        }
     }
 }
