@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -83,7 +84,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         private void OnEnable()
         {
             if (!referenceTransform)
+            {
                 referenceTransform = EditorXRUtils.CreateEmptyGameObject("MiniWorldReference").transform;
+                referenceTransform.parent = ModuleLoaderCore.instance.GetModuleParent().transform;
+            }
 
             m_MiniWorldRenderer = EditorXRUtils.AddComponent<MiniWorldRenderer>(CameraUtils.GetMainCamera().gameObject);
             m_MiniWorldRenderer.miniWorld = this;

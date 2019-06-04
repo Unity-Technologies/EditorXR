@@ -117,8 +117,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UnloadModule()
         {
-            while (m_Workspaces.Count > 0)
-                UnityObjectUtils.Destroy(m_Workspaces[0].transform.gameObject);
+            foreach (var workspace in m_Workspaces.ToList())
+            {
+                if (workspace.transform)
+                    UnityObjectUtils.Destroy(workspace.transform.gameObject);
+            }
+
+            m_Workspaces.Clear();
         }
 
         public object OnSerializePreferences()
