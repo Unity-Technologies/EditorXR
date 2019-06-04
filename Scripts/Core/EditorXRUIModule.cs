@@ -50,7 +50,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         Transform m_ModuleParent;
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         public void ConnectDependency(EditorVR dependency)
         {

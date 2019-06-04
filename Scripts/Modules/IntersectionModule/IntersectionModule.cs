@@ -47,7 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
         public List<GameObject> standardIgnoreList { get { return m_StandardIgnoreList; } }
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         SpatialHashModule m_SpatialHashModule;
 

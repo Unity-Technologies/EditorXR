@@ -89,7 +89,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             get { return m_SpatialHintUI.contentContainer; }
         }
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         public void LoadModule()
         {

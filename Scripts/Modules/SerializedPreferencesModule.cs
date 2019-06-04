@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SerializedPreferencesModule : IModule, IInterfaceConnector
+    sealed class SerializedPreferencesModule : IInitializableModule, IInterfaceConnector
     {
         [Serializable]
         internal class SerializedPreferences : ISerializationCallbackReceiver
@@ -75,10 +74,34 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
+        public const string SerializedPreferencesKey = "EditorVR.SerializedPreferences";
+
         readonly List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
         SerializedPreferences m_Preferences;
+        bool m_HasDeserialized;
 
-        public int order { get { return -1; } }
+        internal static string serializedPreferences
+        {
+            get { return EditorPrefs.GetString(SerializedPreferencesKey, string.Empty); }
+            set { EditorPrefs.SetString(SerializedPreferencesKey, value); }
+        }
+
+        public int initializationOrder { get { return -2; } }
+        public int shutdownOrder { get { return 1; } }
+
+        public void Initialize()
+        {
+            SetupWithPreferences(serializedPreferences);
+            m_HasDeserialized = true;
+        }
+
+        public void Shutdown()
+        {
+            if (m_HasDeserialized)
+                serializedPreferences = SerializePreferences();
+
+            m_HasDeserialized = false;
+        }
 
         public void AddSerializer(ISerializePreferences serializer)
         {

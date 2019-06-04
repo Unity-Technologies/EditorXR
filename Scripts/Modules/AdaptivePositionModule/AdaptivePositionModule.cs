@@ -24,7 +24,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Collection of objects whose position is controlled by this module
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         public void LoadModule()
         {

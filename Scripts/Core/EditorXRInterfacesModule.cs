@@ -13,7 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         event Action<object, object> connectInterfaces;
         event Action<object, object> disconnectInterfaces;
 
-        public int order { get { return -1; } }
+        public int initializationOrder { get { return -1; } }
+        public int shutdownOrder { get { return 0; } }
 
         public void LoadModule()
         {

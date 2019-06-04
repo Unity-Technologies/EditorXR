@@ -19,7 +19,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly HashSet<string> m_ObjectTypes = new HashSet<string>();
         readonly List<GameObject> m_IgnoreList = new List<GameObject>();
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly Stack<HierarchyData> m_DataStack = new Stack<HierarchyData>();

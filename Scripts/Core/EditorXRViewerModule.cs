@@ -80,7 +80,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         SpatialHashModule m_SpatialHashModule;
         IntersectionModule m_IntersectionModule;
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         internal IPreviewCamera customPreviewCamera { get; private set; }
 

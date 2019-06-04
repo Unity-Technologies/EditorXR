@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.Labs.ModuleLoader;
-using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
@@ -30,7 +29,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         float m_ProjectFolderLoadYieldTime;
         IModule m_ModuleImplementation;
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         public void Initialize()
         {

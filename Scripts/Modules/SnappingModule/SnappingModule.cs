@@ -370,7 +370,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public Transform rayOrigin { get { return null; } }
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();

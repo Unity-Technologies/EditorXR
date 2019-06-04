@@ -68,7 +68,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public List<GameObject> ignoreList { private get; set; }
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         public void ConnectDependency(HighlightModule dependency)
         {

@@ -37,24 +37,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [RequiresTag(VRPlayerTag)]
 #endif
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
-    sealed class EditorVR : IEditor, IConnectInterfaces,
-        IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<SerializedPreferencesModule>, IInterfaceConnector
+    sealed class EditorVR : IEditor, IConnectInterfaces, IModuleDependency<EditorXRMiniWorldModule>, IInterfaceConnector
     {
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         internal const string VRPlayerTag = "VRPlayer";
         const string k_PreserveLayout = "EditorVR.PreserveLayout";
         const string k_IncludeInBuilds = "EditorVR.IncludeInBuilds";
-        const string k_SerializedPreferences = "EditorVR.SerializedPreferences";
 
         event Action selectionChanged;
 
         internal readonly List<DeviceData> deviceData = new List<DeviceData>();
 
-        bool m_HasDeserialized;
-
         static bool s_IsInitialized;
         EditorXRMiniWorldModule m_MiniWorldModule;
-        SerializedPreferencesModule m_SerializedPreferencesModule;
 
         internal static bool preserveLayout
         {
@@ -68,12 +63,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             set { EditorPrefs.SetBool(k_IncludeInBuilds, value); }
         }
 
-        internal static string serializedPreferences
-        {
-            get { return EditorPrefs.GetString(k_SerializedPreferences, string.Empty); }
-            set { EditorPrefs.SetString(k_SerializedPreferences, value); }
-        }
-
         internal static Type[] DefaultTools { get; set; }
         internal static Type DefaultMenu { get; set; }
         internal static Type DefaultAlternateMenu { get; set; }
@@ -85,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             EditorPrefs.DeleteKey(k_PreserveLayout);
             EditorPrefs.DeleteKey(k_IncludeInBuilds);
-            EditorPrefs.DeleteKey(k_SerializedPreferences);
+            EditorPrefs.DeleteKey(SerializedPreferencesModule.SerializedPreferencesKey);
             ModuleLoaderDebugSettings.instance.SetModuleHideFlags(k_DefaultHideFlags);
 #endif
         }
@@ -151,16 +140,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     initializableModules.Add(initializableModule);
             }
 
-            initializableModules.Sort((a, b) => a.order.CompareTo(b.order));
+            initializableModules.Sort((a, b) => a.initializationOrder.CompareTo(b.initializationOrder));
 
             foreach (var module in initializableModules)
             {
                 module.Initialize();
             }
-
-            m_SerializedPreferencesModule.SetupWithPreferences(serializedPreferences);
-
-            m_HasDeserialized = true;
         }
 
 #if UNITY_EDITOR
@@ -207,15 +192,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void Shutdown()
         {
+            var initializableModules = new List<IInitializableModule>();
             foreach (var module in ModuleLoaderCore.instance.modules)
             {
-                var initializable = module as IInitializableModule;
-                if (initializable != null)
-                    initializable.Shutdown();
+                var initializableModule = module as IInitializableModule;
+                if (initializableModule != null)
+                    initializableModules.Add(initializableModule);
             }
 
-            if (m_HasDeserialized)
-                serializedPreferences = m_SerializedPreferencesModule.SerializePreferences();
+            initializableModules.Sort((a, b) => a.initializationOrder.CompareTo(b.initializationOrder));
+
+            foreach (var module in initializableModules)
+            {
+                module.Shutdown();
+            }
 
             Selection.selectionChanged -= OnSelectionChanged;
 
@@ -301,11 +291,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void ConnectDependency(EditorXRMiniWorldModule dependency)
         {
             m_MiniWorldModule = dependency;
-        }
-
-        public void ConnectDependency(SerializedPreferencesModule dependency)
-        {
-            m_SerializedPreferencesModule = dependency;
         }
 
         public void LoadModule() { }

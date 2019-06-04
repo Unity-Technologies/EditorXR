@@ -18,8 +18,13 @@ namespace UnityEditor.Experimental.EditorVR
         void Shutdown();
 
         /// <summary>
-        /// Used to sort initializable modules before calling Instantiate. Shutdown is called according to module order
+        /// Used to sort initializable modules before calling Initialize
         /// </summary>
-        int order { get; }
+        int initializationOrder { get; }
+
+        /// <summary>
+        /// Used to sort initializable modules before calling Shutdown
+        /// </summary>
+        int shutdownOrder { get; }
     }
 }

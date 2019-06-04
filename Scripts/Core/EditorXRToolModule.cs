@@ -36,7 +36,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal List<Type> allTools { get { return k_AllTools; } }
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         static EditorXRToolModule()
         {

@@ -33,7 +33,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public event Action<Transform, Transform[]> objectsDropped;
         public event Action<Transform, Transform> objectsTransferred;
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         public void ConnectDependency(EditorVR dependency)
         {

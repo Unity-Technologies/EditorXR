@@ -80,7 +80,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public Transform rayOrigin { get { return null; } }
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         public void LoadModule()
         {

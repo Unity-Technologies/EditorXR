@@ -47,7 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRUIModule m_UIModule;
         EditorXRToolModule m_ToolModule;
 
-        public int order { get { return 1; } }
+        public int initializationOrder { get { return 1; } }
+        public int shutdownOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<DeviceData> k_ActiveDeviceData = new List<DeviceData>();

@@ -555,7 +555,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
         }
 
-        internal static void InitializeInputManager()
+        static void InitializeInputManager()
         {
             // HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
             // in edit mode we need to handle lifecycle explicitly

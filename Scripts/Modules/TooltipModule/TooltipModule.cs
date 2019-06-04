@@ -78,7 +78,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Vector3 m_TooltipScale;
         GameObject m_ModuleParent;
 
-        public int order { get { return 0; } }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<ITooltip> k_TooltipsToRemove = new List<ITooltip>();
