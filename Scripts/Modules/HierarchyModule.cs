@@ -45,17 +45,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
-#if UNITY_EDITOR
             EditorApplication.hierarchyChanged += UpdateHierarchyData;
-#endif
             UpdateHierarchyData();
         }
 
         public void Shutdown()
         {
-#if UNITY_EDITOR
             EditorApplication.hierarchyChanged -= UpdateHierarchyData;
-#endif
         }
 
         public void OnSelectionChanged()
@@ -283,10 +279,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     RemoveConsumer(filterUI);
             }
         }
-    }
-#else
-    sealed class HierarchyModule : IModule
-    {
     }
 #endif
 }
