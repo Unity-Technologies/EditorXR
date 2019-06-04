@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class SpatialScrollModule : MonoBehaviour, IModule, IUsesViewerScale, IControlHaptics,
+    public sealed class SpatialScrollModule : ScriptableSettings<SpatialScrollModule>, IModule, IUsesViewerScale, IControlHaptics,
         IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
     {
         public class SpatialScrollData : INodeToRay

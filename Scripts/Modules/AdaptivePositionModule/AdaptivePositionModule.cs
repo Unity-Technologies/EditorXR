@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics,
-        IModuleBehaviorCallbacks, IModuleDependency<Core.EditorVR>, IInterfaceConnector
+        IModuleBehaviorCallbacks, IInterfaceConnector
     {
 #pragma warning disable 649
         [SerializeField]
@@ -20,15 +20,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         bool m_TestInFocus;
         Transform m_GazeTransform;
         Transform m_WorldspaceAnchorTransform; // The player transform under which anchored objects will be parented
-        Core.EditorVR m_EditorVR;
 
         // Collection of objects whose position is controlled by this module
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
-
-        void IModuleDependency<Core.EditorVR>.ConnectDependency(Core.EditorVR dependency)
-        {
-            m_EditorVR = dependency;
-        }
 
         public void LoadModule()
         {
@@ -47,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     var repositionCoroutine = element.adaptiveElementRepositionCoroutine;
                     if (element.resetAdaptivePosition)
                     {
-                        m_EditorVR.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
+                        EditorMonoBehaviour.instance.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
                         element.adaptiveElementRepositionCoroutine = repositionCoroutine;
                         return;
                     }
@@ -88,7 +82,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                         if (moveElement)
                         {
-                            m_EditorVR.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
+                            EditorMonoBehaviour.instance.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
                             element.adaptiveElementRepositionCoroutine = repositionCoroutine;
                         }
                     }

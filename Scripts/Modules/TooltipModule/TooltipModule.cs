@@ -8,8 +8,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : ScriptableSettings<TooltipModule>, IModuleDependency<MultipleRayInputModule>,
-        IModuleDependency<Core.EditorVR>, IUsesViewerScale, IInitializableModule
+    sealed class TooltipModule : ScriptableSettings<TooltipModule>, IInitializableModule, IModuleBehaviorCallbacks,
+        IModuleDependency<MultipleRayInputModule>, IUsesViewerScale
     {
         class TooltipData
         {
@@ -76,8 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         Transform m_TooltipCanvas;
         Vector3 m_TooltipScale;
-
-        Core.EditorVR m_EditorVR;
+        GameObject m_ModuleParent;
 
         public int order { get { return 0; } }
 
@@ -93,11 +92,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             dependency.rayExited += OnRayExited;
         }
 
-        public void ConnectDependency(Core.EditorVR dependency)
-        {
-            m_EditorVR = dependency;
-        }
-
         public void LoadModule()
         {
             m_TooltipScale = m_TooltipPrefab.transform.localScale;
@@ -110,8 +104,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
+            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent();
             m_TooltipCanvas = EditorXRUtils.Instantiate(m_TooltipCanvasPrefab).transform;
-            m_TooltipCanvas.SetParent(m_EditorVR.transform);
+            m_TooltipCanvas.SetParent(m_ModuleParent.transform);
 
             m_Tooltips.Clear();
             m_TooltipPool.Clear();
@@ -124,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 UnityObjectUtils.Destroy(m_TooltipCanvas.gameObject);
         }
 
-        void Update()
+        public void OnBehaviorUpdate()
         {
             k_TooltipsToRemove.Clear();
             foreach (var kvp in m_Tooltips)
@@ -204,7 +199,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var transitionLerp = MathUtilsExt.SmoothInOutLerpFloat(1.0f - Mathf.Clamp01((Time.time - tooltipData.transitionTime) / k_ChangeTransitionDuration));
 
             var viewerScale = this.GetViewerScale();
-            tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
+            tooltipTransform.localScale = lerp * viewerScale * m_TooltipScale;
 
             // Adjust for alignment
             var offset = GetTooltipOffset(tooltipUI, placement, tooltipData.transitionOffset * transitionLerp);
@@ -236,11 +231,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var halfHeight = (bottomLeft - k_Corners[1]).magnitude * 0.5f;
 
                 var source = placement.tooltipSource;
-                var toSource = tooltipTransform.InverseTransformPoint(source.position);
+                var sourcePosition = source.position;
+                var toSource = tooltipTransform.InverseTransformPoint(sourcePosition);
 
                 // Position spheres: one at source, one on the closest edge of the tooltip
                 var spheres = tooltipUI.spheres;
-                spheres[0].position = source.position;
+                spheres[0].position = sourcePosition;
 
                 var attachedSphere = spheres[1];
                 var boxSlope = halfHeight / halfWidth;
@@ -255,7 +251,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 // Align dotted line
                 var attachedSpherePosition = attachedSphere.position;
-                toSource = source.position - attachedSpherePosition;
+                toSource = sourcePosition - attachedSpherePosition;
                 var midPoint = attachedSpherePosition + toSource * 0.5f;
                 var dottedLine = tooltipUI.dottedLine;
                 var length = toSource.magnitude;
@@ -272,9 +268,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void OnRayEntered(GameObject gameObject, RayEventData eventData)
+        void OnRayEntered(GameObject gameObject, RayEventData eventData)
         {
-            if (gameObject == m_EditorVR.gameObject)
+            if (gameObject == m_ModuleParent)
                 return;
 
             k_TooltipList.Clear();
@@ -285,9 +281,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void OnRayHovering(GameObject gameObject, RayEventData eventData)
+        void OnRayHovering(GameObject gameObject, RayEventData eventData)
         {
-            if (gameObject == m_EditorVR.gameObject)
+            if (gameObject == m_ModuleParent)
                 return;
 
             k_TooltipList.Clear();
@@ -298,9 +294,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void OnRayExited(GameObject gameObject, RayEventData eventData)
+        void OnRayExited(GameObject gameObject, RayEventData eventData)
         {
-            if (gameObject && gameObject != m_EditorVR.gameObject)
+            if (gameObject && gameObject != m_ModuleParent)
             {
                 k_TooltipList.Clear();
                 gameObject.GetComponents(k_TooltipList);
@@ -311,7 +307,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f, ITooltipPlacement placement = null, Action becameVisible = null)
+        void ShowTooltip(ITooltip tooltip, bool persistent = false, float duration = 0f, ITooltipPlacement placementOverride = null, Action becameVisible = null)
         {
             if (!IsValidTooltip(tooltip))
                 return;
@@ -321,16 +317,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 // Compare the targets to see if they changed
                 var currentTarget = data.GetTooltipTarget(tooltip);
-                var currentPlacement = data.placement;
+                var placement = data.placement;
+                var currentPlacement = placement;
 
                 data.persistent |= persistent;
-                data.placement = placement ?? tooltip as ITooltipPlacement;
+                data.placement = placementOverride ?? tooltip as ITooltipPlacement;
 
                 // Set the text to new text
                 var tooltipUI = data.tooltipUI;
                 if (tooltipUI)
                 {
-                    tooltipUI.Show(tooltip.tooltipText, data.placement.tooltipAlignment);
+                    tooltipUI.Show(tooltip.tooltipText, placement.tooltipAlignment);
 
                     var newTarget = data.GetTooltipTarget(tooltip);
                     if (currentTarget != newTarget)
@@ -338,7 +335,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         // Get the different between the 'old' tooltip position and 'new' tooltip position, even taking alignment into account
                         var transitionLerp = 1.0f - Mathf.Clamp01((Time.time - data.transitionTime) / k_ChangeTransitionDuration);
                         var currentPosition = currentTarget.TransformPoint(GetTooltipOffset(tooltipUI, currentPlacement, data.transitionOffset * transitionLerp));
-                        var newPosition = newTarget.TransformPoint(GetTooltipOffset(tooltipUI, data.placement, Vector3.zero));
+                        var newPosition = newTarget.TransformPoint(GetTooltipOffset(tooltipUI, placement, Vector3.zero));
 
                         // Store it as an additional offset that we'll quickly lerp from
                         data.transitionOffset = newTarget.InverseTransformVector(currentPosition - newPosition);
@@ -366,7 +363,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             tooltipData.persistent = persistent;
             tooltipData.duration = duration;
             tooltipData.becameVisible = becameVisible;
-            tooltipData.placement = placement ?? tooltip as ITooltipPlacement;
+            tooltipData.placement = placementOverride ?? tooltip as ITooltipPlacement;
             tooltipData.orientationWeight = 0.0f;
             tooltipData.transitionOffset = Vector3.zero;
             tooltipData.transitionTime = 0.0f;
@@ -391,7 +388,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return !string.IsNullOrEmpty(tooltip.tooltipText);
         }
 
-        public void HideTooltip(ITooltip tooltip, bool persistent = false)
+        void HideTooltip(ITooltip tooltip, bool persistent = false)
         {
             TooltipData tooltipData;
             if (m_Tooltips.TryGetValue(tooltip, out tooltipData))
@@ -401,8 +398,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 m_Tooltips.Remove(tooltip);
 
-                if (m_EditorVR.gameObject.activeInHierarchy && tooltipData.tooltipUI)
-                    m_EditorVR.StartCoroutine(AnimateHide(tooltip, tooltipData));
+                if (m_ModuleParent.activeInHierarchy && tooltipData.tooltipUI)
+                    EditorMonoBehaviour.instance.StartCoroutine(AnimateHide(tooltip, tooltipData));
             }
         }
 
@@ -451,7 +448,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
             else
             {
-                offset = Vector3.back * k_Offset * this.GetViewerScale();
+                offset = k_Offset * this.GetViewerScale() * Vector3.back;
             }
 
             offset += transitionOffset;
@@ -470,5 +467,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_TooltipPool.Enqueue(tooltipUI);
             m_TooltipDataPool.Enqueue(tooltipData);
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

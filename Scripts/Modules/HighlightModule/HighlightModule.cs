@@ -9,7 +9,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HighlightModule : MonoBehaviour, IModule, IUsesGameObjectLocking, IInterfaceConnector
+    [ModuleBehaviorCallbackOrder(ModuleOrders.HighlightModuleBehaviorOrder)]
+    sealed class HighlightModule : ScriptableSettings<HighlightModule>, IModuleBehaviorCallbacks, IUsesGameObjectLocking, IInterfaceConnector
     {
         struct HighlightData
         {
@@ -35,6 +36,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Dictionary<int, IEnumerator> m_Blinking = new Dictionary<int, IEnumerator>();               // instanceID-keyed
         Dictionary<GameObject, float> m_LastBlinkStartTimes = new Dictionary<GameObject, float>();
 
+        Material m_RayHighlightMaterialCopy;
+
         // Local method use only -- created here to reduce garbage collection
         static readonly List<KeyValuePair<Material, GameObject>> k_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
         static readonly List<MeshFilter> k_MeshFilters = new List<MeshFilter>();
@@ -50,19 +53,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public Color highlightColor
         {
-            get { return m_RayHighlightMaterial.GetVector("_Color"); }
-            set { m_RayHighlightMaterial.color = value; }
+            get { return m_RayHighlightMaterialCopy.GetVector("_Color"); }
+            set { m_RayHighlightMaterialCopy.color = value; }
         }
 
         public void LoadModule()
         {
-            m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
+            m_RayHighlightMaterialCopy = Instantiate(m_RayHighlightMaterial);
 #if UNITY_EDITOR
             if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
             {
                 var selectionColor = EditorMaterialUtils.PrefToColor(EditorPrefs.GetString(k_SelectionOutlinePrefsKey));
                 selectionColor.a = 1;
-                m_RayHighlightMaterial.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
+                m_RayHighlightMaterialCopy.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
             }
 #endif
 
@@ -72,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UnloadModule() { }
 
-        void LateUpdate()
+        public void OnBehaviorUpdate()
         {
             k_HighlightsToRemove.Clear();
             foreach (var highlight in m_Highlights)
@@ -111,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (!obj)
                     continue;
 
-                HighlightObject(obj, m_RayHighlightMaterial);
+                HighlightObject(obj, m_RayHighlightMaterialCopy);
             }
 
             foreach (var kvp in k_HighlightsToRemove)
@@ -190,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             if (material == null)
             {
-                material = rayOrigin ? m_RayHighlightMaterial : m_DefaultHighlightMaterial;
+                material = rayOrigin ? m_RayHighlightMaterialCopy : m_DefaultHighlightMaterial;
             }
 
             if (active) // Highlight
@@ -227,16 +230,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin,
+        IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin,
             Material material, bool force, float dutyPercent, float cycleLength)
         {
             if (!active)
             {
                 SetHighlight(go, active, rayOrigin, null, true);
                 m_Blinking.Clear();
-
-                // Using StopAll assumes that we're only allowing one simultaneous blinking highlight
-                StopAllCoroutines();
                 return null;
             }
 
@@ -253,7 +253,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         IEnumerator BlinkHighlight(GameObject go, bool active, Transform rayOrigin, Material material,
             bool force, float onTime, float cycleLength)
         {
-            while (enabled)
+            while (true)
             {
                 float lastBlinkTime;
                 m_LastBlinkStartTimes.TryGetValue(go, out lastBlinkTime);
@@ -282,5 +282,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (customHighlight != null)
                 this.customHighlight -= customHighlight.OnHighlight;
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

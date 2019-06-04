@@ -40,7 +40,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             public ActionMap actionMap
             {
-                get { return m_Owner.m_UIActionMap; }
+                get { return MultipleRayInputModuleSettings.instance.UIActionMap; }
             }
 
             public bool ignoreActionMapInputLocking
@@ -194,11 +194,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         static LayerMask s_LayerMask;
 
-#pragma warning disable 649
-        [SerializeField]
-        ActionMap m_UIActionMap;
-#pragma warning restore 649
-
         readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
 
         Camera m_EventCamera;
@@ -232,7 +227,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             s_LayerMask = LayerMask.GetMask("UI");
             m_TempRayEvent = new RayEventData(eventSystem);
-            InputUtils.GetBindingDictionaryFromActionMap(m_UIActionMap, m_Controls);
+            var uiActionMap = MultipleRayInputModuleSettings.instance.UIActionMap;
+            InputUtils.GetBindingDictionaryFromActionMap(uiActionMap, m_Controls);
 
             IIsHoveringOverUIMethods.isHoveringOverUI = IsHoveringOverUI;
             IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;

@@ -2,13 +2,14 @@
 using System;
 using System.IO;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HapticsModule : MonoBehaviour, IModule
+    sealed class HapticsModule : ScriptableSettings<HapticsModule>, IModule
     {
         public const float MaxDuration = 0.8f;
 

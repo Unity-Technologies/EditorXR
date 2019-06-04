@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #pragma warning restore 649
 
         EditorVR m_Instance;
-        Camera m_ExistingCamera;
+        Transform m_CameraRig;
 
         public bool copyMainCameraSettings { get { return m_CopyMainCameraSettings; } }
 
@@ -86,29 +86,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (Application.isPlaying)
             {
                 var camera = CameraUtils.GetMainCamera();
-                m_ExistingCamera = camera;
-                Transform cameraRig;
-                VRView.CreateCameraRig(ref camera, out cameraRig);
-
-                var editorVRs = Resources.FindObjectsOfTypeAll<EditorVR>();
-                if (editorVRs.Length == 0)
-                {
-                    Debug.LogWarning("EditorVR Module not loaded");
-                    return;
-                }
-
-                m_Instance = editorVRs[0];
+                VRView.CreateCameraRig(ref camera, out m_CameraRig);
             }
-            else
-            {
-                var editorVRs = Resources.FindObjectsOfTypeAll<EditorVR>();
-                if (editorVRs.Length == 0)
-                {
-                    Debug.LogWarning("EditorVR Module not loaded");
-                    return;
-                }
 
-                m_Instance = editorVRs[0];
+            m_Instance = ModuleLoaderCore.instance.GetModule<EditorVR>();
+            if (m_Instance == null)
+            {
+                Debug.LogWarning("EditorVR Module not loaded");
+                return;
             }
 
             m_Instance.Initialize();
@@ -129,18 +114,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_Instance == null)
                 return;
 
-            if (m_ExistingCamera && Application.isPlaying)
-                UnityObjectUtils.Destroy(m_ExistingCamera.gameObject);
+            if (m_CameraRig && Application.isPlaying)
+                UnityObjectUtils.Destroy(m_CameraRig.gameObject);
 
             m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
-            if (m_Instance)
-            {
-                if (Application.isPlaying)
-                    UnityObjectUtils.Destroy(m_Instance.gameObject);
-                else
-                    m_Instance.enabled = false;
-            }
-
             m_Instance = null;
         }
 

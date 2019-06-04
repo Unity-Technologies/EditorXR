@@ -14,8 +14,8 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-    sealed class SnappingModule : MonoBehaviour, IModule, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
-        IRaycast, IStandardIgnoreList, IInitializableModule
+    sealed class SnappingModule : ScriptableSettings<SnappingModule>, IInitializableModule, IModuleBehaviorCallbacks,
+        IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IRaycast, IStandardIgnoreList
     {
         const float k_GroundPlaneScale = 1000f;
 
@@ -238,10 +238,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         SnappingModuleSettingsUI m_SnappingModuleSettingsUI;
         Material m_ButtonHighlightMaterialClone;
+        Transform m_ModuleParent;
 
         readonly Dictionary<Transform, Dictionary<Transform, SnappingState>> m_SnappingStates = new Dictionary<Transform, Dictionary<Transform, SnappingState>>();
 
-        public bool widgetEnabled { get; set; }
+        bool widgetEnabled { get; set; }
 
         public List<GameObject> ignoreList { private get; set; }
 
@@ -262,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool snappingEnabled
+        bool snappingEnabled
         {
             get { return !m_Preferences.disableAll && (groundSnappingEnabled || surfaceSnappingEnabled); }
             set
@@ -275,7 +276,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool groundSnappingEnabled
+        bool groundSnappingEnabled
         {
             get { return m_Preferences.groundSnappingEnabled; }
             set
@@ -291,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool surfaceSnappingEnabled
+        bool surfaceSnappingEnabled
         {
             get { return m_Preferences.surfaceSnappingEnabled; }
             set
@@ -307,7 +308,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool pivotSnappingEnabled
+        bool pivotSnappingEnabled
         {
             get { return m_Preferences.pivotSnappingEnabled; }
             set
@@ -319,7 +320,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool rotationSnappingEnabled
+        bool rotationSnappingEnabled
         {
             get { return m_Preferences.rotationSnappingEnabled; }
             set
@@ -331,7 +332,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool limitRadius
+        bool limitRadius
         {
             get { return m_Preferences.limitRadius; }
             set
@@ -343,7 +344,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool manipulatorSnappingEnabled
+        bool manipulatorSnappingEnabled
         {
             get { return m_Preferences.manipulatorSnappingEnabled; }
             set
@@ -355,7 +356,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool directSnappingEnabled
+        bool directSnappingEnabled
         {
             get { return m_Preferences.directSnappingEnabled; }
             set
@@ -392,7 +393,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
-            m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlanePrefab, transform);
+            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
+            m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlanePrefab, m_ModuleParent);
             m_GroundPlane.SetActive(false);
 
             Reset();
@@ -413,7 +415,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Preferences = (Preferences)obj;
         }
 
-        void Update()
+        public void OnBehaviorUpdate()
         {
             if (snappingEnabled)
             {
@@ -432,7 +434,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         {
                             if (widget == null)
                             {
-                                widget = EditorXRUtils.Instantiate(m_Widget, transform).transform;
+                                widget = EditorXRUtils.Instantiate(m_Widget, m_ModuleParent).transform;
                                 state.widget = widget;
                             }
 
@@ -989,5 +991,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     graphic.material = m_ButtonHighlightMaterialClone;
             }
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

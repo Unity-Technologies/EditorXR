@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
@@ -12,7 +13,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class ProjectFolderModule : MonoBehaviour, IModule, IInterfaceConnector
+    sealed class ProjectFolderModule : MonoBehaviour, IInitializableModule, IInterfaceConnector
     {
         // Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
         const float k_MaxFrameTime = 0.01f;
@@ -29,13 +30,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         float m_ProjectFolderLoadYieldTime;
         IModule m_ModuleImplementation;
 
-        void OnEnable()
+        public int order { get { return 0; } }
+
+        public void Initialize()
         {
             EditorApplication.projectChanged += UpdateProjectFolders;
             UpdateProjectFolders();
         }
 
-        void OnDisable()
+        public void Shutdown()
         {
             EditorApplication.projectChanged -= UpdateProjectFolders;
         }

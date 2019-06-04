@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : MonoBehaviour, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
+    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
         IGetVRPlayerObjects, IInterfaceConnector, IInitializableModule
     {
         class RayIntersection
@@ -81,7 +81,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
-            m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
+            var moduleParent = ModuleLoaderCore.instance.GetModuleParent();
+            m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(moduleParent.transform);
 
             m_SpatialHash = m_SpatialHashModule.spatialHash;
             m_IntersectedObjects.Clear();

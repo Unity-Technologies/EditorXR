@@ -1,0 +1,12 @@
+fileFormatVersion: 2
+guid: ad6bc58952f904f40960cf079d1fb33a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_UIActionMap: {fileID: 11400000, guid: 0fba5ab60eda87e40a3fa0e2e0448085, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

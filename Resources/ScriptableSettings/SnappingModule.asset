@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d273530f00c921848b35317113cd0fe5, type: 3}
+  m_Name: SnappingModule
+  m_EditorClassIdentifier: 
+  m_GroundPlanePrefab: {fileID: 1000010670893562, guid: bb3c4478cbdb15d49b1b583b311ec386,
+    type: 3}
+  m_Widget: {fileID: 1000012520273730, guid: 6ed00893e6e67e44c927850a21a90c68, type: 3}
+  m_SettingsMenuPrefab: {fileID: 1000012006013938, guid: db0a56edf8b059642b9e03739ecd2e8b,
+    type: 3}
+  m_ButtonHighlightMaterial: {fileID: 2100000, guid: db3c88ad8f7fe11479d2d3e48c08e6f0,
+    type: 2}

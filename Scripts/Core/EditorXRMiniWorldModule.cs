@@ -179,6 +179,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         HighlightModule m_HighlightModule;
         IntersectionModule m_IntersectionModule;
 
+        GameObject m_ModuleParent;
+
         readonly Dictionary<Transform, MiniWorldRay> m_Rays = new Dictionary<Transform, MiniWorldRay>();
         readonly Dictionary<Transform, bool> m_RayWasContained = new Dictionary<Transform, bool>();
 
@@ -232,6 +234,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorApplication.hierarchyChanged += OnHierarchyChanged;
 #endif
             IIsInMiniWorldMethods.isInMiniWorld = IsInMiniWorld;
+
+            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent();
         }
 
         bool IsInMiniWorld(Transform rayOrigin)
@@ -294,7 +298,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void UpdateMiniWorldIgnoreList()
         {
-            m_EditorVR.GetComponentsInChildren(true, k_Renderers);
+            m_ModuleParent.GetComponentsInChildren(true, k_Renderers);
             k_IgnoreList.Clear();
 
             foreach (var r in k_Renderers)

@@ -37,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [RequiresTag(VRPlayerTag)]
 #endif
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
-    sealed class EditorVR : MonoBehaviour, IEditor, IConnectInterfaces,
+    sealed class EditorVR : IEditor, IConnectInterfaces,
         IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<SerializedPreferencesModule>, IInterfaceConnector
     {
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
@@ -134,6 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!Application.isPlaying)
                 ClearDeveloperConsoleIfNecessary();
 #endif
+
             HandleInitialization();
 
             UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
@@ -276,12 +277,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             deviceData.Clear();
-        }
-
-        void Update()
-        {
-            // TODO: Find a way to reconcile callback owner
-            ModuleLoaderCore.instance.OnBehaviorUpdate();
         }
 
         internal void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)

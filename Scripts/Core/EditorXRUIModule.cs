@@ -11,8 +11,9 @@ using UnityEngine.EventSystems;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
-    class EditorXRUIModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<MultipleRayInputModule>,
-        IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
+    class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<EditorVR>,
+        IModuleDependency<MultipleRayInputModule>, IModuleDependency<EditorXRViewerModule>,
+        IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
         IInterfaceConnector, IConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks
     {
         const byte k_MinStencilRef = 2;
@@ -46,6 +47,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRViewerModule m_ViewerModule;
         EditorXRRayModule m_RayModule;
         KeyboardModule m_KeyboardModule;
+
+        Transform m_ModuleParent;
 
         public int order { get { return 0; } }
 
@@ -86,6 +89,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_MultipleRayInputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
 
             m_MultipleRayInputModule.preProcessRaycastSource = m_RayModule.PreProcessRaycastSource;
+
+            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
         }
 
         public void UnloadModule() { }
@@ -127,7 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
-            m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_EditorVR.transform).GetComponent<Camera>();
+            m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_ModuleParent).GetComponent<Camera>();
             m_EventCamera.enabled = false;
             m_MultipleRayInputModule.eventCamera = m_EventCamera;
         }
@@ -140,7 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
         {
-            var go = EditorXRUtils.Instantiate(prefab, parent ? parent : m_EditorVR.transform, worldPositionStays);
+            var go = EditorXRUtils.Instantiate(prefab, parent ? parent : m_ModuleParent, worldPositionStays);
             foreach (var canvas in go.GetComponentsInChildren<Canvas>())
                 canvas.worldCamera = m_EventCamera;
 

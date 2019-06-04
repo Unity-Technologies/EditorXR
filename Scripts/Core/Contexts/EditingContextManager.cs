@@ -596,6 +596,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
         }
 
+        void Update()
+        {
+            ModuleLoaderCore.instance.OnBehaviorUpdate();
+        }
+
         void OnDestroy()
         {
             var moduleLoaderCore = ModuleLoaderCore.instance;

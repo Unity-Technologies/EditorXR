@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
-using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
@@ -16,8 +16,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public abstract void Reset();
     }
 
-    public class FeedbackModule : MonoBehaviour, IModule, ISettingsMenuItemProvider, ISerializePreferences,
-        IInterfaceConnector, IInitializableModule
+    public class FeedbackModule : ScriptableSettings<FeedbackModule>, IInitializableModule, ISettingsMenuItemProvider,
+        ISerializePreferences, IInterfaceConnector
     {
         [Serializable]
         class Preferences
@@ -102,16 +102,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Shutdown() { }
 
-        public void UnloadModule()
-        {
-        }
+        public void UnloadModule() { }
 
-        public void AddReceiver(IFeedbackReceiver feedbackReceiver)
+        void AddReceiver(IFeedbackReceiver feedbackReceiver)
         {
             m_FeedbackReceivers.Add(feedbackReceiver);
         }
 
-        public void RemoveReceiver(IFeedbackReceiver feedbackReceiver)
+        void RemoveReceiver(IFeedbackReceiver feedbackReceiver)
         {
             m_FeedbackReceivers.Remove(feedbackReceiver);
         }

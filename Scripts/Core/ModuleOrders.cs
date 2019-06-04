@@ -15,5 +15,6 @@
         public const int DeviceInputModuleBehaviorOrder = DirectSelectionModuleBehaviorOrder + 1;
         public const int MenuModuleBehaviorOrder = DeviceInputModuleBehaviorOrder + 1;
         public const int UIModuleBehaviorOrder = DeviceInputModuleBehaviorOrder + 1;
+        public const int HighlightModuleBehaviorOrder = DeviceInputModuleBehaviorOrder + 1;
     }
 }

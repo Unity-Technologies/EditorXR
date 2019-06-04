@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     [ModuleOrder(ModuleOrders.MenuModuleLoadOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.MenuModuleBehaviorOrder)]
-    class EditorXRMenuModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
+    class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
@@ -502,7 +502,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!go)
                 return true;
 
-            if (go == m_EditorVR.gameObject)
+            if (go == gameObject)
                 return true;
 
             var eventData = source.eventData;
@@ -658,7 +658,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal IMenu SpawnMenu(Type menuType, Transform rayOrigin)
         {
-            var spawnedMenu = (IMenu)EditorXRUtils.AddComponent(menuType, m_EditorVR.gameObject);
+            var spawnedMenu = (IMenu)EditorXRUtils.AddComponent(menuType, gameObject);
             this.ConnectInterfaces(spawnedMenu, rayOrigin);
 
             return spawnedMenu;

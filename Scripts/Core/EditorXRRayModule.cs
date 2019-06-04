@@ -14,12 +14,12 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRRayModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<HighlightModule>,
-        IModuleDependency<IntersectionModule>, IModuleDependency<EditorXRMiniWorldModule>,
-        IModuleDependency<DeviceInputModule>, IModuleDependency<MultipleRayInputModule>,
-        IModuleDependency<KeyboardModule>, IModuleDependency<WorkspaceModule>, IModuleDependency<EditorXRViewerModule>,
-        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<EditorXRUIModule>,
-        IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
+    class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>, IModuleDependency<EditorVR>,
+        IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>,
+        IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<DeviceInputModule>,
+        IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>, IModuleDependency<WorkspaceModule>,
+        IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRDirectSelectionModule>,
+        IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
         IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
         ISelectionChanged, IModuleBehaviorCallbacks
     {
@@ -59,6 +59,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRUIModule m_UIModule;
         EditorXRMenuModule m_MenuModule;
         EditorXRToolModule m_ToolModule;
+
+        Transform m_ModuleParent;
 
         internal DefaultProxyRay proxyRayPrefab { get { return m_ProxyRayPrefab; } }
 
@@ -145,6 +147,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
             IGetRayVisibilityMethods.isRayVisible = IsRayActive;
             IGetRayVisibilityMethods.isConeVisible = IsConeActive;
+
+            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
         }
 
         public void UnloadModule()
@@ -253,7 +257,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 var proxy = (IProxy)EditorXRUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
                 this.ConnectInterfaces(proxy);
-                proxy.trackedObjectInput = m_DeviceInputModule.trackedObjectInput;
+                var trackedObjectInput = m_DeviceInputModule.trackedObjectInput;
+                if (trackedObjectInput == null)
+                    Debug.LogError("Device Input Module not initialized--trackedObjectInput is null");
+
+                proxy.trackedObjectInput = trackedObjectInput;
                 proxy.activeChanged += () => OnProxyActiveChanged(proxy);
 
                 m_Proxies.Add(proxy);
@@ -568,7 +576,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // Include inactive children to avoid constantly polling for manipulators until first selection is made
             if (!m_StandardManipulator)
             {
-                m_StandardManipulator = m_EditorVR.GetComponentInChildren<StandardManipulator>(true);
+                m_StandardManipulator = m_ModuleParent.GetComponentInChildren<StandardManipulator>(true);
                 if (m_StandardManipulator)
                     this.ConnectInterfaces(m_StandardManipulator);
             }
@@ -577,7 +585,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_StandardManipulator.AdjustScale(cameraPosition, matrix);
 
             if (!m_ScaleManipulator)
-                m_ScaleManipulator = m_EditorVR.GetComponentInChildren<ScaleManipulator>(true);
+                m_ScaleManipulator = m_ModuleParent.GetComponentInChildren<ScaleManipulator>(true);
 
             if (m_ScaleManipulator)
                 m_ScaleManipulator.AdjustScale(cameraPosition, matrix);

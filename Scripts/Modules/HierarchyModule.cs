@@ -9,7 +9,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class HierarchyModule : MonoBehaviour, IModule, ISelectionChanged, IInterfaceConnector
+    sealed class HierarchyModule : IInitializableModule, ISelectionChanged, IInterfaceConnector
     {
         readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
         readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
@@ -18,6 +18,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly List<IFilterUI> m_FilterUIs = new List<IFilterUI>();
         readonly HashSet<string> m_ObjectTypes = new HashSet<string>();
         readonly List<GameObject> m_IgnoreList = new List<GameObject>();
+
+        public int order { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly Stack<HierarchyData> m_DataStack = new Stack<HierarchyData>();
@@ -41,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void UnloadModule() { }
 
-        void OnEnable()
+        public void Initialize()
         {
 #if UNITY_EDITOR
             EditorApplication.hierarchyChanged += UpdateHierarchyData;
@@ -49,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             UpdateHierarchyData();
         }
 
-        void OnDisable()
+        public void Shutdown()
         {
 #if UNITY_EDITOR
             EditorApplication.hierarchyChanged -= UpdateHierarchyData;
@@ -61,24 +63,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             UpdateHierarchyData();
         }
 
-        public void AddConsumer(IUsesHierarchyData consumer)
+        void AddConsumer(IUsesHierarchyData consumer)
         {
             consumer.hierarchyData = GetHierarchyData();
             m_HierarchyLists.Add(consumer);
         }
 
-        public void RemoveConsumer(IUsesHierarchyData consumer)
+        void RemoveConsumer(IUsesHierarchyData consumer)
         {
             m_HierarchyLists.Remove(consumer);
         }
 
-        public void AddConsumer(IFilterUI consumer)
+        void AddConsumer(IFilterUI consumer)
         {
             consumer.filterList = GetFilterList();
             m_FilterUIs.Add(consumer);
         }
 
-        public void RemoveConsumer(IFilterUI consumer)
+        void RemoveConsumer(IFilterUI consumer)
         {
             m_FilterUIs.Remove(consumer);
         }
@@ -283,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
     }
 #else
-    sealed class HierarchyModule : MonoBehaviour
+    sealed class HierarchyModule : IModule
     {
     }
 #endif

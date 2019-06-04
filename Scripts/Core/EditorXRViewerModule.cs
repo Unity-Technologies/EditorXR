@@ -12,9 +12,10 @@ using Unity.Labs.ModuleLoader;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRViewerModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<IntersectionModule>,
-        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>,IInterfaceConnector,
-        ISerializePreferences, IConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks
+    class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>, IModuleDependency<IntersectionModule>,
+        IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>, IInterfaceConnector,
+        ISerializePreferences, IConnectInterfaces,
+        IInitializableModule, IModuleBehaviorCallbacks
     {
 
         [Serializable]
@@ -67,8 +68,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         GameObject m_PreviewCameraPrefab;
 #pragma warning restore 649
 
-        EditorVR m_EditorVR;
-
         PlayerBody m_PlayerBody;
         GameObject m_PlayerFloor;
 
@@ -88,11 +87,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public bool preserveCameraRig { private get; set; }
 
         public bool hmdReady { get; private set; }
-
-        public void ConnectDependency(EditorVR dependency)
-        {
-            m_EditorVR = dependency;
-        }
 
         public void ConnectDependency(EditorXRDirectSelectionModule dependency)
         {
@@ -211,7 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         void InitializeCamera()
         {
             var cameraRig = CameraUtils.GetCameraRig();
-            cameraRig.parent = m_EditorVR.transform; // Parent the camera rig under EditorVR
+            cameraRig.parent = ModuleLoaderCore.instance.GetModuleParent().transform;
             var viewerCamera = CameraUtils.GetMainCamera();
             m_OriginalNearClipPlane = viewerCamera.nearClipPlane;
             m_OriginalFarClipPlane = viewerCamera.farClipPlane;
@@ -319,7 +313,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var endRotation = cameraRig.rotation * rotationDiff;
             var viewDirection = endRotation * Vector3.forward;
 
-            m_EditorVR.StartCoroutine(UpdateCameraRig(endPosition, viewDirection, () =>
+            EditorMonoBehaviour.instance.StartCoroutine(UpdateCameraRig(endPosition, viewDirection, () =>
             {
                 playerHead.parent = mainCamera;
                 playerHead.localRotation = Quaternion.identity;
@@ -369,7 +363,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void MoveCameraRig(Vector3 position, Vector3? viewdirection)
         {
-            m_EditorVR.StartCoroutine(UpdateCameraRig(position, viewdirection));
+            EditorMonoBehaviour.instance.StartCoroutine(UpdateCameraRig(position, viewdirection));
         }
 
         internal float GetViewerScale()

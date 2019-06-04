@@ -7,6 +7,7 @@ using Unity.Labs.Utils;
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 #endif
 
@@ -17,7 +18,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class PolyModule : MonoBehaviour, IWeb, IInitializableModule
+    public class PolyModule : IInitializableModule, IWeb
     {
         class RequestHandler
         {
@@ -96,7 +97,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void Initialize()
         {
-            m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
+            var moduleParent = ModuleLoaderCore.instance.GetModuleParent();
+            m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", moduleParent.transform).transform;
         }
 
         public void Shutdown()

@@ -203,10 +203,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
                 }
 
-                rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", hideFlags, typeof(EditorMonoBehaviour));
+                rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", hideFlags);
             }
 #endif
 
+            EditorXRUtils.AddComponent<EditorMonoBehaviour>(rigGO);
             cameraRig = rigGO.transform;
             camera.transform.parent = cameraRig;
 

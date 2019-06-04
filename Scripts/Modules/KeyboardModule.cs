@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -8,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class KeyboardModule : MonoBehaviour, IModuleBehaviorCallbacks, IRayVisibilitySettings, IForEachRayOrigin,
+    sealed class KeyboardModule : ScriptableSettings<KeyboardModule>, IModuleBehaviorCallbacks, IRayVisibilitySettings, IForEachRayOrigin,
         IConnectInterfaces
     {
 #pragma warning disable 649

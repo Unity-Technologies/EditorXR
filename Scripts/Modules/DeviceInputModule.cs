@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -11,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.DeviceInputModuleBehaviorOrder)]
-    sealed class DeviceInputModule : MonoBehaviour, IModuleDependency<Core.EditorVR>,
+    sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IModuleDependency<Core.EditorVR>,
         IModuleDependency<EditorXRToolModule>, IInterfaceConnector, IInitializableModule, IModuleBehaviorCallbacks
     {
         class InputProcessor
@@ -47,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public Action<List<ActionMapInput>> updatePlayerHandleMaps;
         public Func<Transform, InputDevice> inputDeviceForRayOrigin;
 
-        public int order { get { return 0; } }
+        public int order { get { return -1; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
@@ -58,6 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<InputControl> k_RemoveList = new List<InputControl>();
         ConsumeControlDelegate m_ConsumeControl;
 
+        // TODO: Make EditorVR an IProcessInput
         public void ConnectDependency(Core.EditorVR dependency)
         {
             processInput = dependency.ProcessInput;
@@ -108,17 +110,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return m_SystemDevices;
         }
 
-        public void InitializePlayerHandle()
+        void InitializePlayerHandle()
         {
             m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
             m_PlayerHandle.global = true;
             m_PlayerHandle.processAll = true;
         }
 
-        /// <summary>
-        /// Called in the EditorVR Update() function
-        /// </summary>
-        public void ProcessInput()
+        void ProcessInput()
         {
             k_RemoveList.Clear();
 
@@ -155,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 processInput(m_ProcessedInputs, m_ConsumeControl);
         }
 
-        public void CreateDefaultActionMapInputs()
+        void CreateDefaultActionMapInputs()
         {
             trackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
         }

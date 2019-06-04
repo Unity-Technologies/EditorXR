@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public Sprite icon;
     }
 
-    class EditorXRToolModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRVacuumableModule>,
+    class EditorXRToolModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRVacuumableModule>,
         IModuleDependency<LockModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
         IModuleDependency<EditorXRRayModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule
     {
@@ -212,7 +212,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 // Setup ToolsMenu
                 ToolsMenu toolsMenu = null;
-                var toolsMenus = m_EditorVR.gameObject.GetComponents<ToolsMenu>();
+                var toolsMenus = gameObject.GetComponents<ToolsMenu>();
                 foreach (var m in toolsMenus)
                 {
                     if (!m.enabled)
@@ -223,7 +223,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
 
                 if (!toolsMenu)
-                    toolsMenu = EditorXRUtils.AddComponent<ToolsMenu>(m_EditorVR.gameObject);
+                    toolsMenu = EditorXRUtils.AddComponent<ToolsMenu>(gameObject);
 
                 toolsMenu.enabled = true;
                 this.ConnectInterfaces(toolsMenu, rayOrigin);
@@ -232,7 +232,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 toolsMenu.setButtonForType(typeof(IMainMenu), null);
                 toolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
 
-                var spatialMenu = EditorXRUtils.AddComponent<SpatialMenu>(m_EditorVR.gameObject);
+                var spatialMenu = EditorXRUtils.AddComponent<SpatialMenu>(gameObject);
                 this.ConnectInterfaces(spatialMenu, rayOrigin);
                 spatialMenu.Setup();
                 deviceData.spatialMenu = spatialMenu;
@@ -256,7 +256,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 return null;
 
             var deviceSlots = new HashSet<DeviceSlot>();
-            var tool = EditorXRUtils.AddComponent(toolType, m_EditorVR.gameObject) as ITool;
+            var tool = EditorXRUtils.AddComponent(toolType, gameObject) as ITool;
             var actionMapInput = m_DeviceInputModule.CreateActionMapInputForObject(tool, device);
             if (actionMapInput != null)
             {

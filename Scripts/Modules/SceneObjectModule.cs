@@ -10,20 +10,19 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SceneObjectModule : MonoBehaviour, IModuleDependency<SceneObjectModule>,
-        IModuleDependency<SpatialHashModule>, IModuleDependency<EditorXRMiniWorldModule>, IUsesSpatialHash
+    sealed class SceneObjectModule : IModuleDependency<SpatialHashModule>, IModuleDependency<EditorXRMiniWorldModule>,
+        IUsesSpatialHash
     {
         const float k_InstantiateFOVDifference = -5f;
         const float k_GrowDuration = 0.5f;
 
-        SceneObjectModule m_SceneObjectModule;
         SpatialHashModule m_SpatialHashModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
 
-        public void PlaceSceneObject(Transform obj, Vector3 targetScale)
+        void PlaceSceneObject(Transform obj, Vector3 targetScale)
         {
             if (!TryPlaceObjectInMiniWorld(obj, targetScale))
-                StartCoroutine(PlaceSceneObjectCoroutine(obj, targetScale));
+                EditorMonoBehaviour.instance.StartCoroutine(PlaceSceneObjectCoroutine(obj, targetScale));
         }
 
         public void DeleteSceneObject(GameObject sceneObject)
@@ -97,9 +96,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
         }
 
-        public void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
+        void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
         {
-            StartCoroutine(PlaceSceneObjectsCoroutine(transforms, targetPositionOffsets, targetRotations, targetScales));
+            EditorMonoBehaviour.instance.StartCoroutine(PlaceSceneObjectsCoroutine(transforms, targetPositionOffsets, targetRotations, targetScales));
         }
 
         IEnumerator PlaceSceneObjectsCoroutine(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
@@ -191,11 +190,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
 #endif
-        }
-
-        public void ConnectDependency(SceneObjectModule dependency)
-        {
-            m_SceneObjectModule = dependency;
         }
 
         public void ConnectDependency(SpatialHashModule dependency)

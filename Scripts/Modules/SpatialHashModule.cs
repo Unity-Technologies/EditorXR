@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
@@ -20,7 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void LoadModule()
         {
-            shouldExcludeObject = go => go.GetComponentInParent<Core.EditorVR>();
+            var moduleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
+            shouldExcludeObject = go => go.transform.IsChildOf(moduleParent);
 
             IUsesSpatialHashMethods.addToSpatialHash = AddObject;
             IUsesSpatialHashMethods.removeFromSpatialHash = RemoveObject;
