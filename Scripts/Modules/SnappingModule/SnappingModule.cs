@@ -388,9 +388,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             IUsesSnappingMethods.clearSnappingState = ClearSnappingState;
         }
 
-        public void UnloadModule()
-        {
-        }
+        public void UnloadModule() { }
 
         public void Initialize()
         {

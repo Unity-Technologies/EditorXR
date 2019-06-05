@@ -674,9 +674,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public void ProcessInput(WorkspaceInput input, ConsumeControlDelegate consumeControl)
         {
-            if (!leftRayOrigin || !rightRayOrigin)
-                return;
-
             if (m_Controls.Count == 0)
                 InputUtils.GetBindingDictionaryFromActionMap(input.actionMap, m_Controls);
 

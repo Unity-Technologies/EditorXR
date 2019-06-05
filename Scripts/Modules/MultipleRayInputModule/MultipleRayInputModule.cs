@@ -28,25 +28,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             MultipleRayInputModule m_Owner;
             readonly List<ProxyFeedbackRequest> m_ScrollFeedback = new List<ProxyFeedbackRequest>();
 
-            public GameObject currentObject
-            {
-                get { return hoveredObject ? hoveredObject : draggedObject; }
-            }
+            public GameObject currentObject { get { return hoveredObject ? hoveredObject : draggedObject; } }
 
-            public bool hasObject
-            {
-                get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; }
-            }
+            public bool hasObject { get { return currentObject != null && (s_LayerMask & (1 << currentObject.layer)) != 0; } }
 
-            public ActionMap actionMap
-            {
-                get { return MultipleRayInputModuleSettings.instance.UIActionMap; }
-            }
-
-            public bool ignoreActionMapInputLocking
-            {
-                get { return false; }
-            }
+            public ActionMap actionMap { get { return MultipleRayInputModuleSettings.instance.UIActionMap; } }
+            public bool ignoreActionMapInputLocking { get { return false; } }
 
             public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<RaycastSource, bool> validationCallback)
             {

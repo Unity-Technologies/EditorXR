@@ -244,10 +244,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
-            //TODO: Fix update before start
-            if (m_Preferences == null)
-                return;
-
             m_LocomotionInput = (LocomotionInput)input;
 
             this.SetUIBlockedForRayOrigin(rayOrigin, true);
@@ -283,9 +279,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         // HACK: Because we don't get mouse input through action maps, just use Update
         void Update()
         {
-            if (!cameraRig)
-                return;
-
             var mouseDelta = VRView.MouseDelta;
 
             if (VRView.LeftMouseButtonHeld)

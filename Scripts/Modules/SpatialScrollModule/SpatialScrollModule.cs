@@ -92,10 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             /// <summary>
             /// Bool denoting that the scroll trigger magnitude has been exceeded
             /// </summary>
-            public bool passedMinDragActivationThreshold
-            {
-                get { return spatialDirection != null; }
-            }
+            public bool passedMinDragActivationThreshold { get { return spatialDirection != null; } }
 
             public void UpdateExistingScrollData(Vector3 newPosition)
             {

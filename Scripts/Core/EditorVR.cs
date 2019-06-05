@@ -200,7 +200,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     initializableModules.Add(initializableModule);
             }
 
-            initializableModules.Sort((a, b) => a.initializationOrder.CompareTo(b.initializationOrder));
+            initializableModules.Sort((a, b) => a.shutdownOrder.CompareTo(b.shutdownOrder));
 
             foreach (var module in initializableModules)
             {

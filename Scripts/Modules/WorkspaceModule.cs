@@ -78,13 +78,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         internal static readonly Vector3 DefaultWorkspaceOffset = new Vector3(0, -0.15f, 0.4f);
         internal static readonly Quaternion DefaultWorkspaceTilt = Quaternion.AngleAxis(-45, Vector3.right);
 
-        internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
-
         readonly List<IWorkspace> m_Workspaces = new List<IWorkspace>();
         readonly List<IInspectorWorkspace> m_Inspectors = new List<IInspectorWorkspace>();
 
-        internal event Action<IWorkspace> workspaceCreated;
-        internal event Action<IWorkspace> workspaceDestroyed;
+        Preferences m_Preferences;
+
+        internal List<IWorkspace> workspaces { get { return m_Workspaces; } }
 
         internal static List<Type> workspaceTypes { get; private set; }
 
@@ -93,7 +92,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         internal bool preserveWorkspaces { get; set; }
 
-        Preferences m_Preferences;
+        internal event Action<IWorkspace> workspaceCreated;
+        internal event Action<IWorkspace> workspaceDestroyed;
 
         static WorkspaceModule()
         {

@@ -235,9 +235,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         internal void UpdateRaycast(Transform rayOrigin, float distance)
         {
-            if (!rayOrigin)
-                return;
-
             if (!m_RayoriginEnabled.ContainsKey(rayOrigin))
                 m_RayoriginEnabled[rayOrigin] = true;
 

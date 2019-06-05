@@ -224,6 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadModule() { }
+
         public void OnBehaviorAwake() { }
 
         public void OnBehaviorEnable() { }

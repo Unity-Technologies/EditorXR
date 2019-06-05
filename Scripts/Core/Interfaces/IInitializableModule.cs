@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR
         void Initialize();
 
         /// <summary>
-        /// Called when EditingStops
+        /// Called when editing stops
         /// </summary>
         void Shutdown();
 
