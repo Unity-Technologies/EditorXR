@@ -529,7 +529,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         {
                             m_ScaleFirstNode = grabbingNode == Node.LeftHand ? Node.RightHand : Node.LeftHand;
                             otherData.StartScaling(grabData);
-                            ShowScaleOptionsFeedback();
+                            ShowScaleOptionsFeedback(otherData.twoHandedManipulateMode);
                             m_Scaling = true;
                         }
 
@@ -1004,7 +1004,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             ShowFeedback(m_ScaleFeedback, "Select", "Scale", node);
         }
 
-        void ShowScaleOptionsFeedback(TwoHandedManipulateMode mode = TwoHandedManipulateMode.ScaleOnly)
+        void ShowScaleOptionsFeedback(TwoHandedManipulateMode mode)
         {
             HideScaleOptionFeedback();
             switch (mode)
