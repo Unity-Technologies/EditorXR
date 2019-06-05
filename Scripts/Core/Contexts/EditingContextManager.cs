@@ -329,7 +329,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnDisable()
         {
-            ModuleLoaderCore.instance.OnBehaviorDisable();
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            moduleLoaderCore.OnBehaviorDisable();
 
             if (Application.isPlaying)
             {
@@ -366,7 +367,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
-                foreach (var module in ModuleLoaderCore.instance.modules)
+                foreach (var module in moduleLoaderCore.modules)
                 {
                     var behavior = module as MonoBehaviour;
                     if (behavior != null)
@@ -407,7 +408,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             else
             {
-                foreach (var module in ModuleLoaderCore.instance.modules)
+                foreach (var module in moduleLoaderCore.modules)
                 {
                     var behavior = module as MonoBehaviour;
                     if (behavior != null)
