@@ -71,6 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         PlayerBody m_PlayerBody;
         GameObject m_PlayerFloor;
 
+        bool m_Initialized;
         float m_OriginalNearClipPlane;
         float m_OriginalFarClipPlane;
         readonly List<GameObject> m_VRPlayerObjects = new List<GameObject>();
@@ -80,7 +81,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         SpatialHashModule m_SpatialHashModule;
         IntersectionModule m_IntersectionModule;
 
-        public int initializationOrder { get { return 0; } }
+        public int initializationOrder { get { return -2; } }
         public int shutdownOrder { get { return 0; } }
 
         internal IPreviewCamera customPreviewCamera { get; private set; }
@@ -117,11 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             VRView.hmdStatusChange += OnHMDStatusChange;
 #endif
 
-            preserveCameraRig = true;
-
             Shader.SetGlobalFloat(k_WorldScaleProperty, 1);
-
-            preserveCameraRig = EditorVR.preserveLayout;
         }
 
         public void UnloadModule()
@@ -129,19 +126,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             VRView.hmdStatusChange -= OnHMDStatusChange;
 #endif
-
-            var cameraRig = CameraUtils.GetCameraRig();
-            if (cameraRig)
-                cameraRig.transform.parent = null;
-
-            if (m_PlayerBody)
-                UnityObjectUtils.Destroy(m_PlayerBody.gameObject);
-
-            if (m_PlayerFloor)
-                UnityObjectUtils.Destroy(m_PlayerFloor);
-
-            if (customPreviewCamera != null && customPreviewCamera as MonoBehaviour != null)
-                UnityObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
         }
 
         public void ConnectInterface(object target, object userData = null)
@@ -252,6 +236,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal void AddPlayerFloor()
         {
             m_PlayerFloor = EditorXRUtils.Instantiate(m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
+            m_VRPlayerObjects.Add(m_PlayerFloor);
         }
 
         internal void AddPlayerModel()
@@ -380,27 +365,46 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             var camera = CameraUtils.GetMainCamera();
             CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
-            camera.nearClipPlane = m_OriginalNearClipPlane * scale;
-            camera.farClipPlane = m_OriginalFarClipPlane * scale;
             Shader.SetGlobalFloat(k_WorldScaleProperty, 1f / scale);
+            if (m_Initialized)
+            {
+                camera.nearClipPlane = m_OriginalNearClipPlane * scale;
+                camera.farClipPlane = m_OriginalFarClipPlane * scale;
+            }
         }
 
         public void Initialize()
         {
+            preserveCameraRig = EditorVR.preserveLayout;
+
             m_VRPlayerObjects.Clear();
             InitializeCamera();
             AddPlayerModel();
             AddPlayerFloor();
+            m_Initialized = true;
         }
 
         public void Shutdown()
         {
+            m_Initialized = true;
+            m_OriginalNearClipPlane = 0;
+            m_OriginalFarClipPlane = 0;
+            hmdReady = false;
+            preserveCameraRig = false;
+
             foreach (var playerObject in m_VRPlayerObjects)
             {
                 UnityObjectUtils.Destroy(playerObject);
             }
 
-            UnityObjectUtils.Destroy(m_PlayerFloor);
+            m_VRPlayerObjects.Clear();
+
+            var cameraRig = CameraUtils.GetCameraRig();
+            if (cameraRig)
+                cameraRig.transform.parent = null;
+
+            if (customPreviewCamera != null && customPreviewCamera as MonoBehaviour != null)
+                UnityObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
         }
 
         public void OnBehaviorAwake() { }

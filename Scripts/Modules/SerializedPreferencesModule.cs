@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             set { EditorPrefs.SetString(SerializedPreferencesKey, value); }
         }
 
-        public int initializationOrder { get { return -2; } }
+        public int initializationOrder { get { return -1; } }
         public int shutdownOrder { get { return 1; } }
 
         public void Initialize()

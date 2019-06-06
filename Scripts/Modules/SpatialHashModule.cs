@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public Func<GameObject, bool> shouldExcludeObject { private get; set; }
 
-        public int initializationOrder { get { return -1; } }
+        public int initializationOrder { get { return -3; } }
         public int shutdownOrder { get { return 0; } }
 
         public void LoadModule()
