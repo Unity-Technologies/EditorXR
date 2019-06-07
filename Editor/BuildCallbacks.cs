@@ -38,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR
             public string[] ExcludePlatforms { get { return excludePlatforms; } set { excludePlatforms = value; } }
         }
 
-        static readonly string[] k_AssemblyNames = { "EXR", "EXR-Dependencies", "input-prototype", "VRLR" };
+        static readonly string[] k_AssemblyNames = { "Unity.Labs.EditorXR", "input-prototype", "VRLR" };
         static readonly string[] k_IncludePlatformsOverride = { "Editor" };
         static readonly string[] k_ExcludePlatformsOverride = { };
         static readonly Dictionary<string, string[]> k_IncludePlatforms = new Dictionary<string, string[]>();

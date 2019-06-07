@@ -1,8 +1,14 @@
 {
-    "name": "EXR-Dependencies",
-    "references": [],
+    "name": "Unity.Labs.EditorXR.Editor",
+    "references": [
+        "Unity.Labs.EditorXR",
+        "Unity.TextMeshPro",
+        "Unity.Labs.Utils"
+    ],
     "optionalUnityReferences": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
