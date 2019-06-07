@@ -456,7 +456,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        private void Update()
+        void Update()
         {
             // If code is compiling, then we need to clean up the window resources before classes get re-initialized
             if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode)
