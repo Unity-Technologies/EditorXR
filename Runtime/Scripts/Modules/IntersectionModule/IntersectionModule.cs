@@ -9,8 +9,9 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
-        IGetVRPlayerObjects, IInterfaceConnector, IInitializableModule
+    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IInitializableModule,
+        IModuleBehaviorCallbacks, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
+        IGetVRPlayerObjects, IInterfaceConnector
     {
         class RayIntersection
         {
@@ -99,7 +100,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 UnityObjectUtils.Destroy(m_CollisionTester.gameObject);
         }
 
-        void Update()
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
         {
             if (m_SpatialHash == null)
                 return;
@@ -201,6 +208,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
         }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
 
         internal void AddTester(IntersectionTester tester)
         {
