@@ -182,8 +182,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 if (!data.initialized)
                     data.Initialize();
 
+#if INCLUDE_POLY_TOOLKIT
                 data.modelImportCompleted += OnModelImportCompleted;
                 data.thumbnailImportCompleted += OnThumbnailImportCompleted;
+#endif
             }
 
             // Don't scale the item while changing visibility because this would conflict with AnimateVisibility
@@ -399,11 +401,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 transform.localScale = Vector3.zero;
             }
+#if INCLUDE_POLY_TOOLKIT
             else
             {
                 data.modelImportCompleted -= OnModelImportCompleted;
                 data.thumbnailImportCompleted -= OnThumbnailImportCompleted;
             }
+#endif
 
             var currentScale = transform.localScale;
             var targetScale = visible ? m_IconScale * scaleFactor : Vector3.zero;
