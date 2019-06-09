@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
     /// Used to specify a combination of 3D axes

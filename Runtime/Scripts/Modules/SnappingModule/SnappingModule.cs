@@ -16,7 +16,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
     sealed class SnappingModule : ScriptableSettings<SnappingModule>, IInitializableModule, IModuleBehaviorCallbacks,
-        IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IStandardIgnoreList, IUsesSceneRaycast
+        IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IStandardIgnoreList, IUsesSceneRaycast,
+        IProvidesSnapping
     {
         const float k_GroundPlaneScale = 1000f;
 
@@ -388,10 +389,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
 
             widgetEnabled = true;
-
-            IUsesSnappingMethods.manipulatorSnap = ManipulatorSnap;
-            IUsesSnappingMethods.directSnap = DirectSnap;
-            IUsesSnappingMethods.clearSnappingState = ClearSnappingState;
         }
 
         public void UnloadModule() { }
@@ -1006,5 +1003,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var snappingSubscriber = obj as IFunctionalitySubscriber<IProvidesSnapping>;
+            if (snappingSubscriber != null)
+                snappingSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

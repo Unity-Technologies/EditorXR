@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR.Handles;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 

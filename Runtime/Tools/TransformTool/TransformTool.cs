@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -394,6 +395,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public bool ignoreActionMapInputLocking { get { return false; } }
 
 #if !FI_AUTOFILL
+        IProvidesSnapping IFunctionalitySubscriber<IProvidesSnapping>.provider { get; set; }
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
 #endif
 

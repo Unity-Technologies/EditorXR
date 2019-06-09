@@ -11,13 +11,13 @@ namespace Unity.Labs.EditorXR.Interfaces
         /// <summary>
         /// Add all renderers of a GameObject (and its children) to the spatial hash for queries, direct selection, etc.
         /// </summary>
-        /// <param name="go">The GameObject to add</param>
-        void AddToSpatialHash(GameObject go);
+        /// <param name="gameObjectToAdd">The GameObject to add</param>
+        void AddToSpatialHash(GameObject gameObjectToAdd);
 
         /// <summary>
         /// Remove all renderers of a GameObject (and its children) from the spatial hash
         /// </summary>
-        /// <param name="go">The GameObject to remove</param>
-        void RemoveFromSpatialHash(GameObject go);
+        /// <param name="gameObjectToRemove">The GameObject to remove</param>
+        void RemoveFromSpatialHash(GameObject gameObjectToRemove);
     }
 }
