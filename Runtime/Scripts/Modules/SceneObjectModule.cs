@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class SceneObjectModule : IModuleDependency<SpatialHashModule>, IModuleDependency<EditorXRMiniWorldModule>,
-        IUsesSpatialHash, IProvidesPlaceSceneObject, IProvidesPlaceSceneObjects
+        IUsesSpatialHash, IProvidesPlaceSceneObject, IProvidesPlaceSceneObjects, IProvidesDeleteSceneObject
     {
         const float k_InstantiateFOVDifference = -5f;
         const float k_GrowDuration = 0.5f;
@@ -201,10 +201,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_MiniWorldModule = dependency;
         }
 
-        public void LoadModule()
-        {
-            IDeleteSceneObjectMethods.deleteSceneObject = DeleteSceneObject;
-        }
+        public void LoadModule() { }
 
         bool TryPlaceObjectInMiniWorld(Transform obj, Vector3 targetScale)
         {
@@ -227,6 +224,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadModule() { }
+
         public void LoadProvider() { }
 
         public void ConnectSubscriber(object obj)
@@ -235,8 +233,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var placeSceneObjectSubscriber = obj as IFunctionalitySubscriber<IProvidesPlaceSceneObject>;
             if (placeSceneObjectSubscriber != null)
                 placeSceneObjectSubscriber.provider = this;
+
+            var placeSceneObjectsSubscriber = obj as IFunctionalitySubscriber<IProvidesPlaceSceneObjects>;
+            if (placeSceneObjectsSubscriber != null)
+                placeSceneObjectsSubscriber.provider = this;
+
+            var deleteObjectSubscriber = obj as IFunctionalitySubscriber<IProvidesDeleteSceneObject>;
+            if (deleteObjectSubscriber != null)
+                deleteObjectSubscriber.provider = this;
 #endif
         }
+
         public void UnloadProvider() { }
     }
 }
