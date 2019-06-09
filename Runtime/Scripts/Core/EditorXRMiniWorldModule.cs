@@ -205,6 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if !FI_AUTOFILL
         IProvidesPlaceSceneObjects IFunctionalitySubscriber<IProvidesPlaceSceneObjects>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 
         public void ConnectDependency(EditorXRRayModule dependency)

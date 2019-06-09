@@ -90,6 +90,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Selection.activeGameObject = go;
 
             this.AddToSpatialHash(go);
+
 #if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
 #endif

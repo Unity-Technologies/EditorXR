@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils.GUI;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -31,6 +33,10 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         Plane m_Plane;
 
         public AxisFlags constraints { get { return m_Constraints; } }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         static readonly LinearHandleEventData k_LinearHandleEventData = new LinearHandleEventData(null, false);

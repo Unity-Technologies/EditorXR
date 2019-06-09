@@ -1,3 +1,5 @@
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -24,6 +26,10 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         float m_ScrollRate;
         Vector3 m_LastPosition;
         float m_CurrentRadius;
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         static readonly SphereHandleEventData k_SphereHandleEventData = new SphereHandleEventData(null, false);

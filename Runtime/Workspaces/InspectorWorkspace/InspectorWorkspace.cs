@@ -1,5 +1,6 @@
 #if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;

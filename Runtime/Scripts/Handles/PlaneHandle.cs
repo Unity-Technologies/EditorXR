@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils.GUI;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -27,6 +29,10 @@ namespace UnityEditor.Experimental.EditorVR.Handles
         readonly Dictionary<Transform, Vector3> m_LastPositions = new Dictionary<Transform, Vector3>(k_DefaultCapacity);
 
         public AxisFlags constraints { get { return m_Constraints; } }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         static readonly PlaneHandleEventData k_LinearHandleEventData = new PlaneHandleEventData(null, false);

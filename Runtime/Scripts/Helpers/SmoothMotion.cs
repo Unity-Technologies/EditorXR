@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
@@ -39,6 +41,10 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
         Quaternion m_LazyRotation;
         Vector3 m_LazyPosition;
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         void Start()
         {

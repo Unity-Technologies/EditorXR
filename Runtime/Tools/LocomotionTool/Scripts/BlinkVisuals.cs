@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 
@@ -90,6 +89,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IUsesSceneRaycast
     }
 
 #if !FI_AUTOFILL
+    IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
     IProvidesSceneRaycast IFunctionalitySubscriber<IProvidesSceneRaycast>.provider { get; set; }
 #endif
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -164,6 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 
         public virtual void Setup()
@@ -172,6 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             m_WorkspaceUI = baseObject.GetComponent<WorkspaceUI>();
             this.ConnectInterfaces(m_WorkspaceUI);
+            this.InjectFunctionalitySingle(m_WorkspaceUI);
             m_WorkspaceUI.closeClicked += OnCloseClicked;
             m_WorkspaceUI.resetSizeClicked += OnResetClicked;
             m_WorkspaceUI.buttonHovered += OnButtonHovered;

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -38,6 +40,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform rayOrigin { private get; set; }
         public List<IWorkspace> allWorkspaces { private get; set; }
         public ActionMap standardActionMap { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {

@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -32,6 +34,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Vector3 defaultOffset { private get; set; }
         public Quaternion defaultTilt { private get; set; }
         public Node node { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         void Start()
         {

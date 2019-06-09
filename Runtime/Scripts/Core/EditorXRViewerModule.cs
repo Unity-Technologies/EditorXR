@@ -110,8 +110,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
             IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
             IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
-            IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
-            IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
             IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
 
 #if UNITY_EDITOR

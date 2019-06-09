@@ -1,3 +1,5 @@
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -45,6 +47,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             EndPoint,
             Freeform
         }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         void Start()
         {

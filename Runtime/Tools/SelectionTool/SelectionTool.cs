@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -152,6 +154,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
         }
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         static readonly Dictionary<Transform, GameObject> k_TempHovers = new Dictionary<Transform, GameObject>();

@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
         IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
-        ISelectionChanged, IModuleBehaviorCallbacks
+        ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -70,6 +70,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
 
         public void ConnectDependency(HighlightModule dependency)
         {
@@ -346,6 +350,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         rayTransform.position = rayOrigin.position;
                         rayTransform.rotation = rayOrigin.rotation;
                         var dpr = rayTransform.GetComponent<DefaultProxyRay>();
+                        this.InjectFunctionalitySingle(dpr);
                         dpr.SetColor(m_HighlightModule.highlightColor);
                         m_DefaultRays.Add(rayOrigin, dpr);
 

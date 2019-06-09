@@ -376,6 +376,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if !FI_AUTOFILL
         IProvidesSceneRaycast IFunctionalitySubscriber<IProvidesSceneRaycast>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection

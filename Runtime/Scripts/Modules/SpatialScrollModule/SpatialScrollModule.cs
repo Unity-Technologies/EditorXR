@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -107,6 +108,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         // Collection housing objects whose scroll data is being processed
         readonly List<IControlSpatialScrolling> m_ScrollCallers = new List<IControlSpatialScrolling>();
+
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
 
         internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
         {

@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -33,6 +35,10 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         bool m_Visible;
         Coroutine m_AnimationVisibilityCoroutine;
 
+#if !FI_AUTOFILL
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+#endif
+
         void Awake()
         {
             m_Camera = CameraUtils.GetMainCamera().transform;
@@ -43,8 +49,9 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
         {
             const float kLerpMultiplier = 6f;
             var currentScale = this.GetViewerScale();
-            m_FloorPosition.x = m_Camera.position.x + k_XOffset * currentScale;
-            m_FloorPosition.z = m_Camera.position.z - k_ZOffset * currentScale;
+            var position = m_Camera.position;
+            m_FloorPosition.x = position.x + k_XOffset * currentScale;
+            m_FloorPosition.z = position.z - k_ZOffset * currentScale;
             m_FloorPosition.y = m_CameraRig.transform.position.y;
             m_FloorPosition -= VRView.headCenteredOrigin * currentScale;
             transform.position = m_FloorPosition;
