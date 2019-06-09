@@ -1,6 +1,7 @@
 #if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -14,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRMiniWorldModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<SpatialHashModule>, IModuleDependency<HighlightModule>,
-        IModuleDependency<IntersectionModule>, IModuleDependency<WorkspaceModule>, IPlaceSceneObjects, IUsesViewerScale, IUsesSpatialHash
+        IModuleDependency<IntersectionModule>, IModuleDependency<WorkspaceModule>, IUsesPlaceSceneObjects, IUsesViewerScale, IUsesSpatialHash
     {
         internal class MiniWorldRay
         {
@@ -139,7 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 hasPreview = false;
             }
 
-            public void DropPreviewObjects(IPlaceSceneObjects placer)
+            public void DropPreviewObjects(IUsesPlaceSceneObjects placer)
             {
                 var count = m_GrabData.Count;
                 var transforms = new Transform[count];
@@ -201,6 +202,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             get { return m_Worlds; }
         }
+
+#if !FI_AUTOFILL
+        IProvidesPlaceSceneObjects IFunctionalitySubscriber<IProvidesPlaceSceneObjects>.provider { get; set; }
+#endif
 
         public void ConnectDependency(EditorXRRayModule dependency)
         {

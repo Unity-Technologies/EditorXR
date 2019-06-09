@@ -10,7 +10,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class SceneObjectModule : IModuleDependency<SpatialHashModule>, IModuleDependency<EditorXRMiniWorldModule>,
-        IUsesSpatialHash, IProvidesPlaceSceneObject
+        IUsesSpatialHash, IProvidesPlaceSceneObject, IProvidesPlaceSceneObjects
     {
         const float k_InstantiateFOVDifference = -5f;
         const float k_GrowDuration = 0.5f;
@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
         }
 
-        void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
+        public void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
         {
             EditorMonoBehaviour.instance.StartCoroutine(PlaceSceneObjectsCoroutine(transforms, targetPositionOffsets, targetRotations, targetScales));
         }
@@ -204,7 +204,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void LoadModule()
         {
             IDeleteSceneObjectMethods.deleteSceneObject = DeleteSceneObject;
-            IPlaceSceneObjectsMethods.placeSceneObjects = PlaceSceneObjects;
         }
 
         bool TryPlaceObjectInMiniWorld(Transform obj, Vector3 targetScale)
