@@ -54,6 +54,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         SpatialHashModule m_SpatialHashModule;
 
+#if !FI_AUTOFILL
+        IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+#endif
+
         // Local method use only -- created here to reduce garbage collection
         readonly List<Renderer> m_Intersections = new List<Renderer>();
         readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();

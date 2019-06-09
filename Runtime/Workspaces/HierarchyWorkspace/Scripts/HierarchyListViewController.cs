@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -90,6 +92,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public Func<string, bool> matchesFilter { private get; set; }
         public Func<string> getSearchQuery { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+#endif
 
         protected override void Start()
         {

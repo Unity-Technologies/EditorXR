@@ -40,6 +40,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Material m_RayHighlightMaterialCopy;
         Transform m_ModuleParent;
 
+#if !FI_AUTOFILL
+        IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+#endif
+
         // Local method use only -- created here to reduce garbage collection
         static readonly List<KeyValuePair<Material, GameObject>> k_HighlightsToRemove = new List<KeyValuePair<Material, GameObject>>();
         static readonly List<MeshFilter> k_MeshFilters = new List<MeshFilter>();

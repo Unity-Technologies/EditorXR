@@ -25,6 +25,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public event Action<Transform> selected;
 
+#if !FI_AUTOFILL
+        IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+#endif
+
         // Local method use only -- created here to reduce garbage collection
         static readonly HashSet<Object> k_SelectedObjects = new HashSet<Object>();
         static readonly List<GameObject> k_SingleObjectList = new List<GameObject>();
