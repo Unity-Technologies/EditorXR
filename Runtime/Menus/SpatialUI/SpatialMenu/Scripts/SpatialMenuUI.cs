@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -267,6 +269,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 m_BeingMoved = value;
             }
         }
+
+#if !FI_AUTOFILL
+        IProvidesRaycastResults IFunctionalitySubscriber<IProvidesRaycastResults>.provider { get; set; }
+#endif
 
         void Awake()
         {

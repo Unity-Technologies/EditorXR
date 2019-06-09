@@ -156,6 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
 
 #if !FI_AUTOFILL
+        IProvidesRaycastResults IFunctionalitySubscriber<IProvidesRaycastResults>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 

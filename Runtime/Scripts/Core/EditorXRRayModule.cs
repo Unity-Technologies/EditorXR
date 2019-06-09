@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -21,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
         IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
-        ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection
+        ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -147,7 +148,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             IForEachRayOriginMethods.forEachRayOrigin = IterateRayOrigins;
             IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
             IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
-            IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
             IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
             INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
             IGetRayVisibilityMethods.isRayVisible = IsRayActive;
@@ -485,7 +485,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return result;
         }
 
-        GameObject GetFirstGameObject(Transform rayOrigin)
+        public GameObject GetFirstGameObject(Transform rayOrigin)
         {
             float distance;
             var go = m_IntersectionModule.GetFirstGameObject(rayOrigin, out distance);
@@ -693,6 +693,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var raycastResultsSubscriber = obj as IFunctionalitySubscriber<IProvidesRaycastResults>;
+            if (raycastResultsSubscriber != null)
+                raycastResultsSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif
