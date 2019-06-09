@@ -1,9 +1,11 @@
 using System;
+using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 using Unity.Labs.ListView;
-
+using Unity.Labs.ModuleLoader;
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
+using UnityEngine.Networking;
 #endif
 
 #if UNITY_EDITOR
@@ -14,7 +16,7 @@ using Unity.Labs.Utils;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    public class PolyGridAsset : IListViewItemData<string>, IWeb
+    public class PolyGridAsset : IListViewItemData<string>, IUsesWeb
     {
         const int k_MaxPreviewComplexity = 2500;
         static readonly string k_TemplateName = "PolyGridItem";
@@ -42,6 +44,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public Texture2D thumbnail { get { return m_Thumbnail; } }
         public bool initialized { get { return m_Initialized; } }
         public long complexity { get { return m_Complexity; } }
+
+#if !FI_AUTOFILL
+        IProvidesWeb IFunctionalitySubscriber<IProvidesWeb>.provider { get; set; }
+#endif
 
 #if INCLUDE_POLY_TOOLKIT
         public event Action<PolyGridAsset, GameObject> modelImportCompleted;
@@ -119,8 +125,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             if (thumbnail == null)
                 return;
 
-            this.DownloadTexture(thumbnail.url, handler =>
+            this.Download<DownloadHandlerTexture>(thumbnail.url, request =>
             {
+                var handler = (DownloadHandlerTexture)request.downloadHandler;
                 m_Thumbnail = handler.texture;
                 if (m_Thumbnail == null)
                     return;

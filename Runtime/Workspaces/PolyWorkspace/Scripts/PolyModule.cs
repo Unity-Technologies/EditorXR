@@ -18,21 +18,23 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class PolyModule : IInitializableModule, IWeb
+    public class PolyModule : IInitializableModule, IUsesFunctionalityInjection
     {
         class RequestHandler
         {
             List<PolyGridAsset> m_Assets;
             Transform m_Container;
             Action<string> m_ListCallback;
+            PolyModule m_PolyModule;
 
             public RequestHandler(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,
                 PolyCategory category, int requestSize, List<PolyGridAsset> assets, Transform container,
-                Action<string> listCallback, string nextPageToken = null)
+                Action<string> listCallback, PolyModule polyModule, string nextPageToken = null)
             {
                 m_Assets = assets;
                 m_Container = container;
                 m_ListCallback = listCallback;
+                m_PolyModule = polyModule;
 
                 var request = new PolyListAssetsRequest
                 {
@@ -66,6 +68,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     if (!k_AssetCache.TryGetValue(name, out polyGridAsset))
                     {
                         polyGridAsset = new PolyGridAsset(asset, m_Container);
+                        m_PolyModule.InjectFunctionalitySingle(polyGridAsset);
                         k_AssetCache[name] = polyGridAsset;
                     }
 
@@ -82,6 +85,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
 
         public void LoadModule()
         {
@@ -112,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             PolyCategory category, int requestSize, List<PolyGridAsset> assets, Action<string> listCallback,
             string nextPageToken = null)
         {
-            new RequestHandler(orderBy, complexity, format,category, requestSize, assets, m_Container, listCallback, nextPageToken);
+            new RequestHandler(orderBy, complexity, format,category, requestSize, assets, m_Container, listCallback, this, nextPageToken);
         }
     }
 }
