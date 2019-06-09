@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿
+using Unity.Labs.ModuleLoader;
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -116,6 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var assetGridView = m_ProjectUI.assetGridView;
             this.ConnectInterfaces(assetGridView);
+            this.InjectFunctionalitySingle(assetGridView);
             assetGridView.matchesFilter = this.MatchesFilter;
             assetGridView.data = new List<AssetData>();
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -10,7 +11,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces,
-        IUsesViewerScale, IControlHaptics, IRayToNode
+        IUsesViewerScale, IControlHaptics, IRayToNode, IUsesFunctionalityInjection
     {
         const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
         protected const float k_DoubleFaceMargin = FaceMargin * 2;
@@ -160,6 +161,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         protected Node leftNode { get; set; }
         protected Node rightNode { get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
 
         public virtual void Setup()
         {

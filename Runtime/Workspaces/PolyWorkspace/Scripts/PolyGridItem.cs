@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -14,7 +16,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class PolyGridItem : DraggableListItem<PolyGridAsset, string>, IPlaceSceneObject, IUsesSpatialHash,
+    class PolyGridItem : DraggableListItem<PolyGridAsset, string>, IUsesPlaceSceneObject, IUsesSpatialHash,
         IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesGrouping, IControlHaptics
     {
         const float k_PreviewDuration = 0.1f;
@@ -82,6 +84,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         float m_SetupTime = float.MaxValue;
 
         public float scaleFactor { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesPlaceSceneObject IFunctionalitySubscriber<IProvidesPlaceSceneObject>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         Action<float> m_CompleteHoverTransition;

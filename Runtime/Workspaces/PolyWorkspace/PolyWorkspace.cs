@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Threading;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 
@@ -105,6 +106,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             var gridView = m_PolyUI.gridView;
             this.ConnectInterfaces(gridView);
+            this.InjectFunctionalitySingle(gridView);
             assetData = new List<PolyGridAsset>();
 
             var sliderObject = EditorXRUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);

@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -16,7 +18,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class AssetGridItem : DraggableListItem<AssetData, int>, IPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
+    sealed class AssetGridItem : DraggableListItem<AssetData, int>, IUsesPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
         IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
     {
         const float k_PreviewDuration = 0.1f;
@@ -184,6 +186,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
 
         public float scaleFactor { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesPlaceSceneObject IFunctionalitySubscriber<IProvidesPlaceSceneObject>.provider { get; set; }
+#endif
 
         public override void Setup(AssetData listData, bool firstTime)
         {

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -9,7 +10,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class SceneObjectModule : IModuleDependency<SpatialHashModule>, IModuleDependency<EditorXRMiniWorldModule>,
-        IUsesSpatialHash
+        IUsesSpatialHash, IProvidesPlaceSceneObject
     {
         const float k_InstantiateFOVDifference = -5f;
         const float k_GrowDuration = 0.5f;
@@ -17,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         SpatialHashModule m_SpatialHashModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
 
-        void PlaceSceneObject(Transform obj, Vector3 targetScale)
+        public void PlaceSceneObject(Transform obj, Vector3 targetScale)
         {
             if (!TryPlaceObjectInMiniWorld(obj, targetScale))
                 EditorMonoBehaviour.instance.StartCoroutine(PlaceSceneObjectCoroutine(obj, targetScale));
@@ -203,7 +204,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void LoadModule()
         {
             IDeleteSceneObjectMethods.deleteSceneObject = DeleteSceneObject;
-            IPlaceSceneObjectMethods.placeSceneObject = PlaceSceneObject;
             IPlaceSceneObjectsMethods.placeSceneObjects = PlaceSceneObjects;
         }
 
@@ -228,5 +228,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void UnloadModule() { }
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var placeSceneObjectSubscriber = obj as IFunctionalitySubscriber<IProvidesPlaceSceneObject>;
+            if (placeSceneObjectSubscriber != null)
+                placeSceneObjectSubscriber.provider = this;
+#endif
+        }
+        public void UnloadProvider() { }
     }
 }

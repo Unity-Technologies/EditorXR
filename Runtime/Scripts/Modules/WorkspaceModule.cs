@@ -11,7 +11,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class WorkspaceModule : IModuleDependency<DeviceInputModule>, IConnectInterfaces, ISerializePreferences,
-        IInterfaceConnector
+        IInterfaceConnector, IUsesFunctionalityInjection
     {
         [Serializable]
         class Preferences
@@ -95,6 +95,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         internal event Action<IWorkspace> workspaceCreated;
         internal event Action<IWorkspace> workspaceDestroyed;
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
+
         static WorkspaceModule()
         {
             workspaceTypes = new List<Type>();
@@ -176,10 +180,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             var cameraTransform = CameraUtils.GetMainCamera().transform;
 
-            var workspace = (IWorkspace)EditorXRUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
+            var workspaceComponent = EditorXRUtils.CreateGameObjectWithComponent(t, CameraUtils.GetCameraRig(), false);
+            var workspace = (IWorkspace)workspaceComponent;
             m_Workspaces.Add(workspace);
             workspace.destroyed += OnWorkspaceDestroyed;
             this.ConnectInterfaces(workspace);
+            this.InjectFunctionalitySingle(workspace);
 
             var evrWorkspace = workspace as Workspace;
             if (evrWorkspace != null)

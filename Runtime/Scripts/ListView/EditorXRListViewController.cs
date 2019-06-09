@@ -1,10 +1,12 @@
 ﻿using Unity.Labs.ListView;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-    public abstract class EditorXRListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>, IInstantiateUI, IConnectInterfaces, IControlHaptics, IRayToNode
+    public abstract class EditorXRListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>,
+        IInstantiateUI, IConnectInterfaces, IControlHaptics, IRayToNode, IUsesFunctionalityInjection
         where TData : class, IListViewItemData<TIndex>
         where TItem : EditorXRListViewItem<TData, TIndex>
     {
@@ -32,6 +34,10 @@ namespace UnityEditor.Experimental.EditorVR
         HapticPulse m_ItemDragEndPulse;
 #pragma warning restore 649
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
+
         protected override void Recycle(TIndex index)
         {
             if (m_GrabbedRows.ContainsKey(index))
@@ -52,6 +58,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             var item = this.InstantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<TItem>();
             this.ConnectInterfaces(item);
+            this.InjectFunctionalitySingle(item);
 
             // Hookup input events for new items.
             item.hoverStart += OnItemHoverStart;
