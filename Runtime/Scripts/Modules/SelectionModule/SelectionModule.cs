@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -10,7 +11,7 @@ using Object = UnityEngine.Object;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class SelectionModule : ScriptableSettings<SelectionModule>, IModule, IUsesGameObjectLocking, ISelectionChanged,
-        IControlHaptics, IRayToNode, IContainsVRPlayerCompletely
+        IControlHaptics, IRayToNode, IContainsVRPlayerCompletely, IProvidesGrouping
     {
 #pragma warning disable 649
         [SerializeField]
@@ -150,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return null;
         }
 
-        void MakeGroup(GameObject parent)
+        public void MakeGroup(GameObject parent)
         {
             parent.GetComponentsInChildren(m_Transforms);
             foreach (var child in m_Transforms)
@@ -164,9 +165,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             ISelectObjectMethods.getSelectionCandidate = GetSelectionCandidate;
             ISelectObjectMethods.selectObject = SelectObject;
             ISelectObjectMethods.selectObjects = SelectObjects;
-            IUsesGroupingMethods.makeGroup = MakeGroup;
         }
 
         public void UnloadModule() { }
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var groupingSubscriber = obj as IFunctionalitySubscriber<IProvidesGrouping>;
+            if (groupingSubscriber != null)
+                groupingSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

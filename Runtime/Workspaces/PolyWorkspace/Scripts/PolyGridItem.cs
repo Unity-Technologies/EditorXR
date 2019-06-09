@@ -89,6 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesPlaceSceneObject IFunctionalitySubscriber<IProvidesPlaceSceneObject>.provider { get; set; }
         IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
+        IProvidesGrouping IFunctionalitySubscriber<IProvidesGrouping>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
