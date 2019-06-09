@@ -1,0 +1,14 @@
+{
+    "name": "Unity.Labs.EditorXR.Interfaces",
+    "references": [
+        "Unity.Labs.ModuleLoader.Interfaces"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using Unity.Labs.ModuleLoader;
-using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core

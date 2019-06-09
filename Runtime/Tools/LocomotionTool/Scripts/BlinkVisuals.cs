@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 
-public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
+public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IUsesSceneRaycast
 {
     const float k_Epsilon = 0.001f;
 
@@ -86,6 +88,10 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
             }
         }
     }
+
+#if !FI_AUTOFILL
+    IProvidesSceneRaycast IFunctionalitySubscriber<IProvidesSceneRaycast>.provider { get; set; }
+#endif
 
     void Awake()
     {

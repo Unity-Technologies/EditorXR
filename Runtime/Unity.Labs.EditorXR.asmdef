@@ -10,10 +10,15 @@
         "Unity.Labs.Utils.Editor",
         "Unity.Labs.ListViewFramework",
         "Unity.Labs.ModuleLoader.Interfaces",
-        "Unity.Labs.ModuleLoader"
+        "Unity.Labs.ModuleLoader",
+        "Unity.Labs.EditorXR.Interfaces"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
 }

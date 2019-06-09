@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -15,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
     sealed class SnappingModule : ScriptableSettings<SnappingModule>, IInitializableModule, IModuleBehaviorCallbacks,
-        IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IRaycast, IStandardIgnoreList
+        IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IStandardIgnoreList, IUsesSceneRaycast
     {
         const float k_GroundPlaneScale = 1000f;
 
@@ -372,6 +373,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesSceneRaycast IFunctionalitySubscriber<IProvidesSceneRaycast>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();

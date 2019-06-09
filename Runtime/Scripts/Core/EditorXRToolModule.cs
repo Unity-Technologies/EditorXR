@@ -22,7 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     class EditorXRToolModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRVacuumableModule>,
         IModuleDependency<LockModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
-        IModuleDependency<EditorXRRayModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule
+        IModuleDependency<EditorXRRayModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
+        IUsesFunctionalityInjection
     {
         static readonly List<Type> k_AllTools = new List<Type>();
 
@@ -38,6 +39,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
 
         static EditorXRToolModule()
         {
@@ -270,6 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (usedDevices.Count == 0)
                 usedDevices.Add(device);
 
+            this.InjectFunctionalitySingle(tool);
             this.ConnectInterfaces(tool, rayOrigin);
 
             var icon = tool as IMenuIcon;

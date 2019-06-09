@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -11,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IInitializableModule,
         IModuleBehaviorCallbacks, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
-        IGetVRPlayerObjects, IInterfaceConnector
+        IGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast
     {
         class RayIntersection
         {
@@ -73,7 +74,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
             IControlInputIntersectionMethods.setRayOriginEnabled = SetRayOriginEnabled;
 
-            IRaycastMethods.raycast = Raycast;
             ICheckBoundsMethods.checkBounds = CheckBounds;
             ICheckSphereMethods.checkSphere = CheckSphere;
             IContainsVRPlayerCompletelyMethods.containsVRPlayerCompletely = ContainsVRPlayerCompletely;
@@ -262,7 +262,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
         }
 
-        internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
+        public bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<GameObject> ignoreList = null)
         {
             obj = null;
             hit = new RaycastHit();
@@ -375,5 +375,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         }
 
         public void DisconnectInterface(object target, object userData = null) { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var raycastSubscriber = obj as IFunctionalitySubscriber<IProvidesSceneRaycast>;
+            if (raycastSubscriber != null)
+                raycastSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -14,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
+        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode, IUsesFunctionalityInjection
     {
         [Serializable]
         class Preferences
@@ -181,6 +182,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
         }
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
+
         void Start()
         {
             if (this.IsSharedUpdater(this))
@@ -202,6 +207,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             m_BlinkVisualsGO = EditorXRUtils.Instantiate(m_BlinkVisualsPrefab, rayOrigin);
             m_BlinkVisuals = m_BlinkVisualsGO.GetComponentInChildren<BlinkVisuals>();
+            this.InjectFunctionalitySingle(m_BlinkVisuals);
             m_BlinkVisuals.ignoreList = this.GetVRPlayerObjects();
             m_BlinkVisualsGO.SetActive(false);
             m_BlinkVisualsGO.transform.parent = rayOrigin;
