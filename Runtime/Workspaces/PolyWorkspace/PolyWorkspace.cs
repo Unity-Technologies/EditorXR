@@ -102,12 +102,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             base.Setup();
 
-            var contentPrefab = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
-            m_PolyUI = contentPrefab.GetComponent<PolyUI>();
+            var content = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            m_PolyUI = content.GetComponent<PolyUI>();
+            foreach (var behavior in content.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                this.InjectFunctionalitySingle(behavior);
+            }
 
             var gridView = m_PolyUI.gridView;
             this.ConnectInterfaces(gridView);
-            this.InjectFunctionalitySingle(gridView);
             assetData = new List<PolyGridAsset>();
 
             var sliderObject = EditorXRUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);

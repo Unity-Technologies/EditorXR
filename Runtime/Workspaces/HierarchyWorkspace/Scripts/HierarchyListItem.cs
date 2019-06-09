@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -111,6 +113,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public bool isStillSettling { private set; get; }
 
         public Func<int, HierarchyListItem> getListItem { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
+#endif
 
         public override void Setup(HierarchyData data, bool firstTime)
         {

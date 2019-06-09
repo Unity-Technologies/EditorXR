@@ -189,6 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 #if !FI_AUTOFILL
         IProvidesPlaceSceneObject IFunctionalitySubscriber<IProvidesPlaceSceneObject>.provider { get; set; }
+        IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
 #endif
 
         public override void Setup(AssetData listData, bool firstTime)

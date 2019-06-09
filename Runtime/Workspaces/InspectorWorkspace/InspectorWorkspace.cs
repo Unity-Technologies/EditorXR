@@ -1,6 +1,7 @@
 #if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -35,8 +36,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_CustomStartingBounds = new Vector3(0.502f, MinBounds.y, 0.6f);
 
             base.Setup();
-            var contentPrefab = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
-            m_InspectorUI = contentPrefab.GetComponent<InspectorUI>();
+            var content = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            m_InspectorUI = content.GetComponent<InspectorUI>();
+            foreach (var behavior in content.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                this.InjectFunctionalitySingle(behavior);
+            }
 
             m_LockUI = EditorXRUtils.Instantiate(m_LockPrefab, m_WorkspaceUI.frontPanel, false).GetComponentInChildren<LockUI>();
             this.ConnectInterfaces(m_LockUI);

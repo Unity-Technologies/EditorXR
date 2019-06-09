@@ -43,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
 #endif
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

@@ -1,6 +1,4 @@
-using System;
 using Unity.Labs.ModuleLoader;
-using UnityEngine.Networking;
 
 namespace Unity.Labs.EditorXR.Interfaces
 {

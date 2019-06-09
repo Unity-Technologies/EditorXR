@@ -1,5 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -55,6 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 foreach (var mb in unlockAllUI.GetComponentsInChildren<MonoBehaviour>())
                 {
                     this.ConnectInterfaces(mb);
+                    this.InjectFunctionalitySingle(mb);
                 }
 
                 unlockAllUI.GetComponentInChildren<Button>(true).onClick.AddListener(UnlockAll);

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -14,8 +15,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>, IModuleDependency<IntersectionModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>, IInterfaceConnector,
-        ISerializePreferences, IConnectInterfaces,
-        IInitializableModule, IModuleBehaviorCallbacks
+        ISerializePreferences, IConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks,
+        IUsesFunctionalityInjection, IProvidesViewerScale, IProvidesViewerBody
     {
 
         [Serializable]
@@ -90,6 +91,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public bool hmdReady { get; private set; }
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
+
         public void ConnectDependency(EditorXRDirectSelectionModule dependency)
         {
             m_DirectSelectionModule = dependency;
@@ -108,8 +113,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void LoadModule()
         {
             IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
-            IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
-            IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
             IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
 
 #if UNITY_EDITOR
@@ -234,12 +237,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal void AddPlayerFloor()
         {
             m_PlayerFloor = EditorXRUtils.Instantiate(m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
+            this.InjectFunctionalitySingle(m_PlayerFloor.GetComponent<PlayerFloor>());
             m_VRPlayerObjects.Add(m_PlayerFloor);
         }
 
         internal void AddPlayerModel()
         {
             m_PlayerBody = EditorXRUtils.Instantiate(m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
+            this.InjectFunctionalitySingle(m_PlayerBody);
             var renderer = m_PlayerBody.GetComponent<Renderer>();
             m_SpatialHashModule.spatialHash.AddObject(renderer, renderer.bounds);
             var playerObjects = m_PlayerBody.GetComponentsInChildren<Renderer>(true);
@@ -251,12 +256,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_IntersectionModule.standardIgnoreList.AddRange(m_VRPlayerObjects);
         }
 
-        internal bool IsOverShoulder(Transform rayOrigin)
+        public bool IsOverShoulder(Transform rayOrigin)
         {
             return Overlaps(rayOrigin, m_PlayerBody.overShoulderTrigger);
         }
 
-        bool IsAboveHead(Transform rayOrigin)
+        public bool IsAboveHead(Transform rayOrigin)
         {
             return Overlaps(rayOrigin, m_PlayerBody.aboveHeadTrigger);
         }
@@ -350,7 +355,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorMonoBehaviour.instance.StartCoroutine(UpdateCameraRig(position, viewdirection));
         }
 
-        internal float GetViewerScale()
+        public float GetViewerScale()
         {
             var cameraRig = CameraUtils.GetCameraRig();
             if (!cameraRig)
@@ -359,7 +364,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return cameraRig.localScale.x;
         }
 
-        void SetViewerScale(float scale)
+        public void SetViewerScale(float scale)
         {
             var camera = CameraUtils.GetMainCamera();
             CameraUtils.GetCameraRig().localScale = Vector3.one * scale;
@@ -377,8 +382,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             m_VRPlayerObjects.Clear();
             InitializeCamera();
-            AddPlayerModel();
             AddPlayerFloor();
+            AddPlayerModel();
             m_Initialized = true;
         }
 
@@ -419,6 +424,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var viewerScaleSubscriber = obj as IFunctionalitySubscriber<IProvidesViewerScale>;
+            if (viewerScaleSubscriber != null)
+                viewerScaleSubscriber.provider = this;
+
+            var viewerBodySubscriber = obj as IFunctionalitySubscriber<IProvidesViewerBody>;
+            if (viewerBodySubscriber != null)
+                viewerBodySubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

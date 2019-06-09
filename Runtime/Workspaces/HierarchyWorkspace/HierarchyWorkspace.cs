@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -75,10 +76,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             base.Setup();
 
-            var contentPrefab = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
-            m_HierarchyUI = contentPrefab.GetComponent<HierarchyUI>();
+            var content = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            m_HierarchyUI = content.GetComponent<HierarchyUI>();
             m_HierarchyUI.listView.lockedQueryString = k_Locked;
             hierarchyData = m_HierarchyData;
+            foreach (var behavior in content.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                this.InjectFunctionalitySingle(behavior);
+            }
 
             if (m_FilterPrefab)
             {
