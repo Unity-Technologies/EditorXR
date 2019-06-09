@@ -14,6 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         static float s_BufferDistance;
 
 #if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 

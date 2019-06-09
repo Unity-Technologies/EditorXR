@@ -11,6 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
     sealed class Duplicate : BaseAction, IUsesSpatialHash, IUsesViewerScale
     {
 #if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 

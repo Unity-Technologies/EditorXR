@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
@@ -22,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
         IGrabObjects, ISelectObject, IManipulatorController, IUsesSnapping, ISetHighlight, ILinkedObject, IRayToNode,
         IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible,
-        IGetRayVisibility, IRayVisibilitySettings, IRequestFeedback
+        IGetRayVisibility, IRayVisibilitySettings, IRequestFeedback, IUsesFunctionalityInjection
     {
         enum TwoHandedManipulateMode
         {
@@ -391,6 +392,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreActionMapInputLocking { get { return false; } }
+
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
 
         void Start()
         {
@@ -857,6 +862,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         BaseManipulator CreateManipulator(GameObject prefab)
         {
             var go = EditorXRUtils.Instantiate(prefab, transform, active: false);
+            foreach (var behavior in go.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                this.InjectFunctionalitySingle(behavior);
+            }
             go.SetActive(false);
             var manipulator = go.GetComponent<BaseManipulator>();
             manipulator.translate = Translate;

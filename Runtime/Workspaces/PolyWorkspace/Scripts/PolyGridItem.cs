@@ -86,6 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public float scaleFactor { private get; set; }
 
 #if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesPlaceSceneObject IFunctionalitySubscriber<IProvidesPlaceSceneObject>.provider { get; set; }
         IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
 #endif

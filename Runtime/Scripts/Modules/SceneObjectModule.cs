@@ -9,14 +9,17 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SceneObjectModule : IModuleDependency<SpatialHashModule>, IModuleDependency<EditorXRMiniWorldModule>,
-        IUsesSpatialHash, IProvidesPlaceSceneObject, IProvidesPlaceSceneObjects, IProvidesDeleteSceneObject
+    sealed class SceneObjectModule : IModuleDependency<EditorXRMiniWorldModule>, IProvidesPlaceSceneObject,
+        IProvidesPlaceSceneObjects, IProvidesDeleteSceneObject, IUsesSpatialHash
     {
         const float k_InstantiateFOVDifference = -5f;
         const float k_GrowDuration = 0.5f;
 
-        SpatialHashModule m_SpatialHashModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
+
+#if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
+#endif
 
         public void PlaceSceneObject(Transform obj, Vector3 targetScale)
         {
@@ -187,14 +190,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
 
             Selection.objects = objects;
+
 #if UNITY_EDITOR
             Undo.IncrementCurrentGroup();
 #endif
-        }
-
-        public void ConnectDependency(SpatialHashModule dependency)
-        {
-            m_SpatialHashModule = dependency;
         }
 
         public void ConnectDependency(EditorXRMiniWorldModule dependency)
@@ -217,7 +216,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
                 obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale.Inverse());
 
-                m_SpatialHashModule.AddObject(obj.gameObject);
+                this.AddToSpatialHash(obj.gameObject);
                 return true;
             }
 

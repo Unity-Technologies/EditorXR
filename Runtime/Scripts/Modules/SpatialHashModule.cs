@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SpatialHashModule : MonoBehaviour, IInitializableModule
+    sealed class SpatialHashModule : MonoBehaviour, IInitializableModule, IProvidesSpatialHash
     {
         readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
         SpatialHash<Renderer> m_SpatialHash;
@@ -24,9 +25,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             var moduleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
             shouldExcludeObject = go => go.transform.IsChildOf(moduleParent);
-
-            IUsesSpatialHashMethods.addToSpatialHash = AddObject;
-            IUsesSpatialHashMethods.removeFromSpatialHash = RemoveObject;
         }
 
         public void UnloadModule() { }
@@ -107,19 +105,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void AddObject(GameObject gameObject)
+        public void AddToSpatialHash(GameObject gameObjectToAdd)
         {
-            foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
+            foreach (var rendererToAdd in gameObjectToAdd.GetComponentsInChildren<Renderer>())
             {
-                spatialHash.AddObject(renderer, renderer.bounds);
+                spatialHash.AddObject(rendererToAdd, rendererToAdd.bounds);
             }
         }
 
-        public void RemoveObject(GameObject gameObject)
+        public void RemoveFromSpatialHash(GameObject gameObjectToRemove)
         {
-            foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>(true))
+            foreach (var rendererToRemove in gameObjectToRemove.GetComponentsInChildren<Renderer>(true))
             {
-                spatialHash.RemoveObject(renderer);
+                spatialHash.RemoveObject(rendererToRemove);
             }
         }
 
@@ -127,5 +125,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             return spatialHash.GetMaxBounds();
         }
+
+        public void LoadProvider() { }
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var spatialHashSubscriber = obj as IFunctionalitySubscriber<IProvidesSpatialHash>;
+            if (spatialHashSubscriber != null)
+                spatialHashSubscriber.provider = this;
+#endif
+        }
+        public void UnloadProvider() { }
     }
 }

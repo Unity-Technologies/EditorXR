@@ -49,6 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
 
 #if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 

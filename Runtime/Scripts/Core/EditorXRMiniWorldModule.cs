@@ -204,6 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 
 #if !FI_AUTOFILL
+        IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesPlaceSceneObjects IFunctionalitySubscriber<IProvidesPlaceSceneObjects>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
