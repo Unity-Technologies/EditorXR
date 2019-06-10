@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class SelectionModule : ScriptableSettings<SelectionModule>, IModule, IUsesGameObjectLocking, ISelectionChanged,
-        IControlHaptics, IRayToNode, IContainsVRPlayerCompletely, IProvidesGrouping
+        IControlHaptics, IRayToNode, IContainsVRPlayerCompletely, IProvidesGrouping, IProvidesSelectObject
     {
 #pragma warning disable 649
         [SerializeField]
@@ -34,7 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<GameObject> k_SingleObjectList = new List<GameObject>();
         readonly List<Transform> m_Transforms = new List<Transform>();
 
-        GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
+        public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
         {
             // If we can't even select the object we're starting with, then skip any further logic
             if (!CanSelectObject(hoveredObject, false))
@@ -72,14 +72,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return true;
         }
 
-        void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
+        public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
         {
             k_SingleObjectList.Clear();
             k_SingleObjectList.Add(hoveredObject);
             SelectObjects(k_SingleObjectList, rayOrigin, multiSelect, useGrouping);
         }
 
-        void SelectObjects(List<GameObject> hoveredObjects, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
+        public void SelectObjects(List<GameObject> hoveredObjects, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
         {
             if (hoveredObjects == null || hoveredObjects.Count == 0)
             {
@@ -164,14 +164,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void LoadModule()
-        {
-            ISelectObjectMethods.getSelectionCandidate = GetSelectionCandidate;
-            ISelectObjectMethods.selectObject = SelectObject;
-            ISelectObjectMethods.selectObjects = SelectObjects;
-        }
+        public void LoadModule() { }
 
         public void UnloadModule() { }
+
         public void LoadProvider() { }
 
         public void ConnectSubscriber(object obj)
@@ -180,6 +176,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var groupingSubscriber = obj as IFunctionalitySubscriber<IProvidesGrouping>;
             if (groupingSubscriber != null)
                 groupingSubscriber.provider = this;
+
+            var selectObjectSubscriber = obj as IFunctionalitySubscriber<IProvidesSelectObject>;
+            if (selectObjectSubscriber != null)
+                selectObjectSubscriber.provider = this;
 #endif
         }
 

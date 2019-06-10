@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [SpatialMenuItem("Selection", "Tools", "Select & manipulate objects in the scene")]
     sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
-        IUsesSetHighlight, ISelectObject, IUsesSetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
+        IUsesSetHighlight, IUsesSelectObject, IUsesSetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
         ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
         IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
         IUsesDeviceType, IMenuIcon, IUsesPointer, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
@@ -164,6 +164,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
         IProvidesSetDefaultRayColor IFunctionalitySubscriber<IProvidesSetDefaultRayColor>.provider { get; set; }
         IProvidesGetDefaultRayColor IFunctionalitySubscriber<IProvidesGetDefaultRayColor>.provider { get; set; }
+        IProvidesSelectObject IFunctionalitySubscriber<IProvidesSelectObject>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection

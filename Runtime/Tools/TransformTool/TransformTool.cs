@@ -22,7 +22,7 @@ public enum PivotRotation
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
-        IGrabObjects, ISelectObject, IManipulatorController, IUsesSnapping, IUsesSetHighlight, ILinkedObject, IRayToNode,
+        IGrabObjects, IUsesSelectObject, IManipulatorController, IUsesSnapping, IUsesSetHighlight, ILinkedObject, IRayToNode,
         IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible,
         IGetRayVisibility, IRayVisibilitySettings, IRequestFeedback, IUsesFunctionalityInjection
     {
@@ -399,6 +399,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
         IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
+        IProvidesSelectObject IFunctionalitySubscriber<IProvidesSelectObject>.provider { get; set; }
 #endif
 
         void Start()
