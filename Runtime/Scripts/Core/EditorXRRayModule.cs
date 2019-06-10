@@ -22,7 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
         IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
-        ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults
+        ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
+        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -139,9 +140,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
-            IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
-
             IRayVisibilitySettingsMethods.removeRayVisibilitySettings = RemoveVisibilitySettings;
             IRayVisibilitySettingsMethods.addRayVisibilitySettings = AddVisibilitySettings;
 
@@ -644,7 +642,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return null;
         }
 
-        void SetDefaultRayColor(Transform rayOrigin, Color color)
+        public void SetDefaultRayColor(Transform rayOrigin, Color color)
         {
             if (rayOrigin)
             {
@@ -656,7 +654,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_HighlightModule.highlightColor = color;
         }
 
-        Color GetDefaultRayColor(Transform rayOrigin)
+        public Color GetDefaultRayColor(Transform rayOrigin)
         {
             if (rayOrigin)
             {
@@ -703,6 +701,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var raycastResultsSubscriber = obj as IFunctionalitySubscriber<IProvidesRaycastResults>;
             if (raycastResultsSubscriber != null)
                 raycastResultsSubscriber.provider = this;
+
+            var setDefaultRayColorSubscriber = obj as IFunctionalitySubscriber<IProvidesSetDefaultRayColor>;
+            if (setDefaultRayColorSubscriber != null)
+                setDefaultRayColorSubscriber.provider = this;
+
+            var getDefaultRayColorSubscriber = obj as IFunctionalitySubscriber<IProvidesGetDefaultRayColor>;
+            if (getDefaultRayColorSubscriber != null)
+                getDefaultRayColorSubscriber.provider = this;
 #endif
         }
 

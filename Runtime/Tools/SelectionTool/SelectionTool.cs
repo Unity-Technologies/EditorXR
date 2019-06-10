@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
         IUsesSetHighlight, ISelectObject, IUsesSetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
         ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
-        IRayToNode, IGetDefaultRayColor, ISetDefaultRayColor, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
+        IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
         IUsesDeviceType, IMenuIcon, IUsesPointer, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
         ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IRequestFeedback,
         IGetVRPlayerObjects
@@ -162,6 +162,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
         IProvidesSetManipulatorsVisible IFunctionalitySubscriber<IProvidesSetManipulatorsVisible>.provider { get; set; }
         IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
+        IProvidesSetDefaultRayColor IFunctionalitySubscriber<IProvidesSetDefaultRayColor>.provider { get; set; }
+        IProvidesGetDefaultRayColor IFunctionalitySubscriber<IProvidesGetDefaultRayColor>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
@@ -417,7 +419,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 var visualsTransform = visuals.transform;
                 if (m_Preferences.sphereMode)
                 {
-                    visualsTransform.localScale = Vector3.one * distance * 2;
+                    visualsTransform.localScale = distance * 2 * Vector3.one;
                     visualsTransform.position = m_SelectStartPosition;
                     this.CheckSphere(m_SelectStartPosition, distance, m_BlockSelectHoverGameObjects, ignoreList);
                 }
