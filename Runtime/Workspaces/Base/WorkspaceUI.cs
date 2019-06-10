@@ -994,7 +994,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             {
                 foreach (var id in ids)
                 {
-                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.priority = priority;

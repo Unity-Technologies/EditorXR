@@ -1,4 +1,5 @@
-﻿using Unity.Labs.ModuleLoader;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
@@ -9,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     // TODO: Remove load order when switching to non-static FI
     [ModuleOrder(ModuleOrders.SpatialHintModuleLoadOrder)]
     public sealed class SpatialHintModule : ScriptableSettings<SpatialHintModule>, IConnectInterfaces, IInstantiateUI,
-        INodeToRay, IRayVisibilitySettings, IInitializableModule
+        INodeToRay, IUsesRayVisibilitySettings, IInitializableModule
     {
         public enum SpatialHintStateFlags
         {
@@ -91,6 +92,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+#endif
 
         public void LoadModule()
         {

@@ -481,7 +481,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.control = id;
                     request.node = node;
                     request.tooltipText = tooltipText;

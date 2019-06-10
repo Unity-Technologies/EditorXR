@@ -14,7 +14,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
+    sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IUsesRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
         IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IUsesRequestFeedback, IUsesNode, IUsesFunctionalityInjection
     {
@@ -187,6 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
         void Start()
@@ -885,7 +886,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.tooltipText = tooltipText;
@@ -922,7 +923,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.control = id;
                     request.node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand;
                     request.tooltipText = "Scale";

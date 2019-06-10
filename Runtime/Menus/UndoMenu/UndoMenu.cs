@@ -171,7 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.control = id;
                     request.node = node;
                     request.tooltipText = m_FeedbackHintForCurrentController;
@@ -187,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.control = id;
                     request.node = node;
                     request.tooltipText = string.Format("{0} performed", undo ? "Undo" : "Redo");

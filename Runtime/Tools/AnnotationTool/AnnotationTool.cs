@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [MainMenuItem("Annotation", "Create", "Draw in 3D")]
     [SpatialMenuItem("Annotation", "Tools", "Draw in 3D")]
-    public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
+    public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesRayVisibilitySettings,
         IInstantiateUI, IInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
         IUsesNode, IUsesRequestFeedback, IConnectInterfaces, IUsesSelectTool
@@ -155,6 +155,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
         void OnDestroy()
@@ -239,7 +240,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     foreach (var id in control.Value)
                     {
-                        var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                        var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                         request.node = node;
                         request.control = id;
                         request.priority = 1;

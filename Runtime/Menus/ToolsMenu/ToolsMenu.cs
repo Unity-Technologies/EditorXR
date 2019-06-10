@@ -14,7 +14,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
-        IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
+        IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IUsesRayVisibilitySettings, IUsesRayOrigin,
         IUsesRequestFeedback, IUsesFunctionalityInjection
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
@@ -86,6 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
         void Awake()
@@ -305,7 +306,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in ids)
                 {
-                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.priority = 1;

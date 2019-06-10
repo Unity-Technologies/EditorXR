@@ -153,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 {
                     foreach (var id in ids)
                     {
-                        var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                        var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                         request.node = node;
                         request.control = id;
                         request.tooltipText = tooltipText;

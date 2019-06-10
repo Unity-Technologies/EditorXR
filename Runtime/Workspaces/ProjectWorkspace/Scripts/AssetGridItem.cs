@@ -19,7 +19,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class AssetGridItem : DraggableListItem<AssetData, int>, IUsesPlaceSceneObject, IUsesSpatialHash, IUsesSetHighlight,
-        IUsesViewerBody, IRayVisibilitySettings, IUsesRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
+        IUsesViewerBody, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -195,9 +195,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
         IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
-        public override void Setup(AssetData listData, bool firstTime)
+        public override void Setup(AssetData listData, bool firstTime = false)
         {
             base.Setup(listData, firstTime);
 
@@ -876,7 +877,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void ShowGrabFeedback(Node node)
         {
-            var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+            var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
             request.control = VRInputDevice.VRControl.Trigger1;
             request.node = node;
             request.tooltipText = "Grab";

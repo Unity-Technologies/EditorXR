@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public sealed class SpatialScrollModule : ScriptableSettings<SpatialScrollModule>, IModule, IUsesViewerScale, IControlHaptics,
-        IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
+        IControlSpatialHinting, IUsesRayVisibilitySettings, INodeToRay
     {
         public class SpatialScrollData : INodeToRay
         {
@@ -111,6 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
         internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)

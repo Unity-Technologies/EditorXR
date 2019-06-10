@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IUsesSetHighlight, IUsesSelectObject, IUsesSetManipulatorsVisible, IIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
         ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
         IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
-        IUsesDeviceType, IMenuIcon, IUsesPointer, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
+        IUsesDeviceType, IMenuIcon, IUsesPointer, IUsesRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
         ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IUsesRequestFeedback,
         IGetVRPlayerObjects
     {
@@ -166,6 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesGetDefaultRayColor IFunctionalitySubscriber<IProvidesGetDefaultRayColor>.provider { get; set; }
         IProvidesSelectObject IFunctionalitySubscriber<IProvidesSelectObject>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
@@ -609,7 +610,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.tooltipText = tooltipText;

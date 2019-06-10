@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     [SpatialMenuItem("Primitives", "Tools", "Create primitives in the scene")]
     sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
         IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, IUsesSelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
-        IRayVisibilitySettings, IMenuIcon, IUsesRequestFeedback, IUsesNode
+        IUsesRayVisibilitySettings, IMenuIcon, IUsesRequestFeedback, IUsesNode
     {
 #pragma warning disable 649
         [SerializeField]
@@ -53,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
         void Start()
@@ -73,7 +74,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in control.Value)
                 {
-                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                     request.node = node;
                     request.control = id;
                     request.tooltipText = "Draw";

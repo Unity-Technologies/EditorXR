@@ -17,7 +17,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     class PolyGridItem : DraggableListItem<PolyGridAsset, string>, IUsesPlaceSceneObject, IUsesSpatialHash,
-        IUsesViewerBody, IRayVisibilitySettings, IUsesRequestFeedback, IUsesGrouping, IControlHaptics
+        IUsesViewerBody, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesGrouping, IControlHaptics
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -91,6 +91,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
         IProvidesGrouping IFunctionalitySubscriber<IProvidesGrouping>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
@@ -527,7 +528,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void ShowGrabFeedback(Node node)
         {
-            var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
+            var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
             request.control = VRInputDevice.VRControl.Trigger1;
             request.node = node;
             request.tooltipText = "Grab";

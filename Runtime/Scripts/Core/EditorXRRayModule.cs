@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
         IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
         ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
-        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor
+        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -140,9 +140,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            IRayVisibilitySettingsMethods.removeRayVisibilitySettings = RemoveVisibilitySettings;
-            IRayVisibilitySettingsMethods.addRayVisibilitySettings = AddVisibilitySettings;
-
             IForEachRayOriginMethods.forEachRayOrigin = IterateRayOrigins;
             IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
             IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
@@ -223,13 +220,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 // Hide the cone and ray if the main menu or custom menu are open
                 if (mainMenu.menuHideFlags == 0 || customMenu != null && customMenu.menuHideFlags == 0)
-                    AddVisibilitySettings(rayOrigin, mainMenu, false, false);
+                    AddRayVisibilitySettings(rayOrigin, mainMenu, false, false);
 
                 // Show the ray if the menu is not hidden but the custom menu is overriding it, and is also hidden
                 else if ((mainMenu.menuHideFlags & MenuHideFlags.Hidden) == 0 || customMenu != null && customMenu.menuHideFlags != 0)
-                    AddVisibilitySettings(rayOrigin, mainMenu, true, true, 1);
+                    AddRayVisibilitySettings(rayOrigin, mainMenu, true, true, 1);
                 else
-                    RemoveVisibilitySettings(rayOrigin, mainMenu);
+                    RemoveRayVisibilitySettings(rayOrigin, mainMenu);
             }
         }
 
@@ -552,7 +549,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return dpr == null || dpr.coneVisible;
         }
 
-        internal void AddVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
+        public void AddRayVisibilitySettings(Transform rayOrigin, object caller, bool rayVisible, bool coneVisible, int priority = 0)
         {
             if (rayOrigin)
             {
@@ -562,7 +559,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        internal void RemoveVisibilitySettings(Transform rayOrigin, object obj)
+        public void RemoveRayVisibilitySettings(Transform rayOrigin, object obj)
         {
             if (!rayOrigin) // Prevent MissingReferenceException on closing m_EditorVR
                 return;
@@ -709,6 +706,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var getDefaultRayColorSubscriber = obj as IFunctionalitySubscriber<IProvidesGetDefaultRayColor>;
             if (getDefaultRayColorSubscriber != null)
                 getDefaultRayColorSubscriber.provider = this;
+
+            var visibilitySubscriber = obj as IFunctionalitySubscriber<IProvidesRayVisibilitySettings>;
+            if (visibilitySubscriber != null)
+                visibilitySubscriber.provider = this;
 #endif
         }
 

@@ -14,8 +14,9 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRMiniWorldModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<EditorXRRayModule>, IModuleDependency<SpatialHashModule>, IModuleDependency<HighlightModule>,
-        IModuleDependency<IntersectionModule>, IModuleDependency<WorkspaceModule>, IUsesPlaceSceneObjects, IUsesViewerScale, IUsesSpatialHash
+        IModuleDependency<SpatialHashModule>, IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>,
+        IModuleDependency<WorkspaceModule>, IModuleDependency<EditorXRRayModule>, IUsesPlaceSceneObjects, IUsesViewerScale,
+        IUsesSpatialHash, IUsesRayVisibilitySettings
     {
         internal class MiniWorldRay
         {
@@ -207,6 +208,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesPlaceSceneObjects IFunctionalitySubscriber<IProvidesPlaceSceneObjects>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
         public void ConnectDependency(EditorXRRayModule dependency)
@@ -529,11 +531,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (!proxy.active)
                     continue;
 
-                UpdateRayContaimnent(deviceData);
+                UpdateRayContainment(deviceData);
             }
         }
 
-        void UpdateRayContaimnent(DeviceData data)
+        void UpdateRayContainment(DeviceData data)
         {
             bool wasContained;
             var rayOrigin = data.rayOrigin;
@@ -546,10 +548,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             if (isContained && !wasContained)
-                m_RayModule.AddVisibilitySettings(rayOrigin, this, false, true);
+                this.AddRayVisibilitySettings(rayOrigin, this, false, true);
 
             if (!isContained && wasContained)
-                m_RayModule.RemoveVisibilitySettings(rayOrigin, this);
+                this.RemoveRayVisibilitySettings(rayOrigin, this);
 
             m_RayWasContained[rayOrigin] = isContained;
         }
@@ -655,7 +657,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     miniWorldRay.dragStartedOutside = false;
 
                     if (!miniWorldRay.isContained)
-                        m_RayModule.RemoveVisibilitySettings(rayOrigin, this);
+                        this.RemoveRayVisibilitySettings(rayOrigin, this);
                 }
             }
         }
