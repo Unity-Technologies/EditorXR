@@ -18,7 +18,7 @@ namespace Unity.Labs.EditorXR.Interfaces
     /// <returns>Whether to block the normal highlight method</returns>
     public delegate bool OnHighlightMethod(GameObject go, Material material);
 
-    public static class UsesCustomHighlight
+    public static class UsesCustomHighlightMethods
     {
         /// <summary>
         /// Subscribe to an event which will be called when trying to highlight each object

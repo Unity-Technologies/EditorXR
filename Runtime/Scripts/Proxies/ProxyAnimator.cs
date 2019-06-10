@@ -61,7 +61,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void OnDestroy()
         {
-            this.ClearFeedbackRequests(this);
+            if (isActiveAndEnabled)
+                this.ClearFeedbackRequests(this);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)

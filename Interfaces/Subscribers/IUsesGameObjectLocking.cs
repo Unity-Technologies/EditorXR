@@ -10,7 +10,7 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
-    public static class UsesGameObjectLocking
+    public static class UsesGameObjectLockingMethods
     {
         /// <summary>
         /// Set a GameObject's locked status
