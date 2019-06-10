@@ -16,7 +16,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>, IModuleDependency<IntersectionModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>, IInterfaceConnector,
         ISerializePreferences, IConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks,
-        IUsesFunctionalityInjection, IProvidesViewerScale, IProvidesViewerBody, IProvidesMoveCameraRig
+        IUsesFunctionalityInjection, IProvidesViewerScale, IProvidesViewerBody, IProvidesMoveCameraRig,
+        IProvidesGetVRPlayerObjects
     {
 
         [Serializable]
@@ -112,8 +113,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
-
 #if UNITY_EDITOR
             VRView.hmdStatusChange += OnHMDStatusChange;
 #endif
@@ -375,6 +374,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
+        public List<GameObject> GetVRPlayerObjects() { return m_VRPlayerObjects; }
+
         public void Initialize()
         {
             preserveCameraRig = EditorVR.preserveLayout;
@@ -440,6 +441,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var moveCameraRigSubscriber = obj as IFunctionalitySubscriber<IProvidesMoveCameraRig>;
             if (moveCameraRigSubscriber != null)
                 moveCameraRigSubscriber.provider = this;
+
+            var getVRPlayerObjectsSubscriber = obj as IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>;
+            if (getVRPlayerObjectsSubscriber != null)
+                getVRPlayerObjectsSubscriber.provider = this;
 #endif
         }
 

@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
         IUsesDeviceType, IMenuIcon, IUsesPointer, IUsesRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
         ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IUsesRequestFeedback,
-        IGetVRPlayerObjects
+        IUsesGetVRPlayerObjects
     {
         [Serializable]
         class Preferences
@@ -170,6 +170,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesIsMainMenuVisible IFunctionalitySubscriber<IProvidesIsMainMenuVisible>.provider { get; set; }
         IProvidesIsInMiniWorld IFunctionalitySubscriber<IProvidesIsInMiniWorld>.provider { get; set; }
         IProvidesIsHoveringOverUI IFunctionalitySubscriber<IProvidesIsHoveringOverUI>.provider { get; set; }
+        IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection

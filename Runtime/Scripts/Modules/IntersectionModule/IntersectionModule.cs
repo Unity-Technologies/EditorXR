@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IInitializableModule,
         IModuleBehaviorCallbacks, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
-        IGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast
+        IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast
     {
         class RayIntersection
         {
@@ -56,6 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if !FI_AUTOFILL
         IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+        IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
