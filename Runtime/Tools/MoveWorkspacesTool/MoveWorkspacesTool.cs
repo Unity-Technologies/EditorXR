@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [ExecuteInEditMode]
     public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUsesRayOrigin, IUsesViewerBody,
-        IResetWorkspaces, IAllWorkspaces, IUsesViewerScale, IRayVisibilitySettings
+        IUsesResetWorkspaces, IAllWorkspaces, IUsesViewerScale, IRayVisibilitySettings
     {
         enum State
         {
@@ -44,6 +44,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
+        IProvidesResetWorkspaces IFunctionalitySubscriber<IProvidesResetWorkspaces>.provider { get; set; }
 #endif
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
