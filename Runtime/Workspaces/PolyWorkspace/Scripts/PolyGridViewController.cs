@@ -1,3 +1,5 @@
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEngine;
 
 #if INCLUDE_POLY_TOOLKIT
@@ -6,7 +8,7 @@ using PolyToolkit;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class PolyGridViewController : EditorXRListViewController<PolyGridAsset, PolyGridItem, string>, IPoly
+    class PolyGridViewController : EditorXRListViewController<PolyGridAsset, PolyGridItem, string>, IUsesPoly
     {
         const int k_RequestSize = 100;
 
@@ -72,6 +74,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 return Mathf.CeilToInt(m_Data.Count / m_NumPerRow) * itemSize.z;
             }
         }
+
+#if !FI_AUTOFILL
+        IProvidesPoly IFunctionalitySubscriber<IProvidesPoly>.provider { get; set; }
+#endif
 
         protected override void Start()
         {

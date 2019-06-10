@@ -7,6 +7,7 @@ using Unity.Labs.Utils;
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 #endif
@@ -18,7 +19,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class PolyModule : IInitializableModule, IUsesFunctionalityInjection
+    public class PolyModule : IInitializableModule, IUsesFunctionalityInjection, IProvidesPoly
     {
         class RequestHandler
         {
@@ -93,8 +94,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void LoadModule()
         {
             PolyApi.Init(new PolyAuthConfig(Encoding.UTF8.GetString(Convert.FromBase64String(k_APIKey)), "", ""));
-
-            IPolyMethods.getAssetList = GetAssetList;
         }
 
         public void UnloadModule()
@@ -121,6 +120,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             new RequestHandler(orderBy, complexity, format,category, requestSize, assets, m_Container, listCallback, this, nextPageToken);
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var polySubscriber = obj as IFunctionalitySubscriber<IProvidesPoly>;
+            if (polySubscriber != null)
+                polySubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif
