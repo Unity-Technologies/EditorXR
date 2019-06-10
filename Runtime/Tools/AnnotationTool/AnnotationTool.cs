@@ -19,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     [SpatialMenuItem("Annotation", "Tools", "Draw in 3D")]
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesRayVisibilitySettings,
         IInstantiateUI, IInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
-        IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
+        IUsesIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
         IUsesNode, IUsesRequestFeedback, IConnectInterfaces, IUsesSelectTool
     {
         [Serializable]
@@ -156,6 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesIsHoveringOverUI IFunctionalitySubscriber<IProvidesIsHoveringOverUI>.provider { get; set; }
 #endif
 
         void OnDestroy()

@@ -13,7 +13,8 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     // Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-    sealed class MultipleRayInputModule : BaseInputModule, IModule, IUsesPointer, IConnectInterfaces, IUsesFunctionalityInjection
+    sealed class MultipleRayInputModule : BaseInputModule, IModule, IUsesPointer, IConnectInterfaces,
+        IProvidesIsHoveringOverUI, IUsesFunctionalityInjection
     {
         public class RaycastSource : ICustomActionMap, IUsesRequestFeedback
         {
@@ -226,7 +227,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var uiActionMap = MultipleRayInputModuleSettings.instance.UIActionMap;
             InputUtils.GetBindingDictionaryFromActionMap(uiActionMap, m_Controls);
 
-            IIsHoveringOverUIMethods.isHoveringOverUI = IsHoveringOverUI;
             IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
         }
 
@@ -520,5 +520,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (m_RaycastSources.TryGetValue(rayOrigin, out source))
                 source.blocked = blocked;
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var isHoveringOverUISubscriber = obj as IFunctionalitySubscriber<IProvidesIsHoveringOverUI>;
+            if (isHoveringOverUISubscriber != null)
+                isHoveringOverUISubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
