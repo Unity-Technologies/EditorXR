@@ -11,7 +11,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IInitializableModule,
-        IModuleBehaviorCallbacks, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, IInterfaceConnector
+        IModuleBehaviorCallbacks, IUsesDetectGazeDivergence, IUsesViewerScale, IControlHaptics, IInterfaceConnector
     {
 #pragma warning disable 649
         [SerializeField]
@@ -30,6 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesDetectGazeDivergence IFunctionalitySubscriber<IProvidesDetectGazeDivergence>.provider { get; set; }
 #endif
 
         public void LoadModule()

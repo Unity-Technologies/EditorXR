@@ -1,4 +1,5 @@
-﻿using Unity.Labs.ModuleLoader;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     /// Allows an implementer to test for a given transforms'
     /// position residing within an angular threshold of the HMD
     /// </summary>
-    public sealed class GazeDivergenceModule : IModuleBehaviorCallbacks
+    public sealed class GazeDivergenceModule : IModuleBehaviorCallbacks, IProvidesDetectGazeDivergence
     {
         const float k_StableGazeThreshold = 0.25f;
 
@@ -26,9 +27,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             m_GazeSourceTransform = CameraUtils.GetMainCamera().transform;
             m_PreviousGazeRotation = m_GazeSourceTransform.rotation; // Prevent a quick initial snap of interpolated rotation values
-
-            IDetectGazeDivergenceMethods.isAboveDivergenceThreshold = IsAboveDivergenceThreshold;
-            IDetectGazeDivergenceMethods.setDivergenceRecoverySpeed = SetGazeDivergenceRecoverySpeed;
         }
 
         public void UnloadModule() { }
@@ -50,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// A value greater than 1 will increase the rate at which the gaze velocity returns to the stable gaze threshold value (faster)
         /// </summary>
         /// <param name="rateAtWhichGazeVelocityReturnsToStableThreshold">The rate at which gaze velocity returns to stable threshold</param>
-        void SetGazeDivergenceRecoverySpeed (float rateAtWhichGazeVelocityReturnsToStableThreshold)
+        public void SetDivergenceRecoverySpeed (float rateAtWhichGazeVelocityReturnsToStableThreshold)
         {
             const float minSpeed = 0.01f;
             rateAtWhichGazeVelocityReturnsToStableThreshold = Mathf.Abs(rateAtWhichGazeVelocityReturnsToStableThreshold); // don't allow negative values
@@ -67,7 +65,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// <param name="divergenceThreshold">Threshold, in degrees, via doc product conversion of this angular value</param>
         /// <param name="disregardTemporalStability">If true, mandate that divergence detection occur, regardless of the gaze being stable</param>
         /// <returns>True if the object is beyond the divergence threshold, False if it is within the defined range</returns>
-        bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold, bool disregardTemporalStability = true)
+        public bool IsAboveDivergenceThreshold(Transform objectToTest, float divergenceThreshold, bool disregardTemporalStability = true)
         {
             var isAbove = false;
             if (disregardTemporalStability || gazeStable) // validate that the gaze is stable if disregarding temporal stability
@@ -93,5 +91,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var detectGazeDivergenceSubscriber = obj as IFunctionalitySubscriber<IProvidesDetectGazeDivergence>;
+            if (detectGazeDivergenceSubscriber != null)
+                detectGazeDivergenceSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
 {
-    public class PlayerFloor : MonoBehaviour, IUsesViewerScale, IDetectGazeDivergence
+    public class PlayerFloor : MonoBehaviour, IUsesViewerScale, IUsesDetectGazeDivergence
     {
         const float k_XOffset = 0.05f;
         const float k_ZOffset = 0.025f;
@@ -37,6 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesDetectGazeDivergence IFunctionalitySubscriber<IProvidesDetectGazeDivergence>.provider { get; set; }
 #endif
 
         void Awake()
@@ -54,13 +55,15 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
             m_FloorPosition.z = position.z - k_ZOffset * currentScale;
             m_FloorPosition.y = m_CameraRig.transform.position.y;
             m_FloorPosition -= VRView.headCenteredOrigin * currentScale;
-            transform.position = m_FloorPosition;
+
+            var thisTransform = transform;
+            thisTransform.position = m_FloorPosition;
             m_CameraForwardTarget = m_Camera.transform.XZForward();
             m_CameraForwardCurrent = Vector3.Lerp(m_CameraForwardCurrent, m_CameraForwardTarget, Time.unscaledDeltaTime * kLerpMultiplier);
-            transform.forward = m_CameraForwardCurrent;
+            thisTransform.forward = m_CameraForwardCurrent;
 
             const float kAllowedDegreeOfGazeDivergence = 55f;
-            var visible = !this.IsAboveDivergenceThreshold(transform, kAllowedDegreeOfGazeDivergence);
+            var visible = !this.IsAboveDivergenceThreshold(thisTransform, kAllowedDegreeOfGazeDivergence);
 
             if (m_Visible != visible)
                 this.RestartCoroutine(ref m_AnimationVisibilityCoroutine, UpdateVisibility(visible));
