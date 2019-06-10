@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IUsesRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-        IUsesDeviceType, IUsesGetVRPlayerObjects, IBlockUIInteraction, IUsesRequestFeedback, IUsesNode, IUsesFunctionalityInjection
+        IUsesDeviceType, IUsesGetVRPlayerObjects, IUsesBlockUIInteraction, IUsesRequestFeedback, IUsesNode, IUsesFunctionalityInjection
     {
         [Serializable]
         class Preferences
@@ -189,6 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
         IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
+        IProvidesBlockUIInteraction IFunctionalitySubscriber<IProvidesBlockUIInteraction>.provider { get; set; }
 #endif
 
         void Start()
