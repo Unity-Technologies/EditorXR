@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -14,12 +15,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRDirectSelectionModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRMiniWorldModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<SceneObjectModule>,
         IModuleDependency<IntersectionModule>, IModuleDependency<EditorXRViewerModule>, IInitializableModule,
-        IInterfaceConnector, IModuleBehaviorCallbacks
+        IInterfaceConnector, IModuleBehaviorCallbacks, IProvidesDirectSelection
     {
         readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
         readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
         readonly List<IGrabObjects> m_ObjectGrabbers = new List<IGrabObjects>();
-        readonly List<IUsesDirectSelection> m_DirectSelectionUsers = new List<IUsesDirectSelection>();
         readonly List<ITwoHandedScaler> m_TwoHandedScalers = new List<ITwoHandedScaler>();
 
         EditorVR m_EditorVR;
@@ -35,6 +35,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+
+        event Action resetDirectSelectionState;
 
         public void ConnectDependency(EditorVR dependency)
         {
@@ -68,9 +70,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            IUsesDirectSelectionMethods.getDirectSelection = () => m_DirectSelections;
-            IUsesDirectSelectionMethods.resetDirectSelectionState = ResetDirectSelectionState;
-
             ICanGrabObjectMethods.canGrabObject = CanGrabObject;
 
             IUsesPointerMethods.getPointerLength = GetPointerLength;
@@ -88,10 +87,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 grabObjects.objectsDropped += OnObjectsDropped;
                 grabObjects.objectsTransferred += OnObjectsTransferred;
             }
-
-            var usesDirectSelection = target as IUsesDirectSelection;
-            if (usesDirectSelection != null)
-                m_DirectSelectionUsers.Add(usesDirectSelection);
 
             var twoHandedScaler = target as ITwoHandedScaler;
             if (twoHandedScaler != null)
@@ -306,29 +301,33 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        void ResetDirectSelectionState()
+        public Dictionary<Transform, DirectSelectionData> GetDirectSelection() { return m_DirectSelections; }
+
+        public void ResetDirectSelectionState()
         {
-            foreach (var usesDirectSelection in m_DirectSelectionUsers)
-            {
-                usesDirectSelection.OnResetDirectSelectionState();
-            }
+            if (resetDirectSelectionState != null)
+                resetDirectSelectionState();
         }
+
+        public void SubscribeToResetDirectSelectionState(Action callback) { resetDirectSelectionState += callback; }
+
+        public void UnsubscribeFromResetDirectSelectionState(Action callback) { resetDirectSelectionState -= callback; }
 
         public void Initialize()
         {
+            resetDirectSelectionState = null;
             m_DirectSelections.Clear();
             m_GrabbedObjects.Clear();
             m_ObjectGrabbers.Clear();
-            m_DirectSelectionUsers.Clear();
             m_TwoHandedScalers.Clear();
         }
 
         public void Shutdown()
         {
+            resetDirectSelectionState = null;
             m_DirectSelections.Clear();
             m_GrabbedObjects.Clear();
             m_ObjectGrabbers.Clear();
-            m_DirectSelectionUsers.Clear();
             m_TwoHandedScalers.Clear();
         }
 
@@ -346,6 +345,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var directSelectionSubscriber = obj as IFunctionalitySubscriber<IProvidesDirectSelection>;
+            if (directSelectionSubscriber != null)
+                directSelectionSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

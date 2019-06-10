@@ -192,6 +192,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesPlaceSceneObject IFunctionalitySubscriber<IProvidesPlaceSceneObject>.provider { get; set; }
         IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
+        IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
 #endif
 
         public override void Setup(AssetData listData, bool firstTime)
@@ -884,7 +885,5 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             this.ClearFeedbackRequests();
         }
-
-        public void OnResetDirectSelectionState() {}
     }
 }

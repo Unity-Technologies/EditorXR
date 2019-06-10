@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
     /// Stores the state of a direct selection

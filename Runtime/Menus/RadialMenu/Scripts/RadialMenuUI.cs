@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces, IRequestStencilRef
+    sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces, IRequestStencilRef, IUsesFunctionalityInjection
     {
         const int k_SlotCount = 16;
 
@@ -185,6 +186,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public event Action buttonHovered;
         public event Action buttonClicked;
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
+
         void Update()
         {
             if (m_Actions != null)
@@ -214,6 +219,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 var menuSlot = EditorXRUtils.Instantiate(m_RadialMenuSlotTemplate.gameObject, m_SlotContainer, false).GetComponent<RadialMenuSlot>();
                 menuSlot.stencilRef = stencilRef; // Setting from the UI so there is a single ref ID for all buttons; the buttons cleanup their own materials.
                 this.ConnectInterfaces(menuSlot);
+                this.InjectFunctionalitySingle(menuSlot);
                 menuSlot.orderIndex = i;
                 m_RadialMenuSlots.Add(menuSlot);
                 menuSlot.hovered += OnButtonHovered;

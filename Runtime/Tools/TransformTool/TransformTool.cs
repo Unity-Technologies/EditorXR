@@ -397,6 +397,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 #if !FI_AUTOFILL
         IProvidesSnapping IFunctionalitySubscriber<IProvidesSnapping>.provider { get; set; }
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
 #endif
 
         void Start()
@@ -421,6 +422,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_CurrentManipulator = m_StandardManipulator;
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
+
+            this.SubscribeToResetDirectSelectionState(OnResetDirectSelectionState);
         }
 
         public void OnSelectionChanged()
@@ -1061,6 +1064,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void OnDestroy()
         {
+            this.UnsubscribeFromResetDirectSelectionState(OnResetDirectSelectionState);
+
             if (m_ScaleManipulator)
                 UnityObjectUtils.Destroy(m_ScaleManipulator.gameObject);
 

@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
         IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
-        IRequestFeedback
+        IRequestFeedback, IUsesFunctionalityInjection
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
@@ -83,6 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
 #endif
 
         void Awake()
@@ -135,6 +136,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var buttonTransform = EditorXRUtils.Instantiate(_mToolsMenuButtonTemplate.gameObject, m_ToolsMenuUI.buttonContainer, false).transform;
             var button = buttonTransform.GetComponent<ToolsMenuButton>();
             this.ConnectInterfaces(button);
+            this.InjectFunctionalitySingle(button);
 
             button.rayOrigin = rayOrigin;
             button.toolType = toolType; // Assign Tool Type before assigning order

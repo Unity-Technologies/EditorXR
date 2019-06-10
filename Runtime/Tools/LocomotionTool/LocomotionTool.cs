@@ -218,6 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             var viewerScaleObject = EditorXRUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
             m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
+            this.InjectFunctionalitySingle(m_ViewerScaleVisuals);
             viewerScaleObject.SetActive(false);
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);

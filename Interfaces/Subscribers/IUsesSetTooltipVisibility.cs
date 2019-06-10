@@ -41,7 +41,7 @@ namespace Unity.Labs.EditorXR.Interfaces
         public static void HideTooltip(this IUsesSetTooltipVisibility user, ITooltip tooltip, bool persistent = false)
         {
 #if !FI_AUTOFILL
-            user.provider.ShowTooltip(tooltip, persistent);
+            user.provider.HideTooltip(tooltip, persistent);
 #endif
         }
     }

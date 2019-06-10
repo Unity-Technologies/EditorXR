@@ -120,6 +120,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             if (m_TooltipCanvas)
                 UnityObjectUtils.Destroy(m_TooltipCanvas.gameObject);
+
+            m_Tooltips.Clear();
         }
 
         public void OnBehaviorUpdate()

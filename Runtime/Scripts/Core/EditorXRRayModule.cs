@@ -262,6 +262,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 var proxy = (IProxy)EditorXRUtils.CreateGameObjectWithComponent(proxyType, cameraRig, false);
                 this.ConnectInterfaces(proxy);
+                this.InjectFunctionalitySingle(proxy);
                 var trackedObjectInput = m_DeviceInputModule.trackedObjectInput;
                 if (trackedObjectInput == null)
                     Debug.LogError("Device Input Module not initialized--trackedObjectInput is null");

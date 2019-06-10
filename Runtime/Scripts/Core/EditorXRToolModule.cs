@@ -233,6 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 toolsMenu.enabled = true;
                 this.ConnectInterfaces(toolsMenu, rayOrigin);
+                this.InjectFunctionalitySingle(toolsMenu);
                 deviceData.toolsMenu = toolsMenu;
                 toolsMenu.rayOrigin = rayOrigin;
                 toolsMenu.setButtonForType(typeof(IMainMenu), null);

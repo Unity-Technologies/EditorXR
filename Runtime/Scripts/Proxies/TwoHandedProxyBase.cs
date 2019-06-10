@@ -27,7 +27,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         Bottom = 1 << 5
     }
 
-    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, IUsesSetTooltipVisibility, ISetHighlight, ISerializePreferences
+    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, IUsesSetTooltipVisibility,
+        ISetHighlight, ISerializePreferences, IUsesFunctionalityInjection
     {
         [SerializeField]
         protected GameObject m_LeftHandProxyPrefab;
@@ -116,6 +117,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 #if !FI_AUTOFILL
         IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
 #endif
 
         public void FakeActivate()
@@ -165,6 +167,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected virtual IEnumerator Start()
         {
+            this.InjectFunctionalitySingle(m_LeftProxyNode);
+            this.InjectFunctionalitySingle(m_RightProxyNode);
             hidden = true;
             while (!active)
                 yield return null;

@@ -159,6 +159,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesRaycastResults IFunctionalitySubscriber<IProvidesRaycastResults>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+        IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
@@ -543,8 +544,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             m_HoverGameObjects.Clear();
         }
-
-        public void OnResetDirectSelectionState() { }
 
         public object OnSerializePreferences()
         {
