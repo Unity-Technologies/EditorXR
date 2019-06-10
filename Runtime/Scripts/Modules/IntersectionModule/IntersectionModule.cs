@@ -12,7 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IInitializableModule,
         IModuleBehaviorCallbacks, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
-        IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast, IProvidesControlInputIntersection
+        IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast, IProvidesControlInputIntersection,
+        IProvidesContainsVRPlayerCompletely
     {
         class RayIntersection
         {
@@ -80,7 +81,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             ICheckBoundsMethods.checkBounds = CheckBounds;
             ICheckSphereMethods.checkSphere = CheckSphere;
-            IContainsVRPlayerCompletelyMethods.containsVRPlayerCompletely = ContainsVRPlayerCompletely;
         }
 
         public void UnloadModule() { }
@@ -338,7 +338,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             var result = false;
             m_Intersections.Clear();
-            var bounds = new Bounds(center, Vector3.one * radius * 2);
+            var bounds = new Bounds(center, radius * 2 * Vector3.one);
             if (m_SpatialHash.GetIntersections(m_Intersections, bounds))
             {
                 for (var i = 0; i < m_Intersections.Count; i++)
@@ -362,7 +362,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return result;
         }
 
-        internal bool ContainsVRPlayerCompletely(GameObject obj)
+        public bool ContainsVRPlayerCompletely(GameObject obj)
         {
             var objectBounds = BoundsUtils.GetBounds(obj.transform);
             var playerBounds = BoundsUtils.GetBounds(this.GetVRPlayerObjects());
@@ -393,6 +393,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var controlInputIntersectionSubscriber = obj as IFunctionalitySubscriber<IProvidesControlInputIntersection>;
             if (controlInputIntersectionSubscriber != null)
                 controlInputIntersectionSubscriber.provider = this;
+
+            var containsVRPlayerCompletelySubscriber = obj as IFunctionalitySubscriber<IProvidesContainsVRPlayerCompletely>;
+            if (containsVRPlayerCompletelySubscriber != null)
+                containsVRPlayerCompletelySubscriber.provider = this;
 #endif
         }
 
