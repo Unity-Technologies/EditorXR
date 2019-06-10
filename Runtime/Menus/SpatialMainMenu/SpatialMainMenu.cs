@@ -42,6 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 #if !FI_AUTOFILL
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+        IProvidesPreviewInToolMenuButton IFunctionalitySubscriber<IProvidesPreviewInToolMenuButton>.provider { get; set; }
 #endif
 
         void Start()

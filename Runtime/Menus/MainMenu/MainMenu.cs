@@ -133,6 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 #if !FI_AUTOFILL
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesPreviewInToolMenuButton IFunctionalitySubscriber<IProvidesPreviewInToolMenuButton>.provider { get; set; }
 #endif
 
         void OnEnable()
@@ -357,7 +358,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnButtonClicked(Transform rayOrigin)
         {
             this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonClickPulse);
-            this.ClearToolMenuButtonPreview();
+            this.ClearToolsMenuButtonPreview();
         }
 
         void OnButtonHovered(Transform rayOrigin, Type buttonType, string buttonDescription)
@@ -367,10 +368,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             // Pass the pointer which is over us, so this information can supply context (e.g. selecting a tool for a different hand)
             // Enable preview-mode on a Tools Menu button; Display on the opposite proxy device by evaluating the entering RayOrigin
             // Disable any existing previews being displayed in ToolsMenus
-            this.ClearToolMenuButtonPreview();
+            this.ClearToolsMenuButtonPreview();
 
             if (buttonType != null && rayOrigin != null)
-                this.PreviewInToolMenuButton(rayOrigin, buttonType, buttonDescription);
+                this.PreviewInToolsMenuButton(rayOrigin, buttonType, buttonDescription);
         }
 
         void OnToggleHovered(Transform rayOrigin)
