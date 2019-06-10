@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Menus;
@@ -23,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRToolModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRVacuumableModule>,
         IModuleDependency<LockModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
         IModuleDependency<EditorXRRayModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
-        IUsesFunctionalityInjection
+        IUsesFunctionalityInjection, IProvidesSelectTool
     {
         static readonly List<Type> k_AllTools = new List<Type>();
 
@@ -82,8 +83,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void LoadModule()
         {
             ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
-            ISelectToolMethods.selectTool = SelectTool;
-            ISelectToolMethods.isToolActive = IsToolActive;
         }
 
         public void UnloadModule()
@@ -293,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        bool IsToolActive(Transform targetRayOrigin, Type toolType)
+        public bool IsToolActive(Transform targetRayOrigin, Type toolType)
         {
             var result = false;
 
@@ -304,7 +303,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return result;
         }
 
-        internal bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true, bool hideMenu = false)
+        public bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true, bool hideMenu = false)
         {
             var result = false;
             m_RayModule.ForEachProxyDevice(deviceData =>
@@ -527,6 +526,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var selectToolSubscriber = obj as IFunctionalitySubscriber<IProvidesSelectTool>;
+            if (selectToolSubscriber != null)
+                selectToolSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

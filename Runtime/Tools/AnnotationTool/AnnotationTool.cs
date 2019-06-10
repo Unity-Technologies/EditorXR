@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IInstantiateUI, IInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback, IConnectInterfaces, ISelectTool
+        IUsesNode, IRequestFeedback, IConnectInterfaces, IUsesSelectTool
     {
         [Serializable]
         public class Preferences
@@ -75,7 +75,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const int k_InitialListSize = 1024; // Pre-allocate lists to avoid GC
 
         const string k_GroupFormatString = "Group {0}";
-        const string k_AnnotationFormatStrig = "Annotation {0}";
+        const string k_AnnotationFormatString = "Annotation {0}";
         const string k_MainHolderName = "Annotations";
         const string k_MeshName = "Annotation";
 
@@ -153,6 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 #if !FI_AUTOFILL
         IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
 #endif
 
         void OnDestroy()
@@ -197,7 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (child.childCount > 0)
                     child.name = string.Format(k_GroupFormatString, groupCount++);
                 else
-                    child.name = string.Format(k_AnnotationFormatStrig, annotationCount++);
+                    child.name = string.Format(k_AnnotationFormatString, annotationCount++);
             }
         }
 
@@ -338,7 +339,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Widths.Clear();
             m_Length = 0;
 
-            var go = new GameObject(string.Format(k_AnnotationFormatStrig, m_AnnotationHolder.childCount));
+            var go = new GameObject(string.Format(k_AnnotationFormatString, m_AnnotationHolder.childCount));
 #if UNITY_EDITOR
             Undo.RegisterCreatedObjectUndo(go, "Annotation");
 #endif

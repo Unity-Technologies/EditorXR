@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -37,6 +39,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             get { return MenuHideFlags.Hidden; }
             set { }
         }
+
+#if !FI_AUTOFILL
+        IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+#endif
 
         void Start()
         {

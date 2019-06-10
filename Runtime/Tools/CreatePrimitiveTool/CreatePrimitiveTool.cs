@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     [MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
     [SpatialMenuItem("Primitives", "Tools", "Create primitives in the scene")]
     sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
-        IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
+        IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, IUsesSelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
         IRayVisibilitySettings, IMenuIcon, IRequestFeedback, IUsesNode
     {
 #pragma warning disable 649
@@ -51,6 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 #if !FI_AUTOFILL
         IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
 #endif
 
         void Start()
@@ -133,8 +134,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 // Set starting minimum scale (don't allow zero scale object to be created)
                 const float kMinScale = 0.0025f;
                 var viewerScale = this.GetViewerScale();
-                m_CurrentGameObject.transform.localScale = Vector3.one * kMinScale * viewerScale;
-                m_StartPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance * viewerScale;
+                m_CurrentGameObject.transform.localScale = kMinScale * viewerScale * Vector3.one;
+                m_StartPoint = rayOrigin.position + k_DrawDistance * viewerScale * rayOrigin.forward;
                 m_CurrentGameObject.transform.position = m_StartPoint;
 
                 m_State = m_Freeform ? PrimitiveCreationStates.Freeform : PrimitiveCreationStates.EndPoint;
@@ -152,14 +153,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             // it feels better to scale these primitives vertically with the draw point
             if (m_SelectedPrimitiveType == PrimitiveType.Capsule || m_SelectedPrimitiveType == PrimitiveType.Cylinder || m_SelectedPrimitiveType == PrimitiveType.Cube)
-                m_CurrentGameObject.transform.localScale = Vector3.one * corner * 0.5f;
+                m_CurrentGameObject.transform.localScale = corner * 0.5f * Vector3.one;
             else
                 m_CurrentGameObject.transform.localScale = Vector3.one * corner;
         }
 
         void UpdatePositions()
         {
-            m_EndPoint = rayOrigin.position + rayOrigin.forward * k_DrawDistance * this.GetViewerScale();
+            m_EndPoint = rayOrigin.position + k_DrawDistance * this.GetViewerScale() * rayOrigin.forward;
             m_CurrentGameObject.transform.position = (m_StartPoint + m_EndPoint) * 0.5f;
         }
 

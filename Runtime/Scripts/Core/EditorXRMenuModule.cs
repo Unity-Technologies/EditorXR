@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
-        IModuleBehaviorCallbacks
+        IModuleBehaviorCallbacks, IUsesFunctionalityInjection
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
         const float k_MainMenuAutoShowDelay = 0.25f;
@@ -49,6 +49,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 1; } }
         public int shutdownOrder { get { return 0; } }
+
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<DeviceData> k_ActiveDeviceData = new List<DeviceData>();
@@ -661,6 +665,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             var spawnedMenu = (IMenu)EditorXRUtils.AddComponent(menuType, gameObject);
             this.ConnectInterfaces(spawnedMenu, rayOrigin);
+            this.InjectFunctionalitySingle(spawnedMenu);
 
             return spawnedMenu;
         }
