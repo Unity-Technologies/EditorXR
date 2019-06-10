@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
         IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
         ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
-        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings
+        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -145,8 +145,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
             IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
             INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
-            IGetRayVisibilityMethods.isRayVisible = IsRayActive;
-            IGetRayVisibilityMethods.isConeVisible = IsConeActive;
 
             m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
         }
@@ -537,13 +535,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return null;
         }
 
-        static bool IsRayActive(Transform rayOrigin)
+        public bool IsRayVisible(Transform rayOrigin)
         {
             var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
             return dpr == null || dpr.rayVisible;
         }
 
-        static bool IsConeActive(Transform rayOrigin)
+        public bool IsConeVisible(Transform rayOrigin)
         {
             var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
             return dpr == null || dpr.coneVisible;
@@ -707,9 +705,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (getDefaultRayColorSubscriber != null)
                 getDefaultRayColorSubscriber.provider = this;
 
-            var visibilitySubscriber = obj as IFunctionalitySubscriber<IProvidesRayVisibilitySettings>;
-            if (visibilitySubscriber != null)
-                visibilitySubscriber.provider = this;
+            var visibilitySettingsSubscriber = obj as IFunctionalitySubscriber<IProvidesRayVisibilitySettings>;
+            if (visibilitySettingsSubscriber != null)
+                visibilitySettingsSubscriber.provider = this;
+
+            var getVisibilitySubscriber = obj as IFunctionalitySubscriber<IProvidesGetRayVisibility>;
+            if (getVisibilitySubscriber != null)
+                getVisibilitySubscriber.provider = this;
 #endif
         }
 

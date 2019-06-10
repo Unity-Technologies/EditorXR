@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     [SpatialMenuItem("Selection", "Tools", "Select & manipulate objects in the scene")]
     sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
         IUsesSetHighlight, IUsesSelectObject, IUsesSetManipulatorsVisible, IUsesIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-        ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IUsesIsMainMenuVisible, IUsesIsInMiniWorld,
+        ICanGrabObject, IGetManipulatorDragState, IUsesNode, IUsesGetRayVisibility, IUsesIsMainMenuVisible, IUsesIsInMiniWorld,
         IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
         IUsesDeviceType, IMenuIcon, IUsesPointer, IUsesRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
         ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IUsesRequestFeedback,
@@ -171,6 +171,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesIsInMiniWorld IFunctionalitySubscriber<IProvidesIsInMiniWorld>.provider { get; set; }
         IProvidesIsHoveringOverUI IFunctionalitySubscriber<IProvidesIsHoveringOverUI>.provider { get; set; }
         IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
+        IProvidesGetRayVisibility IFunctionalitySubscriber<IProvidesGetRayVisibility>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
