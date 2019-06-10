@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -8,7 +10,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    class SpatialMenuBackButton : MonoBehaviour, IControlHaptics, IRayEnterHandler, IRayExitHandler
+    class SpatialMenuBackButton : MonoBehaviour, IUsesControlHaptics, IRayEnterHandler, IRayExitHandler
     {
 #pragma warning disable 649
         [SerializeField]
@@ -59,6 +61,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 this.RestartCoroutine(ref m_AllowInteractionCoroutine, AnimateHighlight());
             }
         }
+
+#if !FI_AUTOFILL
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+#endif
 
         void Awake()
         {

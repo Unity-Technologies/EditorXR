@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    public class SpatialHintUI : MonoBehaviour, IUsesViewerScale, IControlHaptics, IRayToNode
+    public class SpatialHintUI : MonoBehaviour, IUsesViewerScale, IUsesControlHaptics, IRayToNode
     {
         readonly Color k_PrimaryArrowColor = Color.white;
 
@@ -187,6 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         void Awake()

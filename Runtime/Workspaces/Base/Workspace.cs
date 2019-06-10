@@ -12,7 +12,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     abstract class Workspace : MonoBehaviour, IWorkspace, IInstantiateUI, IUsesStencilRef, IConnectInterfaces,
-        IUsesViewerScale, IControlHaptics, IRayToNode, IUsesFunctionalityInjection
+        IUsesViewerScale, IUsesControlHaptics, IRayToNode, IUsesFunctionalityInjection
     {
         const float k_MaxFrameSize = 100f; // Because BlendShapes cap at 100, our workspace maxes out at 100m wide
         protected const float k_DoubleFaceMargin = FaceMargin * 2;
@@ -95,7 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             get
             {
                 const float outerBoundsCenterOffset = 0.09275f; //Amount to extend the bounds to include frame
-                return new Bounds(contentBounds.center + Vector3.down * outerBoundsCenterOffset * 0.5f,
+                return new Bounds(contentBounds.center + outerBoundsCenterOffset * 0.5f * Vector3.down,
                     new Vector3(
                         contentBounds.size.x,
                         contentBounds.size.y + outerBoundsCenterOffset,
@@ -166,6 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         public virtual void Setup()
@@ -204,7 +205,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             var startingBounds = m_CustomStartingBounds ?? DefaultBounds;
 
             //Do not set bounds directly, in case OnBoundsChanged requires Setup override to complete
-            m_ContentBounds = new Bounds(Vector3.up * startingBounds.y * 0.5f, startingBounds); // If custom bounds have been set, use them as the initial bounds
+            m_ContentBounds = new Bounds(startingBounds.y * 0.5f * Vector3.up, startingBounds); // If custom bounds have been set, use them as the initial bounds
             UpdateBounds();
 
             this.RestartCoroutine(ref m_VisibilityCoroutine, AnimateShow());

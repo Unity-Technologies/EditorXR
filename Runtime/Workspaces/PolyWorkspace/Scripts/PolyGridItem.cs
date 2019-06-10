@@ -17,7 +17,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     class PolyGridItem : DraggableListItem<PolyGridAsset, string>, IUsesPlaceSceneObject, IUsesSpatialHash,
-        IUsesViewerBody, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesGrouping, IControlHaptics
+        IUsesViewerBody, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesGrouping, IUsesControlHaptics
     {
         const float k_PreviewDuration = 0.1f;
         const float k_MinPreviewScale = 0.01f;
@@ -92,6 +92,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         IProvidesGrouping IFunctionalitySubscriber<IProvidesGrouping>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection

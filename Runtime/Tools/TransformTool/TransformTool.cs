@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
         IGrabObjects, IUsesSelectObject, IManipulatorController, IUsesSnapping, IUsesSetHighlight, ILinkedObject, IRayToNode,
-        IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IUsesIsMainMenuVisible,
+        IUsesControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IUsesIsMainMenuVisible,
         IUsesGetRayVisibility, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesFunctionalityInjection
     {
         enum TwoHandedManipulateMode
@@ -404,6 +404,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
         IProvidesIsMainMenuVisible IFunctionalitySubscriber<IProvidesIsMainMenuVisible>.provider { get; set; }
         IProvidesGetRayVisibility IFunctionalitySubscriber<IProvidesGetRayVisibility>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         void Start()
@@ -697,10 +698,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 foreach (var linkedObject in linkedObjects)
                 {
                     var transformTool = (TransformTool)linkedObject;
-                    var rayOrigin = transformTool.rayOrigin;
-                    if (!(m_Scaling || directSelection.ContainsKey(rayOrigin) || GrabDataForNode(transformTool.node) != null))
+                    var otherRayOrigin = transformTool.rayOrigin;
+                    if (!(m_Scaling || directSelection.ContainsKey(otherRayOrigin) || GrabDataForNode(transformTool.node) != null))
                     {
-                        this.RemoveRayVisibilitySettings(rayOrigin, this);
+                        this.RemoveRayVisibilitySettings(otherRayOrigin, this);
                     }
                 }
             }

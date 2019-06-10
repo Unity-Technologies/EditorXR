@@ -11,7 +11,7 @@ namespace Unity.Labs.EditorXR.Interfaces
     {
     }
 
-    public static class UsesControlInputIntersection
+    public static class UsesControlInputIntersectionMethods
     {
         /// <summary>
         /// Enable/disable a given ray-origin's ability to intersect/interact with non UI objects

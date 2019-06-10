@@ -11,7 +11,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
-        IControlHaptics, IUsesNode, IConnectInterfaces, IUsesRequestFeedback, IActionsMenu
+        IUsesControlHaptics, IUsesNode, IConnectInterfaces, IUsesRequestFeedback, IActionsMenu
     {
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
         const string k_SpatialDescription = "Perform actions based on selected-object context";
@@ -102,6 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 #if !FI_AUTOFILL
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         void Start()

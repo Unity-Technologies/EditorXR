@@ -11,7 +11,7 @@ using Object = UnityEngine.Object;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class SelectionModule : ScriptableSettings<SelectionModule>, IModule, IUsesGameObjectLocking, ISelectionChanged,
-        IControlHaptics, IRayToNode, IContainsVRPlayerCompletely, IProvidesGrouping, IProvidesSelectObject
+        IUsesControlHaptics, IRayToNode, IContainsVRPlayerCompletely, IProvidesGrouping, IProvidesSelectObject
     {
 #pragma warning disable 649
         [SerializeField]
@@ -27,6 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if !FI_AUTOFILL
         IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection

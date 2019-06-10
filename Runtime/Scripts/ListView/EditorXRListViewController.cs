@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
     public abstract class EditorXRListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>,
-        IInstantiateUI, IConnectInterfaces, IControlHaptics, IRayToNode, IUsesFunctionalityInjection
+        IInstantiateUI, IConnectInterfaces, IUsesControlHaptics, IRayToNode, IUsesFunctionalityInjection
         where TData : class, IListViewItemData<TIndex>
         where TItem : EditorXRListViewItem<TData, TIndex>
     {
@@ -37,6 +37,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         protected override void Recycle(TIndex index)
@@ -55,9 +56,9 @@ namespace UnityEditor.Experimental.EditorVR
                 this.Pulse(Node.None, m_ScrollPulse);
         }
 
-        protected override TItem InstantiateItem(TData data)
+        protected override TItem InstantiateItem(TData datum)
         {
-            var item = this.InstantiateUI(m_TemplateDictionary[data.template].prefab, transform, false).GetComponent<TItem>();
+            var item = this.InstantiateUI(m_TemplateDictionary[datum.template].prefab, transform, false).GetComponent<TItem>();
             this.ConnectInterfaces(item);
             this.InjectFunctionalitySingle(item);
 

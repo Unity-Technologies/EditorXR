@@ -1,8 +1,7 @@
-﻿
-using Unity.Labs.EditorXR.Interfaces;
-#if UNITY_2018_3_OR_NEWER
+﻿#if UNITY_2018_3_OR_NEWER
 using System;
 using System.IO;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -11,19 +10,12 @@ using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HapticsModule : ScriptableSettings<HapticsModule>, IModule
+    sealed class HapticsModule : ScriptableSettings<HapticsModule>, IInitializableModule, IProvidesControlHaptics
     {
         public const float MaxDuration = 0.8f;
 
         [SerializeField]
         float m_MasterIntensity = 0.8f;
-
-        /// <summary>
-        /// Overall intensity of haptics.
-        /// A value to 0 will mute haptics.
-        /// A value of 1 will allow haptics to be performed at normal intensity
-        /// </summary>
-        public float masterIntensity { set { m_MasterIntensity = Mathf.Clamp(value, 0f, 10f); } }
 
         InputDevice m_LeftHand;
         InputDevice m_RightHand;
@@ -35,18 +27,28 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// </summary>
         bool m_SampleLengthWarningShown;
 
-        public void LoadModule()
+        /// <summary>
+        /// Overall intensity of haptics.
+        /// A value to 0 will mute haptics.
+        /// A value of 1 will allow haptics to be performed at normal intensity
+        /// </summary>
+        public float masterIntensity { set { m_MasterIntensity = Mathf.Clamp(value, 0f, 10f); } }
+
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
+
+        public void Initialize()
         {
             m_LeftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
             m_RightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             m_LeftHand.TryGetHapticCapabilities(out m_Capabilities);
             m_GeneratedHapticClip = new MemoryStream();
-
-            IControlHapticsMethods.pulse = Pulse;
-            IControlHapticsMethods.stopPulses = StopPulses;
         }
-
-        public void UnloadModule() { }
+        public void Shutdown() { }
 
         /// <summary>
         /// Pulse haptic feedback
@@ -154,6 +156,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             return default(InputDevice);
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var controlHapticsSubscriber = obj as IFunctionalitySubscriber<IProvidesControlHaptics>;
+            if (controlHapticsSubscriber != null)
+                controlHapticsSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

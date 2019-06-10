@@ -15,7 +15,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, IUsesCreateWorkspace,
-        ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
+        ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IUsesControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
         IUsesRequestFeedback, INodeToRay, ISpatialMenuProvider
     {
         const string k_SettingsMenuSectionName = "Settings";
@@ -135,6 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
         IProvidesPreviewInToolMenuButton IFunctionalitySubscriber<IProvidesPreviewInToolMenuButton>.provider { get; set; }
         IProvidesCreateWorkspace IFunctionalitySubscriber<IProvidesCreateWorkspace>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         void OnEnable()

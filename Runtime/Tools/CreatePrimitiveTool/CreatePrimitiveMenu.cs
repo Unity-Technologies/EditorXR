@@ -1,4 +1,6 @@
 using System;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
@@ -7,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
-    sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu, IControlHaptics, IRayToNode
+    sealed class CreatePrimitiveMenu : MonoBehaviour, IMenu, IUsesControlHaptics, IRayToNode
     {
         const int k_Priority = 1;
         const string k_BottomGradientProperty = "_ColorBottom";
@@ -42,6 +44,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         }
 
         public GameObject menuContent { get { return gameObject; } }
+
+#if !FI_AUTOFILL
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+#endif
 
         void Awake()
         {

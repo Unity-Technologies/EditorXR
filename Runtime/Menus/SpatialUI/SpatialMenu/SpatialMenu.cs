@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// </summary>
     [ProcessInput(2)] // Process input after the ProxyAnimator, but before other IProcessInput implementors
     public sealed class SpatialMenu : SpatialUIController, IInstantiateUI, IUsesNode, IUsesRayOrigin,
-        IUsesSelectTool, IConnectInterfaces, IControlHaptics, IUsesControlInputIntersection, IUsesSetManipulatorsVisible,
+        IUsesSelectTool, IConnectInterfaces, IUsesControlHaptics, IUsesControlInputIntersection, IUsesSetManipulatorsVisible,
         IUsesRayVisibilitySettings, ICustomActionMap, IUsesViewerScale, IScriptReference
     {
         public class SpatialMenuData
@@ -226,6 +226,7 @@ namespace UnityEditor.Experimental.EditorVR
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
         IProvidesControlInputIntersection IFunctionalitySubscriber<IProvidesControlInputIntersection>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         public void Setup()

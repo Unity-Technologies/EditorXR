@@ -13,7 +13,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
+    sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IUsesControlHaptics,
         IUsesViewerScale, IControlSpatialScrolling, IUsesControlSpatialHinting, IUsesRayVisibilitySettings, IUsesRayOrigin,
         IUsesRequestFeedback, IUsesFunctionalityInjection
     {
@@ -88,6 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
         IProvidesControlSpatialHinting IFunctionalitySubscriber<IProvidesControlSpatialHinting>.provider { get; set; }
+        IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
 #endif
 
         void Awake()
