@@ -1,3 +1,5 @@
+
+using IVacuumable = Unity.Labs.EditorXR.Interfaces.IVacuumable;
 #if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections.Generic;
@@ -21,8 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public Sprite icon;
     }
 
-    class EditorXRToolModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRVacuumableModule>,
-        IModuleDependency<LockModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
+    class EditorXRToolModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<LockModule>,
+        IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
         IModuleDependency<EditorXRRayModule>, IInterfaceConnector, IUsesConnectInterfaces, IInitializableModule,
         IUsesFunctionalityInjection, IProvidesSelectTool
     {
@@ -30,7 +32,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
         EditorVR m_EditorVR;
-        EditorXRVacuumableModule m_VacuumablesModule;
         LockModule m_LockModule;
         EditorXRMenuModule m_MenuModule;
         DeviceInputModule m_DeviceInputModule;
@@ -54,11 +55,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void ConnectDependency(EditorVR dependency)
         {
             m_EditorVR = dependency;
-        }
-
-        public void ConnectDependency(EditorXRVacuumableModule dependency)
-        {
-            m_VacuumablesModule = dependency;
         }
 
         public void ConnectDependency(LockModule dependency)
@@ -160,6 +156,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal void SpawnDefaultTools(IProxy proxy)
         {
             var defaultTools = EditorVR.DefaultTools;
+            var vacuumablesModule = ModuleLoaderCore.instance.GetModule<EditorXRVacuumableModule>();
+            var vacuumables = vacuumablesModule != null ? vacuumablesModule.vacuumables : new List<IVacuumable>();
 
             foreach (var deviceData in m_EditorVR.deviceData)
             {
@@ -189,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     {
                         vacuumTool.defaultOffset = WorkspaceModule.DefaultWorkspaceOffset;
                         vacuumTool.defaultTilt = WorkspaceModule.DefaultWorkspaceTilt;
-                        vacuumTool.vacuumables = m_VacuumablesModule.vacuumables;
+                        vacuumTool.vacuumables = vacuumables;
                     }
                 }
 

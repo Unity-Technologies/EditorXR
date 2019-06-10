@@ -24,9 +24,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [ModuleBehaviorCallbackOrder(ModuleOrders.MenuModuleBehaviorOrder)]
     class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
-        IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IUsesConnectInterfaces, IInitializableModule,
-        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesIsMainMenuVisible, IProvidesInstantiateMenuUI
+        IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector,
+        IUsesConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks, IUsesFunctionalityInjection,
+        IProvidesIsMainMenuVisible, IProvidesInstantiateMenuUI, IInstantiateUI
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
         const float k_MainMenuAutoShowDelay = 0.25f;
@@ -45,7 +45,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRViewerModule m_ViewerModule;
         DeviceInputModule m_DeviceInputModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
-        EditorXRUIModule m_UIModule;
         EditorXRToolModule m_ToolModule;
 
         public int initializationOrder { get { return 1; } }
@@ -90,11 +89,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void ConnectDependency(EditorXRDirectSelectionModule dependency)
         {
             m_DirectSelectionModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRUIModule dependency)
-        {
-            m_UIModule = dependency;
         }
 
         public void LoadModule()
@@ -643,7 +637,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     {
                         if (deviceData.customMenu == null)
                         {
-                            go = m_UIModule.InstantiateUI(prefab.gameObject, menuOrigin, false);
+                            go = this.InstantiateUI(prefab.gameObject, menuOrigin, false);
 
                             var customMenu = go.GetComponent<IMenu>();
                             deviceData.customMenu = customMenu;

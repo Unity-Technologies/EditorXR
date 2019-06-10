@@ -20,11 +20,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<DeviceInputModule>,
         IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>, IModuleDependency<WorkspaceModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
+        IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
         IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces, IStandardIgnoreList, IInitializableModule,
         ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
         IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility,
-        IProvidesGetPreviewOrigin, IProvidesGetFieldGrabOrigin
+        IProvidesGetPreviewOrigin, IProvidesGetFieldGrabOrigin, IInstantiateUI
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -59,7 +59,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         WorkspaceModule m_WorkspaceModule;
         EditorXRViewerModule m_ViewerModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
-        EditorXRUIModule m_UIModule;
         EditorXRMenuModule m_MenuModule;
         EditorXRToolModule m_ToolModule;
 
@@ -123,11 +122,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void ConnectDependency(EditorXRDirectSelectionModule dependency)
         {
             m_DirectSelectionModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRUIModule dependency)
-        {
-            m_UIModule = dependency;
         }
 
         public void ConnectDependency(EditorXRMenuModule dependency)
@@ -359,7 +353,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             {
                                 foreach (var prefab in prefabs)
                                 {
-                                    var go = m_UIModule.InstantiateUI(prefab);
+                                    var go = this.InstantiateUI(prefab);
                                     go.transform.SetParent(rayOriginPair.Value, false);
                                 }
                             }
