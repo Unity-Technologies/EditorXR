@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR.Core;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using UnityEditor.Experimental.EditorVR.Core;
 
 namespace UnityEditor.Experimental.EditorVR
 {

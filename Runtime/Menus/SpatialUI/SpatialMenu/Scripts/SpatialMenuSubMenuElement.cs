@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;

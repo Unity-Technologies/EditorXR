@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
-    /// Gives decorated class access to the default ray color
+    /// Gives decorated class ability to detect gaze divergence above a defined threshold, for a given transform's forward vector
     /// </summary>
     public interface IUsesDetectGazeDivergence : IFunctionalitySubscriber<IProvidesDetectGazeDivergence>
     {

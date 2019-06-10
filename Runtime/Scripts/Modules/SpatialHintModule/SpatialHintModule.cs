@@ -10,16 +10,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     // TODO: Remove load order when switching to non-static FI
     [ModuleOrder(ModuleOrders.SpatialHintModuleLoadOrder)]
     public sealed class SpatialHintModule : ScriptableSettings<SpatialHintModule>, IConnectInterfaces, IInstantiateUI,
-        INodeToRay, IUsesRayVisibilitySettings, IInitializableModule
+        INodeToRay, IUsesRayVisibilitySettings, IInitializableModule, IProvidesControlSpatialHinting
     {
-        public enum SpatialHintStateFlags
-        {
-            Hidden,
-            PreDragReveal,
-            Scrolling,
-            CenteredScrolling,
-        }
-
 #pragma warning disable 649
         [SerializeField]
         SpatialHintUI m_SpatialHintUIPrefab;
@@ -27,10 +19,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         SpatialHintUI m_SpatialHintUI;
 
-        SpatialHintStateFlags m_State;
+        SpatialHintState m_State;
         Node m_ControllingNode;
 
-        public SpatialHintStateFlags state
+        public SpatialHintState state
         {
             get { return m_State; }
             set
@@ -38,24 +30,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_State = value;
                 switch (m_State)
                 {
-                    case SpatialHintStateFlags.Hidden:
+                    case SpatialHintState.Hidden:
                         m_SpatialHintUI.centeredScrolling = false;
                         m_SpatialHintUI.preScrollArrowsVisible = false;
                         m_SpatialHintUI.secondaryArrowsVisible = false;
                         this.RemoveRayVisibilitySettings(this.RequestRayOriginFromNode(m_ControllingNode), this);
                         controllingNode = Node.None;
                         break;
-                    case SpatialHintStateFlags.PreDragReveal:
+                    case SpatialHintState.PreDragReveal:
                         m_SpatialHintUI.centeredScrolling = false;
                         m_SpatialHintUI.preScrollArrowsVisible = true;
                         m_SpatialHintUI.secondaryArrowsVisible = true;
                         break;
-                    case SpatialHintStateFlags.Scrolling:
+                    case SpatialHintState.Scrolling:
                         m_SpatialHintUI.centeredScrolling = false;
                         m_SpatialHintUI.preScrollArrowsVisible = false;
                         m_SpatialHintUI.scrollVisualsVisible = true;
                         break;
-                    case SpatialHintStateFlags.CenteredScrolling:
+                    case SpatialHintState.CenteredScrolling:
                         m_SpatialHintUI.centeredScrolling = true;
                         m_SpatialHintUI.preScrollArrowsVisible = false;
                         m_SpatialHintUI.scrollVisualsVisible = true;
@@ -74,7 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                 m_ControllingNode = value;
                 if (m_ControllingNode != Node.None)
-                    state = SpatialHintStateFlags.PreDragReveal;
+                    state = SpatialHintState.PreDragReveal;
 
                 m_SpatialHintUI.controllingNode = value;
             }
@@ -97,17 +89,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
 #endif
 
-        public void LoadModule()
-        {
-            IControlSpatialHintingMethods.setSpatialHintState = SetState;
-            IControlSpatialHintingMethods.setSpatialHintPosition = SetPosition;
-            IControlSpatialHintingMethods.setSpatialHintContainerRotation = SetContainerRotation;
-            IControlSpatialHintingMethods.setSpatialHintShowHideRotationTarget = SetShowHideRotationTarget;
-            IControlSpatialHintingMethods.setSpatialHintLookAtRotation = LookAt;
-            IControlSpatialHintingMethods.setSpatialHintDragThresholdTriggerPosition = SetDragThresholdTriggerPosition;
-            IControlSpatialHintingMethods.pulseSpatialHintScrollArrows = PulseScrollArrows;
-            IControlSpatialHintingMethods.setSpatialHintControlNode = SetSpatialHintControlNode;
-        }
+        public void LoadModule() { }
 
         public void UnloadModule() { }
 
@@ -123,50 +105,62 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 UnityObjectUtils.Destroy(m_SpatialHintUI.gameObject);
         }
 
-        internal void PulseScrollArrows()
+        public void PulseSpatialHintScrollArrows()
         {
             m_SpatialHintUI.PulseScrollArrows();
         }
 
-        internal void SetState(SpatialHintStateFlags newState)
+        public void SetSpatialHintState(SpatialHintState newState)
         {
             state = newState;
         }
 
-        internal void SetPosition(Vector3 newPosition)
+        public void SetSpatialHintPosition(Vector3 newPosition)
         {
             spatialHintContentContainer.position = newPosition;
         }
 
-        internal void SetContainerRotation(Quaternion newRotation)
+        public void SetSpatialHintContainerRotation(Quaternion newRotation)
         {
             m_SpatialHintUI.transform.rotation = newRotation;
         }
 
-        internal void SetShowHideRotationTarget(Vector3 target)
+        public void SetSpatialHintShowHideRotationTarget(Vector3 target)
         {
             spatialHintScrollVisualsRotation = target;
         }
 
-        internal void LookAt(Vector3 position)
+        public void SetSpatialHintLookAtRotation(Vector3 position)
         {
             var orig = spatialHintContentContainer.rotation;
             spatialHintContentContainer.LookAt(position);
             spatialHintContentContainer.rotation = orig;
         }
 
-        internal void SetDragThresholdTriggerPosition(Vector3 position)
+        public void SetSpatialHintDragThresholdTriggerPosition(Vector3 position)
         {
-            if (state == SpatialHintStateFlags.Hidden || position == m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition)
+            if (state == SpatialHintState.Hidden || position == m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition)
                 return;
 
             m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition = position;
         }
 
-        internal void SetSpatialHintControlNode(Node controlNode)
+        public void SetSpatialHintControlNode(Node controlNode)
         {
             controllingNode = controlNode;
             this.AddRayVisibilitySettings(this.RequestRayOriginFromNode(m_ControllingNode), this, false, false);
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var controlSpatialHintingSubscriber = obj as IFunctionalitySubscriber<IProvidesControlSpatialHinting>;
+            if (controlSpatialHintingSubscriber != null)
+                controlSpatialHintingSubscriber.provider = this;
+#endif
+        }
+        public void UnloadProvider() { }
     }
 }

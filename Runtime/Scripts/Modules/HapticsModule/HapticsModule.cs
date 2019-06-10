@@ -1,4 +1,6 @@
-﻿#if UNITY_2018_3_OR_NEWER
+﻿
+using Unity.Labs.EditorXR.Interfaces;
+#if UNITY_2018_3_OR_NEWER
 using System;
 using System.IO;
 using Unity.Labs.ModuleLoader;

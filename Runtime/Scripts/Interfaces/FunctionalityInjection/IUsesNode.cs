@@ -1,4 +1,6 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿using Unity.Labs.EditorXR.Interfaces;
+
+namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Adds Node information to determine which hand the tool is attached to

@@ -1,4 +1,5 @@
 using System;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ListView;
 
 namespace UnityEditor.Experimental.EditorVR

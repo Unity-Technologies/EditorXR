@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public sealed class SpatialScrollModule : ScriptableSettings<SpatialScrollModule>, IModule, IUsesViewerScale, IControlHaptics,
-        IControlSpatialHinting, IUsesRayVisibilitySettings, INodeToRay
+        IUsesControlSpatialHinting, IUsesRayVisibilitySettings, INodeToRay
     {
         public class SpatialScrollData : INodeToRay
         {
@@ -112,6 +112,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesControlSpatialHinting IFunctionalitySubscriber<IProvidesControlSpatialHinting>.provider { get; set; }
 #endif
 
         internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
@@ -178,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (scroller == caller)
                 {
                     this.RemoveRayVisibilitySettings(caller.spatialScrollData.rayOrigin, caller);
-                    this.SetSpatialHintState(SpatialHintModule.SpatialHintStateFlags.Hidden);
+                    this.SetSpatialHintState(SpatialHintState.Hidden);
                     caller.spatialScrollData = null; // clear reference to the previously used scrollData
                     m_ScrollCallers.Remove(caller);
                     return;
