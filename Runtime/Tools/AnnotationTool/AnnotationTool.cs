@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     [MainMenuItem("Annotation", "Create", "Draw in 3D")]
     [SpatialMenuItem("Annotation", "Tools", "Draw in 3D")]
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesRayVisibilitySettings,
-        IInstantiateUI, IInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
+        IInstantiateUI, IUsesInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IUsesIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
         IUsesNode, IUsesRequestFeedback, IConnectInterfaces, IUsesSelectTool
     {
@@ -157,6 +157,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
         IProvidesIsHoveringOverUI IFunctionalitySubscriber<IProvidesIsHoveringOverUI>.provider { get; set; }
+        IProvidesInstantiateMenuUI IFunctionalitySubscriber<IProvidesInstantiateMenuUI>.provider { get; set; }
 #endif
 
         void OnDestroy()

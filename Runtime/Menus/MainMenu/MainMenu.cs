@@ -273,7 +273,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                         if (targetRayOrigin)
                         {
                             this.SelectTool(targetRayOrigin, selectedType,
-                                hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+                                hideMenu: typeof(IUsesInstantiateMenuUI).IsAssignableFrom(selectedType));
                             UpdateToolButtons();
                         }
                     });
@@ -287,7 +287,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     m_ToolsSpatialMenuElements.Add(new SpatialMenu.SpatialMenuElementContainer(buttonData.name, buttonData.description, node =>
                     {
                         this.SelectTool(this.RequestRayOriginFromNode(node), selectedType,
-                            hideMenu: typeof(IInstantiateMenuUI).IsAssignableFrom(selectedType));
+                            hideMenu: typeof(IUsesInstantiateMenuUI).IsAssignableFrom(selectedType));
                     }));
 
                     UpdateToolButtons();

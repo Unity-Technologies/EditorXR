@@ -26,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
-        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesIsMainMenuVisible
+        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesIsMainMenuVisible, IProvidesInstantiateMenuUI
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
         const float k_MainMenuAutoShowDelay = 0.25f;
@@ -98,7 +98,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            IInstantiateMenuUIMethods.instantiateMenuUI = InstantiateMenuUI;
             IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
             IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
         }
@@ -629,7 +628,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
+        public GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
         {
             GameObject go = null;
             m_RayModule.ForEachProxyDevice(deviceData =>
@@ -704,6 +703,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var isMainMenuVisibleSubscriber = obj as IFunctionalitySubscriber<IProvidesIsMainMenuVisible>;
             if (isMainMenuVisibleSubscriber != null)
                 isMainMenuVisibleSubscriber.provider = this;
+
+            var instantiateMenuUISubscriber = obj as IFunctionalitySubscriber<IProvidesInstantiateMenuUI>;
+            if (instantiateMenuUISubscriber != null)
+                instantiateMenuUISubscriber.provider = this;
 #endif
         }
 
