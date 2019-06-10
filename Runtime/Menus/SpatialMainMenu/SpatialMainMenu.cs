@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class SpatialMainMenu : MonoBehaviour, IMainMenu, ISpatialMenuProvider, INodeToRay, ICreateWorkspace
+    sealed class SpatialMainMenu : MonoBehaviour, IMainMenu, ISpatialMenuProvider, INodeToRay, IUsesCreateWorkspace
     {
         readonly List<SpatialMenu.SpatialMenuData> m_SpatialMenuData = new List<SpatialMenu.SpatialMenuData>();
 
@@ -43,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 #if !FI_AUTOFILL
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
         IProvidesPreviewInToolMenuButton IFunctionalitySubscriber<IProvidesPreviewInToolMenuButton>.provider { get; set; }
+        IProvidesCreateWorkspace IFunctionalitySubscriber<IProvidesCreateWorkspace>.provider { get; set; }
 #endif
 
         void Start()

@@ -1,6 +1,6 @@
 ﻿using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
     /// Receive the default action map from the system

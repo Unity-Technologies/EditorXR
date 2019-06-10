@@ -1,6 +1,6 @@
 ﻿using UnityEngine.InputNew;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
     /// Decorates tools which supply their own (singular) ActionMap

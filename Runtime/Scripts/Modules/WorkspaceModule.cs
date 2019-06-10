@@ -12,7 +12,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class WorkspaceModule : IModuleDependency<DeviceInputModule>, IConnectInterfaces, ISerializePreferences,
-        IInterfaceConnector, IUsesFunctionalityInjection, IProvidesResetWorkspaces
+        IInterfaceConnector, IUsesFunctionalityInjection, IProvidesResetWorkspaces, IProvidesCreateWorkspace
     {
         [Serializable]
         class Preferences
@@ -115,7 +115,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             preserveWorkspaces = Core.EditorVR.preserveLayout;
 
-            ICreateWorkspaceMethods.createWorkspace = CreateWorkspace;
             IUpdateInspectorsMethods.updateInspectors = UpdateInspectors;
         }
 
@@ -164,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Preferences = (Preferences)obj;
         }
 
-        internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
+        public void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
         {
             if (!typeof(IWorkspace).IsAssignableFrom(t))
                 return;
@@ -314,6 +313,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var resetSubscriber = obj as IFunctionalitySubscriber<IProvidesResetWorkspaces>;
             if (resetSubscriber != null)
                 resetSubscriber.provider = this;
+
+            var createWorkspaceSubscriber = obj as IFunctionalitySubscriber<IProvidesCreateWorkspace>;
+            if (createWorkspaceSubscriber != null)
+                createWorkspaceSubscriber.provider = this;
 #endif
         }
 
