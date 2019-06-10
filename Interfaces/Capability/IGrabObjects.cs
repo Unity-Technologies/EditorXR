@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Unity.Labs.EditorXR.Interfaces;
 using UnityEngine;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
     /// Provides methods and delegates used to directly select and grab scene objects
     /// </summary>
-    public interface IGrabObjects : ICanGrabObject
+    public interface IGrabObjects : IUsesCanGrabObject
     {
         /// <summary>
         /// Transfer a held object between rayOrigins (i.e. dragging into the MiniWorld)

@@ -405,6 +405,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesIsMainMenuVisible IFunctionalitySubscriber<IProvidesIsMainMenuVisible>.provider { get; set; }
         IProvidesGetRayVisibility IFunctionalitySubscriber<IProvidesGetRayVisibility>.provider { get; set; }
         IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+        IProvidesCanGrabObject IFunctionalitySubscriber<IProvidesCanGrabObject>.provider { get; set; }
 #endif
 
         void Start()

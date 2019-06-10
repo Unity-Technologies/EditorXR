@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRDirectSelectionModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRMiniWorldModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<SceneObjectModule>,
         IModuleDependency<IntersectionModule>, IModuleDependency<EditorXRViewerModule>, IInitializableModule,
-        IInterfaceConnector, IModuleBehaviorCallbacks, IProvidesDirectSelection
+        IInterfaceConnector, IModuleBehaviorCallbacks, IProvidesDirectSelection, IProvidesCanGrabObject
     {
         readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
         readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
@@ -70,8 +70,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            ICanGrabObjectMethods.canGrabObject = CanGrabObject;
-
             IUsesPointerMethods.getPointerLength = GetPointerLength;
         }
 
@@ -194,7 +192,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return null;
         }
 
-        bool CanGrabObject(GameObject selection, Transform rayOrigin)
+        public bool CanGrabObject(GameObject selection, Transform rayOrigin)
         {
             if (selection.CompareTag(EditorVR.VRPlayerTag) && !m_MiniWorldModule.rays.ContainsKey(rayOrigin))
                 return false;

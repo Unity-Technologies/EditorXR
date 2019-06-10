@@ -16,12 +16,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [SpatialMenuItem("Selection", "Tools", "Select & manipulate objects in the scene")]
     sealed class SelectionTool : MonoBehaviour, ITool, IUsesRayOrigin, IUsesRaycastResults, ICustomActionMap,
-        IUsesSetHighlight, IUsesSelectObject, IUsesSetManipulatorsVisible, IUsesIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
-        ICanGrabObject, IUsesGetManipulatorDragState, IUsesNode, IUsesGetRayVisibility, IUsesIsMainMenuVisible, IUsesIsInMiniWorld,
-        IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
-        IUsesDeviceType, IMenuIcon, IUsesPointer, IUsesRayVisibilitySettings, IUsesViewerScale, IUsesCheckSphere,
-        ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IUsesRequestFeedback,
-        IUsesGetVRPlayerObjects, IUsesCheckBounds
+        IUsesSetHighlight, IUsesSelectObject, IUsesSetManipulatorsVisible, IUsesIsHoveringOverUI, IUsesDirectSelection,
+        ILinkedObject, IUsesCanGrabObject, IUsesGetManipulatorDragState, IUsesNode, IUsesGetRayVisibility,
+        IUsesIsMainMenuVisible, IUsesIsInMiniWorld,IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor,
+        ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,IUsesDeviceType, IMenuIcon, IUsesPointer,
+        IUsesRayVisibilitySettings, IUsesViewerScale, IUsesCheckSphere, ISettingsMenuItemProvider, ISerializePreferences,
+        IStandardIgnoreList, IBlockUIInteraction, IUsesRequestFeedback, IUsesGetVRPlayerObjects, IUsesCheckBounds
     {
         [Serializable]
         class Preferences
@@ -175,6 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesGetManipulatorDragState IFunctionalitySubscriber<IProvidesGetManipulatorDragState>.provider { get; set; }
         IProvidesCheckSphere IFunctionalitySubscriber<IProvidesCheckSphere>.provider { get; set; }
         IProvidesCheckBounds IFunctionalitySubscriber<IProvidesCheckBounds>.provider { get; set; }
+        IProvidesCanGrabObject IFunctionalitySubscriber<IProvidesCanGrabObject>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
