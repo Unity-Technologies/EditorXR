@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.DeviceInputModuleBehaviorOrder)]
     sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IModuleDependency<Core.EditorVR>,
-        IModuleDependency<EditorXRToolModule>, IInterfaceConnector, IInitializableModule, IModuleBehaviorCallbacks
+        IInterfaceConnector, IInitializableModule, IModuleBehaviorCallbacks
     {
         class InputProcessor
         {
@@ -33,6 +33,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         PlayerHandle m_PlayerHandle;
 
+        EditorXRToolModule m_ToolModule;
+
         readonly HashSet<InputControl> m_LockedControls = new HashSet<InputControl>();
         readonly Dictionary<ActionMapInput, ICustomActionMap> m_IgnoreLocking = new Dictionary<ActionMapInput, ICustomActionMap>();
 
@@ -46,7 +48,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public TrackedObject trackedObjectInput { get; private set; }
         public Action<HashSet<IProcessInput>, ConsumeControlDelegate> processInput;
-        public Action<List<ActionMapInput>> updatePlayerHandleMaps;
         public Func<Transform, InputDevice> inputDeviceForRayOrigin;
 
         public int initializationOrder { get { return -1; } }
@@ -71,14 +72,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     select deviceData.inputDevice).FirstOrDefault();
         }
 
-        public void ConnectDependency(EditorXRToolModule dependency)
-        {
-            updatePlayerHandleMaps = dependency.UpdatePlayerHandleMaps;
-        }
-
         public void LoadModule()
         {
             m_ConsumeControl = ConsumeControl;
+
+            m_ToolModule = ModuleLoaderCore.instance.GetModule<EditorXRToolModule>();
         }
 
         public void Initialize()
@@ -239,8 +237,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             maps.Add(trackedObjectInput);
 
-            if (updatePlayerHandleMaps != null)
-                updatePlayerHandleMaps(maps);
+            if (m_ToolModule != null)
+                m_ToolModule.UpdatePlayerHandleMaps(maps);
         }
 
         static bool IsValidActionMapForDevice(ActionMap actionMap, InputDevice device)

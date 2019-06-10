@@ -89,6 +89,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
+            m_MenuModule.mainMenuTools = allTools.Where(t =>
+            {
+                return !IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
+            }).ToList(); // Don't show tools that can't be selected/toggled
+
             m_LinkedObjects.Clear();
         }
 

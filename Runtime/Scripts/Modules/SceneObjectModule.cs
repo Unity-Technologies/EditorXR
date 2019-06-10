@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SceneObjectModule : IModuleDependency<EditorXRMiniWorldModule>, IProvidesPlaceSceneObject,
+    sealed class SceneObjectModule : IModule, IProvidesPlaceSceneObject,
         IProvidesPlaceSceneObjects, IProvidesDeleteSceneObject, IUsesSpatialHash
     {
         const float k_InstantiateFOVDifference = -5f;
@@ -44,22 +44,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var currTime = 0f;
 
             obj.parent = null;
-            var startScale = obj.localScale;
+            var localScale = obj.localScale;
+            var startScale = localScale;
             var startPosition = BoundsUtils.GetBounds(obj).center;
-            var pivotOffset = obj.position - startPosition;
+            var position = obj.position;
+            var pivotOffset = position - startPosition;
             var startRotation = obj.rotation;
             var targetRotation = startRotation.ConstrainYaw();
 
             //Get bounds at target scale and rotation (scaled and rotated from bounds center)
-            var origScale = obj.localScale;
-            obj.localScale = targetScale;
+            var origScale = localScale;
             obj.rotation = targetRotation;
             var rotationDiff = Quaternion.Inverse(startRotation) * targetRotation;
             var scaleDiff = targetScale.magnitude / startScale.magnitude;
             var targetPivotOffset = rotationDiff * pivotOffset * scaleDiff;
-            obj.position = startPosition + targetPivotOffset;
             var bounds = BoundsUtils.GetBounds(obj);
-            obj.localScale = origScale;
+            localScale = origScale;
+            obj.localScale = localScale;
             obj.localRotation = startRotation;
             obj.position = startPosition + pivotOffset;
 
@@ -196,15 +197,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
         }
 
-        public void ConnectDependency(EditorXRMiniWorldModule dependency)
-        {
-            m_MiniWorldModule = dependency;
-        }
-
-        public void LoadModule() { }
+        public void LoadModule() { m_MiniWorldModule = ModuleLoaderCore.instance.GetModule<EditorXRMiniWorldModule>(); }
 
         bool TryPlaceObjectInMiniWorld(Transform obj, Vector3 targetScale)
         {
+            if (m_MiniWorldModule == null)
+                return false;
+
             foreach (var miniWorld in m_MiniWorldModule.worlds)
             {
                 if (!miniWorld.Contains(obj.position))

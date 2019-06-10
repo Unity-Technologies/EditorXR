@@ -22,11 +22,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     [ModuleOrder(ModuleOrders.MenuModuleLoadOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.MenuModuleBehaviorOrder)]
-    class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
-        IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
-        IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector,
-        IUsesConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks, IUsesFunctionalityInjection,
-        IProvidesIsMainMenuVisible, IProvidesInstantiateMenuUI, IInstantiateUI
+    class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRRayModule>,
+        IModuleDependency<DeviceInputModule>,
+        IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector, IUsesConnectInterfaces,
+        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesIsMainMenuVisible, IProvidesInstantiateMenuUI,
+        IInstantiateUI, IUsesViewerScale
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
         const float k_MainMenuAutoShowDelay = 0.25f;
@@ -38,21 +38,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
         readonly Dictionary<Transform, IMainMenu> m_MainMenus = new Dictionary<Transform, IMainMenu>();
         readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
         readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
-        List<Type> m_MainMenuTools;
 
         EditorVR m_EditorVR;
         EditorXRRayModule m_RayModule;
-        EditorXRViewerModule m_ViewerModule;
         DeviceInputModule m_DeviceInputModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
-        EditorXRToolModule m_ToolModule;
 
-        public int initializationOrder { get { return 1; } }
-        public int shutdownOrder { get { return 0; } }
+        internal List<Type> mainMenuTools { private get; set; }
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
@@ -66,19 +63,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_EditorVR = dependency;
         }
 
-        public void ConnectDependency(EditorXRToolModule dependency)
-        {
-            m_ToolModule = dependency;
-        }
-
         public void ConnectDependency(EditorXRRayModule dependency)
         {
             m_RayModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRViewerModule dependency)
-        {
-            m_ViewerModule = dependency;
         }
 
         public void ConnectDependency(DeviceInputModule dependency)
@@ -98,16 +85,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
 
         public void UnloadModule() { }
-
-        public void Initialize()
-        {
-            m_MainMenuTools = m_ToolModule.allTools.Where(t =>
-            {
-                return !EditorXRToolModule.IsDefaultTool(t) && !EditorVR.HiddenTypes.Contains(t);
-            }).ToList(); // Don't show tools that can't be selected/toggled
-        }
-
-        public void Shutdown() { }
 
         public void ConnectInterface(object target, object userData = null)
         {
@@ -137,7 +114,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var mainMenu = target as IMainMenu;
             if (mainMenu != null && rayOrigin != null)
             {
-                mainMenu.menuTools = m_MainMenuTools;
+                mainMenu.menuTools = mainMenuTools;
                 mainMenu.menuWorkspaces = WorkspaceModule.workspaceTypes.Where(t => !EditorVR.HiddenTypes.Contains(t)).ToList();
                 mainMenu.settingsMenuProviders = m_SettingsMenuProviders;
                 mainMenu.settingsMenuItemProviders = m_SettingsMenuItemProviders;
@@ -413,7 +390,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
         void CheckDirectSelection(DeviceData deviceData, Dictionary<IMenu, MenuHideData> menuHideData, bool alternateMenuVisible)
         {
-            var viewerScale = m_ViewerModule.GetViewerScale();
+            var viewerScale = this.GetViewerScale();
             var rayOrigin = deviceData.rayOrigin;
             var rayOriginPosition = rayOrigin.position;
             var heldObjects = m_DirectSelectionModule.GetHeldObjects(rayOrigin);
@@ -463,7 +440,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var hoveringCollider = false;
             var menuTransform = menu.menuContent.transform;
             var menuRotation = menuTransform.rotation;
-            var viewerScale = m_ViewerModule.GetViewerScale();
+            var viewerScale = this.GetViewerScale();
             var center = menuTransform.position + menuRotation * menuBounds.center * viewerScale;
             if (Physics.OverlapBoxNonAlloc(center, menuBounds.extents * viewerScale, k_ColliderOverlaps, menuRotation) > 0)
             {
@@ -522,7 +499,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (go.transform.IsChildOf(deviceData.rayOrigin)) // Don't let UI on this hand block the menu
                     return false;
 
-                var scaledPointerDistance = eventData.pointerCurrentRaycast.distance / m_ViewerModule.GetViewerScale();
+                var scaledPointerDistance = eventData.pointerCurrentRaycast.distance / this.GetViewerScale();
                 var menuHideFlags = deviceData.menuHideData;
                 var mainMenu = deviceData.mainMenu;
                 IMenu openMenu = mainMenu;

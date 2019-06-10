@@ -16,15 +16,12 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>, IModuleDependency<EditorVR>,
-        IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>,
-        IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<DeviceInputModule>,
-        IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>, IModuleDependency<WorkspaceModule>,
-        IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
-        IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces, IStandardIgnoreList, IInitializableModule,
-        ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
-        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility,
-        IProvidesGetPreviewOrigin, IProvidesGetFieldGrabOrigin, IInstantiateUI
+        IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>, IModuleDependency<DeviceInputModule>,
+        IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>,
+        IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces,
+        IStandardIgnoreList, IInitializableModule,ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection,
+        IProvidesRaycastResults,IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings,
+        IProvidesGetRayVisibility, IProvidesGetPreviewOrigin, IProvidesGetFieldGrabOrigin, IInstantiateUI, IUsesViewerScale
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -57,7 +54,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         MultipleRayInputModule m_MultipleRayInputModule;
         KeyboardModule m_KeyboardModule;
         WorkspaceModule m_WorkspaceModule;
-        EditorXRViewerModule m_ViewerModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
         EditorXRMenuModule m_MenuModule;
         EditorXRToolModule m_ToolModule;
@@ -76,16 +72,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+        IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 
         public void ConnectDependency(HighlightModule dependency)
         {
             m_HighlightModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRMiniWorldModule dependency)
-        {
-            m_MiniWorldModule = dependency;
         }
 
         public void ConnectDependency(IntersectionModule dependency)
@@ -109,38 +101,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_KeyboardModule = dependency;
         }
 
-        public void ConnectDependency(WorkspaceModule dependency)
-        {
-            m_WorkspaceModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRViewerModule dependency)
-        {
-            m_ViewerModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRDirectSelectionModule dependency)
-        {
-            m_DirectSelectionModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRMenuModule dependency)
-        {
-            m_MenuModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRToolModule dependency)
-        {
-            m_ToolModule = dependency;
-        }
-
         public void LoadModule()
         {
             IForEachRayOriginMethods.forEachRayOrigin = IterateRayOrigins;
             IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
             INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
 
-            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            m_ToolModule = moduleLoaderCore.GetModule<EditorXRToolModule>();
+            m_WorkspaceModule = moduleLoaderCore.GetModule<WorkspaceModule>();
+            m_MenuModule = moduleLoaderCore.GetModule<EditorXRMenuModule>();
+            m_MiniWorldModule = moduleLoaderCore.GetModule<EditorXRMiniWorldModule>();
+            m_DirectSelectionModule = moduleLoaderCore.GetModule<EditorXRDirectSelectionModule>();
+
+            m_ModuleParent = moduleLoaderCore.GetModuleParent().transform;
         }
 
         public void UnloadModule()
@@ -305,7 +279,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                     if (!source.draggedObject)
                                     {
                                         var sourceRayOrigin = source.rayOrigin;
-                                        if (m_DirectSelectionModule.IsHovering(sourceRayOrigin))
+                                        if (m_DirectSelectionModule != null && m_DirectSelectionModule.IsHovering(sourceRayOrigin))
                                             return false;
 
                                         var hoveredObject = source.hoveredObject;
@@ -321,7 +295,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                             return false;
                                     }
 
-                                    if (!m_MenuModule.IsValidHover(source))
+                                    if (m_MenuModule != null && !m_MenuModule.IsValidHover(source))
                                         return false;
 
                                     // Proceed only for raycast sources that haven't been blocked via IBlockUIInteraction
@@ -365,26 +339,32 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                         m_HighlightModule.AddRayOriginForNode(node, rayOrigin);
 
-                        switch (node)
+                        if (m_WorkspaceModule != null)
                         {
-                            case Node.LeftHand:
-                                m_WorkspaceModule.leftRayOrigin = rayOrigin;
-                                break;
-                            case Node.RightHand:
-                                m_WorkspaceModule.rightRayOrigin = rayOrigin;
-                                break;
+                            switch (node)
+                            {
+                                case Node.LeftHand:
+                                    m_WorkspaceModule.leftRayOrigin = rayOrigin;
+                                    break;
+                                case Node.RightHand:
+                                    m_WorkspaceModule.rightRayOrigin = rayOrigin;
+                                    break;
+                            }
                         }
                     }
 
-                    m_ToolModule.SpawnDefaultTools(proxy);
-                    m_WorkspaceModule.CreateSerializedWorkspaces();
+                    if (m_ToolModule != null)
+                        m_ToolModule.SpawnDefaultTools(proxy);
+
+                    if (m_WorkspaceModule != null)
+                        m_WorkspaceModule.CreateSerializedWorkspaces();
                 }
             }
         }
 
         internal void UpdateRaycasts()
         {
-            var distance = k_DefaultRayLength * m_ViewerModule.GetViewerScale();
+            var distance = k_DefaultRayLength * this.GetViewerScale();
             foreach (var deviceData in m_EditorVR.deviceData)
             {
                 var proxy = deviceData.proxy;
@@ -412,7 +392,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         continue;
                     }
 
-                    var distance = k_DefaultRayLength *  m_ViewerModule.GetViewerScale();
+                    var distance = k_DefaultRayLength * this.GetViewerScale();
 
                     // Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
                     // object, so visually show the ray terminating there instead of the object; UI is already given
@@ -486,6 +466,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester, out collisionPoint);
             if (renderer && !renderer.CompareTag(EditorVR.VRPlayerTag))
                 return renderer.gameObject;
+
+            if (m_MiniWorldModule == null)
+                return null;
 
             foreach (var kvp in m_MiniWorldModule.rays)
             {
@@ -599,6 +582,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     return deviceData.node;
             }
 
+            if (m_MiniWorldModule == null)
+                return Node.None;
+
             foreach (var kvp in m_MiniWorldModule.rays)
             {
                 if (kvp.Key == rayOrigin)
@@ -621,6 +607,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (deviceData.node == node)
                     return deviceData.rayOrigin;
             }
+
+            if (m_MiniWorldModule == null)
+                return null;
 
             foreach (var kvp in m_MiniWorldModule.rays)
             {
@@ -662,7 +651,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void OnSelectionChanged()
         {
-            m_MenuModule.UpdateAlternateMenuOnSelectionChanged(lastSelectionRayOrigin);
+            if (m_MenuModule != null)
+                m_MenuModule.UpdateAlternateMenuOnSelectionChanged(lastSelectionRayOrigin);
         }
 
         public void OnBehaviorAwake() { }
