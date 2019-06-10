@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IInitializableModule,
         IModuleBehaviorCallbacks, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
         IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast, IProvidesControlInputIntersection,
-        IProvidesContainsVRPlayerCompletely
+        IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds
     {
         class RayIntersection
         {
@@ -77,10 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void LoadModule()
         {
-            IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
-
-            ICheckBoundsMethods.checkBounds = CheckBounds;
-            ICheckSphereMethods.checkSphere = CheckSphere;
+            IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in LoadModule because it is destroyed on scene load
         }
 
         public void UnloadModule() { }
@@ -307,7 +304,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return result;
         }
 
-        internal bool CheckBounds(Bounds bounds, List<GameObject> objects, List<GameObject> ignoreList = null)
+        public bool CheckBounds(Bounds bounds, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
             m_Intersections.Clear();
@@ -334,7 +331,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return result;
         }
 
-        internal bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<GameObject> ignoreList = null)
+        public bool CheckSphere(Vector3 center, float radius, List<GameObject> objects, List<GameObject> ignoreList = null)
         {
             var result = false;
             m_Intersections.Clear();
@@ -397,6 +394,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var containsVRPlayerCompletelySubscriber = obj as IFunctionalitySubscriber<IProvidesContainsVRPlayerCompletely>;
             if (containsVRPlayerCompletelySubscriber != null)
                 containsVRPlayerCompletelySubscriber.provider = this;
+
+            var checkSphereSubscriber = obj as IFunctionalitySubscriber<IProvidesCheckSphere>;
+            if (checkSphereSubscriber != null)
+                checkSphereSubscriber.provider = this;
 #endif
         }
 

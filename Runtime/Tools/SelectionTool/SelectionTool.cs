@@ -19,9 +19,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IUsesSetHighlight, IUsesSelectObject, IUsesSetManipulatorsVisible, IUsesIsHoveringOverUI, IUsesDirectSelection, ILinkedObject,
         ICanGrabObject, IUsesGetManipulatorDragState, IUsesNode, IUsesGetRayVisibility, IUsesIsMainMenuVisible, IUsesIsInMiniWorld,
         IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
-        IUsesDeviceType, IMenuIcon, IUsesPointer, IUsesRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
+        IUsesDeviceType, IMenuIcon, IUsesPointer, IUsesRayVisibilitySettings, IUsesViewerScale, IUsesCheckSphere,
         ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IUsesRequestFeedback,
-        IUsesGetVRPlayerObjects
+        IUsesGetVRPlayerObjects, IUsesCheckBounds
     {
         [Serializable]
         class Preferences
@@ -173,6 +173,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesGetVRPlayerObjects IFunctionalitySubscriber<IProvidesGetVRPlayerObjects>.provider { get; set; }
         IProvidesGetRayVisibility IFunctionalitySubscriber<IProvidesGetRayVisibility>.provider { get; set; }
         IProvidesGetManipulatorDragState IFunctionalitySubscriber<IProvidesGetManipulatorDragState>.provider { get; set; }
+        IProvidesCheckSphere IFunctionalitySubscriber<IProvidesCheckSphere>.provider { get; set; }
+        IProvidesCheckBounds IFunctionalitySubscriber<IProvidesCheckBounds>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
