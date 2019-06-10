@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.HighlightModuleBehaviorOrder)]
     sealed class HighlightModule : ScriptableSettings<HighlightModule>, IModuleBehaviorCallbacks, IUsesGameObjectLocking,
-        IProvidesCustomHighlight
+        IProvidesCustomHighlight, IProvidesSetHighlight
     {
         struct HighlightData
         {
@@ -68,9 +68,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_RayHighlightMaterialCopy.color = PlayerSettings.colorSpace == ColorSpace.Gamma ? selectionColor : selectionColor.gamma;
             }
 #endif
-
-            ISetHighlightMethods.setHighlight = SetHighlight;
-            ISetHighlightMethods.setBlinkingHighlight = SetBlinkingHighlight;
 
             m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
         }
@@ -238,7 +235,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin,
+        public IEnumerator SetBlinkingHighlight(GameObject go, bool active, Transform rayOrigin,
             Material material, bool force, float dutyPercent, float cycleLength)
         {
             if (!active)
@@ -295,6 +292,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var customHighlightSubscriber = obj as IFunctionalitySubscriber<IProvidesCustomHighlight>;
             if (customHighlightSubscriber != null)
                 customHighlightSubscriber.provider = this;
+
+            var setHighlightSubscriber = obj as IFunctionalitySubscriber<IProvidesSetHighlight>;
+            if (setHighlightSubscriber != null)
+                setHighlightSubscriber.provider = this;
 #endif
         }
 

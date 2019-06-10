@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class HierarchyListViewController : EditorXRNestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, ISetHighlight
+    sealed class HierarchyListViewController : EditorXRNestedListViewController<HierarchyData, HierarchyListItem, int>, IUsesGameObjectLocking, IUsesSetHighlight
     {
         const float k_ClipMargin = 0.001f; // Give the cubes a margin so that their sides don't get clipped
 
@@ -95,6 +95,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 #if !FI_AUTOFILL
         IProvidesGameObjectLocking IFunctionalitySubscriber<IProvidesGameObjectLocking>.provider { get; set; }
+        IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
 #endif
 
         protected override void Start()

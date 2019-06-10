@@ -1,4 +1,6 @@
 using TMPro;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -10,7 +12,7 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    abstract class InspectorListItem : NestedDraggableListItem<InspectorData, int>, ISetHighlight, IGetFieldGrabOrigin
+    abstract class InspectorListItem : NestedDraggableListItem<InspectorData, int>, IUsesSetHighlight, IGetFieldGrabOrigin
     {
         const float k_Indent = 0.02f;
         const float k_HorizThreshold = 0.85f;
@@ -47,6 +49,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             get { return false; }
         }
+
+#if !FI_AUTOFILL
+        IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
+#endif
 
         public override void Setup(InspectorData data, bool firstTime = false)
         {

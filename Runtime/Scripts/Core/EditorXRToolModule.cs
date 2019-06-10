@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -9,7 +10,6 @@ using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
-using Unity.Labs.ModuleLoader;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {

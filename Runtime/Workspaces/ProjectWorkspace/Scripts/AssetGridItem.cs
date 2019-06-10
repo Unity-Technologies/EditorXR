@@ -18,7 +18,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    sealed class AssetGridItem : DraggableListItem<AssetData, int>, IUsesPlaceSceneObject, IUsesSpatialHash, ISetHighlight,
+    sealed class AssetGridItem : DraggableListItem<AssetData, int>, IUsesPlaceSceneObject, IUsesSpatialHash, IUsesSetHighlight,
         IUsesViewerBody, IRayVisibilitySettings, IRequestFeedback, IUsesDirectSelection, IUsesRaycastResults, IUpdateInspectors
     {
         const float k_PreviewDuration = 0.1f;
@@ -193,6 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         IProvidesPlaceSceneObject IFunctionalitySubscriber<IProvidesPlaceSceneObject>.provider { get; set; }
         IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
         IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
+        IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
 #endif
 
         public override void Setup(AssetData listData, bool firstTime)

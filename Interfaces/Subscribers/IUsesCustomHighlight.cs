@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
-    /// Gives decorated class access to IntersectionModule.Raycast
+    /// Gives decorated class the ability to provide a custom highlight callback
     /// </summary>
     public interface IUsesCustomHighlight : IFunctionalitySubscriber<IProvidesCustomHighlight>
     {
@@ -40,7 +40,7 @@ namespace Unity.Labs.EditorXR.Interfaces
         public static void UnsubscribeFromOnHighlight(this IUsesCustomHighlight user, OnHighlightMethod highlightMethod)
         {
 #if !FI_AUTOFILL
-            user.provider.SubscribeToOnHighlight(highlightMethod);
+            user.provider.UnsubscribeFromOnHighlight(highlightMethod);
 #endif
         }
     }

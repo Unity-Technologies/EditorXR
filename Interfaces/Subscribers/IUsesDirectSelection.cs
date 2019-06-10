@@ -59,7 +59,7 @@ namespace Unity.Labs.EditorXR.Interfaces
         public static void UnsubscribeFromResetDirectSelectionState(this IUsesDirectSelection user, Action callback)
         {
 #if !FI_AUTOFILL
-            user.provider.SubscribeToResetDirectSelectionState(callback);
+            user.provider.UnsubscribeFromResetDirectSelectionState(callback);
 #endif
         }
     }

@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     using VisibilityControlType = ProxyAffordanceMap.VisibilityControlType;
     using VRControl = VRInputDevice.VRControl;
 
-    class ProxyNode : MonoBehaviour, IUsesSetTooltipVisibility, ISetHighlight, IConnectInterfaces
+    class ProxyNode : MonoBehaviour, IUsesSetTooltipVisibility, IUsesSetHighlight, IConnectInterfaces
     {
         class AffordanceData
         {
@@ -413,6 +413,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
 #if !FI_AUTOFILL
         IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+        IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
 #endif
 
         void Awake()
