@@ -23,7 +23,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
         IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
         ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
-        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility
+        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility,
+        IProvidesGetPreviewOrigin
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -142,7 +143,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             IForEachRayOriginMethods.forEachRayOrigin = IterateRayOrigins;
             IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
-            IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
             IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
             INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
 
@@ -511,7 +511,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return null;
         }
 
-        Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
+        public Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
         {
             foreach (var proxy in m_Proxies)
             {
@@ -712,6 +712,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var getVisibilitySubscriber = obj as IFunctionalitySubscriber<IProvidesGetRayVisibility>;
             if (getVisibilitySubscriber != null)
                 getVisibilitySubscriber.provider = this;
+
+            var getPreviewOriginSubscriber = obj as IFunctionalitySubscriber<IProvidesGetPreviewOrigin>;
+            if (getPreviewOriginSubscriber != null)
+                getPreviewOriginSubscriber.provider = this;
 #endif
         }
 

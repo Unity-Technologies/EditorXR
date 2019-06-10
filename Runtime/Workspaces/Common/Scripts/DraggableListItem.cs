@@ -11,8 +11,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    class DraggableListItem<TData, TIndex> : EditorXRListViewItem<TData, TIndex>, IGetPreviewOrigin, IUsesViewerScale, IRayToNode
-        where TData : IListViewItemData<TIndex>
+    class DraggableListItem<TData, TIndex> : EditorXRListViewItem<TData, TIndex>, IUsesGetPreviewOrigin, IUsesViewerScale,
+        IRayToNode where TData : IListViewItemData<TIndex>
     {
         const float k_MagnetizeDuration = 0.5f;
         protected const float k_DragDeadZone = 0.025f;
@@ -30,6 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public Func<Transform, ListViewItem<TData, TIndex>> getGrabbedRow { protected get; set; }
 
 #if !FI_AUTOFILL
+        IProvidesGetPreviewOrigin IFunctionalitySubscriber<IProvidesGetPreviewOrigin>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
 #endif
 
