@@ -12,7 +12,7 @@ using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
-    abstract class InspectorListItem : NestedDraggableListItem<InspectorData, int>, IUsesSetHighlight, IGetFieldGrabOrigin
+    abstract class InspectorListItem : NestedDraggableListItem<InspectorData, int>, IUsesSetHighlight, IUsesGetFieldGrabOrigin
     {
         const float k_Indent = 0.02f;
         const float k_HorizThreshold = 0.85f;
@@ -52,11 +52,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 #if !FI_AUTOFILL
         IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
+        IProvidesGetFieldGrabOrigin IFunctionalitySubscriber<IProvidesGetFieldGrabOrigin>.provider { get; set; }
 #endif
 
-        public override void Setup(InspectorData data, bool firstTime = false)
+        public override void Setup(InspectorData datum, bool firstTime = false)
         {
-            base.Setup(data, firstTime);
+            base.Setup(datum, firstTime);
 
             if (firstTime)
                 FirstTimeSetup();
@@ -130,9 +131,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         public virtual void UpdateSelf(float width, int depth, bool expanded)
         {
-            var cubeScale = m_Cube.transform.localScale;
+            var cubeTransform = m_Cube.transform;
+            var cubeScale = cubeTransform.localScale;
             cubeScale.x = width;
-            m_Cube.transform.localScale = cubeScale;
+            cubeTransform.localScale = cubeScale;
 
             if (depth > 0) // Lose one level of indentation because everything is a child of the header
                 depth--;

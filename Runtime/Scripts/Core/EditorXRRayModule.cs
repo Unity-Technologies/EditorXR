@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
         ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
         IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility,
-        IProvidesGetPreviewOrigin
+        IProvidesGetPreviewOrigin, IProvidesGetFieldGrabOrigin
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -142,7 +142,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void LoadModule()
         {
             IForEachRayOriginMethods.forEachRayOrigin = IterateRayOrigins;
-            IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
             IRayToNodeMethods.requestNodeFromRayOrigin = RequestNodeFromRayOrigin;
             INodeToRayMethods.requestRayOriginFromNode = RequestRayOriginFromNode;
 
@@ -523,7 +522,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return null;
         }
 
-        Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
+        public Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
         {
             foreach (var proxy in m_Proxies)
             {
@@ -716,6 +715,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var getPreviewOriginSubscriber = obj as IFunctionalitySubscriber<IProvidesGetPreviewOrigin>;
             if (getPreviewOriginSubscriber != null)
                 getPreviewOriginSubscriber.provider = this;
+
+            var getFieldGrabOriginSubscriber = obj as IFunctionalitySubscriber<IProvidesGetFieldGrabOrigin>;
+            if (getFieldGrabOriginSubscriber != null)
+                getFieldGrabOriginSubscriber.provider = this;
 #endif
         }
 
