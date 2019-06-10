@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -25,7 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
-        IModuleBehaviorCallbacks, IUsesFunctionalityInjection
+        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesIsMainMenuVisible
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
         const float k_MainMenuAutoShowDelay = 0.25f;
@@ -98,7 +99,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void LoadModule()
         {
             IInstantiateMenuUIMethods.instantiateMenuUI = InstantiateMenuUI;
-            IIsMainMenuVisibleMethods.isMainMenuVisible = IsMainMenuVisible;
             IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
             IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
         }
@@ -670,7 +670,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return spawnedMenu;
         }
 
-        bool IsMainMenuVisible(Transform rayOrigin)
+        public bool IsMainMenuVisible(Transform rayOrigin)
         {
             foreach (var deviceData in m_EditorVR.deviceData)
             {
@@ -695,6 +695,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var isMainMenuVisibleSubscriber = obj as IFunctionalitySubscriber<IProvidesIsMainMenuVisible>;
+            if (isMainMenuVisibleSubscriber != null)
+                isMainMenuVisibleSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

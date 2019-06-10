@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
         IGrabObjects, IUsesSelectObject, IManipulatorController, IUsesSnapping, IUsesSetHighlight, ILinkedObject, IRayToNode,
-        IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible,
+        IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IUsesIsMainMenuVisible,
         IGetRayVisibility, IUsesRayVisibilitySettings, IUsesRequestFeedback, IUsesFunctionalityInjection
     {
         enum TwoHandedManipulateMode
@@ -402,6 +402,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesSelectObject IFunctionalitySubscriber<IProvidesSelectObject>.provider { get; set; }
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesIsMainMenuVisible IFunctionalitySubscriber<IProvidesIsMainMenuVisible>.provider { get; set; }
 #endif
 
         void Start()
