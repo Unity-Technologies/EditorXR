@@ -14,7 +14,7 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, IUsesCreateWorkspace,
+    sealed class MainMenu : MonoBehaviour, IMainMenu, IInstantiateUI, IUsesCreateWorkspace,
         ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IUsesControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
         IUsesRequestFeedback, INodeToRay, ISpatialMenuProvider
     {
@@ -141,7 +141,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         void OnEnable()
         {
             m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
-            this.ConnectInterfaces(m_MainMenuUI);
             m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
             m_MainMenuUI.menuOrigin = menuOrigin;
             m_MainMenuUI.Setup();

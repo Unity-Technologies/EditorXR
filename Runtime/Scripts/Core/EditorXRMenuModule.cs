@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
+        IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IUsesConnectInterfaces, IInitializableModule,
         IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesIsMainMenuVisible, IProvidesInstantiateMenuUI
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
@@ -53,6 +53,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection

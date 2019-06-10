@@ -1,12 +1,13 @@
 #if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleOrder(ModuleOrders.InterfaceModule)]
-    class EditorXRInterfacesModule : IInitializableModule
+    class EditorXRInterfacesModule : IInitializableModule, IProvidesConnectInterfaces
     {
         readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
@@ -18,9 +19,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void LoadModule()
         {
-            IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
-            IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
-
             var modules = ModuleLoaderCore.instance.modules;
             foreach (var module in modules)
             {
@@ -61,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             disconnectInterfaces += connector.DisconnectInterface;
         }
 
-        void ConnectInterfaces(object target, object userData = null)
+        public void ConnectInterfaces(object target, object userData = null)
         {
             if (!m_ConnectedInterfaces.Add(target))
                 return;
@@ -70,13 +68,26 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 connectInterfaces(target, userData);
         }
 
-        void DisconnectInterfaces(object target, object userData = null)
+        public void DisconnectInterfaces(object target, object userData = null)
         {
             m_ConnectedInterfaces.Remove(target);
 
             if (disconnectInterfaces != null)
                 disconnectInterfaces(target, userData);
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var connectInterfacesSubscriber = obj as IFunctionalitySubscriber<IProvidesConnectInterfaces>;
+            if (connectInterfacesSubscriber != null)
+                connectInterfacesSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif

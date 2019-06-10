@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class WorkspaceModule : IModuleDependency<DeviceInputModule>, IConnectInterfaces, ISerializePreferences,
+    sealed class WorkspaceModule : IModuleDependency<DeviceInputModule>, IUsesConnectInterfaces, ISerializePreferences,
         IInterfaceConnector, IUsesFunctionalityInjection, IProvidesResetWorkspaces, IProvidesCreateWorkspace
     {
         [Serializable]
@@ -98,6 +98,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         static WorkspaceModule()

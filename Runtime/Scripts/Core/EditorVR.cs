@@ -38,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [RequiresTag(VRPlayerTag)]
 #endif
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
-    sealed class EditorVR : IEditor, IConnectInterfaces, IModuleDependency<EditorXRMiniWorldModule>, IInterfaceConnector
+    sealed class EditorVR : IEditor, IUsesConnectInterfaces, IModuleDependency<EditorXRMiniWorldModule>, IInterfaceConnector
     {
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         internal const string VRPlayerTag = "VRPlayer";
@@ -69,6 +69,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static Type DefaultAlternateMenu { get; set; }
         internal static Type[] HiddenTypes { get; set; }
         internal static Action UpdateInputManager { private get; set; }
+
+#if !FI_AUTOFILL
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+#endif
 
         internal static void ResetPreferences()
         {

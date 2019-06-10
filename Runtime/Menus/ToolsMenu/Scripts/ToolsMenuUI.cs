@@ -12,7 +12,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenuUI : MonoBehaviour, IUsesViewerScale, IInstantiateUI,
-        IConnectInterfaces, IUsesControlSpatialHinting, IUsesRayOrigin, IUsesStencilRef
+        IUsesConnectInterfaces, IUsesControlSpatialHinting, IUsesRayOrigin, IUsesStencilRef
     {
         const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
         const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -151,6 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesControlSpatialHinting IFunctionalitySubscriber<IProvidesControlSpatialHinting>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         void Awake()

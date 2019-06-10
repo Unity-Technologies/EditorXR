@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR
 {
     public abstract class EditorXRListViewController<TData, TItem, TIndex> : ListViewController<TData, TItem, TIndex>,
-        IInstantiateUI, IConnectInterfaces, IUsesControlHaptics, IRayToNode, IUsesFunctionalityInjection
+        IInstantiateUI, IUsesConnectInterfaces, IUsesControlHaptics, IRayToNode, IUsesFunctionalityInjection
         where TData : class, IListViewItemData<TIndex>
         where TItem : EditorXRListViewItem<TData, TIndex>
     {
@@ -38,6 +38,7 @@ namespace UnityEditor.Experimental.EditorVR
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         protected override void Recycle(TIndex index)

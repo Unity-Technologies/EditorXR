@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
     class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<MultipleRayInputModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>,
-        IModuleDependency<KeyboardModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
+        IModuleDependency<KeyboardModule>, IInterfaceConnector, IUsesConnectInterfaces, IInitializableModule,
         IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible, IProvidesRequestStencilRef,
         IProvidesGetManipulatorDragState
     {
@@ -55,6 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         public void ConnectDependency(MultipleRayInputModule dependency)

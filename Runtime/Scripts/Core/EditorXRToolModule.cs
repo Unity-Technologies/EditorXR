@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     class EditorXRToolModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRVacuumableModule>,
         IModuleDependency<LockModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
-        IModuleDependency<EditorXRRayModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
+        IModuleDependency<EditorXRRayModule>, IInterfaceConnector, IUsesConnectInterfaces, IInitializableModule,
         IUsesFunctionalityInjection, IProvidesSelectTool
     {
         static readonly List<Type> k_AllTools = new List<Type>();
@@ -43,6 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         static EditorXRToolModule()

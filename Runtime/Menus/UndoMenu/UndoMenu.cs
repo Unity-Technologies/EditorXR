@@ -12,7 +12,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IUsesMenuOrigins, ICustomActionMap,
-        IUsesControlHaptics, IUsesNode, IConnectInterfaces, IUsesRequestFeedback, IUsesDeviceType, IAlternateMenu
+        IUsesControlHaptics, IUsesNode, IUsesConnectInterfaces, IUsesRequestFeedback, IUsesDeviceType, IAlternateMenu
     {
         const float k_UndoRedoThreshold = 0.5f;
         const string k_EngageControlName = "Engage";
@@ -86,6 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 #if !FI_AUTOFILL
         IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
         IProvidesControlHaptics IFunctionalitySubscriber<IProvidesControlHaptics>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         void Start()

@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     [MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
     [SpatialMenuItem("Primitives", "Tools", "Create primitives in the scene")]
-    sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IUsesInstantiateMenuUI,
+    sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IUsesConnectInterfaces, IUsesInstantiateMenuUI,
         IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, IUsesSelectTool, IUsesIsHoveringOverUI, IUsesIsMainMenuVisible,
         IUsesRayVisibilitySettings, IMenuIcon, IUsesRequestFeedback, IUsesNode
     {
@@ -57,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesIsMainMenuVisible IFunctionalitySubscriber<IProvidesIsMainMenuVisible>.provider { get; set; }
         IProvidesIsHoveringOverUI IFunctionalitySubscriber<IProvidesIsHoveringOverUI>.provider { get; set; }
         IProvidesInstantiateMenuUI IFunctionalitySubscriber<IProvidesInstantiateMenuUI>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         void Start()

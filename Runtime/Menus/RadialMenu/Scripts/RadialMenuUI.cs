@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class RadialMenuUI : MonoBehaviour, IConnectInterfaces, IUsesRequestStencilRef, IUsesFunctionalityInjection
+    sealed class RadialMenuUI : MonoBehaviour, IUsesConnectInterfaces, IUsesRequestStencilRef, IUsesFunctionalityInjection
     {
         const int k_SlotCount = 16;
 
@@ -189,6 +189,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 #if !FI_AUTOFILL
         IProvidesRequestStencilRef IFunctionalitySubscriber<IProvidesRequestStencilRef>.provider { get; set; }
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         void Update()

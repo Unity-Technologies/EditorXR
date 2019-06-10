@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>, IModuleDependency<IntersectionModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>, IInterfaceConnector,
-        ISerializePreferences, IConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks,
+        ISerializePreferences, IUsesConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks,
         IUsesFunctionalityInjection, IProvidesViewerScale, IProvidesViewerBody, IProvidesMoveCameraRig,
         IProvidesGetVRPlayerObjects
     {
@@ -94,6 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         public void ConnectDependency(EditorXRDirectSelectionModule dependency)

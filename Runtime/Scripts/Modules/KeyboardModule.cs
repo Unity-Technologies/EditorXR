@@ -11,7 +11,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class KeyboardModule : ScriptableSettings<KeyboardModule>, IModuleBehaviorCallbacks, IUsesRayVisibilitySettings, IForEachRayOrigin,
-        IConnectInterfaces
+        IUsesConnectInterfaces
     {
 #pragma warning disable 649
         [SerializeField]
@@ -32,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if !FI_AUTOFILL
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         public void LoadModule()

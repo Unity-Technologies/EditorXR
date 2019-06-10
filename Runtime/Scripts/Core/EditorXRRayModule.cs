@@ -21,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>, IModuleDependency<WorkspaceModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
-        IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
+        IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces, IStandardIgnoreList, IInitializableModule,
         ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
         IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility,
         IProvidesGetPreviewOrigin, IProvidesGetFieldGrabOrigin
@@ -76,6 +76,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         public void ConnectDependency(HighlightModule dependency)

@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesRayVisibilitySettings,
         IInstantiateUI, IUsesInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IUsesIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
-        IUsesNode, IUsesRequestFeedback, IConnectInterfaces, IUsesSelectTool
+        IUsesNode, IUsesRequestFeedback, IUsesConnectInterfaces, IUsesSelectTool
     {
         [Serializable]
         public class Preferences
@@ -158,6 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesRayVisibilitySettings IFunctionalitySubscriber<IProvidesRayVisibilitySettings>.provider { get; set; }
         IProvidesIsHoveringOverUI IFunctionalitySubscriber<IProvidesIsHoveringOverUI>.provider { get; set; }
         IProvidesInstantiateMenuUI IFunctionalitySubscriber<IProvidesInstantiateMenuUI>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         void OnDestroy()

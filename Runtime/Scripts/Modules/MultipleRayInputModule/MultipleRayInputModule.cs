@@ -13,7 +13,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     // Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-    sealed class MultipleRayInputModule : BaseInputModule, IModule, IUsesPointer, IConnectInterfaces,
+    sealed class MultipleRayInputModule : BaseInputModule, IModule, IUsesPointer, IUsesConnectInterfaces,
         IProvidesIsHoveringOverUI, IUsesFunctionalityInjection
     {
         public class RaycastSource : ICustomActionMap, IUsesRequestFeedback
@@ -215,6 +215,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+        IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
