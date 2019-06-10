@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IInitializableModule,
         IModuleBehaviorCallbacks, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
-        IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast
+        IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast, IProvidesControlInputIntersection
     {
         class RayIntersection
         {
@@ -77,7 +77,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void LoadModule()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
-            IControlInputIntersectionMethods.setRayOriginEnabled = SetRayOriginEnabled;
 
             ICheckBoundsMethods.checkBounds = CheckBounds;
             ICheckSphereMethods.checkSphere = CheckSphere;
@@ -244,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return null;
         }
 
-        internal void SetRayOriginEnabled(Transform rayOrigin, bool enabled)
+        public void SetRayOriginEnabled(Transform rayOrigin, bool enabled)
         {
             m_RayoriginEnabled[rayOrigin] = enabled;
         }
@@ -258,6 +257,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             RaycastHit hit;
             Raycast(new Ray(rayOrigin.position, rayOrigin.forward), out hit, out go, distance);
 
+            // TODO: check enabled before doing raycast
             if (!m_RayoriginEnabled[rayOrigin])
             {
                 go = null;
@@ -389,6 +389,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var raycastSubscriber = obj as IFunctionalitySubscriber<IProvidesSceneRaycast>;
             if (raycastSubscriber != null)
                 raycastSubscriber.provider = this;
+
+            var controlInputIntersectionSubscriber = obj as IFunctionalitySubscriber<IProvidesControlInputIntersection>;
+            if (controlInputIntersectionSubscriber != null)
+                controlInputIntersectionSubscriber.provider = this;
 #endif
         }
 
