@@ -241,6 +241,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                 var spatialMenu = EditorXRUtils.AddComponent<SpatialMenu>(gameObject);
                 this.ConnectInterfaces(spatialMenu, rayOrigin);
+                this.InjectFunctionalitySingle(spatialMenu);
                 spatialMenu.Setup();
                 deviceData.spatialMenu = spatialMenu;
             }

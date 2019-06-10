@@ -1,5 +1,6 @@
 #if UNITY_2018_3_OR_NEWER
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -13,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<MultipleRayInputModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>,
         IModuleDependency<KeyboardModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
-        IModuleBehaviorCallbacks, IUsesFunctionalityInjection
+        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible
     {
         const byte k_MinStencilRef = 2;
 
@@ -40,7 +41,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         Camera m_EventCamera;
 
         readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
-        readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
+        readonly HashSet<IUsesSetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<IUsesSetManipulatorsVisible>();
         MultipleRayInputModule m_MultipleRayInputModule;
         EditorXRViewerModule m_ViewerModule;
         EditorXRRayModule m_RayModule;
@@ -79,7 +80,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             IInstantiateUIMethods.instantiateUI = InstantiateUI;
             IRequestStencilRefMethods.requestStencilRef = RequestStencilRef;
-            ISetManipulatorsVisibleMethods.setManipulatorsVisible = SetManipulatorsVisible;
             IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
 
             var customPreviewCamera = m_ViewerModule.customPreviewCamera;
@@ -164,7 +164,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return go;
         }
 
-        void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
+        public void SetManipulatorsVisible(IUsesSetManipulatorsVisible setter, bool visible)
         {
             if (visible)
                 m_ManipulatorsHiddenRequests.Remove(setter);
@@ -211,6 +211,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void OnBehaviorDisable() { }
 
         public void OnBehaviorDestroy() { }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var manipulatorVisibilitySubscriber = obj as IFunctionalitySubscriber<IProvidesSetManipulatorsVisible>;
+            if (manipulatorVisibilitySubscriber != null)
+                manipulatorVisibilitySubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif
