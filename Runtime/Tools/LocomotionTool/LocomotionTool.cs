@@ -885,7 +885,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
                     request.node = node;
                     request.control = id;
                     request.tooltipText = tooltipText;
@@ -922,7 +922,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
                     request.control = id;
                     request.node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand;
                     request.tooltipText = "Scale";

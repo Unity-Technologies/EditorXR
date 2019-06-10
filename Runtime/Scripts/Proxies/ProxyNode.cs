@@ -329,7 +329,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         const string k_ZWritePropertyName = "_ZWrite";
         const float k_LastFacingAngleWeight = 0.1f;         // How much extra emphasis to give the last facing angle to prevent 'jitter' when looking at a controller on a boundary
 
-        readonly ProxyFeedbackRequest m_ShakeFeedbackRequest = new ProxyFeedbackRequest(null) { showBody = true };
+        static readonly ProxyFeedbackRequest k_ShakeFeedbackRequest = new ProxyFeedbackRequest { showBody = true };
 
 #pragma warning disable 649
         [SerializeField]
@@ -504,7 +504,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 this.InjectFunctionalitySingle(m_ProxyAnimator);
             }
 
-            AddFeedbackRequest(m_ShakeFeedbackRequest);
+            AddFeedbackRequest(k_ShakeFeedbackRequest);
         }
 
         void Update()
@@ -626,8 +626,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public void AddShakeRequest()
         {
-            RemoveFeedbackRequest(m_ShakeFeedbackRequest);
-            AddFeedbackRequest(m_ShakeFeedbackRequest);
+            RemoveFeedbackRequest(k_ShakeFeedbackRequest);
+            AddFeedbackRequest(k_ShakeFeedbackRequest);
         }
 
         public void AddFeedbackRequest(ProxyFeedbackRequest request)

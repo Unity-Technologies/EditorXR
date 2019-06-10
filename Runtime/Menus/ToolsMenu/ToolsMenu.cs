@@ -305,7 +305,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
+                    var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
                     request.node = node;
                     request.control = id;
                     request.priority = 1;

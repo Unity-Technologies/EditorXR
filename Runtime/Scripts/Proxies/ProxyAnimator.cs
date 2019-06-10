@@ -175,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (m_FeedbackRequests.ContainsKey(key))
                 return;
 
-            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
+            var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
             request.control = control;
             request.node = node;
             request.duration = -1;

@@ -1,4 +1,3 @@
-using System;
 using Unity.Labs.ModuleLoader;
 
 namespace Unity.Labs.EditorXR.Interfaces
@@ -52,14 +51,16 @@ namespace Unity.Labs.EditorXR.Interfaces
         /// Get a pooled FeedbackRequest object from the system
         /// </summary>
         /// <param name="user">The functionality user</param>
-        /// <param name="type">The desired type of feedback request</param>
+        /// <typeparam name="TRequest">The desired type of feedback request</typeparam>
         /// <param name="caller">The caller object</param>
-        public static FeedbackRequest GetFeedbackRequestObject(this IUsesRequestFeedback user, Type type, IUsesRequestFeedback caller)
+        /// <returns>A feedback request object in its default initial state</returns>
+        public static TRequest GetFeedbackRequestObject<TRequest>(this IUsesRequestFeedback user, IUsesRequestFeedback caller)
+            where TRequest : FeedbackRequest, new()
         {
 #if FI_AUTOFILL
             return default(FeedbackRequest);
 #else
-            return user.provider.GetFeedbackRequestObject(type, caller);
+            return user.provider.GetFeedbackRequestObject<TRequest>(caller);
 #endif
         }
     }

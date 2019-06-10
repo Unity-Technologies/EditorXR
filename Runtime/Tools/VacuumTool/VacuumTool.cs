@@ -86,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         {
                             foreach (var id in kvp.Value)
                             {
-                                var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);
+                                var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);
                                 request.control = id;
                                 request.node = node;
                                 request.tooltipText = "Double-tap to summon workspace";

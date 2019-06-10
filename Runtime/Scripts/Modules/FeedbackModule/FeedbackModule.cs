@@ -152,23 +152,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public FeedbackRequest GetFeedbackRequestObject(Type type, IUsesRequestFeedback caller)
+        public TRequest GetFeedbackRequestObject<TRequest>(IUsesRequestFeedback caller)
+            where TRequest : FeedbackRequest, new()
         {
             Queue<FeedbackRequest> pool;
-            if (!m_FeedbackRequestPool.TryGetValue(type, out pool))
+            if (!m_FeedbackRequestPool.TryGetValue(typeof(TRequest), out pool))
             {
                 pool = new Queue<FeedbackRequest>();
-                m_FeedbackRequestPool[type] = pool;
+                m_FeedbackRequestPool[typeof(TRequest)] = pool;
             }
 
             if (pool.Count > 0)
             {
                 var request = pool.Dequeue();
                 request.Reset();
-                return request;
+                request.caller = caller;
+                return (TRequest)request;
             }
 
-            return (FeedbackRequest)Activator.CreateInstance(type, caller);
+            return new TRequest{ caller = caller };
         }
 
         void RecycleFeedbackRequestObject(FeedbackRequest request)

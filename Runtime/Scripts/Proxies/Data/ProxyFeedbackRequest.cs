@@ -75,7 +75,5 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             duration = k_DefaultDuration;
             maxPresentations = k_DefaultMaxPresentations;
         }
-
-        public ProxyFeedbackRequest(IUsesRequestFeedback caller) : base(caller) { }
     }
 }

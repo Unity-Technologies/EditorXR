@@ -527,7 +527,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void ShowGrabFeedback(Node node)
         {
-            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
+            var request = this.GetFeedbackRequestObject<ProxyFeedbackRequest>(this);;
             request.control = VRInputDevice.VRControl.Trigger1;
             request.node = node;
             request.tooltipText = "Grab";
