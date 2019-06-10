@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<MultipleRayInputModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>,
         IModuleDependency<KeyboardModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
-        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible
+        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible, IProvidesRequestStencilRef
     {
         const byte k_MinStencilRef = 2;
 
@@ -79,7 +79,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void LoadModule()
         {
             IInstantiateUIMethods.instantiateUI = InstantiateUI;
-            IRequestStencilRefMethods.requestStencilRef = RequestStencilRef;
             IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
 
             var customPreviewCamera = m_ViewerModule.customPreviewCamera;
@@ -192,7 +191,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        byte RequestStencilRef()
+        public byte RequestStencilRef()
         {
             return stencilRef++;
         }
@@ -220,6 +219,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var manipulatorVisibilitySubscriber = obj as IFunctionalitySubscriber<IProvidesSetManipulatorsVisible>;
             if (manipulatorVisibilitySubscriber != null)
                 manipulatorVisibilitySubscriber.provider = this;
+
+            var requestStencilRefSubscriber = obj as IFunctionalitySubscriber<IProvidesRequestStencilRef>;
+            if (requestStencilRefSubscriber != null)
+                requestStencilRefSubscriber.provider = this;
 #endif
         }
 
