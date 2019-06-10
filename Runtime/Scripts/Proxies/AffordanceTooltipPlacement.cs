@@ -1,4 +1,5 @@
-﻿using Unity.Labs.Utils.GUI;
+﻿using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.Utils.GUI;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies

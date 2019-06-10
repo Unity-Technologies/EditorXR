@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -9,7 +11,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class RadialMenuSlot : MonoBehaviour, ISetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
+    sealed class RadialMenuSlot : MonoBehaviour, IUsesSetTooltipVisibility, ITooltip, ITooltipPlacement, IRayEnterHandler, IRayExitHandler
     {
         static readonly Vector3 k_HiddenLocalScale = new Vector3(1f, 0f, 1f);
         const float k_IconHighlightedLocalYOffset = 0.006f;
@@ -236,6 +238,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public ITooltip tooltip { private get; set; }
 
         public event Action hovered;
+
+#if !FI_AUTOFILL
+        IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+#endif
 
         void Awake()
         {

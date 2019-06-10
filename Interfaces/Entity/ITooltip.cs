@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿namespace Unity.Labs.EditorXR.Interfaces
 {
     /// <summary>
     /// Decorates classes which can specify tool tip information

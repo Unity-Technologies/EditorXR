@@ -1,9 +1,12 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿using System;
+using Unity.Labs.EditorXR.Interfaces;
+
+namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
     /// Attribute used to tag Action classes in order to be added to VR menus
     /// </summary>
-    public class ActionMenuItemAttribute : System.Attribute, ITooltip
+    public class ActionMenuItemAttribute : Attribute, ITooltip
     {
         internal const string DefaultActionSectionName = "DefaultActions";
         internal string name;

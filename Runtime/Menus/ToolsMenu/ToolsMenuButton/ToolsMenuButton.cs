@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Text;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -11,7 +13,7 @@ using UnityEngine.UI;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-    sealed class ToolsMenuButton : MonoBehaviour, IToolsMenuButton, ITooltip, ITooltipPlacement, ISetTooltipVisibility
+    sealed class ToolsMenuButton : MonoBehaviour, IToolsMenuButton, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility
     {
         static Color s_FrameOpaqueColor;
 
@@ -431,6 +433,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public byte stencilRef { private get; set; }
 
         public event Action hovered;
+
+#if !FI_AUTOFILL
+        IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+#endif
 
         void Awake()
         {

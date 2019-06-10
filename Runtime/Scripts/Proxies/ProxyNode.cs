@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -12,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     using VisibilityControlType = ProxyAffordanceMap.VisibilityControlType;
     using VRControl = VRInputDevice.VRControl;
 
-    class ProxyNode : MonoBehaviour, ISetTooltipVisibility, ISetHighlight, IConnectInterfaces
+    class ProxyNode : MonoBehaviour, IUsesSetTooltipVisibility, ISetHighlight, IConnectInterfaces
     {
         class AffordanceData
         {
@@ -408,6 +410,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// The transform that the display/preview objects will be parented under
         /// </summary>
         public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
+
+#if !FI_AUTOFILL
+        IProvidesSetTooltipVisibility IFunctionalitySubscriber<IProvidesSetTooltipVisibility>.provider { get; set; }
+#endif
 
         void Awake()
         {
