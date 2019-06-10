@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     class EditorXRMiniWorldModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<SpatialHashModule>, IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>,
         IModuleDependency<WorkspaceModule>, IModuleDependency<EditorXRRayModule>, IUsesPlaceSceneObjects, IUsesViewerScale,
-        IUsesSpatialHash, IUsesRayVisibilitySettings
+        IUsesSpatialHash, IUsesRayVisibilitySettings, IProvidesIsInMiniWorld
     {
         internal class MiniWorldRay
         {
@@ -242,12 +242,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             EditorApplication.hierarchyChanged += OnHierarchyChanged;
 #endif
-            IIsInMiniWorldMethods.isInMiniWorld = IsInMiniWorld;
 
             m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent();
         }
 
-        bool IsInMiniWorld(Transform rayOrigin)
+        public bool IsInMiniWorld(Transform rayOrigin)
         {
             foreach (var miniWorld in m_Worlds)
             {
@@ -357,12 +356,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var originalRayOrigin = miniWorldRay.originalRayOrigin;
                 var referenceTransform = miniWorld.referenceTransform;
                 var miniWorldTransform = miniWorld.miniWorldTransform;
-                miniWorldRayOrigin.position = referenceTransform.TransformPoint(miniWorldTransform.InverseTransformPoint(originalRayOrigin.position));
+                var position = originalRayOrigin.position;
+                miniWorldRayOrigin.position = referenceTransform.TransformPoint(miniWorldTransform.InverseTransformPoint(position));
                 miniWorldRayOrigin.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorldTransform.rotation) * originalRayOrigin.rotation;
                 miniWorldRayOrigin.localScale = Vector3.Scale(inverseScale, referenceTransform.localScale);
 
                 // Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
-                var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * m_DirectSelectionModule.GetPointerLength(originalRayOrigin);
+                var originalPointerPosition = position + originalRayOrigin.forward * m_DirectSelectionModule.GetPointerLength(originalRayOrigin);
                 var isContained = miniWorld.Contains(originalPointerPosition);
                 miniWorldRay.tester.active = isContained;
                 miniWorldRayOrigin.gameObject.SetActive(isContained);
@@ -700,6 +700,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 }
             }
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var isInMiniWorldSubscriber = obj as IFunctionalitySubscriber<IProvidesIsInMiniWorld>;
+            if (isInMiniWorldSubscriber != null)
+                isInMiniWorldSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }
 #endif
