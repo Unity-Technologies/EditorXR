@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
     [EditorOnlyWorkspace]
     [MainMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
     [SpatialMenuItem("Hierarchy", "Workspaces", "View all GameObjects in your scene(s)")]
-    class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IMoveCameraRig
+    class HierarchyWorkspace : Workspace, IFilterUI, IUsesHierarchyData, ISelectionChanged, IUsesMoveCameraRig
     {
         protected const string k_Locked = "Locked";
 
@@ -67,6 +67,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected List<string> m_FilterList;
 
         public virtual string searchQuery { get { return m_FilterUI.searchQuery; } }
+
+#if !FI_AUTOFILL
+        IProvidesMoveCameraRig IFunctionalitySubscriber<IProvidesMoveCameraRig>.provider { get; set; }
+#endif
 
         public override void Setup()
         {
