@@ -1,5 +1,5 @@
 ﻿#if !UNITY_EDITOR
-namespace UnityEditor.Experimental.EditorVR
+namespace Unity.Labs.EditorXR.Interfaces
 {
     public enum PivotMode
     {
