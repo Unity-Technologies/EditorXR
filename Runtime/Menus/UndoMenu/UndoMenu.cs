@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -10,7 +12,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class UndoMenu : MonoBehaviour, IInstantiateUI, IUsesMenuOrigins, ICustomActionMap,
-        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IUsesDeviceType, IAlternateMenu
+        IControlHaptics, IUsesNode, IConnectInterfaces, IUsesRequestFeedback, IUsesDeviceType, IAlternateMenu
     {
         const float k_UndoRedoThreshold = 0.5f;
         const string k_EngageControlName = "Engage";
@@ -81,6 +83,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             }
         }
 
+#if !FI_AUTOFILL
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+#endif
+
         void Start()
         {
             m_UndoMenuUI = this.InstantiateUI(m_UndoMenuPrefab.gameObject).GetComponent<UndoMenuUI>();
@@ -102,7 +108,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var undoMenuInput = (UndoMenuInput)input;
             if (undoMenuInput == null)
             {
-                this.ClearFeedbackRequests();
+                this.ClearFeedbackRequests(this);
                 return;
             }
 
@@ -165,12 +171,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    this.AddFeedbackRequest(new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node,
-                        tooltipText = m_FeedbackHintForCurrentController
-                    });
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
+                    request.control = id;
+                    request.node = node;
+                    request.tooltipText = m_FeedbackHintForCurrentController;
+                    this.AddFeedbackRequest(request);
                 }
             }
         }
@@ -182,12 +187,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    this.AddFeedbackRequest(new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node,
-                        tooltipText = string.Format("{0} performed", undo ? "Undo" : "Redo")
-                    });
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
+                    request.control = id;
+                    request.node = node;
+                    request.tooltipText = string.Format("{0} performed", undo ? "Undo" : "Redo");
+                    this.AddFeedbackRequest(request);
                 }
             }
         }

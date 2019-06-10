@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -11,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
     [ProcessInput(1)]
     [RequireComponent(typeof(ProxyNode))]
-    class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode, IRequestFeedback
+    class ProxyAnimator : MonoBehaviour, ICustomActionMap, IUsesNode, IUsesRequestFeedback
     {
         public class TransformInfo
         {
@@ -47,6 +49,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         internal event Action<Affordance[], AffordanceDefinition[], Dictionary<Transform, TransformInfo>, ActionMapInput> postAnimate;
 
+#if !FI_AUTOFILL
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+#endif
+
         public void Setup(AffordanceDefinition[] affordanceDefinitions, Affordance[] affordances)
         {
             m_Affordances = affordances;
@@ -55,7 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void OnDestroy()
         {
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -169,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (m_FeedbackRequests.ContainsKey(key))
                 return;
 
-            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+            var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
             request.control = control;
             request.node = node;
             request.duration = -1;

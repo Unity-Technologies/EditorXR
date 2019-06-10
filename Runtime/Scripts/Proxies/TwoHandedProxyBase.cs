@@ -229,7 +229,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        public void ClearFeedbackRequests(IRequestFeedback caller)
+        public void ClearFeedbackRequests(IUsesRequestFeedback caller)
         {
             // Check for null in order to prevent MissingReferenceException when exiting EXR
             if (m_LeftProxyNode && m_RightProxyNode)

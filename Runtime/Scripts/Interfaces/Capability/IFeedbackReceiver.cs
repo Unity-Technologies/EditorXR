@@ -1,4 +1,4 @@
-using UnityEditor.Experimental.EditorVR.Modules;
+using Unity.Labs.EditorXR.Interfaces;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// Clear feedback requests that were added by this caller.
         /// The FeedbackModule can also call this with a null argument, signaling the intent to clear all requests from all callers.
         /// </summary>
-        /// <param name="caller">The IRequestFeedback whose requests will be cleared</param>
-        void ClearFeedbackRequests(IRequestFeedback caller);
+        /// <param name="caller">The IUsesRequestFeedback whose requests will be cleared</param>
+        void ClearFeedbackRequests(IUsesRequestFeedback caller);
     }
 }

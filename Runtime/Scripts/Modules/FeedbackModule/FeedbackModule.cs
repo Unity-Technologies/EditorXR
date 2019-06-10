@@ -6,18 +6,13 @@ using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public abstract class FeedbackRequest
-    {
-        public IRequestFeedback caller;
-
-        public abstract void Reset();
-    }
-
     public class FeedbackModule : ScriptableSettings<FeedbackModule>, IInitializableModule, ISettingsMenuItemProvider,
-        ISerializePreferences, IInterfaceConnector
+        ISerializePreferences, IInterfaceConnector, IProvidesRequestFeedback
     {
         [Serializable]
         class Preferences
@@ -85,11 +80,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public void LoadModule()
         {
-            IRequestFeedbackMethods.addFeedbackRequest = AddFeedbackRequest;
-            IRequestFeedbackMethods.removeFeedbackRequest = RemoveFeedbackRequest;
-            IRequestFeedbackMethods.clearFeedbackRequests = ClearFeedbackRequests;
-            IRequestFeedbackMethods.getFeedbackRequestObject = GetFeedbackRequestObject;
-
             if (m_Preferences == null)
                 m_Preferences = new Preferences();
         }
@@ -130,7 +120,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        void AddFeedbackRequest(FeedbackRequest request)
+        public void AddFeedbackRequest(FeedbackRequest request)
         {
             if (!m_Preferences.enabled)
                 return;
@@ -141,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        void RemoveFeedbackRequest(FeedbackRequest request)
+        public void RemoveFeedbackRequest(FeedbackRequest request)
         {
             foreach (var receiver in m_FeedbackReceivers)
             {
@@ -151,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             RecycleFeedbackRequestObject(request);
         }
 
-        void ClearFeedbackRequests(IRequestFeedback caller)
+        public void ClearFeedbackRequests(IUsesRequestFeedback caller)
         {
             if (caller == null) // Requesters are not allowed to clear all requests
                 return;
@@ -162,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        FeedbackRequest GetFeedbackRequestObject(Type type)
+        public FeedbackRequest GetFeedbackRequestObject(Type type, IUsesRequestFeedback caller)
         {
             Queue<FeedbackRequest> pool;
             if (!m_FeedbackRequestPool.TryGetValue(type, out pool))
@@ -178,7 +168,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return request;
             }
 
-            return (FeedbackRequest)Activator.CreateInstance(type);
+            return (FeedbackRequest)Activator.CreateInstance(type, caller);
         }
 
         void RecycleFeedbackRequestObject(FeedbackRequest request)
@@ -224,5 +214,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (serializePreferences != null)
                 RemoveReceiver(serializePreferences);
         }
+
+        public void LoadProvider() { }
+
+        public void ConnectSubscriber(object obj)
+        {
+#if !FI_AUTOFILL
+            var feedbackRequestSubscriber = obj as IFunctionalitySubscriber<IProvidesRequestFeedback>;
+            if (feedbackRequestSubscriber != null)
+                feedbackRequestSubscriber.provider = this;
+#endif
+        }
+
+        public void UnloadProvider() { }
     }
 }

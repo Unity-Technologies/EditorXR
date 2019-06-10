@@ -24,7 +24,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     sealed class TransformTool : MonoBehaviour, ITool, ITransformer, ISelectionChanged, IActions, IUsesDirectSelection,
         IGrabObjects, IUsesSelectObject, IManipulatorController, IUsesSnapping, IUsesSetHighlight, ILinkedObject, IRayToNode,
         IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible,
-        IGetRayVisibility, IRayVisibilitySettings, IRequestFeedback, IUsesFunctionalityInjection
+        IGetRayVisibility, IRayVisibilitySettings, IUsesRequestFeedback, IUsesFunctionalityInjection
     {
         enum TwoHandedManipulateMode
         {
@@ -400,6 +400,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesDirectSelection IFunctionalitySubscriber<IProvidesDirectSelection>.provider { get; set; }
         IProvidesSetHighlight IFunctionalitySubscriber<IProvidesSetHighlight>.provider { get; set; }
         IProvidesSelectObject IFunctionalitySubscriber<IProvidesSelectObject>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
 #endif
 
         void Start()
@@ -1001,7 +1002,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                     request.node = node;
                     request.control = id;
                     request.tooltipText = tooltipText;

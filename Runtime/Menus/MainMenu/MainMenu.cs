@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class MainMenu : MonoBehaviour, IMainMenu, IConnectInterfaces, IInstantiateUI, ICreateWorkspace,
         ICustomActionMap, IUsesMenuOrigins, IUsesDeviceType, IControlHaptics, IUsesNode, IRayToNode, IUsesRayOrigin,
-        IRequestFeedback, INodeToRay, ISpatialMenuProvider
+        IUsesRequestFeedback, INodeToRay, ISpatialMenuProvider
     {
         const string k_SettingsMenuSectionName = "Settings";
         const float k_MaxFlickDuration = 0.3f;
@@ -125,13 +125,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     if (visible)
                         ShowFeedback();
                     else
-                        this.ClearFeedbackRequests();
+                        this.ClearFeedbackRequests(this);
                 }
             }
         }
 
 #if !FI_AUTOFILL
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
 #endif
 
         void OnEnable()
@@ -480,7 +481,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                     request.control = id;
                     request.node = node;
                     request.tooltipText = tooltipText;

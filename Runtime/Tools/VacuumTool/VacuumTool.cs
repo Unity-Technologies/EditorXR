@@ -11,7 +11,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class VacuumTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IUsesViewerScale,
-        IRequestFeedback, IUsesNode
+        IUsesRequestFeedback, IUsesNode
     {
 #pragma warning disable 649
         [SerializeField]
@@ -37,6 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
 #endif
 
         void Start()
@@ -46,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void OnDestroy()
         {
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -85,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         {
                             foreach (var id in kvp.Value)
                             {
-                                var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                                var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);
                                 request.control = id;
                                 request.node = node;
                                 request.tooltipText = "Double-tap to summon workspace";

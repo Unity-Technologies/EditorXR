@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -12,9 +13,9 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     // Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-    sealed class MultipleRayInputModule : BaseInputModule, IModule, IUsesPointer, IConnectInterfaces
+    sealed class MultipleRayInputModule : BaseInputModule, IModule, IUsesPointer, IConnectInterfaces, IUsesFunctionalityInjection
     {
-        public class RaycastSource : ICustomActionMap, IRequestFeedback
+        public class RaycastSource : ICustomActionMap, IUsesRequestFeedback
         {
             public IProxy proxy; // Needed for checking if proxy is active
             public Transform rayOrigin;
@@ -34,6 +35,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
             public ActionMap actionMap { get { return MultipleRayInputModuleSettings.instance.UIActionMap; } }
             public bool ignoreActionMapInputLocking { get { return false; } }
+
+#if !FI_AUTOFILL
+            IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+#endif
 
             public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, MultipleRayInputModule owner, Func<RaycastSource, bool> validationCallback)
             {
@@ -148,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 {
                     foreach (var id in ids)
                     {
-                        var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                        var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                         request.node = node;
                         request.control = id;
                         request.tooltipText = tooltipText;
@@ -207,6 +212,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
 
+#if !FI_AUTOFILL
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
+#endif
+
         // Local method use only -- created here to reduce garbage collection
         RayEventData m_TempRayEvent;
 
@@ -233,6 +242,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             var source = new RaycastSource(proxy, rayOrigin, node, this, validationCallback);
             this.ConnectInterfaces(source, rayOrigin);
+            this.InjectFunctionalitySingle(source);
             m_RaycastSources.Add(rayOrigin, source);
         }
 

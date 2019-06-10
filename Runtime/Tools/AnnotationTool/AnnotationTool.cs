@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,
         IInstantiateUI, IInstantiateMenuUI, IUsesMenuOrigins, IUsesViewerScale, IUsesSpatialHash,
         IIsHoveringOverUI, IMultiDeviceTool, IUsesDeviceType, ISerializePreferences, ILinkedObject,
-        IUsesNode, IRequestFeedback, IConnectInterfaces, IUsesSelectTool
+        IUsesNode, IUsesRequestFeedback, IConnectInterfaces, IUsesSelectTool
     {
         [Serializable]
         public class Preferences
@@ -154,6 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
 #endif
 
         void OnDestroy()
@@ -178,7 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             if (m_AnnotationPointer)
                 UnityObjectUtils.Destroy(m_AnnotationPointer.gameObject);
 
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
         }
 
         void Close()
@@ -238,7 +239,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     foreach (var id in control.Value)
                     {
-                        var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                        var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                         request.node = node;
                         request.control = id;
                         request.priority = 1;

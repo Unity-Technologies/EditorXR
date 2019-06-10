@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
         IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin,
-        IRequestFeedback, IUsesFunctionalityInjection
+        IUsesRequestFeedback, IUsesFunctionalityInjection
     {
         const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
         const int k_MaxButtonCount = 16;
@@ -85,6 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
 #endif
 
         void Awake()
@@ -289,7 +290,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void CloseMenu()
         {
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
             this.Pulse(node, m_HidingPulse);
             this.EndSpatialScroll(); // Free the spatial scroll data owned by this object
         }
@@ -304,7 +305,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                     request.node = node;
                     request.control = id;
                     request.priority = 1;

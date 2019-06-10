@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         ICanGrabObject, IGetManipulatorDragState, IUsesNode, IGetRayVisibility, IIsMainMenuVisible, IIsInMiniWorld,
         IRayToNode, IUsesGetDefaultRayColor, IUsesSetDefaultRayColor, ITooltip, ITooltipPlacement, IUsesSetTooltipVisibility,
         IUsesDeviceType, IMenuIcon, IUsesPointer, IRayVisibilitySettings, IUsesViewerScale, ICheckBounds,
-        ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IRequestFeedback,
+        ISettingsMenuItemProvider, ISerializePreferences, IStandardIgnoreList, IBlockUIInteraction, IUsesRequestFeedback,
         IGetVRPlayerObjects
     {
         [Serializable]
@@ -165,6 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesSetDefaultRayColor IFunctionalitySubscriber<IProvidesSetDefaultRayColor>.provider { get; set; }
         IProvidesGetDefaultRayColor IFunctionalitySubscriber<IProvidesGetDefaultRayColor>.provider { get; set; }
         IProvidesSelectObject IFunctionalitySubscriber<IProvidesSelectObject>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
 #endif
 
         // Local method use only -- created here to reduce garbage collection
@@ -205,7 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             UnityObjectUtils.Destroy(m_BlockSelectCube);
             UnityObjectUtils.Destroy(m_BlockSelectSphere);
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
         }
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -608,7 +609,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                     request.node = node;
                     request.control = id;
                     request.tooltipText = tooltipText;

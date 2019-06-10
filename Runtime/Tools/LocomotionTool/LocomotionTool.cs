@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
     sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
         ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode, IUsesFunctionalityInjection
+        IUsesDeviceType, IGetVRPlayerObjects, IBlockUIInteraction, IUsesRequestFeedback, IUsesNode, IUsesFunctionalityInjection
     {
         [Serializable]
         class Preferences
@@ -186,6 +186,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
 #endif
 
         void Start()
@@ -242,7 +243,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         void OnDestroy()
         {
             this.RemoveRayVisibilitySettings(rayOrigin, this);
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
 
             if (m_ViewerScaleVisuals)
                 UnityObjectUtils.Destroy(m_ViewerScaleVisuals.gameObject);
@@ -884,7 +885,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                     request.node = node;
                     request.control = id;
                     request.tooltipText = tooltipText;
@@ -921,7 +922,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                     request.control = id;
                     request.node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand;
                     request.tooltipText = "Scale";

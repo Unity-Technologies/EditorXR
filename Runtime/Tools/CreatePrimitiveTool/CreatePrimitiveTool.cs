@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
     [SpatialMenuItem("Primitives", "Tools", "Create primitives in the scene")]
     sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
         IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, IUsesSelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
-        IRayVisibilitySettings, IMenuIcon, IRequestFeedback, IUsesNode
+        IRayVisibilitySettings, IMenuIcon, IUsesRequestFeedback, IUsesNode
     {
 #pragma warning disable 649
         [SerializeField]
@@ -52,6 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IProvidesSpatialHash IFunctionalitySubscriber<IProvidesSpatialHash>.provider { get; set; }
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
         IProvidesSelectTool IFunctionalitySubscriber<IProvidesSelectTool>.provider { get; set; }
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
 #endif
 
         void Start()
@@ -72,7 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in control.Value)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                     request.node = node;
                     request.control = id;
                     request.tooltipText = "Draw";
@@ -203,7 +204,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 return;
 
             this.RemoveRayVisibilitySettings(rayOrigin, this);
-            this.ClearFeedbackRequests();
+            this.ClearFeedbackRequests(this);
         }
 
         public ActionMap standardActionMap { private get; set; }

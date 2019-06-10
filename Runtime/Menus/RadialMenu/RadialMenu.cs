@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Unity.Labs.EditorXR.Interfaces;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -9,7 +11,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
-        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IActionsMenu
+        IControlHaptics, IUsesNode, IConnectInterfaces, IUsesRequestFeedback, IActionsMenu
     {
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
         const string k_SpatialDescription = "Perform actions based on selected-object context";
@@ -93,10 +95,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     if (visible)
                         ShowFeedback();
                     else
-                        this.ClearFeedbackRequests();
+                        this.ClearFeedbackRequests(this);
                 }
             }
         }
+
+#if !FI_AUTOFILL
+        IProvidesRequestFeedback IFunctionalitySubscriber<IProvidesRequestFeedback>.provider { get; set; }
+#endif
 
         void Start()
         {
@@ -116,7 +122,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             var radialMenuInput = (RadialMenuInput)input;
             if (radialMenuInput == null || m_MenuHideFlags != 0)
             {
-                this.ClearFeedbackRequests();
+                this.ClearFeedbackRequests(this);
                 return;
             }
 
@@ -169,7 +175,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest), this);;
                     request.control = id;
                     request.node = node;
                     request.tooltipText = "Select Action (Press to Execute)";
