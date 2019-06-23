@@ -171,11 +171,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             tooltipTarget.localPosition = this.GetDeviceType() == DeviceType.Oculus ? k_TouchTooltipPosition : k_ViveTooltipPosition;
             tooltipTarget.localRotation = k_TooltipRotation;
 
-            m_BlockSelectCube = EditorXRUtils.Instantiate(m_BlockSelectCube, transform);
+            m_BlockSelectCube = GameObjectUtils.Instantiate(m_BlockSelectCube, transform);
             m_BlockSelectCube.SetActive(false);
             m_BlockSelectCubeRenderer = m_BlockSelectCube.GetComponent<Renderer>();
 
-            m_BlockSelectSphere = EditorXRUtils.Instantiate(m_BlockSelectSphere, transform);
+            m_BlockSelectSphere = GameObjectUtils.Instantiate(m_BlockSelectSphere, transform);
             m_BlockSelectSphere.SetActive(false);
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
@@ -279,7 +279,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 foreach (var kvp in directSelection)
                 {
                     var directRayOrigin = kvp.Key;
-                    var directHoveredObject = kvp.Value;
+                    var directHoveredObject = kvp.Value.gameObject;
 
                     var directSelectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
 

@@ -24,10 +24,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         IControlHaptics, IUsesRayOrigin, IUsesNode, ICustomActionMap, ITwoHandedScaler, IIsMainMenuVisible,
         IGetRayVisibility, IRayVisibilitySettings, IRequestFeedback
     {
-        const float k_LazyFollowTranslate = 8f;
-        const float k_LazyFollowRotate = 12f;
-        const float k_DirectLazyFollowTranslate = 20f;
-        const float k_DirectLazyFollowRotate = 30f;
+        enum TwoHandedManipulateMode
+        {
+            ScaleOnly,
+            RotateAndScale,
+            RotateOnly // Disabled until visual improvement is implemented
+        }
 
         class GrabData
         {
@@ -35,18 +37,50 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             Quaternion[] m_RotationOffsets;
             Vector3[] m_InitialScales;
 
-            public Transform[] grabbedObjects { get; private set; }
+            Vector3[] m_OriginalPositions;
+            Quaternion[] m_OriginalRotations;
+            Vector3[] m_OriginalScales;
+            Vector3 m_StartMidPoint;
+            Quaternion m_UpRotationOffset;
+            Quaternion m_ForwardRotationOffset;
+            float m_StartDistance;
+            bool m_UseUp;
+
+            readonly Vector3 m_GrabOffset;
+
+            public Transform[] grabbedTransforms { get; private set; }
             public TransformInput input { get; private set; }
             public Transform rayOrigin { get; private set; }
+            public TwoHandedManipulateMode twoHandedManipulateMode { get; set; }
 
             public bool suspended { private get; set; }
 
-            public GrabData(Transform rayOrigin, TransformInput input, Transform[] grabbedObjects)
+            Vector3 pivotPoint { get { return rayOrigin.position + rayOrigin.rotation * m_GrabOffset; } }
+
+            public GrabData(Transform rayOrigin, TransformInput input, Transform[] grabbedTransforms, Vector3 contactPoint)
             {
                 this.rayOrigin = rayOrigin;
                 this.input = input;
-                this.grabbedObjects = grabbedObjects;
+                this.grabbedTransforms = grabbedTransforms;
+                var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
+                m_GrabOffset = inverseRotation * (contactPoint - rayOrigin.position);
+                CaptureInitialTransforms();
                 Reset();
+            }
+
+            void CaptureInitialTransforms()
+            {
+                var length = grabbedTransforms.Length;
+                m_OriginalPositions = new Vector3[length];
+                m_OriginalRotations = new Quaternion[length];
+                m_OriginalScales = new Vector3[length];
+                for (var i = 0; i < length; i++)
+                {
+                    var grabbedTransform = grabbedTransforms[i];
+                    m_OriginalPositions[i] = grabbedTransform.position;
+                    m_OriginalRotations[i] = grabbedTransform.rotation;
+                    m_OriginalScales[i] = grabbedTransform.localScale;
+                }
             }
 
             public void Reset()
@@ -54,15 +88,19 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (suspended)
                     return;
 
-                var length = grabbedObjects.Length;
+                var length = grabbedTransforms.Length;
                 m_PositionOffsets = new Vector3[length];
                 m_RotationOffsets = new Quaternion[length];
                 m_InitialScales = new Vector3[length];
-                for (int i = 0; i < length; i++)
+                var pivot = pivotPoint;
+                for (var i = 0; i < length; i++)
                 {
-                    var grabbedObject = grabbedObjects[i];
-                    MathUtilsExt.GetTransformOffset(rayOrigin, grabbedObject, out m_PositionOffsets[i], out m_RotationOffsets[i]);
-                    m_InitialScales[i] = grabbedObject.transform.localScale;
+                    var grabbedTransform = grabbedTransforms[i];
+
+                    var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
+                    m_PositionOffsets[i] = inverseRotation * (grabbedTransform.position - pivot);
+                    m_RotationOffsets[i] = inverseRotation * grabbedTransform.rotation;
+                    m_InitialScales[i] = grabbedTransform.localScale;
                 }
             }
 
@@ -72,16 +110,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     return;
 
 #if UNITY_EDITOR
-                Undo.RecordObjects(grabbedObjects, "Move");
+                Undo.RecordObjects(grabbedTransforms, "Move");
 #endif
 
-                for (int i = 0; i < grabbedObjects.Length; i++)
+                var rayOriginRotation = rayOrigin.rotation;
+                var pivot = pivotPoint;
+                for (var i = 0; i < grabbedTransforms.Length; i++)
                 {
-                    var grabbedObject = grabbedObjects[i];
+                    var grabbedObject = grabbedTransforms[i];
                     var position = grabbedObject.position;
                     var rotation = grabbedObject.rotation;
-                    var targetPosition = rayOrigin.position + rayOrigin.rotation * m_PositionOffsets[i];
-                    var targetRotation = rayOrigin.rotation * m_RotationOffsets[i];
+                    var targetPosition = pivot + rayOriginRotation * m_PositionOffsets[i];
+                    var targetRotation = rayOriginRotation * m_RotationOffsets[i];
 
                     if (usesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
                     {
@@ -105,43 +145,113 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
 
-            public void ScaleObjects(float scaleFactor)
+            public void ScaleObjects(GrabData otherGrab)
             {
                 if (suspended)
                     return;
 
 #if UNITY_EDITOR
-                Undo.RecordObjects(grabbedObjects, "Move");
+                Undo.RecordObjects(grabbedTransforms, "Move");
 #endif
 
-                for (int i = 0; i < grabbedObjects.Length; i++)
+                var thisPosition = pivotPoint;
+                var otherPosition = otherGrab.pivotPoint;
+                var distance = Vector3.Distance(thisPosition, otherPosition);
+                var scaleFactor = distance / m_StartDistance;
+                if (scaleFactor > 0 && scaleFactor < Mathf.Infinity)
                 {
-                    var grabbedObject = grabbedObjects[i];
+                    var rayToRay = otherPosition - thisPosition;
+                    var midPoint = thisPosition + rayToRay * 0.5f;
+                    var forward = Vector3.Slerp(rayOrigin.forward, otherGrab.rayOrigin.forward, 0.5f);
+                    var upVector = Vector3.Slerp(rayOrigin.up, otherGrab.rayOrigin.up, 0.5f);
 
-                    var targetPosition = rayOrigin.position + m_PositionOffsets[i] * scaleFactor;
-                    if (grabbedObject.position != targetPosition)
-                        grabbedObject.position = targetPosition;
+                    var grabRotation = Quaternion.LookRotation(rayToRay, m_UseUp ? upVector : forward);
+                    var rotationOffset = grabRotation * (m_UseUp ? m_UpRotationOffset : m_ForwardRotationOffset);
 
-                    var targetScale = m_InitialScales[i] * scaleFactor;
-                    if (grabbedObject.localScale != targetScale)
-                        grabbedObject.localScale = targetScale;
+                    for (var i = 0; i < grabbedTransforms.Length; i++)
+                    {
+                        var grabbedObject = grabbedTransforms[i];
+
+                        if (twoHandedManipulateMode == TwoHandedManipulateMode.RotateOnly)
+                        {
+                            var targetPosition = midPoint + rotationOffset * m_PositionOffsets[i];
+                            var currentPosition = grabbedObject.position;
+                            if (currentPosition != targetPosition)
+                                grabbedObject.position = Vector3.Lerp(currentPosition, targetPosition, k_DirectLazyFollowTranslate);
+
+                            var targetScale = m_InitialScales[i];
+                            if (grabbedObject.localScale != targetScale)
+                                grabbedObject.localScale = targetScale;
+                        }
+                        else
+                        {
+                            var offset = m_PositionOffsets[i] * scaleFactor;
+                            if (twoHandedManipulateMode != TwoHandedManipulateMode.ScaleOnly)
+                                offset = rotationOffset * offset;
+
+                            var targetPosition = midPoint + offset;
+                            var currentPosition = grabbedObject.position;
+                            if (currentPosition != targetPosition)
+                                grabbedObject.position = Vector3.Lerp(currentPosition, targetPosition, k_DirectLazyFollowTranslate);
+
+                            var targetScale = m_InitialScales[i] * scaleFactor;
+                            if (grabbedObject.localScale != targetScale)
+                                grabbedObject.localScale = targetScale;
+                        }
+
+                        if (twoHandedManipulateMode == TwoHandedManipulateMode.ScaleOnly)
+                            grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, m_RotationOffsets[i], k_DirectLazyFollowRotate);
+                        else
+                            grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotationOffset * m_RotationOffsets[i], k_DirectLazyFollowRotate);
+                    }
                 }
             }
 
             public void TransferTo(Transform destRayOrigin, Vector3 deltaOffset)
             {
                 rayOrigin = destRayOrigin;
-                for (int i = 0; i < m_PositionOffsets.Length; i++)
+                for (var i = 0; i < m_PositionOffsets.Length; i++)
                 {
                     m_PositionOffsets[i] += deltaOffset;
                 }
             }
 
-            public void StartScaling()
+            public void StartScaling(GrabData otherGrab)
             {
-                for (int i = 0; i < grabbedObjects.Length; i++)
+                var thisPosition = pivotPoint;
+                var otherPosition = otherGrab.pivotPoint;
+                var rayToRay = otherPosition - thisPosition;
+                m_StartMidPoint = thisPosition + rayToRay * 0.5f;
+                m_StartDistance = Vector3.Distance(thisPosition, otherPosition);
+
+                m_UseUp = Vector3.Dot(rayOrigin.forward, otherGrab.rayOrigin.forward) < -0.5f;
+                var forward = Vector3.Slerp(rayOrigin.forward, otherGrab.rayOrigin.forward, 0.5f);
+                var upVector = Vector3.Slerp(rayOrigin.up, otherGrab.rayOrigin.up, 0.5f);
+                m_UpRotationOffset = Quaternion.Inverse(Quaternion.LookRotation(rayToRay, upVector));
+                m_ForwardRotationOffset = Quaternion.Inverse(Quaternion.LookRotation(rayToRay, forward));
+
+                for (var i = 0; i < grabbedTransforms.Length; i++)
                 {
-                    m_PositionOffsets[i] = grabbedObjects[i].position - rayOrigin.position;
+                    var grabbedObject = grabbedTransforms[i];
+                    m_PositionOffsets[i] = grabbedObject.position - m_StartMidPoint;
+                    m_RotationOffsets[i] = grabbedObject.rotation;
+                }
+
+                // Transfer the first grab's original transform data, for eventual cancel
+                otherGrab.m_OriginalPositions = m_OriginalPositions;
+                otherGrab.m_OriginalRotations = m_OriginalRotations;
+                otherGrab.m_OriginalScales = m_OriginalScales;
+            }
+
+            public void Cancel()
+            {
+                var length = grabbedTransforms.Length;
+                for (var i = 0; i < length; i++)
+                {
+                    var grabbedTransform = grabbedTransforms[i];
+                    grabbedTransform.position = m_OriginalPositions[i];
+                    grabbedTransform.rotation = m_OriginalRotations[i];
+                    grabbedTransform.localScale = m_OriginalScales[i];
                 }
             }
         }
@@ -158,6 +268,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     execute();
             }
         }
+
+        const float k_LazyFollowTranslate = 8f;
+        const float k_LazyFollowRotate = 12f;
+        const float k_DirectLazyFollowTranslate = 20f;
+        const float k_DirectLazyFollowRotate = 30f;
 
 #pragma warning disable 649
         [SerializeField]
@@ -217,9 +332,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         GrabData m_LeftGrabData, m_RightGrabData;
         bool m_DirectSelected;
-        float m_ScaleStartDistance;
         Node m_ScaleFirstNode;
-        float m_ScaleFactor;
         bool m_Scaling;
         bool m_CurrentlySnapping;
 
@@ -228,6 +341,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_GrabFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_ScaleFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_ScaleOptionFeedback = new List<ProxyFeedbackRequest>();
+        readonly List<ProxyFeedbackRequest> m_ScaleCancelFeedback = new List<ProxyFeedbackRequest>();
 
         readonly TransformAction m_PivotModeToggleAction = new TransformAction();
         readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
@@ -348,11 +463,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 foreach (var kvp in directSelection)
                 {
                     var directRayOrigin = kvp.Key;
+                    var directSelectionData = kvp.Value;
 
                     if (!(hasLeft || hasRight) && this.IsMainMenuVisible(directRayOrigin))
                         continue;
 
-                    var directHoveredObject = kvp.Value;
+                    var directHoveredObject = directSelectionData.gameObject;
 
                     var selectionCandidate = this.GetSelectionCandidate(directHoveredObject, true);
 
@@ -379,7 +495,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     // Check if the other hand is already grabbing for two-handed scale
                     var otherData = grabbingNode == Node.LeftHand ? m_RightGrabData : m_LeftGrabData;
 
-                    if (otherData != null && !otherData.grabbedObjects.Contains(directHoveredObject.transform))
+                    if (otherData != null && !otherData.grabbedTransforms.Contains(directHoveredObject.transform))
                         otherData = null;
 
                     if (otherData != null)
@@ -397,26 +513,26 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                         consumeControl(transformInput.select);
 
-                        if (otherData != null)
-                        {
-                            m_ScaleStartDistance = (directRayOrigin.position - otherData.rayOrigin.position).magnitude;
-                            m_ScaleFirstNode = grabbingNode == Node.LeftHand ? Node.RightHand : Node.LeftHand;
-                            otherData.StartScaling();
-                            m_Scaling = true;
-                        }
-
                         var grabbedObjects = new HashSet<Transform> { directHoveredObject.transform };
                         grabbedObjects.UnionWith(Selection.transforms);
 
                         if (objectsGrabbed != null && !m_Scaling)
                             objectsGrabbed(directRayOrigin, grabbedObjects);
 
-                        var grabData = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray());
+                        var grabData = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray(), directSelectionData.contactPoint);
                         if (grabbingNode == Node.LeftHand)
                             m_LeftGrabData = grabData;
                         else
                             m_RightGrabData = grabData;
+
                         ShowGrabFeedback(grabbingNode);
+                        if (otherData != null)
+                        {
+                            m_ScaleFirstNode = grabbingNode == Node.LeftHand ? Node.RightHand : Node.LeftHand;
+                            otherData.StartScaling(grabData);
+                            ShowScaleOptionsFeedback(otherData.twoHandedManipulateMode);
+                            m_Scaling = true;
+                        }
 
                         // A direct selection has been made. Hide the manipulator until the selection changes
                         m_DirectSelected = true;
@@ -441,29 +557,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (hasLeft)
                 {
                     consumeControl(leftInput.cancel);
-                    if (leftInput.cancel.wasJustPressed)
+                    consumeControl(leftInput.suppressVertical);
+                    if (!m_Scaling && leftInput.cancel.wasJustPressed)
                     {
-                        if (m_Scaling)
-                        {
-                            m_Scaling = false;
-                            DropHeldObjects(Node.LeftHand);
-                            DropHeldObjects(Node.RightHand);
-                            hasRight = false;
-                        }
-                        else
-                        {
-                            DropHeldObjects(Node.LeftHand);
-                        }
+                        m_LeftGrabData.Cancel();
+                        DropHeldObjects(Node.LeftHand);
                         hasLeft = false;
-#if UNITY_EDITOR
-                        Undo.PerformUndo();
-#endif
                     }
 
                     if (leftInput.select.wasJustReleased)
                     {
                         if (rightInput != null && rightInput.select.wasJustReleased)
+                        {
+                            HideScaleOptionFeedback();
                             m_Scaling = false;
+                        }
 
                         DropHeldObjects(Node.LeftHand);
                         hasLeft = false;
@@ -474,29 +582,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 if (hasRight)
                 {
                     consumeControl(rightInput.cancel);
-                    if (rightInput.cancel.wasJustPressed)
+                    consumeControl(rightInput.suppressVertical);
+                    if (!m_Scaling && rightInput.cancel.wasJustPressed)
                     {
-                        if (m_Scaling)
-                        {
-                            m_Scaling = false;
-                            DropHeldObjects(Node.RightHand);
-                            DropHeldObjects(Node.LeftHand);
-                            hasLeft = false;
-                        }
-                        else
-                        {
-                             DropHeldObjects(Node.RightHand);
-                        }
+                        m_RightGrabData.Cancel();
+                        DropHeldObjects(Node.RightHand);
                         hasRight = false;
-#if UNITY_EDITOR
-                        Undo.PerformUndo();
-#endif
                     }
 
                     if (rightInput.select.wasJustReleased)
                     {
                         if (leftInput != null && leftInput.select.wasJustReleased)
+                        {
+                            HideScaleOptionFeedback();
                             m_Scaling = false;
+                        }
 
                         DropHeldObjects(Node.RightHand);
                         hasRight = false;
@@ -508,23 +608,46 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     var rightRayOrigin = m_RightGrabData.rayOrigin;
                     var leftRayOrigin = m_LeftGrabData.rayOrigin;
-                    m_ScaleFactor = (leftRayOrigin.position - rightRayOrigin.position).magnitude / m_ScaleStartDistance;
-                    if (m_ScaleFactor > 0 && m_ScaleFactor < Mathf.Infinity)
+                    var leftCancel = leftInput.cancel;
+                    var rightCancel = rightInput.cancel;
+
+                    var scaleGrabData = m_ScaleFirstNode == Node.LeftHand ? m_LeftGrabData : m_RightGrabData;
+                    if (leftCancel.wasJustPressed)
                     {
-                        if (m_ScaleFirstNode == Node.LeftHand)
-                        {
-                            m_LeftGrabData.ScaleObjects(m_ScaleFactor);
-                            this.ClearSnappingState(leftRayOrigin);
-                        }
+                        if (scaleGrabData.twoHandedManipulateMode == TwoHandedManipulateMode.ScaleOnly)
+                            scaleGrabData.twoHandedManipulateMode = TwoHandedManipulateMode.RotateAndScale;
                         else
-                        {
-                            m_RightGrabData.ScaleObjects(m_ScaleFactor);
-                            this.ClearSnappingState(rightRayOrigin);
-                        }
+                            scaleGrabData.twoHandedManipulateMode = TwoHandedManipulateMode.ScaleOnly;
+
+                        ShowScaleOptionsFeedback(scaleGrabData.twoHandedManipulateMode);
+                    }
+
+                    if (rightCancel.wasJustPressed)
+                    {
+                        HideScaleOptionFeedback();
+                        m_Scaling = false;
+                        if (m_ScaleFirstNode == Node.LeftHand)
+                            m_LeftGrabData.Cancel();
+                        else
+                            m_RightGrabData.Cancel();
+
+                        DropHeldObjects(Node.RightHand);
+                        DropHeldObjects(Node.LeftHand);
+                    }
+                    else if (m_ScaleFirstNode == Node.LeftHand)
+                    {
+                        m_LeftGrabData.ScaleObjects(m_RightGrabData);
+                        this.ClearSnappingState(leftRayOrigin);
+                    }
+                    else
+                    {
+                        m_RightGrabData.ScaleObjects(m_LeftGrabData);
+                        this.ClearSnappingState(rightRayOrigin);
                     }
                 }
                 else
                 {
+                    // If m_Scaling is true but both hands don't have a grab, we need to transfer back to one-handed manipulation
                     // Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
                     if (m_Scaling)
                     {
@@ -535,6 +658,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                             if (objectsTransferred != null && m_ScaleFirstNode == Node.RightHand)
                                 objectsTransferred(m_RightGrabData.rayOrigin, m_LeftGrabData.rayOrigin);
                         }
+
                         if (hasRight)
                         {
                             m_RightGrabData.Reset();
@@ -543,6 +667,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                                 objectsTransferred(m_LeftGrabData.rayOrigin, m_RightGrabData.rayOrigin);
                         }
 
+                        HideScaleOptionFeedback();
                         m_Scaling = false;
                     }
 
@@ -634,7 +759,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Transform[] GetHeldObjects(Node node)
         {
             var grabData = GrabDataForNode(node);
-            return grabData == null ? null : grabData.grabbedObjects;
+            return grabData == null ? null : grabData.grabbedTransforms;
         }
 
         public void TransferHeldObjects(Transform rayOrigin, Transform destRayOrigin, Vector3 deltaOffset = default(Vector3))
@@ -665,7 +790,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 return;
 
             var grabData = GrabDataForNode(node);
-            var grabbedObjects = grabData.grabbedObjects;
+            var grabbedObjects = grabData.grabbedTransforms;
             var rayOrigin = grabData.rayOrigin;
 
             if (objectsDropped != null)
@@ -731,7 +856,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         BaseManipulator CreateManipulator(GameObject prefab)
         {
-            var go = EditorXRUtils.Instantiate(prefab, transform, active: false);
+            var go = GameObjectUtils.Instantiate(prefab, transform);
             go.SetActive(false);
             var manipulator = go.GetComponent<BaseManipulator>();
             manipulator.translate = Translate;
@@ -754,10 +879,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_SelectionBounds = BoundsUtils.GetBounds(selectionTransforms);
 
             var manipulatorTransform = manipulatorGameObject.transform;
-            var activeTransform = Selection.activeTransform;
-            if (activeTransform == null)
-                activeTransform = selectionTransforms[0];
-
+            var activeTransform = Selection.activeTransform ?? selectionTransforms[0];
             manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? activeTransform.position : m_SelectionBounds.center;
             manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global && m_CurrentManipulator == m_StandardManipulator
                 ? Quaternion.identity : activeTransform.rotation;
@@ -883,6 +1005,22 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             ShowFeedback(m_ScaleFeedback, "Select", "Scale", node);
         }
 
+        void ShowScaleOptionsFeedback(TwoHandedManipulateMode mode)
+        {
+            HideScaleOptionFeedback();
+            switch (mode)
+            {
+                case TwoHandedManipulateMode.ScaleOnly:
+                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Press to Rotate and Scale", Node.LeftHand);
+                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Press to Cancel", Node.RightHand);
+                    return;
+                case TwoHandedManipulateMode.RotateAndScale:
+                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Press to Scale Only", Node.LeftHand);
+                    ShowFeedback(m_ScaleOptionFeedback, "Cancel", "Press to Cancel", Node.RightHand);
+                    return;
+            }
+        }
+
         void HideFeedback(List<ProxyFeedbackRequest> requests)
         {
             foreach (var request in requests)
@@ -900,6 +1038,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         void HideScaleFeedback()
         {
             HideFeedback(m_ScaleFeedback);
+        }
+
+        void HideScaleOptionFeedback()
+        {
+            HideFeedback(m_ScaleOptionFeedback);
         }
     }
 }
