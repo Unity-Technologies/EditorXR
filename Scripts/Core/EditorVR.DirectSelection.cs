@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     {
         class DirectSelection : Nested, IInterfaceConnector
         {
-            readonly Dictionary<Transform, GameObject> m_DirectSelections = new Dictionary<Transform, GameObject>();
+            readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
             readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
             readonly List<IGrabObjects> m_ObjectGrabbers = new List<IGrabObjects>();
             readonly List<IUsesDirectSelection> m_DirectSelectionUsers = new List<IUsesDirectSelection>();
@@ -117,26 +117,42 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         continue;
 
                     var rayOrigin = deviceData.rayOrigin;
-                    var obj = GetDirectSelectionForRayOrigin(rayOrigin);
+                    Vector3 contactPoint;
+                    var obj = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
                     if (obj && !obj.CompareTag(k_VRPlayerTag))
-                        m_DirectSelections[rayOrigin] = obj;
+                    {
+                        m_DirectSelections[rayOrigin] = new DirectSelectionData
+                        {
+                            gameObject = obj,
+                            contactPoint = contactPoint
+                        };
+                    }
                 }
 
                 foreach (var ray in evr.GetNestedModule<MiniWorlds>().rays)
                 {
                     var rayOrigin = ray.Key;
-                    var go = GetDirectSelectionForRayOrigin(rayOrigin);
+                    Vector3 contactPoint;
+                    var go = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
                     if (go != null)
-                        m_DirectSelections[rayOrigin] = go;
+                    {
+                        m_DirectSelections[rayOrigin] = new DirectSelectionData
+                        {
+                            gameObject = go,
+                            contactPoint = contactPoint
+                        };
+                    }
                 }
             }
 
-            GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin)
+            GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, out Vector3 contactPoint)
             {
                 if (m_IntersectionModule == null)
                     m_IntersectionModule = evr.GetModule<IntersectionModule>();
 
-                var renderer = m_IntersectionModule.GetIntersectedObjectForRayOrigin(rayOrigin);
+                var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+
+                var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester, out contactPoint);
                 if (renderer)
                     return renderer.gameObject;
 
