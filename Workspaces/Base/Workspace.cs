@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -284,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             transform.localScale = targetScale;
             m_WorkspaceUI.highlightsVisible = false;
             m_VisibilityCoroutine = null;
-            ObjectUtils.Destroy(gameObject);
+            UnityObjectUtils.Destroy(gameObject);
         }
 
         IEnumerator AnimateResetSize()

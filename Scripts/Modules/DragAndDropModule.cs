@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.Utils;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules

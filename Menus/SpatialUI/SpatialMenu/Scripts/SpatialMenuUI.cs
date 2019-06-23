@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -348,7 +349,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 foreach (var child in childrenToDelete)
                 {
                     if (child != null && child.gameObject != null)
-                        ObjectUtils.Destroy(child.gameObject);
+                        UnityObjectUtils.Destroy(child.gameObject);
                 }
             }
         }
@@ -362,7 +363,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                 foreach (var child in childrenToDelete)
                 {
                     if (child != null && child.gameObject != null)
-                        ObjectUtils.Destroy(child.gameObject);
+                        UnityObjectUtils.Destroy(child.gameObject);
                 }
             }
         }
@@ -410,13 +411,13 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             foreach (var child in deleteOldChildren)
             {
                 if (child != null && child.gameObject != null)
-                    ObjectUtils.Destroy(child.gameObject);
+                    UnityObjectUtils.Destroy(child.gameObject);
             }
 
             var homeMenuElementParent = (RectTransform)m_HomeMenuLayoutGroup.transform;
             foreach (var data in spatialMenuData)
             {
-                var instantiatedPrefabTransform = ObjectUtils.Instantiate(m_SectionTitleElementPrefab).transform as RectTransform;
+                var instantiatedPrefabTransform = EditorXRUtils.Instantiate(m_SectionTitleElementPrefab).transform as RectTransform;
                 var providerMenuElement = instantiatedPrefabTransform.GetComponent<SpatialMenuElement>();
                 this.ConnectInterfaces(instantiatedPrefabTransform);
                 providerMenuElement.Setup(homeMenuElementParent, () => { }, data.spatialMenuName, null);
@@ -458,12 +459,12 @@ namespace UnityEditor.Experimental.EditorVR.Menus
                     foreach (var child in deleteOldChildren)
                     {
                         if (child != null && child.gameObject != null)
-                            ObjectUtils.Destroy(child.gameObject);
+                            UnityObjectUtils.Destroy(child.gameObject);
                     }
 
                     foreach (var subMenuElement in menuData.spatialMenuElements)
                     {
-                        var instantiatedPrefab = ObjectUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
+                        var instantiatedPrefab = EditorXRUtils.Instantiate(m_SubMenuElementPrefab).transform as RectTransform;
                         var providerMenuElement = instantiatedPrefab.GetComponent<SpatialMenuElement>();
                         this.ConnectInterfaces(providerMenuElement);
                         providerMenuElement.Setup(subMenuContainer, () => Debug.Log("Setting up SubMenu : " + subMenuElement.name), subMenuElement.name, subMenuElement.tooltipText);

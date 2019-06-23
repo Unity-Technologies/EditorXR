@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -47,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_HintLineMaterial);
+            UnityObjectUtils.Destroy(m_HintLineMaterial);
         }
 
         /// <summary>

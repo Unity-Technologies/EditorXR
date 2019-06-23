@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Threading;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEngine;
 
@@ -16,7 +15,11 @@ using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine.InputNew;
 #endif
 
+#if UNITY_EDITOR
+using Unity.Labs.Utils;
+
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -97,14 +100,14 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             base.Setup();
 
-            var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            var contentPrefab = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
             m_PolyUI = contentPrefab.GetComponent<PolyUI>();
 
             var gridView = m_PolyUI.gridView;
             this.ConnectInterfaces(gridView);
             assetData = new List<PolyGridAsset>();
 
-            var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
+            var sliderObject = EditorXRUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
             m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
             m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_MinScale);
             m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_MaxScale);
@@ -142,7 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void SetupCategoryFilterUI()
         {
-            m_CategoryFilterUI = ObjectUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+            m_CategoryFilterUI = EditorXRUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
             m_CategoryFilterUI.transform.localPosition += Vector3.right * k_FilterUIWidth * 3;
             foreach (var mb in m_CategoryFilterUI.GetComponentsInChildren<MonoBehaviour>())
             {
@@ -204,7 +207,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void SetupComplextyFilterUI()
         {
-            m_ComplexityFilterUI = ObjectUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+            m_ComplexityFilterUI = EditorXRUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
             m_ComplexityFilterUI.transform.localPosition += Vector3.right * k_FilterUIWidth * 2;
             foreach (var mb in m_ComplexityFilterUI.GetComponentsInChildren<MonoBehaviour>())
             {
@@ -270,7 +273,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void SetupFormatFilterUI()
         {
-            m_FormatFilterUI = ObjectUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+            m_FormatFilterUI = EditorXRUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
             m_FormatFilterUI.transform.localPosition += Vector3.right * k_FilterUIWidth;
             foreach (var mb in m_FormatFilterUI.GetComponentsInChildren<MonoBehaviour>())
             {
@@ -336,7 +339,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void SetupSortingUI()
         {
-            m_SortingUI = ObjectUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+            m_SortingUI = EditorXRUtils.Instantiate(m_FilterUIPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
             foreach (var mb in m_SortingUI.GetComponentsInChildren<MonoBehaviour>())
             {
                 this.ConnectInterfaces(mb);

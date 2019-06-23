@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR.Utilities;
+﻿using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
@@ -13,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
             Unsupported.DuplicateGameObjectsUsingPasteboard();
 #endif
             var selection = Selection.transforms;
-            var bounds = ObjectUtils.GetBounds(selection);
+            var bounds = BoundsUtils.GetBounds(selection);
             foreach (var s in selection)
             {
                 var clone = s.gameObject;

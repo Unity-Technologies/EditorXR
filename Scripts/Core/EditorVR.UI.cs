@@ -85,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             internal void Initialize()
             {
                 // Create event system, input module, and event camera
-                ObjectUtils.AddComponent<EventSystem>(evr.gameObject);
+                EditorXRUtils.AddComponent<EventSystem>(evr.gameObject);
 
                 var inputModule = evr.AddModule<MultipleRayInputModule>();
 
@@ -93,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (customPreviewCamera != null)
                     inputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
 
-                m_EventCamera = ObjectUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
+                m_EventCamera = EditorXRUtils.Instantiate(evr.m_EventCameraPrefab.gameObject, evr.transform).GetComponent<Camera>();
                 m_EventCamera.enabled = false;
                 inputModule.eventCamera = m_EventCamera;
 
@@ -102,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
             {
-                var go = ObjectUtils.Instantiate(prefab, parent ? parent : evr.transform, worldPositionStays);
+                var go = EditorXRUtils.Instantiate(prefab, parent ? parent : evr.transform, worldPositionStays);
                 foreach (var canvas in go.GetComponentsInChildren<Canvas>())
                     canvas.worldCamera = m_EventCamera;
 

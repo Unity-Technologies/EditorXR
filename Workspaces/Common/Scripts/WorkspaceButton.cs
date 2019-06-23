@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
@@ -239,8 +240,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_ButtonMaterial);
-            ObjectUtils.Destroy(m_ButtonMaskMaterial);
+            UnityObjectUtils.Destroy(m_ButtonMaterial);
+            UnityObjectUtils.Destroy(m_ButtonMaskMaterial);
 
             if (m_Button)
                 m_Button.onClick.RemoveAllListeners();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -855,7 +856,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         BaseManipulator CreateManipulator(GameObject prefab)
         {
-            var go = ObjectUtils.Instantiate(prefab, transform, active: false);
+            var go = GameObjectUtils.Instantiate(prefab, transform);
             go.SetActive(false);
             var manipulator = go.GetComponent<BaseManipulator>();
             manipulator.translate = Translate;
@@ -875,7 +876,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var manipulatorGameObject = m_CurrentManipulator.gameObject;
             manipulatorGameObject.SetActive(manipulatorVisible);
 
-            m_SelectionBounds = ObjectUtils.GetBounds(selectionTransforms);
+            m_SelectionBounds = BoundsUtils.GetBounds(selectionTransforms);
 
             var manipulatorTransform = manipulatorGameObject.transform;
             var activeTransform = Selection.activeTransform ?? selectionTransforms[0];

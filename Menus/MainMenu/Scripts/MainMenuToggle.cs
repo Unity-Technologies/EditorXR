@@ -1,11 +1,8 @@
 ﻿using System;
-using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {

@@ -1,13 +1,7 @@
 ﻿using System;
-using UnityEditor.Experimental.EditorVR;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
-
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
@@ -15,13 +9,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     {
         protected Selectable m_Selectable;
 
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         protected TextMeshProUGUI m_Description;
 
         [SerializeField]
         protected TextMeshProUGUI m_Title;
-#endif
 
         protected Color m_OriginalColor;
 
@@ -51,11 +43,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public void SetData(string name, string description)
         {
-#if INCLUDE_TEXT_MESH_PRO
             m_Title.text = name;
             if (m_Description != null)
                 m_Description.text = description;
-#endif
         }
     }
 }

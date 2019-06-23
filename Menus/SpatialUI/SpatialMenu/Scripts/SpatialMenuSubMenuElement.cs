@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -133,7 +134,7 @@ namespace UnityEditor.Experimental.EditorVR
         {
             if (selectedAction == null)
             {
-                ObjectUtils.Destroy(gameObject);
+                UnityObjectUtils.Destroy(gameObject);
                 return;
             }
 
@@ -186,7 +187,7 @@ namespace UnityEditor.Experimental.EditorVR
             m_VisibilityCoroutine = null;
 
             if (!fadeIn)
-                ObjectUtils.Destroy(gameObject); // TODO: pool
+                UnityObjectUtils.Destroy(gameObject); // TODO: pool
         }
 
         IEnumerator AnimateHighlight(bool isHighlighted)

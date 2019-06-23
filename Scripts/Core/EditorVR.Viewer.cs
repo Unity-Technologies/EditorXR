@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -109,11 +110,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (cameraRig)
                     cameraRig.transform.parent = null;
 
-                ObjectUtils.Destroy(m_PlayerBody.gameObject);
-                ObjectUtils.Destroy(m_PlayerFloor);
+                UnityObjectUtils.Destroy(m_PlayerBody.gameObject);
+                UnityObjectUtils.Destroy(m_PlayerFloor);
 
                 if (customPreviewCamera != null)
-                    ObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
+                    UnityObjectUtils.Destroy(((MonoBehaviour)customPreviewCamera).gameObject);
             }
 
             public void ConnectInterface(object target, object userData = null)
@@ -151,7 +152,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var cameraRigScale = cameraRig.localScale.x;
                 m_Preferences.cameraRigScale = cameraRigScale;
                 m_Preferences.cameraPosition = cameraTransform.position;
-                m_Preferences.cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
+                m_Preferences.cameraRotation = cameraTransform.rotation.ConstrainYaw();
             }
 
             public void OnDeserializePreferences(object obj)
@@ -164,7 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 var camera = CameraUtils.GetMainCamera();
                 var cameraRig = CameraUtils.GetCameraRig();
                 var cameraTransform = camera.transform;
-                var cameraRotation = MathUtilsExt.ConstrainYawRotation(cameraTransform.rotation);
+                var cameraRotation = cameraTransform.rotation.ConstrainYaw();
                 var inverseRotation = Quaternion.Inverse(cameraRotation);
                 cameraRig.position = Vector3.zero;
                 cameraRig.rotation = inverseRotation * preferences.cameraRotation;
@@ -192,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #endif
                 if (!Application.isPlaying && evr.m_PreviewCameraPrefab)
                 {
-                    var go = ObjectUtils.Instantiate(evr.m_PreviewCameraPrefab);
+                    var go = EditorXRUtils.Instantiate(evr.m_PreviewCameraPrefab);
                     go.transform.SetParent(CameraUtils.GetCameraRig(), false);
 
 #if UNITY_EDITOR
@@ -222,12 +223,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             internal void AddPlayerFloor()
             {
-                m_PlayerFloor = ObjectUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
+                m_PlayerFloor = EditorXRUtils.Instantiate(evr.m_PlayerFloorPrefab, CameraUtils.GetCameraRig().transform, false);
             }
 
             internal void AddPlayerModel()
             {
-                m_PlayerBody = ObjectUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
+                m_PlayerBody = EditorXRUtils.Instantiate(evr.m_PlayerModelPrefab, CameraUtils.GetMainCamera().transform, false).GetComponent<PlayerBody>();
                 var renderer = m_PlayerBody.GetComponent<Renderer>();
                 evr.GetModule<SpatialHashModule>().spatialHash.AddObject(renderer, renderer.bounds);
                 var playerObjects = m_PlayerBody.GetComponentsInChildren<Renderer>(true);
@@ -276,7 +277,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     renderer.enabled = false;
                 }
 
-                var rotationDiff = MathUtilsExt.ConstrainYawRotation(Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation);
+                var rotationDiff = (Quaternion.Inverse(mainCamera.rotation) * playerHead.rotation).ConstrainYaw();
                 var cameraDiff = cameraRig.position - mainCamera.position;
                 cameraDiff.y = 0;
                 var rotationOffset = rotationDiff * cameraDiff - cameraDiff;

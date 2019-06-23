@@ -1,13 +1,10 @@
 using System;
+using TMPro;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Button = UnityEditor.Experimental.EditorVR.UI.Button;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -28,14 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         [SerializeField]
         Image m_TextPanel;
-
-#if INCLUDE_TEXT_MESH_PRO
+        
         [SerializeField]
         TextMeshProUGUI m_Text;
-#else
-        [SerializeField]
-        Text m_Text;
-#endif
 #pragma warning restore 649
 
         Transform m_InteractingRayOrigin;
@@ -45,11 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             get { return m_Button; }
         }
 
-#if INCLUDE_TEXT_MESH_PRO
         public TextMeshProUGUI text { get { return m_Text; } }
-#else
-        public Text text { get; set; }
-#endif
 
         public Color color
         {

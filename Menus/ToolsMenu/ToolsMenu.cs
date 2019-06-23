@@ -126,7 +126,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             if (buttons.Count >= k_MaxButtonCount) // Return if tool type already occupies a tool button
                 return;
 
-            var buttonTransform = ObjectUtils.Instantiate(_mToolsMenuButtonTemplate.gameObject, m_ToolsMenuUI.buttonContainer, false).transform;
+            var buttonTransform = EditorXRUtils.Instantiate(_mToolsMenuButtonTemplate.gameObject, m_ToolsMenuUI.buttonContainer, false).transform;
             var button = buttonTransform.GetComponent<ToolsMenuButton>();
             this.ConnectInterfaces(button);
 

@@ -2,12 +2,17 @@
     "name": "EXR-Editor",
     "references": [
         "EXR",
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.Labs.Utils"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
 }

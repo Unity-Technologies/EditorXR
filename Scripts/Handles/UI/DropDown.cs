@@ -2,17 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR;
+using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
-
-#if INCLUDE_TEXT_MESH_PRO
-using TMPro;
-#endif
-
-[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
@@ -25,10 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
         [SerializeField]
         bool m_MultiSelect;
 
-#if INCLUDE_TEXT_MESH_PRO
         [SerializeField]
         TextMeshProUGUI m_Label;
-#endif
 
         [SerializeField]
         RectTransform m_OptionsPanel;
@@ -161,7 +154,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 // Clear existing options
                 var children = listTransform.Cast<Transform>().ToList(); // Copy list, since destroying children changes count
                 foreach (var child in children)
-                    ObjectUtils.Destroy(child.gameObject);
+                    UnityObjectUtils.Destroy(child.gameObject);
 
                 m_Toggles = new Toggle[m_Options.Length];
 
@@ -172,11 +165,9 @@ namespace UnityEditor.Experimental.EditorVR.UI
                     // Zero out Z local position
                     optionObject.transform.localPosition = new Vector3(optionObject.transform.localPosition.x, optionObject.transform.localPosition.y, 0f);
 
-#if INCLUDE_TEXT_MESH_PRO
                     var optionText = optionObject.GetComponentInChildren<TextMeshProUGUI>();
                     if (optionText)
                         optionText.text = m_Options[i];
-#endif
 
                     var toggle = optionObject.GetComponentInChildren<Toggle>();
                     if (toggle)
@@ -215,9 +206,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         public void LabelOverride(string text)
         {
-#if INCLUDE_TEXT_MESH_PRO
             m_Label.text = text;
-#endif
         }
 
         void OnOptionClicked(int val)
@@ -254,7 +243,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         void UpdateLabel()
         {
-#if INCLUDE_TEXT_MESH_PRO
             if (m_MultiSelect)
             {
                 var labelText = string.Empty;
@@ -272,7 +260,6 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 if (m_Value >= 0 && m_Value < m_Options.Length)
                     m_Label.text = m_Options[m_Value];
             }
-#endif
         }
 
         IEnumerator ShowDropDownContents()

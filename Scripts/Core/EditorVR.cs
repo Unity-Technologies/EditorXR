@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEditor.Experimental.EditorVR;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -166,7 +166,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
             AddModule<SerializedPreferencesModule>(); // Added here in case any nested modules have preference serialization
             AddNestedModule(typeof(SerializedPreferencesModuleConnector));
 
-            var nestedClassTypes = ObjectUtils.GetExtensionsOfClass(typeof(Nested));
+            var nestedClassTypes = new List<Type>();
+            typeof(Nested).GetExtensionsOfClass(nestedClassTypes);
             foreach (var type in nestedClassTypes)
             {
                 AddNestedModule(type);
@@ -452,7 +453,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var type = typeof(T);
             if (!m_Modules.TryGetValue(type, out module))
             {
-                module = ObjectUtils.AddComponent<T>(gameObject);
+                module = EditorXRUtils.AddComponent<T>(gameObject);
                 m_Modules.Add(type, module);
 
                 foreach (var nested in m_NestedModules.Values)
@@ -523,7 +524,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void SetHideFlags(HideFlags hideFlags)
         {
-            ObjectUtils.hideFlags = hideFlags;
+            EditorXRUtils.hideFlags = hideFlags;
 
             foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
             {

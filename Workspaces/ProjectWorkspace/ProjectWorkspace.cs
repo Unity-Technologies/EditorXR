@@ -111,7 +111,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
             topPanelDividerOffset = k_LeftPaneRatio; // enable & position the top-divider(mask) slightly to the left of workspace center
 
-            var contentPrefab = ObjectUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
+            var contentPrefab = EditorXRUtils.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
             m_ProjectUI = contentPrefab.GetComponent<ProjectUI>();
 
             var assetGridView = m_ProjectUI.assetGridView;
@@ -124,7 +124,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             folderListView.folderSelected += OnFolderSelected;
             folderData = m_FolderData;
 
-            m_FilterUI = ObjectUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
+            m_FilterUI = EditorXRUtils.Instantiate(m_FilterPrefab, m_WorkspaceUI.frontPanel, false).GetComponent<FilterUI>();
             foreach (var mb in m_FilterUI.GetComponentsInChildren<MonoBehaviour>())
             {
                 this.ConnectInterfaces(mb);
@@ -137,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 button.hovered += OnButtonHovered;
             }
 
-            var sliderObject = ObjectUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
+            var sliderObject = EditorXRUtils.Instantiate(m_SliderPrefab, m_WorkspaceUI.frontPanel, false);
             m_ZoomSliderUI = sliderObject.GetComponent<ZoomSliderUI>();
             m_ZoomSliderUI.zoomSlider.minValue = Mathf.Log10(k_MinScale);
             m_ZoomSliderUI.zoomSlider.maxValue = Mathf.Log10(k_MaxScale);

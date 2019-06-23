@@ -1,7 +1,7 @@
 ﻿using System;
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -21,13 +21,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Type m_ObjectType;
         string m_ObjectTypeName;
 
-        public override void Setup(InspectorData data, bool firstTime)
+        public override void Setup(InspectorData datum, bool firstTime = false)
         {
-            base.Setup(data, firstTime);
+            base.Setup(datum, firstTime);
 
 #if UNITY_EDITOR
-            m_ObjectTypeName = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
-            m_ObjectType = ObjectUtils.TypeNameToType(m_ObjectTypeName);
+            m_ObjectTypeName = EditorUtils.NicifySerializedPropertyType(m_SerializedProperty.type);
+            m_ObjectType = EditorUtils.TypeNameToType(m_ObjectTypeName);
 #endif
 
             OnObjectModified();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -864,8 +865,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         }
         void OnDestroy()
         {
-            ObjectUtils.Destroy(m_TopFaceMaterial);
-            ObjectUtils.Destroy(m_FrontFaceMaterial);
+            UnityObjectUtils.Destroy(m_TopFaceMaterial);
+            UnityObjectUtils.Destroy(m_FrontFaceMaterial);
 
             m_CloseButton.clicked -= OnCloseClicked;
             m_CloseButton.hovered -= OnButtonHovered;

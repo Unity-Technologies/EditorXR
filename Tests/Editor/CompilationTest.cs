@@ -1,10 +1,9 @@
-﻿using ConditionalCompilation;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Utilities;
+using Unity.Labs.Utils;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Tests
@@ -39,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Tests
             var outputFile = "Temp/CCUTest.dll";
 
             var references = new List<string>();
-            ObjectUtils.ForEachAssembly(assembly =>
+            ReflectionUtils.ForEachAssembly(assembly =>
             {
 #if NET_4_6
                 if (assembly.IsDynamic)

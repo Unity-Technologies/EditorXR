@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -34,14 +35,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var spatialMenuData = new SpatialMenu.SpatialMenuData("Actions", "Perform actions on selected object", spatialMenuActions);
             m_SpatialMenuData.Add(spatialMenuData);
 
-            IEnumerable<Type> actionTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IAction));
-            foreach (Type actionType in actionTypes)
+            var actionTypes = CollectionPool<List<Type>, Type>.GetCollection();
+            typeof(IAction).GetImplementationsOfInterface(actionTypes);
+            foreach (var actionType in actionTypes)
             {
                 // Don't treat vanilla actions or tool actions as first class actions
                 if (actionType.IsNested || !typeof(MonoBehaviour).IsAssignableFrom(actionType))
                     continue;
 
-                var action = ObjectUtils.AddComponent(actionType, gameObject) as IAction;
+                var action = EditorXRUtils.AddComponent(actionType, gameObject) as IAction;
                 this.ConnectInterfaces(action);
 
                 var defaultActionAttribute = (ActionMenuItemAttribute)actionType.GetCustomAttributes(typeof(ActionMenuItemAttribute), false).FirstOrDefault();
@@ -65,6 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_Actions.Add(action);
             }
 
+            CollectionPool<List<Type>, Type>.RecycleCollection(actionTypes);
             m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));
         }
 

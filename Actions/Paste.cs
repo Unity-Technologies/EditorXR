@@ -1,4 +1,5 @@
-﻿using UnityEditor.Experimental.EditorVR.Utilities;
+﻿using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
@@ -13,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
         {
             if (transforms != null)
             {
-                var bounds = ObjectUtils.GetBounds(transforms);
+                var bounds = BoundsUtils.GetBounds(transforms);
 
                 s_BufferDistance = bounds.size != Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 1f;
                 s_BufferDistance /= IUsesViewerScaleMethods.getViewerScale(); // Normalize this value in case viewer scale changes before paste happens
@@ -26,7 +27,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
             Unsupported.PasteGameObjectsFromPasteboard();
 #endif
             var transforms = Selection.transforms;
-            var bounds = ObjectUtils.GetBounds(transforms);
+            var bounds = BoundsUtils.GetBounds(transforms);
             foreach (var transform in transforms)
             {
                 var pasted = transform.gameObject;
