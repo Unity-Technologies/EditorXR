@@ -16,8 +16,10 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="collisionTester">A mesh collider located at the origin used to test the object in it's local space</param>
         /// <param name="obj">The object to test collision on</param>
         /// <param name="tester">The tester object</param>
+        /// <param name="collisionPoint">The point of collision between the tester and the surface of the object</param>
         /// <returns>The result of whether the tester is in intersection with or located within the object</returns>
-        public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
+        public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester,
+            out Vector3 collisionPoint)
         {
             var transform = obj.transform;
 
@@ -28,17 +30,22 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             {
                 var ray = tester.rays[j];
 
-                //Transform rays to world space
+                //Transform rays to world space, then to object's local space
                 var testerTransform = tester.transform;
-                ray.origin = testerTransform.TransformPoint(ray.origin);
-                ray.direction = testerTransform.TransformDirection(ray.direction);
+                var objectTransform = obj.transform;
+                ray.origin = objectTransform.InverseTransformPoint(testerTransform.TransformPoint(ray.origin));
+                ray.direction = objectTransform.InverseTransformDirection(testerTransform.TransformDirection(ray.direction));
 
-                if (TestRay(collisionTester, transform, ray))
+                RaycastHit hit;
+                if (TestRay(collisionTester, transform, ray, out hit))
+                {
+                    collisionPoint = hit.point;
                     return true;
+                }
             }
 
             // Try a more robust version with all edges
-            return TestEdges(collisionTester, transform, tester);
+            return TestEdges(collisionTester, transform, tester, out collisionPoint);
         }
 
         /// <summary>
@@ -48,7 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
         /// <param name="obj">The object to test collision on</param>
         /// <param name="tester">The tester object</param>
         /// <returns>The result of whether the point/ray is intersection with or located within the object</returns>
-        public static bool TestEdges(MeshCollider collisionTester, Transform obj, IntersectionTester tester)
+        public static bool TestEdges(MeshCollider collisionTester, Transform obj, IntersectionTester tester, out Vector3 collisionPoint)
         {
             var boundsMagnitude = collisionTester.bounds.size.magnitude;
 
@@ -101,16 +108,32 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                     var B = behindHit;
                     var C = start;
                     var D = end;
-                    if (OnSegment(A, C, B)
-                        || OnSegment(A, D, B)
-                        || OnSegment(C, A, D)
-                        || OnSegment(C, B, D))
+                    var a = OnSegment(C, A, D);
+                    var b = OnSegment(C, B, D);
+                    var c = OnSegment(A, C, B);
+                    var d = OnSegment(A, D, B);
+                    if (a || b || c || d)
                     {
+                        if (!a && !b && c && d) // Tester is fully contained
+                        {
+                            collisionPoint = testerTransform.position;
+                        }
+                        else
+                        {
+                            var testerPosition = testerTransform.position;
+                            forwardHit = obj.TransformPoint(forwardHit);
+                            behindHit = obj.TransformPoint(behindHit);
+                            if (Vector3.Distance(testerPosition, forwardHit) > Vector3.Distance(testerPosition, behindHit))
+                                collisionPoint = behindHit;
+                            else
+                                collisionPoint = forwardHit;
+                        }
                         return true;
                     }
                 }
             }
 
+            collisionPoint = Vector3.zero;
             return false;
         }
 

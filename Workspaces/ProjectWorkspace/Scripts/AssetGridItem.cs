@@ -640,11 +640,15 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         GameObject TryGetSelection(Transform rayOrigin, bool includeRays)
         {
-            GameObject selection = null;
             var directSelections = this.GetDirectSelection();
-            if (directSelections != null)
-                directSelections.TryGetValue(rayOrigin, out selection);
+            if (directSelections == null)
+                return null;
 
+            DirectSelectionData selectionData;
+            if (!directSelections.TryGetValue(rayOrigin, out selectionData))
+                return null;
+
+            var selection = selectionData.gameObject;
             if (selection == null && includeRays)
                 selection = this.GetFirstGameObject(rayOrigin);
 
