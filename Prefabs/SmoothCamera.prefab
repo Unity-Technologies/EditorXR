@@ -91,5 +91,5 @@ MonoBehaviour:
   m_VRCamera: {fileID: 20000011108369806}
   m_TargetDisplay: 0
   m_FieldOfView: 40
-  m_PullBackDistance: 0.8
+  m_PullBackDistance: 0.6
   m_SmoothingMultiplier: 3

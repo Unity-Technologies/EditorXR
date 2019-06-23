@@ -100,6 +100,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
 
+            foreach (var obj in Selection.gameObjects)
+            {
+                if (!obj)
+                    continue;
+
+                HighlightObject(obj, m_RayHighlightMaterial);
+            }
+
             foreach (var kvp in k_HighlightsToRemove)
             {
                 var highlights = m_Highlights[kvp.Key];
@@ -222,7 +230,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             {
                 SetHighlight(go, active, rayOrigin, null, true);
                 m_Blinking.Clear();
-                // using StopAll assumes that we're only allowing one simultaneous blinking highlight
+
+                // Using StopAll assumes that we're only allowing one simultaneous blinking highlight
                 StopAllCoroutines();
                 return null;
             }
@@ -255,6 +264,5 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 yield return null;
             }
         }
-
     }
 }

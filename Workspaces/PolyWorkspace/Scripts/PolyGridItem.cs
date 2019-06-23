@@ -508,6 +508,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 transitionAmount += Time.deltaTime * transitionAddMultiplier;
                 yield return null;
             }
+			
             UnityObjectUtils.Destroy(itemToHide);
         }
 
