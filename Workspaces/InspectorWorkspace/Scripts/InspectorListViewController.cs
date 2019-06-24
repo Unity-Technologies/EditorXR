@@ -4,7 +4,6 @@ using Unity.Labs.ListView;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.UI;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
