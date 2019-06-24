@@ -123,6 +123,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     // If EVR is the last object, early out
                     if (instanceID == 0)
                         break;
+
+                    continue;
                 }
 
                 if (currentDepth <= lastDepth)
