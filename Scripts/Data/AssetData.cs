@@ -9,6 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
         public const string PrefabTypeString = "Prefab";
         public const string ModelTypeString = "Model";
         static readonly string k_TemplateName = "AssetGridItem";
+        static readonly string GameObjetTypeString = "GameObject";
 
         public string template { get {return k_TemplateName; } }
 
@@ -41,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         void UpdateType()
         {
-            if (type == "GameObject")
+            if (type == GameObjetTypeString)
             {
 #if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR
