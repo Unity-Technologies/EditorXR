@@ -23,7 +23,6 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public override void Setup(InspectorData data, bool firstTime)
         {
             base.Setup(data, firstTime);
-
             UpdateDropdown();
         }
 

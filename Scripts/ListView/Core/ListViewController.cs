@@ -147,13 +147,13 @@ namespace Unity.Labs.ListView
                     return GetListItem(row.Key);
             }
 
-            return default(TItem);
+            return default;
         }
 
         protected TItem GetListItem(TIndex index)
         {
             TItem item;
-            return m_ListItems.TryGetValue(index, out item) ? item : default(TItem);
+            return m_ListItems.TryGetValue(index, out item) ? item : default;
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Unity.Labs.ListView
             if (datum == null)
             {
                 Debug.LogWarning("Tried to get item with null datum");
-                item = default(TItem);
+                item = default;
                 return false;
             }
 
@@ -175,8 +175,8 @@ namespace Unity.Labs.ListView
             ListViewItemTemplate<TItem> template;
             if (!m_TemplateDictionary.TryGetValue(templateName, out template))
             {
-                Debug.LogWarning(string.Format("Cannot get item, template {0} doesn't exist", templateName));
-                item = default(TItem);
+                Debug.LogWarning($"Cannot get item, template {templateName} doesn't exist");
+                item = default;
                 return false;
             }
 
