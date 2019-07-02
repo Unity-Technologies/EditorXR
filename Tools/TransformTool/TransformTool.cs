@@ -342,7 +342,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<ProxyFeedbackRequest> m_GrabFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_ScaleFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_ScaleOptionFeedback = new List<ProxyFeedbackRequest>();
-        readonly List<ProxyFeedbackRequest> m_ScaleCancelFeedback = new List<ProxyFeedbackRequest>();
 
         readonly TransformAction m_PivotModeToggleAction = new TransformAction();
         readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
