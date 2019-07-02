@@ -1,21 +1,22 @@
-﻿using ListView;
+﻿using Unity.Labs.ListView;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Data
 {
-    sealed class AssetData : ListViewItemData<int>
+    sealed class AssetData : IListViewItemData<int>
     {
         public const string PrefabTypeString = "Prefab";
         public const string ModelTypeString = "Model";
         static readonly string k_TemplateName = "AssetGridItem";
+        static readonly string k_GameObjetTypeString = "GameObject";
 
+        public string template { get {return k_TemplateName; } }
+
+        public int index { get; private set; }
         public string guid { get; private set; }
-
         public string name { get; private set; }
-
         public string type { get; private set; }
-
         public GameObject preview { get; set; }
 
         public Object asset
@@ -33,7 +34,6 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         public AssetData(string name, string guid, string type)
         {
-            template = k_TemplateName;
             index = guid.GetHashCode();
             this.guid = guid;
             this.name = name;
@@ -42,7 +42,7 @@ namespace UnityEditor.Experimental.EditorVR.Data
 
         void UpdateType()
         {
-            if (type == "GameObject")
+            if (type == k_GameObjetTypeString)
             {
 #if UNITY_2018_3_OR_NEWER
 #if UNITY_EDITOR

@@ -12,9 +12,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         TextMeshProUGUI m_TypeLabel;
 #pragma warning restore 649
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
 #if UNITY_EDITOR
             m_TypeLabel.text = ObjectUtils.NicifySerializedPropertyType(m_SerializedProperty.type);

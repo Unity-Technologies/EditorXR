@@ -87,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             m_WorkspaceUI.topHighlight.visible = true;
             m_WorkspaceUI.amplifyTopHighlight = false;
 
-            m_InspectorUI.listView.OnBeginScrolling();
+            m_InspectorUI.listView.OnScrollStarted();
         }
 
         void OnScrollDragging(BaseHandle handle, HandleEventData eventData = default(HandleEventData))

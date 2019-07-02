@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
                 int minor;
                 var group = match.Groups[2];
                 if (int.TryParse(group.Value, out minor) && minor < 12)
-                    Debug.LogError($"Unity 2018.3.12f1 or greater is required to have full input capabilities");
+                    Debug.LogError("Unity 2018.3.12f1 or greater is required to have full input capabilities");
             }
         }
 #endif

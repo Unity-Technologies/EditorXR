@@ -11,9 +11,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         StandardInputField m_InputField;
 #pragma warning restore 649
 
-        public override void Setup(InspectorData data)
+        public override void Setup(InspectorData data, bool firstTime = false)
         {
-            base.Setup(data);
+            base.Setup(data, firstTime);
 
             UpdateInputField();
         }
