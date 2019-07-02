@@ -1,5 +1,5 @@
-﻿using Unity.Labs.ListView;
-using System;
+﻿using System;
+using Unity.Labs.ListView;
 
 namespace UnityEditor.Experimental.EditorVR
 {
