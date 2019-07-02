@@ -12,6 +12,7 @@ namespace Unity.Labs.ListView
         {
             if (prefab == null)
                 Debug.LogError("Template prefab cannot be null");
+
             this.prefab = prefab;
         }
     }
