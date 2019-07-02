@@ -8,7 +8,8 @@
         "UnityEngine.SpatialTracking",
         "PolyToolkit",
         "Unity.Labs.Utils",
-        "Unity.Labs.Utils.Editor"
+        "Unity.Labs.Utils.Editor",
+        "Unity.Labs.ListViewFramework"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
