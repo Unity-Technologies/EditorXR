@@ -69,6 +69,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static Type[] HiddenTypes { get; set; }
         internal static Action UpdateInputManager { private get; set; }
 
+        public int connectInterfaceOrder { get { return 0; } }
+
         internal static void ResetPreferences()
         {
 #if UNITY_EDITOR

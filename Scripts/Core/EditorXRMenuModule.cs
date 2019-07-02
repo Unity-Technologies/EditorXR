@@ -49,6 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 1; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<DeviceData> k_ActiveDeviceData = new List<DeviceData>();

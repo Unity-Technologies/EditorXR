@@ -21,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly Stack<HierarchyData> m_DataStack = new Stack<HierarchyData>();

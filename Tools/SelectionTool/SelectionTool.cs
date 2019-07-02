@@ -570,12 +570,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             }
             else
             {
-                // Share one preferences object across all instances
-                foreach (var linkedObject in linkedObjects)
+                if (linkedObjects != null)
                 {
-                    var preferences = ((SelectionTool)linkedObject).m_Preferences;
-                    if (preferences != null)
-                        m_Preferences = preferences;
+                    // Share one preferences object across all instances
+                    foreach (var linkedObject in linkedObjects)
+                    {
+                        var preferences = ((SelectionTool)linkedObject).m_Preferences;
+                        if (preferences != null)
+                            m_Preferences = preferences;
+                    }
                 }
             }
 

@@ -88,6 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return -1; } }
         public int shutdownOrder { get { return 1; } }
+        public int connectInterfaceOrder { get { return 1; } }
 
         public void Initialize()
         {

@@ -50,6 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return -1; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();

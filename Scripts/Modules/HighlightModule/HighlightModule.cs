@@ -59,6 +59,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             set { m_RayHighlightMaterialCopy.color = value; }
         }
 
+        public int connectInterfaceOrder { get { return 0; } }
+
         public void LoadModule()
         {
             m_RayHighlightMaterialCopy = Instantiate(m_RayHighlightMaterial);
