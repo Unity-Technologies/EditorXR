@@ -27,8 +27,9 @@ namespace UnityEditor.Experimental.EditorVR
 {
     sealed class HierarchyData : NestedListViewItemData<HierarchyData, int>
     {
-        readonly int m_Index;
         const string k_TemplateName = "HierarchyListItem";
+
+        readonly int m_Index;
 
         public string name { get; set; }
         public HashSet<string> types { get; set; }
