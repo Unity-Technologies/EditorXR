@@ -15,7 +15,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>, IModuleDependency<EditorVR>,
+    class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>,
         IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>, IModuleDependency<DeviceInputModule>,
         IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>,
         IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces,
@@ -46,7 +46,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         StandardManipulator m_StandardManipulator;
         ScaleManipulator m_ScaleManipulator;
-        EditorVR m_EditorVR;
         HighlightModule m_HighlightModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
         IntersectionModule m_IntersectionModule;
@@ -68,6 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
@@ -142,7 +142,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var rayOrigin = userData as Transform;
             if (rayOrigin)
             {
-                var evrDeviceData = m_EditorVR.deviceData;
+                var evrDeviceData = m_ToolModule.deviceData;
 
                 var ray = target as IUsesRayOrigin;
                 if (ray != null)
@@ -248,7 +248,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (proxy.active)
             {
-                var evrDeviceData = m_EditorVR.deviceData;
+                var evrDeviceData = m_ToolModule.deviceData;
                 if (!evrDeviceData.Any(dd => dd.proxy == proxy))
                 {
                     foreach (var rayOriginPair in proxy.rayOrigins)
@@ -365,7 +365,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal void UpdateRaycasts()
         {
             var distance = k_DefaultRayLength * this.GetViewerScale();
-            foreach (var deviceData in m_EditorVR.deviceData)
+            foreach (var deviceData in m_ToolModule.deviceData)
             {
                 var proxy = deviceData.proxy;
                 if (!proxy.active)
@@ -417,7 +417,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void ForEachProxyDevice(ForEachProxyDeviceCallback callback, bool activeOnly = true)
         {
-            var evrDeviceData = m_EditorVR.deviceData;
+            var evrDeviceData = m_ToolModule.deviceData;
             for (var i = 0; i < evrDeviceData.Count; i++)
             {
                 var deviceData = evrDeviceData[i];
@@ -431,7 +431,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void IterateRayOrigins(ForEachRayOriginCallback callback)
         {
-            var evrDeviceData = m_EditorVR.deviceData;
+            var evrDeviceData = m_ToolModule.deviceData;
             for (var i = 0; i < evrDeviceData.Count; i++)
             {
                 var deviceData = evrDeviceData[i];
@@ -446,7 +446,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal IProxy GetProxyForRayOrigin(Transform rayOrigin)
         {
             IProxy result = null;
-            var deviceData = m_EditorVR.deviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
+            var deviceData = m_ToolModule.deviceData.FirstOrDefault(dd => dd.rayOrigin == rayOrigin);
             if (deviceData != null)
                 result = deviceData.proxy;
 
@@ -573,7 +573,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (rayOrigin == null)
                 return Node.None;
 
-            foreach (var deviceData in m_EditorVR.deviceData)
+            foreach (var deviceData in m_ToolModule.deviceData)
             {
                 if (!deviceData.proxy.active)
                     continue;
@@ -599,7 +599,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (node == Node.None)
                 return null;
 
-            foreach (var deviceData in m_EditorVR.deviceData)
+            foreach (var deviceData in m_ToolModule.deviceData)
             {
                 if (!deviceData.proxy.active)
                     continue;
@@ -642,11 +642,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             return m_HighlightModule.highlightColor;
-        }
-
-        public void ConnectDependency(EditorVR dependency)
-        {
-            m_EditorVR = dependency;
         }
 
         public void OnSelectionChanged()

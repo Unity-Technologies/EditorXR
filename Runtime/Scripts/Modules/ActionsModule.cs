@@ -21,6 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
 
+        public int connectInterfaceOrder { get { return 0; } }
+
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }

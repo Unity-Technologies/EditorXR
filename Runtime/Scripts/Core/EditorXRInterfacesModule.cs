@@ -20,11 +20,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void LoadModule()
         {
             var modules = ModuleLoaderCore.instance.modules;
+            var interfaceConnectors = new List<IInterfaceConnector>();
             foreach (var module in modules)
             {
                 var connector = module as IInterfaceConnector;
                 if (connector != null)
-                    AttachInterfaceConnector(connector);
+                    interfaceConnectors.Add(connector);
+            }
+
+            interfaceConnectors.Sort((a, b) => a.connectInterfaceOrder.CompareTo(b.connectInterfaceOrder));
+
+            foreach (var connector in interfaceConnectors)
+            {
+                AttachInterfaceConnector(connector);
             }
 
             // TODO: Remove when replacing FI

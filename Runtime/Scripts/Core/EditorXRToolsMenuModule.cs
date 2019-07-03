@@ -7,18 +7,12 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRToolsMenuModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRRayModule>,
+    class EditorXRToolsMenuModule : IModuleDependency<EditorXRRayModule>,
         IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRMenuModule>, IProvidesPreviewInToolMenuButton
     {
-        EditorVR m_EditorVR;
         EditorXRRayModule m_RayModule;
         EditorXRToolModule m_ToolModule;
         EditorXRMenuModule m_MenuModule;
-
-        public void ConnectDependency(EditorVR dependency)
-        {
-            m_EditorVR = dependency;
-        }
 
         public void ConnectDependency(EditorXRRayModule dependency)
         {
@@ -75,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnMainMenuActivatorSelected(Transform rayOrigin)
         {
-            var targetToolRayOrigin = m_EditorVR.deviceData.FirstOrDefault(data => data.rayOrigin != rayOrigin).rayOrigin;
+            var targetToolRayOrigin = m_ToolModule.deviceData.FirstOrDefault(data => data.rayOrigin != rayOrigin).rayOrigin;
             m_MenuModule.OnMainMenuActivatorSelected(rayOrigin, targetToolRayOrigin);
         }
 

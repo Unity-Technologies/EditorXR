@@ -18,7 +18,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
     /// The SpatialMenu's UI/View-controller
     /// Drives the SpatialMenu visuals elements
     /// </summary>
-    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IUsesDetectGazeDivergence, IUsesConnectInterfaces, IUsesRaycastResults
+    public sealed class SpatialMenuUI : SpatialUIView, IAdaptPosition, IUsesDetectGazeDivergence, IUsesConnectInterfaces,
+        IUsesRaycastResults, IUsesFunctionalityInjection
     {
         const float k_AllowedGazeDivergence = 45f;
         const float k_AllowedMaxHMDDistanceDivergence = 0.95f; // Distance at which the menu will move towards
@@ -274,6 +275,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         IProvidesRaycastResults IFunctionalitySubscriber<IProvidesRaycastResults>.provider { get; set; }
         IProvidesDetectGazeDivergence IFunctionalitySubscriber<IProvidesDetectGazeDivergence>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
+        IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
 #endif
 
         void Awake()
@@ -426,6 +428,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             foreach (var data in spatialMenuData)
             {
                 var instantiatedPrefabTransform = EditorXRUtils.Instantiate(m_SectionTitleElementPrefab).transform as RectTransform;
+                foreach (var mb in instantiatedPrefabTransform.GetComponentsInChildren<MonoBehaviour>(true))
+                {
+                    this.InjectFunctionalitySingle(mb);
+                }
+
                 var providerMenuElement = instantiatedPrefabTransform.GetComponent<SpatialMenuElement>();
                 this.ConnectInterfaces(instantiatedPrefabTransform);
                 providerMenuElement.Setup(homeMenuElementParent, () => { }, data.spatialMenuName, null);

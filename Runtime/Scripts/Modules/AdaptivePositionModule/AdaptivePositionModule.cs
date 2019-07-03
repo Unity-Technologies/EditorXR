@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
@@ -19,7 +20,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #pragma warning restore 649
 
         bool m_TestInFocus;
+
+        [NonSerialized]
         Transform m_GazeTransform;
+
+        [NonSerialized]
         Transform m_WorldspaceAnchorTransform; // The player transform under which anchored objects will be parented
 
         // Collection of objects whose position is controlled by this module
@@ -27,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
         IProvidesViewerScale IFunctionalitySubscriber<IProvidesViewerScale>.provider { get; set; }
@@ -184,11 +190,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void Initialize()
         {
             m_AdaptivePositionElements.Clear();
+            m_GazeTransform = CameraUtils.GetMainCamera().transform;
+            m_WorldspaceAnchorTransform = m_GazeTransform.parent;
         }
 
         public void Shutdown()
         {
             m_AdaptivePositionElements.Clear();
+            m_GazeTransform = null;
+            m_WorldspaceAnchorTransform = null;
         }
     }
 }

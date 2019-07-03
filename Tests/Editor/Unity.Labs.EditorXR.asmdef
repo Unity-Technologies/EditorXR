@@ -3,7 +3,9 @@
     "references": [
         "Unity.Labs.EditorXR",
         "Unity.Labs.Utils",
-        "Unity.Labs.Utils.Editor"
+        "Unity.Labs.Utils.Editor",
+        "Unity.Labs.EditorXR.Interfaces",
+        "Unity.Labs.ModuleLoader.Interfaces"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

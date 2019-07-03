@@ -52,6 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
