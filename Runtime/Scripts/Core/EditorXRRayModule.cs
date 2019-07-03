@@ -15,12 +15,11 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>,
-        IModuleDependency<HighlightModule>, IModuleDependency<IntersectionModule>, IModuleDependency<DeviceInputModule>,
-        IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>,
-        IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces,
-        IStandardIgnoreList, IInitializableModule,ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection,
-        IProvidesRaycastResults,IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings,
+    class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>, IModuleDependency<HighlightModule>,
+        IModuleDependency<DeviceInputModule>, IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>,
+        IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces, IStandardIgnoreList, IInitializableModule,
+        ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
+        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings,
         IProvidesGetRayVisibility, IProvidesGetPreviewOrigin, IProvidesGetFieldGrabOrigin, IInstantiateUI, IUsesViewerScale
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
@@ -80,12 +79,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_HighlightModule = dependency;
         }
 
-        public void ConnectDependency(IntersectionModule dependency)
-        {
-            m_IntersectionModule = dependency;
-            ignoreList = dependency.standardIgnoreList;
-        }
-
         public void ConnectDependency(DeviceInputModule dependency)
         {
             m_DeviceInputModule = dependency;
@@ -113,6 +106,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_MenuModule = moduleLoaderCore.GetModule<EditorXRMenuModule>();
             m_MiniWorldModule = moduleLoaderCore.GetModule<EditorXRMiniWorldModule>();
             m_DirectSelectionModule = moduleLoaderCore.GetModule<EditorXRDirectSelectionModule>();
+            m_IntersectionModule = moduleLoaderCore.GetModule<IntersectionModule>();
+            if (m_IntersectionModule != null)
+                ignoreList = m_IntersectionModule.standardIgnoreList;
 
             m_ModuleParent = moduleLoaderCore.GetModuleParent().transform;
         }

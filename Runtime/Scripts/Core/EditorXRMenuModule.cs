@@ -22,9 +22,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     [ModuleOrder(ModuleOrders.MenuModuleLoadOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.MenuModuleBehaviorOrder)]
-    class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRRayModule>,
-        IModuleDependency<DeviceInputModule>,
-        IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector, IUsesConnectInterfaces,
+    class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorXRRayModule>,
+        IModuleDependency<DeviceInputModule>, IInterfaceConnector, IUsesConnectInterfaces,
         IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesIsMainMenuVisible, IProvidesInstantiateMenuUI,
         IInstantiateUI, IUsesViewerScale
     {
@@ -59,11 +58,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static readonly List<GradientButton> k_ButtonComponents = new List<GradientButton>();
         static readonly Collider[] k_ColliderOverlaps = new Collider[k_PossibleOverlaps];
 
-        public void ConnectDependency(EditorXRToolModule dependency)
-        {
-            m_ToolModule = dependency;
-        }
-
         public void ConnectDependency(EditorXRRayModule dependency)
         {
             m_RayModule = dependency;
@@ -74,15 +68,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_DeviceInputModule = dependency;
         }
 
-        public void ConnectDependency(EditorXRDirectSelectionModule dependency)
-        {
-            m_DirectSelectionModule = dependency;
-        }
-
         public void LoadModule()
         {
             IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
             IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
+
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            m_DirectSelectionModule = moduleLoaderCore.GetModule<EditorXRDirectSelectionModule>();
+            m_ToolModule = moduleLoaderCore.GetModule<EditorXRToolModule>();
         }
 
         public void UnloadModule() { }
@@ -183,6 +176,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void AddAlternateMenu(IAlternateMenu alternateMenu, Transform rayOrigin)
         {
+            if (m_ToolModule == null)
+                return;
+
             foreach (var device in m_ToolModule.deviceData)
             {
                 if (device.rayOrigin != rayOrigin)
@@ -201,6 +197,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void RemoveAlternateMenu(IAlternateMenu alternateMenu)
         {
+            if (m_ToolModule == null)
+                return;
+
             foreach (var device in m_ToolModule.deviceData)
             {
                 device.alternateMenus.Remove(alternateMenu);
@@ -391,6 +390,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         }
         void CheckDirectSelection(DeviceData deviceData, Dictionary<IMenu, MenuHideData> menuHideData, bool alternateMenuVisible)
         {
+            if (m_DirectSelectionModule == null)
+                return;
+
             var viewerScale = this.GetViewerScale();
             var rayOrigin = deviceData.rayOrigin;
             var rayOriginPosition = rayOrigin.position;

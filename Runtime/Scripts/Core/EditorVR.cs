@@ -37,8 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [RequiresTag(VRPlayerTag)]
 #endif
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
-    sealed class EditorVR : IEditor, IUsesConnectInterfaces, IModuleDependency<EditorXRToolModule>,
-        IInterfaceConnector
+    sealed class EditorVR : IEditor, IModule, IUsesConnectInterfaces, IInterfaceConnector
     {
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         internal const string VRPlayerTag = "VRPlayer";
@@ -227,6 +226,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_MiniWorldModule != null)
                 m_MiniWorldModule.UpdateMiniWorlds();
 
+            if (m_ToolModule == null)
+                return;
+
             foreach (var device in m_ToolModule.deviceData)
             {
                 if (!device.proxy.active)
@@ -242,11 +244,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        public void LoadModule() { m_MiniWorldModule = ModuleLoaderCore.instance.GetModule<EditorXRMiniWorldModule>(); }
-
-        public void ConnectDependency(EditorXRToolModule dependency)
+        public void LoadModule()
         {
-            m_ToolModule = dependency;
+            m_MiniWorldModule = ModuleLoaderCore.instance.GetModule<EditorXRMiniWorldModule>();
+            m_ToolModule = ModuleLoaderCore.instance.GetModule<EditorXRToolModule>();
         }
 
         public void UnloadModule()

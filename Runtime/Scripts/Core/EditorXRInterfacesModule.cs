@@ -6,6 +6,7 @@ using Unity.Labs.ModuleLoader;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
+    [ImmortalModule]
     [ModuleOrder(ModuleOrders.InterfaceModule)]
     class EditorXRInterfacesModule : IInitializableModule, IProvidesConnectInterfaces
     {

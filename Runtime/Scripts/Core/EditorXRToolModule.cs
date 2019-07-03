@@ -1,5 +1,3 @@
-
-using IVacuumable = Unity.Labs.EditorXR.Interfaces.IVacuumable;
 #if UNITY_2018_3_OR_NEWER
 using System;
 using System.Collections.Generic;
@@ -25,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     class EditorXRToolModule : MonoBehaviour, IModuleDependency<LockModule>,
         IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>,
-        IModuleDependency<EditorXRRayModule>, IInterfaceConnector, IUsesConnectInterfaces, IInitializableModule,
+        IInterfaceConnector, IUsesConnectInterfaces, IInitializableModule,
         IUsesFunctionalityInjection, IProvidesSelectTool
     {
         static readonly List<Type> k_AllTools = new List<Type>();
@@ -69,14 +67,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_DeviceInputModule = dependency;
         }
 
-        public void ConnectDependency(EditorXRRayModule dependency)
-        {
-            m_RayModule = dependency;
-        }
-
         public void LoadModule()
         {
             ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
+            m_RayModule = ModuleLoaderCore.instance.GetModule<EditorXRRayModule>();
         }
 
         public void UnloadModule()
