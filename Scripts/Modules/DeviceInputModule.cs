@@ -65,15 +65,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void ConnectDependency(Core.EditorVR dependency)
         {
             processInput = dependency.ProcessInput;
-            inputDeviceForRayOrigin = rayOrigin =>
-                (from deviceData in dependency.deviceData
-                    where deviceData.rayOrigin == rayOrigin
-                    select deviceData.inputDevice).FirstOrDefault();
         }
 
         public void ConnectDependency(EditorXRToolModule dependency)
         {
             updatePlayerHandleMaps = dependency.UpdatePlayerHandleMaps;
+            inputDeviceForRayOrigin = rayOrigin =>
+                (from deviceData in dependency.deviceData
+                    where deviceData.rayOrigin == rayOrigin
+                    select deviceData.inputDevice).FirstOrDefault();
         }
 
         public void LoadModule()
