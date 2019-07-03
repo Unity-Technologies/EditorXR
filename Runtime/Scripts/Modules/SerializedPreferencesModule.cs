@@ -88,10 +88,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return -1; } }
         public int shutdownOrder { get { return 1; } }
+        public int connectInterfaceOrder { get { return 1; } }
 
         public void Initialize()
         {
-            SetupWithPreferences(serializedPreferences);
+            m_Preferences = DeserializePreferences(m_Serializers);
             m_HasDeserialized = true;
         }
 
@@ -118,12 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Serializers.Remove(serializer);
         }
 
-        internal void SetupWithPreferences(string serializedPreferences)
-        {
-            m_Preferences = DeserializePreferences(serializedPreferences, m_Serializers);
-        }
-
-        internal static SerializedPreferences DeserializePreferences(string serializedPreferences, List<ISerializePreferences> serializers = null)
+        internal static SerializedPreferences DeserializePreferences(List<ISerializePreferences> serializers = null)
         {
             var preferences = JsonUtility.FromJson<SerializedPreferences>(serializedPreferences);
             if (preferences != null && serializers != null)

@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    class EditorXRMiniWorldModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRDirectSelectionModule>,
+    class EditorXRMiniWorldModule : IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRRayModule>, IModuleDependency<SpatialHashModule>, IModuleDependency<HighlightModule>,
         IModuleDependency<IntersectionModule>, IModuleDependency<WorkspaceModule>, IPlaceSceneObjects, IUsesViewerScale, IUsesSpatialHash
     {
@@ -172,7 +172,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        EditorVR m_EditorVR;
+        EditorXRToolModule m_ToolModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
         EditorXRRayModule m_RayModule;
         SpatialHashModule m_SpatialHashModule;
@@ -251,9 +251,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return false;
         }
 
-        public void ConnectDependency(EditorVR dependency)
+        public void ConnectDependency(EditorXRToolModule dependency)
         {
-            m_EditorVR = dependency;
+            m_ToolModule = dependency;
         }
 
         public void UnloadModule()
@@ -516,7 +516,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             // Update ray visibilities
-            foreach (var deviceData in m_EditorVR.deviceData)
+            foreach (var deviceData in m_ToolModule.deviceData)
             {
                 var proxy = deviceData.proxy;
                 if (!proxy.active)

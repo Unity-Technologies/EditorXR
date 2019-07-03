@@ -342,7 +342,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         readonly List<ProxyFeedbackRequest> m_GrabFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_ScaleFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_ScaleOptionFeedback = new List<ProxyFeedbackRequest>();
-        readonly List<ProxyFeedbackRequest> m_ScaleCancelFeedback = new List<ProxyFeedbackRequest>();
 
         readonly TransformAction m_PivotModeToggleAction = new TransformAction();
         readonly TransformAction m_PivotRotationToggleAction = new TransformAction();
@@ -530,7 +529,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         {
                             m_ScaleFirstNode = grabbingNode == Node.LeftHand ? Node.RightHand : Node.LeftHand;
                             otherData.StartScaling(grabData);
-                            ShowScaleOptionsFeedback();
+                            ShowScaleOptionsFeedback(otherData.twoHandedManipulateMode);
                             m_Scaling = true;
                         }
 
@@ -1008,7 +1007,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             ShowFeedback(m_ScaleFeedback, "Select", "Scale", node);
         }
 
-        void ShowScaleOptionsFeedback(TwoHandedManipulateMode mode = TwoHandedManipulateMode.ScaleOnly)
+        void ShowScaleOptionsFeedback(TwoHandedManipulateMode mode)
         {
             HideScaleOptionFeedback();
             switch (mode)

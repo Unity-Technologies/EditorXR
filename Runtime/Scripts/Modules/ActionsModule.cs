@@ -20,6 +20,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public List<SpatialMenu.SpatialMenuData> spatialMenuData { get { return m_SpatialMenuData; } }
 
+        public int connectInterfaceOrder { get { return 0; } }
+
         public void RemoveActions(List<IAction> actions)
         {
             m_MenuActions.Clear();

@@ -50,6 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return -1; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
@@ -64,15 +65,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public void ConnectDependency(Core.EditorVR dependency)
         {
             processInput = dependency.ProcessInput;
-            inputDeviceForRayOrigin = rayOrigin =>
-                (from deviceData in dependency.deviceData
-                    where deviceData.rayOrigin == rayOrigin
-                    select deviceData.inputDevice).FirstOrDefault();
         }
 
         public void ConnectDependency(EditorXRToolModule dependency)
         {
             updatePlayerHandleMaps = dependency.UpdatePlayerHandleMaps;
+            inputDeviceForRayOrigin = rayOrigin =>
+                (from deviceData in dependency.deviceData
+                    where deviceData.rayOrigin == rayOrigin
+                    select deviceData.inputDevice).FirstOrDefault();
         }
 
         public void LoadModule()

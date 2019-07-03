@@ -11,10 +11,9 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.DirectSelectionModuleBehaviorOrder)]
-    class EditorXRDirectSelectionModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRMiniWorldModule>,
-        IModuleDependency<EditorXRRayModule>, IModuleDependency<SceneObjectModule>,
-        IModuleDependency<IntersectionModule>, IModuleDependency<EditorXRViewerModule>, IInitializableModule,
-        IInterfaceConnector, IModuleBehaviorCallbacks
+    class EditorXRDirectSelectionModule : IModuleDependency<EditorXRMiniWorldModule>, IModuleDependency<EditorXRRayModule>,
+        IModuleDependency<SceneObjectModule>, IModuleDependency<IntersectionModule>, IModuleDependency<EditorXRViewerModule>,
+        IModuleDependency<EditorXRToolModule>, IInitializableModule, IInterfaceConnector, IModuleBehaviorCallbacks
     {
         readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
         readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
@@ -22,12 +21,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
         readonly List<IUsesDirectSelection> m_DirectSelectionUsers = new List<IUsesDirectSelection>();
         readonly List<ITwoHandedScaler> m_TwoHandedScalers = new List<ITwoHandedScaler>();
 
-        EditorVR m_EditorVR;
         IntersectionModule m_IntersectionModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
         EditorXRRayModule m_RayModule;
         SceneObjectModule m_SceneObjectModule;
         EditorXRViewerModule m_ViewerModule;
+        EditorXRToolModule m_ToolModule;
 
         public event Action<Transform, HashSet<Transform>> objectsGrabbed;
         public event Action<Transform, Transform[]> objectsDropped;
@@ -35,10 +34,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
-        public void ConnectDependency(EditorVR dependency)
+        public void ConnectDependency(EditorXRToolModule dependency)
         {
-            m_EditorVR = dependency;
+            m_ToolModule = dependency;
         }
 
         public void ConnectDependency(EditorXRMiniWorldModule dependency)
@@ -153,7 +153,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             m_DirectSelections.Clear();
 
-            foreach (var deviceData in m_EditorVR.deviceData)
+            foreach (var deviceData in m_ToolModule.deviceData)
             {
                 var proxy = deviceData.proxy;
                 if (!proxy.active)

@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     /// Allows an implementer to test for a given transforms'
     /// position residing within an angular threshold of the HMD
     /// </summary>
-    public sealed class GazeDivergenceModule : IModuleBehaviorCallbacks
+    public sealed class GazeDivergenceModule : IModuleBehaviorCallbacks, IInitializableModule
     {
         const float k_StableGazeThreshold = 0.25f;
 
@@ -22,13 +22,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         /// </summary>
         bool gazeStable { get { return m_GazeVelocity < k_StableGazeThreshold; } }
 
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+
         public void LoadModule()
+        {
+            IDetectGazeDivergenceMethods.isAboveDivergenceThreshold = IsAboveDivergenceThreshold;
+            IDetectGazeDivergenceMethods.setDivergenceRecoverySpeed = SetGazeDivergenceRecoverySpeed;
+        }
+
+        public void Initialize()
         {
             m_GazeSourceTransform = CameraUtils.GetMainCamera().transform;
             m_PreviousGazeRotation = m_GazeSourceTransform.rotation; // Prevent a quick initial snap of interpolated rotation values
+        }
 
-            IDetectGazeDivergenceMethods.isAboveDivergenceThreshold = IsAboveDivergenceThreshold;
-            IDetectGazeDivergenceMethods.setDivergenceRecoverySpeed = SetGazeDivergenceRecoverySpeed;
+        public void Shutdown()
+        {
         }
 
         public void UnloadModule() { }

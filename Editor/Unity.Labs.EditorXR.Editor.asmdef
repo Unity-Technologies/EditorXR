@@ -3,7 +3,8 @@
     "references": [
         "Unity.Labs.EditorXR",
         "Unity.TextMeshPro",
-        "Unity.Labs.Utils"
+        "Unity.Labs.Utils",
+        "Unity.Labs.ModuleLoader.Interfaces"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [

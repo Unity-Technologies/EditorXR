@@ -21,10 +21,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     [ModuleOrder(ModuleOrders.MenuModuleLoadOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.MenuModuleBehaviorOrder)]
-    class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorVR>, IModuleDependency<EditorXRToolModule>,
-        IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRViewerModule>,
-        IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRDirectSelectionModule>,
-        IModuleDependency<EditorXRUIModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
+    class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRRayModule>,
+        IModuleDependency<EditorXRViewerModule>, IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRUIModule>,
+        IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
         IModuleBehaviorCallbacks
     {
         const float k_MainMenuAutoHideDelay = 0.125f;
@@ -39,7 +38,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
         List<Type> m_MainMenuTools;
 
-        EditorVR m_EditorVR;
         EditorXRRayModule m_RayModule;
         EditorXRViewerModule m_ViewerModule;
         DeviceInputModule m_DeviceInputModule;
@@ -49,17 +47,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 1; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<DeviceData> k_ActiveDeviceData = new List<DeviceData>();
         static readonly List<IWorkspace> k_WorkspaceComponents = new List<IWorkspace>();
         static readonly List<GradientButton> k_ButtonComponents = new List<GradientButton>();
         static readonly Collider[] k_ColliderOverlaps = new Collider[k_PossibleOverlaps];
-
-        public void ConnectDependency(EditorVR dependency)
-        {
-            m_EditorVR = dependency;
-        }
 
         public void ConnectDependency(EditorXRToolModule dependency)
         {
@@ -207,7 +201,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void AddAlternateMenu(IAlternateMenu alternateMenu, Transform rayOrigin)
         {
-            foreach (var device in m_EditorVR.deviceData)
+            foreach (var device in m_ToolModule.deviceData)
             {
                 if (device.rayOrigin != rayOrigin)
                     continue;
@@ -225,7 +219,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void RemoveAlternateMenu(IAlternateMenu alternateMenu)
         {
-            foreach (var device in m_EditorVR.deviceData)
+            foreach (var device in m_ToolModule.deviceData)
             {
                 device.alternateMenus.Remove(alternateMenu);
                 device.menuHideData.Remove(alternateMenu);
@@ -510,7 +504,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var rayOrigin = eventData.rayOrigin;
 
             DeviceData deviceData = null;
-            foreach (var currentDevice in m_EditorVR.deviceData)
+            foreach (var currentDevice in m_ToolModule.deviceData)
             {
                 if (currentDevice.rayOrigin == rayOrigin)
                 {
@@ -578,7 +572,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void OnMainMenuActivatorSelected(Transform rayOrigin, Transform targetRayOrigin)
         {
-            foreach (var deviceData in m_EditorVR.deviceData)
+            foreach (var deviceData in m_ToolModule.deviceData)
             {
                 var mainMenu = deviceData.mainMenu;
                 if (mainMenu != null)
@@ -612,7 +606,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         // Move alternate menu if overriding custom menu
                         if (customMenuOverridden && alternateMenuVisible)
                         {
-                            foreach (var otherDeviceData in m_EditorVR.deviceData)
+                            foreach (var otherDeviceData in m_ToolModule.deviceData)
                             {
                                 if (deviceData == otherDeviceData)
                                     continue;
@@ -667,7 +661,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         bool IsMainMenuVisible(Transform rayOrigin)
         {
-            foreach (var deviceData in m_EditorVR.deviceData)
+            foreach (var deviceData in m_ToolModule.deviceData)
             {
                 if (deviceData.mainMenu != null && deviceData.rayOrigin == rayOrigin)
                     return (deviceData.menuHideData[deviceData.mainMenu].hideFlags & MenuHideFlags.Hidden) == 0;

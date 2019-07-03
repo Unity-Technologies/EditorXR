@@ -95,6 +95,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         internal event Action<IWorkspace> workspaceCreated;
         internal event Action<IWorkspace> workspaceDestroyed;
 
+        public int connectInterfaceOrder { get { return 0; } }
+
         static WorkspaceModule()
         {
             workspaceTypes = new List<Type>();

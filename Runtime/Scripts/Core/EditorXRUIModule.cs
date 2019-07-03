@@ -6,14 +6,12 @@ using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
-    class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<EditorVR>,
-        IModuleDependency<MultipleRayInputModule>, IModuleDependency<EditorXRViewerModule>,
-        IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
+    class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<MultipleRayInputModule>,
+        IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
         IInterfaceConnector, IConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks
     {
         const byte k_MinStencilRef = 2;
@@ -42,7 +40,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
         readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
-        EditorVR m_EditorVR;
         MultipleRayInputModule m_MultipleRayInputModule;
         EditorXRViewerModule m_ViewerModule;
         EditorXRRayModule m_RayModule;
@@ -52,11 +49,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
-
-        public void ConnectDependency(EditorVR dependency)
-        {
-            m_EditorVR = dependency;
-        }
+        public int connectInterfaceOrder { get { return 0; } }
 
         public void ConnectDependency(MultipleRayInputModule dependency)
         {

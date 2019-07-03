@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-#if ! UNITY_EDITOR
+#if !UNITY_EDITOR
 class SerializedProperty
 {
 }

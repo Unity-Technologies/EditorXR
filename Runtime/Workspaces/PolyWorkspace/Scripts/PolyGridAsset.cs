@@ -1,16 +1,13 @@
 using System;
 using UnityEngine;
 using Unity.Labs.ListView;
+using Unity.Labs.Utils;
 
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 #endif
 
-#if UNITY_EDITOR
-using Unity.Labs.Utils;
-
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
-#endif
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {

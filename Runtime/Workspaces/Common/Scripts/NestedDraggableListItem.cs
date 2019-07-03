@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using Unity.Labs.ListView;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
