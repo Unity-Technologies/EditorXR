@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
@@ -38,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [RequiresTag(VRPlayerTag)]
 #endif
     [ModuleOrder(ModuleOrders.EditorVRLoadOrder)]
-    sealed class EditorVR : IEditor, IUsesConnectInterfaces, IModule, IInterfaceConnector
+    sealed class EditorVR : IEditor, IModule, IUsesConnectInterfaces, IInterfaceConnector
     {
         const HideFlags k_DefaultHideFlags = HideFlags.HideInHierarchy | HideFlags.DontSave;
         internal const string VRPlayerTag = "VRPlayer";
@@ -47,10 +46,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         event Action selectionChanged;
 
-        internal readonly List<DeviceData> deviceData = new List<DeviceData>();
-
         static bool s_IsInitialized;
         EditorXRMiniWorldModule m_MiniWorldModule;
+        EditorXRToolModule m_ToolModule;
 
         internal static bool preserveLayout
         {
@@ -69,6 +67,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         internal static Type DefaultAlternateMenu { get; set; }
         internal static Type[] HiddenTypes { get; set; }
         internal static Action UpdateInputManager { private get; set; }
+
+        public int connectInterfaceOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
@@ -116,7 +116,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void Initialize()
         {
-            deviceData.Clear();
             Selection.selectionChanged += OnSelectionChanged;
 
             if (UpdateInputManager != null)
@@ -220,58 +219,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_EDITOR
             DrivenRectTransformTracker.StartRecordingUndo();
 #endif
-
-            foreach (var device in deviceData)
-            {
-                var mainMenu = device.mainMenu;
-                this.DisconnectInterfaces(mainMenu);
-                var behavior = mainMenu as MonoBehaviour;
-                if (behavior)
-                    UnityObjectUtils.Destroy(behavior);
-
-                var alternateMenu = device.alternateMenu;
-                this.DisconnectInterfaces(alternateMenu);
-                behavior = alternateMenu as MonoBehaviour;
-                if (behavior)
-                    UnityObjectUtils.Destroy(behavior);
-
-                var toolsMenu = device.toolsMenu;
-                this.DisconnectInterfaces(toolsMenu);
-                behavior = toolsMenu as MonoBehaviour;
-                if (behavior)
-                    UnityObjectUtils.Destroy(behavior);
-
-                var customMenu = device.customMenu;
-                this.DisconnectInterfaces(customMenu);
-                behavior = customMenu as MonoBehaviour;
-                if (behavior)
-                    UnityObjectUtils.Destroy(behavior);
-
-                var spatialMenu = device.spatialMenu;
-                this.DisconnectInterfaces(spatialMenu);
-                behavior = spatialMenu;
-                if (behavior)
-                    UnityObjectUtils.Destroy(behavior);
-
-                foreach (var menu in device.alternateMenus.ToList())
-                {
-                    this.DisconnectInterfaces(menu);
-                    behavior = menu as MonoBehaviour;
-                    if (behavior)
-                        UnityObjectUtils.Destroy(behavior);
-                }
-
-                foreach (var toolData in device.toolData.ToList())
-                {
-                    var tool = toolData.tool;
-                    this.DisconnectInterfaces(tool);
-                    behavior = tool as MonoBehaviour;
-                    if (behavior)
-                        UnityObjectUtils.Destroy(behavior);
-                }
-            }
-
-            deviceData.Clear();
         }
 
         internal void ProcessInput(HashSet<IProcessInput> processedInputs, ConsumeControlDelegate consumeControl)
@@ -279,7 +226,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_MiniWorldModule != null)
                 m_MiniWorldModule.UpdateMiniWorlds();
 
-            foreach (var device in deviceData)
+            if (m_ToolModule == null)
+                return;
+
+            foreach (var device in m_ToolModule.deviceData)
             {
                 if (!device.proxy.active)
                     continue;
@@ -294,7 +244,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
         }
 
-        public void LoadModule() { m_MiniWorldModule = ModuleLoaderCore.instance.GetModule<EditorXRMiniWorldModule>(); }
+        public void LoadModule()
+        {
+            m_MiniWorldModule = ModuleLoaderCore.instance.GetModule<EditorXRMiniWorldModule>();
+            m_ToolModule = ModuleLoaderCore.instance.GetModule<EditorXRToolModule>();
+        }
 
         public void UnloadModule()
         {

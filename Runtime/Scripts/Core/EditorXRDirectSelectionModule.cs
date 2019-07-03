@@ -12,7 +12,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.DirectSelectionModuleBehaviorOrder)]
-    class EditorXRDirectSelectionModule : IModuleDependency<EditorVR>, IModuleDependency<EditorXRRayModule>,
+    class EditorXRDirectSelectionModule : IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRToolModule>,
         IModuleDependency<SceneObjectModule>, IModuleDependency<IntersectionModule>, IInitializableModule,
         IInterfaceConnector, IModuleBehaviorCallbacks, IProvidesDirectSelection, IProvidesCanGrabObject, IUsesViewerBody
     {
@@ -21,12 +21,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
         readonly List<IGrabObjects> m_ObjectGrabbers = new List<IGrabObjects>();
         readonly List<ITwoHandedScaler> m_TwoHandedScalers = new List<ITwoHandedScaler>();
 
-        EditorVR m_EditorVR;
         IntersectionModule m_IntersectionModule;
         EditorXRMiniWorldModule m_MiniWorldModule;
         EditorXRRayModule m_RayModule;
         SceneObjectModule m_SceneObjectModule;
         EditorXRViewerModule m_ViewerModule;
+        EditorXRToolModule m_ToolModule;
 
         public event Action<Transform, HashSet<Transform>> objectsGrabbed;
         public event Action<Transform, Transform[]> objectsDropped;
@@ -34,14 +34,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
         event Action resetDirectSelectionState;
 
         IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
 
-        public void ConnectDependency(EditorVR dependency)
+        public void ConnectDependency(EditorXRToolModule dependency)
         {
-            m_EditorVR = dependency;
+            m_ToolModule = dependency;
         }
 
         public void ConnectDependency(EditorXRRayModule dependency)
@@ -144,7 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             m_DirectSelections.Clear();
 
-            foreach (var deviceData in m_EditorVR.deviceData)
+            foreach (var deviceData in m_ToolModule.deviceData)
             {
                 var proxy = deviceData.proxy;
                 if (!proxy.active)

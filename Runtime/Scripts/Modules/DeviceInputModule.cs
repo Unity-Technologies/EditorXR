@@ -13,8 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.DeviceInputModuleBehaviorOrder)]
-    sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IModuleDependency<Core.EditorVR>,
-        IInterfaceConnector, IInitializableModule, IModuleBehaviorCallbacks
+    sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IInterfaceConnector, IInitializableModule,
+        IModuleBehaviorCallbacks
     {
         class InputProcessor
         {
@@ -52,6 +52,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return -1; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
         // Local method use only -- created here to reduce garbage collection
         readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
@@ -62,21 +63,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<InputControl> k_RemoveList = new List<InputControl>();
         ConsumeControlDelegate m_ConsumeControl;
 
-        // TODO: Make EditorVR an IProcessInput
-        public void ConnectDependency(Core.EditorVR dependency)
-        {
-            processInput = dependency.ProcessInput;
-            inputDeviceForRayOrigin = rayOrigin =>
-                (from deviceData in dependency.deviceData
-                    where deviceData.rayOrigin == rayOrigin
-                    select deviceData.inputDevice).FirstOrDefault();
-        }
-
         public void LoadModule()
         {
             m_ConsumeControl = ConsumeControl;
 
             m_ToolModule = ModuleLoaderCore.instance.GetModule<EditorXRToolModule>();
+            if (m_ToolModule != null)
+            {
+                inputDeviceForRayOrigin = rayOrigin =>
+                    (from deviceData in m_ToolModule.deviceData
+                        where deviceData.rayOrigin == rayOrigin
+                        select deviceData.inputDevice).FirstOrDefault();
+            }
+
+            var editorVR = ModuleLoaderCore.instance.GetModule<Core.EditorVR>();
+            if (editorVR != null)
+                processInput = editorVR.ProcessInput;
         }
 
         public void Initialize()

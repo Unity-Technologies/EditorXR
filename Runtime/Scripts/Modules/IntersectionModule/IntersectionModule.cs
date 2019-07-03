@@ -10,10 +10,9 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IInitializableModule,
-        IModuleBehaviorCallbacks, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
-        IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast, IProvidesControlInputIntersection,
-        IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds
+    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IInitializableModule, IModuleBehaviorCallbacks,
+        IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast,
+        IProvidesControlInputIntersection,IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds
     {
         class RayIntersection
         {
@@ -52,6 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
         SpatialHashModule m_SpatialHashModule;
 
@@ -70,14 +70,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float distance;
         }
 
-        public void ConnectDependency(SpatialHashModule dependency)
-        {
-            m_SpatialHashModule = dependency;
-        }
-
         public void LoadModule()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in LoadModule because it is destroyed on scene load
+
+            m_SpatialHashModule = ModuleLoaderCore.instance.GetModule<SpatialHashModule>();
         }
 
         public void UnloadModule() { }
@@ -87,7 +84,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var moduleParent = ModuleLoaderCore.instance.GetModuleParent();
             m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(moduleParent.transform);
 
-            m_SpatialHash = m_SpatialHashModule.spatialHash;
+            if (m_SpatialHashModule != null)
+                m_SpatialHash = m_SpatialHashModule.spatialHash;
+
             m_IntersectedObjects.Clear();
             m_Testers.Clear();
             m_RaycastGameObjects.Clear();

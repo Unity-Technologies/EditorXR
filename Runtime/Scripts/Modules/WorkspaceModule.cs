@@ -96,6 +96,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         internal event Action<IWorkspace> workspaceCreated;
         internal event Action<IWorkspace> workspaceDestroyed;
 
+        public int connectInterfaceOrder { get { return 0; } }
+
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
