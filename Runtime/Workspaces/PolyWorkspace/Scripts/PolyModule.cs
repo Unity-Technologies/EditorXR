@@ -18,7 +18,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class PolyModule : IInitializableModule, IWeb
+    public class PolyModule : IDelayedInitializationModule, IWeb
     {
         class RequestHandler
         {

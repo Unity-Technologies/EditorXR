@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SerializedPreferencesModule : IInitializableModule, IInterfaceConnector
+    sealed class SerializedPreferencesModule : IDelayedInitializationModule, IInterfaceConnector
     {
         [Serializable]
         internal class SerializedPreferences : ISerializationCallbackReceiver

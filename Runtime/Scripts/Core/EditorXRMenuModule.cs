@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [ModuleBehaviorCallbackOrder(ModuleOrders.MenuModuleBehaviorOrder)]
     class EditorXRMenuModule : MonoBehaviour, IModuleDependency<EditorXRToolModule>, IModuleDependency<EditorXRRayModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRUIModule>,
-        IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector, IConnectInterfaces, IInitializableModule,
+        IModuleDependency<EditorXRDirectSelectionModule>, IInterfaceConnector, IConnectInterfaces, IDelayedInitializationModule,
         IModuleBehaviorCallbacks
     {
         const float k_MainMenuAutoHideDelay = 0.125f;

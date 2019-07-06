@@ -22,7 +22,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
     class EditorXRToolModule : MonoBehaviour, IModuleDependency<EditorXRVacuumableModule>, IModuleDependency<LockModule>,
         IModuleDependency<EditorXRMenuModule>, IModuleDependency<DeviceInputModule>, IModuleDependency<EditorXRRayModule>,
-        IInterfaceConnector, IConnectInterfaces, IInitializableModule
+        IInterfaceConnector, IConnectInterfaces, IDelayedInitializationModule
     {
         static readonly List<Type> k_AllTools = new List<Type>();
 

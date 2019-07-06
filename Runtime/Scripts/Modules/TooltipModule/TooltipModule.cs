@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class TooltipModule : ScriptableSettings<TooltipModule>, IInitializableModule, IModuleBehaviorCallbacks,
+    sealed class TooltipModule : ScriptableSettings<TooltipModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IModuleDependency<MultipleRayInputModule>, IUsesViewerScale
     {
         class TooltipData
