@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>, IModuleDependency<WorkspaceModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRDirectSelectionModule>,
         IModuleDependency<EditorXRUIModule>, IModuleDependency<EditorXRMenuModule>, IModuleDependency<EditorXRToolModule>,
-        IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IInitializableModule,
+        IInterfaceConnector, IForEachRayOrigin, IConnectInterfaces, IStandardIgnoreList, IDelayedInitializationModule,
         ISelectionChanged, IModuleBehaviorCallbacks
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);

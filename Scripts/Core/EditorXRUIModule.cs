@@ -12,7 +12,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
     class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<MultipleRayInputModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
-        IInterfaceConnector, IConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks
+        IInterfaceConnector, IConnectInterfaces, IDelayedInitializationModule, IModuleBehaviorCallbacks
     {
         const byte k_MinStencilRef = 2;
 

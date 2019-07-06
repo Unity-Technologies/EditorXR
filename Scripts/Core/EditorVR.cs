@@ -132,10 +132,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // In case we have anything selected at start, set up manipulators, inspector, etc.
             EditorApplication.delayCall += OnSelectionChanged;
 
-            var initializableModules = new List<IInitializableModule>();
+            var initializableModules = new List<IDelayedInitializationModule>();
             foreach (var module in ModuleLoaderCore.instance.modules)
             {
-                var initializableModule = module as IInitializableModule;
+                var initializableModule = module as IDelayedInitializationModule;
                 if (initializableModule != null)
                     initializableModules.Add(initializableModule);
             }
@@ -192,10 +192,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void Shutdown()
         {
-            var initializableModules = new List<IInitializableModule>();
+            var initializableModules = new List<IDelayedInitializationModule>();
             foreach (var module in ModuleLoaderCore.instance.modules)
             {
-                var initializableModule = module as IInitializableModule;
+                var initializableModule = module as IDelayedInitializationModule;
                 if (initializableModule != null)
                     initializableModules.Add(initializableModule);
             }

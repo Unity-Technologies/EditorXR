@@ -16,7 +16,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public abstract void Reset();
     }
 
-    public class FeedbackModule : ScriptableSettings<FeedbackModule>, IInitializableModule, ISettingsMenuItemProvider,
+    public class FeedbackModule : ScriptableSettings<FeedbackModule>, IDelayedInitializationModule, ISettingsMenuItemProvider,
         ISerializePreferences, IInterfaceConnector
     {
         [Serializable]

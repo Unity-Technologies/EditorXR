@@ -6,7 +6,7 @@ using Unity.Labs.ModuleLoader;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleOrder(ModuleOrders.InterfaceModule)]
-    class EditorXRInterfacesModule : IInitializableModule
+    class EditorXRInterfacesModule : IDelayedInitializationModule
     {
         readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 

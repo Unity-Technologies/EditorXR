@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IInitializableModule,
+    public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IDelayedInitializationModule,
         IModuleBehaviorCallbacks, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, IInterfaceConnector
     {
 #pragma warning disable 649
