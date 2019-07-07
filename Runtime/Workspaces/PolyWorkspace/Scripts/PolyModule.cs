@@ -19,7 +19,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class PolyModule : IInitializableModule, IUsesFunctionalityInjection, IProvidesPoly
+    public class PolyModule : IDelayedInitializationModule, IUsesFunctionalityInjection, IProvidesPoly
     {
         class RequestHandler
         {

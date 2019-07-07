@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
     [ModuleBehaviorCallbackOrder(ModuleOrders.DeviceInputModuleBehaviorOrder)]
-    sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IInterfaceConnector, IInitializableModule,
+    sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IInterfaceConnector, IDelayedInitializationModule,
         IModuleBehaviorCallbacks
     {
         class InputProcessor

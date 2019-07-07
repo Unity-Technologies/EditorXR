@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     /// Allows an implementer to test for a given transforms'
     /// position residing within an angular threshold of the HMD
     /// </summary>
-    public sealed class GazeDivergenceModule : IModuleBehaviorCallbacks, IInitializableModule, IProvidesDetectGazeDivergence
+    public sealed class GazeDivergenceModule : IModuleBehaviorCallbacks, IDelayedInitializationModule, IProvidesDetectGazeDivergence
     {
         const float k_StableGazeThreshold = 0.25f;
 

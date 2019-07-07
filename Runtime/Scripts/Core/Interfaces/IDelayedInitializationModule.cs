@@ -5,7 +5,7 @@ namespace UnityEditor.Experimental.EditorVR
     /// <summary>
     /// Adds Initialize and Shutdown methods to modules for when editing starts and stops
     /// </summary>
-    interface IInitializableModule : IModule
+    interface IDelayedInitializationModule : IModule
     {
         /// <summary>
         /// Called when editing starts

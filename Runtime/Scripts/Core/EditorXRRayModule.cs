@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>, IModuleDependency<HighlightModule>,
         IModuleDependency<DeviceInputModule>, IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>,
-        IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces, IStandardIgnoreList, IInitializableModule,
+        IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces, IStandardIgnoreList, IDelayedInitializationModule,
         ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
         IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings,
         IProvidesGetRayVisibility, IProvidesGetPreviewOrigin, IProvidesGetFieldGrabOrigin, IInstantiateUI, IUsesViewerScale

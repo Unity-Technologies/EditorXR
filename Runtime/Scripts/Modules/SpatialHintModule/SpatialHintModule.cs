@@ -10,7 +10,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
     // TODO: Remove load order when switching to non-static FI
     [ModuleOrder(ModuleOrders.SpatialHintModuleLoadOrder)]
     public sealed class SpatialHintModule : ScriptableSettings<SpatialHintModule>, IUsesConnectInterfaces, IInstantiateUI,
-        INodeToRay, IUsesRayVisibilitySettings, IInitializableModule, IProvidesControlSpatialHinting
+        INodeToRay, IUsesRayVisibilitySettings, IDelayedInitializationModule, IProvidesControlSpatialHinting
     {
 #pragma warning disable 649
         [SerializeField]

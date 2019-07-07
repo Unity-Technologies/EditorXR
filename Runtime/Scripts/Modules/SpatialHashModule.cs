@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SpatialHashModule : MonoBehaviour, IInitializableModule, IProvidesSpatialHash
+    sealed class SpatialHashModule : MonoBehaviour, IDelayedInitializationModule, IProvidesSpatialHash
     {
         readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
         SpatialHash<Renderer> m_SpatialHash;

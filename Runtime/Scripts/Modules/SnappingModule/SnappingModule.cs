@@ -15,7 +15,7 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-    sealed class SnappingModule : ScriptableSettings<SnappingModule>, IInitializableModule, IModuleBehaviorCallbacks,
+    sealed class SnappingModule : ScriptableSettings<SnappingModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IStandardIgnoreList, IUsesSceneRaycast,
         IProvidesSnapping
     {

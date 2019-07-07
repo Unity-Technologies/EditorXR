@@ -8,7 +8,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ImmortalModule]
     [ModuleOrder(ModuleOrders.InterfaceModule)]
-    class EditorXRInterfacesModule : IInitializableModule, IProvidesConnectInterfaces
+    class EditorXRInterfacesModule : IDelayedInitializationModule, IProvidesConnectInterfaces
     {
         readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 

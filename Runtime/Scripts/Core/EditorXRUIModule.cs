@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
     class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<MultipleRayInputModule>,
         IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>,
-        IModuleDependency<KeyboardModule>, IInterfaceConnector, IUsesConnectInterfaces, IInitializableModule,
+        IModuleDependency<KeyboardModule>, IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,
         IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible, IProvidesRequestStencilRef,
         IProvidesGetManipulatorDragState
     {

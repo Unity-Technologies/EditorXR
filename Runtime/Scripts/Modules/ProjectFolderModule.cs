@@ -12,7 +12,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class ProjectFolderModule : MonoBehaviour, IInitializableModule, IInterfaceConnector
+    sealed class ProjectFolderModule : MonoBehaviour, IDelayedInitializationModule, IInterfaceConnector
     {
         // Maximum time (in ms) before yielding in CreateFolderData: should be target frame time
         const float k_MaxFrameTime = 0.01f;
