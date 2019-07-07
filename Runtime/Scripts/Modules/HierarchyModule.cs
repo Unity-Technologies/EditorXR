@@ -9,7 +9,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class HierarchyModule : IInitializableModule, ISelectionChanged, IInterfaceConnector
+    sealed class HierarchyModule : IDelayedInitializationModule, ISelectionChanged, IInterfaceConnector
     {
         readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
         readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();

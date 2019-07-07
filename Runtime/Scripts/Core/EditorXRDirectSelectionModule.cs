@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.DirectSelectionModuleBehaviorOrder)]
     class EditorXRDirectSelectionModule : IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRToolModule>,
-        IModuleDependency<SceneObjectModule>, IModuleDependency<IntersectionModule>, IInitializableModule,
+        IModuleDependency<SceneObjectModule>, IModuleDependency<IntersectionModule>, IDelayedInitializationModule,
         IInterfaceConnector, IModuleBehaviorCallbacks, IProvidesDirectSelection, IProvidesCanGrabObject, IUsesViewerBody
     {
         readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();

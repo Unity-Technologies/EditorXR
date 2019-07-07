@@ -11,7 +11,7 @@ using Unity.Labs.ModuleLoader;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class FeedbackModule : ScriptableSettings<FeedbackModule>, IInitializableModule, ISettingsMenuItemProvider,
+    public class FeedbackModule : ScriptableSettings<FeedbackModule>, IDelayedInitializationModule, ISettingsMenuItemProvider,
         ISerializePreferences, IInterfaceConnector, IProvidesRequestFeedback
     {
         [Serializable]

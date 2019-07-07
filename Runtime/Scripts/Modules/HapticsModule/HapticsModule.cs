@@ -10,7 +10,7 @@ using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HapticsModule : ScriptableSettings<HapticsModule>, IInitializableModule, IProvidesControlHaptics
+    sealed class HapticsModule : ScriptableSettings<HapticsModule>, IDelayedInitializationModule, IProvidesControlHaptics
     {
         public const float MaxDuration = 0.8f;
 

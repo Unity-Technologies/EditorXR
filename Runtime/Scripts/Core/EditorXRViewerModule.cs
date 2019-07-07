@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRViewerModule : ScriptableSettings<EditorXRViewerModule>, IModuleDependency<IntersectionModule>,
         IModuleDependency<EditorXRDirectSelectionModule>, IModuleDependency<SpatialHashModule>, IInterfaceConnector,
-        ISerializePreferences, IUsesConnectInterfaces, IInitializableModule, IModuleBehaviorCallbacks,
+        ISerializePreferences, IUsesConnectInterfaces, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesFunctionalityInjection, IProvidesViewerScale, IProvidesViewerBody, IProvidesMoveCameraRig,
         IProvidesGetVRPlayerObjects
     {

@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IInitializableModule, IModuleBehaviorCallbacks,
+    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
         IUsesGameObjectLocking, IUsesGetVRPlayerObjects, IInterfaceConnector, IProvidesSceneRaycast,
         IProvidesControlInputIntersection,IProvidesContainsVRPlayerCompletely, IProvidesCheckSphere, IProvidesCheckBounds
     {
