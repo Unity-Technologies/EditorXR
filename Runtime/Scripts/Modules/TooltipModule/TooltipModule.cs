@@ -4,13 +4,14 @@ using System.Collections.Generic;
 using Unity.Labs.EditorXR.Interfaces;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     sealed class TooltipModule : ScriptableSettings<TooltipModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
-        IModuleDependency<MultipleRayInputModule>, IUsesViewerScale, IProvidesSetTooltipVisibility
+        IUsesViewerScale, IProvidesSetTooltipVisibility
     {
         class TooltipData
         {
@@ -79,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Vector3 m_TooltipScale;
         GameObject m_ModuleParent;
 
-        public int initializationOrder { get { return 0; } }
+        public int initializationOrder { get { return 1; } }
         public int shutdownOrder { get { return 0; } }
 
 #if !FI_AUTOFILL
@@ -90,13 +91,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<ITooltip> k_TooltipsToRemove = new List<ITooltip>();
         static readonly List<ITooltip> k_TooltipList = new List<ITooltip>();
         static readonly List<TooltipUI> k_TooltipUIs = new List<TooltipUI>();
-
-        public void ConnectDependency(MultipleRayInputModule dependency)
-        {
-            dependency.rayEntered += OnRayEntered;
-            dependency.rayHovering += OnRayHovering;
-            dependency.rayExited += OnRayExited;
-        }
 
         public void LoadModule()
         {
@@ -114,6 +108,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Tooltips.Clear();
             m_TooltipPool.Clear();
             m_TooltipDataPool.Clear();
+
+            var uiModule = ModuleLoaderCore.instance.GetModule<EditorXRUIModule>();
+            if (!uiModule)
+                return;
+
+            var inputModule = uiModule.InputModule;
+            inputModule.rayEntered += OnRayEntered;
+            inputModule.rayExited += OnRayExited;
         }
 
         public void Shutdown()
@@ -122,6 +124,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 UnityObjectUtils.Destroy(m_TooltipCanvas.gameObject);
 
             m_Tooltips.Clear();
+
+            var uiModule = ModuleLoaderCore.instance.GetModule<EditorXRUIModule>();
+            if (!uiModule)
+                return;
+
+            var inputModule = uiModule.InputModule;
+            inputModule.rayEntered -= OnRayEntered;
+            inputModule.rayExited -= OnRayExited;
         }
 
         public void OnBehaviorUpdate()

@@ -7,15 +7,15 @@ using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
-    class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<MultipleRayInputModule>,
-        IModuleDependency<EditorXRViewerModule>, IModuleDependency<EditorXRRayModule>,
-        IModuleDependency<KeyboardModule>, IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,
-        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible, IProvidesRequestStencilRef,
-        IProvidesGetManipulatorDragState
+    class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<EditorXRViewerModule>,
+        IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>, IInterfaceConnector, IUsesConnectInterfaces,
+        IDelayedInitializationModule,IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible,
+        IProvidesRequestStencilRef, IProvidesGetManipulatorDragState
     {
         const byte k_MinStencilRef = 2;
 
@@ -43,26 +43,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
         readonly HashSet<IUsesSetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<IUsesSetManipulatorsVisible>();
-        MultipleRayInputModule m_MultipleRayInputModule;
         EditorXRViewerModule m_ViewerModule;
         EditorXRRayModule m_RayModule;
         KeyboardModule m_KeyboardModule;
 
         Transform m_ModuleParent;
+        GameObject m_NewEventSystem;
+        MultipleRayInputModule m_NewInputModule;
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
         public int connectInterfaceOrder { get { return 0; } }
 
+        //TODO: Expose input via FI
+        internal MultipleRayInputModule InputModule { get; private set; }
+
 #if !FI_AUTOFILL
         IProvidesFunctionalityInjection IFunctionalitySubscriber<IProvidesFunctionalityInjection>.provider { get; set; }
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
-
-        public void ConnectDependency(MultipleRayInputModule dependency)
-        {
-            m_MultipleRayInputModule = dependency;
-        }
 
         public void ConnectDependency(EditorXRViewerModule dependency)
         {
@@ -82,12 +81,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void LoadModule()
         {
             IInstantiateUIMethods.instantiateUI = InstantiateUI;
-
-            var customPreviewCamera = m_ViewerModule.customPreviewCamera;
-            if (customPreviewCamera != null)
-                m_MultipleRayInputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
-
-            m_MultipleRayInputModule.preProcessRaycastSource = m_RayModule.PreProcessRaycastSource;
 
             m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
         }
@@ -131,15 +124,46 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
+            var eventSystem = FindObjectOfType<EventSystem>();
+            if (eventSystem)
+            {
+                InputModule = eventSystem.GetComponent<MultipleRayInputModule>();
+                if (!InputModule)
+                {
+                    m_NewInputModule = eventSystem.gameObject.AddComponent<MultipleRayInputModule>();
+                    InputModule = m_NewInputModule;
+                }
+            }
+            else
+            {
+                m_NewEventSystem = new GameObject("EventSystem");
+                InputModule = m_NewEventSystem.AddComponent<MultipleRayInputModule>();
+            }
+
+            this.InjectFunctionalitySingle(InputModule);
+            this.ConnectInterfaces(InputModule);
+
+            var customPreviewCamera = m_ViewerModule.customPreviewCamera;
+            if (customPreviewCamera != null)
+                InputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
+
+            InputModule.preProcessRaycastSource = m_RayModule.PreProcessRaycastSource;
+
             m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_ModuleParent).GetComponent<Camera>();
             m_EventCamera.enabled = false;
-            m_MultipleRayInputModule.eventCamera = m_EventCamera;
+            InputModule.eventCamera = m_EventCamera;
         }
 
         public void Shutdown()
         {
             if (m_EventCamera)
                 UnityObjectUtils.Destroy(m_EventCamera.gameObject);
+
+            if (m_NewInputModule)
+                DestroyImmediate(m_NewInputModule);
+
+            if (m_NewEventSystem)
+                DestroyImmediate(m_NewEventSystem);
         }
 
         internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)

@@ -1,16 +1,23 @@
 ﻿using System.Collections.Generic;
 using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DragAndDropModule : IModuleDependency<MultipleRayInputModule>
+    sealed class DragAndDropModule : IDelayedInitializationModule, IModuleDependency<EditorXRUIModule>
     {
         readonly Dictionary<Transform, IDroppable> m_Droppables = new Dictionary<Transform, IDroppable>();
         readonly Dictionary<Transform, IDropReceiver> m_DropReceivers = new Dictionary<Transform, IDropReceiver>();
 
         readonly Dictionary<Transform, GameObject> m_HoverObjects = new Dictionary<Transform, GameObject>();
+
+        EditorXRUIModule m_UIModule;
+
+        public int initializationOrder { get { return 1; } }
+
+        public int shutdownOrder { get { return 0; } }
 
         object GetCurrentDropObject(Transform rayOrigin)
         {
@@ -89,16 +96,28 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public void ConnectDependency(MultipleRayInputModule dependency)
-        {
-            dependency.rayEntered += OnRayEntered;
-            dependency.rayExited += OnRayExited;
-            dependency.dragStarted += OnDragStarted;
-            dependency.dragEnded += OnDragEnded;
-        }
+        public void ConnectDependency(EditorXRUIModule dependency) { m_UIModule = dependency; }
 
         public void LoadModule() { }
 
         public void UnloadModule() { }
+
+        public void Initialize()
+        {
+            var inputModule = m_UIModule.InputModule;
+            inputModule.rayEntered += OnRayEntered;
+            inputModule.rayExited += OnRayExited;
+            inputModule.dragStarted += OnDragStarted;
+            inputModule.dragEnded += OnDragEnded;
+        }
+
+        public void Shutdown()
+        {
+            var inputModule = m_UIModule.InputModule;
+            inputModule.rayEntered -= OnRayEntered;
+            inputModule.rayExited -= OnRayExited;
+            inputModule.dragStarted -= OnDragStarted;
+            inputModule.dragEnded -= OnDragEnded;
+        }
     }
 }

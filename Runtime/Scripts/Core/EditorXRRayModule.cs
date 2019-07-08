@@ -16,11 +16,11 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     class EditorXRRayModule : ScriptableSettings<EditorXRRayModule>, IModuleDependency<HighlightModule>,
-        IModuleDependency<DeviceInputModule>, IModuleDependency<MultipleRayInputModule>, IModuleDependency<KeyboardModule>,
-        IInterfaceConnector, IForEachRayOrigin, IUsesConnectInterfaces, IStandardIgnoreList, IDelayedInitializationModule,
-        ISelectionChanged, IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults,
-        IProvidesSetDefaultRayColor, IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings,
-        IProvidesGetRayVisibility, IProvidesGetPreviewOrigin, IProvidesGetFieldGrabOrigin, IInstantiateUI, IUsesViewerScale
+        IModuleDependency<DeviceInputModule>, IModuleDependency<KeyboardModule>, IInterfaceConnector, IForEachRayOrigin,
+        IUsesConnectInterfaces, IStandardIgnoreList, IDelayedInitializationModule, ISelectionChanged,
+        IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesRaycastResults, IProvidesSetDefaultRayColor,
+        IProvidesGetDefaultRayColor, IProvidesRayVisibilitySettings, IProvidesGetRayVisibility, IProvidesGetPreviewOrigin,
+        IProvidesGetFieldGrabOrigin, IInstantiateUI, IUsesViewerScale
     {
         internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -49,7 +49,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRMiniWorldModule m_MiniWorldModule;
         IntersectionModule m_IntersectionModule;
         DeviceInputModule m_DeviceInputModule;
-        MultipleRayInputModule m_MultipleRayInputModule;
         KeyboardModule m_KeyboardModule;
         WorkspaceModule m_WorkspaceModule;
         EditorXRDirectSelectionModule m_DirectSelectionModule;
@@ -57,6 +56,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRToolModule m_ToolModule;
 
         Transform m_ModuleParent;
+        MultipleRayInputModule m_InputModule;
 
         internal DefaultProxyRay proxyRayPrefab { get { return m_ProxyRayPrefab; } }
 
@@ -64,7 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public List<GameObject> ignoreList { private get; set; }
 
-        public int initializationOrder { get { return 0; } }
+        public int initializationOrder { get { return 1; } }
         public int shutdownOrder { get { return 0; } }
         public int connectInterfaceOrder { get { return 0; } }
 
@@ -82,11 +82,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void ConnectDependency(DeviceInputModule dependency)
         {
             m_DeviceInputModule = dependency;
-        }
-
-        public void ConnectDependency(MultipleRayInputModule dependency)
-        {
-            m_MultipleRayInputModule = dependency;
         }
 
         public void ConnectDependency(KeyboardModule dependency)
@@ -212,6 +207,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Initialize()
         {
+            var uiModule = ModuleLoaderCore.instance.GetModule<EditorXRUIModule>();
+            if (uiModule)
+                m_InputModule = uiModule.InputModule;
+
             var cameraRig = CameraUtils.GetCameraRig();
             var proxyTypes = CollectionPool<List<Type>, Type>.GetCollection();
             typeof(IProxy).GetImplementationsOfInterface(proxyTypes);
@@ -268,8 +267,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                                 deviceData.rayOrigin = rayOrigin;
                                 deviceData.inputDevice = device;
 
+                                if (!m_InputModule)
+                                    continue;
+
                                 // Add RayOrigin transform, proxy and ActionMapInput references to input module list of sources
-                                m_MultipleRayInputModule.AddRaycastSource(proxy, node, rayOrigin, source =>
+                                m_InputModule.AddRaycastSource(proxy, node, rayOrigin, source =>
                                 {
                                     // Do not invalidate UI raycasts in the middle of a drag operation
                                     if (!source.draggedObject)
@@ -393,7 +395,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Give UI priority over scene objects (e.g. For the TransformTool, handles are generally inside of the
                     // object, so visually show the ray terminating there instead of the object; UI is already given
                     // priority on the input side)
-                    var uiEventData = m_MultipleRayInputModule.GetPointerEventData(rayOrigin);
+                    var uiEventData = m_InputModule.GetPointerEventData(rayOrigin);
                     if (uiEventData != null && uiEventData.pointerCurrentRaycast.isValid)
                     {
                         // Set ray length to distance to UI objects
