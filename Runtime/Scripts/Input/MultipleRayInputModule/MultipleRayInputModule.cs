@@ -221,15 +221,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         // Local method use only -- created here to reduce garbage collection
         RayEventData m_TempRayEvent;
 
-        public void LoadModule()
+        protected override void Awake()
         {
+            base.Awake();
             s_LayerMask = LayerMask.GetMask("UI");
             m_TempRayEvent = new RayEventData(eventSystem);
             var uiActionMap = MultipleRayInputModuleSettings.instance.UIActionMap;
             InputUtils.GetBindingDictionaryFromActionMap(uiActionMap, m_Controls);
         }
 
-        public void UnloadModule()
+        protected override void OnDestroy()
         {
             foreach (var source in m_RaycastSources)
             {
