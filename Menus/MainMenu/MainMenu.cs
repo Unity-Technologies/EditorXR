@@ -58,8 +58,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
 
-        public List<Type> menuTools { private get; set; }
-        public List<Type> menuWorkspaces { private get; set; }
+        public List<Type> menuTools { internal get; set; }
+        public List<Type> menuWorkspaces { internal get; set; }
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> settingsMenuProviders { get; set; }
         public Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> settingsMenuItemProviders { get; set; }
         public Transform targetRayOrigin { private get; set; }
@@ -67,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
         public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 
-        public Transform rayOrigin { private get; set; }
+        public Transform rayOrigin { internal get; set; }
 
         public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
         public int priority { get { return 0; } }
@@ -440,6 +440,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 m_SettingsMenus.Remove(provider);
             }
+
             provider.settingsMenuInstance = null;
         }
 
@@ -461,6 +462,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
                 m_SettingsMenuItems.Remove(provider);
             }
+
             provider.settingsMenuItemInstance = null;
         }
 

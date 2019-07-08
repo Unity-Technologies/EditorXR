@@ -324,12 +324,18 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 this.RemoveFeedbackRequest(request);
             }
+
             requests.Clear();
         }
 
         void HideScrollFeedback()
         {
             HideFeedback(m_ScrollFeedback);
+        }
+
+        public void FakeActivate()
+        {
+            m_ToolsMenuUI.mainMenuActivatorSelected(rayOrigin);
         }
     }
 }

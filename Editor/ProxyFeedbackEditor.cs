@@ -83,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
         void Refresh()
         {
             m_SerializedFeedback.Clear();
-            var preferences = SerializedPreferencesModule.DeserializePreferences(Core.EditorVR.serializedPreferences);
+            var preferences = SerializedPreferencesModule.DeserializePreferences();
             if (preferences == null)
                 return;
 
@@ -112,7 +112,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         static void ClearData()
         {
-            var preferences = SerializedPreferencesModule.DeserializePreferences(Core.EditorVR.serializedPreferences);
+            var preferences = SerializedPreferencesModule.DeserializePreferences();
             if (preferences == null)
                 return;
 
@@ -123,12 +123,12 @@ namespace UnityEditor.Experimental.EditorVR.UI
                     preferences.Remove(type);
             }
 
-            Core.EditorVR.serializedPreferences = JsonUtility.ToJson(preferences);
+            SerializedPreferencesModule.serializedPreferences = JsonUtility.ToJson(preferences);
         }
 
         void SaveData()
         {
-            var preferences = SerializedPreferencesModule.DeserializePreferences(Core.EditorVR.serializedPreferences);
+            var preferences = SerializedPreferencesModule.DeserializePreferences();
             if (preferences == null)
                 return;
 
@@ -138,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
                 items[kvp.Key].payload = JsonUtility.ToJson(kvp.Value);
             }
 
-            Core.EditorVR.serializedPreferences = JsonUtility.ToJson(preferences);
+            SerializedPreferencesModule.serializedPreferences = JsonUtility.ToJson(preferences);
         }
     }
 }

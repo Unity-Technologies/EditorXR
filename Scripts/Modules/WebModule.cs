@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using Unity.Labs.ModuleLoader;
 using UnityEngine;
 using UnityEngine.Networking;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class WebModule : MonoBehaviour, ISystemModule
+    public class WebModule : IModuleBehaviorCallbacks
     {
         class DownloadRequest
         {
@@ -130,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             });
         }
 
-        void Update()
+        public void OnBehaviorUpdate()
         {
             foreach (var kvp in m_Requests)
             {
@@ -214,5 +215,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_CompletedRequests.Clear();
             m_CompletedTransfers.Clear();
         }
+
+        public void LoadModule()
+        {
+            IWebMethods.download = Download;
+            IWebMethods.downloadTexture = DownloadTexture;
+            IWebMethods.downloadToDisk = Download;
+        }
+
+        public void UnloadModule() { }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

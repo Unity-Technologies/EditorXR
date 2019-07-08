@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace UnityEditor.Experimental.EditorVR
+namespace UnityEditor.Experimental.EditorVR.Modules
 {
     public abstract class FeedbackRequest
     {
@@ -15,7 +16,8 @@ namespace UnityEditor.Experimental.EditorVR
         public abstract void Reset();
     }
 
-    public class FeedbackModule : MonoBehaviour, ISystemModule, ISettingsMenuItemProvider, ISerializePreferences
+    public class FeedbackModule : ScriptableSettings<FeedbackModule>, IDelayedInitializationModule, ISettingsMenuItemProvider,
+        ISerializePreferences, IInterfaceConnector
     {
         [Serializable]
         class Preferences
@@ -48,6 +50,9 @@ namespace UnityEditor.Experimental.EditorVR
         {
             set
             {
+                if (value == null)
+                    return;
+
                 var toggle = value.GetComponent<Toggle>();
                 if (m_Preferences != null)
                     toggle.isOn = m_Preferences.enabled;
@@ -75,26 +80,38 @@ namespace UnityEditor.Experimental.EditorVR
 
         public Transform rayOrigin { get { return null; } }
 
-        void Awake()
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
+
+        public void LoadModule()
         {
             IRequestFeedbackMethods.addFeedbackRequest = AddFeedbackRequest;
             IRequestFeedbackMethods.removeFeedbackRequest = RemoveFeedbackRequest;
             IRequestFeedbackMethods.clearFeedbackRequests = ClearFeedbackRequests;
             IRequestFeedbackMethods.getFeedbackRequestObject = GetFeedbackRequestObject;
-        }
 
-        void Start()
-        {
             if (m_Preferences == null)
                 m_Preferences = new Preferences();
         }
 
-        public void AddReceiver(IFeedbackReceiver feedbackReceiver)
+        public void Initialize()
+        {
+            m_Toggles.Clear();
+            m_FeedbackReceivers.Clear();
+            m_FeedbackRequestPool.Clear();
+        }
+
+        public void Shutdown() { }
+
+        public void UnloadModule() { }
+
+        void AddReceiver(IFeedbackReceiver feedbackReceiver)
         {
             m_FeedbackReceivers.Add(feedbackReceiver);
         }
 
-        public void RemoveReceiver(IFeedbackReceiver feedbackReceiver)
+        void RemoveReceiver(IFeedbackReceiver feedbackReceiver)
         {
             m_FeedbackReceivers.Remove(feedbackReceiver);
         }
@@ -193,6 +210,20 @@ namespace UnityEditor.Experimental.EditorVR
             {
                 toggle.isOn = m_Preferences.enabled;
             }
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var serializePreferences = target as IFeedbackReceiver;
+            if (serializePreferences != null)
+                AddReceiver(serializePreferences);
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var serializePreferences = target as IFeedbackReceiver;
+            if (serializePreferences != null)
+                RemoveReceiver(serializePreferences);
         }
     }
 }

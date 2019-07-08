@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SelectionModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking, ISelectionChanged,
+    sealed class SelectionModule : ScriptableSettings<SelectionModule>, IModule, IUsesGameObjectLocking, ISelectionChanged,
         IControlHaptics, IRayToNode, IContainsVRPlayerCompletely
     {
 #pragma warning disable 649
@@ -27,7 +29,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<GameObject> k_SingleObjectList = new List<GameObject>();
         readonly List<Transform> m_Transforms = new List<Transform>();
 
-        public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
+        GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
         {
             // If we can't even select the object we're starting with, then skip any further logic
             if (!CanSelectObject(hoveredObject, false))
@@ -65,14 +67,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return true;
         }
 
-        public void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
+        void SelectObject(GameObject hoveredObject, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
         {
             k_SingleObjectList.Clear();
             k_SingleObjectList.Add(hoveredObject);
             SelectObjects(k_SingleObjectList, rayOrigin, multiSelect, useGrouping);
         }
 
-        public void SelectObjects(List<GameObject> hoveredObjects, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
+        void SelectObjects(List<GameObject> hoveredObjects, Transform rayOrigin, bool multiSelect, bool useGrouping = false)
         {
             if (hoveredObjects == null || hoveredObjects.Count == 0)
             {
@@ -148,7 +150,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return null;
         }
 
-        public void MakeGroup(GameObject parent)
+        void MakeGroup(GameObject parent)
         {
             parent.GetComponentsInChildren(m_Transforms);
             foreach (var child in m_Transforms)
@@ -156,5 +158,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_GroupMap[child.gameObject] = parent;
             }
         }
+
+        public void LoadModule()
+        {
+            ISelectObjectMethods.getSelectionCandidate = GetSelectionCandidate;
+            ISelectObjectMethods.selectObject = SelectObject;
+            ISelectObjectMethods.selectObjects = SelectObjects;
+            IUsesGroupingMethods.makeGroup = MakeGroup;
+        }
+
+        public void UnloadModule() { }
     }
 }

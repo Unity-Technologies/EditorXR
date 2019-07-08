@@ -1,3 +1,5 @@
+using UnityEditor.Experimental.EditorVR.Modules;
+
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>

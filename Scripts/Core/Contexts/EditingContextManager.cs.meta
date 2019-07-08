@@ -5,7 +5,7 @@ MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - m_DefaultContext: {fileID: 11400000, guid: 382791dd2a80d9449bd64b5568128c03, type: 2}
-  executionOrder: 0
+  executionOrder: -16384
   icon: {instanceID: 0}
   userData: 
   assetBundleName: 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -13,8 +14,8 @@ using UnityEngine.UI;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
     [MainMenuItem("Snapping", "Settings", "Select snapping modes")]
-    sealed class SnappingModule : MonoBehaviour, ISystemModule, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
-        IRaycast, IStandardIgnoreList
+    sealed class SnappingModule : ScriptableSettings<SnappingModule>, IDelayedInitializationModule, IModuleBehaviorCallbacks,
+        IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences, IRaycast, IStandardIgnoreList
     {
         const float k_GroundPlaneScale = 1000f;
 
@@ -36,7 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 #pragma warning disable 649
         [SerializeField]
-        GameObject m_GroundPlane;
+        GameObject m_GroundPlanePrefab;
 
         [SerializeField]
         GameObject m_Widget;
@@ -47,6 +48,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         [SerializeField]
         Material m_ButtonHighlightMaterial;
 #pragma warning restore 649
+
+        GameObject m_GroundPlane;
 
         class SnappingState
         {
@@ -235,10 +238,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         SnappingModuleSettingsUI m_SnappingModuleSettingsUI;
         Material m_ButtonHighlightMaterialClone;
+        Transform m_ModuleParent;
 
         readonly Dictionary<Transform, Dictionary<Transform, SnappingState>> m_SnappingStates = new Dictionary<Transform, Dictionary<Transform, SnappingState>>();
 
-        public bool widgetEnabled { get; set; }
+        bool widgetEnabled { get; set; }
 
         public List<GameObject> ignoreList { private get; set; }
 
@@ -259,7 +263,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool snappingEnabled
+        bool snappingEnabled
         {
             get { return !m_Preferences.disableAll && (groundSnappingEnabled || surfaceSnappingEnabled); }
             set
@@ -272,7 +276,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool groundSnappingEnabled
+        bool groundSnappingEnabled
         {
             get { return m_Preferences.groundSnappingEnabled; }
             set
@@ -288,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool surfaceSnappingEnabled
+        bool surfaceSnappingEnabled
         {
             get { return m_Preferences.surfaceSnappingEnabled; }
             set
@@ -304,7 +308,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool pivotSnappingEnabled
+        bool pivotSnappingEnabled
         {
             get { return m_Preferences.pivotSnappingEnabled; }
             set
@@ -316,7 +320,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool rotationSnappingEnabled
+        bool rotationSnappingEnabled
         {
             get { return m_Preferences.rotationSnappingEnabled; }
             set
@@ -328,7 +332,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool limitRadius
+        bool limitRadius
         {
             get { return m_Preferences.limitRadius; }
             set
@@ -340,7 +344,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool manipulatorSnappingEnabled
+        bool manipulatorSnappingEnabled
         {
             get { return m_Preferences.manipulatorSnappingEnabled; }
             set
@@ -352,7 +356,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        public bool directSnappingEnabled
+        bool directSnappingEnabled
         {
             get { return m_Preferences.directSnappingEnabled; }
             set
@@ -366,18 +370,38 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         public Transform rayOrigin { get { return null; } }
 
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+
         // Local method use only -- created here to reduce garbage collection
         readonly List<GameObject> m_CombinedIgnoreList = new List<GameObject>();
         Transform[] m_SingleTransformArray = new Transform[1];
 
-        void Awake()
+        public void LoadModule()
         {
-            m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlane, transform);
-            m_GroundPlane.SetActive(false);
-
             m_ButtonHighlightMaterialClone = Instantiate(m_ButtonHighlightMaterial);
 
             widgetEnabled = true;
+
+            IUsesSnappingMethods.manipulatorSnap = ManipulatorSnap;
+            IUsesSnappingMethods.directSnap = DirectSnap;
+            IUsesSnappingMethods.clearSnappingState = ClearSnappingState;
+        }
+
+        public void UnloadModule() { }
+
+        public void Initialize()
+        {
+            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
+            m_GroundPlane = EditorXRUtils.Instantiate(m_GroundPlanePrefab, m_ModuleParent);
+            m_GroundPlane.SetActive(false);
+
+            Reset();
+        }
+
+        public void Shutdown()
+        {
+            UnityObjectUtils.Destroy(m_GroundPlane);
         }
 
         public object OnSerializePreferences()
@@ -390,7 +414,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Preferences = (Preferences)obj;
         }
 
-        void Update()
+        public void OnBehaviorUpdate()
         {
             if (snappingEnabled)
             {
@@ -409,7 +433,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         {
                             if (widget == null)
                             {
-                                widget = EditorXRUtils.Instantiate(m_Widget, transform).transform;
+                                widget = EditorXRUtils.Instantiate(m_Widget, m_ModuleParent).transform;
                                 state.widget = widget;
                             }
 
@@ -418,7 +442,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                             var distanceToCamera = Vector3.Distance(camera.transform.position, state.snappingPosition);
                             widget.position = state.snappingPosition;
                             widget.rotation = state.snappingRotation;
-                            widget.localScale = Vector3.one * k_WidgetScale * distanceToCamera;
+                            widget.localScale = k_WidgetScale * distanceToCamera * Vector3.one;
                         }
                         else if (state.widget != null)
                             widget.gameObject.SetActive(false);
@@ -428,12 +452,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_GroundPlane.SetActive(shouldActivateGroundPlane);
 
                 if (shouldActivateGroundPlane)
-                    m_GroundPlane.transform.localScale = Vector3.one * k_GroundPlaneScale * this.GetViewerScale();
+                    m_GroundPlane.transform.localScale = k_GroundPlaneScale * this.GetViewerScale() * Vector3.one;
             }
             else
             {
                 m_GroundPlane.SetActive(false);
-                m_Widget.SetActive(false);
             }
         }
 
@@ -967,5 +990,15 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     graphic.material = m_ButtonHighlightMaterialClone;
             }
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

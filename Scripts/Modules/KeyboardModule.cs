@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -7,7 +9,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class KeyboardModule : MonoBehaviour, ISystemModule, IRayVisibilitySettings, IForEachRayOrigin, IConnectInterfaces
+    sealed class KeyboardModule : ScriptableSettings<KeyboardModule>, IModuleBehaviorCallbacks, IRayVisibilitySettings, IForEachRayOrigin,
+        IConnectInterfaces
     {
 #pragma warning disable 649
         [SerializeField]
@@ -26,10 +29,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         ForEachRayOriginCallback m_UpdateKeyboardMallets;
 
-        void Awake()
+        public void LoadModule()
         {
             m_UpdateKeyboardMallets = UpdateKeyboardMallets;
         }
+
+        public void UnloadModule() { }
 
         public KeyboardUI SpawnNumericKeyboard()
         {
@@ -79,11 +84,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_KeyboardMallets.Add(rayOrigin, mallet);
         }
 
-        public void UpdateKeyboardMallets()
-        {
-            this.ForEachRayOrigin(m_UpdateKeyboardMallets);
-        }
-
         void UpdateKeyboardMallets(Transform rayOrigin)
         {
             var malletVisible = true;
@@ -117,5 +117,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             // TODO remove this after physics is in
             mallet.CheckForKeyCollision();
         }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
+        {
+            this.ForEachRayOrigin(m_UpdateKeyboardMallets);
+        }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

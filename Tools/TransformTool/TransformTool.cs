@@ -855,7 +855,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         BaseManipulator CreateManipulator(GameObject prefab)
         {
-            var go = GameObjectUtils.Instantiate(prefab, transform);
+            var go = EditorXRUtils.Instantiate(prefab, transform, active: false);
             go.SetActive(false);
             var manipulator = go.GetComponent<BaseManipulator>();
             manipulator.translate = Translate;
@@ -878,7 +878,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_SelectionBounds = BoundsUtils.GetBounds(selectionTransforms);
 
             var manipulatorTransform = manipulatorGameObject.transform;
-            var activeTransform = Selection.activeTransform ?? selectionTransforms[0];
+            var activeTransform = Selection.activeTransform;
+            if (activeTransform == null)
+                activeTransform = selectionTransforms[0];
+
             manipulatorTransform.position = m_PivotMode == PivotMode.Pivot ? activeTransform.position : m_SelectionBounds.center;
             manipulatorTransform.rotation = m_PivotRotation == PivotRotation.Global && m_CurrentManipulator == m_StandardManipulator
                 ? Quaternion.identity : activeTransform.rotation;
@@ -1042,6 +1045,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         void HideScaleOptionFeedback()
         {
             HideFeedback(m_ScaleOptionFeedback);
+        }
+
+        void OnDestroy()
+        {
+            if (m_ScaleManipulator)
+                UnityObjectUtils.Destroy(m_ScaleManipulator.gameObject);
+
+            if (m_StandardManipulator)
+                UnityObjectUtils.Destroy(m_StandardManipulator.gameObject);
         }
     }
 }

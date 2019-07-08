@@ -53,10 +53,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
             go.SetActive(active);
             if (!Application.isPlaying && runInEditMode)
-            {
                 go.SetRunInEditModeRecursively(true);
-                go.hideFlags = hideFlags;
-            }
+
+            go.SetHideFlagsRecursively(hideFlags);
 
             return go;
         }
@@ -97,6 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             bool worldPositionStays = true)
         {
             var go = new GameObject(type.Name);
+            go.hideFlags = hideFlags;
             go.transform.SetParent(parent, worldPositionStays);
             return AddComponent(type, go);
         }

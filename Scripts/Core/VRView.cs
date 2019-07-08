@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -21,7 +22,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
         const string k_ShowDeviceView = "VRView.ShowDeviceView";
         const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
         const string k_CameraName = "VRCamera";
-        const HideFlags k_HideFlags = HideFlags.HideInHierarchy | HideFlags.DontSaveInEditor;
 
         static Camera s_ExistingSceneMainCamera;
         static bool s_ExistingSceneMainCameraEnabledState;
@@ -133,10 +133,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public static bool MiddleMouseButtonHeld;
         public static bool RightMouseButtonHeld;
 
-        public static void CreateCameraRig(ref Camera camera, ref Transform cameraRig)
+        public static void CreateCameraRig(ref Camera camera, out Transform cameraRig)
         {
-            var hideFlags = Application.isPlaying ? HideFlags.None : k_HideFlags;
-
             const float nearClipPlane = 0.01f;
             const float farClipPlane = 1000f;
 
@@ -144,12 +142,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // ReSharper disable once RedundantAssignment
             GameObject rigGO = null;
 
+            var debugSettings = ModuleLoaderDebugSettings.instance;
+            var hideFlags = debugSettings.moduleHideFlags;
+
             if (Application.isPlaying)
             {
                 camera.nearClipPlane = nearClipPlane;
                 camera.farClipPlane = farClipPlane;
+                camera.gameObject.hideFlags = hideFlags;
 
-                rigGO = new GameObject("VRCameraRig");
+                rigGO = new GameObject("VRCameraRig") { hideFlags = hideFlags };
             }
 #if UNITY_EDITOR
             else
@@ -201,10 +203,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
                 }
 
-                rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", hideFlags, typeof(EditorMonoBehaviour));
+                rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", hideFlags);
             }
 #endif
 
+            EditorXRUtils.AddComponent<EditorMonoBehaviour>(rigGO);
             cameraRig = rigGO.transform;
             camera.transform.parent = cameraRig;
 
@@ -230,7 +233,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             autoRepaintOnSceneChange = true;
             s_ActiveView = this;
-            CreateCameraRig(ref m_Camera, ref m_CameraRig);
+            CreateCameraRig(ref m_Camera, out m_CameraRig);
 
             m_ShowDeviceView = EditorPrefs.GetBool(k_ShowDeviceView, false);
             m_UseCustomPreviewCamera = EditorPrefs.GetBool(k_UseCustomPreviewCamera, false);
@@ -278,8 +281,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (viewDisabled != null)
                 viewDisabled();
 
-            XRSettings.enabled = false;
-
             EditorPrefs.SetBool(k_ShowDeviceView, m_ShowDeviceView);
             EditorPrefs.SetBool(k_UseCustomPreviewCamera, m_UseCustomPreviewCamera);
 
@@ -287,6 +288,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (m_CameraRig)
                 DestroyImmediate(m_CameraRig.gameObject, true);
+
+            XRSettings.enabled = false;
 
             Assert.IsNotNull(s_ActiveView, "EditorXR should have an active view");
             s_ActiveView = null;
@@ -332,7 +335,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 renderTexture = new RenderTexture(0, 0, 24, format);
                 renderTexture.name = "Scene RT";
                 renderTexture.antiAliasing = msaa;
-                renderTexture.hideFlags = k_HideFlags;
             }
 
             if (renderTexture.width != width || renderTexture.height != height)
@@ -442,18 +444,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (!m_Camera.gameObject.activeInHierarchy)
                 return;
 
-            if (!XRDevice.isPresent)
-                return;
-
-            UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
             if (Event.current.type == EventType.Repaint)
             {
+                if (XRDevice.isPresent)
+                    UnityEditor.Handles.DrawCamera(rect, m_Camera, m_RenderMode);
+                else
+                    m_Camera.Render();
+
                 GUI.matrix = Matrix4x4.identity; // Need to push GUI matrix back to GPU after camera rendering
                 RenderTexture.active = null; // Clean up after DrawCamera
             }
         }
 
-        private void Update()
+        void Update()
         {
             // If code is compiling, then we need to clean up the window resources before classes get re-initialized
             if (EditorApplication.isCompiling || EditorApplication.isPlayingOrWillChangePlaymode)

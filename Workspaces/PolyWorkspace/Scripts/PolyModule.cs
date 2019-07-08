@@ -2,23 +2,23 @@ using System;
 using System.Text;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
+using Unity.Labs.Utils;
 
 #if INCLUDE_POLY_TOOLKIT
 using PolyToolkit;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Utilities;
 #endif
 
 #if UNITY_EDITOR
-using Unity.Labs.Utils;
-
 [assembly: OptionalDependency("PolyToolkit.PolyApi", "INCLUDE_POLY_TOOLKIT")]
 #endif
 
 #if INCLUDE_POLY_TOOLKIT
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public class PolyModule : MonoBehaviour, ISystemModule, IWeb
+    public class PolyModule : IDelayedInitializationModule, IWeb
     {
         class RequestHandler
         {
@@ -80,16 +80,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         Transform m_Container;
 
-        void Awake()
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+
+        public void LoadModule()
         {
             PolyApi.Init(new PolyAuthConfig(Encoding.UTF8.GetString(Convert.FromBase64String(k_APIKey)), "", ""));
-            m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", transform).transform;
+
+            IPolyMethods.getAssetList = GetAssetList;
         }
 
-        void OnDestroy()
+        public void UnloadModule()
         {
             k_AssetCache.Clear();
             PolyApi.Shutdown();
+        }
+
+        public void Initialize()
+        {
+            var moduleParent = ModuleLoaderCore.instance.GetModuleParent();
+            m_Container = EditorXRUtils.CreateEmptyGameObject("Poly Prefabs", moduleParent.transform).transform;
+        }
+
+        public void Shutdown()
+        {
+            if (m_Container)
+                UnityObjectUtils.Destroy(m_Container.gameObject);
         }
 
         public void GetAssetList(PolyOrderBy orderBy, PolyMaxComplexityFilter complexity, PolyFormatFilter? format,

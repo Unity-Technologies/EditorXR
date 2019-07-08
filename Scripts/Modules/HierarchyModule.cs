@@ -2,13 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 #if UNITY_EDITOR
-    sealed class HierarchyModule : MonoBehaviour, ISystemModule, ISelectionChanged
+    sealed class HierarchyModule : IDelayedInitializationModule, ISelectionChanged, IInterfaceConnector
     {
         readonly List<IUsesHierarchyData> m_HierarchyLists = new List<IUsesHierarchyData>();
         readonly List<HierarchyData> m_HierarchyData = new List<HierarchyData>();
@@ -18,15 +19,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         readonly HashSet<string> m_ObjectTypes = new HashSet<string>();
         readonly List<GameObject> m_IgnoreList = new List<GameObject>();
 
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
+
         // Local method use only -- created here to reduce garbage collection
         readonly Stack<HierarchyData> m_DataStack = new Stack<HierarchyData>();
         readonly Stack<int> m_SiblingIndexStack = new Stack<int>();
         static readonly List<Component> k_Components = new List<Component>();
         static readonly Dictionary<Type, string> k_TypeNames = new Dictionary<Type, string>();
 
-        void Awake()
+        public void LoadModule()
         {
-            m_IgnoreList.Add(gameObject); // Ignore EditorVR
+            m_IgnoreList.Add(ModuleLoaderCore.instance.GetModuleParent());  // Ignore Module parent
             foreach (var manager in Resources.FindObjectsOfTypeAll<InputManager>())
             {
                 m_IgnoreList.Add(manager.gameObject);
@@ -38,19 +43,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        void OnEnable()
+        public void UnloadModule() { }
+
+        public void Initialize()
         {
-#if UNITY_EDITOR
             EditorApplication.hierarchyChanged += UpdateHierarchyData;
-#endif
             UpdateHierarchyData();
         }
 
-        void OnDisable()
+        public void Shutdown()
         {
-#if UNITY_EDITOR
             EditorApplication.hierarchyChanged -= UpdateHierarchyData;
-#endif
         }
 
         public void OnSelectionChanged()
@@ -58,24 +61,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             UpdateHierarchyData();
         }
 
-        public void AddConsumer(IUsesHierarchyData consumer)
+        void AddConsumer(IUsesHierarchyData consumer)
         {
             consumer.hierarchyData = GetHierarchyData();
             m_HierarchyLists.Add(consumer);
         }
 
-        public void RemoveConsumer(IUsesHierarchyData consumer)
+        void RemoveConsumer(IUsesHierarchyData consumer)
         {
             m_HierarchyLists.Remove(consumer);
         }
 
-        public void AddConsumer(IFilterUI consumer)
+        void AddConsumer(IFilterUI consumer)
         {
             consumer.filterList = GetFilterList();
             m_FilterUIs.Add(consumer);
         }
 
-        public void RemoveConsumer(IFilterUI consumer)
+        void RemoveConsumer(IFilterUI consumer)
         {
             m_FilterUIs.Remove(consumer);
         }
@@ -254,10 +257,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
         }
-    }
-#else
-    sealed class HierarchyModule : MonoBehaviour
-    {
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var usesHierarchyData = target as IUsesHierarchyData;
+            if (usesHierarchyData != null)
+            {
+                AddConsumer(usesHierarchyData);
+
+                var filterUI = target as IFilterUI;
+                if (filterUI != null)
+                    AddConsumer(filterUI);
+            }
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var usesHierarchy = target as IUsesHierarchyData;
+            if (usesHierarchy != null)
+            {
+                RemoveConsumer(usesHierarchy);
+
+                var filterUI = target as IFilterUI;
+                if (filterUI != null)
+                    RemoveConsumer(filterUI);
+            }
+        }
     }
 #endif
 }

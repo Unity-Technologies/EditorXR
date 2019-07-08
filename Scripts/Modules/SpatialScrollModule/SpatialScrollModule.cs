@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class SpatialScrollModule : MonoBehaviour, ISystemModule, IUsesViewerScale, IControlHaptics,
+    public sealed class SpatialScrollModule : ScriptableSettings<SpatialScrollModule>, IModule, IUsesViewerScale, IControlHaptics,
         IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
     {
         public class SpatialScrollData : INodeToRay
@@ -177,5 +179,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
         }
+
+        public void LoadModule()
+        {
+            IControlSpatialScrollingMethods.performSpatialScroll = PerformScroll;
+            IControlSpatialScrollingMethods.endSpatialScroll = EndScroll;
+        }
+
+        public void UnloadModule() { }
     }
 }

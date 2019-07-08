@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class LockModule : MonoBehaviour, ISystemModule, IActions, ISelectionChanged
+    sealed class LockModule : ScriptableSettings<LockModule>, IModuleDependency<EditorXRMenuModule>, IActions, ISelectionChanged
     {
         class LockModuleAction : IAction, ITooltip
         {
@@ -40,13 +43,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         Transform m_HoverRayOrigin;
         float m_HoverDuration;
 
-        void Awake()
+        public void ConnectDependency(EditorXRMenuModule dependency)
+        {
+            updateAlternateMenu = (rayOrigin, o) => dependency.SetAlternateMenuVisibility(rayOrigin, o != null);
+        }
+
+        public void LoadModule()
         {
             m_LockModuleAction.execute = ToggleLocked;
             UpdateAction(null);
 
             actions = new List<IAction> { m_LockModuleAction };
+
+            IUsesGameObjectLockingMethods.setLocked = SetLocked;
+            IUsesGameObjectLockingMethods.isLocked = IsLocked;
         }
+
+        public void UnloadModule() { }
 
         public bool IsLocked(GameObject go)
         {
@@ -54,7 +67,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 return false;
 
             // EditorVR objects (i.e. PlayerHead) may get HideAndDontSave, which includes NotEditable, but should not count as locked
-            if (go.transform.IsChildOf(transform))
+            var moduleParent = ModuleLoaderCore.instance.GetModuleParent();
+            if (go.transform.IsChildOf(moduleParent.transform))
                 return false;
 
             return (go.hideFlags & HideFlags.NotEditable) != 0;

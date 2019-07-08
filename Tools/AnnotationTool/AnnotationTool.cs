@@ -632,9 +632,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
-            if (m_Preferences == null)
-                return;
-
             var annotationInput = (AnnotationInput)input;
 
             var draw = annotationInput.draw;

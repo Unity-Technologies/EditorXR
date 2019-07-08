@@ -1,5 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,7 +10,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class AdaptivePositionModule : MonoBehaviour, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, ISystemModule
+    public sealed class AdaptivePositionModule : ScriptableSettings<AdaptivePositionModule>, IDelayedInitializationModule,
+        IModuleBehaviorCallbacks, IDetectGazeDivergence, IUsesViewerScale, IControlHaptics, IInterfaceConnector
     {
 #pragma warning disable 649
         [SerializeField]
@@ -15,19 +19,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #pragma warning restore 649
 
         bool m_TestInFocus;
+
+        [NonSerialized]
         Transform m_GazeTransform;
+
+        [NonSerialized]
         Transform m_WorldspaceAnchorTransform; // The player transform under which anchored objects will be parented
 
         // Collection of objects whose position is controlled by this module
         readonly List<IAdaptPosition> m_AdaptivePositionElements = new List<IAdaptPosition>();
 
-        void Awake()
-        {
-            m_GazeTransform = CameraUtils.GetMainCamera().transform;
-            m_WorldspaceAnchorTransform = m_GazeTransform.parent;
-        }
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
 
-        void Update()
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
+
+        public void OnBehaviorUpdate()
         {
             if (m_AdaptivePositionElements.Count > 0)
             {
@@ -36,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                     var repositionCoroutine = element.adaptiveElementRepositionCoroutine;
                     if (element.resetAdaptivePosition)
                     {
-                        this.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
+                        EditorMonoBehaviour.instance.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
                         element.adaptiveElementRepositionCoroutine = repositionCoroutine;
                         return;
                     }
@@ -77,7 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
                         if (moveElement)
                         {
-                            this.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
+                            EditorMonoBehaviour.instance.RestartCoroutine(ref repositionCoroutine, RepositionElement(element));
                             element.adaptiveElementRepositionCoroutine = repositionCoroutine;
                         }
                     }
@@ -117,7 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var adaptiveTransform = adaptiveElement.adaptiveTransform;
             var currentPosition = adaptiveTransform.position;
             var targetPosition = m_GazeTransform.position;
-            targetPosition = targetPosition + this.GetViewerScale() * m_GazeTransform.forward * adaptiveElement.adaptivePositionRestDistance;
+            targetPosition = targetPosition + this.GetViewerScale() * adaptiveElement.adaptivePositionRestDistance * m_GazeTransform.forward;
             if (!adaptiveElement.resetAdaptivePosition)
             {
                 this.Pulse(Node.None, m_MovingPulse);
@@ -140,6 +150,44 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             adaptiveElement.adaptiveElementRepositionCoroutine = null;
             adaptiveElement.beingMoved = false;
             adaptiveElement.resetAdaptivePosition = false;
+        }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var adaptsPosition = target as IAdaptPosition;
+            if (adaptsPosition != null)
+                ControlObject(adaptsPosition);
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var adaptsPosition = target as IAdaptPosition;
+            if (adaptsPosition != null)
+                FreeObject(adaptsPosition);
+        }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
+
+        public void Initialize()
+        {
+            m_AdaptivePositionElements.Clear();
+            m_GazeTransform = CameraUtils.GetMainCamera().transform;
+            m_WorldspaceAnchorTransform = m_GazeTransform.parent;
+        }
+
+        public void Shutdown()
+        {
+            m_AdaptivePositionElements.Clear();
+            m_GazeTransform = null;
+            m_WorldspaceAnchorTransform = null;
         }
     }
 }

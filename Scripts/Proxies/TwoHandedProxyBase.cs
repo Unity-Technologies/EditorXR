@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Input;
+using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
@@ -57,6 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         bool m_Hidden;
         ProxyNode m_LeftProxyNode;
         ProxyNode m_RightProxyNode;
+        bool m_FakeActive;
 
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
@@ -65,12 +67,31 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-        public bool active { get { return m_InputToEvents.active; } }
+        public bool active
+        {
+            get
+            {
+                if (m_FakeActive)
+                    return true;
+
+                return m_InputToEvents.active;
+            }
+        }
+
+        event Action fakeActiveChanged;
 
         public event Action activeChanged
         {
-            add { m_InputToEvents.activeChanged += value; }
-            remove { m_InputToEvents.activeChanged -= value; }
+            add
+            {
+                fakeActiveChanged += value;
+                m_InputToEvents.activeChanged += value;
+            }
+            remove
+            {
+                fakeActiveChanged -= value;
+                m_InputToEvents.activeChanged -= value;
+            }
         }
 
         public virtual bool hidden
@@ -90,6 +111,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public Dictionary<Transform, Transform> alternateMenuOrigins { get; set; }
         public Dictionary<Transform, Transform> previewOrigins { get; set; }
         public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
+
+        public void FakeActivate()
+        {
+            m_FakeActive = true;
+            fakeActiveChanged();
+        }
 
         protected virtual void Awake()
         {

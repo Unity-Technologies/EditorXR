@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -12,8 +13,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
     [CreateAssetMenu(menuName = "EditorXR/Editing Context")]
     class EditorXRContext : ScriptableObject, IEditingContext
     {
-        static EditorVR s_Instance; // Used only by PreferencesGUI
-
 #pragma warning disable 649
         [SerializeField]
         float m_RenderScale = 1f;
@@ -59,6 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #pragma warning restore 649
 
         EditorVR m_Instance;
+        Transform m_CameraRig;
 
         public bool copyMainCameraSettings { get { return m_CopyMainCameraSettings; } }
 
@@ -83,14 +83,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (m_HiddenTypeNames != null)
                 EditorVR.HiddenTypes = m_HiddenTypeNames.Select(GetTypeSafe).ToArray();
 
-            s_Instance = m_Instance = EditorXRUtils.CreateGameObjectWithComponent<EditorVR>();
-
             if (Application.isPlaying)
             {
                 var camera = CameraUtils.GetMainCamera();
-                var cameraRig = m_Instance.transform;
-                VRView.CreateCameraRig(ref camera, ref cameraRig);
+                VRView.CreateCameraRig(ref camera, out m_CameraRig);
             }
+
+            m_Instance = ModuleLoaderCore.instance.GetModule<EditorVR>();
+            if (m_Instance == null)
+            {
+                Debug.LogWarning("EditorVR Module not loaded");
+                return;
+            }
+
+            m_Instance.Initialize();
 
             XRSettings.eyeTextureResolutionScale = m_RenderScale;
         }
@@ -105,11 +111,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Dispose()
         {
-            m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
-            if (m_Instance)
-                UnityObjectUtils.Destroy(m_Instance.gameObject);
+            if (m_Instance == null)
+                return;
 
-            s_Instance = m_Instance = null;
+            if (m_CameraRig && Application.isPlaying)
+                UnityObjectUtils.Destroy(m_CameraRig.gameObject);
+
+            m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
+            m_Instance = null;
         }
 
 #if UNITY_EDITOR
@@ -138,14 +147,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorGUILayout.BeginVertical();
 
             // Show EditorXR GameObjects
+            using (var changed = new EditorGUI.ChangeCheckScope())
             {
                 const string title = "Show EditorXR GameObjects";
                 const string tooltip = "Normally, EditorXR GameObjects are hidden in the Hierarchy. Would you like to show them?";
 
-                EditorGUI.BeginChangeCheck();
-                EditorVR.showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), EditorVR.showGameObjects);
-                if (EditorGUI.EndChangeCheck() && s_Instance)
-                    s_Instance.SetHideFlags(EditorVR.defaultHideFlags);
+                var debugSettings = ModuleLoaderDebugSettings.instance;
+                var hideFlags = debugSettings.moduleHideFlags;
+                var showGameObjects = (hideFlags & HideFlags.HideInHierarchy) == 0;
+                showGameObjects = EditorGUILayout.Toggle(new GUIContent(title, tooltip), showGameObjects);
+                if (changed.changed)
+                    debugSettings.SetModuleHideFlags(showGameObjects ? hideFlags & ~HideFlags.HideInHierarchy : hideFlags | HideFlags.HideInHierarchy);
             }
 
             // Preserve Layout

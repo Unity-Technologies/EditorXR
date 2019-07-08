@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 73ebc22694df10149af30292fe05c1be
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_PlayerModelPrefab: {fileID: 1000013280737546, guid: 3dbbb2baa83f3994e94fe56a60c73252,
+      type: 3}
+  - m_PlayerFloorPrefab: {fileID: 1888626590568660, guid: b904665d3c595934b8950ea7c2a51972,
+      type: 3}
+  - m_PreviewCameraPrefab: {fileID: 1000010893495554, guid: 66d2f6b9efc6b7842bea782607a65bd2,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

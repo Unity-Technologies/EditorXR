@@ -57,6 +57,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var camVector = Quaternion.Inverse(parentTransform.rotation) * camToParent;
             camVector.x = 0;
 
+            if (camVector == Vector3.zero)
+                return Quaternion.identity;
+
             return Quaternion.LookRotation(camVector,
                 Vector3.Dot(camVector, Vector3.forward) > 0 ? Vector3.up : Vector3.down);
         }

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -7,7 +9,9 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class IntersectionModule : MonoBehaviour, ISystemModule, IUsesGameObjectLocking, IGetVRPlayerObjects
+    sealed class IntersectionModule : ScriptableSettings<IntersectionModule>, IDelayedInitializationModule,
+        IModuleBehaviorCallbacks, IModuleDependency<SpatialHashModule>, IUsesGameObjectLocking,
+        IGetVRPlayerObjects, IInterfaceConnector
     {
         class RayIntersection
         {
@@ -44,6 +48,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public int intersectedObjectCount { get { return m_IntersectedObjects.Count; } }
         public List<GameObject> standardIgnoreList { get { return m_StandardIgnoreList; } }
 
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
+
+        SpatialHashModule m_SpatialHashModule;
+
         // Local method use only -- created here to reduce garbage collection
         readonly List<Renderer> m_Intersections = new List<Renderer>();
         readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
@@ -54,19 +64,50 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float distance;
         }
 
-        void Awake()
+        public void ConnectDependency(SpatialHashModule dependency)
+        {
+            m_SpatialHashModule = dependency;
+        }
+
+        public void LoadModule()
         {
             IntersectionUtils.BakedMesh = new Mesh(); // Create a new Mesh in each Awake because it is destroyed on scene load
             IControlInputIntersectionMethods.setRayOriginEnabled = SetRayOriginEnabled;
+
+            IRaycastMethods.raycast = Raycast;
+            ICheckBoundsMethods.checkBounds = CheckBounds;
+            ICheckSphereMethods.checkSphere = CheckSphere;
+            IContainsVRPlayerCompletelyMethods.containsVRPlayerCompletely = ContainsVRPlayerCompletely;
         }
 
-        internal void Setup(SpatialHash<Renderer> hash)
+        public void UnloadModule() { }
+
+        public void Initialize()
         {
-            m_SpatialHash = hash;
-            m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(transform);
+            var moduleParent = ModuleLoaderCore.instance.GetModuleParent();
+            m_CollisionTester = EditorXRUtils.CreateGameObjectWithComponent<MeshCollider>(moduleParent.transform);
+
+            m_SpatialHash = m_SpatialHashModule.spatialHash;
+            m_IntersectedObjects.Clear();
+            m_Testers.Clear();
+            m_RaycastGameObjects.Clear();
+            m_RayoriginEnabled.Clear();
+            m_StandardIgnoreList.Clear();
         }
 
-        void Update()
+        public void Shutdown()
+        {
+            if (m_CollisionTester)
+                UnityObjectUtils.Destroy(m_CollisionTester.gameObject);
+        }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
         {
             if (m_SpatialHash == null)
                 return;
@@ -168,6 +209,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
         }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
 
         internal void AddTester(IntersectionTester tester)
         {
@@ -320,5 +365,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             playerBounds.extents += m_PlayerBoundsMargin;
             return objectBounds.ContainsCompletely(playerBounds);
         }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var standardIgnoreList = target as IStandardIgnoreList;
+            if (standardIgnoreList != null)
+            {
+                standardIgnoreList.ignoreList = this.standardIgnoreList;
+            }
+        }
+
+        public void DisconnectInterface(object target, object userData = null) { }
     }
 }

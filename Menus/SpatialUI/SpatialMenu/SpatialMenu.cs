@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Menus;
@@ -227,6 +228,9 @@ namespace UnityEditor.Experimental.EditorVR
         {
             // Reset the applicable selection gizmo (SceneView) states
             sceneViewGizmosVisible = true;
+
+            if (s_SpatialMenuUI)
+                UnityObjectUtils.Destroy(s_SpatialMenuUI.gameObject);
         }
 #endif
 
@@ -234,7 +238,12 @@ namespace UnityEditor.Experimental.EditorVR
         {
             if (s_SpatialMenuUI == null)
             {
-                s_SpatialMenuUI = this.InstantiateUI(m_SpatialMenuUiPrefab.gameObject, CameraUtils.GetCameraRig(), rayOrigin: rayOrigin).GetComponent<SpatialMenuUI>();
+                var parent = CameraUtils.GetCameraRig();
+                s_SpatialMenuUI = this.InstantiateUI(m_SpatialMenuUiPrefab.gameObject, parent, rayOrigin: rayOrigin).GetComponent<SpatialMenuUI>();
+
+                // HACK: For some reason, the spatial menu ends up outside of the VRCameraRig in play mode
+                s_SpatialMenuUI.transform.parent = parent;
+
                 s_SpatialMenuUI.spatialMenuData = k_SpatialMenuData; // set shared reference to menu name/type, elements, and highlighted state
                 s_SpatialMenuUI.Setup();
                 s_SpatialMenuUI.returnToPreviousMenuLevel = ReturnToPreviousMenuLevel;

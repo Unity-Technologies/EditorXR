@@ -34,6 +34,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 if (defaultScriptReferences.m_TypePrefabs.TryGetValue(type, out prefab))
                 {
                     var go = Instantiate(prefab);
+                    go.SetHideFlagsRecursively(EditorXRUtils.hideFlags);
                     return (MonoBehaviour)go.GetComponent(type);
                 }
             }
@@ -71,6 +72,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             var defaultScriptReferences = CreateInstance<DefaultScriptReferences>();
 
             var prefabsRoot = new GameObject(Path.GetFileNameWithoutExtension(k_Path));
+            prefabsRoot.SetActive(false);
             Action<ICollection> create = types =>
             {
                 foreach (Type t in types)
@@ -81,7 +83,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                     if (t.GetCustomAttributes(true).OfType<EditorOnlyWorkspaceAttribute>().Any())
                         continue;
 
-                    var mb = (MonoBehaviour)EditorXRUtils.CreateGameObjectWithComponent(t, runInEditMode: false);
+                    var mb = (MonoBehaviour)EditorXRUtils.CreateGameObjectWithComponent(t, prefabsRoot.transform, runInEditMode: false);
                     if (mb)
                     {
                         mb.gameObject.hideFlags = HideFlags.None;
@@ -92,10 +94,8 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             };
 
             var defaultReferenceTypes = new List<Type>();
-            typeof(IEditor).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(IProxy).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(ITool).GetImplementationsOfInterface(defaultReferenceTypes);
-            typeof(ISystemModule).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(IMainMenu).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(IToolsMenu).GetImplementationsOfInterface(defaultReferenceTypes);
             typeof(IAlternateMenu).GetImplementationsOfInterface(defaultReferenceTypes);

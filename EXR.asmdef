@@ -9,7 +9,9 @@
         "PolyToolkit",
         "Unity.Labs.Utils",
         "Unity.Labs.Utils.Editor",
-        "Unity.Labs.ListViewFramework"
+        "Unity.Labs.ListViewFramework",
+        "Unity.Labs.ModuleLoader.Interfaces",
+        "Unity.Labs.ModuleLoader"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],

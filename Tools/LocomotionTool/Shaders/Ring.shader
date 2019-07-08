@@ -83,7 +83,7 @@ Shader "Ring"
 				TRANSFER_SHADOW_CASTER_NORMALOFFSET( o )
 				return o;
 			}
-			fixed4 frag( v2f IN ) : SV_Target
+			fixed4 frag( v2f IN) : SV_Target
 			{
 				UNITY_SETUP_INSTANCE_ID( IN );
 				Input surfIN;

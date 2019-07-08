@@ -6,11 +6,8 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SerializedPreferencesModule : MonoBehaviour, ISystemModule
+    sealed class SerializedPreferencesModule : IDelayedInitializationModule, IInterfaceConnector
     {
-        List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
-        SerializedPreferences m_Preferences;
-
         [Serializable]
         internal class SerializedPreferences : ISerializationCallbackReceiver
         {
@@ -77,6 +74,36 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
+        public const string SerializedPreferencesKey = "EditorVR.SerializedPreferences";
+
+        readonly List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
+        SerializedPreferences m_Preferences;
+        bool m_HasDeserialized;
+
+        internal static string serializedPreferences
+        {
+            get { return EditorPrefs.GetString(SerializedPreferencesKey, string.Empty); }
+            set { EditorPrefs.SetString(SerializedPreferencesKey, value); }
+        }
+
+        public int initializationOrder { get { return -1; } }
+        public int shutdownOrder { get { return 1; } }
+        public int connectInterfaceOrder { get { return 1; } }
+
+        public void Initialize()
+        {
+            m_Preferences = DeserializePreferences(m_Serializers);
+            m_HasDeserialized = true;
+        }
+
+        public void Shutdown()
+        {
+            if (m_HasDeserialized)
+                serializedPreferences = SerializePreferences();
+
+            m_HasDeserialized = false;
+        }
+
         public void AddSerializer(ISerializePreferences serializer)
         {
             if (m_Preferences != null)
@@ -92,12 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_Serializers.Remove(serializer);
         }
 
-        internal void SetupWithPreferences(string serializedPreferences)
-        {
-            m_Preferences = DeserializePreferences(serializedPreferences, m_Serializers);
-        }
-
-        internal static SerializedPreferences DeserializePreferences(string serializedPreferences, List<ISerializePreferences> serializers = null)
+        internal static SerializedPreferences DeserializePreferences(List<ISerializePreferences> serializers = null)
         {
             var preferences = JsonUtility.FromJson<SerializedPreferences>(serializedPreferences);
             if (preferences != null && serializers != null)
@@ -153,6 +175,24 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 var payload = JsonUtility.FromJson(item.payload, type);
                 serializer.OnDeserializePreferences(payload);
             }
+        }
+
+        public void LoadModule() { }
+
+        public void UnloadModule() { }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var serializePreferences = target as ISerializePreferences;
+            if (serializePreferences != null)
+                AddSerializer(serializePreferences);
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var serializePreferences = target as ISerializePreferences;
+            if (serializePreferences != null)
+                RemoveSerializer(serializePreferences);
         }
     }
 }

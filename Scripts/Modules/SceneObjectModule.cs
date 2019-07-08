@@ -1,22 +1,26 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
+using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class SceneObjectModule : MonoBehaviour, ISystemModule, IUsesSpatialHash
+    sealed class SceneObjectModule : IModuleDependency<SpatialHashModule>, IModuleDependency<EditorXRMiniWorldModule>,
+        IUsesSpatialHash
     {
         const float k_InstantiateFOVDifference = -5f;
         const float k_GrowDuration = 0.5f;
 
-        public Func<Transform, Vector3, bool> tryPlaceObject;
+        SpatialHashModule m_SpatialHashModule;
+        EditorXRMiniWorldModule m_MiniWorldModule;
 
-        public void PlaceSceneObject(Transform obj, Vector3 targetScale)
+        void PlaceSceneObject(Transform obj, Vector3 targetScale)
         {
-            if (tryPlaceObject == null || !tryPlaceObject(obj, targetScale))
-                StartCoroutine(PlaceSceneObjectCoroutine(obj, targetScale));
+            if (!TryPlaceObjectInMiniWorld(obj, targetScale))
+                EditorMonoBehaviour.instance.StartCoroutine(PlaceSceneObjectCoroutine(obj, targetScale));
         }
 
         public void DeleteSceneObject(GameObject sceneObject)
@@ -28,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         IEnumerator PlaceSceneObjectCoroutine(Transform obj, Vector3 targetScale)
         {
             var go = obj.gameObject;
+
             // Don't let us direct select while placing
             this.RemoveFromSpatialHash(go);
 
@@ -79,6 +84,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 obj.rotation = Quaternion.Lerp(startRotation, targetRotation, tSquared);
                 yield return null;
             }
+
             obj.localScale = targetScale;
             Selection.activeGameObject = go;
 
@@ -88,9 +94,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 #endif
         }
 
-        public void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
+        void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
         {
-            StartCoroutine(PlaceSceneObjectsCoroutine(transforms, targetPositionOffsets, targetRotations, targetScales));
+            EditorMonoBehaviour.instance.StartCoroutine(PlaceSceneObjectsCoroutine(transforms, targetPositionOffsets, targetRotations, targetScales));
         }
 
         IEnumerator PlaceSceneObjectsCoroutine(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
@@ -121,6 +127,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 transform.rotation = targetRotations[i];
                 transform.localScale = targetScales[i];
             }
+
             pivot /= length;
 
             var bounds = BoundsUtils.GetBounds(transforms);
@@ -182,5 +189,44 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             Undo.IncrementCurrentGroup();
 #endif
         }
+
+        public void ConnectDependency(SpatialHashModule dependency)
+        {
+            m_SpatialHashModule = dependency;
+        }
+
+        public void ConnectDependency(EditorXRMiniWorldModule dependency)
+        {
+            m_MiniWorldModule = dependency;
+        }
+
+        public void LoadModule()
+        {
+            IDeleteSceneObjectMethods.deleteSceneObject = DeleteSceneObject;
+            IPlaceSceneObjectMethods.placeSceneObject = PlaceSceneObject;
+            IPlaceSceneObjectsMethods.placeSceneObjects = PlaceSceneObjects;
+        }
+
+        bool TryPlaceObjectInMiniWorld(Transform obj, Vector3 targetScale)
+        {
+            foreach (var miniWorld in m_MiniWorldModule.worlds)
+            {
+                if (!miniWorld.Contains(obj.position))
+                    continue;
+
+                var referenceTransform = miniWorld.referenceTransform;
+                obj.transform.parent = null;
+                obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
+                obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
+                obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale.Inverse());
+
+                m_SpatialHashModule.AddObject(obj.gameObject);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void UnloadModule() { }
     }
 }

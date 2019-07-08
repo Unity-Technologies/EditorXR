@@ -48,10 +48,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         ActionMap m_ActionMap;
 
         [SerializeField]
-        GameObject m_BlockSelectCube;
+        GameObject m_BlockSelectCubePrefab;
 
         [SerializeField]
-        GameObject m_BlockSelectSphere;
+        GameObject m_BlockSelectSpherePrefab;
 
         [SerializeField]
         GameObject m_SettingsMenuItemPrefab;
@@ -79,6 +79,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Toggle m_CubeToggle;
         Toggle m_SphereToggle;
         bool m_BlockValueChangedListener;
+
+        GameObject m_BlockSelectCube;
+        GameObject m_BlockSelectSphere;
 
         readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
 
@@ -110,6 +113,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             set
             {
+                if (value == null)
+                    return;
+
                 var defaultToggleGroup = value.GetComponentInChildren<DefaultToggleGroup>();
                 foreach (var toggle in value.GetComponentsInChildren<Toggle>())
                 {
@@ -171,11 +177,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             tooltipTarget.localPosition = this.GetDeviceType() == DeviceType.Oculus ? k_TouchTooltipPosition : k_ViveTooltipPosition;
             tooltipTarget.localRotation = k_TooltipRotation;
 
-            m_BlockSelectCube = GameObjectUtils.Instantiate(m_BlockSelectCube, transform);
+            m_BlockSelectCube = EditorXRUtils.Instantiate(m_BlockSelectCubePrefab, transform);
             m_BlockSelectCube.SetActive(false);
             m_BlockSelectCubeRenderer = m_BlockSelectCube.GetComponent<Renderer>();
 
-            m_BlockSelectSphere = GameObjectUtils.Instantiate(m_BlockSelectSphere, transform);
+            m_BlockSelectSphere = EditorXRUtils.Instantiate(m_BlockSelectSpherePrefab, transform);
             m_BlockSelectSphere.SetActive(false);
 
             InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);
@@ -184,6 +190,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         void OnDestroy()
         {
             UnityObjectUtils.Destroy(m_BlockSelectCube);
+            UnityObjectUtils.Destroy(m_BlockSelectSphere);
             this.ClearFeedbackRequests();
         }
 
@@ -525,6 +532,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 this.SetHighlight(kvp.Value, false, kvp.Key);
             }
+
             m_HoverGameObjects.Clear();
         }
 
@@ -559,13 +567,23 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     ((SelectionTool)linkedObject).m_Preferences = m_Preferences;
                 }
-
-                if (m_SphereToggle)
-                    m_SphereToggle.isOn = m_Preferences.sphereMode;
-
-                if (m_CubeToggle)
-                    m_CubeToggle.isOn = !m_Preferences.sphereMode;
             }
+            else
+            {
+                // Share one preferences object across all instances
+                foreach (var linkedObject in linkedObjects)
+                {
+                    var preferences = ((SelectionTool)linkedObject).m_Preferences;
+                    if (preferences != null)
+                        m_Preferences = preferences;
+                }
+            }
+
+            if (m_SphereToggle)
+                m_SphereToggle.isOn = m_Preferences.sphereMode;
+
+            if (m_CubeToggle)
+                m_CubeToggle.isOn = !m_Preferences.sphereMode;
         }
 
         void ShowFeedback(List<ProxyFeedbackRequest> requests, string controlName, string tooltipText = null)

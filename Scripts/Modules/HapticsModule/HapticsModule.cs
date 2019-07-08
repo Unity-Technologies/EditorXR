@@ -1,13 +1,15 @@
 ﻿#if UNITY_2018_3_OR_NEWER
 using System;
 using System.IO;
+using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class HapticsModule : MonoBehaviour, ISystemModule
+    sealed class HapticsModule : ScriptableSettings<HapticsModule>, IModule
     {
         public const float MaxDuration = 0.8f;
 
@@ -24,20 +26,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         InputDevice m_LeftHand;
         InputDevice m_RightHand;
         MemoryStream m_GeneratedHapticClip;
-        HapticCapabilities m_Capabilites;
+        HapticCapabilities m_Capabilities;
 
         /// <summary>
         /// Allow for a single warning that informs the user of an attempted pulse with a length greater than 0.8f
         /// </summary>
         bool m_SampleLengthWarningShown;
 
-        void Start()
+        public void LoadModule()
         {
             m_LeftHand = InputDevices.GetDeviceAtXRNode(XRNode.LeftHand);
             m_RightHand = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
-            m_LeftHand.TryGetHapticCapabilities(out m_Capabilites);
+            m_LeftHand.TryGetHapticCapabilities(out m_Capabilities);
             m_GeneratedHapticClip = new MemoryStream();
+
+            IControlHapticsMethods.pulse = Pulse;
+            IControlHapticsMethods.stopPulses = StopPulses;
         }
+
+        public void UnloadModule() { }
 
         /// <summary>
         /// Pulse haptic feedback
@@ -102,7 +109,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (node == Node.None)
                 {
                     StopPulses();
-                    if (m_Capabilites.supportsBuffer)
+                    if (m_Capabilities.supportsBuffer)
                     {
                         m_LeftHand.SendHapticBuffer(0, buffer);
                         m_RightHand.SendHapticBuffer(0, buffer);
@@ -116,7 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 else
                 {
                     StopPulses(node);
-                    if (m_Capabilites.supportsBuffer)
+                    if (m_Capabilities.supportsBuffer)
                         channel.SendHapticBuffer(0, buffer);
                     else
                         channel.SendHapticImpulse(0, intensity, duration);

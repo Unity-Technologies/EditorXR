@@ -1,18 +1,17 @@
 fileFormatVersion: 2
 guid: aab8fcc587f237c4cb48fb7bc8a59909
-timeCreated: 1506111717
-licenseType: Pro
 MonoImporter:
+  externalObjects: {}
   serializedVersion: 2
   defaultReferences:
   - m_Icon: {fileID: 21300000, guid: 6226464a462df6949a63407a4aed1753, type: 3}
   - m_ActionMap: {fileID: 11400000, guid: 9bdc23bc93bcec343934b99348f0ecf4, type: 2}
-  - m_BlockSelectCube: {fileID: 1345258128224670, guid: e360a4c31cf4bf54fa01f9fa5b916ec6,
-      type: 2}
-  - m_BlockSelectSphere: {fileID: 1345258128224670, guid: 0a44b0b9284b6e6419902d672bb94ec6,
-      type: 2}
+  - m_BlockSelectCubePrefab: {fileID: 1345258128224670, guid: e360a4c31cf4bf54fa01f9fa5b916ec6,
+      type: 3}
+  - m_BlockSelectSpherePrefab: {fileID: 1345258128224670, guid: 0a44b0b9284b6e6419902d672bb94ec6,
+      type: 3}
   - m_SettingsMenuItemPrefab: {fileID: 1000013404610172, guid: 3f593adfd4b4c6745a99c1a237ba6902,
-      type: 2}
+      type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

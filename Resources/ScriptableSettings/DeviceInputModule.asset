@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 315e7a64e803fad42bb68a030c571b48, type: 3}
+  m_Name: DeviceInputModule
+  m_EditorClassIdentifier: 
+  m_TrackedObjectActionMap: {fileID: 11400000, guid: fda722c992454454aa59f3760898d74a,
+    type: 2}
+  m_StandardToolActionMap: {fileID: 11400000, guid: f904ed06397c2fc4f81263e88804a0af,
+    type: 2}

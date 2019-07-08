@@ -1,11 +1,15 @@
-﻿using UnityEditor.Experimental.EditorVR.Core;
+﻿using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    public sealed class SpatialHintModule : MonoBehaviour, ISystemModule, IConnectInterfaces, IInstantiateUI,
-        INodeToRay, IRayVisibilitySettings
+    // TODO: Remove load order when switching to non-static FI
+    [ModuleOrder(ModuleOrders.SpatialHintModuleLoadOrder)]
+    public sealed class SpatialHintModule : ScriptableSettings<SpatialHintModule>, IConnectInterfaces, IInstantiateUI,
+        INodeToRay, IRayVisibilitySettings, IDelayedInitializationModule
     {
         public enum SpatialHintStateFlags
         {
@@ -15,7 +19,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             CenteredScrolling,
         }
 
+#pragma warning disable 649
         [SerializeField]
+        SpatialHintUI m_SpatialHintUIPrefab;
+#pragma warning restore 649
+
         SpatialHintUI m_SpatialHintUI;
 
         SpatialHintStateFlags m_State;
@@ -71,14 +79,43 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             }
         }
 
-        Vector3 spatialHintScrollVisualsRotation { set { m_SpatialHintUI.scrollVisualsRotation = value; } }
-
-        Transform spatialHintContentContainer { get { return m_SpatialHintUI.contentContainer; } }
-
-        void Awake()
+        Vector3 spatialHintScrollVisualsRotation
         {
-            m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
+            set { m_SpatialHintUI.scrollVisualsRotation = value; }
+        }
+
+        Transform spatialHintContentContainer
+        {
+            get { return m_SpatialHintUI.contentContainer; }
+        }
+
+        public int initializationOrder { get { return 0; } }
+        public int shutdownOrder { get { return 0; } }
+
+        public void LoadModule()
+        {
+            IControlSpatialHintingMethods.setSpatialHintState = SetState;
+            IControlSpatialHintingMethods.setSpatialHintPosition = SetPosition;
+            IControlSpatialHintingMethods.setSpatialHintContainerRotation = SetContainerRotation;
+            IControlSpatialHintingMethods.setSpatialHintShowHideRotationTarget = SetShowHideRotationTarget;
+            IControlSpatialHintingMethods.setSpatialHintLookAtRotation = LookAt;
+            IControlSpatialHintingMethods.setSpatialHintDragThresholdTriggerPosition = SetDragThresholdTriggerPosition;
+            IControlSpatialHintingMethods.pulseSpatialHintScrollArrows = PulseScrollArrows;
+            IControlSpatialHintingMethods.setSpatialHintControlNode = SetSpatialHintControlNode;
+        }
+
+        public void UnloadModule() { }
+
+        public void Initialize()
+        {
+            m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUIPrefab.gameObject).GetComponent<SpatialHintUI>();
             this.ConnectInterfaces(m_SpatialHintUI);
+        }
+
+        public void Shutdown()
+        {
+            if (m_SpatialHintUI)
+                UnityObjectUtils.Destroy(m_SpatialHintUI.gameObject);
         }
 
         internal void PulseScrollArrows()

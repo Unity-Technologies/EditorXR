@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.XR;
+
+#if UNITY_2018_3
+using System.Text.RegularExpressions;
+#endif
 
 namespace UnityEditor.Experimental.EditorVR.Input
 {

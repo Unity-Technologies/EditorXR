@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.ModuleLoader;
+using Unity.Labs.Utils;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-    sealed class DeviceInputModule : MonoBehaviour, ISystemModule
+    [ModuleOrder(ModuleOrders.DeviceInputModuleOrder)]
+    [ModuleBehaviorCallbackOrder(ModuleOrders.DeviceInputModuleBehaviorOrder)]
+    sealed class DeviceInputModule : ScriptableSettings<DeviceInputModule>, IModuleDependency<Core.EditorVR>,
+        IModuleDependency<EditorXRToolModule>, IInterfaceConnector, IDelayedInitializationModule, IModuleBehaviorCallbacks
     {
         class InputProcessor
         {
@@ -42,6 +48,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public Action<List<ActionMapInput>> updatePlayerHandleMaps;
         public Func<Transform, InputDevice> inputDeviceForRayOrigin;
 
+        public int initializationOrder { get { return -1; } }
+        public int shutdownOrder { get { return 0; } }
+        public int connectInterfaceOrder { get { return 0; } }
+
         // Local method use only -- created here to reduce garbage collection
         readonly HashSet<IProcessInput> m_ProcessedInputs = new HashSet<IProcessInput>();
         readonly List<InputDevice> m_SystemDevices = new List<InputDevice>();
@@ -51,10 +61,41 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         static readonly List<InputControl> k_RemoveList = new List<InputControl>();
         ConsumeControlDelegate m_ConsumeControl;
 
-        void Awake()
+        // TODO: Make EditorVR an IProcessInput
+        public void ConnectDependency(Core.EditorVR dependency)
+        {
+            processInput = dependency.ProcessInput;
+        }
+
+        public void ConnectDependency(EditorXRToolModule dependency)
+        {
+            updatePlayerHandleMaps = dependency.UpdatePlayerHandleMaps;
+            inputDeviceForRayOrigin = rayOrigin =>
+                (from deviceData in dependency.deviceData
+                    where deviceData.rayOrigin == rayOrigin
+                    select deviceData.inputDevice).FirstOrDefault();
+        }
+
+        public void LoadModule()
         {
             m_ConsumeControl = ConsumeControl;
         }
+
+        public void Initialize()
+        {
+            m_InputProcessors.Clear();
+            InitializePlayerHandle();
+            CreateDefaultActionMapInputs();
+        }
+
+        public void Shutdown()
+        {
+            m_InputProcessors.Clear();
+            if (m_PlayerHandle != null)
+                PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
+        }
+
+        public void UnloadModule() { }
 
         public List<InputDevice> GetSystemDevices()
         {
@@ -71,22 +112,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             return m_SystemDevices;
         }
 
-        public void InitializePlayerHandle()
+        void InitializePlayerHandle()
         {
             m_PlayerHandle = PlayerHandleManager.GetNewPlayerHandle();
             m_PlayerHandle.global = true;
             m_PlayerHandle.processAll = true;
         }
 
-        void OnDestroy()
-        {
-            PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
-        }
-
-        /// <summary>
-        /// Called in the EditorVR Update() function
-        /// </summary>
-        public void ProcessInput()
+        void ProcessInput()
         {
             k_RemoveList.Clear();
 
@@ -123,7 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 processInput(m_ProcessedInputs, m_ConsumeControl);
         }
 
-        public void CreateDefaultActionMapInputs()
+        void CreateDefaultActionMapInputs()
         {
             trackedObjectInput = (TrackedObject)CreateActionMapInput(m_TrackedObjectActionMap, null);
         }
@@ -341,5 +374,38 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 }
             }
         }
+
+        public void ConnectInterface(object target, object userData = null)
+        {
+            var trackedObjectMap = target as ITrackedObjectActionMap;
+            if (trackedObjectMap != null)
+                trackedObjectMap.trackedObjectInput = trackedObjectInput;
+
+            var processInput = target as IProcessInput;
+            if (processInput != null && !(target is ITool)) // Tools have their input processed separately
+                AddInputProcessor(processInput, userData);
+        }
+
+        public void DisconnectInterface(object target, object userData = null)
+        {
+            var processInput = target as IProcessInput;
+            if (processInput != null)
+                RemoveInputProcessor(processInput);
+        }
+
+        public void OnBehaviorAwake() { }
+
+        public void OnBehaviorEnable() { }
+
+        public void OnBehaviorStart() { }
+
+        public void OnBehaviorUpdate()
+        {
+            ProcessInput();
+        }
+
+        public void OnBehaviorDisable() { }
+
+        public void OnBehaviorDestroy() { }
     }
 }

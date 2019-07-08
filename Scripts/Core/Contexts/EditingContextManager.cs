@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Unity.Labs.ModuleLoader;
 using Unity.Labs.Utils;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -109,7 +110,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             Resources.UnloadUnusedAssets();
             InitializeInputManager();
             if (!Application.isPlaying)
+            {
                 instance = EditorXRUtils.CreateGameObjectWithComponent<EditingContextManager>();
+                instance.transform.SetParent(ModuleLoaderCore.instance.GetModuleParent().transform);
+            }
         }
 
         static void OnVRViewDisabled()
@@ -302,6 +306,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnEnable()
         {
+            ModuleLoaderCore.instance.OnBehaviorEnable();
+
             ISetEditingContextMethods.getAvailableEditingContexts = GetAvailableEditingContexts;
             ISetEditingContextMethods.getPreviousEditingContexts = GetPreviousEditingContexts;
             ISetEditingContextMethods.setEditingContext = SetEditingContext;
@@ -323,6 +329,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnDisable()
         {
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            moduleLoaderCore.OnBehaviorDisable();
+
             if (Application.isPlaying)
             {
                 OnVRViewDisabled();
@@ -354,6 +363,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
             ISetEditingContextMethods.restorePreviousEditingContext = null;
 
             SaveUserSettings(settings);
+
+#if UNITY_EDITOR
+            if (!Application.isPlaying)
+            {
+                foreach (var module in moduleLoaderCore.modules)
+                {
+                    var behavior = module as MonoBehaviour;
+                    if (behavior != null)
+                        behavior.StopRunInEditMode();
+                }
+            }
+#endif
         }
 
         void Awake()
@@ -371,12 +392,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 VRView.afterOnGUI += OnVRViewGUI;
 #endif
 
+            EditorXRUtils.hideFlags = ModuleLoaderDebugSettings.instance.moduleHideFlags;
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            if (Application.isPlaying)
+                moduleLoaderCore.ReloadModules();
+
+            moduleLoaderCore.OnBehaviorAwake();
+
             if (Application.isPlaying)
             {
                 OnVRViewEnabled();
                 instance = this;
                 SetEditingContext((IEditingContext)m_DefaultContext);
             }
+#if UNITY_EDITOR
+            else
+            {
+                foreach (var module in moduleLoaderCore.modules)
+                {
+                    var behavior = module as MonoBehaviour;
+                    if (behavior != null)
+                        behavior.StartRunInEditMode();
+                }
+            }
+#endif
         }
 
 #if UNITY_EDITOR
@@ -547,12 +586,27 @@ namespace UnityEditor.Experimental.EditorVR.Core
             s_InputManager = managers[0];
             var go = s_InputManager.gameObject;
             go.SetRunInEditModeRecursively(true);
+            go.transform.SetParent(ModuleLoaderCore.instance.GetModuleParent().transform);
 
             // These components were allocating memory every frame and aren't currently used in EditorVR
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<JoystickInputToEvents>());
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<MouseInputToEvents>());
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<KeyboardInputToEvents>());
             UnityObjectUtils.Destroy(s_InputManager.GetComponent<TouchInputToEvents>());
+        }
+
+        void Update()
+        {
+            ModuleLoaderCore.instance.OnBehaviorUpdate();
+        }
+
+        void OnDestroy()
+        {
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            moduleLoaderCore.OnBehaviorDestroy();
+
+            if (Application.isPlaying)
+                moduleLoaderCore.UnloadModules();
         }
     }
 }

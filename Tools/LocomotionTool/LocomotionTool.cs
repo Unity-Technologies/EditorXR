@@ -183,14 +183,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void Start()
         {
-            if (this.IsSharedUpdater(this) && m_Preferences == null)
+            if (this.IsSharedUpdater(this))
             {
-                m_Preferences = new Preferences();
-
-                // Share one preferences object across all instances
-                foreach (var linkedObject in linkedObjects)
+                if (m_Preferences == null)
                 {
-                    ((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
+                    m_Preferences = new Preferences();
+
+                    // Share one preferences object across all instances
+                    foreach (var linkedObject in linkedObjects)
+                    {
+                        ((LocomotionTool)linkedObject).m_Preferences = m_Preferences;
+                    }
                 }
 
                 var instance = EditorXRUtils.Instantiate(m_RingPrefab, cameraRig, false);
@@ -219,6 +222,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             var cameraTransform = CameraUtils.GetMainCamera().transform;
             var cameraYaw = cameraTransform.localRotation.ConstrainYaw();
+            if (!m_Ring)
+                return;
+
             var ringTransform = m_Ring.transform;
             ringTransform.localPosition = cameraTransform.localPosition + cameraYaw * k_RingOffset;
             ringTransform.localRotation = cameraYaw;
@@ -822,7 +828,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             foreach (var linkedObject in linkedObjects)
             {
                 var locomotionTool = (LocomotionTool)linkedObject;
-
                 if (!locomotionTool.m_Crawling && !locomotionTool.m_BlinkVisuals.gameObject.activeInHierarchy)
                 {
                     var rayOrigin = locomotionTool.rayOrigin;
@@ -999,14 +1004,27 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     locomotionTool.ShowCrawlFeedback();
                     locomotionTool.ShowMainButtonFeedback();
                 }
-
-                //Setting toggles on this tool's menu will set them on other tool menus
-                if (m_BlinkToggle)
-                    m_BlinkToggle.isOn = m_Preferences.blinkMode;
-
-                if (m_FlyToggle)
-                    m_FlyToggle.isOn = !m_Preferences.blinkMode;
             }
+            else
+            {
+                // Share one preferences object across all instances
+                foreach (var linkedObject in linkedObjects)
+                {
+                    var locomotionTool = (LocomotionTool)linkedObject;
+                    var preferences = locomotionTool.m_Preferences;
+                    if (preferences != null)
+                        m_Preferences = preferences;
+                }
+
+                ShowCrawlFeedback();
+                ShowMainButtonFeedback();
+            }
+
+            if (m_BlinkToggle)
+                m_BlinkToggle.isOn = m_Preferences.blinkMode;
+
+            if (m_FlyToggle)
+                m_FlyToggle.isOn = !m_Preferences.blinkMode;
         }
     }
 }
