@@ -5,7 +5,8 @@
         "Unity.TextMeshPro",
         "Unity.Labs.Utils",
         "Unity.Labs.EditorXR.Interfaces",
-        "Unity.Labs.ModuleLoader.Interfaces"
+        "Unity.Labs.ModuleLoader.Interfaces",
+        "Unity.Labs.ModuleLoader"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [

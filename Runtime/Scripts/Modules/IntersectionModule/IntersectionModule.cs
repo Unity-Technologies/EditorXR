@@ -397,6 +397,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             var checkSphereSubscriber = obj as IFunctionalitySubscriber<IProvidesCheckSphere>;
             if (checkSphereSubscriber != null)
                 checkSphereSubscriber.provider = this;
+
+            var checkBoundsSubscriber = obj as IFunctionalitySubscriber<IProvidesCheckBounds>;
+            if (checkBoundsSubscriber != null)
+                checkBoundsSubscriber.provider = this;
 #endif
         }
 

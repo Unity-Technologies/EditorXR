@@ -55,6 +55,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRDirectSelectionModule m_DirectSelectionModule;
         EditorXRMenuModule m_MenuModule;
         EditorXRToolModule m_ToolModule;
+        SerializedPreferencesModule m_SerializedPreferences;
 
         Transform m_ModuleParent;
 
@@ -106,6 +107,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             m_MenuModule = moduleLoaderCore.GetModule<EditorXRMenuModule>();
             m_MiniWorldModule = moduleLoaderCore.GetModule<EditorXRMiniWorldModule>();
             m_DirectSelectionModule = moduleLoaderCore.GetModule<EditorXRDirectSelectionModule>();
+            m_SerializedPreferences = moduleLoaderCore.GetModule<SerializedPreferencesModule>();
             m_IntersectionModule = moduleLoaderCore.GetModule<IntersectionModule>();
             if (m_IntersectionModule != null)
                 ignoreList = m_IntersectionModule.standardIgnoreList;
@@ -351,6 +353,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     if (m_ToolModule != null)
                         m_ToolModule.SpawnDefaultTools(proxy);
+
+                    if (m_SerializedPreferences != null)
+                        m_SerializedPreferences.DeserializePreferences();
 
                     if (m_WorkspaceModule != null)
                         m_WorkspaceModule.CreateSerializedWorkspaces();
