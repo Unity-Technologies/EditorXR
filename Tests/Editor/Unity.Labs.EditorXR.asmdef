@@ -1,7 +1,7 @@
 {
-    "name": "EXR-Tests-Editor",
+    "name": "Unity.Labs.EditorXR.EditorTests",
     "references": [
-        "EXR",
+        "Unity.Labs.EditorXR",
         "Unity.Labs.Utils",
         "Unity.Labs.Utils.Editor"
     ],

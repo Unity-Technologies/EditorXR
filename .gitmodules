@@ -1,10 +1,10 @@
-[submodule "libs/input-prototype"]
-	path = libs/input-prototype
+[submodule "Runtime/libs/input-prototype"]
+	path = Runtime/libs/input-prototype
 	url=https://github.com/Unity-Technologies/input-prototype.git
 	branch = editorvr/main
-[submodule "libs/UnityOctree"]
-	path = libs/UnityOctree
+[submodule "Runtime/libs/UnityOctree"]
+	path = Runtime/libs/UnityOctree
 	url=https://github.com/Unity-Technologies/UnityOctree.git
-[submodule "libs/VRLineRenderer"]
-	path = libs/VRLineRenderer
+[submodule "Runtime/libs/VRLineRenderer"]
+	path = Runtime/libs/VRLineRenderer
 	url = https://github.com/Unity-Technologies/VRLineRenderer

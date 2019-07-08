@@ -40,10 +40,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         public bool initialized { get { return m_Initialized; } }
         public long complexity { get { return m_Complexity; } }
 
+#if INCLUDE_POLY_TOOLKIT
         public event Action<PolyGridAsset, GameObject> modelImportCompleted;
         public event Action<PolyGridAsset, Texture2D> thumbnailImportCompleted;
 
-#if INCLUDE_POLY_TOOLKIT
         static PolyGridAsset()
         {
             s_Options = PolyImportOptions.Default();

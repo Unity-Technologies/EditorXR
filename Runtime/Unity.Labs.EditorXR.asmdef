@@ -1,7 +1,6 @@
 {
-    "name": "EXR",
+    "name": "Unity.Labs.EditorXR",
     "references": [
-        "EXR-Dependencies",
         "input-prototype",
         "VRLR",
         "Unity.TextMeshPro",
@@ -16,9 +15,5 @@
     "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": []
+    "allowUnsafeCode": false
 }

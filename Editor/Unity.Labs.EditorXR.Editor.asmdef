@@ -1,7 +1,7 @@
 {
-    "name": "EXR-Editor",
+    "name": "Unity.Labs.EditorXR.Editor",
     "references": [
-        "EXR",
+        "Unity.Labs.EditorXR",
         "Unity.TextMeshPro",
         "Unity.Labs.Utils",
         "Unity.Labs.ModuleLoader.Interfaces"

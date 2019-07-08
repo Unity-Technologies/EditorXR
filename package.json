@@ -1,0 +1,12 @@
+{
+	"name": "com.unity.labs.editorxr",
+	"displayName":"EditorXR",
+	"version": "0.3.0-preview",
+	"unity": "2018.3",
+	"description": "Author XR in XR",
+	"dependencies": {
+		"com.unity.labs.utils": "0.1.0-preview",
+		"com.unity.labs.module-loader": "0.1.0-preview",
+		"com.unity.labs.list-view-framework": "0.1.0-preview"
+	}
+}
