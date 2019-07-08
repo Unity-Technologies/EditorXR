@@ -132,17 +132,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
             // In case we have anything selected at start, set up manipulators, inspector, etc.
             EditorApplication.delayCall += OnSelectionChanged;
 
-            var initializableModules = new List<IDelayedInitializationModule>();
+            var delayedInitializationModules = new List<IDelayedInitializationModule>();
             foreach (var module in ModuleLoaderCore.instance.modules)
             {
-                var initializableModule = module as IDelayedInitializationModule;
-                if (initializableModule != null)
-                    initializableModules.Add(initializableModule);
+                var delayedInitializationModule = module as IDelayedInitializationModule;
+                if (delayedInitializationModule != null)
+                    delayedInitializationModules.Add(delayedInitializationModule);
             }
 
-            initializableModules.Sort((a, b) => a.initializationOrder.CompareTo(b.initializationOrder));
+            delayedInitializationModules.Sort((a, b) => a.initializationOrder.CompareTo(b.initializationOrder));
 
-            foreach (var module in initializableModules)
+            foreach (var module in delayedInitializationModules)
             {
                 module.Initialize();
             }
@@ -192,17 +192,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal void Shutdown()
         {
-            var initializableModules = new List<IDelayedInitializationModule>();
+            var delayedInitializationModules = new List<IDelayedInitializationModule>();
             foreach (var module in ModuleLoaderCore.instance.modules)
             {
-                var initializableModule = module as IDelayedInitializationModule;
-                if (initializableModule != null)
-                    initializableModules.Add(initializableModule);
+                var delayedInitializationModule = module as IDelayedInitializationModule;
+                if (delayedInitializationModule != null)
+                    delayedInitializationModules.Add(delayedInitializationModule);
             }
 
-            initializableModules.Sort((a, b) => a.shutdownOrder.CompareTo(b.shutdownOrder));
+            delayedInitializationModules.Sort((a, b) => a.shutdownOrder.CompareTo(b.shutdownOrder));
 
-            foreach (var module in initializableModules)
+            foreach (var module in delayedInitializationModules)
             {
                 module.Shutdown();
             }
