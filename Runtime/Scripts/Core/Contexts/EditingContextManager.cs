@@ -143,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (EditorApplication.isPlayingOrWillChangePlaymode || Application.isPlaying)
                 return false;
 
-            return PlayerSettings.virtualRealitySupported;
+            return PlayerSettings.GetVirtualRealitySupported(BuildTargetGroup.Standalone);
         }
 
         [MenuItem("Edit/Project Settings/EditorXR/Default Editing Context")]

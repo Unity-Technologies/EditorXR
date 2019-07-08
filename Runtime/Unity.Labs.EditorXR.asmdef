@@ -4,7 +4,6 @@
         "input-prototype",
         "VRLR",
         "Unity.TextMeshPro",
-        "UnityEngine.SpatialTracking",
         "PolyToolkit",
         "Unity.Labs.Utils",
         "Unity.Labs.Utils.Editor",

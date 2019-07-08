@@ -13,7 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
     class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<EditorXRViewerModule>,
-        IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>, IInterfaceConnector, IUsesConnectInterfaces,
+        IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
+        IModuleDependency<FunctionalityInjectionModule>, IInterfaceConnector, IUsesConnectInterfaces,
         IDelayedInitializationModule,IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible,
         IProvidesRequestStencilRef, IProvidesGetManipulatorDragState
     {
@@ -46,6 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         EditorXRViewerModule m_ViewerModule;
         EditorXRRayModule m_RayModule;
         KeyboardModule m_KeyboardModule;
+        FunctionalityInjectionModule m_FIModule;
 
         Transform m_ModuleParent;
         GameObject m_NewEventSystem;
@@ -63,20 +65,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
-        public void ConnectDependency(EditorXRViewerModule dependency)
-        {
-            m_ViewerModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRRayModule dependency)
-        {
-            m_RayModule = dependency;
-        }
-
-        public void ConnectDependency(KeyboardModule dependency)
-        {
-            m_KeyboardModule = dependency;
-        }
+        public void ConnectDependency(EditorXRViewerModule dependency) { m_ViewerModule = dependency; }
+        public void ConnectDependency(EditorXRRayModule dependency) { m_RayModule = dependency; }
+        public void ConnectDependency(KeyboardModule dependency) { m_KeyboardModule = dependency; }
+        public void ConnectDependency(FunctionalityInjectionModule dependency) { m_FIModule = dependency; }
 
         public void LoadModule()
         {
@@ -140,6 +132,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 InputModule = m_NewEventSystem.AddComponent<MultipleRayInputModule>();
             }
 
+#if UNITY_EDITOR
+            InputModule.StartRunInEditMode();
+#endif
+
+            m_FIModule.activeIsland.AddProviders(new List<IFunctionalityProvider> { InputModule });
+
             this.InjectFunctionalitySingle(InputModule);
             this.ConnectInterfaces(InputModule);
 
@@ -164,6 +162,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (m_NewEventSystem)
                 DestroyImmediate(m_NewEventSystem);
+
+            m_FIModule.activeIsland.RemoveProviders(new List<IFunctionalityProvider> { InputModule });
         }
 
         internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
