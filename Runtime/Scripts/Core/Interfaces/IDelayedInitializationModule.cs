@@ -18,12 +18,12 @@ namespace UnityEditor.Experimental.EditorVR
         void Shutdown();
 
         /// <summary>
-        /// Used to sort initializable modules before calling Initialize
+        /// Used to sort delayed initialization modules before calling Initialize
         /// </summary>
         int initializationOrder { get; }
 
         /// <summary>
-        /// Used to sort initializable modules before calling Shutdown
+        /// Used to sort delayed initialization modules before calling Shutdown
         /// </summary>
         int shutdownOrder { get; }
     }
