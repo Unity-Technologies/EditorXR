@@ -83,10 +83,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
         void Refresh()
         {
             m_SerializedFeedback.Clear();
-            var preferences = SerializedPreferencesModule.DeserializePreferences();
-            if (preferences == null)
-                return;
 
+            var preferences = SerializedPreferencesModule.SerializedPreferences.Deserialize(SerializedPreferencesModule.serializedPreferences);
             foreach (var kvp in preferences.items)
             {
                 var type = kvp.Key;
@@ -112,10 +110,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         static void ClearData()
         {
-            var preferences = SerializedPreferencesModule.DeserializePreferences();
-            if (preferences == null)
-                return;
-
+            var preferences = SerializedPreferencesModule.SerializedPreferences.Deserialize(SerializedPreferencesModule.serializedPreferences);
             foreach (var kvp in new Dictionary<Type, SerializedPreferencesModule.SerializedPreferenceItem>(preferences.items))
             {
                 var type = kvp.Key;
@@ -128,10 +123,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
 
         void SaveData()
         {
-            var preferences = SerializedPreferencesModule.DeserializePreferences();
-            if (preferences == null)
-                return;
-
+            var preferences = SerializedPreferencesModule.SerializedPreferences.Deserialize(SerializedPreferencesModule.serializedPreferences);
             var items = preferences.items;
             foreach (var kvp in m_SerializedFeedback)
             {

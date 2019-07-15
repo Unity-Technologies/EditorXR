@@ -43,6 +43,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_ItemDictionary.Remove(type);
                 m_Items = m_ItemDictionary.Values.ToArray();
             }
+
+            internal static SerializedPreferences Deserialize(string json)
+            {
+                return JsonUtility.FromJson<SerializedPreferences>(json);
+            }
         }
 
         [Serializable]
@@ -77,8 +82,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public const string SerializedPreferencesKey = "EditorVR.SerializedPreferences";
 
         readonly List<ISerializePreferences> m_Serializers = new List<ISerializePreferences>();
-        SerializedPreferences m_Preferences;
         bool m_HasDeserialized;
+
+        internal SerializedPreferences Preferences { get; private set; }
 
         internal static string serializedPreferences
         {
@@ -90,11 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         public int shutdownOrder { get { return 1; } }
         public int connectInterfaceOrder { get { return 1; } }
 
-        public void Initialize()
-        {
-            m_Preferences = DeserializePreferences(m_Serializers);
-            m_HasDeserialized = true;
-        }
+        public void Initialize() { }
 
         public void Shutdown()
         {
@@ -104,39 +106,22 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             m_HasDeserialized = false;
         }
 
-        public void AddSerializer(ISerializePreferences serializer)
+        internal void DeserializePreferences()
         {
-            if (m_Preferences != null)
-                Deserialize(m_Preferences, serializer);
-
-            m_Serializers.Add(serializer);
-        }
-
-        public void RemoveSerializer(ISerializePreferences serializer)
-        {
-            // TODO: Support serializing one type at a time
-            SerializePreferences();
-            m_Serializers.Remove(serializer);
-        }
-
-        internal static SerializedPreferences DeserializePreferences(List<ISerializePreferences> serializers = null)
-        {
-            var preferences = JsonUtility.FromJson<SerializedPreferences>(serializedPreferences);
-            if (preferences != null && serializers != null)
+            Preferences = SerializedPreferences.Deserialize(serializedPreferences);
+            if (Preferences != null)
             {
-                foreach (var serializer in serializers)
+                foreach (var serializer in m_Serializers)
                 {
-                    Deserialize(preferences, serializer);
+                    Deserialize(Preferences, serializer);
                 }
             }
-
-            return preferences;
         }
 
         internal string SerializePreferences()
         {
-            if (m_Preferences == null)
-                m_Preferences = new SerializedPreferences();
+            if (Preferences == null)
+                Preferences = new SerializedPreferences();
 
             var serializerTypes = new HashSet<Type>();
 
@@ -152,7 +137,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 if (!serializerTypes.Add(type))
                     Debug.LogWarning(string.Format("Multiple payloads of type {0} on serialization", type));
 
-                m_Preferences.items[type] = new SerializedPreferenceItem
+                Preferences.items[type] = new SerializedPreferenceItem
                 {
                     name = type.FullName,
                     payloadType = payload.GetType().FullName,
@@ -160,7 +145,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 };
             }
 
-            return JsonUtility.ToJson(m_Preferences);
+            return JsonUtility.ToJson(Preferences);
         }
 
         static void Deserialize(SerializedPreferences preferences, ISerializePreferences serializer)
@@ -185,14 +170,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
         {
             var serializePreferences = target as ISerializePreferences;
             if (serializePreferences != null)
-                AddSerializer(serializePreferences);
+                m_Serializers.Add(serializePreferences);
         }
 
         public void DisconnectInterface(object target, object userData = null)
         {
-            var serializePreferences = target as ISerializePreferences;
-            if (serializePreferences != null)
-                RemoveSerializer(serializePreferences);
         }
     }
 }
