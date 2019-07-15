@@ -12,8 +12,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.DirectSelectionModuleBehaviorOrder)]
-    class EditorXRDirectSelectionModule : IModuleDependency<EditorXRRayModule>, IModuleDependency<EditorXRToolModule>,
-        IModuleDependency<SceneObjectModule>, IModuleDependency<IntersectionModule>, IDelayedInitializationModule,
+    class EditorXRDirectSelectionModule : IDelayedInitializationModule,
         IInterfaceConnector, IModuleBehaviorCallbacks, IProvidesDirectSelection, IProvidesCanGrabObject, IUsesViewerBody
     {
         readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
@@ -40,33 +39,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         IProvidesViewerBody IFunctionalitySubscriber<IProvidesViewerBody>.provider { get; set; }
 
-        public void ConnectDependency(EditorXRToolModule dependency)
-        {
-            m_ToolModule = dependency;
-        }
-
-        public void ConnectDependency(EditorXRRayModule dependency)
-        {
-            m_RayModule = dependency;
-        }
-
-        public void ConnectDependency(SceneObjectModule dependency)
-        {
-            m_SceneObjectModule = dependency;
-        }
-
-        public void ConnectDependency(IntersectionModule dependency)
-        {
-            m_IntersectionModule = dependency;
-        }
-
         public void LoadModule()
         {
             IUsesPointerMethods.getPointerLength = GetPointerLength;
 
             var moduleLoaderCore = ModuleLoaderCore.instance;
-            m_ViewerModule = moduleLoaderCore.GetModule<EditorXRViewerModule>();
+            m_IntersectionModule = moduleLoaderCore.GetModule<IntersectionModule>();
             m_MiniWorldModule = moduleLoaderCore.GetModule<EditorXRMiniWorldModule>();
+            m_RayModule = moduleLoaderCore.GetModule<EditorXRRayModule>();
+            m_SceneObjectModule = moduleLoaderCore.GetModule<SceneObjectModule>();
+            m_ViewerModule = moduleLoaderCore.GetModule<EditorXRViewerModule>();
+            m_ToolModule = moduleLoaderCore.GetModule<EditorXRToolModule>();
         }
 
         public void UnloadModule() { }
@@ -112,19 +95,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     rayOrigin = ray.originalRayOrigin;
             }
 
-            DefaultProxyRay dpr;
-            if (m_RayModule.defaultRays.TryGetValue(rayOrigin, out dpr))
+            if (m_RayModule != null)
             {
-                length = dpr.pointerLength;
-
-                // If this is a MiniWorldRay, scale the pointer length to the correct size relative to MiniWorld objects
-                if (ray != null)
+                DefaultProxyRay dpr;
+                if (m_RayModule.defaultRays.TryGetValue(rayOrigin, out dpr))
                 {
-                    var miniWorld = ray.miniWorld;
+                    length = dpr.pointerLength;
 
-                    // As the MiniWorld gets smaller, the ray length grows, hence lossyScale.Inverse().
-                    // Assume that both transforms have uniform scale, so we just need .x
-                    length *= miniWorld.referenceTransform.TransformVector(miniWorld.miniWorldTransform.lossyScale.Inverse()).x;
+                    // If this is a MiniWorldRay, scale the pointer length to the correct size relative to MiniWorld objects
+                    if (ray != null)
+                    {
+                        var miniWorld = ray.miniWorld;
+
+                        // As the MiniWorld gets smaller, the ray length grows, hence lossyScale.Inverse().
+                        // Assume that both transforms have uniform scale, so we just need .x
+                        length *= miniWorld.referenceTransform.TransformVector(miniWorld.miniWorldTransform.lossyScale.Inverse()).x;
+                    }
                 }
             }
 
@@ -145,22 +131,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             m_DirectSelections.Clear();
 
-            foreach (var deviceData in m_ToolModule.deviceData)
+            if (m_ToolModule != null)
             {
-                var proxy = deviceData.proxy;
-                if (!proxy.active)
-                    continue;
-
-                var rayOrigin = deviceData.rayOrigin;
-                Vector3 contactPoint;
-                var obj = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
-                if (obj && !obj.CompareTag(EditorVR.VRPlayerTag))
+                foreach (var deviceData in m_ToolModule.deviceData)
                 {
-                    m_DirectSelections[rayOrigin] = new DirectSelectionData
+                    var proxy = deviceData.proxy;
+                    if (!proxy.active)
+                        continue;
+
+                    var rayOrigin = deviceData.rayOrigin;
+                    Vector3 contactPoint;
+                    var obj = GetDirectSelectionForRayOrigin(rayOrigin, out contactPoint);
+                    if (obj && !obj.CompareTag(EditorVR.VRPlayerTag))
                     {
-                        gameObject = obj,
-                        contactPoint = contactPoint
-                    };
+                        m_DirectSelections[rayOrigin] = new DirectSelectionData
+                        {
+                            gameObject = obj,
+                            contactPoint = contactPoint
+                        };
+                    }
                 }
             }
 
@@ -186,6 +175,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
         GameObject GetDirectSelectionForRayOrigin(Transform rayOrigin, out Vector3 contactPoint)
         {
             var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
+
+            if (m_IntersectionModule == null)
+            {
+                contactPoint = default(Vector3);
+                return null;
+            }
 
             var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester, out contactPoint);
             if (renderer)
@@ -243,7 +238,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     // Dropping the player head updates the camera rig position
                     if (grabbedObject.CompareTag(EditorVR.VRPlayerTag))
                         m_ViewerModule.DropPlayerHead(grabbedObject);
-                    else if (this.IsOverShoulder(rayOrigin) && (m_MiniWorldModule == null || !m_MiniWorldModule.rays.ContainsKey(rayOrigin)))
+                    else if (m_SceneObjectModule != null && this.IsOverShoulder(rayOrigin) && (m_MiniWorldModule == null || !m_MiniWorldModule.rays.ContainsKey(rayOrigin)))
                         m_SceneObjectModule.DeleteSceneObject(grabbedObject.gameObject);
                     else
                         eventObjects.Add(grabbedObject);

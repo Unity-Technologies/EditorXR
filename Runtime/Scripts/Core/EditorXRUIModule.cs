@@ -12,11 +12,10 @@ using UnityEngine.EventSystems;
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     [ModuleBehaviorCallbackOrder(ModuleOrders.UIModuleBehaviorOrder)]
-    class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<EditorXRViewerModule>,
-        IModuleDependency<EditorXRRayModule>, IModuleDependency<KeyboardModule>,
-        IModuleDependency<FunctionalityInjectionModule>, IInterfaceConnector, IUsesConnectInterfaces,
-        IDelayedInitializationModule,IModuleBehaviorCallbacks, IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible,
-        IProvidesRequestStencilRef, IProvidesGetManipulatorDragState
+    class EditorXRUIModule : ScriptableSettings<EditorXRUIModule>, IModuleDependency<FunctionalityInjectionModule>,
+        IModuleDependency<EditorXRDirectSelectionModule>,
+        IInterfaceConnector, IUsesConnectInterfaces, IDelayedInitializationModule,IModuleBehaviorCallbacks,
+        IUsesFunctionalityInjection, IProvidesSetManipulatorsVisible, IProvidesRequestStencilRef, IProvidesGetManipulatorDragState
     {
         const byte k_MinStencilRef = 2;
 
@@ -44,14 +43,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
         readonly HashSet<IUsesSetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<IUsesSetManipulatorsVisible>();
-        EditorXRViewerModule m_ViewerModule;
-        EditorXRRayModule m_RayModule;
-        KeyboardModule m_KeyboardModule;
         FunctionalityInjectionModule m_FIModule;
+
+        KeyboardModule m_KeyboardModule;
 
         Transform m_ModuleParent;
         GameObject m_NewEventSystem;
         MultipleRayInputModule m_NewInputModule;
+        ScreenInputHelper m_NewInputHelper;
 
         public int initializationOrder { get { return 0; } }
         public int shutdownOrder { get { return 0; } }
@@ -65,16 +64,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
         IProvidesConnectInterfaces IFunctionalitySubscriber<IProvidesConnectInterfaces>.provider { get; set; }
 #endif
 
-        public void ConnectDependency(EditorXRViewerModule dependency) { m_ViewerModule = dependency; }
-        public void ConnectDependency(EditorXRRayModule dependency) { m_RayModule = dependency; }
-        public void ConnectDependency(KeyboardModule dependency) { m_KeyboardModule = dependency; }
         public void ConnectDependency(FunctionalityInjectionModule dependency) { m_FIModule = dependency; }
+
+        // Unused dependency to ensure IUsesPointer is satisfied
+        public void ConnectDependency(EditorXRDirectSelectionModule dependency) { }
 
         public void LoadModule()
         {
             IInstantiateUIMethods.instantiateUI = InstantiateUI;
 
-            m_ModuleParent = ModuleLoaderCore.instance.GetModuleParent().transform;
+            var moduleLoaderCore = ModuleLoaderCore.instance;
+            m_ModuleParent = moduleLoaderCore.GetModuleParent().transform;
+            m_KeyboardModule = moduleLoaderCore.GetModule<KeyboardModule>();
         }
 
         public void UnloadModule() { }
@@ -117,6 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public void Initialize()
         {
             var eventSystem = FindObjectOfType<EventSystem>();
+            ScreenInputHelper inputHelper;
             if (eventSystem)
             {
                 InputModule = eventSystem.GetComponent<MultipleRayInputModule>();
@@ -125,15 +127,30 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_NewInputModule = eventSystem.gameObject.AddComponent<MultipleRayInputModule>();
                     InputModule = m_NewInputModule;
                 }
+
+//                inputHelper = eventSystem.GetComponent<ScreenInputHelper>();
+//                if (!inputHelper)
+//                {
+//                    inputHelper = eventSystem.gameObject.AddComponent<ScreenInputHelper>();
+//                    m_NewInputHelper = inputHelper;
+//                }
             }
             else
             {
                 m_NewEventSystem = new GameObject("EventSystem");
                 InputModule = m_NewEventSystem.AddComponent<MultipleRayInputModule>();
+
+//                inputHelper = m_NewEventSystem.GetComponent<ScreenInputHelper>();
+//                if (!inputHelper)
+//                {
+//                    inputHelper = m_NewEventSystem.gameObject.AddComponent<ScreenInputHelper>();
+//                    m_NewInputHelper = inputHelper;
+//                }
             }
 
 #if UNITY_EDITOR
             InputModule.StartRunInEditMode();
+            //inputHelper.StartRunInEditMode();
 #endif
 
             m_FIModule.activeIsland.AddProviders(new List<IFunctionalityProvider> { InputModule });
@@ -141,11 +158,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
             this.InjectFunctionalitySingle(InputModule);
             this.ConnectInterfaces(InputModule);
 
-            var customPreviewCamera = m_ViewerModule.customPreviewCamera;
-            if (customPreviewCamera != null)
-                InputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
+            var viewerModule = ModuleLoaderCore.instance.GetModule<EditorXRViewerModule>();
+            if (viewerModule != null)
+            {
+                var customPreviewCamera = viewerModule.customPreviewCamera;
+                if (customPreviewCamera != null)
+                    InputModule.layerMask |= customPreviewCamera.hmdOnlyLayerMask;
+            }
 
-            InputModule.preProcessRaycastSource = m_RayModule.PreProcessRaycastSource;
+            var rayModule = ModuleLoaderCore.instance.GetModule<EditorXRRayModule>();
+            if (rayModule != null)
+                InputModule.preProcessRaycastSource = rayModule.PreProcessRaycastSource;
 
             m_EventCamera = EditorXRUtils.Instantiate(m_EventCameraPrefab.gameObject, m_ModuleParent).GetComponent<Camera>();
             m_EventCamera.enabled = false;
@@ -159,6 +182,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             if (m_NewInputModule)
                 DestroyImmediate(m_NewInputModule);
+
+            if (m_NewInputHelper)
+                DestroyImmediate(m_NewInputHelper);
 
             if (m_NewEventSystem)
                 DestroyImmediate(m_NewEventSystem);

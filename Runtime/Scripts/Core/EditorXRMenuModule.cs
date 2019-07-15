@@ -472,7 +472,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 menuHideData.hideFlags |= MenuHideFlags.OverWorkspace;
         }
 
-        internal bool IsValidHover(MultipleRayInputModule.RaycastSource source)
+        internal bool IsValidHover(IRaycastSource source)
         {
             var go = source.draggedObject;
             if (!go)
